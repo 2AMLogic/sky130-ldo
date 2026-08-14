@@ -1,6 +1,11 @@
 # DR-001: sky130 pass-device and supply framing
 
-- **Status**: **proposed** — this record does **not** ratify itself.
+- **Status**: **ratified** — framing (A) ratified by the operator's ruling on #1,
+  2026-08-14
+  ([comment](https://github.com/2AMLogic/sky130-ldo/issues/1#issuecomment-5297123803)).
+  Ratification is scoped to the *framing* (pass-device family, input-rail
+  mission, port parity); every numeric row in `spec/target-spec.md` remains
+  DRAFT — see "Status notes" below.
 - **Date**: 2026-08-13
 - **Author**: Builder agent (drafted per #4)
 - **Ratifies against / input to**: #1 (Ratify the target spec — operator-only,
@@ -367,6 +372,20 @@ from DRAFT to ratified. If #1 rules differently from this record's
 recommendation, a superseding record is filed to match the ratified outcome;
 this record is not edited after the fact (decision records are append-only per
 `CLAUDE.md`).
+
+**Ratification update (2026-08-14).** #1's operator ruling accepted this
+record's recommendation: framing (A) — pass device `sky130_fd_pr__pfet_g5v0d10v5`,
+3.3 V ±10 % in / 1.8 V out / 0–50 mA, port parity with `2AMLogic/gf180-ldo` — is
+ratified
+([ruling comment](https://github.com/2AMLogic/sky130-ldo/issues/1#issuecomment-5297123803)).
+The ruling is explicitly scoped to the framing only: it does **not** ratify any
+numeric row in `spec/target-spec.md`, and #1 stays open as the gate for those —
+consistent with the sibling-canary precedent (sky130-pll / sky130-sar-adc) the
+ruling cites, that ratifying a framing record does not ratify the values.
+Framing (C) — a 5 V pass device with a core-device error-amplifier core —
+remains an open refinement *inside* (A), deferred to a later topology decision
+record as this record already proposed. This paragraph is appended per this repo's append-only
+decision-record convention; the argument above is unedited.
 
 Filed under this repo's `DR-NNN-<slug>.md` convention
 (`spec/decision-records/README.md`). Note that `spec/target-spec.md`'s closing

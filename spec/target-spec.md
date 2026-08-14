@@ -29,12 +29,12 @@ Where a value cannot yet be sourced from either — because it depends on a
 sky130-specific device measurement this repo has not run — the row says so and
 carries no number rather than an invented one.
 
-## The central sky130 porting question (must be resolved before ratification)
+## The central sky130 porting question — RATIFIED (framing A)
 
 gf180-ldo uses the gf180mcu 3.3 V PMOS (`pfet_03v3`) as its pass device for a
 3.3 V input. **sky130 has no native 3.3 V flavor.** A 3.3 V-in / 1.8 V-out LDO on
-sky130 therefore has two candidate framings, and issue #1 must pick one via a
-decision record:
+sky130 therefore had two candidate framings, argued in
+[`spec/decision-records/DR-001-pass-device-supply-framing.md`](decision-records/DR-001-pass-device-supply-framing.md):
 
 - **(A) 5.0 V pass device.** Use `pfet_g5v0d10v5` for a 3.3 V input, preserving
   gf180-ldo's 3.3 V → 1.8 V port-parity intent. Costs area and gate drive; buys
@@ -44,9 +44,15 @@ decision record:
   produce 1.8 V out from a 1.8 V-class input** — it changes the block's mission
   and breaks port parity with gf180-ldo.
 
-The DRAFT below is written against framing **(A)** as the parity-preserving
-default, and every affected row is flagged. Choosing (B) at ratification changes
-several rows at once.
+**(A) ratified per DR-001/#1** — the operator's ruling on #1
+([2026-08-14](https://github.com/2AMLogic/sky130-ldo/issues/1#issuecomment-5297123803))
+ratified framing (A): pass device `sky130_fd_pr__pfet_g5v0d10v5`, 3.3 V ±10% in /
+1.8 V out / 0–50 mA, port parity with `2AMLogic/gf180-ldo`. The ruling is scoped
+to this framing question only — **every numeric row in the DRAFT table below
+remains DRAFT** and is not ratified by this decision; #1 stays open as the gate
+for those rows. Framing (C) (5 V pass device with a core-device error-amplifier
+core) remains an open refinement inside (A), deferred to a later topology
+decision record.
 
 ## DRAFT target table
 
@@ -82,8 +88,10 @@ ratification.
 
 ## Open items that must close before ratification
 
-1. **Pass-device flavor (A vs B above).** The single most consequential decision;
-   several rows depend on it. Decision record required.
+1. **Pass-device flavor (A vs B above).** ~~The single most consequential
+   decision; several rows depend on it. Decision record required.~~ **Resolved:
+   framing (A) ratified per DR-001/#1** (2026-08-14). The rows that depend on it
+   still carry their own DRAFT numeric values, unaffected by this resolution.
 2. **Output-capacitor / ESR window.** Mirror gf180-ldo's DR-0001 or re-derive for
    sky130. Decision record required.
 3. **sky130 device characterization.** Dropout test point, pass-device sizing, Iq
