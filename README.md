@@ -101,11 +101,16 @@ measurements/  silicon characterization (empty until tape-out)
 ## Environment setup
 
 The open-source flow (xschem + ngspice + the sky130 PDK fetched via `volare`,
-plus KLayout and `klt` for the layout flow) is bootstrapped by issue #2, seeded
-from the working harnesses in
-[sky130-bandgap](https://github.com/2AMLogic/sky130-bandgap) and
-[gf180-ldo](https://github.com/2AMLogic/gf180-ldo). Once it lands, setup steps
-and the end-to-end smoke test will live in `docs/environment-setup.md`.
+plus `klt` for the layout flow) is bootstrapped (issue #2), seeded from the
+working harnesses in [sky130-bandgap](https://github.com/2AMLogic/sky130-bandgap)
+(sky130 flow, `klt` layout/DRC/LVS driver) and
+[gf180-ldo](https://github.com/2AMLogic/gf180-ldo) (LDO testbench structure).
+See [`docs/environment-setup.md`](docs/environment-setup.md) for the
+reproducible bring-up, [`sim/README.md`](sim/README.md) for the sim harness,
+and [`layout/README.md`](layout/README.md) for the layout flow. The harness
+is proven end to end (env check, sim selftest, trivial-cell DRC/LVS flow) but
+carries no LDO design content yet — no schematic, no LDO layout — that starts
+once `spec/target-spec.md` is ratified (issue #1).
 
 ## License
 
