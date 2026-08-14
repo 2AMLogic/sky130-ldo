@@ -61,7 +61,14 @@ the portability proof.** Where sky130 forces a departure from the gf180mcu desig
 (most notably the pass-device voltage flavor — sky130 has no native 3.3 V device,
 so a 3.3 V-in / 1.8 V-out LDO reaches for the 5.0 V `pfet_g5v0d10v5`), the
 divergence is called out in `spec/target-spec.md` and resolved through a decision
-record, not assumed.
+record, not assumed. That framing question is now **ratified**: the operator's
+ruling on #1
+([2026-08-14](https://github.com/2AMLogic/sky130-ldo/issues/1#issuecomment-5297123803))
+ratified
+[DR-001](spec/decision-records/DR-001-pass-device-supply-framing.md)'s
+recommendation — `sky130_fd_pr__pfet_g5v0d10v5` as the pass device, 3.3 V ±10% in
+/ 1.8 V out / 0–50 mA, preserving port parity with gf180-ldo. The numeric spec
+rows below remain DRAFT; only the framing is ratified.
 
 ## Private, for now
 
