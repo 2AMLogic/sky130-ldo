@@ -1,0 +1,25 @@
+* Hand-written LVS reference netlist for `trivial_mos_array`, the trivial
+* known-good cell this flow is proven against (issue #2).
+*
+* Topology only, matching `klt gen mos_array`'s pinned-default output
+* (rows=2, cols=2, dummy=1, flavor=nfet -- 2x2 "real" devices plus one
+* dummy column on each side of each row, no well/body layer drawn): 4
+* independent *real* unit NMOS devices, each with its own isolated
+* source/drain/gate net (this generator draws no GDS pin-label text, so
+* there is nothing to name these nets after), bodies tied to the single
+* shared `vsubs` pin. `klt lvs`/`NetlistComparer` compares topology, not net
+* names, so the arbitrary `d*/g*/s*` names here do not need to match the
+* extracted netlist's own (also arbitrary, `$N`-style) net names.
+*
+* At the `klt` pin this repo starts on (same pin sky130-bandgap's own
+* trivial-cell flow proved this exact cell against -- see
+* layout/requirements.txt), sky130's curated deck recognizes the 4
+* dummy-column units as dummies (no schematic counterpart by construction)
+* and `klt extract` drops them from the comparison, so this reference only
+* states the 4 units that matter.
+.SUBCKT trivial_mos_array vsubs
+M1 d1 g1 s1 vsubs nfet L=0.28U W=0.42U
+M2 d2 g2 s2 vsubs nfet L=0.28U W=0.42U
+M3 d3 g3 s3 vsubs nfet L=0.28U W=0.42U
+M4 d4 g4 s4 vsubs nfet L=0.28U W=0.42U
+.ENDS trivial_mos_array
