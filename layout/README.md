@@ -2,10 +2,11 @@
 
 Issue #2's layout-flow deliverable: a headless, repeatable DRC/LVS flow driven
 by [`klayout-tools`](https://github.com/2AMLogic/klayout-tools) (`klt`),
-**proven on a trivial known-good cell only** — this is scoped to prove the
-`klt` layout/DRC/LVS driver works on this repo, not to draw the LDO. The
-LDO's own layout is future work once `spec/target-spec.md` is ratified
-(issue #1) and the design is drawn.
+**first proven on a trivial known-good cell** (`trivial-cell/`, below) before
+being extended to the LDO's own layout (`ldo-core/`, issue #15 — see
+"Extending to the LDO core" below): a placed floorplan skeleton for
+`design/ldo_3v3in_1v8out.sch`, DRC-clean, with extraction/LVS deferred to
+issue #17.
 
 Two rules from the root `CLAUDE.md` shape this directory the same way they
 shape `sim/`:
@@ -111,7 +112,16 @@ layout/
     setup-venv.sh             # create/refresh layout/.venv from requirements.txt
     run-trivial-cell-flow.sh  # the repeatable driver: gen -> drc -> extract -> lvs -> report
     render-record.py          # renders + verdict-checks a record's record.md
+    run-ldo-layout-flow.sh    # LDO-core driver: gen (x15) -> gen-compose -> drc -> report
+    gen-ldo-blocks.py         # per-device klt gen + explicit-placement floorplan + gen-compose
+    render-ldo-record.py      # renders + verdict-checks an ldo-core record's record.md
   .venv/                      # gitignored -- `klt` install, created by setup-venv.sh
+  ldo-core/                   # issue #15: the real LDO layout (see "Extending to the LDO core")
+    floorplan.md               # device-to-block mapping + row-grouping rationale
+    reports/
+      LATEST
+      <record-id>/             # gen.<device>.json/<device>.gds x15, compose.*.json,
+                                # ldo_core.gds, drc.json, report.md, record.md
   trivial-cell/
     reference.spice                    # known-good LVS reference netlist
     reference.broken-device.spice      # negative control 1: device.property corruption
@@ -155,6 +165,35 @@ layout issues — most likely once real LDO device geometry (poly resistors,
 the `pfet_g5v0d10v5`/`pfet_01v8` pass-device candidates once #1 ratifies) is
 drawn — file it at `2AMLogic/klayout-tools` per the root `CLAUDE.md`:
 tool-gap description only, no spec values or design content from this repo.
+
+## Extending to the LDO core (issue #15)
+
+`ldo-core/` is the real block layout — a placed floorplan skeleton for
+`design/ldo_3v3in_1v8out.sch` (issue #14), one `klt gen` block per active
+device, positioned by function group via `klt gen-compose`'s
+`placement.strategy: "explicit"` and confirmed DRC-clean. It is separate
+from `trivial-cell/` above (that stays tool-flow proof only) and follows the
+same "closest real precedent" this repo used for #14: `2AMLogic/sky130-bandgap`'s
+own issue #15 (a floorplan + placed skeleton, DRC-clean, LVS explicitly
+deferred to a follow-on issue).
+
+```bash
+layout/bin/setup-venv.sh            # once, or after bumping requirements.txt
+layout/bin/run-ldo-layout-flow.sh   # regenerate the floorplan + DRC record
+```
+
+Read the newest `ldo-core/reports/<record-id>/record.md` for the actual
+DRC-clean evidence, and `ldo-core/floorplan.md` for the device-to-block
+mapping and row-grouping rationale (why the two feedback/bias resistor
+blocks get their own dedicated rows, separate from the compact MOS core).
+
+**Explicitly out of scope for issue #15** (deferred to the issues that
+already depend on it): inter-block routing, extraction, and LVS (#17); full
+DRC-report closure/formalization (#16, though this flow's own DRC run must
+already be clean, and is); the schematic's Miller compensation cap
+(`C_COMP`) has no corresponding `klt gen` device generator at this repo's
+pinned `klt` commit and is not drawn — see `ldo-core/floorplan.md`'s "Known
+gap" section.
 
 ## Known klt-deck limitations relevant to later, LDO-specific layout issues
 
