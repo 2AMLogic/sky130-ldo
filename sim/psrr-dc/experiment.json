@@ -1,0 +1,43 @@
+{
+  "slug": "psrr-dc",
+  "title": "PSRR at 1kHz and 100kHz (small-signal AC around the DC operating point)",
+  "claim": "Substantiates spec/target-spec.md's DRAFT \"PSRR\" row (>50dB @ 1kHz and >20dB @ 100kHz) against the LDO core-regulation-loop schematic landed by #14 (design/ldo_3v3in_1v8out.sch). That row is DRAFT (issue #1 not yet ratified) -- the bounds below cite it directly, not an invented final limit, and need re-verification once #1 rules. This v1 testbench characterizes ONE load point (~1mA, 1.8kOhm) rather than both 1mA and 50mA the DRAFT row names -- see the testbench schematic's header for why (the 50mA point does not have a valid regulating DC operating point to linearize around, per this schematic's known compensation/gain immaturity, design/README.md \"Known gaps\").",
+  "provenance": "schematic",
+  "provenance_source": "sim/psrr-dc/testbench/tb_psrr_dc.sch",
+  "schematic": "testbench/tb_psrr_dc.sch",
+  "statistical_convention": "N/A (corner-matrix check, not a distribution claim)",
+  "corners": {
+    "process": ["tt", "ss", "ff", "sf", "fs"],
+    "temperature_c": [-40, 27, 125],
+    "supply_v": [2.97, 3.3, 3.63]
+  },
+  "quick_subset": [
+    ["tt", 27, 3.3],
+    ["ss", -40, 2.97],
+    ["ff", 125, 3.63]
+  ],
+  "deck": {
+    "options": ["wnflag=1"],
+    "params": {},
+    "analyses": ["ac lin 3 1e3 1e5"]
+  },
+  "measurements": [
+    {
+      "name": "psrr_1khz_db",
+      "expr": "-vdb(vout)[0]",
+      "unit": "dB",
+      "min": 50,
+      "max": null,
+      "note": "PSRR at 1kHz (index 0 of the 3-point 'ac lin 3 1e3 1e5' sweep -- ngspice's 'ac lin 2 ...' form drops a point on this deck, so a 3rd, unused midpoint is requested to work around it). DRAFT bound: spec/target-spec.md \"PSRR\" row, >50dB @ 1kHz."
+    },
+    {
+      "name": "psrr_100khz_db",
+      "expr": "-vdb(vout)[2]",
+      "unit": "dB",
+      "min": 20,
+      "max": null,
+      "note": "PSRR at 100kHz (index 2, the sweep's upper endpoint). DRAFT bound: spec/target-spec.md \"PSRR\" row, >20dB @ 100kHz."
+    }
+  ],
+  "spread_checks": []
+}

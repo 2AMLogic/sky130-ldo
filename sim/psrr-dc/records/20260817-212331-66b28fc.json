@@ -1,0 +1,195 @@
+{
+  "author": "robb@2amlogic.com",
+  "corners": [
+    {
+      "corner_id": "tt_27c_3.30v",
+      "elapsed_s": 14.991,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/psrr-dc/corners/20260817-212331-66b28fc/tt_27c_3.30v.log",
+      "measurements": [
+        {
+          "expr": "-vdb(vout)[0]",
+          "max": null,
+          "min": 50,
+          "name": "psrr_1khz_db",
+          "pass": false,
+          "reason": "below min 50",
+          "unit": "dB",
+          "value": 26.09483
+        },
+        {
+          "expr": "-vdb(vout)[2]",
+          "max": null,
+          "min": 20,
+          "name": "psrr_100khz_db",
+          "pass": true,
+          "reason": "",
+          "unit": "dB",
+          "value": 36.72423
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": false,
+      "process": "tt",
+      "supply_v": 3.3,
+      "temperature_c": 27.0,
+      "timed_out": false,
+      "timeout_s": 300
+    },
+    {
+      "corner_id": "ss_-40c_2.97v",
+      "elapsed_s": 16.564,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/psrr-dc/corners/20260817-212331-66b28fc/ss_-40c_2.97v.log",
+      "measurements": [
+        {
+          "expr": "-vdb(vout)[0]",
+          "max": null,
+          "min": 50,
+          "name": "psrr_1khz_db",
+          "pass": false,
+          "reason": "below min 50",
+          "unit": "dB",
+          "value": 39.13353
+        },
+        {
+          "expr": "-vdb(vout)[2]",
+          "max": null,
+          "min": 20,
+          "name": "psrr_100khz_db",
+          "pass": true,
+          "reason": "",
+          "unit": "dB",
+          "value": 35.59282
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": false,
+      "process": "ss",
+      "supply_v": 2.97,
+      "temperature_c": -40.0,
+      "timed_out": false,
+      "timeout_s": 300
+    },
+    {
+      "corner_id": "ff_125c_3.63v",
+      "elapsed_s": 16.081,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/psrr-dc/corners/20260817-212331-66b28fc/ff_125c_3.63v.log",
+      "measurements": [
+        {
+          "expr": "-vdb(vout)[0]",
+          "max": null,
+          "min": 50,
+          "name": "psrr_1khz_db",
+          "pass": false,
+          "reason": "below min 50",
+          "unit": "dB",
+          "value": -1.20484
+        },
+        {
+          "expr": "-vdb(vout)[2]",
+          "max": null,
+          "min": 20,
+          "name": "psrr_100khz_db",
+          "pass": true,
+          "reason": "",
+          "unit": "dB",
+          "value": 33.12068
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": false,
+      "process": "ff",
+      "supply_v": 3.63,
+      "temperature_c": 125.0,
+      "timed_out": false,
+      "timeout_s": 300
+    }
+  ],
+  "experiment": {
+    "claim": "Substantiates spec/target-spec.md's DRAFT \"PSRR\" row (>50dB @ 1kHz and >20dB @ 100kHz) against the LDO core-regulation-loop schematic landed by #14 (design/ldo_3v3in_1v8out.sch). That row is DRAFT (issue #1 not yet ratified) -- the bounds below cite it directly, not an invented final limit, and need re-verification once #1 rules. This v1 testbench characterizes ONE load point (~1mA, 1.8kOhm) rather than both 1mA and 50mA the DRAFT row names -- see the testbench schematic's header for why (the 50mA point does not have a valid regulating DC operating point to linearize around, per this schematic's known compensation/gain immaturity, design/README.md \"Known gaps\").",
+    "provenance": "schematic",
+    "provenance_source": "sim/psrr-dc/testbench/tb_psrr_dc.sch",
+    "slug": "psrr-dc",
+    "statistical_convention": "N/A (corner-matrix check, not a distribution claim)",
+    "title": "PSRR at 1kHz and 100kHz (small-signal AC around the DC operating point)"
+  },
+  "git": {
+    "branch": "feature/issue-18",
+    "dirty": true,
+    "sha": "66b28fc"
+  },
+  "links": {
+    "corners_dir": "sim/psrr-dc/corners/20260817-212331-66b28fc/",
+    "json": "sim/psrr-dc/records/20260817-212331-66b28fc.json",
+    "manifest": "sim/psrr-dc/experiment.json",
+    "netlist_snapshot": "sim/psrr-dc/netlist-snapshots/20260817-212331-66b28fc.spice",
+    "record": "sim/psrr-dc/records/20260817-212331-66b28fc.md",
+    "testbench": "sim/psrr-dc/testbench/tb_psrr_dc.sch"
+  },
+  "matrix": {
+    "is_subset": true,
+    "n_points": 3,
+    "point_ids": [
+      "tt_27c_3.30v",
+      "ss_-40c_2.97v",
+      "ff_125c_3.63v"
+    ],
+    "points": [
+      [
+        "tt",
+        27.0,
+        3.3
+      ],
+      [
+        "ss",
+        -40.0,
+        2.97
+      ],
+      [
+        "ff",
+        125.0,
+        3.63
+      ]
+    ],
+    "process": [
+      "tt",
+      "ss",
+      "ff"
+    ],
+    "subset_reason": "Standing up the testbench per #18 (first evidence record); full PVT sweep is #19's job, mirrors sim/pdk-smoke's own quick_subset convention.",
+    "supply_v": [
+      2.97,
+      3.3,
+      3.63
+    ],
+    "temperature_c": [
+      -40.0,
+      27.0,
+      125.0
+    ]
+  },
+  "overall_pass": false,
+  "pdk": {
+    "installed_commit": "c6d73a35f524070e85faff4a6a9eef49553ebc2b",
+    "lib_file": "/Users/rwalters/.volare/sky130A/libs.tech/combined/sky130.lib.spice",
+    "matches_pin": true,
+    "pinned_commit": "c6d73a35f524070e85faff4a6a9eef49553ebc2b",
+    "root": "/Users/rwalters/.volare",
+    "variant": "sky130A"
+  },
+  "record_id": "20260817-212331-66b28fc",
+  "spread_checks": [],
+  "supersedes": "",
+  "timestamp": "2026-08-17T21:23:31Z",
+  "tools": {
+    "ngspice": "ngspice-47 : Circuit level simulation program",
+    "platform": "Darwin 25.6.0 arm64",
+    "python": "3.14.7",
+    "xschem": "XSCHEM V3.4.7"
+  }
+}

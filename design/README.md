@@ -648,3 +648,30 @@ its `.subckt` line commented out, so its elements land at the top level with
 and a load. Copy `sim/spiceinit` to `.spiceinit` in the working directory
 first. Screening decks are intentionally not committed — they are not `sim/`
 evidence.
+
+## `ldo_3v3in_1v8out.sym` — companion subcircuit symbol (added for #18)
+
+`ldo_3v3in_1v8out.sym`, alongside the schematic, is a mechanically-generated
+companion artifact, not a redesign of the circuit above — it carries no
+device content of its own. It exists so `sim/`'s testbenches (issue #18:
+`load-transient`, `psrr-dc`, `dropout-vs-load`) can instantiate this
+schematic hierarchically as a subcircuit (`xschem`'s standard pattern for a
+DUT-under-testbench, already anticipated by `sim/xschemrc`'s "so this
+project's own cells resolve by their repo-relative name" comment). xschem
+resolves a subcircuit symbol's schematic body by co-locating the `.sym` next
+to the `.sch` it names — a symbol filed anywhere else (e.g. under `sim/`)
+silently netlists to an **empty** subcircuit with no warning, which is why
+this file lives here rather than alongside the testbenches that use it.
+
+Regenerate it (deterministic — byte-identical given the same schematic) with:
+
+```bash
+awk -f "$(brew --prefix xschem 2>/dev/null || echo /usr/local)/share/xschem/make_sym.awk" \
+  150 design/ldo_3v3in_1v8out.sch
+```
+
+or interactively via xschem's own `make_symbol` (bound to the "K" key), which
+runs the same `make_sym.awk` under the hood. The pin list (`VOUT`, `VREF`,
+`EN`, `VIN`) is auto-extracted from the schematic's `opin`/`ipin` instances —
+if a future revision of the schematic adds, removes, or renames a top-level
+port, regenerate this file to match.

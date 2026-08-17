@@ -15,10 +15,22 @@ results it produces. Two rules from the root `CLAUDE.md` shape everything here:
 The directory layout, record-id scheme and summary-record fields are ported
 from the sibling [`sky130-bandgap`](https://github.com/2AMLogic/sky130-bandgap)
 repo's harness (same PDK, same pin, issue #2), so the two evidence trails read
-as one house style. This directory has no LDO design content yet — `pdk-smoke`
-below is harness plumbing only; the block's own testbenches (`load-transient`,
-`psrr-dc`, `dropout-vs-load`, …) arrive once `spec/target-spec.md` is ratified
-(issue #1) and there is a schematic to test against.
+as one house style. `pdk-smoke` below is harness plumbing only (PDK/tool
+liveness, not a spec claim). The block's own testbenches — `load-transient`,
+`psrr-dc`, `dropout-vs-load` — landed in issue #18, each exercising the LDO
+core-regulation-loop schematic from issue #14
+(`design/ldo_3v3in_1v8out.sch`, instantiated via its companion subcircuit
+symbol `design/ldo_3v3in_1v8out.sym`) against a DRAFT row of
+`spec/target-spec.md`. `spec/target-spec.md` is not yet ratified (issue #1
+still open), so every measurement bound these testbenches use cites a DRAFT
+spec row directly rather than an invented "final" number, and each
+experiment's `claim` says so. Their first evidence records are an explicit
+`--quick` subset (3 corners, `--subset-reason` cited in the record) standing
+the harness up; the full 45-point PVT sweep is issue #19's job. **All three
+currently record `FAIL`** against their DRAFT bounds — an honest, expected
+finding given this schematic's known immaturity (unsized placeholder
+compensation, no current limit; see `design/README.md`'s "Known gaps"), not a
+harness defect.
 
 ---
 
@@ -213,6 +225,56 @@ prejudgment of it.
 
 Keep it green: it is the first thing to run when a testbench misbehaves, to
 tell "my circuit is wrong" apart from "my harness is broken".
+
+## The LDO's own testbenches (issue #18)
+
+Each testbench below instantiates `design/ldo_3v3in_1v8out.sch` (issue #14,
+including the current-limit and soft-start circuitry issue #22 added)
+hierarchically, via its companion subcircuit symbol
+`design/ldo_3v3in_1v8out.sym` (see `design/README.md` for why the symbol has
+to be co-located with the schematic). All three share the same VIN/EN/VREF
+stimulus convention (VIN and/or EN carry the corner runner's `'vsup'`; VREF is
+a fixed 1.2 V placeholder — see `design/README.md`'s "VREF interface
+caveat, and the reference common mode", which explains why 1.2 V/1:2-divider
+is the value that actually regulates, unlike the earlier 0.6 V/2:1
+convention) and the same output network (1 µF `C_OUT` + 10 mΩ `R_ESR`, a
+representative point inside DR-002's *proposed* 0–500 mΩ window, not a sweep
+of it). Full detail — exact stimulus, measurement expressions, and which
+DRAFT spec row each bound cites — lives in each experiment's own
+`experiment.json` `claim` field, per this directory's own convention; this
+section is a map, not a duplicate of that detail.
+
+- **`load-transient/`** — `I_LOAD` steps 1↔50 mA (1 µs edges) at `VOUT`;
+  measures undershoot/overshoot against `spec/target-spec.md`'s DRAFT "Load
+  transient" row (peak excursion ≤150 mV). First record
+  (`20260817-212623-66b28fc`): **PASS** at `tt_27c_3.30v` and `ss_-40c_2.97v`
+  (undershoot ≈0.146 V / 0.137 V), **FAIL** at `ff_125c_3.63v`
+  (undershoot 0.941 V) — overall `FAIL`.
+- **`psrr-dc/`** — small-signal AC sweep on VIN (1 kHz, 100 kHz) at a single
+  ~1 mA load point; measures PSRR against the DRAFT "PSRR" row (>50 dB @
+  1 kHz, >20 dB @ 100 kHz). Characterizes one load point, not both 1 mA and
+  50 mA the DRAFT row names — see the testbench schematic's header for why.
+  First record (`20260817-212331-66b28fc`): `FAIL` at all three corners
+  (1 kHz PSRR 26.1 dB / 39.1 dB / −1.2 dB, all below the 50 dB bound).
+- **`dropout-vs-load/`** — DC VIN sweep at a fixed 50 mA load (the DRAFT
+  spec row's own gf180-mirrored "sweep Vin toward Vout" method); measures the
+  Vin–Vout margin against the DRAFT "Dropout @ 50 mA" row (<300 mV). First
+  record (`20260817-212426-66b28fc`): `FAIL` at all three corners (dropout
+  0.613 V / 0.365 V / 1.354 V, all above the 300 mV bound).
+
+None of the three fully meet their DRAFT bound yet (`psrr-dc` and
+`dropout-vs-load` fail at every corner in their first `--quick`-subset
+record; `load-transient` passes at two of the three quick-subset corners and
+fails at the high-`VIN`/high-temperature corner). This is an honest, expected
+finding, not a harness bug: `design/README.md`'s "Known gaps" section
+documents that this schematic's compensation (`C_COMP`/`C_CL`) remains an
+unsized placeholder and its single-stage 5T OTA error amplifier still has a
+light-load/high-`VIN` output-swing ceiling ("Known open item"), even though
+issue #22 already closed the current-limit and soft-start gaps. Closing the
+compensation/ceiling gap is design work tracked separately (its own follow-on
+issue per `design/README.md`), not this issue's (#18's) job, which is
+standing the testbenches up so that gap is *visible* as `sim/` evidence
+instead of asserted from inspection.
 
 ## `sim/selftest.sh` — the harness acceptance test
 

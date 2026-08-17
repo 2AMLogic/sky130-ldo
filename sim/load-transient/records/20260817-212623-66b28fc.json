@@ -1,0 +1,195 @@
+{
+  "author": "robb@2amlogic.com",
+  "corners": [
+    {
+      "corner_id": "tt_27c_3.30v",
+      "elapsed_s": 19.501,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/load-transient/corners/20260817-212623-66b28fc/tt_27c_3.30v.log",
+      "measurements": [
+        {
+          "expr": "v(vout)[0] - vecmin(v(vout))",
+          "max": 0.15,
+          "min": null,
+          "name": "undershoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.1456749
+        },
+        {
+          "expr": "vecmax(v(vout)) - v(vout)[0]",
+          "max": 0.15,
+          "min": null,
+          "name": "overshoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.1061224
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "tt",
+      "supply_v": 3.3,
+      "temperature_c": 27.0,
+      "timed_out": false,
+      "timeout_s": 300
+    },
+    {
+      "corner_id": "ss_-40c_2.97v",
+      "elapsed_s": 21.211,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/load-transient/corners/20260817-212623-66b28fc/ss_-40c_2.97v.log",
+      "measurements": [
+        {
+          "expr": "v(vout)[0] - vecmin(v(vout))",
+          "max": 0.15,
+          "min": null,
+          "name": "undershoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.1372712
+        },
+        {
+          "expr": "vecmax(v(vout)) - v(vout)[0]",
+          "max": 0.15,
+          "min": null,
+          "name": "overshoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.1042964
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "ss",
+      "supply_v": 2.97,
+      "temperature_c": -40.0,
+      "timed_out": false,
+      "timeout_s": 300
+    },
+    {
+      "corner_id": "ff_125c_3.63v",
+      "elapsed_s": 22.063,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/load-transient/corners/20260817-212623-66b28fc/ff_125c_3.63v.log",
+      "measurements": [
+        {
+          "expr": "v(vout)[0] - vecmin(v(vout))",
+          "max": 0.15,
+          "min": null,
+          "name": "undershoot_v",
+          "pass": false,
+          "reason": "above max 0.15",
+          "unit": "V",
+          "value": 0.9413675
+        },
+        {
+          "expr": "vecmax(v(vout)) - v(vout)[0]",
+          "max": 0.15,
+          "min": null,
+          "name": "overshoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 6.208367e-12
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": false,
+      "process": "ff",
+      "supply_v": 3.63,
+      "temperature_c": 125.0,
+      "timed_out": false,
+      "timeout_s": 300
+    }
+  ],
+  "experiment": {
+    "claim": "Substantiates spec/target-spec.md's DRAFT \"Load transient\" row (1<->50 mA step, ~1us edges: peak excursion <=150mV, recover to +-1% in <=20us, over the ratified C_out/ESR window) against the LDO core-regulation-loop schematic landed by #14 (design/ldo_3v3in_1v8out.sch). Both the spec row and the C_out/ESR window (spec/decision-records/DR-002, status: proposed) are DRAFT/unratified pending issue #1 -- the bounds below cite those DRAFT numbers directly, not an invented final limit, and need re-verification once #1 and DR-002 rule. This testbench's undershoot/overshoot measurements are computed as the deviation from the pre-step (light-load) steady-state value, not an absolute vout bound. Known-immature-design caveat (design/README.md \"Known gaps\"): C_COMP/C_CL remain unsized placeholders and the error amplifier still has a light-load/high-VIN output-swing ceiling (design/README.md's \"Known open item\") even though issue #22 already added the current-limit and soft-start protection circuitry, so a FAIL here -- especially at the high-VIN corner -- is an honest, expected finding at this design stage (per CLAUDE.md's \"Verification is the product\"), not a harness defect.",
+    "provenance": "schematic",
+    "provenance_source": "sim/load-transient/testbench/tb_load_transient.sch",
+    "slug": "load-transient",
+    "statistical_convention": "N/A (corner-matrix check, not a distribution claim)",
+    "title": "Load transient: 1mA <-> 50mA step response"
+  },
+  "git": {
+    "branch": "feature/issue-18",
+    "dirty": true,
+    "sha": "66b28fc"
+  },
+  "links": {
+    "corners_dir": "sim/load-transient/corners/20260817-212623-66b28fc/",
+    "json": "sim/load-transient/records/20260817-212623-66b28fc.json",
+    "manifest": "sim/load-transient/experiment.json",
+    "netlist_snapshot": "sim/load-transient/netlist-snapshots/20260817-212623-66b28fc.spice",
+    "record": "sim/load-transient/records/20260817-212623-66b28fc.md",
+    "testbench": "sim/load-transient/testbench/tb_load_transient.sch"
+  },
+  "matrix": {
+    "is_subset": true,
+    "n_points": 3,
+    "point_ids": [
+      "tt_27c_3.30v",
+      "ss_-40c_2.97v",
+      "ff_125c_3.63v"
+    ],
+    "points": [
+      [
+        "tt",
+        27.0,
+        3.3
+      ],
+      [
+        "ss",
+        -40.0,
+        2.97
+      ],
+      [
+        "ff",
+        125.0,
+        3.63
+      ]
+    ],
+    "process": [
+      "tt",
+      "ss",
+      "ff"
+    ],
+    "subset_reason": "Standing up the testbench per #18 (first evidence record); full PVT sweep is #19's job, mirrors sim/pdk-smoke's own quick_subset convention.",
+    "supply_v": [
+      2.97,
+      3.3,
+      3.63
+    ],
+    "temperature_c": [
+      -40.0,
+      27.0,
+      125.0
+    ]
+  },
+  "overall_pass": false,
+  "pdk": {
+    "installed_commit": "c6d73a35f524070e85faff4a6a9eef49553ebc2b",
+    "lib_file": "/Users/rwalters/.volare/sky130A/libs.tech/combined/sky130.lib.spice",
+    "matches_pin": true,
+    "pinned_commit": "c6d73a35f524070e85faff4a6a9eef49553ebc2b",
+    "root": "/Users/rwalters/.volare",
+    "variant": "sky130A"
+  },
+  "record_id": "20260817-212623-66b28fc",
+  "spread_checks": [],
+  "supersedes": "",
+  "timestamp": "2026-08-17T21:26:23Z",
+  "tools": {
+    "ngspice": "ngspice-47 : Circuit level simulation program",
+    "platform": "Darwin 25.6.0 arm64",
+    "python": "3.14.7",
+    "xschem": "XSCHEM V3.4.7"
+  }
+}

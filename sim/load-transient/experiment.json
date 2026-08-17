@@ -1,0 +1,43 @@
+{
+  "slug": "load-transient",
+  "title": "Load transient: 1mA <-> 50mA step response",
+  "claim": "Substantiates spec/target-spec.md's DRAFT \"Load transient\" row (1<->50 mA step, ~1us edges: peak excursion <=150mV, recover to +-1% in <=20us, over the ratified C_out/ESR window) against the LDO core-regulation-loop schematic landed by #14 (design/ldo_3v3in_1v8out.sch). Both the spec row and the C_out/ESR window (spec/decision-records/DR-002, status: proposed) are DRAFT/unratified pending issue #1 -- the bounds below cite those DRAFT numbers directly, not an invented final limit, and need re-verification once #1 and DR-002 rule. This testbench's undershoot/overshoot measurements are computed as the deviation from the pre-step (light-load) steady-state value, not an absolute vout bound. Known-immature-design caveat (design/README.md \"Known gaps\"): C_COMP/C_CL remain unsized placeholders and the error amplifier still has a light-load/high-VIN output-swing ceiling (design/README.md's \"Known open item\") even though issue #22 already added the current-limit and soft-start protection circuitry, so a FAIL here -- especially at the high-VIN corner -- is an honest, expected finding at this design stage (per CLAUDE.md's \"Verification is the product\"), not a harness defect.",
+  "provenance": "schematic",
+  "provenance_source": "sim/load-transient/testbench/tb_load_transient.sch",
+  "schematic": "testbench/tb_load_transient.sch",
+  "statistical_convention": "N/A (corner-matrix check, not a distribution claim)",
+  "corners": {
+    "process": ["tt", "ss", "ff", "sf", "fs"],
+    "temperature_c": [-40, 27, 125],
+    "supply_v": [2.97, 3.3, 3.63]
+  },
+  "quick_subset": [
+    ["tt", 27, 3.3],
+    ["ss", -40, 2.97],
+    ["ff", 125, 3.63]
+  ],
+  "deck": {
+    "options": ["wnflag=1"],
+    "params": {},
+    "analyses": ["tran 200n 3m"]
+  },
+  "measurements": [
+    {
+      "name": "undershoot_v",
+      "expr": "v(vout)[0] - vecmin(v(vout))",
+      "unit": "V",
+      "min": null,
+      "max": 0.15,
+      "note": "Worst-case dip below the pre-step (light-load, ~1mA) steady-state value, across the whole transient. DRAFT bound: spec/target-spec.md \"Load transient\" row, peak excursion <=150mV (DRAFT, unratified)."
+    },
+    {
+      "name": "overshoot_v",
+      "expr": "vecmax(v(vout)) - v(vout)[0]",
+      "unit": "V",
+      "min": null,
+      "max": 0.15,
+      "note": "Worst-case rise above the pre-step steady-state value (captures ringing on the 50mA->1mA recovery edge). Same DRAFT 150mV bound as undershoot_v."
+    }
+  ],
+  "spread_checks": []
+}
