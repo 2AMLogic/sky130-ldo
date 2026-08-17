@@ -195,6 +195,27 @@ already be clean, and is); the schematic's Miller compensation cap
 pinned `klt` commit and is not drawn — see `ldo-core/floorplan.md`'s "Known
 gap" section.
 
+### DRC-clean report closure (issue #16)
+
+Issue #15's own `run-ldo-layout-flow.sh` run already produced a `status:
+"clean"` `drc.json` for the composed `ldo_core` floorplan (`violation_count:
+0`); issue #16's job was to formalize that as this block's own T1 re-read
+(#12) item 3 evidence — re-running the same flow fresh against current
+`main` to confirm the clean result reproduces, rather than relying on #15's
+incidental run. Read the newest `ldo-core/reports/<record-id>/record.md` for
+that evidence trail directly.
+
+**Coverage caveat, read alongside "clean"**: this floorplan skeleton draws
+device blocks only — no inter-block routing (issue #17) — so `drc.json`'s
+`coverage.rules_skipped` lists every `met1`/`met2`/`via`/`mcon` rule (no
+metal or via geometry exists yet to check) and `coverage.layers_checked`
+covers only 4 of the 8 layers in the sky130 deck. "Clean" here means "no
+violations on the layers this skeleton actually draws" (wells, active,
+poly/gate — the layers `mos_array`/`res_array` blocks populate), not
+full-stack metal-DRC closure; a routed layout (#17 and beyond) will need its
+own fresh DRC record once metal is drawn, which is expected to exercise the
+currently-skipped rules for the first time.
+
 ## Known klt-deck limitations relevant to later, LDO-specific layout issues
 
 Not gaps to file (documented, deliberate scope limits of the curated
