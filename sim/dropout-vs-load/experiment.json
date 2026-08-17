@@ -1,0 +1,43 @@
+{
+  "slug": "dropout-vs-load",
+  "title": "Dropout voltage at 50mA load (Vin sweep toward Vout, DR-003/gf180 convention)",
+  "claim": "Substantiates spec/target-spec.md's DRAFT \"Dropout @ 50 mA\" row (< 300mV, DRAFT stretch < 200mV) against the LDO core-regulation-loop schematic landed by #14 (design/ldo_3v3in_1v8out.sch), using the DRAFT row's own cited method (\"gf180's ss/125C/Vin~=Vout+dropout convention\"): fix I_LOAD at 50mA (the row's own test point) and sweep Vin down toward Vout to find the Vin-Vout margin at which regulation is lost, rather than sweeping load current at a single ample Vin (that measures load regulation, a different DRAFT row). That row is DRAFT (issue #1 not yet ratified) -- the bound below cites it directly, not an invented final limit, and needs re-verification once #1 rules. dropout_v reports the Vin-Vout margin at the sweep's lowest Vin point (worst-case headroom); vout_at_max_vin_v is a light-headroom regulation sanity check at the sweep's top end.",
+  "provenance": "schematic",
+  "provenance_source": "sim/dropout-vs-load/testbench/tb_dropout_vs_load.sch",
+  "schematic": "testbench/tb_dropout_vs_load.sch",
+  "statistical_convention": "N/A (corner-matrix check, not a distribution claim)",
+  "corners": {
+    "process": ["tt", "ss", "ff", "sf", "fs"],
+    "temperature_c": [-40, 27, 125],
+    "supply_v": [2.97, 3.3, 3.63]
+  },
+  "quick_subset": [
+    ["tt", 27, 3.3],
+    ["ss", -40, 2.97],
+    ["ff", 125, 3.63]
+  ],
+  "deck": {
+    "options": ["wnflag=1"],
+    "params": {},
+    "analyses": ["dc VVIN 1.9 3.63 0.05"]
+  },
+  "measurements": [
+    {
+      "name": "dropout_v",
+      "expr": "v(vin)[0] - v(vout)[0]",
+      "unit": "V",
+      "min": null,
+      "max": 0.3,
+      "note": "Vin - Vout at the sweep's lowest Vin point (1.9V, just above the 1.8V DRAFT output target) with I_LOAD fixed at 50mA -- the worst-case headroom this sweep exercises. DRAFT bound: spec/target-spec.md \"Dropout @ 50 mA\" row, < 300mV (DRAFT stretch < 200mV, not applied here)."
+    },
+    {
+      "name": "vout_at_max_vin_v",
+      "expr": "v(vout)[34]",
+      "unit": "V",
+      "min": 0.5,
+      "max": 3.7,
+      "note": "Vout at the sweep's highest Vin point (3.63V, ample headroom -- index 34 of the 35-point 1.9V..3.63V/0.05V sweep). A wide sanity-range check (not a tight spec bound) that regulation is at least in a sane operating range at the sweep's easiest point."
+    }
+  ],
+  "spread_checks": []
+}
