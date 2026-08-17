@@ -115,13 +115,20 @@ layout/
     run-ldo-layout-flow.sh    # LDO-core driver: gen (x15) -> gen-compose -> drc -> report
     gen-ldo-blocks.py         # per-device klt gen + explicit-placement floorplan + gen-compose
     render-ldo-record.py      # renders + verdict-checks an ldo-core record's record.md
+    run-ldo-lvs-flow.sh       # issue #17: LDO-core LVS driver: xschem netlist -> reference -> extract -> lvs -> report
+    gen-ldo-reference-netlist.py  # translates the schematic's xschem netlist into an LVS reference
+    render-ldo-lvs-record.py  # renders + verdict-checks an ldo-core LVS record's record.md
   .venv/                      # gitignored -- `klt` install, created by setup-venv.sh
   ldo-core/                   # issue #15: the real LDO layout (see "Extending to the LDO core")
     floorplan.md               # device-to-block mapping + row-grouping rationale
     reports/
-      LATEST
+      LATEST                    # newest gen/compose/drc record (issue #15/#16)
+      LATEST-LVS                 # newest LVS-attempt record (issue #17)
       <record-id>/             # gen.<device>.json/<device>.gds x15, compose.*.json,
                                 # ldo_core.gds, drc.json, report.md, record.md
+      <lvs-record-id>/         # issue #17: xschem_out/, reference.spice, extract.json,
+                                # ldo_core.extract.spice, lvs.request.json, lvs.json,
+                                # report.md, record.md (see "LVS attempt" below)
   trivial-cell/
     reference.spice                    # known-good LVS reference netlist
     reference.broken-device.spice      # negative control 1: device.property corruption
@@ -215,6 +222,41 @@ poly/gate — the layers `mos_array`/`res_array` blocks populate), not
 full-stack metal-DRC closure; a routed layout (#17 and beyond) will need its
 own fresh DRC record once metal is drawn, which is expected to exercise the
 currently-skipped rules for the first time.
+
+## LVS attempt against the real LDO layout (issue #17)
+
+```bash
+layout/bin/setup-venv.sh          # once, or after bumping requirements.txt
+layout/bin/run-ldo-layout-flow.sh # (re)generate the floorplan/DRC record first
+layout/bin/run-ldo-lvs-flow.sh    # xschem netlist -> reference -> extract -> lvs -> report
+```
+
+Read the newest `ldo-core/reports/<lvs-record-id>/record.md` (also pointed to
+by `ldo-core/reports/LATEST-LVS`) for the actual evidence. **As of this
+issue's first run, the result is `status: mismatch`, not `match`** — this is
+a genuine, already-diagnosed layout-completeness gap, not a `klt` defect:
+
+- The `ldo-core/` floorplan (issue #15) was built from `design/
+  ldo_3v3in_1v8out.sch` as it stood *before* issue #22 added the
+  current-limit/soft-start circuitry, so 11 active MOS devices (plus 2 of the
+  schematic's 3 capacitors) have no `klt gen` block at all.
+- `M_PASS`'s drawn width (100µm) does not reflect the schematic's corrected
+  value (2500µm, per `design/README.md`'s "Pass-device width correction").
+- No inter-block routing exists yet (deliberately deferred by #15, above) —
+  the extracted netlist's own `pin_count: 1` (vs. the schematic's 4 top-level
+  ports) is the direct evidence.
+
+The record's "Root cause" section has the full breakdown. Extending the
+floorplan, correcting `M_PASS`, and adding inter-block routing is tracked as
+its own follow-on issue
+([#33](https://github.com/2AMLogic/sky130-ldo/issues/33)) — out of #17's own
+"routine, run-the-tool-against-a-landed-block" scope. `layout/bin/
+run-ldo-lvs-flow.sh` and its two helper scripts
+(`gen-ldo-reference-netlist.py`, `render-ldo-lvs-record.py`) are already
+built and reusable: once #33 lands a complete, routed floorplan, re-running
+this same driver is the one-command re-check that (hopefully) reports
+`match`, mints a fresh record, and closes out #17's own acceptance criteria
+retroactively via #33.
 
 ## Known klt-deck limitations relevant to later, LDO-specific layout issues
 
