@@ -43,7 +43,10 @@ those two commits, so every citation below is still current.
 **ratified** record among the four (framing only, no numeric row);
 DR-002/003/004 are `proposed`. This schematic designs against the DRAFT
 numbers and the `proposed` sizing methodology, per those issues' own
-instruction not to block on #1.
+instruction not to block on #1. **Issue #29** additionally designs against
+`spec/decision-records/DR-005-thermal-shutdown-trip.md` (also `proposed`,
+tip of `main` at commit `e500d71`, 2026-08-17) — the thermal-shutdown trip
+temperature, hysteresis, reference, and auto-restart decision.
 
 ## Topology
 
@@ -96,6 +99,18 @@ instruction not to block on #1.
     C_SS: SS -> 0                                 (current-starved linear ramp)
     SS --(gate)--> M_IN2S, in parallel with M_IN2 on the amplifier's "-" input
                    => effective reference = soft-min(VREF, SS)
+
+  thermal shutdown (issue #29, DR-005):
+    VIN -> M_TSPS (gate=BIASP) -> TS_SNS -> [M_TSD1 (diode)] -> TS_MID
+                                          -> [M_TSD2 (diode)] -> [AMP_ENN]  (CTAT sense stack)
+    VIN -> M_TSPR (gate=BIASP) -> TS_REF -> [M_TSR1 (diode)] -> [AMP_ENN]  (CTAT reference)
+    TS_SNS --(gate)--> M_TCN1 -+
+    TS_REF --(gate)--> M_TCN2 -+--> TC_TAIL -> M_TCTAIL (gate=NB) -> [AMP_ENN]
+    M_TCP1 (diode) / M_TCP2 (mirror) -> TS_CMP           (comparator load)
+    TS_CMP --(gate)--> M_TSHUT : VIN -> EA_OUT            (pulls pass gate off)
+    TS_CMP --(gate)--> M_TSHYS : M_TSHYSB's current -> TS_REF  (hysteresis, tripped only)
+    M_ENP4: VIN -> TS_CMP, gate=EN        (defined off state, same role as M_ENP3)
+    C_TS: TS_CMP <-> VIN                  (comparator dominant pole)
 ```
 
 All active devices are `sky130_fd_pr__pfet_g5v0d10v5` /
@@ -129,6 +144,11 @@ ratified.
 | `CL_CMP` | current-limit comparison node (high-impedance); `≈VIN` = inactive, falls when the limit engages |
 | `ENB` | logical inverse of `EN`, from the `M_INVP`/`M_INVN` inverter |
 | `SS` | soft-start ramp voltage on `C_SS`; drives `M_IN2S`'s gate |
+| `TS_SNS`, `TS_MID` | thermal CTAT sense-stack nodes (`M_TSD1`/`M_TSD2`) |
+| `TS_REF` | thermal CTAT reference node (`M_TSR1`), also the hysteresis injection point |
+| `TC_D1`, `TC_TAIL` | thermal trip comparator's mirror-diode and tail nodes |
+| `TS_CMP` | thermal-trip comparison node (high-impedance); `≈VIN` = not tripped, falls when the trip engages |
+| `TS_HYS` | hysteresis current-source node (`M_TSHYSB` -> `M_TSHYS`) |
 
 ### Error-amplifier polarity (load-bearing, verified by simulation)
 
@@ -420,6 +440,95 @@ The ramp is deliberately fast relative to the spec row: 10–90% in ~290µs, so
 inrush into the DR-002 `C_out` window stays well below the current limit. The
 spec row bounds the *settling time*, it does not require a slow ramp.
 
+### Thermal shutdown (#29)
+
+Implements `spec/decision-records/DR-005-thermal-shutdown-trip.md`: trip
+`Tj_trip` = 150°C nominal (untrimmed), hysteresis 15°C nominal (reset
+`Tj_reset` ≈135°C), reference = internally generated / bias-generator-derived
+(explicitly **not** `VREF`, **not** a bandgap), behavior = auto-restart
+(non-latching), reusing the existing EN-gated shutdown path rather than a
+parallel shutdown mechanism.
+
+The implementation mirrors #22's current-limit structure exactly — a sense
+element feeding a comparison node, an EN-gated clamp on that node:
+
+1. **Sense (CTAT).** `M_TSD1`/`M_TSD2` are two diode-connected NMOS stacked
+   between `TS_SNS` and the EN-gated pseudo-ground `AMP_ENN`, biased from a
+   1/4-width copy of the `M_BIASP1` bias unit (`M_TSPS`, gate=`BIASP`) at a
+   few hundred nA. Each `Vgs` is CTAT; stacking two doubles the slope, so
+   `V(TS_SNS)` falls with temperature roughly twice as fast as a single
+   diode-connected device would.
+2. **Reference (also CTAT, but shallower).** `M_TSR1` is a single
+   diode-connected NMOS of the same device family as the sense stack, at a
+   ~1500× higher current density (`W/L = 2/10` vs. the stack's effective
+   `80/1`, same current), biased from `M_TSPR` — an identical copy of
+   `M_TSPS`, so both branches share the same bias-generator-derived current
+   and its supply/temperature drift is common-mode to the comparison. At
+   this much higher current density `M_TSR1` sits in strong inversion, where
+   `Vgs` is only weakly CTAT, versus the sense stack's weak-inversion,
+   steeply-CTAT behavior. Both quantities are internally generated and
+   bias-generator-derived — neither is `VREF` — per DR-005's reference
+   decision; the crossing of the two differently-sloped CTAT curves as
+   temperature rises is the trip point.
+3. **Compare.** `M_TCN1`/`M_TCN2` (gates `TS_SNS`/`TS_REF`) form an NMOS
+   differential pair (NMOS rather than the error amp's PMOS pair, because the
+   input common mode here — 1–2.2V — sits above an NMOS pair's headroom and
+   too close to `VIN` for a PMOS tail to stay saturated), tailed by
+   `M_TCTAIL` (a 1/4-width copy of `M_BIASN1`, gate=`NB`, source through
+   `M_ENN2`/`AMP_ENN`) and loaded by the `M_TCP1`/`M_TCP2` diode/mirror pair,
+   driving the high-impedance node `TS_CMP`. `TS_CMP ≈ VIN` = not tripped
+   (cold: `TS_SNS > TS_REF`); `TS_CMP` falls once the die is hot enough that
+   `TS_SNS` drops below `TS_REF` — the same "falling = engaged" convention
+   `CL_CMP` already uses.
+4. **Clamp into the existing shutdown path.** `M_TSHUT` (`VIN -> EA_OUT`,
+   gate=`TS_CMP`) is structurally identical to `M_ENP` and `M_CLIM` — while
+   not tripped it is off; once `TS_CMP` falls it turns on and pulls the pass
+   gate to `VIN`, turning `M_PASS` off and driving dissipation toward zero,
+   exactly the mechanism `M_CLIM` uses for an over-current fault. Because
+   this is a level-driven clamp on the same node the enable and current-limit
+   paths already drive, and not a new/parallel mechanism, auto-restart falls
+   out for free per DR-005's Decision: once the die cools and `TS_CMP` snaps
+   back toward `VIN`, `M_TSHUT` turns off and the loop resumes with no reset
+   pin or latch needed. `M_ENP4` (`VIN -> TS_CMP`, gate=`EN`) is the fourth
+   member of the `M_ENP`/`M_ENP2`/`M_ENP3` EN-gated-clamp family, giving
+   `TS_CMP` — and therefore `M_TSHUT`'s gate — a defined off state at `EN=0`
+   instead of floating, the same role `M_ENP3` plays for `CL_CMP`.
+5. **Hysteresis.** `M_TSHYS` (`gate=TS_CMP`) is off while not tripped (its
+   `Vsg ≈ 0`, costing no quiescent current), so hysteresis is free in normal
+   operation. Once `TS_CMP` falls (tripped), `M_TSHYS` turns on and steers
+   `M_TSHYSB`'s current (a scaled bias-unit copy, not the switch's own drive
+   — sizing the *current* rather than the switch keeps the hysteresis a
+   device ratio rather than a `VIN`-dependent injection) into `TS_REF`,
+   raising the reference so the comparison looks hotter than it is until the
+   die actually cools past `Tj_reset`. This is positive feedback around the
+   comparator, giving a clean edge rather than a slow slide through the
+   linear region, matching DR-005's 15°C nominal hysteresis target
+   qualitatively (the ratio here is the sizing knob; it is not yet
+   calibrated against a temperature sweep — see the screening check below).
+6. **Dominant pole.** `C_TS` (`TS_CMP -> VIN`, 1p placeholder) is the same
+   construction as `C_CL` on the current-limit comparator — it only damps
+   electrical comparator chatter; the real time constant of a thermal event
+   is the die's own thermal mass, orders of magnitude slower.
+
+**EN-gating, following the established discipline.** Every new device is
+gated by an existing EN-controlled node: `M_TSPS`/`M_TSPR`/`M_TSHYSB`'s gates
+are `BIASP` (dead at `EN=0` via `M_ENP2`); `M_TSD1`/`M_TSD2`/`M_TSR1`/
+`M_TCTAIL`'s ground returns are the shared `AMP_ENN` switch (`M_ENN2`); and
+`M_ENP4` forces `TS_CMP` to `VIN` at `EN=0`, which turns `M_TSHUT` and
+`M_TSHYS` off as a consequence rather than requiring a dedicated gate on
+either. No new EN-gating primitive was added — the circuit reuses
+`M_ENN`/`M_ENN2`/`BIASP` exactly as #22's current-limit and soft-start
+additions did.
+
+**Known accuracy caveat, same shape as the current limit's.** The reference
+branch is bias-generator-derived, hence itself supply-dependent and
+untrimmed (`design/README.md`'s own caveat for `M_CLP`), so the trip point's
+absolute accuracy is loose and PVT-dependent — this is DR-005's stated,
+accepted cost of not depending on a reference-generator gap that has no
+closing date, not a hidden shortfall. Establishing the actual trip/hysteresis
+window over PVT is explicitly out of scope for this issue (DR-005
+Consequences; #19's job).
+
 ## Screening checks (screening only — not `sim/` evidence)
 
 Everything below was run against the pinned PDK (`sky130A`, open_pdks
@@ -537,6 +646,70 @@ open item below, and note that this is the ceiling gap asserting itself, not
 a soft-start failure: the loop cannot hold `VOUT` down at those points with
 or without a ramp.
 
+### 5. Thermal shutdown
+
+**What a single-temperature DC OP check can and cannot show.** sky130's
+device models are characterized per-corner at a fixed temperature; DR-004
+binds this repo's own verification temperature axis to `{−40, 27, 125}°C`.
+DR-005's 150°C trip target sits *above* that characterized range, so no DC
+OP check run at a single temperature can demonstrate the circuit actually
+tripping at 150°C or resetting at 135°C — that is real thermal/PVT
+testbench work (#18/#19's job), not something screenable here. What follows
+is deliberately narrower: (a) correct comparator/bias polarity at a fixed,
+characterized temperature, (b) the qualitative direction of the sense/
+reference gap as temperature rises within the characterized range, and
+(c) a clean, unaffected `EN=0` shutdown with the new devices present. None
+of this is a trip-point measurement.
+
+**(a) Polarity at `tt`/27°C**, `VIN = 3.30V`, `EN` high, `VREF = 1.2V`
+(placeholder), `1.8kΩ` load (~1mA):
+
+| Node | Value | Reading |
+|---|---|---|
+| `TS_SNS` | 1.502V | sense-stack CTAT node |
+| `TS_REF` | 1.085V | reference CTAT node |
+| `TS_SNS − TS_REF` | **+0.417V** | cold, well away from the crossing |
+| `TS_CMP` | 3.300V (`≈VIN`) | **not tripped**, correct polarity |
+| `EA_OUT` | 2.346V | main loop unaffected — same operating point as the pre-#29 screening data |
+| `VOUT` | 1.817V | matches the existing 1mA/`VIN=3.30V` row in "DC operating grid" above, confirming the new circuit does not perturb the main loop when untripped |
+
+`TS_SNS > TS_REF` at 27°C is the expected cold-state ordering (sense stack
+reads "not yet hot"), and `TS_CMP` sitting at `VIN` with that ordering
+confirms the comparator's polarity is wired the way §"Thermal shutdown"
+above describes — `TS_CMP` falls only once `TS_SNS` drops below `TS_REF`.
+
+**(b) Direction with temperature, `tt`/125°C** (top of DR-004's
+characterized range, same bias/load conditions), for qualitative sanity
+only — **not** an extrapolation to the 150°C trip point:
+
+| Node | 27°C | 125°C | Direction |
+|---|---|---|---|
+| `TS_SNS − TS_REF` | +0.417V | **+0.067V** | gap closes by ~84% over the characterized range |
+| `TS_CMP` | 3.300V | 3.277V | starts drooping off `VIN`, consistent with approaching the crossing |
+
+The gap closes monotonically and `TS_CMP` moves in the tripped direction as
+temperature rises — the qualitatively correct behavior for DR-005's design —
+but the gap has not crossed zero by 125°C, so this is evidence the mechanism
+points the right way, not evidence of where the crossing actually falls.
+Locating the actual crossing needs device data beyond 125°C, which this
+repo's pinned corner set does not yet cover (a named gap in DR-005's own
+Consequences section).
+
+**(c) Clean `EN=0` shutdown**, `tt`/27°C, same `VIN`/load:
+
+| Node | Value |
+|---|---|
+| `TS_CMP` | 3.300000V (forced to `VIN` by `M_ENP4`) |
+| `EA_OUT` | 3.300000V (forced to `VIN` by the existing `M_ENP`) |
+| `BIASP`, `NB` | `≈VIN` (bias generator dead) |
+| `VOUT` | ≈0V |
+| `I_VIN` | **175pA** |
+
+175pA is the same leakage floor the #22 record measured (≈150pA after
+current limit + soft start); the thermal-shutdown additions do not open a
+new static current path at `EN=0`, consistent with every new device routing
+through the existing `AMP_ENN`/`BIASP`/`M_ENP4` gating described above.
+
 ### Known open item: light-load regulation, now diagnosed
 
 `M_PASS` is sized for 50mA (`W_total ≈ 2.5mm`), so at 0mA it must be
@@ -589,29 +762,27 @@ shipped half-done.
 
 Closed by issue #22 and now in this schematic: **current limit** and
 **soft-start** (both spec rows above), plus the pass-device width correction
-and the reference-common-mode change those two required.
+and the reference-common-mode change those two required. Closed by issue #29:
+**thermal shutdown** (CTAT sense + trip comparator, per DR-005), reusing the
+same shutdown path.
 
 Still deliberately **not** in this schematic:
 
-- **Thermal shutdown.** Decomposed to its own follow-on issue, which issue
-  #22's acceptance criteria explicitly allow ("thermal shutdown may be
-  decomposed further if it proves independently sizable"). The reason it is
-  not designed here is not effort but a missing input: **`spec/target-spec.md`
-  states no trip temperature.** The Thermal row gives a dissipation framing
-  and `Tj ≤ 125°C` with "θJA delegated to package/integration", so there is
-  no spec number for a trip circuit to be designed against, and inventing one
-  would violate CLAUDE.md's spec-is-a-gate rule. Compounding that, a trip
-  point needs something temperature-stable to compare a CTAT sense against,
-  and this block has none — `VREF` is an external port whose tempco is
-  explicitly undefined (see "VREF interface caveat"). A trip designed against
-  it would be un-anchored. The follow-on therefore needs a spec/decision-record
-  answer first (trip temperature + hysteresis, and what reference it is
-  measured against), and probably depends on the reference-generator gap
-  below. When it is built, the clean insertion point is the existing shutdown
-  path — `M_ENP`/`M_ENP2`/`M_ENP3`/`M_ENN`/`M_ENN2` plus the `ENB` inverter
-  this issue added — rather than a parallel shutdown mechanism. The
-  measured 673mW worst-case short-circuit dissipation above (θJA ≤ 149°C/W
-  implied) is the concrete motivation.
+- **Thermal shutdown — trip/hysteresis window over PVT, and simulation past
+  125°C.** The circuit itself (CTAT sense stack + reference + comparator +
+  hysteresis, wired into the existing EN-gated shutdown path) is now in this
+  schematic — see "Thermal shutdown (#29)" above and its screening OP checks.
+  What is **not** landed: (1) the actual trip/reset window this circuit
+  produces over process and supply — untrimmed and bias-generator-derived per
+  DR-005's accepted accuracy cost, characterizing it is #19-scoped simulation
+  work, not a screening OP check; (2) DR-005's 150°C nominal trip target sits
+  above the 125°C top of DR-004's characterized temperature axis, so no
+  simulation against the pinned corner set can yet confirm the numeric trip
+  point — extending temperature coverage past 125°C for these specific
+  devices (or accepting the gap) is a #29-follow-on/`sim/`-record question,
+  named explicitly rather than silently dropped, per DR-005's Consequences
+  section; (3) a `sim/`-evidentiary thermal/PVT testbench proving the actual
+  trip/reset behavior is #18/#19's job — nothing here is `sim/` evidence.
 - **Error-amplifier output swing / light-load regulation.** See "Known open
   item" above: diagnosed precisely, with a screened candidate fix that closes
   the DC gap but oscillates under the placeholder compensation, so it has to

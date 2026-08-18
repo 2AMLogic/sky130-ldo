@@ -565,3 +565,269 @@ loop servos FB to SS while SS < VREF (VOUT ramps as 1.5 x SS) and hands over
 to VREF once SS passes it, with no comparator, no switch and no discontinuity
 to overshoot through. Once SS has charged toward VIN this device is fully
 off and the amplifier is exactly the issue #14 5T OTA again.} 2240 -1600 0 0 0.2 0.2 {}
+
+* ============ issue #29: thermal shutdown (DR-005) ============
+* Two CTAT branches at different current densities (DR-005's "internally
+* generated, bias-generator-derived" reference -- not VREF, not a bandgap),
+* compared by a 5T OTA whose output drives an EA_OUT clamp. TS_CMP ~ VIN =
+* not tripped, falls when the die is hot -- the same polarity convention as
+* the current limit's CL_CMP node.
+C {sky130_fd_pr/pfet_g5v0d10v5.sym} 2700 -100 0 0 {name=M_TSPS
+L=1
+W=2.5
+nf=1
+mult=1
+model=pfet_g5v0d10v5
+spiceprefix=X}
+C {devices/lab_pin.sym} 2720 -70 0 0 {name=p_mtsps_d lab=TS_SNS}
+C {devices/lab_pin.sym} 2680 -100 0 0 {name=p_mtsps_g lab=BIASP}
+C {devices/lab_pin.sym} 2720 -130 0 0 {name=p_mtsps_s lab=VIN}
+C {devices/lab_pin.sym} 2720 -100 0 0 {name=p_mtsps_b lab=VIN}
+T {M_TSPS: sense-branch current source -- a 1/4-width copy of the M_BIASP1
+PMOS bias unit (W=2.5 against 10, same L) so the sense stack runs at a few
+hundred nA rather than the full bias unit. Gate = BIASP, so the whole
+thermal sensor dies at EN=0 for free, exactly like M_CLP and M_SSCHG.
+The low current density is load-bearing, not an Iq economy: it puts the
+stack devices in weak inversion, which is what makes the branch steeply
+CTAT *and* nearly insensitive to the bias current itself (see
+design/README.md "Thermal shutdown (#29)").} 2740 -100 0 0 0.2 0.2 {}
+
+C {sky130_fd_pr/nfet_g5v0d10v5.sym} 2700 -400 0 0 {name=M_TSD1
+L=1
+W=80
+nf=16
+mult=1
+model=nfet_g5v0d10v5
+spiceprefix=X}
+C {devices/lab_pin.sym} 2720 -430 0 0 {name=p_mtsd1_d lab=TS_SNS}
+C {devices/lab_pin.sym} 2680 -400 0 0 {name=p_mtsd1_g lab=TS_SNS}
+C {devices/lab_pin.sym} 2720 -370 0 0 {name=p_mtsd1_s lab=TS_MID}
+C {devices/lab_pin.sym} 2720 -400 0 0 {name=p_mtsd1_b lab=0}
+T {M_TSD1/M_TSD2: the thermal sense element -- two diode-connected NMOS
+stacked between TS_SNS and the EN-gated pseudo-ground AMP_ENN, so
+V(TS_SNS) = Vgs1 + Vgs2 at a low current density. Each Vgs is CTAT
+(~ -1.5mV/C at this bias), and stacking two doubles the slope: TS_SNS falls
+~3.2mV/C. Wide (W=80, nf=16 -> 5um fingers) and at ~0.4uA so both devices
+sit in weak inversion; that is what makes the branch's dV/dln(I) small
+enough that the trip point barely moves with the supply-dependent bias
+current. Source returns through the shared M_ENN2 switch (AMP_ENN).} 2740 -400 0 0 0.2 0.2 {}
+
+C {sky130_fd_pr/nfet_g5v0d10v5.sym} 2700 -700 0 0 {name=M_TSD2
+L=1
+W=80
+nf=16
+mult=1
+model=nfet_g5v0d10v5
+spiceprefix=X}
+C {devices/lab_pin.sym} 2720 -730 0 0 {name=p_mtsd2_d lab=TS_MID}
+C {devices/lab_pin.sym} 2680 -700 0 0 {name=p_mtsd2_g lab=TS_MID}
+C {devices/lab_pin.sym} 2720 -670 0 0 {name=p_mtsd2_s lab=AMP_ENN}
+C {devices/lab_pin.sym} 2720 -700 0 0 {name=p_mtsd2_b lab=0}
+T {M_TSD2: bottom device of the sense stack (see M_TSD1). Identical
+geometry to M_TSD1 -- the stack is a ratio of *counts*, not of widths.} 2740 -700 0 0 0.2 0.2 {}
+
+C {sky130_fd_pr/pfet_g5v0d10v5.sym} 2700 -1000 0 0 {name=M_TSPR
+L=1
+W=2.5
+nf=1
+mult=1
+model=pfet_g5v0d10v5
+spiceprefix=X}
+C {devices/lab_pin.sym} 2720 -970 0 0 {name=p_mtspr_d lab=TS_REF}
+C {devices/lab_pin.sym} 2680 -1000 0 0 {name=p_mtspr_g lab=BIASP}
+C {devices/lab_pin.sym} 2720 -1030 0 0 {name=p_mtspr_s lab=VIN}
+C {devices/lab_pin.sym} 2720 -1000 0 0 {name=p_mtspr_b lab=VIN}
+T {M_TSPR: reference-branch current source -- identical to M_TSPS, so both
+CTAT branches see the same current from the same mirror and the bias
+current's own supply/temperature drift is common-mode to the comparison.} 2740 -1000 0 0 0.2 0.2 {}
+
+C {sky130_fd_pr/nfet_g5v0d10v5.sym} 2700 -1300 0 0 {name=M_TSR1
+L=10
+W=2
+nf=1
+mult=1
+model=nfet_g5v0d10v5
+spiceprefix=X}
+C {devices/lab_pin.sym} 2720 -1330 0 0 {name=p_mtsr1_d lab=TS_REF}
+C {devices/lab_pin.sym} 2680 -1300 0 0 {name=p_mtsr1_g lab=TS_REF}
+C {devices/lab_pin.sym} 2720 -1270 0 0 {name=p_mtsr1_s lab=AMP_ENN}
+C {devices/lab_pin.sym} 2720 -1300 0 0 {name=p_mtsr1_b lab=0}
+T {M_TSR1: the trip reference -- a single diode-connected NMOS of the same
+family as the sense stack but at a ~1500x higher current density (W/L =
+2/10 against 80/1 at the same current), which puts it in strong inversion.
+Its Vgs is therefore only weakly CTAT (Vth falls with temperature but the
+overdrive grows as mobility drops), while the two-high weak-inversion sense
+stack falls twice as fast. The two curves cross, and that crossing is the
+trip temperature -- DR-005's "ratioed diode/CTAT pair at different current
+densities", with the stack height supplying the slope asymmetry a
+same-height pair cannot have. W/L here is the trip-temperature knob.} 2740 -1300 0 0 0.2 0.2 {}
+
+C {sky130_fd_pr/nfet_g5v0d10v5.sym} 3200 -100 0 0 {name=M_TCTAIL
+L=1
+W=1
+nf=1
+mult=1
+model=nfet_g5v0d10v5
+spiceprefix=X}
+C {devices/lab_pin.sym} 3220 -130 0 0 {name=p_mtctail_d lab=TC_TAIL}
+C {devices/lab_pin.sym} 3180 -100 0 0 {name=p_mtctail_g lab=NB}
+C {devices/lab_pin.sym} 3220 -70 0 0 {name=p_mtctail_s lab=AMP_ENN}
+C {devices/lab_pin.sym} 3220 -100 0 0 {name=p_mtctail_b lab=0}
+T {M_TCTAIL: tail sink for the trip comparator -- a 1/4-width copy of the
+M_BIASN1 NMOS bias unit (W=1 against 4, same L), gate = NB. Its source
+returns through M_ENN2 (AMP_ENN), so at EN=0 the comparator has no ground
+return at all and cannot draw static current no matter what its inputs do.} 3240 -100 0 0 0.2 0.2 {}
+
+C {sky130_fd_pr/nfet_g5v0d10v5.sym} 3200 -400 0 0 {name=M_TCN1
+L=2
+W=10
+nf=2
+mult=1
+model=nfet_g5v0d10v5
+spiceprefix=X}
+C {devices/lab_pin.sym} 3220 -430 0 0 {name=p_mtcn1_d lab=TC_D1}
+C {devices/lab_pin.sym} 3180 -400 0 0 {name=p_mtcn1_g lab=TS_SNS}
+C {devices/lab_pin.sym} 3220 -370 0 0 {name=p_mtcn1_s lab=TC_TAIL}
+C {devices/lab_pin.sym} 3220 -400 0 0 {name=p_mtcn1_b lab=0}
+T {M_TCN1: trip-comparator input on the mirror-diode side, gate = TS_SNS.
+NMOS input pair (not PMOS like the error amp) because the input common
+mode here is 1.3-2.1V, comfortably above an NMOS pair's own Vgs + Vdsat and
+too close to VIN for a PMOS pair's tail to stay saturated at VIN_min.} 3240 -400 0 0 0.2 0.2 {}
+
+C {sky130_fd_pr/nfet_g5v0d10v5.sym} 3200 -700 0 0 {name=M_TCN2
+L=2
+W=10
+nf=2
+mult=1
+model=nfet_g5v0d10v5
+spiceprefix=X}
+C {devices/lab_pin.sym} 3220 -730 0 0 {name=p_mtcn2_d lab=TS_CMP}
+C {devices/lab_pin.sym} 3180 -700 0 0 {name=p_mtcn2_g lab=TS_REF}
+C {devices/lab_pin.sym} 3220 -670 0 0 {name=p_mtcn2_s lab=TC_TAIL}
+C {devices/lab_pin.sym} 3220 -700 0 0 {name=p_mtcn2_b lab=0}
+T {M_TCN2: trip-comparator input on the output side, gate = TS_REF. This
+assignment is the load-bearing polarity choice: the mirror copies the
+TS_SNS-side current into TS_CMP where the TS_REF side sinks it, so
+TS_CMP is pulled UP while TS_SNS > TS_REF (cold) and falls when the sense
+stack drops below the reference (hot). "Falling = engaged" matches the
+current limit's CL_CMP convention, which is what lets a plain PMOS clamp
+(M_TSHUT) do the shutdown with no inverter in between.} 3240 -700 0 0 0.2 0.2 {}
+
+C {sky130_fd_pr/pfet_g5v0d10v5.sym} 3200 -1000 0 0 {name=M_TCP1
+L=2
+W=10
+nf=2
+mult=1
+model=pfet_g5v0d10v5
+spiceprefix=X}
+C {devices/lab_pin.sym} 3220 -970 0 0 {name=p_mtcp1_d lab=TC_D1}
+C {devices/lab_pin.sym} 3180 -1000 0 0 {name=p_mtcp1_g lab=TC_D1}
+C {devices/lab_pin.sym} 3220 -1030 0 0 {name=p_mtcp1_s lab=VIN}
+C {devices/lab_pin.sym} 3220 -1000 0 0 {name=p_mtcp1_b lab=VIN}
+T {M_TCP1: diode-connected PMOS mirror reference of the comparator load.} 3240 -1000 0 0 0.2 0.2 {}
+
+C {sky130_fd_pr/pfet_g5v0d10v5.sym} 3200 -1300 0 0 {name=M_TCP2
+L=2
+W=10
+nf=2
+mult=1
+model=pfet_g5v0d10v5
+spiceprefix=X}
+C {devices/lab_pin.sym} 3220 -1270 0 0 {name=p_mtcp2_d lab=TS_CMP}
+C {devices/lab_pin.sym} 3180 -1300 0 0 {name=p_mtcp2_g lab=TC_D1}
+C {devices/lab_pin.sym} 3220 -1330 0 0 {name=p_mtcp2_s lab=VIN}
+C {devices/lab_pin.sym} 3220 -1300 0 0 {name=p_mtcp2_b lab=VIN}
+T {M_TCP2: mirror output of the comparator load, driving the high-impedance
+trip node TS_CMP.} 3240 -1300 0 0 0.2 0.2 {}
+
+C {sky130_fd_pr/pfet_g5v0d10v5.sym} 3200 -1600 0 0 {name=M_TSHUT
+L=0.5
+W=20
+nf=4
+mult=1
+model=pfet_g5v0d10v5
+spiceprefix=X}
+C {devices/lab_pin.sym} 3220 -1570 0 0 {name=p_mtshut_d lab=EA_OUT}
+C {devices/lab_pin.sym} 3180 -1600 0 0 {name=p_mtshut_g lab=TS_CMP}
+C {devices/lab_pin.sym} 3220 -1630 0 0 {name=p_mtshut_s lab=VIN}
+C {devices/lab_pin.sym} 3220 -1600 0 0 {name=p_mtshut_b lab=VIN}
+T {M_TSHUT: the shutdown clamp itself -- VIN -> EA_OUT, gate = TS_CMP.
+Structurally identical to M_ENP (the EN=0 clamp) and to M_CLIM (the
+current-limit clamp), and deliberately so: DR-005 chose auto-restart
+(non-latching) precisely because this insertion point is level-driven, so
+the trip needs no memory element and no reset pin. Over temperature the
+trip forces the pass gate to VIN, M_PASS off, dissipation to ~0; the die
+cools, TS_CMP snaps back to VIN and the loop resumes on its own.
+NOTE it clamps the *pass gate*, not the bias generator: the sense stack,
+the reference branch and this comparator must stay biased while tripped or
+the circuit could not detect the reset threshold. The pass device is the
+dissipating element, so turning it off is what actually removes the heat.} 3240 -1600 0 0 0.2 0.2 {}
+
+C {sky130_fd_pr/pfet_g5v0d10v5.sym} 3200 -1900 0 0 {name=M_TSHYSB
+L=2
+W=1.5
+nf=1
+mult=1
+model=pfet_g5v0d10v5
+spiceprefix=X}
+C {devices/lab_pin.sym} 3220 -1870 0 0 {name=p_mtshysb_d lab=TS_HYS}
+C {devices/lab_pin.sym} 3180 -1900 0 0 {name=p_mtshysb_g lab=BIASP}
+C {devices/lab_pin.sym} 3220 -1930 0 0 {name=p_mtshysb_s lab=VIN}
+C {devices/lab_pin.sym} 3220 -1900 0 0 {name=p_mtshysb_b lab=VIN}
+T {M_TSHYSB: the hysteresis current, set by a scaled-down copy of the
+M_BIASP1 bias unit (W/L = 1/2 against 10/1) rather than by the switch
+M_TSHYS's own drive. Sizing the *current* rather than the switch is what
+keeps the hysteresis a device ratio instead of a strong function of VIN --
+a bare switch PMOS with Vsg = VIN would inject a supply-dependent tens of
+uA and swamp the reference branch.} 3240 -1900 0 0 0.2 0.2 {}
+
+C {sky130_fd_pr/pfet_g5v0d10v5.sym} 3200 -2200 0 0 {name=M_TSHYS
+L=0.5
+W=2
+nf=1
+mult=1
+model=pfet_g5v0d10v5
+spiceprefix=X}
+C {devices/lab_pin.sym} 3220 -2170 0 0 {name=p_mtshys_d lab=TS_REF}
+C {devices/lab_pin.sym} 3180 -2200 0 0 {name=p_mtshys_g lab=TS_CMP}
+C {devices/lab_pin.sym} 3220 -2230 0 0 {name=p_mtshys_s lab=TS_HYS}
+C {devices/lab_pin.sym} 3220 -2200 0 0 {name=p_mtshys_b lab=VIN}
+T {M_TSHYS: the hysteresis switch. While TS_CMP ~ VIN (not tripped) its
+Vsg is ~0 and it is off, so hysteresis costs no quiescent current in
+normal operation. Once TS_CMP falls (tripped) it steers M_TSHYSB's current
+into TS_REF, raising the reference by tens of mV -- i.e. making the
+comparison look hotter than it is, so the die must cool below the trip
+point before the block restarts. That is positive feedback around the
+comparator: it also snaps the transition, so the trip is a clean edge
+rather than a slow slide through the comparator's linear range.
+DR-005 fixes the target at 15C nominal; the ratio here is the knob.} 3240 -2200 0 0 0.2 0.2 {}
+
+C {sky130_fd_pr/pfet_g5v0d10v5.sym} 3200 -2500 0 0 {name=M_ENP4
+L=0.5
+W=2
+nf=1
+mult=1
+model=pfet_g5v0d10v5
+spiceprefix=X}
+C {devices/lab_pin.sym} 3220 -2470 0 0 {name=p_menp4_d lab=TS_CMP}
+C {devices/lab_pin.sym} 3180 -2500 0 0 {name=p_menp4_g lab=EN}
+C {devices/lab_pin.sym} 3220 -2530 0 0 {name=p_menp4_s lab=VIN}
+C {devices/lab_pin.sym} 3220 -2500 0 0 {name=p_menp4_b lab=VIN}
+T {M_ENP4: EN=0 forces TS_CMP -> VIN, i.e. "not tripped" -- the fourth
+member of the M_ENP/M_ENP2/M_ENP3 family and the same argument as M_ENP3:
+in shutdown every device that drives TS_CMP is off, so without this clamp
+the node floats and M_TSHUT's and M_TSHYS's gates are undefined. Forcing it
+to VIN also guarantees the thermal clamp cannot hold EA_OUT while the block
+is disabled, and gives the DC solve a well-posed shutdown state.} 3240 -2500 0 0 0.2 0.2 {}
+
+C {devices/capa.sym} 3200 -2800 0 0 {name=C_TS m=1 value=1p footprint=1206 device="mim cap (thermal trip comparator)"}
+C {devices/lab_pin.sym} 3200 -2770 0 0 {name=p_cts_m lab=TS_CMP}
+C {devices/lab_pin.sym} 3200 -2830 0 0 {name=p_cts_p lab=VIN}
+T {C_TS: dominant-pole cap on the trip node, referenced to VIN so it does
+not inject supply noise into TS_CMP -- same construction and same status as
+C_CL on the current-limit comparator. It sets the time constant of the
+hysteretic trip/reset cycle together with the ~0.4uA available at TS_CMP.
+Value is a PLACEHOLDER: the thermal loop's real time constant is the die's,
+which is orders of magnitude slower than anything this cap sets, so its job
+is only to keep the electrical comparator from chattering. Not sized
+against a transient simulation.} 3240 -2800 0 0 0.2 0.2 {}
