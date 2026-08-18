@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "worktree:return": "./.loom/scripts/worktree-return.sh",
-    "check:ci": "npm run lint && npm run test && ./.loom/scripts/check-xschem-embedded-quotes.sh",
+    "check:ci": "npm run lint && npm run test && ./.loom/scripts/check-xschem-embedded-quotes.sh && ./.loom/scripts/check-xschem-duplicate-instance-names.sh",
     "check:all": "npm run check:ci",
     "test": "npm run test:compile && npm run test:unit",
     "test:compile": "find sim layout -name '*.py' -not -path 'layout/.venv/*' -print0 | xargs -0 -n1 python3 -m py_compile",
