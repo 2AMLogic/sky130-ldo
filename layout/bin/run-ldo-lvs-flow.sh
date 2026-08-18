@@ -11,16 +11,26 @@
 # pinned sky130A PDK resolvable (same pin as sim/pdk.json), and a landed
 # ldo-core layout record (layout/ldo-core/reports/LATEST).
 #
-# IMPORTANT: as of this repo's first run (issue #17), this reports
-# `status: mismatch`, not `match` -- the committed ldo-core layout
-# (layout/ldo-core/reports/<record-id>/, issue #15) is a placed-but-unrouted
-# floorplan skeleton built against an earlier revision of the schematic
-# (before issue #22 added current-limit/soft-start devices), so it neither
-# has the full device set nor any inter-block routing. See the rendered
-# record.md's "Root cause" section and layout/ldo-core/floorplan.md's
-# "Explicitly out of scope" note. This script exists so the *next* run --
-# once a follow-on issue extends the floorplan and adds routing -- is a
-# one-command re-check, not a redesign of the LVS pipeline.
+# Three request-level hooks make the compare well-posed; each is disclosed
+# in lvs.json's own mismatches[] as a `warning`, so a `match` reached
+# through them is never indistinguishable from one reached without:
+#
+#   * options.combine_devices -- folds the layout's parallel unit devices
+#     (a wide device is drawn as N strapped units, see gen-ldo-blocks.py)
+#     back into the single W_total-wide device the reference states, and
+#     folds series strings identically on both sides.
+#   * layout.declared_pins -- every routed net is labelled with its
+#     schematic name, so without this every one of them would promote to a
+#     top-level pin; the block's actual interface is the schematic's four
+#     ports.
+#   * reference.device_bulk -- `klt extract` gives a drawn poly resistor a
+#     third (bulk) terminal that a schematic netlist has no node for; this
+#     names the reference-side net it carries.
+#
+# As of issue #33 this reports `status: match`. Issue #17's first run
+# reported `mismatch` against the then-committed placed-but-unrouted
+# floorplan skeleton; that record is kept (append-only evidence), and the
+# gaps it root-caused are what #33 closed.
 set -euo pipefail
 
 LAYOUT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -30,6 +40,8 @@ KLT="$LAYOUT_DIR/.venv/bin/klt"
 CELL=ldo_core
 PDK_VARIANT=sky130A
 SCHEMATIC="$REPO_ROOT/design/ldo_3v3in_1v8out.sch"
+PORTS="VOUT VREF EN VIN"
+PIN_LIST="VOUT,VREF,EN,VIN"
 
 if [[ ! -x "$KLT" ]]; then
   echo "run-ldo-lvs-flow.sh: $KLT not found -- run layout/bin/setup-venv.sh first" >&2
@@ -80,12 +92,15 @@ MISSING_COUNT="$(grep -c MISSING "$SCHEM_NETLIST" || true)"
 echo "run-ldo-lvs-flow.sh: schematic netlist MISSING count = $MISSING_COUNT"
 
 # --- 2. Translate the schematic netlist into an LVS reference -------------
-python3 "$LAYOUT_DIR/bin/gen-ldo-reference-netlist.py" \
-  --netlist "$SCHEM_NETLIST" --subckt-name "$CELL" --ports "VOUT VREF EN VIN" \
+# Run under layout/.venv: the translator reads the resistor sheet-rho/offset
+# constants out of `klt`'s own extraction deck rather than transcribing them.
+"$LAYOUT_DIR/.venv/bin/python" "$LAYOUT_DIR/bin/gen-ldo-reference-netlist.py" \
+  --netlist "$SCHEM_NETLIST" --subckt-name "$CELL" --ports "$PORTS" --deck sky130 \
   -o "$OUT_DIR/reference.spice"
 
 # --- 3. Extract the composed layout ----------------------------------------
 "$KLT" extract "$OUT_DIR/$CELL.gds" --deck sky130 --top "$CELL" \
+  --pins "$PIN_LIST" \
   -o "$OUT_DIR/$CELL.extract.spice" --format json > "$OUT_DIR/extract.json"
 
 # --- 4. LVS: extracted layout vs. schematic-derived reference --------------
@@ -93,8 +108,18 @@ cat > "$OUT_DIR/lvs.request.json" <<EOF
 {
   "schema": "klt.lvs.request/1",
   "engine": "klayout",
-  "layout": { "file": "$CELL.gds", "deck": "sky130", "top": "$CELL" },
-  "reference": { "netlist": "reference.spice", "top": "$CELL" }
+  "layout": {
+    "file": "$CELL.gds",
+    "deck": "sky130",
+    "top": "$CELL",
+    "declared_pins": ["VOUT", "VREF", "EN", "VIN"]
+  },
+  "reference": {
+    "netlist": "reference.spice",
+    "top": "$CELL",
+    "device_bulk": { "res_high_po": "0", "res_xhigh_po": "0" }
+  },
+  "options": { "combine_devices": true }
 }
 EOF
 "$KLT" lvs "$OUT_DIR/lvs.request.json" --format json > "$OUT_DIR/lvs.json" || true

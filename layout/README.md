@@ -112,23 +112,24 @@ layout/
     setup-venv.sh             # create/refresh layout/.venv from requirements.txt
     run-trivial-cell-flow.sh  # the repeatable driver: gen -> drc -> extract -> lvs -> report
     render-record.py          # renders + verdict-checks a record's record.md
-    run-ldo-layout-flow.sh    # LDO-core driver: gen (x15) -> gen-compose -> drc -> report
-    gen-ldo-blocks.py         # per-device klt gen + explicit-placement floorplan + gen-compose
+    run-ldo-layout-flow.sh    # LDO-core driver: xschem netlist -> gen -> gen-compose -> route -> drc -> report
+    gen-ldo-blocks.py         # netlist-driven klt gen + placement + gen-compose + the channel router
     render-ldo-record.py      # renders + verdict-checks an ldo-core record's record.md
     run-ldo-lvs-flow.sh       # issue #17: LDO-core LVS driver: xschem netlist -> reference -> extract -> lvs -> report
     gen-ldo-reference-netlist.py  # translates the schematic's xschem netlist into an LVS reference
     render-ldo-lvs-record.py  # renders + verdict-checks an ldo-core LVS record's record.md
   .venv/                      # gitignored -- `klt` install, created by setup-venv.sh
-  ldo-core/                   # issue #15: the real LDO layout (see "Extending to the LDO core")
-    floorplan.md               # device-to-block mapping + row-grouping rationale
+  ldo-core/                   # the real LDO layout (see "Extending to the LDO core")
+    floorplan.md               # device-to-block mapping, placement + routing rationale
     reports/
-      LATEST                    # newest gen/compose/drc record (issue #15/#16)
-      LATEST-LVS                 # newest LVS-attempt record (issue #17)
-      <record-id>/             # gen.<device>.json/<device>.gds x15, compose.*.json,
+      LATEST                    # newest gen/compose/route/drc record
+      LATEST-LVS                 # newest LVS record
+      <record-id>/             # xschem_out/, gen.<device>.json/<device>.gds per device,
+                                # compose.*.json, floorplan.json, ldo_core.placed.gds,
                                 # ldo_core.gds, drc.json, report.md, record.md
-      <lvs-record-id>/         # issue #17: xschem_out/, reference.spice, extract.json,
+      <lvs-record-id>/         # xschem_out/, reference.spice, extract.json,
                                 # ldo_core.extract.spice, lvs.request.json, lvs.json,
-                                # report.md, record.md (see "LVS attempt" below)
+                                # report.md, record.md (see "LVS" below)
   trivial-cell/
     reference.spice                    # known-good LVS reference netlist
     reference.broken-device.spice      # negative control 1: device.property corruption
@@ -173,90 +174,120 @@ the `pfet_g5v0d10v5`/`pfet_01v8` pass-device candidates once #1 ratifies) is
 drawn — file it at `2AMLogic/klayout-tools` per the root `CLAUDE.md`:
 tool-gap description only, no spec values or design content from this repo.
 
-## Extending to the LDO core (issue #15)
+### What routing the LDO core hit (issue #33)
 
-`ldo-core/` is the real block layout — a placed floorplan skeleton for
-`design/ldo_3v3in_1v8out.sch` (issue #14), one `klt gen` block per active
-device, positioned by function group via `klt gen-compose`'s
-`placement.strategy: "explicit"` and confirmed DRC-clean. It is separate
-from `trivial-cell/` above (that stays tool-flow proof only) and follows the
-same "closest real precedent" this repo used for #14: `2AMLogic/sky130-bandgap`'s
-own issue #15 (a floorplan + placed skeleton, DRC-clean, LVS explicitly
-deferred to a follow-on issue).
+Two `klt` gaps shaped how `ldo-core/` is generated. **Both were already
+tracked upstream**, so this repo cross-confirmed rather than re-filed
+(`klayout-tools` [#1116](https://github.com/2AMLogic/klayout-tools/issues/1116)),
+and both have since been resolved on `klayout-tools`' `main` — *after* the
+commit `layout/requirements.txt` pins:
+
+- **`gen-compose`'s router was two-pin only**, and rejected any route
+  crossing another block's bounding box — so no shared rail or fanout net in
+  a real block was routable
+  ([#1073](https://github.com/2AMLogic/klayout-tools/issues/1073), closed by
+  bundle routing; the broader "no netlist -> placed+routed layout verb" gap
+  is [#1116](https://github.com/2AMLogic/klayout-tools/issues/1116), still
+  open). `gen-ldo-blocks.py` draws its own channel route instead.
+- **`mos_array`'s `fingers>1` drew a series chain** with unstrapped interior
+  diffusions and uncontactable gates, which extracts as N series devices
+  rather than one folded device
+  ([#777](https://github.com/2AMLogic/klayout-tools/issues/777)). Every
+  device here is therefore drawn with `fingers=1`, splitting width across
+  parallel `cols` units instead.
+
+Bumping the pin to pick those up is a deliberate act (see
+`requirements.txt`'s own note) that would need the whole ldo-core flow
+re-verified against the new build — worth doing on its own issue, not as a
+side effect of a layout change.
+
+## Extending to the LDO core (issues #15/#33)
+
+`ldo-core/` is the real block layout for `design/ldo_3v3in_1v8out.sch`: one
+`klt gen` block per active schematic device, placed via `klt gen-compose`'s
+`placement.strategy: "explicit"`, wired net-for-net, DRC-clean and
+LVS-matched. It is separate from `trivial-cell/` above (that stays tool-flow
+proof only).
 
 ```bash
 layout/bin/setup-venv.sh            # once, or after bumping requirements.txt
-layout/bin/run-ldo-layout-flow.sh   # regenerate the floorplan + DRC record
+layout/bin/run-ldo-layout-flow.sh   # regenerate the layout + DRC record
+layout/bin/run-ldo-lvs-flow.sh      # extract + LVS against the schematic
 ```
 
-Read the newest `ldo-core/reports/<record-id>/record.md` for the actual
-DRC-clean evidence, and `ldo-core/floorplan.md` for the device-to-block
-mapping and row-grouping rationale (why the two feedback/bias resistor
-blocks get their own dedicated rows, separate from the compact MOS core).
+Read the newest `ldo-core/reports/<record-id>/record.md` for the DRC
+evidence, the newest `<lvs-record-id>/record.md` for the LVS verdict, and
+`ldo-core/floorplan.md` for the device-to-block mapping, the placement
+rationale, and the routing topology.
 
-**Explicitly out of scope for issue #15** (deferred to the issues that
-already depend on it): inter-block routing, extraction, and LVS (#17); full
-DRC-report closure/formalization (#16, though this flow's own DRC run must
-already be clean, and is); the schematic's Miller compensation cap
-(`C_COMP`) has no corresponding `klt gen` device generator at this repo's
-pinned `klt` commit and is not drawn — see `ldo-core/floorplan.md`'s "Known
-gap" section.
+**The device set is read from the schematic at run time** — the flow
+netlists `design/ldo_3v3in_1v8out.sch` with `xschem` and generates one block
+per element it finds, so the layout cannot describe a different circuit than
+the schematic. Issue #15's first cut instead carried a hand-transcribed
+device table; that table is what went stale (see "LVS" below), which is why
+issue #33 replaced it rather than extending it.
 
-### DRC-clean report closure (issue #16)
+### DRC (issue #16)
 
-Issue #15's own `run-ldo-layout-flow.sh` run already produced a `status:
-"clean"` `drc.json` for the composed `ldo_core` floorplan (`violation_count:
-0`); issue #16's job was to formalize that as this block's own T1 re-read
-(#12) item 3 evidence — re-running the same flow fresh against current
-`main` to confirm the clean result reproduces, rather than relying on #15's
-incidental run. Read the newest `ldo-core/reports/<record-id>/record.md` for
-that evidence trail directly.
+Issue #16 formalized the DRC-clean claim for this block as its own T1 re-read
+(#12) item 3 evidence: re-running the flow fresh and confirming the clean
+result reproduces. That still holds, and the coverage caveat it recorded no
+longer applies.
 
-**Coverage caveat, read alongside "clean"**: this floorplan skeleton draws
-device blocks only — no inter-block routing (issue #17) — so `drc.json`'s
-`coverage.rules_skipped` lists every `met1`/`met2`/`via`/`mcon` rule (no
-metal or via geometry exists yet to check) and `coverage.layers_checked`
-covers only 4 of the 8 layers in the sky130 deck. "Clean" here means "no
-violations on the layers this skeleton actually draws" (wells, active,
-poly/gate — the layers `mos_array`/`res_array` blocks populate), not
-full-stack metal-DRC closure; a routed layout (#17 and beyond) will need its
-own fresh DRC record once metal is drawn, which is expected to exercise the
-currently-skipped rules for the first time.
+Issue #16's record ran against a placed-but-unrouted skeleton, so
+`drc.json`'s `coverage.rules_skipped` listed every `met1`/`met2`/`via`/`mcon`
+rule (no metal existed to check) and `coverage.layers_checked` covered 4 of
+the deck's 8 layers. Now that the block is routed, the newest record checks
+**all 8 layers with 0 rules skipped** — the metal/via rules that were
+structurally unexercised before are exercised for the first time, and the
+result is still `status: clean`.
 
-## LVS attempt against the real LDO layout (issue #17)
+## LVS against the schematic (issue #17)
 
 ```bash
 layout/bin/setup-venv.sh          # once, or after bumping requirements.txt
-layout/bin/run-ldo-layout-flow.sh # (re)generate the floorplan/DRC record first
+layout/bin/run-ldo-layout-flow.sh # (re)generate the layout/DRC record first
 layout/bin/run-ldo-lvs-flow.sh    # xschem netlist -> reference -> extract -> lvs -> report
 ```
 
 Read the newest `ldo-core/reports/<lvs-record-id>/record.md` (also pointed to
-by `ldo-core/reports/LATEST-LVS`) for the actual evidence. **As of this
-issue's first run, the result is `status: mismatch`, not `match`** — this is
-a genuine, already-diagnosed layout-completeness gap, not a `klt` defect:
+by `ldo-core/reports/LATEST-LVS`) for the actual evidence. **As of issue #33
+this reports `status: match`** — every schematic net, device and port paired.
 
-- The `ldo-core/` floorplan (issue #15) was built from `design/
-  ldo_3v3in_1v8out.sch` as it stood *before* issue #22 added the
-  current-limit/soft-start circuitry, so 11 active MOS devices (plus 2 of the
-  schematic's 3 capacitors) have no `klt gen` block at all.
-- `M_PASS`'s drawn width (100µm) does not reflect the schematic's corrected
-  value (2500µm, per `design/README.md`'s "Pass-device width correction").
-- No inter-block routing exists yet (deliberately deferred by #15, above) —
-  the extracted netlist's own `pin_count: 1` (vs. the schematic's 4 top-level
-  ports) is the direct evidence.
+Three request-level hooks make that compare well-posed, each disclosed as its
+own `warning` in `lvs.json` so a match reached through them is never
+indistinguishable from one reached without (see `run-ldo-lvs-flow.sh`'s
+header):
 
-The record's "Root cause" section has the full breakdown. Extending the
-floorplan, correcting `M_PASS`, and adding inter-block routing is tracked as
-its own follow-on issue
-([#33](https://github.com/2AMLogic/sky130-ldo/issues/33)) — out of #17's own
-"routine, run-the-tool-against-a-landed-block" scope. `layout/bin/
-run-ldo-lvs-flow.sh` and its two helper scripts
-(`gen-ldo-reference-netlist.py`, `render-ldo-lvs-record.py`) are already
-built and reusable: once #33 lands a complete, routed floorplan, re-running
-this same driver is the one-command re-check that (hopefully) reports
-`match`, mints a fresh record, and closes out #17's own acceptance criteria
-retroactively via #33.
+- `options.combine_devices` folds the layout's parallel unit devices (a wide
+  device is drawn as N strapped units) back into the single `W_total`-wide
+  device the reference states;
+- `layout.declared_pins` keeps the block's interface to the schematic's own
+  four ports, since every routed net is labelled with its schematic name;
+- `reference.device_bulk` supplies the bulk net for the third terminal
+  `klt extract` gives a drawn poly resistor and a schematic netlist has no
+  node for.
+
+**The first run (issue #17) reported `mismatch`**, against the then-committed
+placed-but-unrouted skeleton: a device table that had gone stale against the
+schematic, `M_PASS` drawn at `W` rather than `W * mult`, and no inter-block
+routing. That record is kept as append-only evidence; issue #33 closed all
+three gaps — structurally for the first (netlist-driven generation), not by
+re-transcribing the table.
+
+### What a `match` here does and does not certify
+
+- It **does** certify that every drawn MOS/resistor device and every drawn
+  net corresponds 1:1 with the schematic's, including both body nets (the
+  layout draws a real n-well tie and a real substrate tie).
+- It **does not** cover the schematic's four capacitors: `klt gen` has no
+  capacitor generator (klayout-tools#1117), so they are drawn on neither
+  side. The compensation network is exactly what the loop's stability
+  depends on most, so this is a real coverage gap, not a formality.
+- It **does not** distinguish device voltage flavor (see "Known klt-deck
+  limitations" below), and it says nothing about parasitics (issue #20) or
+  about whether the signal-grade routing this flow draws is adequate for the
+  load current `VIN`/`VOUT` actually carry.
 
 ## Known klt-deck limitations relevant to later, LDO-specific layout issues
 
@@ -265,12 +296,16 @@ Not gaps to file (documented, deliberate scope limits of the curated
 takes on the LDO's own layout, since this issue's own scope stops at the
 trivial-cell proof:
 
-- **No NMOS substrate-tap extraction.** The curated deck ties every NMOS
-  body to a single global `vsubs` net rather than a real drawn tap
-  (`docs/cli/extract.md` → "Coverage"). Harmless for this issue's trivial
-  cell (see `record.md`'s `device.body_unverified` note) but means a future
-  LVS reference netlist for the real LDO should also tie NMOS bodies to a
-  single net, not model per-tap connectivity the extractor can't see.
+- **NMOS substrate-tap extraction needs a drawn tap** (superseded in
+  practice, kept for the trivial cell). The curated deck falls back to a
+  single global `vsubs` net when no substrate tie is drawn
+  (`docs/cli/extract.md` → "Coverage"), which is what the trivial cell hits
+  and what its `record.md`'s `device.body_unverified` note records. The deck
+  *does* resolve a real tie: sky130's `tap.drawing` split by `nwell`
+  containment gives a well tie inside the well and a substrate tie outside
+  it. `ldo-core/` draws one of each, so its NMOS bodies extract as the
+  schematic's own `0` rail and that warning does not appear on its LVS
+  record.
 - **No voltage-flavor distinction on MOS devices.** `klt extract`'s `nfet`/
   `pfet` classes are flavor-agnostic — a 5 V-flavor (thick-oxide) device and
   a core-voltage device both extract as the same generic class, with no
