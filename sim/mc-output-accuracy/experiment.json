@@ -1,7 +1,7 @@
 {
   "slug": "mc-output-accuracy",
   "title": "Output accuracy under device mismatch (Monte Carlo, sky130A tt_mm)",
-  "claim": "Substantiates spec/target-spec.md's DRAFT \"Output\" row (1.8V +-2%, i.e. 1.764V-1.836V) against the LDO core-regulation-loop schematic landed by #14 (design/ldo_3v3in_1v8out.sch) under per-instance device mismatch, at a single representative operating point (nominal VIN=3.3V/27C/tt process corner, I_LOAD=1mA light load -- the same light-load convention sim/psrr-dc/ already uses). That row is DRAFT (issue #1 not yet ratified) -- the bound cited below is the DRAFT row's own window, not an invented final limit, and needs re-verification once #1 rules. This is a mismatch-only statistical check (klt sim's monte_carlo.vary=\"mismatch\"): it re-runs this one PVT point N times with a fresh per-instance AGAUSS mismatch draw each time (sky130A's tt_mm .lib section -- see sim/README.md and docs/cli/sim.md in 2AMLogic/klayout-tools), NOT a re-run across the full PVT corner matrix (that is corner-run.py's separate job, e.g. sim/dropout-vs-load). Known-immature-design caveat (design/README.md \"Known gaps\"): C_COMP/C_CL remain unsized placeholders and the error amplifier still has a light-load/high-VIN output-swing ceiling, so a FAIL here is an honest, expected finding at this design stage, not a harness defect.",
+  "claim": "Substantiates spec/target-spec.md's DRAFT \"Output\" row (1.8V +-2%, i.e. 1.764V-1.836V) against the LDO core-regulation-loop schematic landed by #14 and revised by #22 (current limit / soft start) and #25/#36 (current-mirror-OTA rail-to-rail output stage plus sized Miller compensation) (design/ldo_3v3in_1v8out.sch) under per-instance device mismatch, at a single representative operating point (nominal VIN=3.3V/27C/tt process corner, I_LOAD=1mA light load -- the same light-load convention sim/psrr-dc/ already uses). That row is DRAFT (issue #1 not yet ratified) -- the bound cited below is the DRAFT row's own window, not an invented final limit, and needs re-verification once #1 rules. This is a mismatch-only statistical check (klt sim's monte_carlo.vary=\"mismatch\"): it re-runs this one PVT point N times with a fresh per-instance AGAUSS mismatch draw each time (sky130A's tt_mm .lib section -- see sim/README.md and docs/cli/sim.md in 2AMLogic/klayout-tools), NOT a re-run across the full PVT corner matrix (that is corner-run.py's separate job, e.g. sim/dropout-vs-load). Known-remaining-gaps caveat (design/README.md \"Known gaps / follow-on scope\"): the #25/#36 revision closed the unsized-compensation and error-amplifier output-swing-ceiling gaps that dominated the #18-era records, but the pass device's own light-load pole and the absent Iq budget remain open, so a FAIL here is an honest finding about the current design state, not a harness defect.",
   "provenance": "schematic",
   "provenance_source": "sim/mc-output-accuracy/testbench/tb_mc_output_accuracy.sch",
   "schematic": "testbench/tb_mc_output_accuracy.sch",
@@ -20,7 +20,10 @@
       "name": "vout_ss",
       "spice": ".meas tran vout_ss avg v(vout) from=2.5m to=3m",
       "unit": "V",
-      "limits": { "min": 1.764, "max": 1.836 },
+      "limits": {
+        "min": 1.764,
+        "max": 1.836
+      },
       "note": "Steady-state VOUT, averaged over the settled tail (2.5ms-3ms of a 3ms transient) of a fixed-1mA-load, VIN=3.3V/27C/tt_mm operating point. DRAFT bound: spec/target-spec.md \"Output\" row, 1.8V +-2% (DRAFT, unratified)."
     }
   ],

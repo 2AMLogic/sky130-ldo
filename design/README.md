@@ -98,7 +98,7 @@ temperature, hysteresis, reference, and auto-restart decision.
 
   EA_OUT is a push/pull node between M_MIRP2 (pull-up, source = VIN) and
   M_MIR2 (pull-down), so it can be driven all the way to VIN -- see
-  "Error-amplifier output stage (rebuilt in #25)". M_ENP4 forces PB -> VIN
+  "Error-amplifier output stage (rebuilt in #25)". M_ENP5 forces PB -> VIN
   at EN=0 so the new pull-up has a defined off state.
 
   R_BIAS: VIN -> NB -> [M_BIASN1 (diode)] -> [BIAS_ENN] -> M_ENN -> 0
@@ -222,7 +222,7 @@ naming is textbook vocabulary, not a reference to anyone's implementation):
 | `M_MIR4` | 1:1 NMOS mirror of `M_MIR3`, sinking that branch current out of `M_MIRP1` at `PB` |
 | `M_MIRP1` | diode-connected PMOS reference of the output pull-up mirror, source = `VIN` |
 | `M_MIRP2` | 1:1 PMOS mirror output — **the device that removes the ceiling**. Source = `VIN`, drain = `EA_OUT` |
-| `M_ENP4` | `VIN → PB`, gate = `EN`: forces the new pull-up hard off at `EN=0` (see "Enable/shutdown") |
+| `M_ENP5` | `VIN → PB`, gate = `EN`: forces the new pull-up hard off at `EN=0` (see "Enable/shutdown") |
 
 `EA_OUT` is now a push/pull node between `M_MIRP2` (pull-up from `VIN`) and
 `M_MIR2` (pull-down), i.e. two 1:1-mirrored copies of the two input-pair
@@ -246,7 +246,7 @@ Two properties of this choice are load-bearing and worth stating explicitly:
 - **It costs one clamp, not two.** The rejected candidate needed two extra
   devices to restore shutdown leakage (`NB` pulled low and `R_BIAS`
   disconnected). Here `M_MIR3`/`M_MIR4` return through the *existing*
-  `AMP_ENN` switch, so the only new shutdown device is `M_ENP4` on `PB`, and
+  `AMP_ENN` switch, so the only new shutdown device is `M_ENP5` on `PB`, and
   measured `EN=0` supply current stays at the ~150 pA leakage floor (table
   below).
 
@@ -786,7 +786,7 @@ make another DRAFT row pass is exactly what `CLAUDE.md` forbids.
 133pA at `VIN=2.97V` and 165pA at `VIN=3.63V` — the same ~150pA as the #22
 record — confirming the new pull-up path (`M_MIRP1`/`M_MIRP2` and the `PB`
 node that drives them) introduces no reverse-leakage path. At `EN=0`,
-`M_ENP4` holds `PB` at `VIN` (measured `PB = VIN` exactly at both supplies)
+`M_ENP5` holds `PB` at `VIN` (measured `PB = VIN` exactly at both supplies)
 so `M_MIRP2` is hard off, and `M_MIR3`/`M_MIR4` are cut by the existing
 `AMP_ENN` switch; `VOUT` collapses to ~0.2µV. This is where the rejected #22
 candidate needed *two* extra devices (`NB` pulled low and `R_BIAS`
