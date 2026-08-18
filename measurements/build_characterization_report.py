@@ -30,13 +30,21 @@ Design rules (see the issue and `sim/README.md`'s own conventions):
   other rows' testbenches, not measured by one of their own) is reported
   N/A with a stated reason, never forced into a PASS/FAIL slot it has no
   evidence for.
-- **Deterministic.** No wall-clock timestamps are embedded. Re-running this
-  script against an unchanged tree (same git commit, same pinned toolchain)
-  reproduces byte-identical output. This file itself is *not* append-only
-  evidence in the `sim/README.md` sense -- it is a generated rollup of
-  evidence that already lives under version control, so git history (not a
-  per-run record id) is its audit trail; regenerate and commit it whenever
-  the evidence it cites changes.
+- **Deterministic, and never self-referential.** No wall-clock timestamps and
+  no *generating-commit* identity (repo `HEAD` sha, dirty flag, run id) are
+  embedded. That second half is what makes `--check` usable: the commit that
+  regenerates `measurements/characterization.md` necessarily has a different
+  sha than whatever `HEAD` was before it, so any line naming the generating
+  commit would make `--check` fail on the very commit that ships the file,
+  and on every regenerate+commit cycle thereafter, forever. Content is
+  therefore a pure function of the *cited evidence* (records, spec table,
+  netlists, `LATEST*` pointers) -- so re-running this script against an
+  unchanged tree reproduces byte-identical output both before and after the
+  commit that lands it. This file itself is *not* append-only evidence in the
+  `sim/README.md` sense -- it is a generated rollup of evidence that already
+  lives under version control, so git history (not a per-run record id) is
+  its audit trail; regenerate and commit it whenever the evidence it cites
+  changes.
 
 Usage
 -----
@@ -558,10 +566,6 @@ def generate_report(skip_netlist_freshness: bool = False) -> str:
     table, detail = build_spec_row_table(spec_rows, skip_netlist_freshness)
     layout_lines = build_layout_section()
 
-    git_sha = git("rev-parse", "--short", "HEAD") or "nogit"
-    git_dirty = bool(git("status", "--porcelain"))
-    repo_state = f"`{git_sha}`" + (" (working tree dirty at generation time)" if git_dirty else "")
-
     lines: list[str] = []
     lines.append("# LDO characterization report (DRAFT spec)")
     lines.append("")
@@ -605,7 +609,9 @@ def generate_report(skip_netlist_freshness: bool = False) -> str:
     lines.append(
         "Re-running this generator against an unchanged tree with the same "
         "pinned toolchain (`sim/pdk.json`) reproduces this file byte-for-"
-        "byte — no wall-clock timestamps are embedded. The per-`sim/` "
+        "byte — no wall-clock timestamps and no generating-commit identity "
+        "are embedded, so `--check` passes both before and after the commit "
+        "that lands a regenerated report. The per-`sim/` "
         "**Freshness** column below is a live check (a fresh `xschem` "
         "re-netlist of the current testbench schematic, compared verbatim "
         "against the committed netlist snapshot); on a machine without the "
@@ -617,7 +623,14 @@ def generate_report(skip_netlist_freshness: bool = False) -> str:
         "toolchain required."
     )
     lines.append("")
-    lines.append(f"Generated against repo state {repo_state}.")
+    lines.append(
+        "No generating-commit SHA is stamped into this file, deliberately: a "
+        "commit that regenerates this report cannot contain its own resulting "
+        "hash, so such a line would make `--check` fail by construction on the "
+        "very commit that ships the regenerated file. Provenance instead comes "
+        "from the record ids cited per row (each of which is itself an "
+        "append-only, commit-pinned record) plus this file's own git history."
+    )
     lines.append("")
 
     lines.append("## Per-spec-row characterization")

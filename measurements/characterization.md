@@ -12,9 +12,9 @@ python3 measurements/build_characterization_report.py --out measurements/charact
 python3 measurements/build_characterization_report.py --check
 ```
 
-Re-running this generator against an unchanged tree with the same pinned toolchain (`sim/pdk.json`) reproduces this file byte-for-byte — no wall-clock timestamps are embedded. The per-`sim/` **Freshness** column below is a live check (a fresh `xschem` re-netlist of the current testbench schematic, compared verbatim against the committed netlist snapshot); on a machine without the PDK toolchain it degrades to `unverified` rather than a false claim of freshness (`--no-netlist-freshness` forces this explicitly). The layout (DRC/LVS/PEX) **Freshness** column instead compares the schematic/layout commit each record itself cites against the current git history / `LATEST*` pointers — no toolchain required.
+Re-running this generator against an unchanged tree with the same pinned toolchain (`sim/pdk.json`) reproduces this file byte-for-byte — no wall-clock timestamps and no generating-commit identity are embedded, so `--check` passes both before and after the commit that lands a regenerated report. The per-`sim/` **Freshness** column below is a live check (a fresh `xschem` re-netlist of the current testbench schematic, compared verbatim against the committed netlist snapshot); on a machine without the PDK toolchain it degrades to `unverified` rather than a false claim of freshness (`--no-netlist-freshness` forces this explicitly). The layout (DRC/LVS/PEX) **Freshness** column instead compares the schematic/layout commit each record itself cites against the current git history / `LATEST*` pointers — no toolchain required.
 
-Generated against repo state `aa5a6e9` (working tree dirty at generation time).
+No generating-commit SHA is stamped into this file, deliberately: a commit that regenerates this report cannot contain its own resulting hash, so such a line would make `--check` fail by construction on the very commit that ships the regenerated file. Provenance instead comes from the record ids cited per row (each of which is itself an append-only, commit-pinned record) plus this file's own git history.
 
 ## Per-spec-row characterization
 
