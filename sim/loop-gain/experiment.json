@@ -1,0 +1,183 @@
+{
+  "slug": "loop-gain",
+  "title": "Loop gain, phase margin and gain margin across the DR-002 C_out/ESR window (0-50mA)",
+  "claim": "Substantiates spec/target-spec.md's DRAFT \"Stability\" row (stable 0-50 mA over the ratified C_out/ESR window; PM >= 45 deg, GM >= 10 dB worst corner) against the issue-#25 current-mirror-OTA revision of the LDO core-regulation loop (design/ldo_3v3in_1v8out.sch). Both the spec row and the window are DRAFT/proposed -- the row awaits issue #1 and the window is DR-002's *proposed* C_eff 0.33-4.7 uF / ESR 0-500 mOhm / no-minimum-ESR posture -- so the bounds below cite them directly rather than an invented final limit, and need re-verification once #1 rules. This is also the testbench DR-002 sequenced itself in front of: DR-002 states its no-minimum-ESR posture stays an unverified claim 'until a loop-gain sim/ record exists', and names the low-C_eff/low-ESR corner as the one that has to be shown. Method: closed-loop injection at VREF with the loop gain recovered as T = X/(1-X), X = v(xldo.fb) -- see the testbench schematic's header for the derivation, and for the one approximation it makes (input-pair path asymmetry, a fraction of a degree at these crossovers).",
+  "provenance": "schematic",
+  "provenance_source": "sim/loop-gain/testbench/tb_loop_gain.sch",
+  "schematic": "testbench/tb_loop_gain.sch",
+  "statistical_convention": "N/A (corner-matrix check, not a distribution claim)",
+  "corners": {
+    "process": ["tt", "ss", "ff", "sf", "fs"],
+    "temperature_c": [-40, 27, 125],
+    "supply_v": [2.97, 3.3, 3.63]
+  },
+  "quick_subset": [
+    ["tt", 27, 3.3],
+    ["ss", -40, 2.97],
+    ["ff", 125, 3.63]
+  ],
+  "deck": {
+    "options": ["wnflag=1"],
+    "params": {},
+    "analyses": [
+      "set units=degrees",
+      "* --- point 1: C_out 0.33uF / ESR 10mOhm / 50mA (DR-002 low-C_eff corner) ---",
+      "ac dec 30 1e-2 1e9",
+      "let lg = v(xldo.fb)/(1-v(xldo.fb))",
+      "let lgdb = db(lg)",
+      "let lgph = cph(lg)",
+      "meas ac fc when lgdb=0 cross=1",
+      "meas ac phc find lgph when lgdb=0 cross=1",
+      "meas ac gmdb find lgdb when lgph=-180 cross=1",
+      "let dcg = lgdb[0]",
+      "* --- point 2: C_out 0.33uF / ESR 10mOhm / 1mA ---",
+      "alter rload = 1.8k",
+      "ac dec 30 1e-2 1e9",
+      "let lg = v(xldo.fb)/(1-v(xldo.fb))",
+      "let lgdb = db(lg)",
+      "let lgph = cph(lg)",
+      "meas ac fc when lgdb=0 cross=1",
+      "meas ac phc find lgph when lgdb=0 cross=1",
+      "meas ac gmdb find lgdb when lgph=-180 cross=1",
+      "* --- point 3: C_out 0.33uF / ESR 10mOhm / 0mA (divider preload only) ---",
+      "alter rload = 1e12",
+      "ac dec 30 1e-2 1e9",
+      "let lg = v(xldo.fb)/(1-v(xldo.fb))",
+      "let lgdb = db(lg)",
+      "let lgph = cph(lg)",
+      "meas ac fc when lgdb=0 cross=1",
+      "meas ac phc find lgph when lgdb=0 cross=1",
+      "meas ac gmdb find lgdb when lgph=-180 cross=1",
+      "* --- point 4: C_out 4.7uF / ESR 10mOhm / 50mA ---",
+      "alter cout = 4.7u",
+      "alter rload = 36",
+      "ac dec 30 1e-2 1e9",
+      "let lg = v(xldo.fb)/(1-v(xldo.fb))",
+      "let lgdb = db(lg)",
+      "let lgph = cph(lg)",
+      "meas ac fc when lgdb=0 cross=1",
+      "meas ac phc find lgph when lgdb=0 cross=1",
+      "meas ac gmdb find lgdb when lgph=-180 cross=1",
+      "* --- point 5: C_out 4.7uF / ESR 10mOhm / 1mA ---",
+      "alter rload = 1.8k",
+      "ac dec 30 1e-2 1e9",
+      "let lg = v(xldo.fb)/(1-v(xldo.fb))",
+      "let lgdb = db(lg)",
+      "let lgph = cph(lg)",
+      "meas ac fc when lgdb=0 cross=1",
+      "meas ac phc find lgph when lgdb=0 cross=1",
+      "meas ac gmdb find lgdb when lgph=-180 cross=1",
+      "* --- point 6: C_out 4.7uF / ESR 10mOhm / 0mA ---",
+      "alter rload = 1e12",
+      "ac dec 30 1e-2 1e9",
+      "let lg = v(xldo.fb)/(1-v(xldo.fb))",
+      "let lgdb = db(lg)",
+      "let lgph = cph(lg)",
+      "meas ac fc when lgdb=0 cross=1",
+      "meas ac phc find lgph when lgdb=0 cross=1",
+      "meas ac gmdb find lgdb when lgph=-180 cross=1",
+      "* --- point 7: C_out 0.33uF / ESR 500mOhm / 50mA (window ESR ceiling) ---",
+      "alter cout = 0.33u",
+      "alter resr = 500m",
+      "alter rload = 36",
+      "ac dec 30 1e-2 1e9",
+      "let lg = v(xldo.fb)/(1-v(xldo.fb))",
+      "let lgdb = db(lg)",
+      "let lgph = cph(lg)",
+      "meas ac fc when lgdb=0 cross=1",
+      "meas ac phc find lgph when lgdb=0 cross=1",
+      "meas ac gmdb find lgdb when lgph=-180 cross=1"
+    ]
+  },
+  "measurements": [
+    {
+      "name": "pm_c033_50ma_deg",
+      "expr": "180 + ac1.phc",
+      "unit": "deg",
+      "min": 45,
+      "max": null,
+      "note": "Phase margin at DR-002's low-C_eff corner: C_out 0.33uF, ESR 10mOhm, 50mA. This is the specific corner issue #25 was told to re-check -- the candidate fix screened during #22 showed a 351mV pp limit cycle here. DRAFT bound: spec/target-spec.md \"Stability\" row, PM >= 45 deg worst corner."
+    },
+    {
+      "name": "gm_c033_50ma_db",
+      "expr": "-ac1.gmdb",
+      "unit": "dB",
+      "min": 10,
+      "max": null,
+      "note": "Gain margin at the same low-C_eff corner. DRAFT bound: spec/target-spec.md \"Stability\" row, GM >= 10 dB worst corner."
+    },
+    {
+      "name": "fc_c033_50ma_hz",
+      "expr": "ac1.fc",
+      "unit": "Hz",
+      "min": null,
+      "max": null,
+      "note": "Unity-loop-gain crossover frequency at the low-C_eff corner. Reported, not bounded: the DRAFT spec states no bandwidth row. It is the number C_COMP/R_CZ were actually sized against (crossover has to stay below the pass stage's own gm_pass/(2*pi*C_out) pole across the window)."
+    },
+    {
+      "name": "dcgain_c033_50ma_db",
+      "expr": "ac1.dcg",
+      "unit": "dB",
+      "min": null,
+      "max": null,
+      "note": "DC loop gain at the low-C_eff corner (evaluated at the sweep's 0.01Hz start point). Reported, not bounded: the DRAFT spec bounds load/line regulation and output accuracy, not loop gain directly."
+    },
+    {
+      "name": "pm_c033_1ma_deg",
+      "expr": "180 + ac2.phc",
+      "unit": "deg",
+      "min": 45,
+      "max": null,
+      "note": "Phase margin at C_out 0.33uF, ESR 10mOhm, 1mA. DRAFT bound: \"Stability\" row, PM >= 45 deg."
+    },
+    {
+      "name": "pm_c033_0ma_deg",
+      "expr": "180 + ac3.phc",
+      "unit": "deg",
+      "min": 45,
+      "max": null,
+      "note": "Phase margin at C_out 0.33uF, ESR 10mOhm, 0mA (feedback divider is the only preload). DRAFT bound: \"Stability\" row, PM >= 45 deg. Screening at tt/27C says this is the binding point of the whole window -- see design/README.md \"Compensation (sized in #25)\" and the DR-002 append for why, and for why it is a low-frequency pole/zero doublet dip (gain margin stays very large) rather than a near-oscillation."
+    },
+    {
+      "name": "gm_c033_0ma_db",
+      "expr": "-ac3.gmdb",
+      "unit": "dB",
+      "min": 10,
+      "max": null,
+      "note": "Gain margin at the 0mA / 0.33uF point. Recorded alongside pm_c033_0ma_deg specifically because the two tell different stories there: the phase dips into a doublet while the gain is still tens of dB from unity. DRAFT bound: \"Stability\" row, GM >= 10 dB."
+    },
+    {
+      "name": "pm_c47_50ma_deg",
+      "expr": "180 + ac4.phc",
+      "unit": "deg",
+      "min": 45,
+      "max": null,
+      "note": "Phase margin at C_out 4.7uF (DR-002's C_eff ceiling), ESR 10mOhm, 50mA. DRAFT bound: \"Stability\" row, PM >= 45 deg."
+    },
+    {
+      "name": "pm_c47_1ma_deg",
+      "expr": "180 + ac5.phc",
+      "unit": "deg",
+      "min": 45,
+      "max": null,
+      "note": "Phase margin at C_out 4.7uF, ESR 10mOhm, 1mA. DRAFT bound: \"Stability\" row, PM >= 45 deg."
+    },
+    {
+      "name": "pm_c47_0ma_deg",
+      "expr": "180 + ac6.phc",
+      "unit": "deg",
+      "min": 45,
+      "max": null,
+      "note": "Phase margin at C_out 4.7uF, ESR 10mOhm, 0mA. DRAFT bound: \"Stability\" row, PM >= 45 deg."
+    },
+    {
+      "name": "pm_c033_esr500m_50ma_deg",
+      "expr": "180 + ac7.phc",
+      "unit": "deg",
+      "min": 45,
+      "max": null,
+      "note": "Phase margin at DR-002's ESR ceiling: C_out 0.33uF, ESR 500mOhm, 50mA. Included to show which end of the ESR range is the stressing one -- DR-002's posture is 'no minimum ESR', so the low-ESR end (points 1-6) is where the loop has no ESR zero to lean on. DRAFT bound: \"Stability\" row, PM >= 45 deg."
+    }
+  ],
+  "spread_checks": []
+}

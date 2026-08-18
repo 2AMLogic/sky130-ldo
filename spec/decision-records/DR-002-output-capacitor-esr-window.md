@@ -186,3 +186,119 @@ real compensation topology that does not exist yet. If that future
 simulation shows this window's stability posture is unreachable, a
 superseding record replaces this one; this record is not edited after the
 fact.
+
+---
+
+## Append (2026-08-17, issue #25): the loop-gain record this record asked for
+
+**This is an append, not an edit.** Nothing above has been changed. Per
+`spec/decision-records/TEMPLATE.md` a record that turns out to be wrong is
+superseded, never quietly rewritten; this append adds the measurement the
+record above explicitly sequenced itself in front of, and states what that
+measurement does and does not settle. The record's **Status stays
+`proposed`** and its **numeric window is unchanged** — 0.33–4.7 µF,
+0–500 mΩ, no minimum ESR.
+
+### What was measured
+
+Issue #25 rebuilt the error-amplifier output stage (a current-mirror OTA
+whose output is the drain of a PMOS sourced from `VIN`, so the pass gate can
+be driven to `VIN`) and sized its compensation — `C_COMP = 150 pF` in series
+with a ≈300 kΩ nulling resistor `R_CZ` — against a new AC loop-gain
+testbench, `sim/loop-gain`. That testbench walks this record's proposed
+window inside one deck at every PVT point the corner runner sweeps: `C_eff` ∈
+{0.33 µF, 4.7 µF} × load ∈ {0, 1, 50 mA} at 10 mΩ ESR, plus the 500 mΩ ESR
+ceiling at 0.33 µF/50 mA. First record: `20260818-014128-01b7905`, a 3-corner
+`--quick` subset (`tt`/27 °C/3.30 V, `ss`/−40 °C/2.97 V, `ff`/125 °C/3.63 V);
+the 45-point matrix remains issue #19's job.
+
+Phase margin, degrees, against `spec/target-spec.md`'s DRAFT Stability row
+(PM ≥ 45°, GM ≥ 10 dB worst corner) and the window row above:
+
+| Window point | `tt`/27 °C | `ss`/−40 °C | `ff`/125 °C |
+|---|---|---|---|
+| 0.33 µF, 10 mΩ, 50 mA — **this record's low-`C_eff` corner** | 58.6 | 55.6 | 64.5 |
+| 0.33 µF, 10 mΩ, 1 mA | 90.1 | 89.2 | 91.2 |
+| 0.33 µF, 10 mΩ, 0 mA | **19.3** | **15.6** | 82.0 |
+| 4.7 µF, 10 mΩ, 50 mA | 90.4 | 90.4 | 90.7 |
+| 4.7 µF, 10 mΩ, 1 mA | 50.8 | 53.9 | 46.7 |
+| 4.7 µF, 10 mΩ, 0 mA | 52.0 | **38.1** | 89.6 |
+| 0.33 µF, 500 mΩ, 50 mA — the ESR ceiling | 70.5 | 68.3 | 75.2 |
+
+Gain margin is 18.7–19.9 dB at the low-`C_eff` corner and 70.2–71.0 dB at the
+0 mA points, i.e. above the 10 dB row wherever the record measures it.
+
+### What this settles, and what it does not
+
+**Settles, in this record's favour, the corner it was most worried about.**
+The Context and Consequences sections above single out "the 0.33 µF/0 mΩ
+corner" and the "elevated stability risk sky130's larger pass-gate
+capacitance creates" as the reason the no-minimum-ESR posture was a claim
+rather than a result. At 50 mA that corner now measures 55.6–64.5° of phase
+margin with 18.7–19.9 dB of gain margin, and it does so with 10 mΩ of ESR —
+i.e. with no ESR zero helping. The `p2` requirement this record "handed to
+design, unresolved" was met by a single-gain-stage topology plus
+Miller-with-nulling-resistor compensation, not by requiring ESR.
+
+**Does not settle the no-load end of the load range.** The 0 mA points are
+now the binding ones: 15.6–19.3° at 0.33 µF and 38.1° at 4.7 µF/`ss`. Two
+observations matter for whichever record acts on this:
+
+1. **The minimum-ESR fallback this record names first under Alternatives
+   would not fix it.** The ESR zero sits at `1/(2π·ESR·C_out)`, which is
+   ≈965 kHz even at this record's 500 mΩ ceiling with 0.33 µF — roughly three
+   decades above the ~300 Hz crossover at that operating point. Requiring a
+   minimum ESR buys nothing here. That is a concrete result against the
+   Alternatives section's own preferred fallback, and it is the single most
+   useful thing this append contributes.
+2. **The shape is a low-frequency pole/zero doublet dip, not an erosion
+   toward oscillation.** Gain margin at those points is ~70 dB — the phase
+   dips toward −160° while the loop gain is still tens of dB from unity. The
+   transient signature is ringing and slow settling at no load, not a limit
+   cycle. This is stated so a later reader does not equate "19°" with
+   "nearly unstable", and it is *not* offered as a reason to treat the DRAFT
+   45° row as met. It is not met at those points.
+
+**Root cause, so a superseding record does not have to re-derive it.** Under
+Miller compensation the loop crossover must stay below the pass stage's own
+pole `gm_pass/(2π·C_out)`. In weak inversion `gm_pass = I_load/(nV_T)`, so
+that pole falls in proportion to load current: ≈72 kHz at 50 mA/0.33 µF but
+≈7 Hz at the 0 mA operating point, where the only load is the block's own
+~3.1 MΩ feedback divider (≈0.6 µA). No value of `C_COMP` reaches that: the
+two levers that would are more amplifier bias current or a real preload, and
+both spend the DRAFT `Iq < 30 µA` row, which issue #25 already took to
+24.9 µA at 50 mA. Screening confirmed the trade directly — a 6× amplifier
+tail lifted the 0 mA/0.33 µF margin to ~40° and pushed Iq to 33.6 µA, over
+the row, so it was not taken. Relaxing one DRAFT row to make another pass is
+what `CLAUDE.md` forbids.
+
+### What this append does NOT do
+
+- It does **not** narrow the `C_eff` or ESR window. Consequences above says a
+  shortfall gets a superseding record, not a quiet narrowing, and the
+  shortfall here is on the *load* axis (0 mA), not the capacitor axis.
+- It does **not** introduce a minimum ESR. Point 1 above shows it would not
+  help, which is a stronger reason to leave the posture alone than the
+  original argument (that 1 µF MLCCs have 5–20 mΩ anyway).
+- It does **not** change the record's Status, and it does not claim to
+  ratify anything. Issue #1 still ratifies this record; issue #19 still owns
+  the 45-point matrix that would turn a 3-corner subset into a worst-corner
+  claim.
+
+### What a superseding record would need
+
+A superseding DR-002 (or a new record on the load range / minimum-load
+question) is warranted if #19's full matrix confirms the no-load shortfall
+across the remaining corners. The candidates it should weigh, in the order
+this measurement suggests rather than the order the Alternatives section
+above guessed:
+
+1. **A stated minimum load** (or an internal preload) as a datasheet-style
+   condition on the Stability row — the direct lever on `gm_pass`, and the
+   one the physics points at. Costs Iq, so it is coupled to the still
+   non-existent Iq budget record DR-003 declined to write.
+2. **An Iq budget record**, which this design has now hit twice as a hard
+   constraint (once here, once in issue #25's amplifier sizing). Without one,
+   "spend more bias current" is unarbitrable.
+3. **A minimum ESR**, ranked *below* the two above by this measurement rather
+   than above them as Alternatives assumed.

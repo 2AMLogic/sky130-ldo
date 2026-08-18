@@ -1,5 +1,5 @@
 v {xschem version=3.4.7 file_version=1.2
-* sky130-ldo core regulation loop + protection/sequencing (issues #14, #22).
+* sky130-ldo core regulation loop + protection/sequencing (issues #14, #22, #25).
 *
 * Clean-room forward design against spec/target-spec.md (DRAFT) and the
 * ratified framing in spec/decision-records/DR-001-pass-device-supply-framing.md
@@ -18,13 +18,27 @@ v {xschem version=3.4.7 file_version=1.2
 * family rather than adopting the deferred framing (C) core-device-amplifier
 * refinement):
 *   - M_PASS: pfet_g5v0d10v5 series pass device, VIN -> VOUT.
-*   - M_IN1/M_IN2 + M_MIR1/M_MIR2 + M_TAIL: single-stage 5T OTA error
-*     amplifier. "+" input = FB (M_IN1, mirror-diode side), "-" input = VREF
-*     (M_IN2, output side) -- this polarity is load-bearing: EA_OUT must rise
-*     when FB rises so the pass gate turns OFF as VOUT rises (negative
-*     feedback). See design/README.md "Error-amplifier polarity" for the
-*     derivation (verified by an OP sanity sweep, not derivation alone --
-*     an earlier draft had this swapped and latched to a rail).
+*   - M_IN1/M_IN2 + M_MIR1/M_MIR2 + M_MIR3/M_MIR4 + M_MIRP1/M_MIRP2 +
+*     M_TAIL: single-stage current-mirror ("symmetric") OTA error amplifier.
+*     "+" input = FB (M_IN1), "-" input = VREF (M_IN2) -- this polarity is
+*     load-bearing: EA_OUT must rise when FB rises so the pass gate turns
+*     OFF as VOUT rises (negative feedback). See design/README.md
+*     "Error-amplifier polarity" for the derivation (verified by an OP
+*     sanity sweep, not derivation alone -- an earlier draft had this
+*     swapped and latched to a rail).
+*     Issue #25 promoted this stage from the #14/#22 five-transistor OTA,
+*     in which EA_OUT was the *drain of the PMOS input device M_IN2* and so
+*     could never rise above EA_TAIL ~= V_in,cm + V_sg ~= 2.5V. That ceiling
+*     -- not a gain shortfall -- is what made the loop rail at light load and
+*     high VIN. Here the VREF-side branch current is turned around twice
+*     (M_MIR3/M_MIR4 -> PB -> M_MIRP1/M_MIRP2) so that EA_OUT is the drain of
+*     a PMOS whose SOURCE is VIN, and the pass gate can be driven to VIN. The
+*     amplifier stays a SINGLE gain stage: both turnaround nodes (EA_D2, PB)
+*     are diode-loaded and therefore low-impedance, so their poles sit
+*     decades above crossover and the loop keeps the two-pole shape Miller
+*     compensation is designed for. That is the difference from the
+*     second-gain-stage candidate screened and rejected during #22, which
+*     added a third low-frequency pole and oscillated.
 *   - R_BIAS + M_BIASN1 + M_BIASN2 + M_BIASP1: simple resistor-referenced
 *     self-biased current mirror (textbook technique, e.g. Razavi ch.5;
 *     not derived from any third party's implementation) supplying BIASP to
@@ -43,10 +57,11 @@ v {xschem version=3.4.7 file_version=1.2
 *     FB->GND) sets VOUT = 1.5 x VREF; see design/README.md for the assumed
 *     VREF interface value, why the reference common mode was raised from the
 *     first draft's 0.6V, and the measured (not invented) unit value.
-*   - C_COMP: Miller compensation cap, EA_OUT (pass gate) -> VOUT, across the
-*     inverting EA_OUT->VOUT gain stage. Value is a placeholder pending the
-*     DR-002 C_out/ESR window and an actual loop-gain simulation -- NOT a
-*     verified/stable value.
+*   - C_COMP + R_CZ: Miller compensation with a nulling resistor, VOUT ->
+*     EA_CZ -> EA_OUT, across the inverting EA_OUT->VOUT pass stage. Sized in
+*     issue #25 against sim/loop-gain (an AC loop-gain/phase-margin testbench
+*     walking DR-002's proposed C_out/ESR window), not from transient smoke
+*     tests -- see design/README.md "Compensation (sized in #25)".
 *
 * Protection / sequencing added by issue #22 (spec rows "Current limit" and
 * "Startup / soft-start"):
@@ -70,13 +85,19 @@ v {xschem version=3.4.7 file_version=1.2
 *     and SS: VOUT tracks 1.5 x SS on the way up and hands over to 1.5 x VREF
 *     when SS passes it. This replaces the hard on/off enable of issue #14.
 *
+* Closed by issue #25: the error-amplifier output-swing ceiling (the
+* current-mirror OTA above) and the compensation placeholder (C_COMP/R_CZ
+* are now sized against sim/loop-gain).
+*
 * Explicitly NOT in this schematic (see design/README.md "Known gaps /
 * follow-on scope"): thermal shutdown (decomposed to its own issue -- the
 * spec table states no trip temperature and this block has no
 * temperature-stable on-chip reference to trip against), an actual on-chip
-* voltage reference (VREF is an external port here), the error-amplifier
-* output-swing/gain gap that still costs light-load regulation at high VIN,
-* and loop compensation (C_COMP is a placeholder; DR-002 is not ratified).
+* voltage reference (VREF is an external port here), and phase margin at the
+* no-load / minimum-C_eff end of DR-002's window, which sim/loop-gain records
+* below the DRAFT Stability row's 45 deg (with a very large gain margin --
+* see the DR-002 append and design/README.md for why that corner is a
+* pole/zero doublet dip rather than a near-oscillation).
 *
 * Connectivity is entirely by net label (lab_pin / ipin / opin on every
 * device pin), no drawn wires -- same convention as
@@ -88,7 +109,7 @@ K {}
 V {}
 S {}
 E {}
-T {sky130-ldo core regulation loop + current limit + soft start -- issues #14, #22
+T {sky130-ldo core regulation loop + current limit + soft start -- issues #14, #22, #25
 pass device: sky130_fd_pr__pfet_g5v0d10v5 (DR-001 ratified framing A)
 error amp + bias + protection: all 5V-gate flavor (DR-001 Consequences)
 connectivity by net label (lab_pin/ipin/opin), no drawn wires
@@ -194,8 +215,8 @@ T {M_ENP2: EN=0 forces BIASP->VIN, killing the whole PMOS bias/tail chain
 * ---- error amplifier: 5T OTA, PMOS input pair + NMOS mirror load ----
 C {sky130_fd_pr/pfet_g5v0d10v5.sym} 600 -100 0 0 {name=M_TAIL
 L=2
-W=20
-nf=4
+W=40
+nf=8
 mult=1
 model=pfet_g5v0d10v5
 spiceprefix=X}
@@ -206,7 +227,15 @@ C {devices/lab_pin.sym} 620 -100 0 0 {name=p_mtail_b lab=VIN}
 T {M_TAIL: tail current source. L raised 1 -> 2 in issue #22 together with
 the input pair and the mirror load: the corrected (25x wider) M_PASS needs a
 much higher-gain amplifier to be throttled at light load. See README
-"Amplifier sizing revision".} 640 -100 0 0 0.2 0.2 {}
+"Amplifier sizing revision".
+W raised 20 -> 40 (nf 4 -> 8, same finger width) in issue #25: the tail
+sets the amplifier's transconductance Gm, and under Miller compensation the
+loop's unity-gain frequency is Gm/(2*pi*C_COMP). At the no-load / minimum-
+C_out corner the loop has to cross ABOVE a low-frequency pole/zero doublet
+to keep phase margin, which needs a higher Gm -- see README "Compensation
+(sized in #25)" for the measured phase-margin-vs-tail data and for the Iq
+cost this buys it with (the DRAFT Iq row is the binding constraint on how
+far this can go, which is why it stops at 2x rather than 6x).} 640 -100 0 0 0.2 0.2 {}
 
 C {sky130_fd_pr/pfet_g5v0d10v5.sym} 600 -400 0 0 {name=M_IN1
 L=2
@@ -229,13 +258,17 @@ nf=2
 mult=1
 model=pfet_g5v0d10v5
 spiceprefix=X}
-C {devices/lab_pin.sym} 620 -670 0 0 {name=p_min2_d lab=EA_OUT}
+C {devices/lab_pin.sym} 620 -670 0 0 {name=p_min2_d lab=EA_D2}
 C {devices/lab_pin.sym} 580 -700 0 0 {name=p_min2_g lab=VREF}
 C {devices/lab_pin.sym} 620 -730 0 0 {name=p_min2_s lab=EA_TAIL}
 C {devices/lab_pin.sym} 620 -700 0 0 {name=p_min2_b lab=VIN}
-T {M_IN2: "-" input = VREF (output side, EA_OUT = pass gate node).
+T {M_IN2: "-" input = VREF. Its drain is EA_D2, the second mirror-diode
+node (issue #25) -- NOT the pass gate. In the issue-#14/#22 5T OTA this
+drain WAS EA_OUT, which capped the pass-gate voltage at EA_TAIL and is
+exactly the light-load/high-VIN ceiling issue #25 removes; the VREF side
+now reaches EA_OUT through the EA_D2 -> PB -> M_MIRP2 mirror path instead.
 M_IN2S (soft-start column) is wired in parallel with this device, so the
-"-" side sees the soft minimum of VREF and the soft-start ramp SS.} 640 -700 0 0 0.2 0.2 {}
+"-" side still sees the soft minimum of VREF and the soft-start ramp SS.} 640 -700 0 0 0.2 0.2 {}
 
 C {sky130_fd_pr/nfet_g5v0d10v5.sym} 600 -1000 0 0 {name=M_MIR1
 L=4
@@ -302,6 +335,107 @@ C {devices/lab_pin.sym} 620 -1600 0 0 {name=p_menp_b lab=VIN}
 T {M_ENP: EN=0 forces EA_OUT->VIN, i.e. forces M_PASS gate high (off) --
 independent of the (now-unbiased) amplifier's own output} 640 -1600 0 0 0.2 0.2 {}
 
+* ---- issue #25: second mirror path (5T OTA -> current-mirror OTA) ----
+* The VREF-side drain current leaves the input pair at EA_D2, is turned
+* around by the NMOS mirror M_MIR3/M_MIR4 into PB, and is turned around a
+* second time by the PMOS mirror M_MIRP1/M_MIRP2 to become the PULL-UP at
+* EA_OUT. EA_OUT is therefore the drain of a PMOS whose SOURCE is VIN, so it
+* can swing all the way to VIN -- the whole point of issue #25. The FB-side
+* current still reaches EA_OUT as the pull-down through M_MIR1/M_MIR2, so
+* EA_OUT is a rail-to-rail push/pull node between two 1:1-mirrored copies of
+* the two input-pair drain currents.
+C {sky130_fd_pr/nfet_g5v0d10v5.sym} 3000 -100 0 0 {name=M_MIR3
+L=4
+W=10
+nf=2
+mult=1
+model=nfet_g5v0d10v5
+spiceprefix=X}
+C {devices/lab_pin.sym} 3020 -130 0 0 {name=p_mmir3_d lab=EA_D2}
+C {devices/lab_pin.sym} 2980 -100 0 0 {name=p_mmir3_g lab=EA_D2}
+C {devices/lab_pin.sym} 3020 -70 0 0 {name=p_mmir3_s lab=AMP_ENN}
+C {devices/lab_pin.sym} 3020 -100 0 0 {name=p_mmir3_b lab=0}
+T {M_MIR3: diode-connected NMOS load on the VREF/soft-start side of the
+input pair -- the mirror twin of M_MIR1 on the FB side, same L=4 W=10 nf=2,
+so the two input-pair branches see identical drain loads and the systematic
+offset of the extra path stays small. Source returns through the shared
+M_ENN2 switch (AMP_ENN), so it dies at EN=0 like every other NMOS branch.} 3040 -100 0 0 0.2 0.2 {}
+
+C {sky130_fd_pr/nfet_g5v0d10v5.sym} 3000 -400 0 0 {name=M_MIR4
+L=4
+W=10
+nf=2
+mult=1
+model=nfet_g5v0d10v5
+spiceprefix=X}
+C {devices/lab_pin.sym} 3020 -430 0 0 {name=p_mmir4_d lab=PB}
+C {devices/lab_pin.sym} 2980 -400 0 0 {name=p_mmir4_g lab=EA_D2}
+C {devices/lab_pin.sym} 3020 -370 0 0 {name=p_mmir4_s lab=AMP_ENN}
+C {devices/lab_pin.sym} 3020 -400 0 0 {name=p_mmir4_b lab=0}
+T {M_MIR4: 1:1 NMOS mirror output of M_MIR3, sinking the VREF-side branch
+current out of the PMOS diode M_MIRP1. L=4 for the same output-resistance
+reason M_MIR1/M_MIR2 were lengthened in issue #22.} 3040 -400 0 0 0.2 0.2 {}
+
+C {sky130_fd_pr/pfet_g5v0d10v5.sym} 3000 -700 0 0 {name=M_MIRP1
+L=4
+W=20
+nf=4
+mult=1
+model=pfet_g5v0d10v5
+spiceprefix=X}
+C {devices/lab_pin.sym} 3020 -670 0 0 {name=p_mmirp1_d lab=PB}
+C {devices/lab_pin.sym} 2980 -700 0 0 {name=p_mmirp1_g lab=PB}
+C {devices/lab_pin.sym} 3020 -730 0 0 {name=p_mmirp1_s lab=VIN}
+C {devices/lab_pin.sym} 3020 -700 0 0 {name=p_mmirp1_b lab=VIN}
+T {M_MIRP1: diode-connected PMOS reference of the output pull-up mirror.
+Source = VIN. Sized W=20 L=4 (wider and longer than the bias unit) so the
+mirror's own Vsg stays modest and its output resistance is high -- PB sits
+around VIN - 0.9V in normal operation.} 3040 -700 0 0 0.2 0.2 {}
+
+C {sky130_fd_pr/pfet_g5v0d10v5.sym} 3000 -1000 0 0 {name=M_MIRP2
+L=4
+W=20
+nf=4
+mult=1
+model=pfet_g5v0d10v5
+spiceprefix=X}
+C {devices/lab_pin.sym} 3020 -970 0 0 {name=p_mmirp2_d lab=EA_OUT}
+C {devices/lab_pin.sym} 2980 -1000 0 0 {name=p_mmirp2_g lab=PB}
+C {devices/lab_pin.sym} 3020 -1030 0 0 {name=p_mmirp2_s lab=VIN}
+C {devices/lab_pin.sym} 3020 -1000 0 0 {name=p_mmirp2_b lab=VIN}
+T {M_MIRP2: 1:1 PMOS mirror output -- THE device that removes the issue-#25
+ceiling. Its source is VIN, so when the loop needs the pass device fully off
+it can drive EA_OUT all the way to VIN (into triode), instead of stalling at
+EA_TAIL ~= V_in,cm + V_sg ~= 2.5V the way the 5T OTA's PMOS input drain did.
+Together with the M_MIR2 pull-down this makes EA_OUT a push-pull, rail-to-
+rail node while the amplifier stays a SINGLE gain stage: both mirror
+turnaround nodes (EA_D2, PB) are diode-loaded and therefore low-impedance,
+so their poles sit far above the loop crossover and the loop keeps the
+two-pole (EA_OUT / VOUT) shape that Miller compensation is designed for.
+That is the difference from the second-gain-stage candidate screened and
+rejected in issue #22, which added a third low-frequency pole and
+oscillated.} 3040 -1000 0 0 0.2 0.2 {}
+
+C {sky130_fd_pr/pfet_g5v0d10v5.sym} 3000 -1300 0 0 {name=M_ENP4
+L=0.5
+W=2
+nf=1
+mult=1
+model=pfet_g5v0d10v5
+spiceprefix=X}
+C {devices/lab_pin.sym} 3020 -1270 0 0 {name=p_menp4_d lab=PB}
+C {devices/lab_pin.sym} 2980 -1300 0 0 {name=p_menp4_g lab=EN}
+C {devices/lab_pin.sym} 3020 -1330 0 0 {name=p_menp4_s lab=VIN}
+C {devices/lab_pin.sym} 3020 -1300 0 0 {name=p_menp4_b lab=VIN}
+T {M_ENP4: EN=0 forces PB->VIN, which forces the pull-up M_MIRP2 hard off.
+Same rationale as M_ENP3 on CL_CMP: at EN=0 both of PB's drivers (M_MIRP1
+and M_MIR4, the latter cut by M_ENN2/AMP_ENN) are off, so PB would otherwise
+be a floating gate node on a device that sources current straight from VIN.
+This is the shutdown-leakage defence the rejected issue-#22 candidate fix
+needed two devices for: because M_MIR3/M_MIR4 return through the existing
+AMP_ENN switch rather than straight to ground, no NB pull-down or R_BIAS
+disconnect is required here -- one clamp is enough.} 3040 -1300 0 0 0.2 0.2 {}
+
 * ---- output stage: pass device, compensation, feedback divider ----
 C {sky130_fd_pr/pfet_g5v0d10v5.sym} 1200 -100 0 0 {name=M_PASS
 L=0.5
@@ -324,11 +458,38 @@ W_total = W x nf = 2500um, but it netlists 100um, 25x under the DR-003
 number. mult=25 is what actually instantiates 2500um. See README
 "Pass-device width correction".} 1240 -100 0 0 0.2 0.2 {}
 
-C {devices/capa.sym} 1200 -400 0 0 {name=C_COMP m=1 value=2p footprint=1206 device="mim cap (compensation)"}
-C {devices/lab_pin.sym} 1200 -370 0 0 {name=p_ccomp_m lab=EA_OUT}
+C {devices/capa.sym} 1200 -400 0 0 {name=C_COMP m=1 value=150p footprint=1206 device="mim cap (compensation)"}
+C {devices/lab_pin.sym} 1200 -370 0 0 {name=p_ccomp_m lab=EA_CZ}
 C {devices/lab_pin.sym} 1200 -430 0 0 {name=p_ccomp_p lab=VOUT}
-T {C_COMP: Miller compensation, EA_OUT->VOUT. value is a PLACEHOLDER --
-not sized against a loop-gain sim; pending DR-002 C_out/ESR window} 1240 -400 0 0 0.2 0.2 {}
+T {C_COMP: Miller compensation, VOUT -> EA_CZ -> (R_CZ) -> EA_OUT, across the
+inverting EA_OUT->VOUT pass stage. 100p, sized in issue #25 against the
+sim/loop-gain testbench over the DR-002 C_out/ESR window -- no longer the
+#14/#22 placeholder. It is deliberately large: under Miller compensation the
+loop's unity-gain frequency is Gm/(2*pi*C_COMP), and it has to sit below the
+pass stage's own gm_pass/(2*pi*C_out) pole at the light-load/high-C_eff end
+of the DR-002 window. See README "Compensation (sized in #25)" for the
+measured phase-margin map and for the area note (a 100p MIM is ~50000um2 of
+cap_mim, stackable over the pass device rather than beside it).} 1240 -400 0 0 0.2 0.2 {}
+
+C {sky130_fd_pr/res_xhigh_po.sym} 1200 -250 0 0 {name=R_CZ W=0.42 L=52 model=res_xhigh_po spiceprefix=X mult=1}
+C {devices/lab_pin.sym} 1200 -220 0 0 {name=p_rcz1 lab=EA_CZ}
+C {devices/lab_pin.sym} 1200 -280 0 0 {name=p_rcz2 lab=EA_OUT}
+C {devices/lab_pin.sym} 1180 -250 0 0 {name=p_rcz3 lab=0}
+T {R_CZ: the compensation network's nulling resistor, in series with C_COMP
+(issue #25). res_xhigh_po W=0.42 L=52 -- the same unit-resistor flavor the
+feedback divider uses, so ~300kOhm at the L=180 -> ~1.04MOhm screening slope
+in README's "Feedback divider" table.
+
+Why it is here and not just a bare Miller cap: a bare C_COMP shorts EA_OUT to
+VOUT at high frequency, which turns the pass device into a follower and puts
+a floor under the loop gain -- past that floor, making C_COMP bigger stops
+lowering the crossover at all (measured: 100p -> 250p moved the light-load
+crossover only 2671Hz -> 1677Hz). R_CZ breaks that feedthrough and places a
+left-half-plane zero at 1/(2*pi*R_CZ*C_COMP) ~= 5kHz, which is what actually
+buys the phase margin back at the light-load/high-C_eff corner. Its value is
+a genuine two-sided optimum, not a "bigger is better" knob: too small and the
+light-load corners lose margin, too large and the Miller pole splitting stops
+working at 50mA/0.33uF. See README "Compensation (sized in #25)".} 1240 -250 0 0 0.2 0.2 {}
 
 C {sky130_fd_pr/res_xhigh_po.sym} 1200 -700 0 0 {name=R_FB_A W=0.42 L=180 model=res_xhigh_po spiceprefix=X mult=1}
 C {devices/lab_pin.sym} 1200 -670 0 0 {name=p_rfba1 lab=VOUT}
@@ -553,12 +714,13 @@ nf=2
 mult=1
 model=pfet_g5v0d10v5
 spiceprefix=X}
-C {devices/lab_pin.sym} 2220 -1570 0 0 {name=p_min2s_d lab=EA_OUT}
+C {devices/lab_pin.sym} 2220 -1570 0 0 {name=p_min2s_d lab=EA_D2}
 C {devices/lab_pin.sym} 2180 -1600 0 0 {name=p_min2s_g lab=SS}
 C {devices/lab_pin.sym} 2220 -1630 0 0 {name=p_min2s_s lab=EA_TAIL}
 C {devices/lab_pin.sym} 2220 -1600 0 0 {name=p_min2s_b lab=VIN}
 T {M_IN2S: the min-select input. A replica of M_IN2 (same L/W/nf) wired in
-parallel with it -- same source (EA_TAIL), same drain (EA_OUT) -- but gated
+parallel with it -- same source (EA_TAIL), same drain (EA_D2, issue
+#25's second mirror-diode node) -- but gated
 by SS instead of VREF. In a PMOS input pair the device with the *lower* gate
 dominates, so the "-" side behaves as the soft minimum of VREF and SS: the
 loop servos FB to SS while SS < VREF (VOUT ramps as 1.5 x SS) and hands over

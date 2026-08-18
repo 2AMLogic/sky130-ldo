@@ -1,15 +1,17 @@
 # `design/` — sky130-ldo core regulation loop + protection
 
-Schematic source for issue #14 (item 1 of the T1/bronze re-read, #12/#13)
-and issue #22 (protection/sequencing): `ldo_3v3in_1v8out.sch`, a clean-room,
-forward-designed xschem schematic for the sky130 LDO's core regulation loop
-(error amplifier + pass device + feedback divider + compensation +
-enable/shutdown) plus the current-limit and soft-start circuitry. This is
-genuinely original circuit-topology work — a textbook single-stage-OTA LDO
-architecture (error amp driving a common-source pass device with Miller
-compensation, e.g. Razavi *Design of Analog CMOS Integrated Circuits* ch. 5
-& 11), a sense-FET current comparator, and a min-select soft-start input —
-sized against this repo's own PDK screening data, not derived from,
+Schematic source for issue #14 (item 1 of the T1/bronze re-read, #12/#13),
+issue #22 (protection/sequencing) and issue #25 (error-amplifier output
+stage + compensation): `ldo_3v3in_1v8out.sch`, a clean-room, forward-designed
+xschem schematic for the sky130 LDO's core regulation loop (error amplifier +
+pass device + feedback divider + compensation + enable/shutdown) plus the
+current-limit and soft-start circuitry. This is genuinely original
+circuit-topology work — a textbook single-stage-OTA LDO architecture (a
+current-mirror/"symmetric" OTA driving a common-source pass device with
+Miller-plus-nulling-resistor compensation, e.g. Razavi *Design of Analog CMOS
+Integrated Circuits* ch. 5 & 11), a sense-FET current comparator, and a
+min-select soft-start input — sized against this repo's own PDK screening
+data and (for the compensation) against `sim/loop-gain`, not derived from,
 reverse-engineered from, or ported from any third party's implementation —
 per `CLAUDE.md`'s clean-room mandate.
 
@@ -23,8 +25,10 @@ per `CLAUDE.md`'s clean-room mandate.
   methodology.
 - **Isn't**: a `sim/`-evidentiary, corner-swept, spec-row-proving result.
   These issues are scoped to design *sources*, not verification — that is #18
-  (block testbenches: `load-transient`, `psrr-dc`, `dropout-vs-load`) and
-  #19 (full PVT/Monte Carlo). The OP checks described below are **screening
+  (block testbenches: `load-transient`, `psrr-dc`, `dropout-vs-load`), #25
+  (`loop-gain`, the one testbench this record's compensation was actually
+  sized against) and #19 (full PVT/Monte Carlo). Except where a section names
+  a `sim/` record explicitly, the OP checks described below are **screening
   sanity checks**, run the same way DR-001/DR-003's own appendices do
   (single process corner, single temperature, not committed as evidence) —
   they exist so this record's design claims cite something checkable rather
@@ -35,13 +39,17 @@ per `CLAUDE.md`'s clean-room mandate.
 
 Originally written against `spec/target-spec.md` and
 `spec/decision-records/{DR-001,DR-002,DR-003,DR-004}` as of commit `7de8d4b`
-(2026-08-17) for issue #14; **re-verified against the same spec and
+(2026-08-17) for issue #14; re-verified against the same spec and
 decision-record set as of commit `0e12b14` (2026-08-17), the tip of `main` at
 the start of issue #22** — no spec file or decision record changed between
-those two commits, so every citation below is still current.
+those two commits, so every citation below is still current. **Re-verified a
+third time against `e500d71` (2026-08-17), the tip of `main` at the start of
+issue #25**: `DR-005-thermal-shutdown-trip.md` landed in between (it does not
+change any row this record cites), and issue #25 itself appends to DR-002
+rather than editing it, per the append-only decision-record rule.
 `spec/target-spec.md` is entirely DRAFT pending #1; DR-001 is the only
-**ratified** record among the four (framing only, no numeric row);
-DR-002/003/004 are `proposed`. This schematic designs against the DRAFT
+**ratified** record among the five (framing only, no numeric row);
+DR-002/003/004/005 are `proposed`. This schematic designs against the DRAFT
 numbers and the `proposed` sizing methodology, per those issues' own
 instruction not to block on #1. **Issue #29** additionally designs against
 `spec/decision-records/DR-005-thermal-shutdown-trip.md` (also `proposed`,
@@ -64,25 +72,41 @@ temperature, hysteresis, reference, and auto-restart decision.
               ^                M_IN1       M_IN2      M_IN2S
               |               (gate=FB)  (gate=VREF)  (gate=SS)
               |                 |           |           |
-            [AMP_ENN]         EA_D1       EA_OUT <------+  --(gate)--> M_PASS --> VOUT
-              ^                 |           |                                       |
-           M_ENN2            M_MIR1      M_MIR2                                   R_FB_A
-              |              (diode)    (mirror out)                                |
-              0                 |           |                                       FB --> M_IN1.gate
-                              [AMP_ENN]  [AMP_ENN]                                  |
-                                 |           |                                    R_FB_B
-                                 +---M_ENN2--+                                      |
-                                                                                  N_FBB
-                                                                                    |
-                                                                                  R_FB_C
-                                                                                    |
-                                                                                    0
+            [AMP_ENN]         EA_D1       EA_D2 <-------+
+              ^                 |           |
+           M_ENN2            M_MIR1      M_MIR3 (diode) --(gate)--> M_MIR4
+              |              (diode)       |                           |
+              0              [AMP_ENN]  [AMP_ENN]                      PB
+                                 |                                     ^
+                              M_MIR2 (mirror out)          M_MIRP1 (PMOS diode, source=VIN)
+                                 |                                     |
+                              EA_OUT <----- M_MIRP2 (source=VIN) <------+
+                                 |
+                                 +--(gate)--> M_PASS --> VOUT
+                                                           |
+                                                         R_FB_A
+                                                           |
+                                                           FB --> M_IN1.gate
+                                                           |
+                                                         R_FB_B
+                                                           |
+                                                         N_FBB
+                                                           |
+                                                         R_FB_C
+                                                           |
+                                                           0
+
+  EA_OUT is a push/pull node between M_MIRP2 (pull-up, source = VIN) and
+  M_MIR2 (pull-down), so it can be driven all the way to VIN -- see
+  "Error-amplifier output stage (rebuilt in #25)". M_ENP4 forces PB -> VIN
+  at EN=0 so the new pull-up has a defined off state.
 
   R_BIAS: VIN -> NB -> [M_BIASN1 (diode)] -> [BIAS_ENN] -> M_ENN -> 0
   M_ENP:  VIN -> EA_OUT, gate=EN   (forces pass gate off when EN=0)
   M_ENP2: VIN -> BIASP,  gate=EN   (forces bias/tail chain off when EN=0)
   M_ENP3: VIN -> CL_CMP, gate=EN   (defined off state for the limit comparator)
-  C_COMP: EA_OUT <-> VOUT (Miller compensation)
+  C_COMP + R_CZ: VOUT <-> EA_CZ <-> EA_OUT (Miller compensation with a
+                 nulling resistor; sized in #25 against sim/loop-gain)
 
   current limit (issue #22):
     VIN -> M_SENSE (gate=EA_OUT, W 1:5952 replica of M_PASS) -> CL_SNS
@@ -135,8 +159,11 @@ ratified.
 | `VOUT` | 1.8V ±2% regulated output (opin) |
 | `FB` | feedback-divider tap, drives the amplifier's "+" input |
 | `EA_TAIL` | error-amp differential-pair tail node |
-| `EA_D1` | mirror-diode-side drain (M_IN1/M_MIR1) |
+| `EA_D1` | FB-side input-pair drain, into the `M_MIR1` diode |
+| `EA_D2` | VREF-side input-pair drain, into the `M_MIR3` diode (added in #25) |
+| `PB` | PMOS-mirror turnaround node, `M_MIR4` drain into the `M_MIRP1` diode (added in #25) |
 | `EA_OUT` | amplifier output = pass-device gate |
+| `EA_CZ` | compensation-network mid node, between `C_COMP` and `R_CZ` (added in #25) |
 | `NB`, `BIASP` | bias-generator reference nodes (NMOS-diode, PMOS-diode) |
 | `BIAS_ENN`, `AMP_ENN` | EN-gated pseudo-ground returns (see "Enable/shutdown") |
 | `N_FBB` | midpoint of the two-unit bottom leg of the feedback divider |
@@ -164,8 +191,64 @@ assignment producing net **positive** feedback. This is exactly why the
 schematic alone — even a syntactically clean one — is not itself a
 verification claim: the fix (swap `M_IN1`/`M_IN2` gate labels) is in the
 committed `.sch`, and the polarity is now confirmed correct by the OP checks
-below, but a real corner-swept loop-gain/stability sim (#18/#19) is still
-what would actually verify it.
+below, and issue #25's `sim/loop-gain` record is now a real corner-swept
+loop-gain measurement of it, the polarity is confirmed by measurement rather
+than by derivation alone.
+
+### Error-amplifier output stage (rebuilt in #25)
+
+Issue #14 and issue #22 used a **five-transistor OTA**: the tail `M_TAIL`,
+the input pair `M_IN1`/`M_IN2`, and the NMOS mirror `M_MIR1`/`M_MIR2`. Its
+output node — the pass gate — was the *drain of the PMOS input device
+`M_IN2`*, whose source is `EA_TAIL`. That is a hard ceiling:
+
+> `EA_OUT` cannot rise above `EA_TAIL`, and `EA_TAIL` settles near
+> `V_in,cm + V_sg(M_IN2)` ≈ 2.4–2.5 V **regardless of `VIN`**. The minimum
+> achievable `V_sg(M_PASS)` is therefore `VIN − 2.5 V`, which *grows* with
+> `VIN` — ≈0.5 V at `VIN_min`, ≈1.1 V at `VIN_max`. A 2.5 mm pass device at
+> `V_sg = 1.1 V` still sources far more than a 1 mA load can absorb, so the
+> loop rails instead of regulating.
+
+That is a topology problem, not a gain problem — more gain cannot help an
+amplifier that is already saturated against its own supply ceiling. Issue #25
+removes the ceiling by promoting the stage to a **current-mirror (a.k.a.
+"symmetric") OTA**, which is the standard textbook way to give a
+PMOS-input OTA a rail-to-rail output (Razavi ch. 9's mirrored-OTA family; the
+naming is textbook vocabulary, not a reference to anyone's implementation):
+
+| Device | Role |
+|---|---|
+| `M_MIR3` | NMOS diode on the VREF-side drain `EA_D2` — the twin of `M_MIR1` on the FB side, same `L=4 W=10 nf=2`, so both input-pair branches see identical loads |
+| `M_MIR4` | 1:1 NMOS mirror of `M_MIR3`, sinking that branch current out of `M_MIRP1` at `PB` |
+| `M_MIRP1` | diode-connected PMOS reference of the output pull-up mirror, source = `VIN` |
+| `M_MIRP2` | 1:1 PMOS mirror output — **the device that removes the ceiling**. Source = `VIN`, drain = `EA_OUT` |
+| `M_ENP4` | `VIN → PB`, gate = `EN`: forces the new pull-up hard off at `EN=0` (see "Enable/shutdown") |
+
+`EA_OUT` is now a push/pull node between `M_MIRP2` (pull-up from `VIN`) and
+`M_MIR2` (pull-down), i.e. two 1:1-mirrored copies of the two input-pair
+drain currents, and it can be driven into triode against `VIN`. The screening
+grid below shows exactly that: at `VIN = 3.63 V` / 0 mA, `EA_OUT` now sits at
+**3.072 V** — 0.44 V *above* the old `EA_TAIL` ceiling — and `VOUT` regulates.
+
+Two properties of this choice are load-bearing and worth stating explicitly:
+
+- **It is still a single gain stage.** Both new turnaround nodes (`EA_D2`,
+  `PB`) are diode-loaded and therefore low-impedance, so their poles sit
+  decades above crossover and the loop keeps the two-pole (`EA_OUT`, `VOUT`)
+  shape Miller compensation is designed for. This is the difference from the
+  PMOS-common-source **second gain stage** that was built and screened during
+  issue #22 and rejected: that candidate closed the same DC gap but added a
+  third low-frequency pole and produced a 351 mV pp limit cycle at
+  `C_out = 0.33 µF` / 50 mA / `VIN = 3.63 V`. The measured transient at that
+  same corner for *this* topology is **3.8 mV pp** after a 10 mA load step
+  (screening; and `sim/loop-gain` measures 55.6–64.5° of phase margin there
+  across the quick-subset corners).
+- **It costs one clamp, not two.** The rejected candidate needed two extra
+  devices to restore shutdown leakage (`NB` pulled low and `R_BIAS`
+  disconnected). Here `M_MIR3`/`M_MIR4` return through the *existing*
+  `AMP_ENN` switch, so the only new shutdown device is `M_ENP4` on `PB`, and
+  measured `EN=0` supply current stays at the ~150 pA leakage floor (table
+  below).
 
 ### Enable/shutdown (also revised after simulation)
 
@@ -248,11 +331,19 @@ raised it to `1.2V` with a 1:2 divider (same three unit resistors, same
 Screening measurement of the difference, everything else identical
 (`tt`/27°C, `VIN = 3.3V`, corrected 2.5mm pass device, ~1mA load):
 `VREF = 0.6V` / 2:1 → `VOUT = 2.89V`; `VREF = 1.2V` / 1:2 → `VOUT = 1.817V`.
-This does **not** fully close the ceiling problem — see "Known open item"
-below — it moves it from "fails at 1mA" to "fails at 0mA, and at 1mA only at
-`VIN_max`". 1.2V is also the more natural value for a future on-chip
-reference (a silicon bandgap lands near 1.2V), but that is a convenience,
-not the argument.
+This did **not** fully close the ceiling problem — it moved it from "fails at
+1mA" to "fails at 0mA, and at 1mA only at `VIN_max`". 1.2V is also the more
+natural value for a future on-chip reference (a silicon bandgap lands near
+1.2V), but that is a convenience, not the argument.
+
+**Superseded as a stability argument by #25.** The blockquote above describes
+the *five-transistor* amplifier. Issue #25 removed the ceiling at its source
+(see "Error-amplifier output stage (rebuilt in #25)"), so the reference
+common mode no longer sets the pass gate's reachable range and `VREF = 1.2 V`
+is now purely an interface placeholder plus a divider-ratio choice. The
+open interface question — what `VREF`'s real value and tempco are — is
+unchanged and still belongs to whichever future issue adds a reference
+generator.
 
 ### Feedback divider — measured, not invented, unit-resistor value
 
@@ -334,18 +425,96 @@ unchanged from #14 and remains a functional starting point rather than a
 budgeted design. Once an Iq budget decision record exists, the bias currents
 here can be re-derived against it rather than the other way around.
 
-### Compensation
+### Compensation (sized in #25)
 
-`C_COMP` (Miller compensation, `EA_OUT -> VOUT`, value `2p`) and `C_CL`
-(current-limit comparator dominant pole, `CL_CMP -> VIN`, value `1p`) are
-both **placeholders**, not sized against a loop-gain simulation. DR-002 (the
-C_out/ESR window) is `proposed`, not ratified, and explicitly sequences
-itself *after* a topology exists to simulate against — this schematic is
-that topology, but the loop-gain sim itself is out of scope here (#18/#19).
-What *was* screened, and is reported below, is that the main loop settles
-without ringing and the limit loop settles flat into a hard short across the
-DR-002 C_out window at `tt`/27°C. That is a smoke test, not a phase-margin
-claim.
+`C_COMP` (**150 pF**) in series with `R_CZ` (`res_xhigh_po` `W=0.42 L=52`,
+≈300 kΩ) from `VOUT` to `EA_OUT` is Miller compensation with a nulling
+resistor. Unlike the `2p` placeholder it replaces, it was sized against a
+real AC loop-gain measurement — `sim/loop-gain`, added by this issue, which
+walks DR-002's *proposed* `C_out`/ESR window (seven points: `C_eff` ∈
+{0.33 µF, 4.7 µF} × load ∈ {0, 1, 50 mA}, plus the 500 mΩ ESR ceiling) inside
+one deck at every PVT corner the runner sweeps. `C_CL` (`1p`) is untouched
+and remains the current-limit comparator's placeholder dominant pole.
+
+**Why the compensation looks the way it does.** Under Miller compensation
+the loop's unity-gain frequency is `Gm/(2π·C_COMP)`, and it has to stay below
+the *pass stage's own* pole `gm_pass/(2π·C_out)`. That second pole is the
+binding constraint and it moves with load: ≈72 kHz at 50 mA/0.33 µF but only
+≈900 Hz at 1 mA/4.7 µF, because `gm_pass` in weak inversion is `I_load/(nV_T)`
+and is therefore proportional to the load current. Two consequences fall out
+of that, and both are why the answer is not a small cap:
+
+1. **`C_COMP` has to be large.** The crossover has to be pushed down to the
+   low-hundreds-of-Hz/low-kHz range to sit under that pole at the light-load
+   end. As a MIM (`cap_mim_m3_1`, ≈2 fF/µm²) 150 pF is ≈75,000 µm² — real
+   area, but MIM sits between met3 and met4 and can be stacked *over* the
+   2.5 mm pass device rather than beside it. That is a floorplan constraint
+   for the layout issue, and it is recorded here rather than discovered
+   there.
+2. **A bare Miller cap is not enough — hence `R_CZ`.** A bare `C_COMP` shorts
+   `EA_OUT` to `VOUT` at high frequency, which turns the pass device into a
+   follower and puts a floor under the loop gain; past that floor, making
+   `C_COMP` bigger stops lowering the crossover at all. Screening measured
+   exactly that: at 1 mA/4.7 µF, going 100 pF → 250 pF moved the crossover
+   only 2671 Hz → 1677 Hz (phase margin 12.4° → 18.5°). `R_CZ` breaks the
+   feedthrough and places a left-half-plane zero at `1/(2π·R_CZ·C_COMP)` ≈
+   3.5 kHz, which is what actually recovers the phase.
+
+`R_CZ` is a genuine two-sided optimum rather than a "bigger is better" knob.
+Screening at `tt`/27°C, `VIN = 3.63 V`, `C_COMP = 100 pF`, phase margin in
+degrees:
+
+| `R_CZ` | 0 mA / 0.33 µF | 1 mA / 4.7 µF | 50 mA / 0.33 µF |
+|---|---|---|---|
+| 100 kΩ | 16.3 | 21.7 | 122.0 |
+| 200 kΩ | 17.3 | 30.6 | 107.7 |
+| 400 kΩ | 19.2 | 46.8 | 56.2 |
+| 1 MΩ | 24.8 | 74.1 | **25.7** |
+
+Too small and the light-load/high-`C_eff` corner loses margin; too large and
+Miller pole splitting stops working at the 50 mA/0.33 µF corner DR-002 flags
+as the risky one. `M_TAIL`'s `W` was raised `20 → 40` in the same pass, for
+`Gm`: the no-load corner has to cross over *above* a low-frequency pole/zero
+doublet, which needs bandwidth. It stops at 2× rather than the 6× that
+screening showed keeps improving that corner, because the DRAFT `Iq < 30 µA`
+row is the binding constraint — 6× measured 33.6 µA at 50 mA, over the row;
+2× measures 24.9 µA (table below), inside it.
+
+**Measured result** (`sim/loop-gain` record `20260818-014128-01b7905`, the
+`--quick` 3-corner subset; DRAFT bound is `spec/target-spec.md`'s Stability
+row, PM ≥ 45° and GM ≥ 10 dB worst corner):
+
+| Window point | `tt`/27°C/3.30V | `ss`/−40°C/2.97V | `ff`/125°C/3.63V |
+|---|---|---|---|
+| 0.33 µF, 10 mΩ, 50 mA (DR-002's low-`C_eff` corner) | **58.6°** | **55.6°** | **64.5°** |
+| 0.33 µF, 10 mΩ, 1 mA | 90.1° | 89.2° | 91.2° |
+| 0.33 µF, 10 mΩ, 0 mA | **19.3°** | **15.6°** | 82.0° |
+| 4.7 µF, 10 mΩ, 50 mA | 90.4° | 90.4° | 90.7° |
+| 4.7 µF, 10 mΩ, 1 mA | 50.8° | 53.9° | 46.7° |
+| 4.7 µF, 10 mΩ, 0 mA | 52.0° | **38.1°** | 89.6° |
+| 0.33 µF, 500 mΩ, 50 mA (ESR ceiling) | 70.5° | 68.3° | 75.2° |
+
+Gain margin is 18.7–19.9 dB at the low-`C_eff` corner and 70.2–71.0 dB at the
+0 mA points, i.e. above the 10 dB row everywhere the record measures it.
+Crossover at the low-`C_eff` corner is 153–189 kHz and DC loop gain
+58.1–59.9 dB.
+
+**What still fails, stated plainly.** The **no-load** points are the binding
+ones: 0 mA/0.33 µF measures 15.6–19.3° at the `tt` and `ss` corners, and
+0 mA/4.7 µF measures 38.1° at `ss`. The record's overall verdict is therefore
+`FAIL`, honestly. Two things are worth knowing about that number before
+reading it as "nearly oscillating":
+
+- Its **gain margin is ~70 dB**. The shape is a low-frequency pole/zero
+  *doublet dip* — the phase dips toward −160° while the loop gain is still
+  tens of dB away from unity — not a phase margin eroding toward an
+  instability. In transient the signature is ringing/slow settling at no
+  load, not a limit cycle.
+- The fallback DR-002 itself names for a stability shortfall — requiring a
+  **minimum ESR** — would not fix it. At 0 mA/0.33 µF the ESR zero sits at
+  `1/(2π·ESR·C_out)`, i.e. ≈965 kHz even at DR-002's 500 mΩ ceiling, three
+  decades above the ~300 Hz crossover. That is a real finding for DR-002 and
+  it is written into the append this issue adds to that record.
 
 ### Current limit (#22)
 
@@ -536,49 +705,93 @@ Everything below was run against the pinned PDK (`sky130A`, open_pdks
 corner, 27°C, `VREF = 1.2V` (placeholder, see above), **from the committed
 schematic's own xschem-generated netlist** (`xschem -n … -o /tmp/… ; .include`
 that `.spice` file into a throwaway deck). Nothing here is committed under
-`sim/`: these issues are design sources only, and a real corner-swept
-`load-transient` / `dropout-vs-load` / loop-gain testbench is #18's job with
-the full PVT/Monte-Carlo matrix being #19's. Single process corner, single
-temperature — **not** a spec-row-proving result.
+`sim/`: these issues are design sources only. The corner-swept versions live
+under `sim/` — `load-transient` / `psrr-dc` / `dropout-vs-load` from #18 and
+`loop-gain` from #25, each re-run against this revision — with the full
+45-point PVT/Monte-Carlo matrix still being #19's job. Single process corner,
+single temperature — **not** a spec-row-proving result.
 
 ### 1. DC operating grid — `VOUT` (target `1.5 × VREF` = 1.800V)
 
+Re-measured after issue #25's amplifier revision (a `.op` analysis treats
+capacitors as opens, so `C_COMP`/`R_CZ` cannot move these numbers; `M_TAIL`
+and the new mirror branches can, and did):
+
 | `VIN` | 0mA (divider only) | 1mA (`1.8kΩ`) | 50mA (`36Ω`) |
+|---|---|---|---|
+| 2.97V | 1.8021V (+0.11%) | 1.8003V (+0.02%) | 1.7978V (−0.12%) |
+| 3.30V | 1.8022V (+0.12%) | 1.8004V (+0.02%) | 1.7980V (−0.11%) |
+| 3.63V | 1.8025V (+0.14%) | 1.8005V (+0.03%) | 1.7981V (−0.11%) |
+
+**Every point is inside the DRAFT ±2% Output row**, including the 0mA and 1mA
+high-`VIN` points the #22 schematic missed by +24.7% and +13.6%. For direct
+comparison, the same grid on the #22 (five-transistor OTA) schematic — the
+"known open item" this issue closes:
+
+| `VIN` | 0mA | 1mA | 50mA |
 |---|---|---|---|
 | 2.97V | 1.859V (+3.3%) | 1.811V (+0.6%) | 1.804V (+0.2%) |
 | 3.30V | **2.244V (+24.7%)** | 1.817V (+1.0%) | 1.808V (+0.4%) |
 | 3.63V | **2.696V (+49.8%)** | **2.046V (+13.6%)** | 1.812V (+0.6%) |
 
-Bold = outside the DRAFT ±2% Output row; see "Known open item" below.
+The pass-gate voltage is the tell. `EA_OUT` now tracks `VIN` instead of
+stalling at the old ≈2.5V `EA_TAIL` ceiling:
+
+| `VIN` | `EA_OUT` @ 0mA | @ 1mA | @ 50mA |
+|---|---|---|---|
+| 2.97V | 2.395V | 2.008V | 1.356V |
+| 3.30V | 2.734V | 2.347V | 1.708V |
+| 3.63V | **3.072V** | 2.685V | 2.057V |
+
 Against the other DRAFT rows, honestly scored:
 
-- **Load regulation** over 1→50mA is 6.7mV at `VIN=2.97V` and 9.4mV at
-  `VIN=3.3V` — 0.37% and 0.52%, inside the DRAFT `<1%` row. Over the row's
-  actual **0**→50mA range it is 55mV (3.0%) even at `VIN=2.97V`, i.e. **not**
-  met, and the whole miss is the 0mA point.
-- **Line regulation** at 50mA is (1.812−1.804)/0.66V ≈ **11mV/V**, outside
-  the DRAFT `<5mV/V` row.
+- **Load regulation** over the row's full 0→50mA range is 4.3mV at
+  `VIN=2.97V` (**0.24%**), inside the DRAFT `<1%` row — where the #22
+  schematic was 55mV (3.0%) and missed it.
+- **Line regulation** at 50mA is (1.7981−1.7978)/0.66V ≈ **0.45mV/V**, inside
+  the DRAFT `<5mV/V` row — where the #22 schematic was ≈11mV/V and missed it.
+  At 0mA it is 0.61mV/V.
 
-Both misses trace to the same ceiling mechanism as the 0mA failures, and both
-are reported rather than waved away. For contrast, issue #14's committed
-schematic measured 1.977V at ~1mA (+9.9%) and could not reach 50mA at all,
-so every column here is an improvement — but "improved" is not "meets the
-row", and no row is claimed as met.
+These are still **screening** numbers (single process corner, single
+temperature, not `sim/` evidence); corner-swept versions of the same rows are
+#19's job. What *is* `sim/` evidence for this revision is the
+loop-gain/phase-margin record cited under "Compensation (sized in #25)", plus
+the re-run `load-transient` / `dropout-vs-load` / `psrr-dc` records.
 
 ### 2. Quiescent and shutdown current
 
-| `VIN` | Iq @ 0mA | Iq @ 1mA | Iq @ 50mA | shutdown (`EN=0`, `1.8kΩ`) |
+| `VIN` | Iq @ 0mA | Iq @ 1mA | Iq @ 50mA | `EN=0` supply current (`1.8kΩ`) |
 |---|---|---|---|---|
-| 2.97V | 5.55µA | 6.17µA | 18.0µA | **0.134nA** |
-| 3.30V | 6.45µA | 6.95µA | 18.6µA | — |
-| 3.63V | 7.38µA | 7.89µA | 19.3µA | **0.167nA** |
+| 2.97V | 9.71µA | 10.33µA | 22.12µA | **0.133nA** |
+| 3.30V | 11.28µA | 11.87µA | 23.49µA | — |
+| 3.63V | 12.88µA | 13.44µA | 24.91µA | **0.165nA** |
 
 Iq = total `VIN` current minus load current. All points are inside the DRAFT
-`Iq < 30µA at no load and full load` row, and shutdown is five orders of
-magnitude inside the DRAFT `< 3µA` row. The 0mA→50mA Iq growth is almost
-entirely the current-limit sense branch (`I_load / 5952` ≈ 8µA at 50mA) —
-see "Iq interaction" above. The #14 record's `EN=0` figure was ≈46pA; the
-protection additions move it to ≈150pA, still the leakage floor.
+`Iq < 30µA at no load and full load` row, and the disabled state is four
+orders of magnitude inside the DRAFT `< 3µA` row. The 0mA→50mA Iq growth is
+almost entirely the current-limit sense branch (`I_load / 5952` ≈ 8µA at
+50mA) — see "Iq interaction" above.
+
+**Issue #25 spent Iq deliberately, and the row is what capped the spend.**
+The #22 numbers were 5.55–7.38µA at 0mA and 18.0–19.3µA at 50mA; the increase
+here is the two added mirror branches plus the 2× `M_TAIL` widening. Pushing
+`M_TAIL` to 6× — which screening showed keeps improving the no-load phase
+margin, up to ~40° — measured **33.6µA at 50mA**, i.e. *over* the DRAFT row,
+so it was not taken. That trade is recorded rather than hidden, because it is
+the reason the no-load corner in "Compensation (sized in #25)" is left short
+of 45° instead of bought out with bias current: relaxing one DRAFT row to
+make another DRAFT row pass is exactly what `CLAUDE.md` forbids.
+
+**The disabled state is unchanged at the leakage floor.** `EN=0` measures
+133pA at `VIN=2.97V` and 165pA at `VIN=3.63V` — the same ~150pA as the #22
+record — confirming the new pull-up path (`M_MIRP1`/`M_MIRP2` and the `PB`
+node that drives them) introduces no reverse-leakage path. At `EN=0`,
+`M_ENP4` holds `PB` at `VIN` (measured `PB = VIN` exactly at both supplies)
+so `M_MIRP2` is hard off, and `M_MIR3`/`M_MIR4` are cut by the existing
+`AMP_ENN` switch; `VOUT` collapses to ~0.2µV. This is where the rejected #22
+candidate needed *two* extra devices (`NB` pulled low and `R_BIAS`
+disconnected) and this topology needs one. The #14 record's figure was ≈46pA;
+the #22 protection additions moved it to ≈150pA and #25 leaves it there.
 
 ### 3. Current limit
 
@@ -641,10 +854,14 @@ Across the whole DR-002 `C_out` window at `VIN = 2.97V` (`C_out` ∈ {0.33µF,
 every case, and the ramp duration is essentially independent of `C_out` and
 load, which is the point of ramping the *reference* rather than relying on
 the output pole. At `VIN = 3.63V` the same is true at 50mA (10–90%
-229–234µs, overshoot ≤ 0.03%), but at 0/1mA the ramp is bypassed — see the
-open item below, and note that this is the ceiling gap asserting itself, not
-a soft-start failure: the loop cannot hold `VOUT` down at those points with
-or without a ramp.
+229–234µs, overshoot ≤ 0.03%), but at 0/1mA the ramp is bypassed — that was
+the ceiling gap asserting itself, not a soft-start failure: the #22 loop
+could not hold `VOUT` down at those points with or without a ramp. **Issue
+#25 removed that ceiling** (see "Error-amplifier output stage (rebuilt in
+#25)" and the re-measured DC grid), so the ramp is no longer bypassed at
+0/1mA. The soft-start table itself has *not* been re-measured against the
+new amplifier; re-taking it is follow-on work, and the numbers above should
+be read as belonging to the #22 revision.
 
 ### 5. Thermal shutdown
 
@@ -710,12 +927,17 @@ current limit + soft start); the thermal-shutdown additions do not open a
 new static current path at `EN=0`, consistent with every new device routing
 through the existing `AMP_ENN`/`BIASP`/`M_ENP4` gating described above.
 
-### Known open item: light-load regulation, now diagnosed
+### Closed in #25: light-load regulation (diagnosis and cure)
+
+**Status: closed.** The DC grid above now sits inside the DRAFT ±2% row at
+all nine `VIN` × load points. What follows is the history, kept because the
+diagnosis is the reason the fix is a topology change and not a sizing tweak,
+and because the *rejected* candidate is worth not repeating.
 
 `M_PASS` is sized for 50mA (`W_total ≈ 2.5mm`), so at 0mA it must be
 throttled deep into sub-threshold. Issue #14 flagged that this failed at 0mA
-and narrowed it to "a gain/sizing question". **This issue identifies the
-mechanism, and it is a hard topology ceiling rather than a gain shortfall:**
+and narrowed it to "a gain/sizing question". **Issue #22 identified the
+mechanism, and it was a hard topology ceiling rather than a gain shortfall:**
 
 > `EA_OUT` is the drain of the PMOS input device `M_IN2`, whose source is
 > `EA_TAIL`. `EA_OUT` therefore cannot rise above `EA_TAIL`, and `EA_TAIL`
@@ -725,16 +947,17 @@ mechanism, and it is a hard topology ceiling rather than a gain shortfall:**
 > +3.3%), ≈1.1V at `VIN_max` (a 2.5mm device at `V_sg = 1.1V` still delivers
 > more than a 1mA load can absorb, so the loop rails).
 
-The screening OP data above is exactly this pattern: the failures are at low
-load *and high `VIN`*, and the failure gets monotonically worse as `VIN`
-rises. Adding gain does not fix it — the amplifier is already saturated
-against its own ceiling at those points, as `EA_OUT ≈ EA_TAIL` to within
-20mV confirms. **The fix is an amplifier output stage that can actually
-swing to `VIN`.**
+The #22 screening OP data (second table under "DC operating grid") is exactly
+this pattern: the failures are at low load *and high `VIN`*, and the failure
+gets monotonically worse as `VIN` rises. Adding gain does not fix it — the
+amplifier is already saturated against its own ceiling at those points, as
+`EA_OUT ≈ EA_TAIL` to within 20mV confirms. **The fix is an amplifier output
+stage that can actually swing to `VIN`**, which is what the current-mirror
+OTA described above is.
 
-A candidate fix was built and screened during this issue and is **not**
-committed, because it trades one failure for a worse one — recording it here
-so the follow-on issue starts from data rather than from scratch:
+A different candidate fix was built and screened during #22 and was **not**
+committed, because it traded one failure for a worse one. It is recorded here
+because #25 deliberately did *not* repeat it:
 
 > Adding a PMOS common-source second stage (`M_G2`: `VIN → EA_OUT`,
 > `gate = EA1`, `L=4 W=1`; NMOS current-sink load `M_L2` from `NB`; stage-1
@@ -749,14 +972,29 @@ so the follow-on issue starts from data rather than from scratch:
 > `C_out = 0.33µF` / 50mA / `VIN = 3.63V` — the low-`C_eff` corner DR-002
 > itself flags as the risky one. `C_COMP = 10p` and `30p`, a Miller cap
 > around stage 2, a lower-gain stage-1, and a higher stage-2 bias current
-> were each screened and none of them fixed it. The committed single-stage
-> loop is stable at that same corner (0.77µV pp).
+> were each screened and none of them fixed it. The #22 single-stage
+> loop was stable at that same corner (0.77µV pp).
 
-So the honest state is: **the committed schematic is a stable regulator with
-a light-load/high-`VIN` regulation gap, and the known cure for that gap has
-to be co-designed with compensation** (DR-002 + a loop-gain testbench),
-which is more than a sizing tweak. Flagged as a follow-on rather than
-shipped half-done.
+**Why #25's answer avoids that trap.** The rejected candidate bought output
+swing by adding a *second gain stage*, which meant a second high-impedance
+node and therefore a third low-frequency pole under a large DC gain — a
+three-pole loop that no single Miller cap can compensate, which is exactly
+what the screening found. The current-mirror OTA buys the same output swing
+without adding a gain stage: the two turnaround nodes it introduces (`EA_D2`,
+`PB`) are diode-loaded, so they are low-impedance and their poles land
+decades above crossover. The loop stays two-pole, and a Miller cap with a
+nulling resistor is then the right tool for it. Measured at the same corner
+that broke the candidate (`C_out = 0.33µF` / 50mA / `VIN = 3.63V`,
+`tt`/27°C): **3.8mV pp** on `VOUT` after a 10mA load step and 14mA pp on the
+supply, versus 351mV pp / 135mA pp for the rejected candidate — and
+`sim/loop-gain` measures 55.6–64.5° of phase margin there across its
+quick-subset corners. Adding DR-002's 500mΩ ESR ceiling at the same corner
+changes the transient by nothing measurable (3.8mV pp, 12.5mA pp).
+
+The residual, stated plainly: the **no-load** end of DR-002's window is now
+the binding stability point rather than the DC-accuracy point it used to be —
+see "Compensation (sized in #25)" for the measured phase margins and the
+DR-002 append for what that means for the record.
 
 ## Known gaps / follow-on scope
 
@@ -765,6 +1003,10 @@ Closed by issue #22 and now in this schematic: **current limit** and
 and the reference-common-mode change those two required. Closed by issue #29:
 **thermal shutdown** (CTAT sense + trip comparator, per DR-005), reusing the
 same shutdown path.
+
+Closed by issue #25: the **error-amplifier output-swing ceiling** (the
+current-mirror OTA) and the **compensation placeholder** (`C_COMP`/`R_CZ`,
+sized against `sim/loop-gain` over DR-002's proposed window).
 
 Still deliberately **not** in this schematic:
 
@@ -783,13 +1025,29 @@ Still deliberately **not** in this schematic:
   named explicitly rather than silently dropped, per DR-005's Consequences
   section; (3) a `sim/`-evidentiary thermal/PVT testbench proving the actual
   trip/reset behavior is #18/#19's job — nothing here is `sim/` evidence.
-- **Error-amplifier output swing / light-load regulation.** See "Known open
-  item" above: diagnosed precisely, with a screened candidate fix that closes
-  the DC gap but oscillates under the placeholder compensation, so it has to
-  be co-designed with DR-002 and a loop-gain testbench. Filed as its own
-  follow-on.
-- **Loop compensation.** `C_COMP` and `C_CL` remain placeholders; DR-002 is
-  `proposed`, not ratified, and the loop-gain/phase-margin work is #18/#19.
+- **Phase margin at the no-load end of DR-002's window.** `sim/loop-gain`
+  records 15.6–19.3° at 0mA/0.33µF (`tt` and `ss` corners) and 38.1° at
+  0mA/4.7µF (`ss`), against the DRAFT Stability row's 45°; every other point
+  of the window, including DR-002's own low-`C_eff` corner and the 500mΩ ESR
+  ceiling, is 46.7–91.2°, and gain margin is ≥18.7dB everywhere (~70dB at the
+  0mA points). This is a genuine residual, not a rounding error, and it is
+  *not* closable by compensation alone: the pass stage's own
+  `gm_pass/(2π·C_out)` pole falls with load current, and the two levers that
+  would move it — more bias current in the amplifier, or a real preload —
+  both spend the DRAFT `Iq < 30µA` budget, which is already at 24.9µA at
+  50mA. The minimum-ESR fallback DR-002 names would not help either (its
+  zero lands three decades too high). Written up in the DR-002 append this
+  issue adds, so a superseding record has the data.
+- **`C_CL` is still a placeholder.** The current-limit comparator's dominant
+  pole (`CL_CMP -> VIN`, `1p`) was not sized against a loop-gain sim; only
+  the main loop's `C_COMP`/`R_CZ` were. The limit loop's screened behaviour
+  (flat into a hard short, 1.4µA pp) is a smoke test, not a phase-margin
+  claim.
+- **Corner coverage.** Every `sim/` record for this block is still an
+  explicit 3-corner `--quick` subset; the 45-point PVT matrix and Monte Carlo
+  are #19's job. In particular the `ss`/−40°C corner is where the no-load
+  phase margin is worst in the subset, and no `sf`/`fs` corner has been run
+  at all.
 - **An actual on-chip voltage reference.** `VREF` is an external port (see
   "VREF interface caveat" above).
 
