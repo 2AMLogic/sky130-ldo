@@ -12,6 +12,19 @@ DRC-clean, LVS deferred to a follow-on), and lines up with this repo's own
 issue split — #16 (DRC-report closure) and #17 (LVS) both explicitly depend
 on this issue rather than arguing for a different scope for it.
 
+> **Known stale as of issue #17 (2026-08-17).** This floorplan (and the
+> device table immediately below) was built from `design/
+> ldo_3v3in_1v8out.sch` as it stood on `main` at commit `0e12b14`, *before*
+> issue #22 added the current-limit/soft-start circuitry (`4bda2cb`). #17's
+> first `klt lvs` attempt confirmed 11 active MOS devices from #22 (plus
+> `M_PASS`'s corrected width) have no counterpart here — see
+> `layout/README.md`'s "LVS attempt against the real LDO layout" section and
+> the committed record under `layout/ldo-core/reports/<lvs-record-id>/`.
+> Extending this table and adding inter-block routing is tracked as
+> [#33](https://github.com/2AMLogic/sky130-ldo/issues/33); the table below is
+> left as originally written (issue #15's own scope) rather than edited here,
+> since #33 is the issue that actually redoes it.
+
 ## Device-to-block mapping
 
 Every active device in the schematic gets exactly one `klt gen` block,
