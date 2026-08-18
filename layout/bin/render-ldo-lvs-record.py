@@ -21,10 +21,10 @@ from __future__ import annotations
 
 import argparse
 import collections
-import json
-import subprocess
 import sys
 from pathlib import Path
+
+from _record_common import _load, provenance
 
 #: Schematic elements with no drawn counterpart, and why. Capacitors have no
 #: `klt gen` generator at this repo's pinned `klt` commit (filed upstream as
@@ -36,20 +36,6 @@ CAPS_NOT_DRAWN_REASON = (
     "this repo's pinned commit "
     "(https://github.com/2AMLogic/klayout-tools/issues/1117)"
 )
-
-
-def _load(path: Path) -> dict:
-    with path.open() as f:
-        return json.load(f)
-
-
-def _git(repo_root: Path, *args: str) -> str:
-    return subprocess.run(
-        ["git", "-C", str(repo_root), *args],
-        check=True,
-        capture_output=True,
-        text=True,
-    ).stdout.strip()
 
 
 def main() -> int:
@@ -69,20 +55,9 @@ def main() -> int:
     extract = _load(out_dir / "extract.json")
     lvs = _load(out_dir / "lvs.json")
 
-    sha = _git(args.repo_root, "rev-parse", "HEAD")
-    branch = _git(args.repo_root, "rev-parse", "--abbrev-ref", "HEAD")
-    dirty = _git(args.repo_root, "status", "--porcelain") != ""
-
-    klt_version = subprocess.run(
-        [args.klt, "--version"], check=True, capture_output=True, text=True
-    ).stdout.strip()
-    pdk_info_raw = subprocess.run(
-        [args.klt, "pdk", "find", "--pdk", args.pdk_variant, "--format", "json"],
-        check=True,
-        capture_output=True,
-        text=True,
-    ).stdout
-    pdk_info = json.loads(pdk_info_raw)
+    prov = provenance(args.repo_root, args.klt, args.pdk_variant)
+    sha, branch, dirty = prov.sha, prov.branch, prov.dirty
+    klt_version, pdk_info = prov.klt_version, prov.pdk_info
 
     status = lvs.get("status")
     is_match = status == "match"

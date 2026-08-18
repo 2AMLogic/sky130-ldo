@@ -16,24 +16,10 @@ exactly the regression this script is here to catch.
 from __future__ import annotations
 
 import argparse
-import json
-import subprocess
 import sys
 from pathlib import Path
 
-
-def _load(path: Path) -> dict:
-    with path.open() as f:
-        return json.load(f)
-
-
-def _git(repo_root: Path, *args: str) -> str:
-    return subprocess.run(
-        ["git", "-C", str(repo_root), *args],
-        check=True,
-        capture_output=True,
-        text=True,
-    ).stdout.strip()
+from _record_common import _load, provenance
 
 
 def main() -> int:
@@ -53,20 +39,9 @@ def main() -> int:
     lvs_bad_dev = _load(out_dir / "lvs.broken-device.json")
     lvs_bad_topo = _load(out_dir / "lvs.broken-topology.json")
 
-    sha = _git(args.repo_root, "rev-parse", "HEAD")
-    branch = _git(args.repo_root, "rev-parse", "--abbrev-ref", "HEAD")
-    dirty = _git(args.repo_root, "status", "--porcelain") != ""
-
-    klt_version = subprocess.run(
-        [args.klt, "--version"], check=True, capture_output=True, text=True
-    ).stdout.strip()
-    pdk_info_raw = subprocess.run(
-        [args.klt, "pdk", "find", "--pdk", args.pdk_variant, "--format", "json"],
-        check=True,
-        capture_output=True,
-        text=True,
-    ).stdout
-    pdk_info = json.loads(pdk_info_raw)
+    prov = provenance(args.repo_root, args.klt, args.pdk_variant)
+    sha, branch, dirty = prov.sha, prov.branch, prov.dirty
+    klt_version, pdk_info = prov.klt_version, prov.pdk_info
 
     checks = [
         ("DRC on trivial_mos_array is clean", drc.get("status") == "clean"),
