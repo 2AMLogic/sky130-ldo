@@ -5,10 +5,15 @@ name: CI
 #
 #   - `package.json` `check:ci` (JSON syntax of every sim/**/experiment.json
 #     and sim/**/records/*.json, shell/python syntax of the harness scripts,
-#     py_compile over every tracked sim/ + layout/ Python file, and
+#     py_compile over every tracked sim/ + layout/ Python file,
 #     `sim/tests/`'s PDK-free unit coverage for the corner runner's own pure
-#     helper functions) -> `checks` job below, every push/PR. Headless, no
-#     PDK, no `klt` install needed.
+#     helper functions, a regex lint over tracked `.sch`/`.sym` files for
+#     xschem's embedded-quoted-attribute truncation hazard (#59), and a
+#     regex lint over tracked `design/*.sch` files for duplicate component
+#     `name=` values (#38) -- catches an unusable merged netlist, e.g. two
+#     `M_ENP4` instances, without needing xschem/ngspice/the PDK at all) ->
+#     `checks` job below, every push/PR. Headless, no PDK, no `klt` install
+#     needed.
 #   - `sim/selftest.sh --quick` (the harness's own liveness test: proves the
 #     pinned sky130 PDK models load in ngspice, xschem netlists headlessly,
 #     and the PVT knobs actually reach the simulator) -> requires xschem +
