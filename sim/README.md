@@ -17,20 +17,20 @@ from the sibling [`sky130-bandgap`](https://github.com/2AMLogic/sky130-bandgap)
 repo's harness (same PDK, same pin, issue #2), so the two evidence trails read
 as one house style. `pdk-smoke` below is harness plumbing only (PDK/tool
 liveness, not a spec claim). The block's own testbenches — `load-transient`,
-`psrr-dc`, `dropout-vs-load` — landed in issue #18, each exercising the LDO
-core-regulation-loop schematic from issue #14
+`psrr-dc`, `dropout-vs-load` (issue #18) and `loop-gain` (issue #25) — each
+exercise the LDO core-regulation-loop schematic from issue #14
 (`design/ldo_3v3in_1v8out.sch`, instantiated via its companion subcircuit
 symbol `design/ldo_3v3in_1v8out.sym`) against a DRAFT row of
 `spec/target-spec.md`. `spec/target-spec.md` is not yet ratified (issue #1
 still open), so every measurement bound these testbenches use cites a DRAFT
 spec row directly rather than an invented "final" number, and each
-experiment's `claim` says so. Their first evidence records are an explicit
-`--quick` subset (3 corners, `--subset-reason` cited in the record) standing
-the harness up; the full 45-point PVT sweep is issue #19's job. **All three
+experiment's `claim` says so. Their evidence records are all explicit
+`--quick` subsets (3 corners, `--subset-reason` cited in the record) standing
+the harness up; the full 45-point PVT sweep is issue #19's job. **All four
 currently record `FAIL`** against their DRAFT bounds — an honest, expected
-finding given this schematic's known immaturity (unsized placeholder
-compensation, no current limit; see `design/README.md`'s "Known gaps"), not a
-harness defect.
+finding given this schematic's remaining known gaps (see `design/README.md`'s
+"Known gaps / follow-on scope"), not a harness defect, and every one of them
+improved substantially under the issue-#25 amplifier/compensation revision.
 
 ---
 
@@ -226,10 +226,11 @@ prejudgment of it.
 Keep it green: it is the first thing to run when a testbench misbehaves, to
 tell "my circuit is wrong" apart from "my harness is broken".
 
-## The LDO's own testbenches (issue #18)
+## The LDO's own testbenches (issues #18 and #25)
 
 Each testbench below instantiates `design/ldo_3v3in_1v8out.sch` (issue #14,
-including the current-limit and soft-start circuitry issue #22 added)
+including the current-limit and soft-start circuitry issue #22 added and the
+current-mirror-OTA output stage plus sized compensation issue #25 added)
 hierarchically, via its companion subcircuit symbol
 `design/ldo_3v3in_1v8out.sym` (see `design/README.md` for why the symbol has
 to be co-located with the schematic). All three share the same VIN/EN/VREF
@@ -246,35 +247,73 @@ section is a map, not a duplicate of that detail.
 
 - **`load-transient/`** — `I_LOAD` steps 1↔50 mA (1 µs edges) at `VOUT`;
   measures undershoot/overshoot against `spec/target-spec.md`'s DRAFT "Load
-  transient" row (peak excursion ≤150 mV). First record
-  (`20260817-212623-66b28fc`): **PASS** at `tt_27c_3.30v` and `ss_-40c_2.97v`
-  (undershoot ≈0.146 V / 0.137 V), **FAIL** at `ff_125c_3.63v`
-  (undershoot 0.941 V) — overall `FAIL`.
+  transient" row (peak excursion ≤150 mV). Latest record
+  (`20260818-014345-01b7905`, supersedes `20260817-212623-66b28fc`):
+  **PASS** at `tt_27c_3.30v` and `ss_-40c_2.97v` (undershoot 0.136 V /
+  0.125 V, improved from 0.146 V / 0.137 V), **FAIL** at `ff_125c_3.63v`
+  (undershoot 0.156 V) — overall `FAIL`, but that corner improved from
+  0.941 V to 0.156 V, i.e. from six times the bound to four percent over it.
 - **`psrr-dc/`** — small-signal AC sweep on VIN (1 kHz, 100 kHz) at a single
   ~1 mA load point; measures PSRR against the DRAFT "PSRR" row (>50 dB @
   1 kHz, >20 dB @ 100 kHz). Characterizes one load point, not both 1 mA and
   50 mA the DRAFT row names — see the testbench schematic's header for why.
-  First record (`20260817-212331-66b28fc`): `FAIL` at all three corners
-  (1 kHz PSRR 26.1 dB / 39.1 dB / −1.2 dB, all below the 50 dB bound).
+  Latest record (`20260818-015127-01b7905`, supersedes
+  `20260817-212331-66b28fc`): `FAIL` at all three corners (1 kHz PSRR
+  23.3 dB / 23.6 dB / 22.4 dB, all below the 50 dB bound). This is the one
+  place the issue-#25 revision is a mixed result rather than an improvement.
+  The `ff_125c_3.63v` corner went from **−1.2 dB** (the loop was *amplifying*
+  1 kHz supply ripple, because that corner had no valid regulating operating
+  point) to 22.4 dB; but the `tt`/`ss` 1 kHz figures fell from 26.1 dB /
+  39.1 dB, and 100 kHz fell from 36.7 dB / 35.6 dB / 33.1 dB to 32.9 dB /
+  31.7 dB / 34.6 dB. Lower 1 kHz PSRR is the expected price of a deliberately
+  lower loop crossover — PSRR at a given frequency tracks loop gain at that
+  frequency — and it is recorded rather than glossed, since neither the old
+  nor the new number meets the row. Buying it back is coupled to the same
+  Iq-budget question `design/README.md` and the DR-002 append both land on.
 - **`dropout-vs-load/`** — DC VIN sweep at a fixed 50 mA load (the DRAFT
   spec row's own gf180-mirrored "sweep Vin toward Vout" method); measures the
-  Vin–Vout margin against the DRAFT "Dropout @ 50 mA" row (<300 mV). First
-  record (`20260817-212426-66b28fc`): `FAIL` at all three corners (dropout
-  0.613 V / 0.365 V / 1.354 V, all above the 300 mV bound).
+  Vin–Vout margin against the DRAFT "Dropout @ 50 mA" row (<300 mV). Latest
+  record (`20260818-014918-01b7905`, supersedes `20260817-212426-66b28fc`):
+  `FAIL` at all three corners (dropout 0.531 V / 0.365 V / 1.274 V, versus
+  0.613 V / 0.365 V / 1.354 V before). Both records also carry a
+  `vout_at_max_vin_v` sanity measurement that lands on a non-regulating
+  branch at exactly one corner — `ss` in the older record (3.40 V), `tt` in
+  this one (3.34 V) — while the same operating point regulates correctly in
+  a plain `.op` (see `design/README.md`'s DC grid). That is a DC-sweep
+  continuation artifact of this testbench, pre-dating and surviving the #25
+  revision rather than caused by it; chasing it belongs with #19's fuller
+  characterization.
 
-None of the three fully meet their DRAFT bound yet (`psrr-dc` and
-`dropout-vs-load` fail at every corner in their first `--quick`-subset
-record; `load-transient` passes at two of the three quick-subset corners and
-fails at the high-`VIN`/high-temperature corner). This is an honest, expected
-finding, not a harness bug: `design/README.md`'s "Known gaps" section
-documents that this schematic's compensation (`C_COMP`/`C_CL`) remains an
-unsized placeholder and its single-stage 5T OTA error amplifier still has a
-light-load/high-`VIN` output-swing ceiling ("Known open item"), even though
-issue #22 already closed the current-limit and soft-start gaps. Closing the
-compensation/ceiling gap is design work tracked separately (its own follow-on
-issue per `design/README.md`), not this issue's (#18's) job, which is
-standing the testbenches up so that gap is *visible* as `sim/` evidence
-instead of asserted from inspection.
+- **`loop-gain/`** (issue #25) — AC loop gain, phase margin and gain margin
+  against `spec/target-spec.md`'s DRAFT "Stability" row (PM ≥ 45°, GM ≥ 10 dB
+  worst corner). Unlike the three above it walks its own second axis: each
+  PVT point runs **seven** AC sweeps, `alter`-ing `C_OUT`/`R_ESR`/`R_LOAD`
+  across DR-002's *proposed* window (`C_eff` ∈ {0.33 µF, 4.7 µF} × load ∈
+  {0, 1, 50 mA} at 10 mΩ, plus the 500 mΩ ESR ceiling), so the C_out/ESR axis
+  is complete even in a `--quick` record. Because the block's feedback
+  divider is internal — the LDO has no port a testbench can cut — the loop
+  gain is recovered from closed-loop injection at `VREF` as `T = X/(1−X)`
+  with `X = v(xldo.fb)`; the testbench header derives that and states the one
+  approximation it makes. First record (`20260818-014128-01b7905`): `PASS` at
+  `ff_125c_3.63v`, `FAIL` at `tt_27c_3.30v` and `ss_-40c_2.97v` — overall
+  `FAIL`, and the failures are confined to the **0 mA** window points
+  (15.6–19.3° at 0.33 µF, 38.1° at 4.7 µF/`ss`). DR-002's own low-`C_eff`
+  corner measures 55.6–64.5° with 18.7–19.9 dB of gain margin. See the append
+  this issue added to DR-002 for what the 0 mA shortfall does and does not
+  settle.
+
+None of the four fully meets its DRAFT bound yet. This is an honest,
+expected finding, not a harness bug — and the reason has moved. The #18
+records were dominated by two gaps issue #25 has now closed: an unsized
+placeholder compensation and a five-transistor error amplifier whose output
+could not swing to `VIN`. With those closed, `load-transient` passes two of
+three corners and misses the third by 4%, `dropout-vs-load` and `psrr-dc`
+still miss by a wide margin, and `loop-gain` fails only at the no-load end of
+DR-002's window. What remains is documented in `design/README.md`'s "Known
+gaps / follow-on scope" and in the DR-002 append: the pass device's own
+`gm_pass/(2π·C_out)` pole at no load, an Iq budget that does not exist yet,
+and the fact that every record here is still a 3-corner subset rather than
+the 45-point matrix that would license a worst-corner claim (#19).
 
 ## `sim/selftest.sh` — the harness acceptance test
 
