@@ -24,13 +24,22 @@ symbol `design/ldo_3v3in_1v8out.sym`) against a DRAFT row of
 `spec/target-spec.md`. `spec/target-spec.md` is not yet ratified (issue #1
 still open), so every measurement bound these testbenches use cites a DRAFT
 spec row directly rather than an invented "final" number, and each
-experiment's `claim` says so. Their evidence records are all explicit
-`--quick` subsets (3 corners, `--subset-reason` cited in the record) standing
-the harness up; the full 45-point PVT sweep is issue #19's job. **All four
-currently record `FAIL`** against their DRAFT bounds — an honest, expected
-finding given this schematic's remaining known gaps (see `design/README.md`'s
-"Known gaps / follow-on scope"), not a harness defect, and every one of them
-improved substantially under the issue-#25 amplifier/compensation revision.
+experiment's `claim` says so. Issues #18 and #25 stood the harness up with
+explicit `--quick` subsets (3 corners, `--subset-reason` cited in the record);
+issue #19 ran the full 45-point PVT matrix declared in each experiment's
+`experiment.json` for all four (`load-transient`, `psrr-dc`,
+`dropout-vs-load`, `loop-gain`), plus a Monte Carlo/mismatch experiment
+(`mc-output-accuracy/`, see "Monte Carlo / mismatch experiments" below) for the
+one DRAFT row that carries a statistical (population) claim rather than a
+PVT-corner claim. Those full-matrix records are pinned to the *current*
+schematic (post-#35/#36); the earlier `…-879f035` full-matrix set is superseded
+— see "Which record set is authoritative" below. **All four testbenches still
+record `FAIL`** against their DRAFT bounds — an honest, expected finding given
+this schematic's remaining known gaps (see `design/README.md`'s "Known gaps /
+follow-on scope"), not a harness defect. Per issue #19's own guardrail, none of
+this is a final pass/fail verdict against a *ratified* spec — issue #1 (spec
+ratification) is still open, so every record here cites the current DRAFT row
+only.
 
 ---
 
@@ -75,6 +84,7 @@ interactive sessions and the runner resolve the PDK identically.
 | ngspice settings | `sim/spiceinit` | `ngbehavior=hsa` etc. required to read the sky130 libs; copied into the scratch run dir as `.spiceinit` |
 | xschem config | `sim/xschemrc` | project-local rc that sources the PDK's own xschemrc (so `sky130_fd_pr/*.sym` resolves) and keeps generated netlists out of the tracked tree |
 | corner runner | `sim/bin/corner-run.py` | netlist → deck → ngspice → parse → record; also `--check-env` / `--print-env` |
+| Monte Carlo runner | `sim/bin/mc-run.py` | netlist → `klt sim` mismatch request → record; see "Monte Carlo / mismatch experiments" below |
 | env helper | `sim/bin/pdk-env.sh` | `source` it for interactive xschem/ngspice work |
 | acceptance test | `sim/selftest.sh` | unit tests + `--check-env` + an end-to-end PVT run; see below |
 | unit tests | `sim/tests/` | PDK-free coverage of the runner's pure helper functions |
@@ -112,18 +122,23 @@ sim/
   selftest.sh                        # harness acceptance test (issue #2)
   bin/
     corner-run.py                    # PVT corner runner (+ --check-env / --print-env)
+    mc-run.py                        # Monte Carlo (mismatch) runner, via `klt sim`
     pdk-env.sh                       # `source` for interactive use
   tests/
     test_corner_run.py               # PDK-free unit tests for corner-run.py's helpers
   build/                             # gitignored scratch (decks, xschem netlists)
-  <experiment-slug>/                 # e.g. pdk-smoke
+  <experiment-slug>/                 # e.g. pdk-smoke (PVT), mc-output-accuracy (Monte Carlo)
     experiment.json                  # manifest: claim, corners, measurements, limits
     testbench/                       # xschem schematic(s) for this experiment
     netlist-snapshots/
       <record-id>.spice              # frozen netlist used for this record
-    corners/
+    corners/                         # PVT experiments only
       <record-id>/
         <corner-id>.log              # deck + raw ngspice output per PVT point
+    klt-requests/                    # Monte Carlo experiments only
+      <record-id>.json               # the `klt sim` request actually submitted
+    klt-responses/                   # Monte Carlo experiments only
+      <record-id>.json               # `klt sim`'s full per-sample response (the raw evidence)
     records/
       <record-id>.md                 # append-only summary record (human)
       <record-id>.json               # same record, machine-readable
@@ -204,6 +219,18 @@ Exit status: `0` all checks passed, `2` a record was written (or would have
 been, under `--no-write`) but something failed, `1` harness/setup error (no
 record written).
 
+### Writing a new Monte Carlo experiment
+
+Same testbench-authoring rule as above (no corner include, no numeric supply,
+no `.control` block), but the manifest and runner differ — see "Monte Carlo /
+mismatch experiments" below for the mechanism, and `sim/mc-output-accuracy/`
+for a worked example manifest (`mc_corner`, `mc_analysis`, `mc_measurements`,
+`monte_carlo_defaults` keys instead of `corners`/`deck`/`measurements`/
+`quick_subset`). Run it with `python3 sim/bin/mc-run.py sim/<slug> --n <N>
+--seed <seed>` (`--seed` is required and recorded verbatim — the seed
+contract is what makes an MC record reproducible); commit the produced
+record, netlist snapshot, and the `klt-requests/`/`klt-responses/` JSON.
+
 ---
 
 ## `pdk-smoke` — the harness's own testbench
@@ -247,17 +274,24 @@ section is a map, not a duplicate of that detail.
 
 - **`load-transient/`** — `I_LOAD` steps 1↔50 mA (1 µs edges) at `VOUT`;
   measures undershoot/overshoot against `spec/target-spec.md`'s DRAFT "Load
-  transient" row (peak excursion ≤150 mV). Latest record
+  transient" row (peak excursion ≤150 mV). Latest quick-subset record
   (`20260818-014345-01b7905`, supersedes `20260817-212623-66b28fc`):
   **PASS** at `tt_27c_3.30v` and `ss_-40c_2.97v` (undershoot 0.136 V /
   0.125 V, improved from 0.146 V / 0.137 V), **FAIL** at `ff_125c_3.63v`
   (undershoot 0.156 V) — overall `FAIL`, but that corner improved from
   0.941 V to 0.156 V, i.e. from six times the bound to four percent over it.
+  **Full 45-point PVT record** (`20260818-032755-81dc232`, issue #19,
+  supersedes the pre-#36 `20260818-005853-879f035`): **23/45 PASS** — all five
+  process corners pass at `-40 °C`/2.97 V, `27 °C`/3.30 V and `27 °C`/3.63 V,
+  4/5 at `-40 °C`/3.30 V and 3/5 at `-40 °C`/3.63 V, and **0/15 at 125 °C**.
+  The 22 failures split into 16 that miss by a plausible margin (0.150–0.311 V
+  against the 0.15 V bound, worst `ff_27c_2.97v`) and the six degenerate
+  `ff`/`sf` 125 °C corners described below — overall `FAIL`.
 - **`psrr-dc/`** — small-signal AC sweep on VIN (1 kHz, 100 kHz) at a single
   ~1 mA load point; measures PSRR against the DRAFT "PSRR" row (>50 dB @
   1 kHz, >20 dB @ 100 kHz). Characterizes one load point, not both 1 mA and
   50 mA the DRAFT row names — see the testbench schematic's header for why.
-  Latest record (`20260818-015127-01b7905`, supersedes
+  Latest quick-subset record (`20260818-015127-01b7905`, supersedes
   `20260817-212331-66b28fc`): `FAIL` at all three corners (1 kHz PSRR
   23.3 dB / 23.6 dB / 22.4 dB, all below the 50 dB bound). This is the one
   place the issue-#25 revision is a mixed result rather than an improvement.
@@ -270,10 +304,19 @@ section is a map, not a duplicate of that detail.
   frequency — and it is recorded rather than glossed, since neither the old
   nor the new number meets the row. Buying it back is coupled to the same
   Iq-budget question `design/README.md` and the DR-002 append both land on.
+  **Full 45-point PVT record** (`20260818-032803-81dc232`, issue #19,
+  supersedes the pre-#36 `20260818-014410-879f035`): **6/45 PASS** — the
+  100 kHz bound (>20 dB) is met at **every** corner (31.5–105.3 dB), and the
+  1 kHz bound (>50 dB) is met at only six (20.3 dB worst, `fs_125c_2.97v`).
+  All six 1 kHz "passes" (76.6–76.8 dB) are `ff`/`sf` 125 °C corners — the same six
+  that are degenerate in the other three testbenches, so they are not evidence
+  of real PSRR headroom. No corner timed out (the two 300 s timeouts in the
+  superseded pre-#36 record are gone) — overall `FAIL`.
 - **`dropout-vs-load/`** — DC VIN sweep at a fixed 50 mA load (the DRAFT
   spec row's own gf180-mirrored "sweep Vin toward Vout" method); measures the
   Vin–Vout margin against the DRAFT "Dropout @ 50 mA" row (<300 mV). Latest
-  record (`20260818-014918-01b7905`, supersedes `20260817-212426-66b28fc`):
+  quick-subset record (`20260818-014918-01b7905`, supersedes
+  `20260817-212426-66b28fc`):
   `FAIL` at all three corners (dropout 0.531 V / 0.365 V / 1.274 V, versus
   0.613 V / 0.365 V / 1.354 V before). Both records also carry a
   `vout_at_max_vin_v` sanity measurement that lands on a non-regulating
@@ -282,7 +325,14 @@ section is a map, not a duplicate of that detail.
   a plain `.op` (see `design/README.md`'s DC grid). That is a DC-sweep
   continuation artifact of this testbench, pre-dating and surviving the #25
   revision rather than caused by it; chasing it belongs with #19's fuller
-  characterization.
+  characterization. **Full 45-point PVT record** (`20260818-032811-81dc232`,
+  issue #19, supersedes the pre-#36 `20260818-022803-879f035`): **0/45 PASS** —
+  the best corner is 0.365 V (`ss`/−40 °C, all three supplies) against the
+  300 mV bound, 33 of 45 corners land under 1 V, `ff`/−40 °C is ~1.55 V, and
+  the three `sf_125c_*` corners return a nonsensical 32.6 V (see below) —
+  overall `FAIL`. The `vout_at_max_vin_v` sanity measurement lands on a
+  non-regulating branch at 6 of 45 corners, the same `ff`/`sf` 125 °C
+  cluster.
 
 - **`loop-gain/`** (issue #25) — AC loop gain, phase margin and gain margin
   against `spec/target-spec.md`'s DRAFT "Stability" row (PM ≥ 45°, GM ≥ 10 dB
@@ -300,20 +350,117 @@ section is a map, not a duplicate of that detail.
   (15.6–19.3° at 0.33 µF, 38.1° at 4.7 µF/`ss`). DR-002's own low-`C_eff`
   corner measures 55.6–64.5° with 18.7–19.9 dB of gain margin. See the append
   this issue added to DR-002 for what the 0 mA shortfall does and does not
-  settle.
+  settle. **Full 45-point PVT record** (`20260818-032819-81dc232`, issue #19,
+  first full matrix for this experiment, supersedes nothing): **3/45 PASS** —
+  and the full matrix confirms the quick record's shape rather than changing
+  it. The dominant failure is still the **0 mA** window point
+  (`pm_c033_0ma_deg` fails at 41 of 45 corners, `pm_c47_0ma_deg` at 20); the
+  loaded points are healthy nearly everywhere (`pm_c033_50ma_deg` 45.9–78.9°
+  with 17.0–21.7 dB of gain margin, failing only at the six degenerate
+  corners) — overall `FAIL`.
 
 None of the four fully meets its DRAFT bound yet. This is an honest,
 expected finding, not a harness bug — and the reason has moved. The #18
-records were dominated by two gaps issue #25 has now closed: an unsized
+records were dominated by two gaps issue #25/#36 has now closed: an unsized
 placeholder compensation and a five-transistor error amplifier whose output
-could not swing to `VIN`. With those closed, `load-transient` passes two of
-three corners and misses the third by 4%, `dropout-vs-load` and `psrr-dc`
-still miss by a wide margin, and `loop-gain` fails only at the no-load end of
-DR-002's window. What remains is documented in `design/README.md`'s "Known
-gaps / follow-on scope" and in the DR-002 append: the pass device's own
-`gm_pass/(2π·C_out)` pole at no load, an Iq budget that does not exist yet,
-and the fact that every record here is still a 3-corner subset rather than
-the 45-point matrix that would license a worst-corner claim (#19).
+could not swing to `VIN`. With those closed, `load-transient` passes 23 of 45
+corners, `loop-gain`'s loaded points are comfortable everywhere the operating
+point is valid, and `psrr-dc` meets its 100 kHz bound at every corner — while
+`dropout-vs-load` still misses at every corner and both `psrr-dc`'s 1 kHz bound
+and `loop-gain`'s 0 mA window point still fail widely. What remains is
+documented in `design/README.md`'s "Known gaps / follow-on scope" and in the
+DR-002 append: the pass device's own `gm_pass/(2π·C_out)` pole at no load and
+an Iq budget that does not exist yet.
+
+### Which record set is authoritative (issue #19)
+
+There are now **two generations** of full 45-point records on disk, and only
+the newer one characterizes the design as it stands:
+
+| Generation | Record ids | Pinned schematic | Status |
+|---|---|---|---|
+| Pre-#36 | `…-879f035` (`load-transient`, `psrr-dc`, `dropout-vs-load`) | `879f035` — before #35 (thermal shutdown) and #36 (rail-to-rail EA output stage + sized compensation) | **Superseded.** Kept per the append-only rule; do not cite. |
+| Current | `…-81dc232` (all four testbenches) | `81dc232` — current `main` plus the `M_ENP4`/`M_ENP5` fix below | **Authoritative** for issue #19's acceptance criteria. |
+
+The first generation was run before #35/#36 landed and blamed its failures on
+gaps those two commits then closed, so re-running was a correctness matter, not
+a refresh: the newer set is what issue #19's "full PVT + Monte Carlo
+verification" deliverable rests on. Both sets stay on disk — the superseded
+records point forward via the new records' `Supersedes` field, never by
+deletion.
+
+The re-run also turned up a defect in `main` itself: #35 and #36 each added an
+EN-gated clamp named `M_ENP4` (on `TS_CMP` and `PB` respectively), so the
+merged schematic netlisted two devices with the same instance name and ngspice
+refused every deck outright (`device already exists, bail out` → "no
+simulations run!"). No LDO simulation could run on `main` at `d0b244d` at all.
+The minimal rename (#36's `PB` clamp → `M_ENP5`) is carried by this issue's
+branch; issue #38 tracks the reason nothing caught it (nothing in
+`npm run check:ci` netlists the LDO core).
+
+### The six degenerate `ff`/`sf` 125 °C corners
+
+`ff_125c_*` and `sf_125c_*` (six of the 45 points) return values that are not
+physically meaningful — 8.4–22.3 V of "undershoot" on a 1.8 V output, 32.6 V of
+"dropout" from a ≤3.63 V supply, `vout_at_max_vin_v` of −19 V / −29 V, `n/a`
+loop-gain measurements, and the only six 1 kHz PSRR "passes" in the matrix.
+That is one signature seen four ways: at those corners the solve does not land
+on a valid regulating operating point, so the number the measurement expression
+extracts describes the solver's excursion, not the circuit's behaviour. They
+are recorded as `FAIL`/`n/a` rather than dropped (per this directory's own
+rule), and they are excluded from the "worst plausible corner" figures quoted
+above; diagnosing them is design/harness follow-on work, not something this
+record resolves.
+
+## Monte Carlo / mismatch experiments
+
+Of the DRAFT spec rows, **Output** (1.8 V ±2%, i.e. 1.764–1.836 V) is the one
+that names a population/statistical bound rather than a PVT-corner limit, so
+it is the one that gets a Monte Carlo mismatch experiment (issue #19) rather
+than (or in addition to) a PVT corner sweep. Every other DRAFT row (dropout,
+PSRR, load transient, …) is itself a PVT-corner claim, already covered by the
+corner-matrix experiments above.
+
+`sim/bin/mc-run.py` is a **separate script from `corner-run.py`**, not an
+extension of it (see the script's own module docstring for the full
+rationale). It drives `klt sim`'s native `request.monte_carlo` field
+(`{"n", "seed", "vary": "mismatch", "k_sigma"}` — see `docs/cli/sim.md` in
+`2AMLogic/klayout-tools`) rather than reimplementing per-instance mismatch
+sampling in this repo: `klt sim` re-runs one PVT point `n` times, each time
+drawing a fresh per-instance `AGAUSS` mismatch term from sky130A's `tt_mm`
+`.lib` section (confirmed present for both `nfet_g5v0d10v5` and
+`pfet_g5v0d10v5` — the two device families this schematic instantiates — by
+inspecting `libs.tech/combined/continuous/models_fet.spice` at the pinned PDK
+commit), and reports per-measurement mean/stddev/quantiles/sigma-window
+statistics plus a per-device-family "was mismatch actually active" report.
+
+- **`mc-output-accuracy/`** — samples `vout_ss` (steady-state VOUT under a
+  fixed 1 mA load, VIN=3.3 V/27 °C/`tt_mm`) against the DRAFT "Output" row's
+  1.764–1.836 V window. **Current record** (`20260818-032827-81dc232`,
+  supersedes the pre-#36 `20260817-235656-e500d71`): N=200 samples, seed
+  `20260817`, k_sigma=3 — **181/200 individual-sample PASS**, and the mean±3σ
+  sigma-window check **FAILS** (mean 1.717 V, stddev 2.154 V, window
+  [−4.745 V, 8.180 V] vs. the 1.764–1.836 V bound) — overall `FAIL`. The
+  median sample is well inside the window (p50 = 1.802 V, p5 = 1.787 V), so
+  the distribution's *centre* meets the DRAFT row and the failure is entirely
+  in its tail: p95 = 3.300 V, i.e. the top few percent of draws rail to `VIN`,
+  and the worst sample (`mc147`, −19.345 V) is a non-convergent solve rather
+  than a physical output — the same non-regulating-operating-point signature
+  as the six degenerate PVT corners above. Reported mean/stddev are therefore
+  dominated by those tail samples; the honest reading is "most of the
+  population regulates, a tail does not", not "the mean output is 1.717 V".
+  Same known-remaining-gaps caveat as the PVT experiments above — an honest
+  finding at this design stage, not a harness defect.
+- The pre-#36 record (`20260817-235656-e500d71`, 194/200, mean 1.854 V,
+  stddev 0.232 V) is kept on disk per the append-only rule but is **not** the
+  current evidence: it was sampled against the schematic as it stood before
+  #35/#36 and before the `M_ENP4`/`M_ENP5` fix.
+- This experiment's directory layout adds `klt-requests/` and
+  `klt-responses/` (the raw `klt sim` request/response JSON, which *is* the
+  append-only evidence for an MC run — see the script's docstring for why no
+  per-sample `.log` files are kept by default) alongside the same
+  `testbench/`, `netlist-snapshots/` and `records/` convention the PVT
+  experiments use.
 
 ## `sim/selftest.sh` — the harness acceptance test
 

@@ -416,18 +416,18 @@ That is the difference from the second-gain-stage candidate screened and
 rejected in issue #22, which added a third low-frequency pole and
 oscillated.} 3040 -1000 0 0 0.2 0.2 {}
 
-C {sky130_fd_pr/pfet_g5v0d10v5.sym} 3000 -1300 0 0 {name=M_ENP4
+C {sky130_fd_pr/pfet_g5v0d10v5.sym} 3000 -1300 0 0 {name=M_ENP5
 L=0.5
 W=2
 nf=1
 mult=1
 model=pfet_g5v0d10v5
 spiceprefix=X}
-C {devices/lab_pin.sym} 3020 -1270 0 0 {name=p_menp4_d lab=PB}
-C {devices/lab_pin.sym} 2980 -1300 0 0 {name=p_menp4_g lab=EN}
-C {devices/lab_pin.sym} 3020 -1330 0 0 {name=p_menp4_s lab=VIN}
-C {devices/lab_pin.sym} 3020 -1300 0 0 {name=p_menp4_b lab=VIN}
-T {M_ENP4: EN=0 forces PB->VIN, which forces the pull-up M_MIRP2 hard off.
+C {devices/lab_pin.sym} 3020 -1270 0 0 {name=p_menp5_d lab=PB}
+C {devices/lab_pin.sym} 2980 -1300 0 0 {name=p_menp5_g lab=EN}
+C {devices/lab_pin.sym} 3020 -1330 0 0 {name=p_menp5_s lab=VIN}
+C {devices/lab_pin.sym} 3020 -1300 0 0 {name=p_menp5_b lab=VIN}
+T {M_ENP5: EN=0 forces PB->VIN, which forces the pull-up M_MIRP2 hard off.
 Same rationale as M_ENP3 on CL_CMP: at EN=0 both of PB's drivers (M_MIRP1
 and M_MIR4, the latter cut by M_ENN2/AMP_ENN) are off, so PB would otherwise
 be a floating gate node on a device that sources current straight from VIN.
