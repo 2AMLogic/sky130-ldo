@@ -67,6 +67,8 @@ import re
 import sys
 from pathlib import Path
 
+from _netlist_common import _merge_continuations
+
 MOS_MODEL_MAP = {
     "sky130_fd_pr__nfet_g5v0d10v5": "nfet",
     "sky130_fd_pr__pfet_g5v0d10v5": "pfet",
@@ -95,18 +97,6 @@ def resistor_models(deck_name: str) -> dict[str, tuple[float, float]]:
         resistor.name: (resistor.sheet_rho_ohm_sq, resistor.fixed_offset_ohm)
         for resistor in deck.resistors
     }
-
-
-def _merge_continuations(lines: list[str]) -> list[str]:
-    """xschem wraps long device lines with a leading `+` continuation --
-    merge those back onto the device line they belong to."""
-    merged: list[str] = []
-    for line in lines:
-        if line.startswith("+") and merged:
-            merged[-1] = merged[-1] + " " + line[1:].strip()
-        else:
-            merged.append(line)
-    return merged
 
 
 def translate(
