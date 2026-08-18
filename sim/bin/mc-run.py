@@ -47,6 +47,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import importlib.util
 
+from _record_common import render_record_footer, render_record_header
+
 _spec = importlib.util.spec_from_file_location(
     "corner_run", Path(__file__).resolve().parent / "corner-run.py"
 )
@@ -183,28 +185,9 @@ def run_klt_sim(
 def render_record(record: dict) -> str:
     r = record
     resp = r["klt_response"]
-    lines = [f"# Record {r['record_id']}", ""]
-    lines.append(f"- **Record ID**: {r['record_id']}")
-    lines.append(f"- **Experiment**: `{r['experiment']['slug']}` — {r['experiment']['title']}")
-    lines.append(f"- **Claim**: {r['experiment']['claim']}")
-    lines.append(
-        f"- **Netlist provenance**: {r['experiment']['provenance']} "
-        f"(`{r['experiment']['provenance_source']}`)"
-    )
-    pdk = r["pdk"]
-    pin_state = "matches sim/pdk.json pin" if pdk["matches_pin"] else "**MISMATCH vs sim/pdk.json pin**"
-    lines.append(
-        f"- **PDK**: {pdk['variant']} @ open_pdks `{pdk['installed_commit']}` ({pin_state}); "
-        f"models `{pdk['lib_file']}`"
-    )
     tools = r["tools"]
-    lines.append(
-        f"- **Tools**: {tools['ngspice']}; {tools['xschem']}; klt {r['klt_version']}; {tools['platform']}"
-    )
-    lines.append(
-        f"- **Repo state**: `{r['git']['sha']}` on `{r['git']['branch']}`"
-        + (" (working tree dirty at run time)" if r["git"]["dirty"] else " (clean working tree)")
-    )
+    tools_line = f"{tools['ngspice']}; {tools['xschem']}; klt {r['klt_version']}; {tools['platform']}"
+    lines = render_record_header(r, tools_line)
 
     corner = r["mc_corner"]
     lines.append("- **Corner matrix run**:")
@@ -281,14 +264,7 @@ def render_record(record: dict) -> str:
     lines.append(f"  - klt sim response (raw, full per-sample data): `{r['links']['klt_response']}`")
     lines.append(f"  - Machine-readable record: `{r['links']['json']}`")
     lines.append(f"  - Experiment manifest: `{r['links']['manifest']}`")
-    lines.append(f"- **Timestamp / author**: {r['timestamp']}, {r['author']}")
-    lines.append(f"- **Supersedes**: {r['supersedes'] or '(none)'}")
-    lines.append("")
-    lines.append(
-        "Written by `sim/bin/mc-run.py`. Append-only: never edit this file — "
-        "a correction is a new record with a `Supersedes` field (see `sim/README.md`)."
-    )
-    lines.append("")
+    lines.extend(render_record_footer(r, "mc-run.py"))
     return "\n".join(lines)
 
 
