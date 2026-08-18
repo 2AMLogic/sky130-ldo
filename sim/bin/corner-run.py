@@ -40,6 +40,8 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 
+from _record_common import render_record_footer, render_record_header
+
 SIM_DIR = Path(__file__).resolve().parent.parent
 REPO_ROOT = SIM_DIR.parent
 PDK_PIN_FILE = SIM_DIR / "pdk.json"
@@ -623,28 +625,9 @@ def spread_checks(exp: Experiment, results: list[dict]) -> list[dict]:
 
 def render_record(record: dict) -> str:
     r = record
-    lines = [f"# Record {r['record_id']}", ""]
-    lines.append(f"- **Record ID**: {r['record_id']}")
-    lines.append(f"- **Experiment**: `{r['experiment']['slug']}` — {r['experiment']['title']}")
-    lines.append(f"- **Claim**: {r['experiment']['claim']}")
-    lines.append(
-        f"- **Netlist provenance**: {r['experiment']['provenance']} "
-        f"(`{r['experiment']['provenance_source']}`)"
-    )
-    pdk = r["pdk"]
-    pin_state = "matches sim/pdk.json pin" if pdk["matches_pin"] else "**MISMATCH vs sim/pdk.json pin**"
-    lines.append(
-        f"- **PDK**: {pdk['variant']} @ open_pdks `{pdk['installed_commit']}` ({pin_state}); "
-        f"models `{pdk['lib_file']}`"
-    )
     tools = r["tools"]
-    lines.append(
-        f"- **Tools**: {tools['ngspice']}; {tools['xschem']}; {tools['platform']}"
-    )
-    lines.append(
-        f"- **Repo state**: `{r['git']['sha']}` on `{r['git']['branch']}`"
-        + (" (working tree dirty at run time)" if r["git"]["dirty"] else " (clean working tree)")
-    )
+    tools_line = f"{tools['ngspice']}; {tools['xschem']}; {tools['platform']}"
+    lines = render_record_header(r, tools_line)
 
     matrix = r["matrix"]
     lines.append("- **Corner matrix run**:")
@@ -714,16 +697,7 @@ def render_record(record: dict) -> str:
     lines.append(f"  - Raw per-corner logs: `{r['links']['corners_dir']}`")
     lines.append(f"  - Machine-readable record: `{r['links']['json']}`")
     lines.append(f"  - Experiment manifest: `{r['links']['manifest']}`")
-    lines.append(
-        f"- **Timestamp / author**: {r['timestamp']}, {r['author']}"
-    )
-    lines.append(f"- **Supersedes**: {r['supersedes'] or '(none)'}")
-    lines.append("")
-    lines.append(
-        "Written by `sim/bin/corner-run.py`. Append-only: never edit this file — "
-        "a correction is a new record with a `Supersedes` field (see `sim/README.md`)."
-    )
-    lines.append("")
+    lines.extend(render_record_footer(r, "corner-run.py"))
     return "\n".join(lines)
 
 
