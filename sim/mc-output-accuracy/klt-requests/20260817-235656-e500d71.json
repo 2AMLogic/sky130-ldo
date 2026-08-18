@@ -1,0 +1,42 @@
+{
+  "analysis": {
+    "args": "10u 3m",
+    "kind": "tran"
+  },
+  "corners": {
+    "process": [
+      "tt_mm"
+    ],
+    "temperature_c": [
+      27
+    ]
+  },
+  "engine": "ngspice",
+  "measurements": [
+    {
+      "limits": {
+        "max": 1.836,
+        "min": 1.764
+      },
+      "name": "vout_ss",
+      "note": "Steady-state VOUT, averaged over the settled tail (2.5ms-3ms of a 3ms transient) of a fixed-1mA-load, VIN=3.3V/27C/tt_mm operating point. DRAFT bound: spec/target-spec.md \"Output\" row, 1.8V +-2% (DRAFT, unratified).",
+      "spice": ".meas tran vout_ss avg v(vout) from=2.5m to=3m",
+      "unit": "V"
+    }
+  ],
+  "models": {
+    "lib": "libs.tech/combined/sky130.lib.spice",
+    "pdk": "sky130A"
+  },
+  "monte_carlo": {
+    "k_sigma": 3,
+    "n": 200,
+    "seed": 20260817,
+    "vary": "mismatch"
+  },
+  "netlist": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-19/sim/mc-output-accuracy/netlist-snapshots/20260817-235656-e500d71.spice",
+  "options": {
+    "keep_artifacts": false,
+    "timeout_s": 180
+  }
+}
