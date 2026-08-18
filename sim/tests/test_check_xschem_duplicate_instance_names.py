@@ -105,18 +105,75 @@ class TestCheckXschemDuplicateInstanceNames(unittest.TestCase):
         self.assertEqual(result.returncode, 1)
         self.assertIn("p_rbias1", result.stderr)
 
+    def test_name_only_single_line_instance_duplicate_is_caught(self):
+        # Regression (PR #43 review): an instance whose ONLY attribute is
+        # `name=`, closed with `}` on the same line and nothing after it.
+        # The original regex required whitespace or end-of-line immediately
+        # after the captured value, so `{name=M1}` never matched at all and
+        # the instance was invisible to the duplicate check -- a silent
+        # false negative that reported OK / exit 0 on this very fixture.
+        sch = (
+            "C {devices/lab_pin.sym} 0 0 0 0 {name=M1}\n"
+            "C {devices/lab_pin.sym} 10 0 0 0 {name=M1}\n"
+        )
+        with tempfile.TemporaryDirectory() as td:
+            repo = _make_fixture_repo(Path(td), sch)
+            result = _run_check(repo)
+        self.assertEqual(result.returncode, 1, msg=result.stdout)
+        self.assertIn("DUPLICATE INSTANCE NAME", result.stderr)
+        self.assertIn("M1", result.stderr)
+
+    def test_name_only_instance_duplicate_across_shapes_is_caught(self):
+        # The same name reached via two *different* line shapes -- the
+        # name-only single-line form (`{name=xldo}`, the exact shape every
+        # testbench in this repo uses to instantiate the LDO core) and the
+        # multi-attribute form -- must still collide.
+        sch = (
+            "C {design/ldo_3v3in_1v8out.sch} 0 0 0 0 {name=xldo}\n"
+            "C {design/ldo_3v3in_1v8out.sch} 400 0 0 0 {name=xldo "
+            "spiceprefix=X}\n"
+        )
+        with tempfile.TemporaryDirectory() as td:
+            repo = _make_fixture_repo(Path(td), sch)
+            result = _run_check(repo)
+        self.assertEqual(result.returncode, 1, msg=result.stdout)
+        self.assertIn("xldo", result.stderr)
+
     def test_repeated_prefix_is_not_a_false_positive(self):
         # M_ENP, M_ENP2, M_ENP3 share a prefix but are distinct names -- must
         # not be flagged as duplicates of each other.
+        #
+        # These use the name-only, `}`-on-the-same-line shape, so a clean
+        # exit 0 here is ambiguous on its own: it is equally consistent with
+        # "recognized 3 distinct names" and "recognized 0 instances at all"
+        # (which is exactly what the pre-fix regex did -- see PR #43's
+        # review). The positive control below pins down which one it is by
+        # duplicating one of the names in the *identical* shape and
+        # requiring that to fail.
         sch = (
-            'C {sky130_fd_pr/pfet_g5v0d10v5.sym} 0 0 0 0 {name=M_ENP}\n'
-            'C {sky130_fd_pr/pfet_g5v0d10v5.sym} 100 0 0 0 {name=M_ENP2}\n'
-            'C {sky130_fd_pr/pfet_g5v0d10v5.sym} 200 0 0 0 {name=M_ENP3}\n'
+            "C {sky130_fd_pr/pfet_g5v0d10v5.sym} 0 0 0 0 {name=M_ENP}\n"
+            "C {sky130_fd_pr/pfet_g5v0d10v5.sym} 100 0 0 0 {name=M_ENP2}\n"
+            "C {sky130_fd_pr/pfet_g5v0d10v5.sym} 200 0 0 0 {name=M_ENP3}\n"
         )
         with tempfile.TemporaryDirectory() as td:
             repo = _make_fixture_repo(Path(td), sch)
             result = _run_check(repo)
         self.assertEqual(result.returncode, 0, msg=result.stderr)
+
+        # Positive control: same fixture, same line shape, one name repeated.
+        dup_sch = sch + (
+            "C {sky130_fd_pr/pfet_g5v0d10v5.sym} 300 0 0 0 {name=M_ENP2}\n"
+        )
+        with tempfile.TemporaryDirectory() as td:
+            repo = _make_fixture_repo(Path(td), dup_sch)
+            dup_result = _run_check(repo)
+        self.assertEqual(
+            dup_result.returncode,
+            1,
+            msg="name-only single-line instances are not being recognized at "
+            f"all: {dup_result.stdout}",
+        )
+        self.assertIn("M_ENP2", dup_result.stderr)
 
     def test_name_shaped_text_outside_component_instance_is_ignored(self):
         # A repeated name=-shaped token inside a T {...} comment/text block

@@ -84,7 +84,19 @@ for rel in "${FILES[@]}"; do
     # -- name= is always the first attribute right after the opening `{`,
     # whether the attribute block closes on this line or continues on
     # following lines (a multi-line C {...} block).
-    if [[ "$line" =~ ^C\ \{[^}]*\}.*\{name=([A-Za-z0-9_]+)([[:space:]].*)?$ ]]; then
+    #
+    # The optional trailing group must accept every way the captured value
+    # can end:
+    #   * whitespace  -- more attributes follow on this line
+    #                    (`{name=p_rbias1 lab=VIN}`),
+    #   * `}`         -- name= is the ONLY attribute and the block closes on
+    #                    this same line (`{name=xldo}`) -- a very common
+    #                    xschem shape (every testbench instantiates the LDO
+    #                    core this way). Omitting `}` here made such
+    #                    instances invisible to the whole check, a silent
+    #                    false negative (PR #43 review).
+    #   * end-of-line -- multi-line block, attributes continue below.
+    if [[ "$line" =~ ^C\ \{[^}]*\}.*\{name=([A-Za-z0-9_]+)([[:space:]}].*)?$ ]]; then
       name="${BASH_REMATCH[1]}"
 
       if [[ -n "${seen_line[$name]:-}" ]]; then
