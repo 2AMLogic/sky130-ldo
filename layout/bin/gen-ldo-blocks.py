@@ -63,6 +63,8 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from _netlist_common import _merge_continuations
+
 # --------------------------------------------------------------------------
 # Schematic -> device-set translation. The model-name maps mirror
 # gen-ldo-reference-netlist.py's exactly (same schematic, same two flavors),
@@ -148,16 +150,6 @@ class GenError(RuntimeError):
 # --------------------------------------------------------------------------
 # Netlist parsing
 # --------------------------------------------------------------------------
-
-
-def _merge_continuations(lines: list[str]) -> list[str]:
-    merged: list[str] = []
-    for line in lines:
-        if line.startswith("+") and merged:
-            merged[-1] = merged[-1] + " " + line[1:].strip()
-        else:
-            merged.append(line)
-    return merged
 
 
 def parse_netlist(path: Path) -> tuple[list[dict[str, Any]], list[str]]:
