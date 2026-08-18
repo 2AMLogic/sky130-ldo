@@ -5,9 +5,10 @@ envelopes `run-ldo-layout-flow.sh` just produced in that directory.
 Standard library only (matches `layout/bin/render-record.py`'s convention).
 
 Exits non-zero (after writing record.md, so the evidence trail still gets a
-record of the failure) if the composed floorplan is not DRC-clean -- that is
-this flow's actual gating claim; extraction/LVS are explicitly out of scope
-here (issue #17).
+record of the failure) if the layout is not DRC-clean, or if the drawn block
+set does not cover the schematic's own device set -- those are this flow's
+gating claims. LVS is its own driver and its own record
+(`run-ldo-lvs-flow.sh`, issue #17).
 """
 
 from __future__ import annotations
@@ -48,6 +49,7 @@ def main() -> int:
     floorplan = _load(out_dir / "floorplan.json")
     compose = _load(out_dir / "compose.json")
     drc = _load(out_dir / "drc.json")
+    routing = floorplan.get("routing", {})
 
     sha = _git(args.repo_root, "rev-parse", "HEAD")
     branch = _git(args.repo_root, "rev-parse", "--abbrev-ref", "HEAD")
@@ -65,10 +67,17 @@ def main() -> int:
     pdk_info = json.loads(pdk_info_raw)
 
     checks = [
-        ("DRC on the composed ldo-core floorplan is clean", drc.get("status") == "clean"),
+        ("DRC on the routed ldo-core layout is clean", drc.get("status") == "clean"),
         (
-            "Every schematic active device has exactly one placed klt gen block",
-            len(compose.get("blocks", [])) == 15,
+            "Every schematic MOS/resistor device has exactly one placed "
+            f"`klt gen` block ({floorplan.get('device_count')} devices)",
+            len(compose.get("blocks", [])) == floorplan.get("device_count"),
+        ),
+        (
+            "Every schematic net the drawn devices touch is routed "
+            f"({routing.get('net_count')} nets, "
+            f"{routing.get('terminal_count')} terminals)",
+            bool(routing.get("net_count")) and not compose.get("unrouted_nets"),
         ),
     ]
     all_pass = all(ok for _, ok in checks)
@@ -78,11 +87,13 @@ def main() -> int:
     a(f"# LDO core layout record: {args.record_id}")
     a("")
     a(
-        "Placed floorplan skeleton for the sky130 LDO's core regulation loop "
-        "(issue #15), one `klt gen` block per active device in "
-        "`design/ldo_3v3in_1v8out.sch` (issue #14). **Not** an "
-        "extraction/LVS-verified result -- inter-block routing and LVS are "
-        "explicitly out of scope here, see `layout/ldo-core/floorplan.md`."
+        "Placed and routed layout for the sky130 LDO's core regulation loop "
+        "(issues #15/#33), generated from `design/ldo_3v3in_1v8out.sch`'s own "
+        "headless xschem netlist: one `klt gen` block per active schematic "
+        "device, placed by `klt gen-compose` and wired net-for-net by "
+        "`layout/bin/gen-ldo-blocks.py`'s channel router. LVS against the "
+        "schematic is its own driver and its own record -- see "
+        "`layout/bin/run-ldo-lvs-flow.sh` and `reports/LATEST-LVS`."
     )
     a("")
     a("## Overall verdict: " + ("PASS" if all_pass else "FAIL"))
@@ -93,36 +104,78 @@ def main() -> int:
     a("## Flow")
     a("")
     a(
-        "1. `layout/bin/gen-ldo-blocks.py` runs `klt gen mos_array`/"
-        "`klt gen res_array` once per schematic device (13 MOS + 2 resistor "
-        "blocks covering all 4 resistor instances = 15 blocks total), "
-        "computes an explicit row-packed floorplan (see "
-        "`layout/ldo-core/floorplan.md`), and runs `klt gen-compose` to "
-        "place every block into one composed GDS."
+        "1. `xschem -n -q -x -s ...` -- headless netlist of "
+        "`design/ldo_3v3in_1v8out.sch`, the single source this layout's "
+        "device set and connectivity are both derived from."
     )
-    a(f"2. `klt drc {args.cell_name}.gds --deck sky130`")
+    a(
+        "2. `layout/bin/gen-ldo-blocks.py` runs `klt gen mos_array` / "
+        f"`klt gen res_array` once per schematic device "
+        f"({floorplan.get('mos_count')} MOS + {floorplan.get('res_count')} "
+        "resistor blocks), computes an explicit single-row placement (see "
+        "`layout/ldo-core/floorplan.md`), runs `klt gen-compose` to place "
+        "them, then draws the inter-block routing and the two body ties."
+    )
+    a(f"3. `klt drc {args.cell_name}.gds --deck sky130`")
     a("")
     a("## Composed cell")
     a("")
     bbox = compose.get("bbox_um", {})
     a(f"- Cell name: `{compose.get('cell_name')}`")
     a(f"- Block count: {len(compose.get('blocks', []))}")
-    a(f"- Composed bbox (um): {bbox}")
-    if bbox:
-        width = bbox.get("x1", 0) - bbox.get("x0", 0)
-        height = bbox.get("y1", 0) - bbox.get("y0", 0)
-        a(f"- Composed size: {width:.2f}um x {height:.2f}um")
+    a(f"- Placed bbox (um), before routing: {bbox}")
+    a(
+        f"- Device row: {floorplan.get('row_width_um', 0):.2f}um x "
+        f"{floorplan.get('row_height_um', 0):.2f}um"
+    )
+    a(
+        f"- Routing channel: {routing.get('net_count')} met1 trunks on a "
+        f"{routing.get('track_pitch_um')}um pitch below the row, "
+        f"{routing.get('terminal_count')} terminals landed"
+    )
     a("")
-    a("### Floorplan rows (bottom to top)")
+    a("### Function groups (x extent within the row)")
     a("")
-    a("| Row | Blocks | y_base (um) | height (um) | width (um) |")
+    a(
+        "Blocks are ordered resistors -> every NMOS -> every PMOS, and inside "
+        "each of those spans by function group, so a group that has both "
+        "flavors (e.g. the error amplifier) occupies two x ranges rather than "
+        "one contiguous block. The flavor split is load-bearing: the PMOS "
+        "bodies are tied through one n-well drawn across the whole PMOS span, "
+        "and `klt extract` decides a device's flavor by n-well containment."
+    )
+    a("")
+    a("| Group | Blocks | x0 (um) | x1 (um) | height (um) |")
     a("| --- | --- | --- | --- | --- |")
-    for row in floorplan.get("rows", []):
+    for group in floorplan.get("groups", []):
         a(
-            f"| {row['row']} | {', '.join(row['blocks'])} | "
-            f"{row['y_base_um']:.2f} | {row['height_um']:.2f} | "
-            f"{row['width_um']:.2f} |"
+            f"| {group['group']} | {', '.join(group['blocks'])} | "
+            f"{group['x0_um']:.2f} | {group['x1_um']:.2f} | "
+            f"{group['height_um']:.2f} |"
         )
+    a("")
+    a("### Devices drawn as parallel unit arrays")
+    a("")
+    split = [d for d in floorplan.get("devices", []) if (d.get("units") or 1) > 1]
+    if split:
+        a("| Device | W_total (um) | Units | Unit W (um) |")
+        a("| --- | --- | --- | --- |")
+        for device in split:
+            a(
+                f"| `{device['name']}` | {device['w_total_um']:g} | "
+                f"{device['units']} | {device['unit_w_um']:g} |"
+            )
+        a("")
+        a(
+            "A device wider than "
+            f"{floorplan.get('max_unit_w_um')}um is drawn as that many equal "
+            "parallel unit devices with their terminals strapped, rather than "
+            "as one enormous single-finger device. `klt lvs`'s "
+            "`options.combine_devices` folds them back into one device of the "
+            "summed width for the compare."
+        )
+    else:
+        a("(none)")
     a("")
     a("## Results")
     a("")
@@ -133,23 +186,32 @@ def main() -> int:
         f"{drc.get('status')} | violation_count={drc.get('violation_count')} |"
     )
     a("")
+    coverage = drc.get("coverage", {})
+    if coverage:
+        a(
+            f"DRC coverage: layers_checked={coverage.get('layers_checked')}, "
+            f"rules_skipped={len(coverage.get('rules_skipped', []) or [])}."
+        )
+        a("")
+    a("## Known gap: the schematic's capacitors are not drawn")
+    a("")
+    undrawn = floorplan.get("undrawn_elements", [])
     a(
-        "**Extraction/LVS not run here** -- issue #17's job. "
-        "`layout/README.md`'s \"Known klt-deck limitations\" section "
-        "documents two caveats a future LVS reference netlist needs to "
-        "account for (no NMOS substrate-tap extraction, no voltage-flavor "
-        "distinction on MOS devices)."
+        f"{len(undrawn)} schematic element(s) have no corresponding `klt gen` "
+        "generator at this repo's pinned `klt` commit -- there is no "
+        "capacitor/MiM family member alongside `mos_array`/`res_array`, "
+        "filed generically per `CLAUDE.md`'s friction protocol as "
+        "https://github.com/2AMLogic/klayout-tools/issues/1117:"
     )
     a("")
-    a("## Known gap: `C_COMP` not drawn")
+    for element in undrawn:
+        a(f"- `{element.split()[0]}`")
     a("")
     a(
-        "The schematic's Miller compensation cap (`C_COMP`, MiM, `2p`, "
-        "itself a placeholder value pending DR-002) has no corresponding "
-        "`klt gen` device generator at this repo's pinned `klt` commit -- "
-        "see `layout/ldo-core/floorplan.md`'s \"Known gap\" section and "
-        "https://github.com/2AMLogic/klayout-tools/issues/1117 (filed per "
-        "CLAUDE.md's friction protocol)."
+        "`layout/bin/gen-ldo-reference-netlist.py` drops the same elements "
+        "from the LVS reference, so the compare stays symmetric -- their "
+        "absence is a disclosed coverage gap in both directions, not a "
+        "silent one."
     )
     a("")
     a("## Provenance")
@@ -173,15 +235,20 @@ def main() -> int:
     a(
         f"- Schematic freshness: `design/ldo_3v3in_1v8out.sch` as of commit "
         f"`{args.schematic_sha}` (see `design/README.md`'s own Freshness "
-        "note)."
+        "note). This record's device set was read from that schematic at run "
+        "time, not from a table."
     )
     a(f"- Repo state: `{sha}` on `{branch}`" + (" (dirty)" if dirty else ""))
     a("")
     a("## Links")
     a("")
-    a("- [`floorplan.json`](floorplan.json) -- the resolved row-packing this run produced")
+    a("- [`floorplan.json`](floorplan.json) -- resolved placement, per-device sizing, and the routed net table")
     a("- [`compose.request.json`](compose.request.json), [`compose.json`](compose.json)")
-    a(f"- [`{args.cell_name}.gds`]({args.cell_name}.gds) -- the composed layout")
+    a(f"- [`{args.cell_name}.gds`]({args.cell_name}.gds) -- the routed layout")
+    a(
+        f"- [`{args.cell_name}.placed.gds`]({args.cell_name}.placed.gds) -- "
+        "`klt gen-compose`'s own output, before this flow's routing was drawn"
+    )
     a("- [`drc.json`](drc.json)")
     a(
         "- `gen.<device>.json` / `<device>.gds` -- per-device `klt gen` "

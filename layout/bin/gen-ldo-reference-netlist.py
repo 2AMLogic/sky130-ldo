@@ -29,17 +29,35 @@ limitations:
 
 Resistor model names (`sky130_fd_pr__res_{high,xhigh}_po`) already match
 `klt extract`'s flavor-specific resistor classes 1:1 -- no translation
-needed. Capacitors (`C_COMP`, `C_CL`, `C_SS`) are dropped: no `klt gen`
+needed, but their *values* do: the schematic states a resistor's geometry
+(`W`/`L`) while `klt extract` reports the resistance, area and perimeter it
+measured off the drawn body, and `klt lvs` compares all three. This script
+therefore emits each resistor's expected `R`/`A`/`P` computed from the same
+geometry, using the sheet resistivity and fixed end-contact offset read out
+of `klt`'s own curated sky130 extraction deck (`klayout_tools.decks`) rather
+than a transcribed copy of those constants -- there is exactly one source of
+truth for them, and it is the deck the layout side is extracted with.
+
+The schematic's ground net (`0`) is emitted unchanged. It needs no
+translation because the layout draws a real substrate tie and *labels* the
+net it lands on `0` (see `gen-ldo-blocks.py`'s router): the deck's
+synthesized `vsubs` substrate global therefore never surfaces as a net name
+on the layout side, and the two sides name the same physical node the same
+way. The resistor bulk terminal -- which `klt extract` reports but a
+schematic netlist does not carry as a separate node -- is supplied through
+`request.reference.device_bulk` instead (see `run-ldo-lvs-flow.sh`).
+
+Capacitors (`C_COMP`, `C_CL`, `C_SS`) are dropped: no `klt gen`
 capacitor/MiM generator exists at this repo's pinned `klt` commit (see
 `layout/ldo-core/floorplan.md`'s "Known gap"), so none are drawn in the
 layout and including them in the reference would only add a redundant,
 already-documented mismatch dimension.
 
-NMOS body terminals and PMOS body terminals are passed through unchanged
-(this schematic already ties every NMOS body to a single net (`0`) and
-every PMOS body to a single net (`VIN`), which is exactly the
-single-shared-net topology `klt extract`'s deck-synthesized `vsubs` net
-represents -- see "No NMOS substrate-tap extraction").
+MOS body terminals are passed through unchanged: this schematic ties every
+NMOS body to one net (`0`) and every PMOS body to one net (`VIN`), and the
+layout draws exactly one substrate tie and one n-well tie to match, so both
+body nets are real, drawn, extracted nets on the layout side rather than the
+deck's synthesized fallback.
 """
 
 from __future__ import annotations
@@ -59,6 +77,26 @@ RES_MODEL_MAP = {
 }
 
 
+def resistor_models(deck_name: str) -> dict[str, tuple[float, float]]:
+    """``{class name: (sheet_rho_ohm_sq, fixed_offset_ohm)}`` from `klt`'s own
+    curated extraction deck -- the single source of truth the layout side is
+    extracted with. Requires running under `layout/.venv` (see
+    `run-ldo-lvs-flow.sh`), which is where `klt` lives."""
+    try:
+        from klayout_tools.decks import get_extraction_deck
+    except ImportError as exc:  # pragma: no cover - environment error path
+        raise SystemExit(
+            "gen-ldo-reference-netlist.py: needs `klt` importable (run it with "
+            "layout/.venv/bin/python -- see layout/bin/run-ldo-lvs-flow.sh): "
+            f"{exc}"
+        ) from exc
+    deck = get_extraction_deck(deck_name)
+    return {
+        resistor.name: (resistor.sheet_rho_ohm_sq, resistor.fixed_offset_ohm)
+        for resistor in deck.resistors
+    }
+
+
 def _merge_continuations(lines: list[str]) -> list[str]:
     """xschem wraps long device lines with a leading `+` continuation --
     merge those back onto the device line they belong to."""
@@ -71,9 +109,15 @@ def _merge_continuations(lines: list[str]) -> list[str]:
     return merged
 
 
-def translate(netlist_path: Path, subckt_name: str, ports: list[str]) -> str:
+def translate(
+    netlist_path: Path,
+    subckt_name: str,
+    ports: list[str],
+    deck_name: str = "sky130",
+) -> str:
     raw_lines = netlist_path.read_text().splitlines()
     lines = _merge_continuations([ln.rstrip() for ln in raw_lines])
+    res_models = resistor_models(deck_name)
 
     out: list[str] = [
         "* Mechanically translated LVS reference netlist for "
@@ -135,12 +179,24 @@ def translate(netlist_path: Path, subckt_name: str, ports: list[str]) -> str:
                 f"L={l_um}U W={w_total_um:g}U"
             )
         else:
-            a, b_, w = nets
+            a, b_, _bulk = nets
             klass = RES_MODEL_MAP[model_token]
-            l_um = pdict.get("L", "?")
-            w_um = pdict.get("W", "?")
+            l_um = float(pdict.get("L", "0"))
+            w_um = float(pdict.get("W", "0"))
+            sheet_rho, fixed_offset = res_models[klass]
+            # The value/area/perimeter `klt extract` measures off the drawn
+            # body (`klt lvs` compares all three). The bulk terminal is *not*
+            # emitted as a third net -- KLayout's SPICE reader would read it
+            # as the element's value; it is supplied instead through
+            # `request.reference.device_bulk`, see run-ldo-lvs-flow.sh.
+            r_ohm = sheet_rho * l_um / w_um + fixed_offset
+            area_um2 = l_um * w_um
+            perimeter_um = 2.0 * (l_um + w_um)
             elem_name = inst_suffix if inst_suffix[:1] in ("R", "r") else f"R{inst_suffix}"
-            out.append(f"{elem_name} {a} {b_} {w} {klass} L={l_um}U W={w_um}U")
+            out.append(
+                f"{elem_name} {a} {b_} {r_ohm:.6f} {klass} "
+                f"L={l_um:g}U W={w_um:g}U A={area_um2:g}P P={perimeter_um:g}U"
+            )
 
     out.append(f".ENDS {subckt_name}")
 
@@ -162,10 +218,16 @@ def main() -> int:
     ap.add_argument("--netlist", required=True, type=Path, help="xschem-generated .spice")
     ap.add_argument("--subckt-name", required=True)
     ap.add_argument("--ports", required=True, help="space-separated port list, e.g. 'VOUT VREF EN VIN'")
+    ap.add_argument("--deck", default="sky130", help="klt extraction deck to read resistor constants from")
     ap.add_argument("-o", "--output", required=True, type=Path)
     args = ap.parse_args()
 
-    reference = translate(args.netlist, args.subckt_name, args.ports.split())
+    reference = translate(
+        args.netlist,
+        args.subckt_name,
+        args.ports.split(),
+        deck_name=args.deck,
+    )
     args.output.write_text(reference)
     print(f"gen-ldo-reference-netlist.py: wrote {args.output}")
     return 0

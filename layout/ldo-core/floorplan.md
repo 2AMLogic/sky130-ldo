@@ -1,126 +1,193 @@
-# `layout/ldo-core/` floorplan
+# `layout/ldo-core/` floorplan and routing
 
-Issue #15's deliverable: a physical layout for the sky130 LDO's core
-regulation loop, corresponding 1:1 (per active device) to
-`design/ldo_3v3in_1v8out.sch` (issue #14). Scope is a **DRC-clean placed
-floorplan skeleton** — one `klt gen` device block per schematic device,
-positioned by function group via `klt gen-compose`'s
-`placement.strategy: "explicit"`. No inter-block routing, no extraction, no
-LVS: that mirrors the closest real precedent for this kind of issue,
-`2AMLogic/sky130-bandgap`'s own issue #15 (floorplan + placed skeleton,
-DRC-clean, LVS deferred to a follow-on), and lines up with this repo's own
-issue split — #16 (DRC-report closure) and #17 (LVS) both explicitly depend
-on this issue rather than arguing for a different scope for it.
+The physical layout of the sky130 LDO's core regulation loop: one `klt gen`
+block per active device in `design/ldo_3v3in_1v8out.sch`, placed by
+`klt gen-compose` and wired net-for-net, DRC-clean and LVS-matched against
+the schematic.
 
-> **Known stale as of issue #17 (2026-08-17).** This floorplan (and the
-> device table immediately below) was built from `design/
-> ldo_3v3in_1v8out.sch` as it stood on `main` at commit `0e12b14`, *before*
-> issue #22 added the current-limit/soft-start circuitry (`4bda2cb`). #17's
-> first `klt lvs` attempt confirmed 11 active MOS devices from #22 (plus
-> `M_PASS`'s corrected width) have no counterpart here — see
-> `layout/README.md`'s "LVS attempt against the real LDO layout" section and
-> the committed record under `layout/ldo-core/reports/<lvs-record-id>/`.
-> Extending this table and adding inter-block routing is tracked as
-> [#33](https://github.com/2AMLogic/sky130-ldo/issues/33); the table below is
-> left as originally written (issue #15's own scope) rather than edited here,
-> since #33 is the issue that actually redoes it.
+- Issue #15 built the first cut: a **placed floorplan skeleton**, no routing,
+  no LVS, sized from a device table transcribed into
+  `layout/bin/gen-ldo-blocks.py` by hand.
+- Issue #17's first `klt lvs` run against that skeleton reported
+  `status: mismatch` (0 of 28 reference devices matched), and root-caused it
+  to three gaps: a device table that had gone stale against the schematic, a
+  pass device drawn at `W` instead of `W * mult`, and no inter-block routing
+  at all.
+- Issue #33 closed all three, structurally: **the layout is now generated
+  from the schematic's own netlist** rather than from a table, every device's
+  drawn width is its schematic `W_total`, and the block is routed.
 
-## Device-to-block mapping
+Read the newest `reports/<record-id>/record.md` for the DRC evidence and the
+newest `reports/<lvs-record-id>/record.md` (pointed to by `reports/LATEST-LVS`)
+for the LVS verdict; `reports/<record-id>/floorplan.json` carries the exact
+per-device sizing, placement, and routed-net table each run produced.
 
-Every active device in the schematic gets exactly one `klt gen` block,
-sized to match the schematic's own `model`/`L`/`W`/`nf` fields:
+## Where the device set comes from
 
-| Schematic device(s) | `klt gen` generator | Params (schematic → generator) |
+`layout/bin/run-ldo-layout-flow.sh` netlists `design/ldo_3v3in_1v8out.sch`
+headlessly with `xschem` and hands that netlist to
+`layout/bin/gen-ldo-blocks.py`, which reads every MOS and resistor element
+out of it. There is no device table in this repository to keep in sync: the
+layout cannot describe a different device set than the schematic, because it
+reads the same file the LVS reference netlist is translated from
+(`layout/bin/gen-ldo-reference-netlist.py`).
+
+That is the direct, structural fix for the failure mode that produced #17's
+mismatch. The old hand-maintained table did not merely fall behind by the 11
+devices issue #22 added -- by the time #33 was picked up it was also missing
+the rail-to-rail output stage and the whole thermal-shutdown comparator, and
+any hand-edited replacement would have started decaying again on the next
+schematic commit.
+
+| Schematic element | `klt gen` block | Params (schematic -> generator) |
 |---|---|---|
-| `M_BIASN1`, `M_ENN`, `M_BIASN2`, `M_MIR1`, `M_MIR2`, `M_ENN2` | `mos_array`, `flavor: "nfet"` | `w_um`=schematic `W`, `l_um`=schematic `L`, `fingers`=schematic `nf`, `rows=1 cols=1 dummy=0` (one physical device, not a matched array) |
-| `M_BIASP1`, `M_ENP2`, `M_TAIL`, `M_IN1`, `M_IN2`, `M_ENP`, `M_PASS` | `mos_array`, `flavor: "pfet"` | same mapping, `pfet` flavor draws the well sky130's PMOS devices need |
-| `R_BIAS` (`res_high_po`, `W=0.42 L=1500`) | `res_array`, `flavor: "high"` | `length_um=1500 width_um=0.42 num=1 dummy=0` — a single unit, not a matched pair, so no dummy protection needed |
-| `R_FB_A`/`R_FB_B`/`R_FB_C` (three identical `res_xhigh_po`, `W=0.42 L=180`, in series) | `res_array`, `flavor: "xhigh"` | `length_um=180 width_um=0.42 num=3 dummy=1` — one block draws all three unit resistors of the divider string in series, which is the more faithful physical rendering of "three identical unit resistors in series" than three separate single-unit blocks, and `dummy=1` protects the matching the divider's 2:1 ratio accuracy depends on |
-| `C_COMP` (Miller compensation cap, MiM, `2p`, placeholder value) | *(none — known gap, see below)* | not drawn |
+| any `nfet_g5v0d10v5` instance | `mos_array`, `flavor: "nfet"` | `l_um`=`L`, `fingers=1`, `rows=1`, `cols`=units, `w_um`=`W * mult / units`, `dummy=0`, `gate_contact=true` |
+| any `pfet_g5v0d10v5` instance | `mos_array`, `flavor: "pfet"` | same mapping; the `pfet` flavor draws the well sky130's PMOS devices need |
+| any `res_high_po` / `res_xhigh_po` instance | `res_array`, `flavor: "high"`/`"xhigh"` | `length_um`=`L`, `width_um`=`W`, `num=1`, `dummy=0` -- one block per schematic instance, so the layout is 1:1 with the reference netlist's own per-instance resistor elements |
+| `C_COMP`, `C_CL`, `C_SS`, `C_TS` | *(none -- known gap, see below)* | not drawn |
 
-13 MOS devices + 2 resistor blocks (covering all 4 resistor instances) =
-**15 `klt gen` blocks**, one JSON generator report + GDS per block, checked
-into each run's `reports/<record-id>/` directory alongside the composed
-top-level GDS.
+### Width: `W_total = W * mult`, and why `fingers` is not used
 
-### Known gap: no `klt gen` capacitor generator for `C_COMP`
+`design/README.md`'s "Pass-device width correction" note is load-bearing:
+the xschem symbol's `W` is a per-`mult`-group width, so a device's real total
+width is `W * mult`. The pass device is `W=100 mult=25` -- 2500um, not 100um.
 
-At this repo's pinned `klt` commit, `klt gen --list` has no capacitor/MiM
-family member alongside `mos_array`/`res_array`/`diff_pair`/`bjt_array`,
-even though `klt extract` recognises a MiM `CapacitorDevice` class. `C_COMP`
-is therefore not drawn in this layout. This is not scope creep to defer:
-`design/README.md` already documents `C_COMP`'s `2p` value as a
-**placeholder**, not sized against a loop-gain simulation (pending DR-002,
-`proposed` not ratified) — so there is no verified value to lay out yet
-either way. Filed as a generic capability gap per `CLAUDE.md`'s friction
-protocol:
-[`2AMLogic/klayout-tools#1117`](https://github.com/2AMLogic/klayout-tools/issues/1117)
-("no capacitor/MiM generator in `klt gen`'s device-generator family") — no
-design-specific detail in that filing.
+Two generator parameters could nominally reach that total, and only one of
+them survives extraction:
 
-## Row grouping and placement rationale
+- **`fingers=N` does not work.** `klt gen`'s multi-finger unit device leaves
+  the interior diffusions unstrapped and each finger's gate unconnected, so
+  `klt extract` reads an N-finger device as N devices in *series*, each with
+  a floating gate. That is neither the schematic's topology nor something
+  `combine_devices` can fold. (The pre-#33 layout drew every device with the
+  schematic's `nf` as `fingers`, which is part of why not one device matched.)
+- **`cols=N` parallel units does.** A device wider than 100um is drawn as
+  `ceil(W_total / 100)` equal unit devices whose S/D/G terminals the router
+  straps together, which is exactly what `mult` means physically. `klt lvs`'s
+  `options.combine_devices` folds the strapped units back into one device of
+  the summed width, so the reference's single `W=2500U` element matches. Only
+  the pass device is wide enough to split today (25 x 100um).
 
-Blocks are grouped into five floorplan rows (bottom to top), matching
-`design/README.md`'s own functional grouping of the schematic:
+Drawing the pass device as one 2500um-wide single-finger device would also
+extract with the right width, but it would make the block 2500um tall for no
+benefit; a parallel-unit array is both the physically sensible construction
+and the smaller one.
 
-1. **`bias_resistor`** — `R_BIAS` alone (`res_high_po`, `W=0.42 L=1500`).
-2. **`fb_resistor`** — `R_FB` (the 3-unit divider string, `res_xhigh_po`).
-3. **`bias_enable`** — the resistor-referenced bias generator and its
-   EN-gated ground return: `M_BIASN1`, `M_ENN`, `M_BIASN2`, `M_BIASP1`,
-   `M_ENP2`.
-4. **`error_amp`** — the 5T OTA and its own EN-gated mirror-load return:
-   `M_TAIL`, `M_IN1`, `M_IN2`, `M_MIR1`, `M_MIR2`, `M_ENN2`, `M_ENP`.
-5. **`output_pass`** — `M_PASS`, the series pass device, alone.
+## Placement
 
-Within a row, blocks are packed left-to-right with a flat 5µm gap between
-adjacent bounding boxes; rows are stacked with a flat 20µm gap. Both margins
-were chosen generously above sky130's own well/tap/diffusion spacing rules
-(sub-2µm) specifically so a first floorplan pass would not need a
-DRC-violation-driven iteration loop — confirmed DRC-clean on the first
-composed run (see the newest `reports/<record-id>/record.md`).
+One bottom-aligned row, blocks packed left to right with a 2um gap (6um
+between super-groups), ordered:
 
-**Why the two resistor blocks get their own dedicated rows, separate from
-the compact MOS core**: `R_BIAS` (a single straight `L=1500` poly strip) and
-`R_FB` (three `L=180` units plus dummies, ≈900µm end to end) are both
-physically enormous next to any of the MOS devices (the largest of which,
-`M_PASS`, is ≈24µm × 101µm) — a direct, unavoidable consequence of
-`res_high_po`/`res_xhigh_po`'s low sheet resistivity: reaching the
-MΩ-class values `design/README.md`'s own measured-value table reports
-(`R_FB` unit ≈1.04MΩ, `R_BIAS` ≈1.22MΩ) at `W=0.42µm` requires hundreds to
-thousands of µm of poly length. `klt gen res_array` draws each resistor as
-a single straight body (no meander/fold support for a single logical
-resistor at this repo's pinned `klt` commit — `res_array`'s own `rows`
-param folds multiple *separate* unit elements into parallel rows, which
-does not apply to `R_BIAS`'s single `num=1` element). Interleaving these
-two long, thin blocks into the same rows as the compact MOS devices would
-force every row to the resistor's width for no matching benefit; keeping
-them in their own rows (a "resistor farm" beneath the compact analog core)
-is a real, deliberate floorplan choice, not an artifact of the packing
-algorithm, and mirrors a common real analog-IC convention.
+1. **resistors** -- `R_BIAS`, the feedback divider (`R_FB_A/B/C`), `R_CZ`;
+2. **every NMOS block**, preceded by a reserved slot for the substrate tie;
+3. **every PMOS block**, preceded by a reserved slot for the n-well tie.
 
-The result is intentionally lopsided (≈1500µm × ≈214µm total, dominated
-by `R_BIAS`'s own single-element width) — see the newest
-`reports/<record-id>/floorplan.json` for the exact per-row packing this
-run produced, and `record.md`'s "Composed cell" section for the resolved
-overall bounding box.
+Within each of those spans, blocks are grouped by function (bias/enable,
+error amplifier, current limit, soft start, thermal shutdown, output pass),
+mirroring `design/README.md`'s own grouping of the schematic.
 
-## Explicitly out of scope for this issue
+**The flavor split is load-bearing, not cosmetic.** The PMOS bodies are tied
+through a single n-well drawn across the whole PMOS span, and `klt extract`
+decides a device's flavor by n-well containment (`pfet_active = active &
+nwell`): a well drawn over an interleaved NMOS block would re-type that
+device. Keeping every PMOS contiguous is what makes one shared well -- and
+therefore one drawn `VIN` body tie instead of 25 of them -- possible at all.
+The cost is that a function group with both flavors occupies two x ranges;
+`record.md`'s group table shows both.
 
-- **Inter-block routing.** `klt gen-compose`'s `connectivity[]`/`routing`
-  fields support 2-pin point-to-point Manhattan routing at this repo's
-  pinned `klt` commit, but wiring this schematic's actual nets (several of
-  which fan out to 3+ pins — e.g. `VIN` connects to every PMOS source/body
-  in the chain) is a real, separate design task in its own right (device
-  orientation, port-side selection, bus planning), not a mechanical
-  follow-on to placement. Left unrouted, matching the bandgap-#15
-  precedent's own scope line.
-- **Extraction/LVS.** Issue #17's job. `layout/README.md`'s "Known klt-deck
-  limitations" section already flags two caveats a future LVS reference
-  netlist will need to account for: no NMOS substrate-tap extraction (every
-  NMOS body ties to a synthesized `vsubs` net) and no voltage-flavor
-  distinction on MOS devices (`klt extract`'s `nfet`/`pfet` classes don't
-  disambiguate the `_g5v0d10v5` flavor this schematic uses throughout from
-  a core-voltage device) — this floorplan draws the well/tap isolation the
-  mixed-voltage-adjacent devices need, but a DRC-clean, unextracted result
-  does not itself certify that isolation is electrically correct.
-- **`C_COMP`'s physical layout** (see "Known gap" above).
+The resistors keep their own span at the left for the reason issue #15
+already documented: `R_BIAS` (a single straight `L=1500` poly strip) is
+physically enormous next to any MOS device, a direct consequence of
+`res_high_po`'s sheet resistivity, and `klt gen res_array` draws each unit
+resistor as one straight body (no meander/fold for a single logical resistor
+at this repo's pinned `klt` commit). The result is a deliberately lopsided
+block, ~2384um x ~101um for the device row, dominated by that one resistor.
+
+## Routing
+
+`klt gen-compose`'s own `connectivity[]` router is not used. It draws
+**two-pin** point-to-point nets only, and rejects any route whose backbone
+crosses another block's bounding box; this schematic's nets fan out to
+between 2 and 50 terminals each (`VIN` alone reaches every PMOS source and
+the well tie), across a 2384um-wide row. `layout/bin/gen-ldo-blocks.py`
+therefore draws the wiring itself, as a single-channel two-layer channel
+route. That gap was already tracked upstream and is cross-confirmed rather
+than re-filed -- see `layout/README.md`'s "What routing the LDO core hit"
+section, which also records that `klayout-tools` has since added bundle
+routing on a commit *newer* than this repo's pin.
+
+The topology is deliberately uniform, so that no two nets can share drawn
+metal by construction rather than by inspection:
+
+- **One met1 trunk per net**, in a routing channel below the device row, on a
+  0.8um track pitch. Each trunk owns a unique y.
+- **Source/drain terminals drop straight down** from their own li1 pad (the
+  pads already run the full device height) onto their net's trunk, through an
+  mcon. Each drop owns a unique x -- ports within a block are >=0.46um apart
+  and blocks are gapped -- so parallel drops never touch each other, and a
+  drop crossing an unrelated trunk is a li1-over-met1 crossing, not a short.
+- **Gate terminals rise** out of the top of their block on li1, transfer to
+  met2 (mcon -> met1 landing pad -> via1), run back down *over their own
+  block* on met2, and land on their trunk through a second via1. The second
+  routing level exists precisely so a gate can reach the channel without
+  crossing the met1 trunks stacked in it.
+- **Every trunk is labelled** on `met1.pin` with its schematic net name, so
+  the extracted netlist reads in schematic terms and `klt lvs` has no net
+  name/identity conflict to report. `klt extract --pins VOUT,VREF,EN,VIN`
+  keeps the block's interface to the schematic's own four ports; every other
+  labelled net stays an internal node.
+
+All drawn dimensions sit at or above the sky130 deck's own minimums (li1
+0.19um wide vs. a 0.17um rule; met1/met2 trunks 0.30um wide vs. 0.14um;
+mcon/via1 at the deck's own contact size with >=0.055um enclosure), chosen
+with enough margin that the first routed run came back DRC-clean rather than
+needing a violation-driven iteration loop.
+
+### Body ties
+
+Both body nets are drawn and extracted, not left on the deck's synthesized
+fallback:
+
+- an **n-well tie** (`tap.drawing` inside the shared n-well, licon + li1)
+  drops onto the `VIN` trunk, so every PMOS body terminal extracts as `VIN`;
+- a **substrate tie** (`tap.drawing` outside every well) drops onto the `0`
+  trunk, so every NMOS body -- and every poly resistor's `bulk_to_substrate`
+  bulk terminal -- extracts as the schematic's own `0` rail rather than the
+  deck's `vsubs` global.
+
+This is why the LVS record no longer carries the `device.body_unverified`
+warning that `layout/README.md`'s "no NMOS substrate-tap extraction" note
+predicted: the deck *does* resolve a real drawn tie, and this layout draws
+one.
+
+## Known gap: no `klt gen` capacitor generator
+
+At this repo's pinned `klt` commit, `klt gen --list` still has no
+capacitor/MiM family member alongside `mos_array`/`res_array`/`diff_pair`/
+`bjt_array`, even though `klt extract` recognises MiM `CapacitorDevice`
+classes. The schematic's four capacitors (`C_COMP`, `C_CL`, `C_SS`, `C_TS`)
+are therefore not drawn. Filed generically per `CLAUDE.md`'s friction
+protocol as
+[`2AMLogic/klayout-tools#1117`](https://github.com/2AMLogic/klayout-tools/issues/1117).
+
+`layout/bin/gen-ldo-reference-netlist.py` drops the same four elements from
+the LVS reference, so the compare stays symmetric: their absence is a
+disclosed coverage gap on both sides, not a silent one. It is a real gap
+nonetheless -- an LVS match on this layout says nothing about the
+compensation capacitor, which is the component the loop's stability depends
+on most.
+
+## Still out of scope here
+
+- **Parasitic extraction / post-layout simulation** (`klt pex`) -- issue #20.
+  A DRC-clean, LVS-matched layout certifies topology and geometry rules; it
+  says nothing about the li1 trunk resistance this deliberately simple
+  channel route puts in series with, e.g., the pass device's source.
+- **Real power routing.** Every net here is drawn at the same signal-grade
+  width, including `VIN`/`VOUT`, which in the real block carry the full load
+  current. Sizing those as power straps is a separate design task with its
+  own electromigration/IR-drop acceptance criteria.
+- **Matching-aware placement.** Blocks are packed in schematic order within
+  their function group; the differential pairs and current mirrors are not
+  common-centroid placed or interdigitated, and `klt gen`'s own
+  `matched_group_id` hints are not yet used to check symmetry.

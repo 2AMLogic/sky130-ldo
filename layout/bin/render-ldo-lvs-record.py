@@ -7,34 +7,35 @@ Standard library only (matches this repo's other `layout/bin/` render
 scripts).
 
 Unlike `render-record.py` / `render-ldo-record.py`, this renderer does not
-assume the expected verdict is a pass: issue #17's first run is expected to
-report `status: mismatch` (see `run-ldo-lvs-flow.sh`'s own comment), because
-the committed ldo-core layout (issue #15) is a placed-but-unrouted floorplan
-skeleton built against an earlier revision of the schematic. Exits non-zero
-whenever the verdict is not `match`, same convention as the other renderers
-(non-zero does not mean "something went wrong with this script" -- it means
-"the LVS claim this record makes is not a clean match", which the caller
-still writes to record.md as real evidence either way).
+assume the expected verdict is a pass, and it never narrates a root cause it
+has not read: a mismatch is summarised from `lvs.json`'s own `mismatches[]`
+(the run's evidence), not from a story hard-coded here that can go stale the
+way the layout itself once did. Exits non-zero whenever the verdict is not
+`match`, same convention as the other renderers (non-zero does not mean
+"something went wrong with this script" -- it means "the LVS claim this
+record makes is not a clean match", which the caller still writes to
+record.md as real evidence either way).
 """
 
 from __future__ import annotations
 
 import argparse
+import collections
 import json
 import subprocess
 import sys
 from pathlib import Path
 
-# Devices present in design/ldo_3v3in_1v8out.sch as of issue #22 but absent
-# from the issue #15 floorplan (layout/ldo-core/floorplan.md's device table
-# predates #22). Recomputed from the schematic/floorplan device lists at
-# authoring time -- if this drifts, a future run's device_counts diff in
-# extract.json/lvs.json is the source of truth, not this list.
-DEVICES_MISSING_FROM_LAYOUT = [
-    "M_SENSE", "M_CLN1", "M_CLN2", "M_CLP", "M_CLIM", "M_ENP3",
-    "M_INVP", "M_INVN", "M_SSDIS", "M_SSCHG", "M_IN2S",
-]
-CAPS_NOT_DRAWN = ["C_COMP", "C_CL", "C_SS"]
+#: Schematic elements with no drawn counterpart, and why. Capacitors have no
+#: `klt gen` generator at this repo's pinned `klt` commit (filed upstream as
+#: klayout-tools#1117); `gen-ldo-reference-netlist.py` drops them from the
+#: reference for the same reason, so the compare stays symmetric.
+CAPS_NOT_DRAWN_REASON = (
+    "the schematic's MiM capacitors are not drawn and are dropped from the "
+    "reference on both sides -- `klt gen` has no capacitor/MiM generator at "
+    "this repo's pinned commit "
+    "(https://github.com/2AMLogic/klayout-tools/issues/1117)"
+)
 
 
 def _load(path: Path) -> dict:
@@ -91,12 +92,15 @@ def main() -> int:
     a(f"# LDO core LVS record: {args.record_id}")
     a("")
     a(
-        "First `klt extract` + `klt lvs` attempt against the real LDO layout "
-        "(issue #17), comparing `layout/ldo-core/reports/"
-        f"{args.layout_record_id}/{args.cell_name}.gds` (issue #15) against "
-        "a reference netlist mechanically translated from "
-        "`design/ldo_3v3in_1v8out.sch`'s own xschem netlist (issues #14/#22) "
-        "by `layout/bin/gen-ldo-reference-netlist.py`."
+        "`klt extract` + `klt lvs` against the LDO core layout (issue #17's "
+        "driver), comparing `layout/ldo-core/reports/"
+        f"{args.layout_record_id}/{args.cell_name}.gds` against a reference "
+        "netlist mechanically translated from "
+        "`design/ldo_3v3in_1v8out.sch`'s own xschem netlist by "
+        "`layout/bin/gen-ldo-reference-netlist.py`. Both sides are derived "
+        "from that one netlist -- the layout's device set comes from it too "
+        "(`layout/bin/gen-ldo-blocks.py`, issue #33) -- so neither side can "
+        "silently describe a different circuit than the schematic."
     )
     a("")
     a("## Overall verdict: " + ("MATCH" if is_match else "MISMATCH -- not LVS-clean"))
@@ -106,11 +110,11 @@ def main() -> int:
     if not is_match:
         a(
             "**This does not satisfy issue #17's acceptance criteria "
-            "(`status: match`).** The root cause is not a `klt` defect -- "
-            "see \"Root cause\" below. Filed as a real, committed negative "
+            "(`status: match`).** Filed as a real, committed negative "
             "result (`CLAUDE.md`'s \"Verification is the product\": "
-            "append-only evidence, not a silently-dropped attempt), with a "
-            "follow-on issue tracking the layout work a clean match needs."
+            "append-only evidence, not a silently-dropped attempt). The "
+            "findings `klt lvs` actually reported are summarised below -- "
+            "read `lvs.json` for the full list."
         )
         a("")
     a("## Flow")
@@ -123,15 +127,23 @@ def main() -> int:
     a(
         "2. `layout/bin/gen-ldo-reference-netlist.py` translates that "
         "netlist into an LVS reference (MOS model names -> `klt extract`'s "
-        "generic `nfet`/`pfet` classes, `W_total = W * mult`; resistor "
-        "model names pass through unchanged; capacitors dropped -- no `klt "
-        "gen` capacitor generator exists)."
+        "generic `nfet`/`pfet` classes, `W_total = W * mult`; each "
+        "resistor's expected `R`/`A`/`P` computed from its drawn geometry "
+        "using `klt`'s own deck constants; capacitors dropped -- "
+        f"{CAPS_NOT_DRAWN_REASON})."
     )
     a(
         f"3. `klt extract {args.cell_name}.gds --deck sky130 --top "
-        f"{args.cell_name}`"
+        f"{args.cell_name} --pins ...` (the schematic's own four ports; "
+        "every other labelled net stays an internal node)."
     )
-    a("4. `klt lvs` (extracted layout vs. the translated reference).")
+    a(
+        "4. `klt lvs` (extracted layout vs. the translated reference), with "
+        "`options.combine_devices`, `layout.declared_pins` and "
+        "`reference.device_bulk` -- see `run-ldo-lvs-flow.sh`'s header for "
+        "what each one reconciles and why. Every one of them is disclosed "
+        "as its own `warning` entry in `lvs.json`."
+    )
     a("")
     a("## Results")
     a("")
@@ -153,74 +165,43 @@ def main() -> int:
         f"pins(layout/reference/matched)={counts.get('pins', {})} |"
     )
     a("")
-    if not is_match:
-        a("## Root cause")
+    mismatches = lvs.get("mismatches", [])
+    errors = [m for m in mismatches if m.get("severity") == "error"]
+    warnings = [m for m in mismatches if m.get("severity") != "error"]
+
+    if errors:
+        a("## Findings (`severity: error`)")
         a("")
-        a(
-            "Three independent, well-understood gaps -- any one of them "
-            "alone would already prevent a match; together they explain "
-            f"the full LVS result above (0 of {counts.get('nets', {}).get('reference', '?')} "
-            f"reference nets, 0 of {counts.get('devices', {}).get('reference', '?')} "
-            "reference devices matched):"
-        )
+        a("| Category | Side | Description | Device / net |")
+        a("| --- | --- | --- | --- |")
+        for entry in errors[:40]:
+            subject = entry.get("device") or entry.get("net") or ""
+            a(
+                f"| `{entry.get('category')}` | {entry.get('side')} | "
+                f"{entry.get('description')} | `{subject}` |"
+            )
+        if len(errors) > 40:
+            a(f"| ... | | {len(errors) - 40} further error entries, see `lvs.json` | |")
         a("")
-        a(
-            "1. **The layout is stale relative to the schematic.** "
-            "`layout/ldo-core/` (issue #15) was floorplanned from "
-            "`design/ldo_3v3in_1v8out.sch` as it stood before issue #22 "
-            "added the current-limit and soft-start circuitry -- the "
-            "branch #15 built from was based on commit `0e12b14`, before "
-            "`4bda2cb` (#22) landed on `main`. The floorplan's device table "
-            "(`layout/ldo-core/floorplan.md`) still lists only the "
-            f"pre-#22 device set. **{len(DEVICES_MISSING_FROM_LAYOUT)} "
-            "active MOS devices** added by #22 have no `klt gen` block at "
-            "all: " + ", ".join(f"`{d}`" for d in DEVICES_MISSING_FROM_LAYOUT) + "."
-        )
-        a(
-            "2. **`M_PASS`'s drawn width does not match the corrected "
-            "schematic value.** `design/README.md`'s \"Pass-device width "
-            "correction\" note explains the `mult` parameter is load-"
-            "bearing (`W_total = W * mult`, not `W` alone); "
-            "`layout/bin/gen-ldo-blocks.py`'s `MOS_DEVICES` table still "
-            "passes only `w_um=100` with no `mult`, so the drawn "
-            "`M_PASS` block is 100um wide, not the schematic's corrected "
-            "2500um."
-        )
-        a(
-            "3. **No inter-block routing exists.** `klt gen-compose` only "
-            "places the 15 blocks it does draw -- `layout/ldo-core/"
-            "floorplan.md`'s \"Explicitly out of scope\" section documents "
-            "this as a deliberate #15 scope boundary "
-            "(\"a real, separate design task in its own right\"). The "
-            "extracted netlist's own `pin_count: "
-            f"{extract.get('pin_count')}` (vs. the schematic's 4 top-level "
-            "ports) is the direct evidence: with no metal connecting the "
-            "placed blocks, almost nothing reaches the top-level cell "
-            "boundary."
-        )
+        by_category = collections.Counter(e.get("category") for e in errors)
+        a(f"Error findings by category: `{dict(by_category)}`.")
         a("")
-        a(
-            "None of this is a `klt` tool defect -- `klt extract`/`klt lvs` "
-            "produced a coherent, correctly-reasoned mismatch report "
-            "against the layout exactly as drawn; the gap is real, "
-            "physical layout content that does not exist yet. No "
-            "`2AMLogic/klayout-tools` filing follows from this record. The "
-            "one `device.body_unverified` warning in `lvs.json` reproduces "
-            "the already-documented, already-filed \"no NMOS substrate-tap "
-            "extraction\" deck limitation (`layout/README.md`) -- not a new "
-            "finding."
-        )
-        a("")
-        a(
-            "**Follow-on**: extending the floorplan to cover the #22 "
-            "devices, correcting `M_PASS`'s width, and adding inter-block "
-            "routing is tracked as its own issue (linked from #17) -- out "
-            "of this issue's own \"routine\" scope, matching "
-            "`layout/ldo-core/floorplan.md`'s own characterization of "
-            "routing as \"a real, separate design task in its own right "
-            "... not a mechanical follow-on to placement.\""
-        )
-        a("")
+
+    a("## Disclosed warnings (non-blocking)")
+    a("")
+    if warnings:
+        for entry in warnings:
+            a(f"- `{entry.get('category')}` -- {entry.get('description')}")
+    else:
+        a("- (none)")
+    a("")
+    a(
+        "A `warning` entry never changes `status`; each one records a "
+        "dimension this compare could not verify structurally, or a "
+        "request-level reconciliation it was given. Read them alongside the "
+        "verdict, not instead of it."
+    )
+    a("")
     a("## Provenance")
     a("")
     a(f"- Record ID: `{args.record_id}`")
