@@ -40,7 +40,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 
-from _record_common import render_record_footer, render_record_header
+from _record_common import git, render_record_footer, render_record_header
 
 SIM_DIR = Path(__file__).resolve().parent.parent
 REPO_ROOT = SIM_DIR.parent
@@ -207,25 +207,12 @@ def check_env() -> int:
 # --------------------------------------------------------------------------
 
 
-def git(*args: str) -> str:
-    try:
-        return subprocess.run(
-            ["git", "-C", str(REPO_ROOT), *args],
-            capture_output=True,
-            text=True,
-            timeout=60,
-            check=True,
-        ).stdout.strip()
-    except (subprocess.SubprocessError, OSError):
-        return ""
-
-
 def git_state() -> dict:
-    sha = git("rev-parse", "--short", "HEAD") or "nogit"
-    dirty = bool(git("status", "--porcelain"))
+    sha = git(REPO_ROOT, "rev-parse", "--short", "HEAD") or "nogit"
+    dirty = bool(git(REPO_ROOT, "status", "--porcelain"))
     return {
         "sha": sha,
-        "branch": git("rev-parse", "--abbrev-ref", "HEAD") or "unknown",
+        "branch": git(REPO_ROOT, "rev-parse", "--abbrev-ref", "HEAD") or "unknown",
         "dirty": dirty,
     }
 
@@ -235,7 +222,7 @@ def default_author() -> str:
         val = os.environ.get(var, "").strip()
         if val:
             return val
-    return git("config", "user.email") or "unknown"
+    return git(REPO_ROOT, "config", "user.email") or "unknown"
 
 
 # --------------------------------------------------------------------------

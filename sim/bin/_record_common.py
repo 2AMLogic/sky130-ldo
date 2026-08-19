@@ -9,9 +9,32 @@ scripts before this module existed -- pure extraction, no behavior change.
 
 Mirrors the `layout/bin/_record_common.py` convention from issue #41/#44
 (PR #42/#45), one directory over.
+
+Also home to `git()` (issue #51), a `-C <repo_root>` git subprocess helper
+shared by `corner-run.py` and `measurements/build_characterization_report.py`
+-- both previously carried byte-identical copies.
 """
 
 from __future__ import annotations
+
+import subprocess
+from pathlib import Path
+
+
+def git(repo_root: Path, *args: str) -> str:
+    """Run `git -C <repo_root> <args>`, returning stripped stdout on
+    success or `""` on any subprocess failure (non-zero exit, missing
+    git, timeout)."""
+    try:
+        return subprocess.run(
+            ["git", "-C", str(repo_root), *args],
+            capture_output=True,
+            text=True,
+            timeout=60,
+            check=True,
+        ).stdout.strip()
+    except (subprocess.SubprocessError, OSError):
+        return ""
 
 
 def render_record_header(record: dict, tools_line: str) -> list[str]:
