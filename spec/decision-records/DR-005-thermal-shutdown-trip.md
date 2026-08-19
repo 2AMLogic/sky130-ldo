@@ -1,6 +1,12 @@
 # DR-005: Thermal-shutdown trip temperature, hysteresis, and reference
 
-- **Status**: proposed — not self-ratifying; input to #1
+- **Status**: **ratified** — trip temperature, hysteresis, reference strategy,
+  and auto-restart behavior ratified by #1 (DR-006), pending operator PR
+  approval per the 2026-08-19 ratification-via-PR standing policy
+  ([2AMLogic/2am#357](https://github.com/2AMLogic/2am/issues/357)). The
+  150 °C/135 °C figures remain outside this repo's own model-characterized
+  temperature range and PVT-loose, per this record's own Consequences —
+  ratification fixes the *design target*, not a verified accuracy window.
 - **Date**: 2026-08-17
 - **Author**: Builder agent (drafted per #28, split from #24)
 - **Ratifies against / input to**: #1 (Ratify the target spec — operator-only,
@@ -280,14 +286,16 @@ chosen because:
 
 ## Status notes
 
-This record stays `proposed` until #1 closes. #1's ratification of this
-record's trip temperature, hysteresis, reference strategy, and auto-restart
-choice does not by itself satisfy this repo's "no claim without a
-testbench" rule — a `sim/` evidentiary record for the actual trip/reference
-circuit (#29's output) is still required before any thermal-shutdown
-behavior can be cited as verified, and that circuit's screening/simulation
-work will additionally need to address the 150 °C model-characterization gap
-named in Consequences. If #29's implementation finds the internally
-generated reference cannot hold a defensible window, or that 150 °C is not
+**Ratified by DR-006 / #1, pending operator PR approval (2026-08-19).**
+Ratification of this record's trip temperature, hysteresis, reference
+strategy, and auto-restart choice does not by itself satisfy this repo's "no
+claim without a testbench" rule — a `sim/` evidentiary record for the actual
+trip/reference circuit (#29 implemented the circuit; no dedicated thermal
+testbench exists yet under `sim/`, per `measurements/characterization.md`'s
+Thermal row) is still required before any thermal-shutdown behavior can be
+cited as verified, and that circuit's screening/simulation work will
+additionally need to address the 150 °C model-characterization gap named in
+Consequences. If that future simulation finds the internally generated
+reference cannot hold a defensible window, or that 150 °C is not
 achievable/appropriate once real device data exists, a superseding record
 replaces this one — this record is not edited after the fact.
