@@ -67,7 +67,6 @@ import json
 import os
 import re
 import shutil
-import subprocess
 import sys
 from pathlib import Path
 
@@ -76,6 +75,12 @@ REPO_ROOT = MEASUREMENTS_DIR.parent
 SIM_DIR = REPO_ROOT / "sim"
 LAYOUT_DIR = REPO_ROOT / "layout"
 SPEC_FILE = REPO_ROOT / "spec" / "target-spec.md"
+
+_SIM_BIN_DIR = str(SIM_DIR / "bin")
+if _SIM_BIN_DIR not in sys.path:
+    sys.path.insert(0, _SIM_BIN_DIR)
+from _record_common import git  # shared git() helper (issue #51)
+
 SCHEMATIC_FILE = "design/ldo_3v3in_1v8out.sch"
 DEFAULT_OUT = MEASUREMENTS_DIR / "characterization.md"
 
@@ -164,19 +169,6 @@ def read_pointer(path: Path) -> str | None:
         return None
     val = path.read_text().strip()
     return val or None
-
-
-def git(*args: str) -> str:
-    try:
-        return subprocess.run(
-            ["git", "-C", str(REPO_ROOT), *args],
-            capture_output=True,
-            text=True,
-            timeout=60,
-            check=True,
-        ).stdout.strip()
-    except (subprocess.SubprocessError, OSError):
-        return ""
 
 
 def load_corner_run_module():
@@ -323,7 +315,7 @@ LAYOUT_RECORD_RE = re.compile(r"\*\*Layout record\*\*:\s*`([^`]+)`")
 
 
 def current_schematic_sha() -> str:
-    return git("log", "-1", "--format=%h", "--", SCHEMATIC_FILE)
+    return git(REPO_ROOT, "log", "-1", "--format=%h", "--", SCHEMATIC_FILE)
 
 
 def extract_overall_verdict_md(text: str) -> str | None:
