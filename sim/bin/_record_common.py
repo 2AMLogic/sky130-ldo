@@ -13,11 +13,19 @@ Mirrors the `layout/bin/_record_common.py` convention from issue #41/#44
 Also home to `git()` (issue #51), a `-C <repo_root>` git subprocess helper
 shared by `corner-run.py` and `measurements/build_characterization_report.py`
 -- both previously carried byte-identical copies.
+
+Also home to `load_corner_run_module()` (issue #96), the importlib-by-path
+loader for `corner-run.py` (its filename has a hyphen, so it can't be
+`import`ed directly) -- `sim/bin/mc-run.py` and
+`measurements/build_characterization_report.py` previously carried
+byte-identical copies of this same importlib dance.
 """
 
 from __future__ import annotations
 
+import importlib.util
 import subprocess
+import sys
 from pathlib import Path
 
 
@@ -35,6 +43,30 @@ def git(repo_root: Path, *args: str) -> str:
         ).stdout.strip()
     except (subprocess.SubprocessError, OSError):
         return ""
+
+
+def load_corner_run_module(bin_dir: Path):
+    """Import `corner-run.py` by file path and return the loaded module.
+
+    `corner-run.py`'s filename has a hyphen, so it can't be `import`ed
+    directly -- this is the importlib-by-path workaround, shared by
+    `sim/bin/mc-run.py` and `measurements/build_characterization_report.py`
+    (issue #96).
+
+    `bin_dir` is the directory containing `corner-run.py` (`sim/bin/`). It is
+    inserted at the front of `sys.path` (if not already present) so that
+    `corner-run.py`'s own `from _record_common import ...` resolves, then the
+    module is loaded, registered as `sys.modules["corner_run"]` (`dataclass()`
+    needs this in `sys.modules` to resolve), and executed.
+    """
+    bin_dir_str = str(bin_dir)
+    if bin_dir_str not in sys.path:
+        sys.path.insert(0, bin_dir_str)
+    spec = importlib.util.spec_from_file_location("corner_run", Path(bin_dir) / "corner-run.py")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules["corner_run"] = module
+    spec.loader.exec_module(module)  # type: ignore[union-attr]
+    return module
 
 
 def render_record_header(record: dict, tools_line: str) -> list[str]:
