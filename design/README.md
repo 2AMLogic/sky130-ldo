@@ -1199,6 +1199,158 @@ pass:
 `mc-output-accuracy`'s tail-outlier FAIL (mechanism 6) has no issue of its
 own — it is expected to close mostly or entirely as a side effect of #70.
 
+### Bias-generator redesign investigated, reverted (#70)
+
+**Status: investigated, not shipped.** Issue #70 set out to fix the PSRR
+shortfall (mechanism 5 above) and the pervasive light-load stability
+shortfall (mechanism 2) via a bias-generator and/or compensation redesign,
+per its own acceptance criteria's instruction to screen any candidate at a
+single corner (PSRR at 1 kHz/100 kHz, phase margin at 0 mA) before
+committing to an expensive full 45-point re-run. Two PSRR candidates and
+one stability candidate were built and screened; **none was shippable**,
+so `ldo_3v3in_1v8out.sch` is **unchanged** by this issue — this section is
+the record of what was tried, per this repo's "verification is the
+product" discipline (a well-verified negative result is still evidence).
+Follow-on work continues in **#79**, seeded with the data below so the
+next attempt does not repeat the same failed sizing.
+
+**Candidate 1: self-biased ("beta-multiplier") bias-generator reference.**
+The suspected root cause named a bias generator with "no supply-independent
+reference or cascode" — the standard textbook fix (e.g. Razavi ch.5) is a
+self-biased reference: a PMOS mirror (`M_BIASP1`/`M_BIASP2`) forcing two
+NMOS legs' currents equal regardless of `VIN`, with an unequal-width pair
+(`M_BIASN2`/`M_SBN2`, `K=4`) plus a degeneration resistor `R_SB` pinning
+the equilibrium current to `R_SB` and the device ratio instead of to
+`VIN/R`, and a passive startup trickle (`M_ENSTART`/`R_START`) to break the
+loop's degenerate `I=0` solution. This was fully implemented in place of
+`R_BIAS`/`M_BIASN1`/`M_BIASN2`/`M_BIASP1`.
+
+- *A real bug, found and fixed en route.* Both new resistors (`R_SB`,
+  `R_START`) were missing their third (body) `lab_pin` terminal that
+  `sky130_fd_pr__res_high_po`/`res_xhigh_po` require — xschem silently
+  auto-named the unconnected pin a floating net (`net1`/`net2`) rather than
+  erroring, and ngspice reported `"singular matrix: check node net1"` on
+  every `.op`. Fixed by tying the body pin to `0`, the same convention
+  `R_BIAS` already used.
+- *After that fix, the loop still does not settle at its intended
+  operating point.* A real transient startup check (`EN` ramping 0→`VIN`
+  over a few µs, not a bare cold `.op` — this repo's own established
+  convention for exactly this class of question, see "Thermal shutdown"
+  and the `enable-shutdown` testbench's rising-edge note in
+  `sim/README.md`) settles into a genuine, stable-but-wrong high-current
+  branch at every load point tried (`tt`/27°C, `VIN=3.3V`, 0/1/50 mA):
+  `NB` pulled to ≈3.297 V (≈`VIN`), `BIASP` pulled to ≈0.673 V, and total
+  supply current ≈1 mA at 0 mA external load — over 30× the DRAFT
+  `Iq < 30 µA` row, with `VOUT` collapsed to a few hundred µV to a few mV.
+  This reproduces from a *settled* transient (500 µs, values steady well
+  before the end of the run), not a one-shot `.op` artifact, and is
+  independent of `.nodeset` hints biasing the solver toward the intended
+  low-current point — the solver keeps returning to the same bad branch.
+- *Working, not-fully-proven diagnosis.* `M_BIASN2` (narrow, its gate
+  driven externally by `NB`) and the `M_BIASP1`/`M_BIASP2` mirror appear to
+  form a positive-feedback path: `NB` rising turns `M_BIASN2` on harder,
+  which pulls `BIASP` down, which raises `M_BIASP1`/`M_BIASP2`'s own
+  `Vsg`, which mirrors *more* current back into `NB` — reinforcing the rise
+  rather than correcting it. A rough hand estimate of the *intended*
+  equilibrium (weak inversion, `Vgs1−Vgs2 ≈ n·V_T·ln(K)` with `K=4`, set
+  against `R_SB≈1.22MΩ`) lands at tens of nA — three orders of magnitude
+  below where the simulated bad branch actually settles — suggesting the
+  positive-feedback loop's gain may never actually drop below unity at the
+  intended weak-inversion point with this sizing, rather than this being a
+  simple startup-kick sizing problem. Confirming that (and re-deriving a
+  sizing where the loop gain genuinely does cross unity, a real large-
+  signal stability analysis, not a trial-and-error re-tune) is **#79**'s
+  scope, not this issue's.
+
+**Candidate 2: cascode only the OTA's own PMOS pull-up mirror.** Narrower
+than Candidate 1: keep the original `R_BIAS`-referenced generator
+unchanged, and address only the second mechanism #60/#70's root-cause data
+named — "the current-mirror OTA's own pull-up path (`M_MIRP1`/`M_MIRP2`)...
+unlike the NMOS pull-down side..., the pull-up mirror's reference is
+itself referred to `VIN`." Added `M_MIRP1C` (a diode-connected PMOS
+stacked below `M_MIRP1`, generating a cascode-bias node `PBC`) and
+`M_MIRP2C` (cascoding `M_MIRP2`, gate=`PBC`, inserted between `M_MIRP2`'s
+drain and `EA_OUT`) — a standard low-voltage cascode-mirror bias generation
+(Razavi ch.9), not a new gain stage (both new turnaround nodes are still
+low-impedance/diode-loaded).
+
+- Netlisted cleanly and **regulated correctly at all three DR-002 load
+  points** (0/1/50 mA, `tt`/27°C/3.3V: `VOUT` 1.8007–1.8035V), unlike
+  Candidate 1 — this alone is a real, isolated, working change.
+- **Screened PSRR at 1 kHz did not show a material improvement, and
+  regressed at one corner.** Quick 3-corner subset (`tt_27c_3.30v`/
+  `ss_-40c_2.97v`/`ff_125c_3.63v`), against the pre-#70 baseline
+  (`sim/psrr-dc` record `20260818-015127-01b7905`, 1 kHz: 23.3/23.6/22.4 dB):
+
+  | Corner | Baseline (pre-#70) | Candidate 2 (cascode only) |
+  |---|---|---|
+  | `tt_27c_3.30v` | 23.3 dB | 23.2 dB (unchanged) |
+  | `ss_-40c_2.97v` | 23.6 dB | **17.6 dB (regression)** |
+  | `ff_125c_3.63v` | 22.4 dB | 76.6 dB* |
+
+  \*`ff_125c_3.63v` is the thermal-shutdown false-trip corner #69 already
+  root-caused — its high number is AC gain around a collapsed,
+  non-regulating bias point, not real PSRR headroom, in either record.
+  100 kHz PSRR improved modestly at `ss` (37.0 dB vs. the baseline record's
+  31.7 dB) but both already clear the 20 dB bound there, so it changes no
+  verdict. Given no material 1 kHz improvement and an outright regression
+  at one corner, this candidate was **not committed** either.
+- *Working theory for why cascoding the feedthrough path did not help.*
+  1 kHz sits well below this bias point's own loop crossover — the
+  0 mA/1 mA points' crossover is far lower than the 50 mA/0.33 µF corner's
+  measured 150–190 kHz (see "Compensation (sized in #25)"), so PSRR at
+  1 kHz is more likely **loop-gain-limited** than feedthrough-limited at
+  this bias point, consistent with this file's existing "PSRR at a given
+  frequency tracks loop gain at that frequency" note. Cascoding a
+  feedthrough path that is not the dominant term at 1 kHz would not be
+  expected to move the number much either way — which is what was measured.
+
+**Candidate 3 (stability side): a preload resistor from `VOUT` to
+ground.** Per #70's own "Suspected Cause" (b), raising the light-load pass
+current should raise `gm_pass` and push the pass-stage pole up in
+frequency, directly targeting the documented 15–24° 0 mA phase-margin
+shortfall.
+
+- A hand-rolled AC screening deck (fresh cold `.op`, `RLOAD` swept from
+  1 MΩ down to 100 kΩ in parallel with the internal feedback divider, not
+  routed through `corner-run.py`) showed the loop crossover frequency
+  rising markedly — 283 Hz → 1647 Hz, ~5.8× — as total quiescent current
+  rose from ≈13 µA to ≈31 µA. Directionally promising.
+- **This result is not trustworthy evidence for the real 0 mA branch,
+  and was not further pursued in this pass.** A real `sim/loop-gain
+  --quick` corner run against the identical (Candidate-2, then fully
+  reverted) schematic measured `pm_c033_0ma_deg` = 19.19°/15.64° at
+  `tt`/`ss` — matching this file's already-documented baseline almost
+  exactly. But the hand-rolled deck's own phase-margin figure at the
+  nominal same operating point computed to ≈177°, wildly different. The
+  most likely explanation: `corner-run.py`'s deck reaches the 0 mA point
+  by `alter`-ing `rload` down from the 50 mA point's already-converged
+  operating point, while the hand-rolled deck solved a fresh cold `.op`
+  directly at the light-load point — and this schematic already has a
+  documented DC-solution-multiplicity finding (mechanism 4 above, sibling
+  issue **#71**'s scope) where a cold solve and an alter-continuation
+  solve can land on different valid branches for the same nominal bias
+  condition. **The crossover-frequency trend is real evidence the preload
+  current changes the small-signal behaviour, but it was measured on a
+  branch that is not confirmed to be the same branch the documented
+  15–24° PM shortfall lives on**, so it is not treated as a validated fix
+  here.
+- Independent of that ambiguity, the `Iq` headroom for any preload is
+  tight regardless: "Quiescent and shutdown current" above measures
+  24.9 µA at 50 mA against the DRAFT `Iq < 30 µA` row, leaving only ≈5 µA
+  of room for a preload that adds current at *every* load point (not just
+  at 0 mA) before that row itself would be missed.
+
+**Net effect on the DRAFT spec rows.** PSRR and Stability remain **open**,
+exactly as mechanisms 2 and 5 in the campaign section above describe —
+this investigation did not close either. Per `CLAUDE.md`'s "a row that
+proves unmeetable is superseded by a new decision record, never silently
+loosened" discipline, no DRAFT row was touched: both the 50 dB PSRR row
+and the 45° Stability row stand as written, and the two screened-but-
+rejected candidates above are recorded as real, if negative, findings
+rather than folded into a claim of progress. **#79** carries the
+investigation forward with this section's data as its starting point.
+
 ## Validating this schematic
 
 ```bash
