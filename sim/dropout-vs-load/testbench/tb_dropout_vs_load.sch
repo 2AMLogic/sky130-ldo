@@ -59,8 +59,17 @@ v {xschem version=3.4.7 file_version=1.2
 *   dropout-vs-load's 125C corners (all processes, widening the existing
 *   ff/sf-only exclusion) should be read with the same "solver artifact, not
 *   a real measurement" caution already applied to ff/sf's 125C numbers, not
-*   evaluated as real dropout results -- tracked as a follow-up, #81. See
-*   design/README.md's campaign section for the full writeup and evidence.
+*   evaluated as real dropout results. **Root-caused by #81**: most of the
+*   extreme campaign numbers are outright Newton non-convergence (garbage
+*   that fails the divider's own algebra), but a settled UIC transient with
+*   VOUT's own capacitor seeded exactly at the intended 1.8V point (the one
+*   true reactive state in this loop) reliably drifts away to a DIFFERENT,
+*   genuinely stable, non-regulating equilibrium at 125C (tt/ss/fs all
+*   checked at Vin=3.60V/50mA) -- a real circuit robustness gap, not a
+*   solver-seeding problem (`.nodeset`/`.ic`/`gminsteps=0` hardening tried,
+*   none fixed it). Fix deferred to #79 (shares root cause with mechanism
+*   2's light-load stability shortfall). See design/README.md's campaign
+*   section ("#71/#81 resolved") for the full writeup and evidence.
 *
 * VREF is a fixed 1.2V placeholder per design/README.md's "VREF interface
 * caveat" -- matching the 1:2 feedback-divider ratio issue #22 revised the
