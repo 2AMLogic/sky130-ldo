@@ -1,0 +1,4661 @@
+{
+  "author": "ci@loom.test",
+  "corners": [
+    {
+      "corner_id": "tt_-40c_2.97v",
+      "elapsed_s": 55.739,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/enable-shutdown/corners/20260825-073259-64c17cb/tt_-40c_2.97v.log",
+      "measurements": [
+        {
+          "expr": "-1e6*op1.i(vvin)",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_static_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0001307218
+        },
+        {
+          "expr": "-1e6*tran1.iq_worst",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_after_edge_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0003795177
+        },
+        {
+          "expr": "-1e6*tran1.iq_avg",
+          "max": null,
+          "min": null,
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0001680654
+        },
+        {
+          "expr": "1e6*op2.i(vforce)",
+          "max": 1.0,
+          "min": null,
+          "name": "leak_vin_vout_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 7.425084e-05
+        },
+        {
+          "expr": "tran1.vpre",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_pre_disable_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.809964
+        },
+        {
+          "expr": "tran1.vhold",
+          "max": null,
+          "min": 1.764,
+          "name": "vout_hold_2ms_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.808767
+        },
+        {
+          "expr": "op1.v(vout)",
+          "max": null,
+          "min": null,
+          "name": "vout_disabled_static_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.0002318128
+        },
+        {
+          "expr": "-1e6*op3.i(vforce)",
+          "max": null,
+          "min": null,
+          "name": "ivout_held_1v8_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.5766567
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "tt",
+      "supply_v": 2.97,
+      "temperature_c": -40.0,
+      "timed_out": false,
+      "timeout_s": 300
+    },
+    {
+      "corner_id": "tt_-40c_3.30v",
+      "elapsed_s": 122.368,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/enable-shutdown/corners/20260825-073259-64c17cb/tt_-40c_3.30v.log",
+      "measurements": [
+        {
+          "expr": "-1e6*op1.i(vvin)",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_static_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.000145805
+        },
+        {
+          "expr": "-1e6*tran1.iq_worst",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_after_edge_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.001733159
+        },
+        {
+          "expr": "-1e6*tran1.iq_avg",
+          "max": null,
+          "min": null,
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0001852575
+        },
+        {
+          "expr": "1e6*op2.i(vforce)",
+          "max": 1.0,
+          "min": null,
+          "name": "leak_vin_vout_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 8.250205e-05
+        },
+        {
+          "expr": "tran1.vpre",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_pre_disable_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.808831
+        },
+        {
+          "expr": "tran1.vhold",
+          "max": null,
+          "min": 1.764,
+          "name": "vout_hold_2ms_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.807637
+        },
+        {
+          "expr": "op1.v(vout)",
+          "max": null,
+          "min": null,
+          "name": "vout_disabled_static_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.0002575732
+        },
+        {
+          "expr": "-1e6*op3.i(vforce)",
+          "max": null,
+          "min": null,
+          "name": "ivout_held_1v8_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.5766485
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "tt",
+      "supply_v": 3.3,
+      "temperature_c": -40.0,
+      "timed_out": false,
+      "timeout_s": 300
+    },
+    {
+      "corner_id": "tt_-40c_3.63v",
+      "elapsed_s": 109.948,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/enable-shutdown/corners/20260825-073259-64c17cb/tt_-40c_3.63v.log",
+      "measurements": [
+        {
+          "expr": "-1e6*op1.i(vvin)",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_static_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0001611536
+        },
+        {
+          "expr": "-1e6*tran1.iq_worst",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_after_edge_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0008814991
+        },
+        {
+          "expr": "-1e6*tran1.iq_avg",
+          "max": null,
+          "min": null,
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0002031157
+        },
+        {
+          "expr": "1e6*op2.i(vforce)",
+          "max": 1.0,
+          "min": null,
+          "name": "leak_vin_vout_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 9.081657e-05
+        },
+        {
+          "expr": "tran1.vpre",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_pre_disable_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.807991
+        },
+        {
+          "expr": "tran1.vhold",
+          "max": null,
+          "min": 1.764,
+          "name": "vout_hold_2ms_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.806803
+        },
+        {
+          "expr": "op1.v(vout)",
+          "max": null,
+          "min": null,
+          "name": "vout_disabled_static_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.0002835307
+        },
+        {
+          "expr": "-1e6*op3.i(vforce)",
+          "max": null,
+          "min": null,
+          "name": "ivout_held_1v8_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.5766403
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "tt",
+      "supply_v": 3.63,
+      "temperature_c": -40.0,
+      "timed_out": false,
+      "timeout_s": 300
+    },
+    {
+      "corner_id": "tt_27c_2.97v",
+      "elapsed_s": 85.906,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/enable-shutdown/corners/20260825-073259-64c17cb/tt_27c_2.97v.log",
+      "measurements": [
+        {
+          "expr": "-1e6*op1.i(vvin)",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_static_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.000152505
+        },
+        {
+          "expr": "-1e6*tran1.iq_worst",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_after_edge_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0002522116
+        },
+        {
+          "expr": "-1e6*tran1.iq_avg",
+          "max": null,
+          "min": null,
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0001880999
+        },
+        {
+          "expr": "1e6*op2.i(vforce)",
+          "max": 1.0,
+          "min": null,
+          "name": "leak_vin_vout_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 7.944849e-05
+        },
+        {
+          "expr": "tran1.vpre",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_pre_disable_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.814764
+        },
+        {
+          "expr": "tran1.vhold",
+          "max": null,
+          "min": 1.764,
+          "name": "vout_hold_2ms_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.813561
+        },
+        {
+          "expr": "op1.v(vout)",
+          "max": null,
+          "min": null,
+          "name": "vout_disabled_static_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.0002480387
+        },
+        {
+          "expr": "-1e6*op3.i(vforce)",
+          "max": null,
+          "min": null,
+          "name": "ivout_held_1v8_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.5766521
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "tt",
+      "supply_v": 2.97,
+      "temperature_c": 27.0,
+      "timed_out": false,
+      "timeout_s": 300
+    },
+    {
+      "corner_id": "tt_27c_3.30v",
+      "elapsed_s": 123.462,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/enable-shutdown/corners/20260825-073259-64c17cb/tt_27c_3.30v.log",
+      "measurements": [
+        {
+          "expr": "-1e6*op1.i(vvin)",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_static_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0001704902
+        },
+        {
+          "expr": "-1e6*tran1.iq_worst",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_after_edge_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.001414205
+        },
+        {
+          "expr": "-1e6*tran1.iq_avg",
+          "max": null,
+          "min": null,
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0002052813
+        },
+        {
+          "expr": "1e6*op2.i(vforce)",
+          "max": 1.0,
+          "min": null,
+          "name": "leak_vin_vout_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 8.90954e-05
+        },
+        {
+          "expr": "tran1.vpre",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_pre_disable_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.813511
+        },
+        {
+          "expr": "tran1.vhold",
+          "max": null,
+          "min": 1.764,
+          "name": "vout_hold_2ms_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.81231
+        },
+        {
+          "expr": "op1.v(vout)",
+          "max": null,
+          "min": null,
+          "name": "vout_disabled_static_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.0002781547
+        },
+        {
+          "expr": "-1e6*op3.i(vforce)",
+          "max": null,
+          "min": null,
+          "name": "ivout_held_1v8_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.5766434
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "tt",
+      "supply_v": 3.3,
+      "temperature_c": 27.0,
+      "timed_out": false,
+      "timeout_s": 300
+    },
+    {
+      "corner_id": "tt_27c_3.63v",
+      "elapsed_s": 124.237,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/enable-shutdown/corners/20260825-073259-64c17cb/tt_27c_3.63v.log",
+      "measurements": [
+        {
+          "expr": "-1e6*op1.i(vvin)",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_static_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0001896571
+        },
+        {
+          "expr": "-1e6*tran1.iq_worst",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_after_edge_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.001790533
+        },
+        {
+          "expr": "-1e6*tran1.iq_avg",
+          "max": null,
+          "min": null,
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0002234223
+        },
+        {
+          "expr": "1e6*op2.i(vforce)",
+          "max": 1.0,
+          "min": null,
+          "name": "leak_vin_vout_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 9.968418e-05
+        },
+        {
+          "expr": "tran1.vpre",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_pre_disable_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.812495
+        },
+        {
+          "expr": "tran1.vhold",
+          "max": null,
+          "min": 1.764,
+          "name": "vout_hold_2ms_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.811298
+        },
+        {
+          "expr": "op1.v(vout)",
+          "max": null,
+          "min": null,
+          "name": "vout_disabled_static_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.0003112086
+        },
+        {
+          "expr": "-1e6*op3.i(vforce)",
+          "max": null,
+          "min": null,
+          "name": "ivout_held_1v8_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.5766345
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "tt",
+      "supply_v": 3.63,
+      "temperature_c": 27.0,
+      "timed_out": false,
+      "timeout_s": 300
+    },
+    {
+      "corner_id": "tt_125c_2.97v",
+      "elapsed_s": 68.667,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/enable-shutdown/corners/20260825-073259-64c17cb/tt_125c_2.97v.log",
+      "measurements": [
+        {
+          "expr": "-1e6*op1.i(vvin)",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_static_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0118425
+        },
+        {
+          "expr": "-1e6*tran1.iq_worst",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_after_edge_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.00719706
+        },
+        {
+          "expr": "-1e6*tran1.iq_avg",
+          "max": null,
+          "min": null,
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.006877083
+        },
+        {
+          "expr": "1e6*op2.i(vforce)",
+          "max": 1.0,
+          "min": null,
+          "name": "leak_vin_vout_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.009948619
+        },
+        {
+          "expr": "tran1.vpre",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_pre_disable_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.821152
+        },
+        {
+          "expr": "tran1.vhold",
+          "max": null,
+          "min": 1.764,
+          "name": "vout_hold_2ms_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.819958
+        },
+        {
+          "expr": "op1.v(vout)",
+          "max": null,
+          "min": null,
+          "name": "vout_disabled_static_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.03056915
+        },
+        {
+          "expr": "-1e6*op3.i(vforce)",
+          "max": null,
+          "min": null,
+          "name": "ivout_held_1v8_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.5721408
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "tt",
+      "supply_v": 2.97,
+      "temperature_c": 125.0,
+      "timed_out": false,
+      "timeout_s": 300
+    },
+    {
+      "corner_id": "tt_125c_3.30v",
+      "elapsed_s": 95.929,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/enable-shutdown/corners/20260825-073259-64c17cb/tt_125c_3.30v.log",
+      "measurements": [
+        {
+          "expr": "-1e6*op1.i(vvin)",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_static_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.01403845
+        },
+        {
+          "expr": "-1e6*tran1.iq_worst",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_after_edge_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.008613145
+        },
+        {
+          "expr": "-1e6*tran1.iq_avg",
+          "max": null,
+          "min": null,
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.007780516
+        },
+        {
+          "expr": "1e6*op2.i(vforce)",
+          "max": 1.0,
+          "min": null,
+          "name": "leak_vin_vout_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.01211239
+        },
+        {
+          "expr": "tran1.vpre",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_pre_disable_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.82029
+        },
+        {
+          "expr": "tran1.vhold",
+          "max": null,
+          "min": 1.764,
+          "name": "vout_hold_2ms_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.819101
+        },
+        {
+          "expr": "op1.v(vout)",
+          "max": null,
+          "min": null,
+          "name": "vout_disabled_static_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.03689883
+        },
+        {
+          "expr": "-1e6*op3.i(vforce)",
+          "max": null,
+          "min": null,
+          "name": "ivout_held_1v8_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.5714336
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "tt",
+      "supply_v": 3.3,
+      "temperature_c": 125.0,
+      "timed_out": false,
+      "timeout_s": 300
+    },
+    {
+      "corner_id": "tt_125c_3.63v",
+      "elapsed_s": 74.112,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/enable-shutdown/corners/20260825-073259-64c17cb/tt_125c_3.63v.log",
+      "measurements": [
+        {
+          "expr": "-1e6*op1.i(vvin)",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_static_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.01740957
+        },
+        {
+          "expr": "-1e6*tran1.iq_worst",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_after_edge_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.009826189
+        },
+        {
+          "expr": "-1e6*tran1.iq_avg",
+          "max": null,
+          "min": null,
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.008769404
+        },
+        {
+          "expr": "1e6*op2.i(vforce)",
+          "max": 1.0,
+          "min": null,
+          "name": "leak_vin_vout_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.01562439
+        },
+        {
+          "expr": "tran1.vpre",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_pre_disable_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.819591
+        },
+        {
+          "expr": "tran1.vhold",
+          "max": null,
+          "min": 1.764,
+          "name": "vout_hold_2ms_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.818408
+        },
+        {
+          "expr": "op1.v(vout)",
+          "max": null,
+          "min": null,
+          "name": "vout_disabled_static_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.04686097
+        },
+        {
+          "expr": "-1e6*op3.i(vforce)",
+          "max": null,
+          "min": null,
+          "name": "ivout_held_1v8_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.5706486
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "tt",
+      "supply_v": 3.63,
+      "temperature_c": 125.0,
+      "timed_out": false,
+      "timeout_s": 300
+    },
+    {
+      "corner_id": "ss_-40c_2.97v",
+      "elapsed_s": 45.038,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/enable-shutdown/corners/20260825-073259-64c17cb/ss_-40c_2.97v.log",
+      "measurements": [
+        {
+          "expr": "-1e6*op1.i(vvin)",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_static_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0001302067
+        },
+        {
+          "expr": "-1e6*tran1.iq_worst",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_after_edge_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0006283006
+        },
+        {
+          "expr": "-1e6*tran1.iq_avg",
+          "max": null,
+          "min": null,
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0001667759
+        },
+        {
+          "expr": "1e6*op2.i(vforce)",
+          "max": 1.0,
+          "min": null,
+          "name": "leak_vin_vout_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 7.425016e-05
+        },
+        {
+          "expr": "tran1.vpre",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_pre_disable_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.809372
+        },
+        {
+          "expr": "tran1.vhold",
+          "max": null,
+          "min": 1.764,
+          "name": "vout_hold_2ms_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.808181
+        },
+        {
+          "expr": "op1.v(vout)",
+          "max": null,
+          "min": null,
+          "name": "vout_disabled_static_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.0002318106
+        },
+        {
+          "expr": "-1e6*op3.i(vforce)",
+          "max": null,
+          "min": null,
+          "name": "ivout_held_1v8_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.5766567
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "ss",
+      "supply_v": 2.97,
+      "temperature_c": -40.0,
+      "timed_out": false,
+      "timeout_s": 300
+    },
+    {
+      "corner_id": "ss_-40c_3.30v",
+      "elapsed_s": 90.461,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/enable-shutdown/corners/20260825-073259-64c17cb/ss_-40c_3.30v.log",
+      "measurements": [
+        {
+          "expr": "-1e6*op1.i(vvin)",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_static_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0001453073
+        },
+        {
+          "expr": "-1e6*tran1.iq_worst",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_after_edge_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0005881188
+        },
+        {
+          "expr": "-1e6*tran1.iq_avg",
+          "max": null,
+          "min": null,
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0001814677
+        },
+        {
+          "expr": "1e6*op2.i(vforce)",
+          "max": 1.0,
+          "min": null,
+          "name": "leak_vin_vout_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 8.250165e-05
+        },
+        {
+          "expr": "tran1.vpre",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_pre_disable_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.8083
+        },
+        {
+          "expr": "tran1.vhold",
+          "max": null,
+          "min": 1.764,
+          "name": "vout_hold_2ms_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.807113
+        },
+        {
+          "expr": "op1.v(vout)",
+          "max": null,
+          "min": null,
+          "name": "vout_disabled_static_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.000257572
+        },
+        {
+          "expr": "-1e6*op3.i(vforce)",
+          "max": null,
+          "min": null,
+          "name": "ivout_held_1v8_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.5766485
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "ss",
+      "supply_v": 3.3,
+      "temperature_c": -40.0,
+      "timed_out": false,
+      "timeout_s": 300
+    },
+    {
+      "corner_id": "ss_-40c_3.63v",
+      "elapsed_s": 87.318,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/enable-shutdown/corners/20260825-073259-64c17cb/ss_-40c_3.63v.log",
+      "measurements": [
+        {
+          "expr": "-1e6*op1.i(vvin)",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_static_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0001605683
+        },
+        {
+          "expr": "-1e6*tran1.iq_worst",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_after_edge_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.001554087
+        },
+        {
+          "expr": "-1e6*tran1.iq_avg",
+          "max": null,
+          "min": null,
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0001983118
+        },
+        {
+          "expr": "1e6*op2.i(vforce)",
+          "max": 1.0,
+          "min": null,
+          "name": "leak_vin_vout_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 9.082945e-05
+        },
+        {
+          "expr": "tran1.vpre",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_pre_disable_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.807518
+        },
+        {
+          "expr": "tran1.vhold",
+          "max": null,
+          "min": 1.764,
+          "name": "vout_hold_2ms_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.806336
+        },
+        {
+          "expr": "op1.v(vout)",
+          "max": null,
+          "min": null,
+          "name": "vout_disabled_static_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.0002835708
+        },
+        {
+          "expr": "-1e6*op3.i(vforce)",
+          "max": null,
+          "min": null,
+          "name": "ivout_held_1v8_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.5766401
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "ss",
+      "supply_v": 3.63,
+      "temperature_c": -40.0,
+      "timed_out": false,
+      "timeout_s": 300
+    },
+    {
+      "corner_id": "ss_27c_2.97v",
+      "elapsed_s": 41.535,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/enable-shutdown/corners/20260825-073259-64c17cb/ss_27c_2.97v.log",
+      "measurements": [
+        {
+          "expr": "-1e6*op1.i(vvin)",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_static_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0001397345
+        },
+        {
+          "expr": "-1e6*tran1.iq_worst",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_after_edge_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.00026828
+        },
+        {
+          "expr": "-1e6*tran1.iq_avg",
+          "max": null,
+          "min": null,
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0001792593
+        },
+        {
+          "expr": "1e6*op2.i(vforce)",
+          "max": 1.0,
+          "min": null,
+          "name": "leak_vin_vout_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 7.563464e-05
+        },
+        {
+          "expr": "tran1.vpre",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_pre_disable_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.814264
+        },
+        {
+          "expr": "tran1.vhold",
+          "max": null,
+          "min": 1.764,
+          "name": "vout_hold_2ms_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.813062
+        },
+        {
+          "expr": "op1.v(vout)",
+          "max": null,
+          "min": null,
+          "name": "vout_disabled_static_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.0002361337
+        },
+        {
+          "expr": "-1e6*op3.i(vforce)",
+          "max": null,
+          "min": null,
+          "name": "ivout_held_1v8_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.5766529
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "ss",
+      "supply_v": 2.97,
+      "temperature_c": 27.0,
+      "timed_out": false,
+      "timeout_s": 300
+    },
+    {
+      "corner_id": "ss_27c_3.30v",
+      "elapsed_s": 74.883,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/enable-shutdown/corners/20260825-073259-64c17cb/ss_27c_3.30v.log",
+      "measurements": [
+        {
+          "expr": "-1e6*op1.i(vvin)",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_static_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0001557148
+        },
+        {
+          "expr": "-1e6*tran1.iq_worst",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_after_edge_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.001188388
+        },
+        {
+          "expr": "-1e6*tran1.iq_avg",
+          "max": null,
+          "min": null,
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0001951383
+        },
+        {
+          "expr": "1e6*op2.i(vforce)",
+          "max": 1.0,
+          "min": null,
+          "name": "leak_vin_vout_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 8.416879e-05
+        },
+        {
+          "expr": "tran1.vpre",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_pre_disable_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.812971
+        },
+        {
+          "expr": "tran1.vhold",
+          "max": null,
+          "min": 1.764,
+          "name": "vout_hold_2ms_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.811772
+        },
+        {
+          "expr": "op1.v(vout)",
+          "max": null,
+          "min": null,
+          "name": "vout_disabled_static_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.0002627774
+        },
+        {
+          "expr": "-1e6*op3.i(vforce)",
+          "max": null,
+          "min": null,
+          "name": "ivout_held_1v8_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.5766447
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "ss",
+      "supply_v": 3.3,
+      "temperature_c": 27.0,
+      "timed_out": false,
+      "timeout_s": 300
+    },
+    {
+      "corner_id": "ss_27c_3.63v",
+      "elapsed_s": 97.909,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/enable-shutdown/corners/20260825-073259-64c17cb/ss_27c_3.63v.log",
+      "measurements": [
+        {
+          "expr": "-1e6*op1.i(vvin)",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_static_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0001719805
+        },
+        {
+          "expr": "-1e6*tran1.iq_worst",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_after_edge_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0005939553
+        },
+        {
+          "expr": "-1e6*tran1.iq_avg",
+          "max": null,
+          "min": null,
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0002119477
+        },
+        {
+          "expr": "1e6*op2.i(vforce)",
+          "max": 1.0,
+          "min": null,
+          "name": "leak_vin_vout_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 9.291167e-05
+        },
+        {
+          "expr": "tran1.vpre",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_pre_disable_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.811936
+        },
+        {
+          "expr": "tran1.vhold",
+          "max": null,
+          "min": 1.764,
+          "name": "vout_hold_2ms_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.81074
+        },
+        {
+          "expr": "op1.v(vout)",
+          "max": null,
+          "min": null,
+          "name": "vout_disabled_static_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.0002900717
+        },
+        {
+          "expr": "-1e6*op3.i(vforce)",
+          "max": null,
+          "min": null,
+          "name": "ivout_held_1v8_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.5766363
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "ss",
+      "supply_v": 3.63,
+      "temperature_c": 27.0,
+      "timed_out": false,
+      "timeout_s": 300
+    },
+    {
+      "corner_id": "ss_125c_2.97v",
+      "elapsed_s": 43.542,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/enable-shutdown/corners/20260825-073259-64c17cb/ss_125c_2.97v.log",
+      "measurements": [
+        {
+          "expr": "-1e6*op1.i(vvin)",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_static_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.005034286
+        },
+        {
+          "expr": "-1e6*tran1.iq_worst",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_after_edge_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.004118814
+        },
+        {
+          "expr": "-1e6*tran1.iq_avg",
+          "max": null,
+          "min": null,
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.003454527
+        },
+        {
+          "expr": "1e6*op2.i(vforce)",
+          "max": 1.0,
+          "min": null,
+          "name": "leak_vin_vout_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.003883107
+        },
+        {
+          "expr": "tran1.vpre",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_pre_disable_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.821062
+        },
+        {
+          "expr": "tran1.vhold",
+          "max": null,
+          "min": 1.764,
+          "name": "vout_hold_2ms_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.819861
+        },
+        {
+          "expr": "op1.v(vout)",
+          "max": null,
+          "min": null,
+          "name": "vout_disabled_static_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.01206452
+        },
+        {
+          "expr": "-1e6*op3.i(vforce)",
+          "max": null,
+          "min": null,
+          "name": "ivout_held_1v8_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.57472
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "ss",
+      "supply_v": 2.97,
+      "temperature_c": 125.0,
+      "timed_out": false,
+      "timeout_s": 300
+    },
+    {
+      "corner_id": "ss_125c_3.30v",
+      "elapsed_s": 77.816,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/enable-shutdown/corners/20260825-073259-64c17cb/ss_125c_3.30v.log",
+      "measurements": [
+        {
+          "expr": "-1e6*op1.i(vvin)",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_static_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.005717444
+        },
+        {
+          "expr": "-1e6*tran1.iq_worst",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_after_edge_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.005008477
+        },
+        {
+          "expr": "-1e6*tran1.iq_avg",
+          "max": null,
+          "min": null,
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.003837783
+        },
+        {
+          "expr": "1e6*op2.i(vforce)",
+          "max": 1.0,
+          "min": null,
+          "name": "leak_vin_vout_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.00449492
+        },
+        {
+          "expr": "tran1.vpre",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_pre_disable_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.820083
+        },
+        {
+          "expr": "tran1.vhold",
+          "max": null,
+          "min": 1.764,
+          "name": "vout_hold_2ms_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.818886
+        },
+        {
+          "expr": "op1.v(vout)",
+          "max": null,
+          "min": null,
+          "name": "vout_disabled_static_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.01393911
+        },
+        {
+          "expr": "-1e6*op3.i(vforce)",
+          "max": null,
+          "min": null,
+          "name": "ivout_held_1v8_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.5744489
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "ss",
+      "supply_v": 3.3,
+      "temperature_c": 125.0,
+      "timed_out": false,
+      "timeout_s": 300
+    },
+    {
+      "corner_id": "ss_125c_3.63v",
+      "elapsed_s": 82.538,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/enable-shutdown/corners/20260825-073259-64c17cb/ss_125c_3.63v.log",
+      "measurements": [
+        {
+          "expr": "-1e6*op1.i(vvin)",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_static_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.006676579
+        },
+        {
+          "expr": "-1e6*tran1.iq_worst",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_after_edge_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.005208105
+        },
+        {
+          "expr": "-1e6*tran1.iq_avg",
+          "max": null,
+          "min": null,
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.004253836
+        },
+        {
+          "expr": "1e6*op2.i(vforce)",
+          "max": 1.0,
+          "min": null,
+          "name": "leak_vin_vout_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.005389656
+        },
+        {
+          "expr": "tran1.vpre",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_pre_disable_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.819243
+        },
+        {
+          "expr": "tran1.vhold",
+          "max": null,
+          "min": 1.764,
+          "name": "vout_hold_2ms_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.81805
+        },
+        {
+          "expr": "op1.v(vout)",
+          "max": null,
+          "min": null,
+          "name": "vout_disabled_static_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.0166557
+        },
+        {
+          "expr": "-1e6*op3.i(vforce)",
+          "max": null,
+          "min": null,
+          "name": "ivout_held_1v8_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.5741532
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "ss",
+      "supply_v": 3.63,
+      "temperature_c": 125.0,
+      "timed_out": false,
+      "timeout_s": 300
+    },
+    {
+      "corner_id": "ff_-40c_2.97v",
+      "elapsed_s": 78.267,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/enable-shutdown/corners/20260825-073259-64c17cb/ff_-40c_2.97v.log",
+      "measurements": [
+        {
+          "expr": "-1e6*op1.i(vvin)",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_static_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0001311247
+        },
+        {
+          "expr": "-1e6*tran1.iq_worst",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_after_edge_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.001211196
+        },
+        {
+          "expr": "-1e6*tran1.iq_avg",
+          "max": null,
+          "min": null,
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0001705886
+        },
+        {
+          "expr": "1e6*op2.i(vforce)",
+          "max": 1.0,
+          "min": null,
+          "name": "leak_vin_vout_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 7.425508e-05
+        },
+        {
+          "expr": "tran1.vpre",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_pre_disable_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.810513
+        },
+        {
+          "expr": "tran1.vhold",
+          "max": null,
+          "min": 1.764,
+          "name": "vout_hold_2ms_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.809312
+        },
+        {
+          "expr": "op1.v(vout)",
+          "max": null,
+          "min": null,
+          "name": "vout_disabled_static_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.000231826
+        },
+        {
+          "expr": "-1e6*op3.i(vforce)",
+          "max": null,
+          "min": null,
+          "name": "ivout_held_1v8_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.5766569
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "ff",
+      "supply_v": 2.97,
+      "temperature_c": -40.0,
+      "timed_out": false,
+      "timeout_s": 300
+    },
+    {
+      "corner_id": "ff_-40c_3.30v",
+      "elapsed_s": 88.586,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/enable-shutdown/corners/20260825-073259-64c17cb/ff_-40c_3.30v.log",
+      "measurements": [
+        {
+          "expr": "-1e6*op1.i(vvin)",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_static_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0001464654
+        },
+        {
+          "expr": "-1e6*tran1.iq_worst",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_after_edge_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0002751219
+        },
+        {
+          "expr": "-1e6*tran1.iq_avg",
+          "max": null,
+          "min": null,
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0001869201
+        },
+        {
+          "expr": "1e6*op2.i(vforce)",
+          "max": 1.0,
+          "min": null,
+          "name": "leak_vin_vout_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 8.250789e-05
+        },
+        {
+          "expr": "tran1.vpre",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_pre_disable_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.809332
+        },
+        {
+          "expr": "tran1.vhold",
+          "max": null,
+          "min": 1.764,
+          "name": "vout_hold_2ms_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.808135
+        },
+        {
+          "expr": "op1.v(vout)",
+          "max": null,
+          "min": null,
+          "name": "vout_disabled_static_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.0002575915
+        },
+        {
+          "expr": "-1e6*op3.i(vforce)",
+          "max": null,
+          "min": null,
+          "name": "ivout_held_1v8_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.5766485
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "ff",
+      "supply_v": 3.3,
+      "temperature_c": -40.0,
+      "timed_out": false,
+      "timeout_s": 300
+    },
+    {
+      "corner_id": "ff_-40c_3.63v",
+      "elapsed_s": 90.237,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/enable-shutdown/corners/20260825-073259-64c17cb/ff_-40c_3.63v.log",
+      "measurements": [
+        {
+          "expr": "-1e6*op1.i(vvin)",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_static_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0001617409
+        },
+        {
+          "expr": "-1e6*tran1.iq_worst",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_after_edge_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0006667107
+        },
+        {
+          "expr": "-1e6*tran1.iq_avg",
+          "max": null,
+          "min": null,
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0002028649
+        },
+        {
+          "expr": "1e6*op2.i(vforce)",
+          "max": 1.0,
+          "min": null,
+          "name": "leak_vin_vout_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 9.08145e-05
+        },
+        {
+          "expr": "tran1.vpre",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_pre_disable_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.808437
+        },
+        {
+          "expr": "tran1.vhold",
+          "max": null,
+          "min": 1.764,
+          "name": "vout_hold_2ms_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.807243
+        },
+        {
+          "expr": "op1.v(vout)",
+          "max": null,
+          "min": null,
+          "name": "vout_disabled_static_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.0002835243
+        },
+        {
+          "expr": "-1e6*op3.i(vforce)",
+          "max": null,
+          "min": null,
+          "name": "ivout_held_1v8_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.5766403
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "ff",
+      "supply_v": 3.63,
+      "temperature_c": -40.0,
+      "timed_out": false,
+      "timeout_s": 300
+    },
+    {
+      "corner_id": "ff_27c_2.97v",
+      "elapsed_s": 59.051,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/enable-shutdown/corners/20260825-073259-64c17cb/ff_27c_2.97v.log",
+      "measurements": [
+        {
+          "expr": "-1e6*op1.i(vvin)",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_static_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0001919016
+        },
+        {
+          "expr": "-1e6*tran1.iq_worst",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_after_edge_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.001394376
+        },
+        {
+          "expr": "-1e6*tran1.iq_avg",
+          "max": null,
+          "min": null,
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0002138435
+        },
+        {
+          "expr": "1e6*op2.i(vforce)",
+          "max": 1.0,
+          "min": null,
+          "name": "leak_vin_vout_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 9.513878e-05
+        },
+        {
+          "expr": "tran1.vpre",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_pre_disable_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.815145
+        },
+        {
+          "expr": "tran1.vhold",
+          "max": null,
+          "min": 1.764,
+          "name": "vout_hold_2ms_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.813941
+        },
+        {
+          "expr": "op1.v(vout)",
+          "max": null,
+          "min": null,
+          "name": "vout_disabled_static_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.0002970106
+        },
+        {
+          "expr": "-1e6*op3.i(vforce)",
+          "max": null,
+          "min": null,
+          "name": "ivout_held_1v8_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.5766467
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "ff",
+      "supply_v": 2.97,
+      "temperature_c": 27.0,
+      "timed_out": false,
+      "timeout_s": 300
+    },
+    {
+      "corner_id": "ff_27c_3.30v",
+      "elapsed_s": 93.217,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/enable-shutdown/corners/20260825-073259-64c17cb/ff_27c_3.30v.log",
+      "measurements": [
+        {
+          "expr": "-1e6*op1.i(vvin)",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_static_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0002190338
+        },
+        {
+          "expr": "-1e6*tran1.iq_worst",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_after_edge_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.001391758
+        },
+        {
+          "expr": "-1e6*tran1.iq_avg",
+          "max": null,
+          "min": null,
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0002348572
+        },
+        {
+          "expr": "1e6*op2.i(vforce)",
+          "max": 1.0,
+          "min": null,
+          "name": "leak_vin_vout_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0001111818
+        },
+        {
+          "expr": "tran1.vpre",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_pre_disable_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.813936
+        },
+        {
+          "expr": "tran1.vhold",
+          "max": null,
+          "min": 1.764,
+          "name": "vout_hold_2ms_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.812735
+        },
+        {
+          "expr": "op1.v(vout)",
+          "max": null,
+          "min": null,
+          "name": "vout_disabled_static_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.0003470804
+        },
+        {
+          "expr": "-1e6*op3.i(vforce)",
+          "max": null,
+          "min": null,
+          "name": "ivout_held_1v8_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.576637
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "ff",
+      "supply_v": 3.3,
+      "temperature_c": 27.0,
+      "timed_out": false,
+      "timeout_s": 300
+    },
+    {
+      "corner_id": "ff_27c_3.63v",
+      "elapsed_s": 94.732,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/enable-shutdown/corners/20260825-073259-64c17cb/ff_27c_3.63v.log",
+      "measurements": [
+        {
+          "expr": "-1e6*op1.i(vvin)",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_static_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0002524491
+        },
+        {
+          "expr": "-1e6*tran1.iq_worst",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_after_edge_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.00164991
+        },
+        {
+          "expr": "-1e6*tran1.iq_avg",
+          "max": null,
+          "min": null,
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0002560202
+        },
+        {
+          "expr": "1e6*op2.i(vforce)",
+          "max": 1.0,
+          "min": null,
+          "name": "leak_vin_vout_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0001334237
+        },
+        {
+          "expr": "tran1.vpre",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_pre_disable_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.812944
+        },
+        {
+          "expr": "tran1.vhold",
+          "max": null,
+          "min": 1.764,
+          "name": "vout_hold_2ms_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.811746
+        },
+        {
+          "expr": "op1.v(vout)",
+          "max": null,
+          "min": null,
+          "name": "vout_disabled_static_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.0004164804
+        },
+        {
+          "expr": "-1e6*op3.i(vforce)",
+          "max": null,
+          "min": null,
+          "name": "ivout_held_1v8_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.576627
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "ff",
+      "supply_v": 3.63,
+      "temperature_c": 27.0,
+      "timed_out": false,
+      "timeout_s": 300
+    },
+    {
+      "corner_id": "ff_125c_2.97v",
+      "elapsed_s": 66.869,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/enable-shutdown/corners/20260825-073259-64c17cb/ff_125c_2.97v.log",
+      "measurements": [
+        {
+          "expr": "-1e6*op1.i(vvin)",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_static_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.03009951
+        },
+        {
+          "expr": "-1e6*tran1.iq_worst",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_after_edge_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.01567221
+        },
+        {
+          "expr": "-1e6*tran1.iq_avg",
+          "max": null,
+          "min": null,
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.01526099
+        },
+        {
+          "expr": "1e6*op2.i(vforce)",
+          "max": 1.0,
+          "min": null,
+          "name": "leak_vin_vout_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.02768902
+        },
+        {
+          "expr": "tran1.vpre",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_pre_disable_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.821054
+        },
+        {
+          "expr": "tran1.vhold",
+          "max": null,
+          "min": 1.764,
+          "name": "vout_hold_2ms_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.819877
+        },
+        {
+          "expr": "op1.v(vout)",
+          "max": null,
+          "min": null,
+          "name": "vout_disabled_static_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.08171912
+        },
+        {
+          "expr": "-1e6*op3.i(vforce)",
+          "max": null,
+          "min": null,
+          "name": "ivout_held_1v8_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.5655345
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "ff",
+      "supply_v": 2.97,
+      "temperature_c": 125.0,
+      "timed_out": false,
+      "timeout_s": 300
+    },
+    {
+      "corner_id": "ff_125c_3.30v",
+      "elapsed_s": 65.415,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/enable-shutdown/corners/20260825-073259-64c17cb/ff_125c_3.30v.log",
+      "measurements": [
+        {
+          "expr": "-1e6*op1.i(vvin)",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_static_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0373817
+        },
+        {
+          "expr": "-1e6*tran1.iq_worst",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_after_edge_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.01836285
+        },
+        {
+          "expr": "-1e6*tran1.iq_avg",
+          "max": null,
+          "min": null,
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.01754265
+        },
+        {
+          "expr": "1e6*op2.i(vforce)",
+          "max": 1.0,
+          "min": null,
+          "name": "leak_vin_vout_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.03634401
+        },
+        {
+          "expr": "tran1.vpre",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_pre_disable_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.820332
+        },
+        {
+          "expr": "tran1.vhold",
+          "max": null,
+          "min": 1.764,
+          "name": "vout_hold_2ms_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.819164
+        },
+        {
+          "expr": "op1.v(vout)",
+          "max": null,
+          "min": null,
+          "name": "vout_disabled_static_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.10334
+        },
+        {
+          "expr": "-1e6*op3.i(vforce)",
+          "max": null,
+          "min": null,
+          "name": "ivout_held_1v8_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.5636192
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "ff",
+      "supply_v": 3.3,
+      "temperature_c": 125.0,
+      "timed_out": false,
+      "timeout_s": 300
+    },
+    {
+      "corner_id": "ff_125c_3.63v",
+      "elapsed_s": 74.443,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/enable-shutdown/corners/20260825-073259-64c17cb/ff_125c_3.63v.log",
+      "measurements": [
+        {
+          "expr": "-1e6*op1.i(vvin)",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_static_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.04882693
+        },
+        {
+          "expr": "-1e6*tran1.iq_worst",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_after_edge_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.02143982
+        },
+        {
+          "expr": "-1e6*tran1.iq_avg",
+          "max": null,
+          "min": null,
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.02008525
+        },
+        {
+          "expr": "1e6*op2.i(vforce)",
+          "max": 1.0,
+          "min": null,
+          "name": "leak_vin_vout_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.05164267
+        },
+        {
+          "expr": "tran1.vpre",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_pre_disable_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.819781
+        },
+        {
+          "expr": "tran1.vhold",
+          "max": null,
+          "min": 1.764,
+          "name": "vout_hold_2ms_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.818624
+        },
+        {
+          "expr": "op1.v(vout)",
+          "max": null,
+          "min": null,
+          "name": "vout_disabled_static_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.1379016
+        },
+        {
+          "expr": "-1e6*op3.i(vforce)",
+          "max": null,
+          "min": null,
+          "name": "ivout_held_1v8_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.5614553
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "ff",
+      "supply_v": 3.63,
+      "temperature_c": 125.0,
+      "timed_out": false,
+      "timeout_s": 300
+    },
+    {
+      "corner_id": "sf_-40c_2.97v",
+      "elapsed_s": 89.071,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/enable-shutdown/corners/20260825-073259-64c17cb/sf_-40c_2.97v.log",
+      "measurements": [
+        {
+          "expr": "-1e6*op1.i(vvin)",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_static_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0001319908
+        },
+        {
+          "expr": "-1e6*tran1.iq_worst",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_after_edge_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.001456761
+        },
+        {
+          "expr": "-1e6*tran1.iq_avg",
+          "max": null,
+          "min": null,
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.000172991
+        },
+        {
+          "expr": "1e6*op2.i(vforce)",
+          "max": 1.0,
+          "min": null,
+          "name": "leak_vin_vout_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 7.425006e-05
+        },
+        {
+          "expr": "tran1.vpre",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_pre_disable_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.809094
+        },
+        {
+          "expr": "tran1.vhold",
+          "max": null,
+          "min": 1.764,
+          "name": "vout_hold_2ms_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.807909
+        },
+        {
+          "expr": "op1.v(vout)",
+          "max": null,
+          "min": null,
+          "name": "vout_disabled_static_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.0002318103
+        },
+        {
+          "expr": "-1e6*op3.i(vforce)",
+          "max": null,
+          "min": null,
+          "name": "ivout_held_1v8_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.5766567
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "sf",
+      "supply_v": 2.97,
+      "temperature_c": -40.0,
+      "timed_out": false,
+      "timeout_s": 300
+    },
+    {
+      "corner_id": "sf_-40c_3.30v",
+      "elapsed_s": 64.748,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/enable-shutdown/corners/20260825-073259-64c17cb/sf_-40c_3.30v.log",
+      "measurements": [
+        {
+          "expr": "-1e6*op1.i(vvin)",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_static_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0001471877
+        },
+        {
+          "expr": "-1e6*tran1.iq_worst",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_after_edge_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.004241883
+        },
+        {
+          "expr": "-1e6*tran1.iq_avg",
+          "max": null,
+          "min": null,
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0001887506
+        },
+        {
+          "expr": "1e6*op2.i(vforce)",
+          "max": 1.0,
+          "min": null,
+          "name": "leak_vin_vout_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 8.250102e-05
+        },
+        {
+          "expr": "tran1.vpre",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_pre_disable_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.808133
+        },
+        {
+          "expr": "tran1.vhold",
+          "max": null,
+          "min": 1.764,
+          "name": "vout_hold_2ms_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.806951
+        },
+        {
+          "expr": "op1.v(vout)",
+          "max": null,
+          "min": null,
+          "name": "vout_disabled_static_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.00025757
+        },
+        {
+          "expr": "-1e6*op3.i(vforce)",
+          "max": null,
+          "min": null,
+          "name": "ivout_held_1v8_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.5766485
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "sf",
+      "supply_v": 3.3,
+      "temperature_c": -40.0,
+      "timed_out": false,
+      "timeout_s": 300
+    },
+    {
+      "corner_id": "sf_-40c_3.63v",
+      "elapsed_s": 88.65,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/enable-shutdown/corners/20260825-073259-64c17cb/sf_-40c_3.63v.log",
+      "measurements": [
+        {
+          "expr": "-1e6*op1.i(vvin)",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_static_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.000162647
+        },
+        {
+          "expr": "-1e6*tran1.iq_worst",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_after_edge_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.00424753
+        },
+        {
+          "expr": "-1e6*tran1.iq_avg",
+          "max": null,
+          "min": null,
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0002041424
+        },
+        {
+          "expr": "1e6*op2.i(vforce)",
+          "max": 1.0,
+          "min": null,
+          "name": "leak_vin_vout_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 9.081512e-05
+        },
+        {
+          "expr": "tran1.vpre",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_pre_disable_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.807433
+        },
+        {
+          "expr": "tran1.vhold",
+          "max": null,
+          "min": 1.764,
+          "name": "vout_hold_2ms_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.806256
+        },
+        {
+          "expr": "op1.v(vout)",
+          "max": null,
+          "min": null,
+          "name": "vout_disabled_static_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.0002835262
+        },
+        {
+          "expr": "-1e6*op3.i(vforce)",
+          "max": null,
+          "min": null,
+          "name": "ivout_held_1v8_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.5766403
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "sf",
+      "supply_v": 3.63,
+      "temperature_c": -40.0,
+      "timed_out": false,
+      "timeout_s": 300
+    },
+    {
+      "corner_id": "sf_27c_2.97v",
+      "elapsed_s": 82.044,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/enable-shutdown/corners/20260825-073259-64c17cb/sf_27c_2.97v.log",
+      "measurements": [
+        {
+          "expr": "-1e6*op1.i(vvin)",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_static_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0002411706
+        },
+        {
+          "expr": "-1e6*tran1.iq_worst",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_after_edge_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.001766511
+        },
+        {
+          "expr": "-1e6*tran1.iq_avg",
+          "max": null,
+          "min": null,
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0002693236
+        },
+        {
+          "expr": "1e6*op2.i(vforce)",
+          "max": 1.0,
+          "min": null,
+          "name": "leak_vin_vout_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 7.488598e-05
+        },
+        {
+          "expr": "tran1.vpre",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_pre_disable_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.813843
+        },
+        {
+          "expr": "tran1.vhold",
+          "max": null,
+          "min": 1.764,
+          "name": "vout_hold_2ms_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.812642
+        },
+        {
+          "expr": "op1.v(vout)",
+          "max": null,
+          "min": null,
+          "name": "vout_disabled_static_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.0002337967
+        },
+        {
+          "expr": "-1e6*op3.i(vforce)",
+          "max": null,
+          "min": null,
+          "name": "ivout_held_1v8_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.5766536
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "sf",
+      "supply_v": 2.97,
+      "temperature_c": 27.0,
+      "timed_out": false,
+      "timeout_s": 300
+    },
+    {
+      "corner_id": "sf_27c_3.30v",
+      "elapsed_s": 86.217,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/enable-shutdown/corners/20260825-073259-64c17cb/sf_27c_3.30v.log",
+      "measurements": [
+        {
+          "expr": "-1e6*op1.i(vvin)",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_static_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0002675525
+        },
+        {
+          "expr": "-1e6*tran1.iq_worst",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_after_edge_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.002957083
+        },
+        {
+          "expr": "-1e6*tran1.iq_avg",
+          "max": null,
+          "min": null,
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0002957181
+        },
+        {
+          "expr": "1e6*op2.i(vforce)",
+          "max": 1.0,
+          "min": null,
+          "name": "leak_vin_vout_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 8.330623e-05
+        },
+        {
+          "expr": "tran1.vpre",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_pre_disable_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.812591
+        },
+        {
+          "expr": "tran1.vhold",
+          "max": null,
+          "min": 1.764,
+          "name": "vout_hold_2ms_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.811393
+        },
+        {
+          "expr": "op1.v(vout)",
+          "max": null,
+          "min": null,
+          "name": "vout_disabled_static_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.0002600848
+        },
+        {
+          "expr": "-1e6*op3.i(vforce)",
+          "max": null,
+          "min": null,
+          "name": "ivout_held_1v8_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.5766454
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "sf",
+      "supply_v": 3.3,
+      "temperature_c": 27.0,
+      "timed_out": false,
+      "timeout_s": 300
+    },
+    {
+      "corner_id": "sf_27c_3.63v",
+      "elapsed_s": 102.505,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/enable-shutdown/corners/20260825-073259-64c17cb/sf_27c_3.63v.log",
+      "measurements": [
+        {
+          "expr": "-1e6*op1.i(vvin)",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_static_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0002946918
+        },
+        {
+          "expr": "-1e6*tran1.iq_worst",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_after_edge_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0003683116
+        },
+        {
+          "expr": "-1e6*tran1.iq_avg",
+          "max": null,
+          "min": null,
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0003186607
+        },
+        {
+          "expr": "1e6*op2.i(vforce)",
+          "max": 1.0,
+          "min": null,
+          "name": "leak_vin_vout_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 9.189619e-05
+        },
+        {
+          "expr": "tran1.vpre",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_pre_disable_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.811588
+        },
+        {
+          "expr": "tran1.vhold",
+          "max": null,
+          "min": 1.764,
+          "name": "vout_hold_2ms_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.810393
+        },
+        {
+          "expr": "op1.v(vout)",
+          "max": null,
+          "min": null,
+          "name": "vout_disabled_static_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.0002869019
+        },
+        {
+          "expr": "-1e6*op3.i(vforce)",
+          "max": null,
+          "min": null,
+          "name": "ivout_held_1v8_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.576637
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "sf",
+      "supply_v": 3.63,
+      "temperature_c": 27.0,
+      "timed_out": false,
+      "timeout_s": 300
+    },
+    {
+      "corner_id": "sf_125c_2.97v",
+      "elapsed_s": 78.764,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/enable-shutdown/corners/20260825-073259-64c17cb/sf_125c_2.97v.log",
+      "measurements": [
+        {
+          "expr": "-1e6*op1.i(vvin)",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_static_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.01003653
+        },
+        {
+          "expr": "-1e6*tran1.iq_worst",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_after_edge_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.01068506
+        },
+        {
+          "expr": "-1e6*tran1.iq_avg",
+          "max": null,
+          "min": null,
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.01007933
+        },
+        {
+          "expr": "1e6*op2.i(vforce)",
+          "max": 1.0,
+          "min": null,
+          "name": "leak_vin_vout_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.002248034
+        },
+        {
+          "expr": "tran1.vpre",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_pre_disable_v",
+          "pass": false,
+          "reason": "below min 1.764",
+          "unit": "V",
+          "value": 0.006995057
+        },
+        {
+          "expr": "tran1.vhold",
+          "max": null,
+          "min": 1.764,
+          "name": "vout_hold_2ms_v",
+          "pass": false,
+          "reason": "below min 1.764",
+          "unit": "V",
+          "value": 0.006995329
+        },
+        {
+          "expr": "op1.v(vout)",
+          "max": null,
+          "min": null,
+          "name": "vout_disabled_static_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.006995184
+        },
+        {
+          "expr": "-1e6*op3.i(vforce)",
+          "max": null,
+          "min": null,
+          "name": "ivout_held_1v8_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.575582
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": false,
+      "process": "sf",
+      "supply_v": 2.97,
+      "temperature_c": 125.0,
+      "timed_out": false,
+      "timeout_s": 300
+    },
+    {
+      "corner_id": "sf_125c_3.30v",
+      "elapsed_s": 77.031,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/enable-shutdown/corners/20260825-073259-64c17cb/sf_125c_3.30v.log",
+      "measurements": [
+        {
+          "expr": "-1e6*op1.i(vvin)",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_static_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.01118452
+        },
+        {
+          "expr": "-1e6*tran1.iq_worst",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_after_edge_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0119905
+        },
+        {
+          "expr": "-1e6*tran1.iq_avg",
+          "max": null,
+          "min": null,
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.01123316
+        },
+        {
+          "expr": "1e6*op2.i(vforce)",
+          "max": 1.0,
+          "min": null,
+          "name": "leak_vin_vout_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.002692891
+        },
+        {
+          "expr": "tran1.vpre",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_pre_disable_v",
+          "pass": false,
+          "reason": "below min 1.764",
+          "unit": "V",
+          "value": 0.008364009
+        },
+        {
+          "expr": "tran1.vhold",
+          "max": null,
+          "min": 1.764,
+          "name": "vout_hold_2ms_v",
+          "pass": false,
+          "reason": "below min 1.764",
+          "unit": "V",
+          "value": 0.008364295
+        },
+        {
+          "expr": "op1.v(vout)",
+          "max": null,
+          "min": null,
+          "name": "vout_disabled_static_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.008364106
+        },
+        {
+          "expr": "-1e6*op3.i(vforce)",
+          "max": null,
+          "min": null,
+          "name": "ivout_held_1v8_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.5754321
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": false,
+      "process": "sf",
+      "supply_v": 3.3,
+      "temperature_c": 125.0,
+      "timed_out": false,
+      "timeout_s": 300
+    },
+    {
+      "corner_id": "sf_125c_3.63v",
+      "elapsed_s": 70.486,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/enable-shutdown/corners/20260825-073259-64c17cb/sf_125c_3.63v.log",
+      "measurements": [
+        {
+          "expr": "-1e6*op1.i(vvin)",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_static_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.01262468
+        },
+        {
+          "expr": "-1e6*tran1.iq_worst",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_after_edge_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.01278109
+        },
+        {
+          "expr": "-1e6*tran1.iq_avg",
+          "max": null,
+          "min": null,
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.01268158
+        },
+        {
+          "expr": "1e6*op2.i(vforce)",
+          "max": 1.0,
+          "min": null,
+          "name": "leak_vin_vout_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.003410901
+        },
+        {
+          "expr": "tran1.vpre",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_pre_disable_v",
+          "pass": false,
+          "reason": "below min 1.764",
+          "unit": "V",
+          "value": 0.01055848
+        },
+        {
+          "expr": "tran1.vhold",
+          "max": null,
+          "min": 1.764,
+          "name": "vout_hold_2ms_v",
+          "pass": false,
+          "reason": "below min 1.764",
+          "unit": "V",
+          "value": 0.01055878
+        },
+        {
+          "expr": "op1.v(vout)",
+          "max": null,
+          "min": null,
+          "name": "vout_disabled_static_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.01055853
+        },
+        {
+          "expr": "-1e6*op3.i(vforce)",
+          "max": null,
+          "min": null,
+          "name": "ivout_held_1v8_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.5752667
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": false,
+      "process": "sf",
+      "supply_v": 3.63,
+      "temperature_c": 125.0,
+      "timed_out": false,
+      "timeout_s": 300
+    },
+    {
+      "corner_id": "fs_-40c_2.97v",
+      "elapsed_s": 92.981,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/enable-shutdown/corners/20260825-073259-64c17cb/fs_-40c_2.97v.log",
+      "measurements": [
+        {
+          "expr": "-1e6*op1.i(vvin)",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_static_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0001299224
+        },
+        {
+          "expr": "-1e6*tran1.iq_worst",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_after_edge_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.001211756
+        },
+        {
+          "expr": "-1e6*tran1.iq_avg",
+          "max": null,
+          "min": null,
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.000166343
+        },
+        {
+          "expr": "1e6*op2.i(vforce)",
+          "max": 1.0,
+          "min": null,
+          "name": "leak_vin_vout_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 7.426258e-05
+        },
+        {
+          "expr": "tran1.vpre",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_pre_disable_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.810961
+        },
+        {
+          "expr": "tran1.vhold",
+          "max": null,
+          "min": 1.764,
+          "name": "vout_hold_2ms_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.809759
+        },
+        {
+          "expr": "op1.v(vout)",
+          "max": null,
+          "min": null,
+          "name": "vout_disabled_static_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.0002318494
+        },
+        {
+          "expr": "-1e6*op3.i(vforce)",
+          "max": null,
+          "min": null,
+          "name": "ivout_held_1v8_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.5766567
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "fs",
+      "supply_v": 2.97,
+      "temperature_c": -40.0,
+      "timed_out": false,
+      "timeout_s": 300
+    },
+    {
+      "corner_id": "fs_-40c_3.30v",
+      "elapsed_s": 63.718,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/enable-shutdown/corners/20260825-073259-64c17cb/fs_-40c_3.30v.log",
+      "measurements": [
+        {
+          "expr": "-1e6*op1.i(vvin)",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_static_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0001449632
+        },
+        {
+          "expr": "-1e6*tran1.iq_worst",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_after_edge_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.001019791
+        },
+        {
+          "expr": "-1e6*tran1.iq_avg",
+          "max": null,
+          "min": null,
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0001874531
+        },
+        {
+          "expr": "1e6*op2.i(vforce)",
+          "max": 1.0,
+          "min": null,
+          "name": "leak_vin_vout_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 8.251756e-05
+        },
+        {
+          "expr": "tran1.vpre",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_pre_disable_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.809717
+        },
+        {
+          "expr": "tran1.vhold",
+          "max": null,
+          "min": 1.764,
+          "name": "vout_hold_2ms_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.808518
+        },
+        {
+          "expr": "op1.v(vout)",
+          "max": null,
+          "min": null,
+          "name": "vout_disabled_static_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.0002576216
+        },
+        {
+          "expr": "-1e6*op3.i(vforce)",
+          "max": null,
+          "min": null,
+          "name": "ivout_held_1v8_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.5766485
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "fs",
+      "supply_v": 3.3,
+      "temperature_c": -40.0,
+      "timed_out": false,
+      "timeout_s": 300
+    },
+    {
+      "corner_id": "fs_-40c_3.63v",
+      "elapsed_s": 82.402,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/enable-shutdown/corners/20260825-073259-64c17cb/fs_-40c_3.63v.log",
+      "measurements": [
+        {
+          "expr": "-1e6*op1.i(vvin)",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_static_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0001603055
+        },
+        {
+          "expr": "-1e6*tran1.iq_worst",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_after_edge_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0002412739
+        },
+        {
+          "expr": "-1e6*tran1.iq_avg",
+          "max": null,
+          "min": null,
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0002019965
+        },
+        {
+          "expr": "1e6*op2.i(vforce)",
+          "max": 1.0,
+          "min": null,
+          "name": "leak_vin_vout_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 9.083828e-05
+        },
+        {
+          "expr": "tran1.vpre",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_pre_disable_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.808741
+        },
+        {
+          "expr": "tran1.vhold",
+          "max": null,
+          "min": 1.764,
+          "name": "vout_hold_2ms_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.807546
+        },
+        {
+          "expr": "op1.v(vout)",
+          "max": null,
+          "min": null,
+          "name": "vout_disabled_static_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.0002835985
+        },
+        {
+          "expr": "-1e6*op3.i(vforce)",
+          "max": null,
+          "min": null,
+          "name": "ivout_held_1v8_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.5766403
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "fs",
+      "supply_v": 3.63,
+      "temperature_c": -40.0,
+      "timed_out": false,
+      "timeout_s": 300
+    },
+    {
+      "corner_id": "fs_27c_2.97v",
+      "elapsed_s": 85.643,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/enable-shutdown/corners/20260825-073259-64c17cb/fs_27c_2.97v.log",
+      "measurements": [
+        {
+          "expr": "-1e6*op1.i(vvin)",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_static_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0001777179
+        },
+        {
+          "expr": "-1e6*tran1.iq_worst",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_after_edge_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0007403125
+        },
+        {
+          "expr": "-1e6*tran1.iq_avg",
+          "max": null,
+          "min": null,
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0001911289
+        },
+        {
+          "expr": "1e6*op2.i(vforce)",
+          "max": 1.0,
+          "min": null,
+          "name": "leak_vin_vout_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0001170902
+        },
+        {
+          "expr": "tran1.vpre",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_pre_disable_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.815534
+        },
+        {
+          "expr": "tran1.vhold",
+          "max": null,
+          "min": 1.764,
+          "name": "vout_hold_2ms_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.814329
+        },
+        {
+          "expr": "op1.v(vout)",
+          "max": null,
+          "min": null,
+          "name": "vout_disabled_static_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.0003655282
+        },
+        {
+          "expr": "-1e6*op3.i(vforce)",
+          "max": null,
+          "min": null,
+          "name": "ivout_held_1v8_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.5766383
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "fs",
+      "supply_v": 2.97,
+      "temperature_c": 27.0,
+      "timed_out": false,
+      "timeout_s": 300
+    },
+    {
+      "corner_id": "fs_27c_3.30v",
+      "elapsed_s": 64.138,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/enable-shutdown/corners/20260825-073259-64c17cb/fs_27c_3.30v.log",
+      "measurements": [
+        {
+          "expr": "-1e6*op1.i(vvin)",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_static_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0002045532
+        },
+        {
+          "expr": "-1e6*tran1.iq_worst",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_after_edge_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0006019235
+        },
+        {
+          "expr": "-1e6*tran1.iq_avg",
+          "max": null,
+          "min": null,
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0002097506
+        },
+        {
+          "expr": "1e6*op2.i(vforce)",
+          "max": 1.0,
+          "min": null,
+          "name": "leak_vin_vout_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0001368581
+        },
+        {
+          "expr": "tran1.vpre",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_pre_disable_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.814353
+        },
+        {
+          "expr": "tran1.vhold",
+          "max": null,
+          "min": 1.764,
+          "name": "vout_hold_2ms_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.813151
+        },
+        {
+          "expr": "op1.v(vout)",
+          "max": null,
+          "min": null,
+          "name": "vout_disabled_static_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.0004272183
+        },
+        {
+          "expr": "-1e6*op3.i(vforce)",
+          "max": null,
+          "min": null,
+          "name": "ivout_held_1v8_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.5766267
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "fs",
+      "supply_v": 3.3,
+      "temperature_c": 27.0,
+      "timed_out": false,
+      "timeout_s": 300
+    },
+    {
+      "corner_id": "fs_27c_3.63v",
+      "elapsed_s": 83.917,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/enable-shutdown/corners/20260825-073259-64c17cb/fs_27c_3.63v.log",
+      "measurements": [
+        {
+          "expr": "-1e6*op1.i(vvin)",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_static_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.000238877
+        },
+        {
+          "expr": "-1e6*tran1.iq_worst",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_after_edge_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.002194281
+        },
+        {
+          "expr": "-1e6*tran1.iq_avg",
+          "max": null,
+          "min": null,
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0002290746
+        },
+        {
+          "expr": "1e6*op2.i(vforce)",
+          "max": 1.0,
+          "min": null,
+          "name": "leak_vin_vout_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.000163939
+        },
+        {
+          "expr": "tran1.vpre",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_pre_disable_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.813381
+        },
+        {
+          "expr": "tran1.vhold",
+          "max": null,
+          "min": 1.764,
+          "name": "vout_hold_2ms_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.812181
+        },
+        {
+          "expr": "op1.v(vout)",
+          "max": null,
+          "min": null,
+          "name": "vout_disabled_static_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.0005117061
+        },
+        {
+          "expr": "-1e6*op3.i(vforce)",
+          "max": null,
+          "min": null,
+          "name": "ivout_held_1v8_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.5766148
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "fs",
+      "supply_v": 3.63,
+      "temperature_c": 27.0,
+      "timed_out": false,
+      "timeout_s": 300
+    },
+    {
+      "corner_id": "fs_125c_2.97v",
+      "elapsed_s": 74.017,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/enable-shutdown/corners/20260825-073259-64c17cb/fs_125c_2.97v.log",
+      "measurements": [
+        {
+          "expr": "-1e6*op1.i(vvin)",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_static_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.04548632
+        },
+        {
+          "expr": "-1e6*tran1.iq_worst",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_after_edge_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.02367512
+        },
+        {
+          "expr": "-1e6*tran1.iq_avg",
+          "max": null,
+          "min": null,
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.02272224
+        },
+        {
+          "expr": "1e6*op2.i(vforce)",
+          "max": 1.0,
+          "min": null,
+          "name": "leak_vin_vout_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.047907
+        },
+        {
+          "expr": "tran1.vpre",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_pre_disable_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.821323
+        },
+        {
+          "expr": "tran1.vhold",
+          "max": null,
+          "min": 1.764,
+          "name": "vout_hold_2ms_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.820172
+        },
+        {
+          "expr": "op1.v(vout)",
+          "max": null,
+          "min": null,
+          "name": "vout_disabled_static_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.1392186
+        },
+        {
+          "expr": "-1e6*op3.i(vforce)",
+          "max": null,
+          "min": null,
+          "name": "ivout_held_1v8_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.5551677
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "fs",
+      "supply_v": 2.97,
+      "temperature_c": 125.0,
+      "timed_out": false,
+      "timeout_s": 300
+    },
+    {
+      "corner_id": "fs_125c_3.30v",
+      "elapsed_s": 72.775,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/enable-shutdown/corners/20260825-073259-64c17cb/fs_125c_3.30v.log",
+      "measurements": [
+        {
+          "expr": "-1e6*op1.i(vvin)",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_static_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.05363854
+        },
+        {
+          "expr": "-1e6*tran1.iq_worst",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_after_edge_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0273864
+        },
+        {
+          "expr": "-1e6*tran1.iq_avg",
+          "max": null,
+          "min": null,
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0262637
+        },
+        {
+          "expr": "1e6*op2.i(vforce)",
+          "max": 1.0,
+          "min": null,
+          "name": "leak_vin_vout_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0585356
+        },
+        {
+          "expr": "tran1.vpre",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_pre_disable_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.820669
+        },
+        {
+          "expr": "tran1.vhold",
+          "max": null,
+          "min": 1.764,
+          "name": "vout_hold_2ms_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.819532
+        },
+        {
+          "expr": "op1.v(vout)",
+          "max": null,
+          "min": null,
+          "name": "vout_disabled_static_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.1643736
+        },
+        {
+          "expr": "-1e6*op3.i(vforce)",
+          "max": null,
+          "min": null,
+          "name": "ivout_held_1v8_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.5517107
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "fs",
+      "supply_v": 3.3,
+      "temperature_c": 125.0,
+      "timed_out": false,
+      "timeout_s": 300
+    },
+    {
+      "corner_id": "fs_125c_3.63v",
+      "elapsed_s": 61.626,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/enable-shutdown/corners/20260825-073259-64c17cb/fs_125c_3.63v.log",
+      "measurements": [
+        {
+          "expr": "-1e6*op1.i(vvin)",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_static_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.0653925
+        },
+        {
+          "expr": "-1e6*tran1.iq_worst",
+          "max": 3.0,
+          "min": null,
+          "name": "iq_shutdown_after_edge_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.03229105
+        },
+        {
+          "expr": "-1e6*tran1.iq_avg",
+          "max": null,
+          "min": null,
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.03018727
+        },
+        {
+          "expr": "1e6*op2.i(vforce)",
+          "max": 1.0,
+          "min": null,
+          "name": "leak_vin_vout_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.07580629
+        },
+        {
+          "expr": "tran1.vpre",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_pre_disable_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.820229
+        },
+        {
+          "expr": "tran1.vhold",
+          "max": null,
+          "min": 1.764,
+          "name": "vout_hold_2ms_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.81911
+        },
+        {
+          "expr": "op1.v(vout)",
+          "max": null,
+          "min": null,
+          "name": "vout_disabled_static_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.2006798
+        },
+        {
+          "expr": "-1e6*op3.i(vforce)",
+          "max": null,
+          "min": null,
+          "name": "ivout_held_1v8_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 0.5478731
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "fs",
+      "supply_v": 3.63,
+      "temperature_c": 125.0,
+      "timed_out": false,
+      "timeout_s": 300
+    }
+  ],
+  "experiment": {
+    "claim": "Substantiates spec/target-spec.md's DRAFT \"Enable / shutdown\" row (shutdown Iq < 3 uA worst corner; disabled output = pass device fully off, no active discharge; Vin->Vout leakage <= 1 uA) against the EN-gated shutdown path in design/ldo_3v3in_1v8out.sch -- the M_ENP/M_ENP2/M_ENP3/M_ENP4/M_ENP5 clamp family and the M_ENN/M_ENN2 pseudo-ground switches, see design/README.md's \"Enable/shutdown (also revised after simulation)\". The row is DRAFT (issue #1 not yet ratified); the bounds below cite its own two numbers (3 uA, 1 uA) directly rather than an invented final limit. Three deliberate method choices: (1) shutdown Iq is measured both statically (EN held at 0) AND 1.5-2.5 ms after a falling EN edge, because a DC-only check cannot distinguish a block that HAS a clean disabled solution from one that actually REACHES it -- vout_pre_disable_v witnesses that the transient leg really was regulating before the edge, so the check cannot pass vacuously. The transient leg runs a full enable -> shutdown CYCLE (EN low at t=0, rising at 100 us, falling again at 2 ms) rather than starting already-enabled: starting enabled would make the leg depend on ngspice's t=0 DC solve landing on the regulating branch, which it does not at the ff/sf 125 C corners (design/README.md's \"What the full 45-point PVT + Monte Carlo campaign's FAILs actually mean\", mechanism 1 -- thermal-clamp nuisance trip, issue #69), so that draft failed those corners for a reason unrelated to the enable/shutdown path. (2) Vin->Vout leakage is measured with VOUT forced to 0 V, which is what isolates the clause: at VOUT = 0 the block's ~3.1 MOhm feedback divider carries no current, so the forcing source collects the VIN->VOUT path and nothing else. (3) \"no active discharge\" is bounded via the transient residual output 2 ms after the disable edge with no external load (the only discharge path a correctly disabled block has is the divider, whose R_div x C_OUT constant is seconds), checked against the DRAFT Output row's own +-2% window rather than an invented discharge-current threshold; the static counterpart -- the current a disabled block draws from an output held at 1.8 V -- is reported rather than bounded, because separating the divider's inherent preload from an active discharge by DC current alone would need a divider value this experiment does not independently measure. Stated coverage limitation: the row's \"pass device fully off\" clause is substantiated by the leakage measurement, not by a per-device check inside the DUT.",
+    "provenance": "schematic",
+    "provenance_source": "sim/enable-shutdown/testbench/tb_enable_shutdown.sch",
+    "slug": "enable-shutdown",
+    "statistical_convention": "N/A (corner-matrix check, not a distribution claim)",
+    "title": "Enable / shutdown: shutdown Iq, Vin->Vout leakage, and no active discharge"
+  },
+  "git": {
+    "branch": "feature/issue-74",
+    "dirty": false,
+    "sha": "64c17cb"
+  },
+  "links": {
+    "corners_dir": "sim/enable-shutdown/corners/20260825-073259-64c17cb/",
+    "json": "sim/enable-shutdown/records/20260825-073259-64c17cb.json",
+    "manifest": "sim/enable-shutdown/experiment.json",
+    "netlist_snapshot": "sim/enable-shutdown/netlist-snapshots/20260825-073259-64c17cb.spice",
+    "record": "sim/enable-shutdown/records/20260825-073259-64c17cb.md",
+    "testbench": "sim/enable-shutdown/testbench/tb_enable_shutdown.sch"
+  },
+  "matrix": {
+    "is_subset": false,
+    "n_points": 45,
+    "point_ids": [
+      "tt_-40c_2.97v",
+      "tt_-40c_3.30v",
+      "tt_-40c_3.63v",
+      "tt_27c_2.97v",
+      "tt_27c_3.30v",
+      "tt_27c_3.63v",
+      "tt_125c_2.97v",
+      "tt_125c_3.30v",
+      "tt_125c_3.63v",
+      "ss_-40c_2.97v",
+      "ss_-40c_3.30v",
+      "ss_-40c_3.63v",
+      "ss_27c_2.97v",
+      "ss_27c_3.30v",
+      "ss_27c_3.63v",
+      "ss_125c_2.97v",
+      "ss_125c_3.30v",
+      "ss_125c_3.63v",
+      "ff_-40c_2.97v",
+      "ff_-40c_3.30v",
+      "ff_-40c_3.63v",
+      "ff_27c_2.97v",
+      "ff_27c_3.30v",
+      "ff_27c_3.63v",
+      "ff_125c_2.97v",
+      "ff_125c_3.30v",
+      "ff_125c_3.63v",
+      "sf_-40c_2.97v",
+      "sf_-40c_3.30v",
+      "sf_-40c_3.63v",
+      "sf_27c_2.97v",
+      "sf_27c_3.30v",
+      "sf_27c_3.63v",
+      "sf_125c_2.97v",
+      "sf_125c_3.30v",
+      "sf_125c_3.63v",
+      "fs_-40c_2.97v",
+      "fs_-40c_3.30v",
+      "fs_-40c_3.63v",
+      "fs_27c_2.97v",
+      "fs_27c_3.30v",
+      "fs_27c_3.63v",
+      "fs_125c_2.97v",
+      "fs_125c_3.30v",
+      "fs_125c_3.63v"
+    ],
+    "points": [
+      [
+        "tt",
+        -40.0,
+        2.97
+      ],
+      [
+        "tt",
+        -40.0,
+        3.3
+      ],
+      [
+        "tt",
+        -40.0,
+        3.63
+      ],
+      [
+        "tt",
+        27.0,
+        2.97
+      ],
+      [
+        "tt",
+        27.0,
+        3.3
+      ],
+      [
+        "tt",
+        27.0,
+        3.63
+      ],
+      [
+        "tt",
+        125.0,
+        2.97
+      ],
+      [
+        "tt",
+        125.0,
+        3.3
+      ],
+      [
+        "tt",
+        125.0,
+        3.63
+      ],
+      [
+        "ss",
+        -40.0,
+        2.97
+      ],
+      [
+        "ss",
+        -40.0,
+        3.3
+      ],
+      [
+        "ss",
+        -40.0,
+        3.63
+      ],
+      [
+        "ss",
+        27.0,
+        2.97
+      ],
+      [
+        "ss",
+        27.0,
+        3.3
+      ],
+      [
+        "ss",
+        27.0,
+        3.63
+      ],
+      [
+        "ss",
+        125.0,
+        2.97
+      ],
+      [
+        "ss",
+        125.0,
+        3.3
+      ],
+      [
+        "ss",
+        125.0,
+        3.63
+      ],
+      [
+        "ff",
+        -40.0,
+        2.97
+      ],
+      [
+        "ff",
+        -40.0,
+        3.3
+      ],
+      [
+        "ff",
+        -40.0,
+        3.63
+      ],
+      [
+        "ff",
+        27.0,
+        2.97
+      ],
+      [
+        "ff",
+        27.0,
+        3.3
+      ],
+      [
+        "ff",
+        27.0,
+        3.63
+      ],
+      [
+        "ff",
+        125.0,
+        2.97
+      ],
+      [
+        "ff",
+        125.0,
+        3.3
+      ],
+      [
+        "ff",
+        125.0,
+        3.63
+      ],
+      [
+        "sf",
+        -40.0,
+        2.97
+      ],
+      [
+        "sf",
+        -40.0,
+        3.3
+      ],
+      [
+        "sf",
+        -40.0,
+        3.63
+      ],
+      [
+        "sf",
+        27.0,
+        2.97
+      ],
+      [
+        "sf",
+        27.0,
+        3.3
+      ],
+      [
+        "sf",
+        27.0,
+        3.63
+      ],
+      [
+        "sf",
+        125.0,
+        2.97
+      ],
+      [
+        "sf",
+        125.0,
+        3.3
+      ],
+      [
+        "sf",
+        125.0,
+        3.63
+      ],
+      [
+        "fs",
+        -40.0,
+        2.97
+      ],
+      [
+        "fs",
+        -40.0,
+        3.3
+      ],
+      [
+        "fs",
+        -40.0,
+        3.63
+      ],
+      [
+        "fs",
+        27.0,
+        2.97
+      ],
+      [
+        "fs",
+        27.0,
+        3.3
+      ],
+      [
+        "fs",
+        27.0,
+        3.63
+      ],
+      [
+        "fs",
+        125.0,
+        2.97
+      ],
+      [
+        "fs",
+        125.0,
+        3.3
+      ],
+      [
+        "fs",
+        125.0,
+        3.63
+      ]
+    ],
+    "process": [
+      "tt",
+      "ss",
+      "ff",
+      "sf",
+      "fs"
+    ],
+    "subset_reason": "",
+    "supply_v": [
+      2.97,
+      3.3,
+      3.63
+    ],
+    "temperature_c": [
+      -40.0,
+      27.0,
+      125.0
+    ]
+  },
+  "overall_pass": false,
+  "pdk": {
+    "installed_commit": "c6d73a35f524070e85faff4a6a9eef49553ebc2b",
+    "lib_file": "/home/ubuntu/.volare/sky130A/libs.tech/combined/sky130.lib.spice",
+    "matches_pin": true,
+    "pinned_commit": "c6d73a35f524070e85faff4a6a9eef49553ebc2b",
+    "root": "/home/ubuntu/.volare",
+    "variant": "sky130A"
+  },
+  "record_id": "20260825-073259-64c17cb",
+  "spread_checks": [],
+  "supersedes": "20260825-044140-703a889",
+  "timestamp": "2026-08-25T07:32:59Z",
+  "tools": {
+    "ngspice": "ngspice-46 : Circuit level simulation program",
+    "platform": "Linux 7.0.0-1010-aws x86_64",
+    "python": "3.12.3",
+    "xschem": "XSCHEM V3.4.7"
+  }
+}

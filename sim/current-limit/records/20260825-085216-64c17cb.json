@@ -1,0 +1,5111 @@
+{
+  "author": "ci@loom.test",
+  "corners": [
+    {
+      "corner_id": "tt_-40c_2.97v",
+      "elapsed_s": 13.598,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/current-limit/corners/20260825-085216-64c17cb/tt_-40c_2.97v.log",
+      "measurements": [
+        {
+          "expr": "op1.v(vout)",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.798156
+        },
+        {
+          "expr": "op1.v(vin) - op1.v(xldo.cl_cmp)",
+          "max": null,
+          "min": null,
+          "name": "cl_margin_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.03585674
+        },
+        {
+          "expr": "1000*dc1.ilim_short",
+          "max": null,
+          "min": 50,
+          "name": "ilim_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 145.2219
+        },
+        {
+          "expr": "1000*dc1.ilim_knee",
+          "max": null,
+          "min": 50,
+          "name": "ilim_knee_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 118.6696
+        },
+        {
+          "expr": "100*(dc1.ilim_knee - dc1.ilim_short)/dc1.ilim_knee",
+          "max": null,
+          "min": null,
+          "name": "ilim_droop_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -22.375
+        },
+        {
+          "expr": "-1000*tran1.ish_avg",
+          "max": null,
+          "min": null,
+          "name": "ishort_sustained_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 145.2592
+        },
+        {
+          "expr": "100*(tran1.ish_max - tran1.ish_min)/(-tran1.ish_avg)",
+          "max": 100,
+          "min": null,
+          "name": "ishort_ripple_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": 0.003166753
+        },
+        {
+          "expr": "1000*tran1.vsh_max",
+          "max": null,
+          "min": null,
+          "name": "vout_short_mv",
+          "pass": true,
+          "reason": "",
+          "unit": "mV",
+          "value": 0.1452224
+        },
+        {
+          "expr": "-1000*tran1.ipre",
+          "max": null,
+          "min": null,
+          "name": "isup_pre_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 0.01047909
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "tt",
+      "supply_v": 2.97,
+      "temperature_c": -40.0,
+      "timed_out": false,
+      "timeout_s": 600
+    },
+    {
+      "corner_id": "tt_-40c_3.30v",
+      "elapsed_s": 13.347,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/current-limit/corners/20260825-085216-64c17cb/tt_-40c_3.30v.log",
+      "measurements": [
+        {
+          "expr": "op1.v(vout)",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.798295
+        },
+        {
+          "expr": "op1.v(vin) - op1.v(xldo.cl_cmp)",
+          "max": null,
+          "min": null,
+          "name": "cl_margin_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.0303128
+        },
+        {
+          "expr": "1000*dc1.ilim_short",
+          "max": null,
+          "min": 50,
+          "name": "ilim_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 169.987
+        },
+        {
+          "expr": "1000*dc1.ilim_knee",
+          "max": null,
+          "min": 50,
+          "name": "ilim_knee_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 142.2026
+        },
+        {
+          "expr": "100*(dc1.ilim_knee - dc1.ilim_short)/dc1.ilim_knee",
+          "max": null,
+          "min": null,
+          "name": "ilim_droop_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -19.5386
+        },
+        {
+          "expr": "-1000*tran1.ish_avg",
+          "max": null,
+          "min": null,
+          "name": "ishort_sustained_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 170.0303
+        },
+        {
+          "expr": "100*(tran1.ish_max - tran1.ish_min)/(-tran1.ish_avg)",
+          "max": 100,
+          "min": null,
+          "name": "ishort_ripple_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": 0.001117448
+        },
+        {
+          "expr": "1000*tran1.vsh_max",
+          "max": null,
+          "min": null,
+          "name": "vout_short_mv",
+          "pass": true,
+          "reason": "",
+          "unit": "mV",
+          "value": 0.1699822
+        },
+        {
+          "expr": "-1000*tran1.ipre",
+          "max": null,
+          "min": null,
+          "name": "isup_pre_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 0.01236029
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "tt",
+      "supply_v": 3.3,
+      "temperature_c": -40.0,
+      "timed_out": false,
+      "timeout_s": 600
+    },
+    {
+      "corner_id": "tt_-40c_3.63v",
+      "elapsed_s": 13.419,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/current-limit/corners/20260825-085216-64c17cb/tt_-40c_3.63v.log",
+      "measurements": [
+        {
+          "expr": "op1.v(vout)",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.798393
+        },
+        {
+          "expr": "op1.v(vin) - op1.v(xldo.cl_cmp)",
+          "max": null,
+          "min": null,
+          "name": "cl_margin_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.02672418
+        },
+        {
+          "expr": "1000*dc1.ilim_short",
+          "max": null,
+          "min": 50,
+          "name": "ilim_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 198.029
+        },
+        {
+          "expr": "1000*dc1.ilim_knee",
+          "max": null,
+          "min": 50,
+          "name": "ilim_knee_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 165.6185
+        },
+        {
+          "expr": "100*(dc1.ilim_knee - dc1.ilim_short)/dc1.ilim_knee",
+          "max": null,
+          "min": null,
+          "name": "ilim_droop_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -19.5694
+        },
+        {
+          "expr": "-1000*tran1.ish_avg",
+          "max": null,
+          "min": null,
+          "name": "ishort_sustained_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 198.0784
+        },
+        {
+          "expr": "100*(tran1.ish_max - tran1.ish_min)/(-tran1.ish_avg)",
+          "max": 100,
+          "min": null,
+          "name": "ishort_ripple_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": 0.003231044
+        },
+        {
+          "expr": "1000*tran1.vsh_max",
+          "max": null,
+          "min": null,
+          "name": "vout_short_mv",
+          "pass": true,
+          "reason": "",
+          "unit": "mV",
+          "value": 0.1980235
+        },
+        {
+          "expr": "-1000*tran1.ipre",
+          "max": null,
+          "min": null,
+          "name": "isup_pre_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 0.01427871
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "tt",
+      "supply_v": 3.63,
+      "temperature_c": -40.0,
+      "timed_out": false,
+      "timeout_s": 600
+    },
+    {
+      "corner_id": "tt_27c_2.97v",
+      "elapsed_s": 13.873,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/current-limit/corners/20260825-085216-64c17cb/tt_27c_2.97v.log",
+      "measurements": [
+        {
+          "expr": "op1.v(vout)",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.797844
+        },
+        {
+          "expr": "op1.v(vin) - op1.v(xldo.cl_cmp)",
+          "max": null,
+          "min": null,
+          "name": "cl_margin_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.04245517
+        },
+        {
+          "expr": "1000*dc1.ilim_short",
+          "max": null,
+          "min": 50,
+          "name": "ilim_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 139.573
+        },
+        {
+          "expr": "1000*dc1.ilim_knee",
+          "max": null,
+          "min": 50,
+          "name": "ilim_knee_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 112.931
+        },
+        {
+          "expr": "100*(dc1.ilim_knee - dc1.ilim_short)/dc1.ilim_knee",
+          "max": null,
+          "min": null,
+          "name": "ilim_droop_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -23.5914
+        },
+        {
+          "expr": "-1000*tran1.ish_avg",
+          "max": null,
+          "min": null,
+          "name": "ishort_sustained_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 139.6096
+        },
+        {
+          "expr": "100*(tran1.ish_max - tran1.ish_min)/(-tran1.ish_avg)",
+          "max": 100,
+          "min": null,
+          "name": "ishort_ripple_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": 0.0001432566
+        },
+        {
+          "expr": "1000*tran1.vsh_max",
+          "max": null,
+          "min": null,
+          "name": "vout_short_mv",
+          "pass": true,
+          "reason": "",
+          "unit": "mV",
+          "value": 0.1395691
+        },
+        {
+          "expr": "-1000*tran1.ipre",
+          "max": null,
+          "min": null,
+          "name": "isup_pre_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 0.01080259
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "tt",
+      "supply_v": 2.97,
+      "temperature_c": 27.0,
+      "timed_out": false,
+      "timeout_s": 600
+    },
+    {
+      "corner_id": "tt_27c_3.30v",
+      "elapsed_s": 13.733,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/current-limit/corners/20260825-085216-64c17cb/tt_27c_3.30v.log",
+      "measurements": [
+        {
+          "expr": "op1.v(vout)",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.797993
+        },
+        {
+          "expr": "op1.v(vin) - op1.v(xldo.cl_cmp)",
+          "max": null,
+          "min": null,
+          "name": "cl_margin_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.03620977
+        },
+        {
+          "expr": "1000*dc1.ilim_short",
+          "max": null,
+          "min": 50,
+          "name": "ilim_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 162.0452
+        },
+        {
+          "expr": "1000*dc1.ilim_knee",
+          "max": null,
+          "min": 50,
+          "name": "ilim_knee_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 134.9797
+        },
+        {
+          "expr": "100*(dc1.ilim_knee - dc1.ilim_short)/dc1.ilim_knee",
+          "max": null,
+          "min": null,
+          "name": "ilim_droop_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -20.0515
+        },
+        {
+          "expr": "-1000*tran1.ish_avg",
+          "max": null,
+          "min": null,
+          "name": "ishort_sustained_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 162.0875
+        },
+        {
+          "expr": "100*(tran1.ish_max - tran1.ish_min)/(-tran1.ish_avg)",
+          "max": 100,
+          "min": null,
+          "name": "ishort_ripple_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": 0.005305776
+        },
+        {
+          "expr": "1000*tran1.vsh_max",
+          "max": null,
+          "min": null,
+          "name": "vout_short_mv",
+          "pass": true,
+          "reason": "",
+          "unit": "mV",
+          "value": 0.1620407
+        },
+        {
+          "expr": "-1000*tran1.ipre",
+          "max": null,
+          "min": null,
+          "name": "isup_pre_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 0.01264983
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "tt",
+      "supply_v": 3.3,
+      "temperature_c": 27.0,
+      "timed_out": false,
+      "timeout_s": 600
+    },
+    {
+      "corner_id": "tt_27c_3.63v",
+      "elapsed_s": 13.507,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/current-limit/corners/20260825-085216-64c17cb/tt_27c_3.63v.log",
+      "measurements": [
+        {
+          "expr": "op1.v(vout)",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.798094
+        },
+        {
+          "expr": "op1.v(vin) - op1.v(xldo.cl_cmp)",
+          "max": null,
+          "min": null,
+          "name": "cl_margin_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.03210141
+        },
+        {
+          "expr": "1000*dc1.ilim_short",
+          "max": null,
+          "min": 50,
+          "name": "ilim_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 186.5732
+        },
+        {
+          "expr": "1000*dc1.ilim_knee",
+          "max": null,
+          "min": 50,
+          "name": "ilim_knee_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 156.8514
+        },
+        {
+          "expr": "100*(dc1.ilim_knee - dc1.ilim_short)/dc1.ilim_knee",
+          "max": null,
+          "min": null,
+          "name": "ilim_droop_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -18.949
+        },
+        {
+          "expr": "-1000*tran1.ish_avg",
+          "max": null,
+          "min": null,
+          "name": "ishort_sustained_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 186.6213
+        },
+        {
+          "expr": "100*(tran1.ish_max - tran1.ish_min)/(-tran1.ish_avg)",
+          "max": 100,
+          "min": null,
+          "name": "ishort_ripple_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": 0.007930499
+        },
+        {
+          "expr": "1000*tran1.vsh_max",
+          "max": null,
+          "min": null,
+          "name": "vout_short_mv",
+          "pass": true,
+          "reason": "",
+          "unit": "mV",
+          "value": 0.186568
+        },
+        {
+          "expr": "-1000*tran1.ipre",
+          "max": null,
+          "min": null,
+          "name": "isup_pre_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 0.01453772
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "tt",
+      "supply_v": 3.63,
+      "temperature_c": 27.0,
+      "timed_out": false,
+      "timeout_s": 600
+    },
+    {
+      "corner_id": "tt_125c_2.97v",
+      "elapsed_s": 13.183,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/current-limit/corners/20260825-085216-64c17cb/tt_125c_2.97v.log",
+      "measurements": [
+        {
+          "expr": "op1.v(vout)",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.797314
+        },
+        {
+          "expr": "op1.v(vin) - op1.v(xldo.cl_cmp)",
+          "max": null,
+          "min": null,
+          "name": "cl_margin_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.05209111
+        },
+        {
+          "expr": "1000*dc1.ilim_short",
+          "max": null,
+          "min": 50,
+          "name": "ilim_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 131.8052
+        },
+        {
+          "expr": "1000*dc1.ilim_knee",
+          "max": null,
+          "min": 50,
+          "name": "ilim_knee_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 104.8337
+        },
+        {
+          "expr": "100*(dc1.ilim_knee - dc1.ilim_short)/dc1.ilim_knee",
+          "max": null,
+          "min": null,
+          "name": "ilim_droop_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -25.7279
+        },
+        {
+          "expr": "-1000*tran1.ish_avg",
+          "max": null,
+          "min": null,
+          "name": "ishort_sustained_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 131.8403
+        },
+        {
+          "expr": "100*(tran1.ish_max - tran1.ish_min)/(-tran1.ish_avg)",
+          "max": 100,
+          "min": null,
+          "name": "ishort_ripple_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": 0.002503028
+        },
+        {
+          "expr": "1000*tran1.vsh_max",
+          "max": null,
+          "min": null,
+          "name": "vout_short_mv",
+          "pass": true,
+          "reason": "",
+          "unit": "mV",
+          "value": 0.1318016
+        },
+        {
+          "expr": "-1000*tran1.ipre",
+          "max": null,
+          "min": null,
+          "name": "isup_pre_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 0.01098735
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "tt",
+      "supply_v": 2.97,
+      "temperature_c": 125.0,
+      "timed_out": false,
+      "timeout_s": 600
+    },
+    {
+      "corner_id": "tt_125c_3.30v",
+      "elapsed_s": 13.332,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/current-limit/corners/20260825-085216-64c17cb/tt_125c_3.30v.log",
+      "measurements": [
+        {
+          "expr": "op1.v(vout)",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.797486
+        },
+        {
+          "expr": "op1.v(vin) - op1.v(xldo.cl_cmp)",
+          "max": null,
+          "min": null,
+          "name": "cl_margin_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.04478397
+        },
+        {
+          "expr": "1000*dc1.ilim_short",
+          "max": null,
+          "min": 50,
+          "name": "ilim_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 151.7038
+        },
+        {
+          "expr": "1000*dc1.ilim_knee",
+          "max": null,
+          "min": 50,
+          "name": "ilim_knee_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 124.8525
+        },
+        {
+          "expr": "100*(dc1.ilim_knee - dc1.ilim_short)/dc1.ilim_knee",
+          "max": null,
+          "min": null,
+          "name": "ilim_droop_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -21.5064
+        },
+        {
+          "expr": "-1000*tran1.ish_avg",
+          "max": null,
+          "min": null,
+          "name": "ishort_sustained_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 151.7441
+        },
+        {
+          "expr": "100*(tran1.ish_max - tran1.ish_min)/(-tran1.ish_avg)",
+          "max": 100,
+          "min": null,
+          "name": "ishort_ripple_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": 0.01034637
+        },
+        {
+          "expr": "1000*tran1.vsh_max",
+          "max": null,
+          "min": null,
+          "name": "vout_short_mv",
+          "pass": true,
+          "reason": "",
+          "unit": "mV",
+          "value": 0.1516996
+        },
+        {
+          "expr": "-1000*tran1.ipre",
+          "max": null,
+          "min": null,
+          "name": "isup_pre_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 0.01315728
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "tt",
+      "supply_v": 3.3,
+      "temperature_c": 125.0,
+      "timed_out": false,
+      "timeout_s": 600
+    },
+    {
+      "corner_id": "tt_125c_3.63v",
+      "elapsed_s": 13.866,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/current-limit/corners/20260825-085216-64c17cb/tt_125c_3.63v.log",
+      "measurements": [
+        {
+          "expr": "op1.v(vout)",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.79759
+        },
+        {
+          "expr": "op1.v(vin) - op1.v(xldo.cl_cmp)",
+          "max": null,
+          "min": null,
+          "name": "cl_margin_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.0399059
+        },
+        {
+          "expr": "1000*dc1.ilim_short",
+          "max": null,
+          "min": 50,
+          "name": "ilim_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 172.7154
+        },
+        {
+          "expr": "1000*dc1.ilim_knee",
+          "max": null,
+          "min": 50,
+          "name": "ilim_knee_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 144.597
+        },
+        {
+          "expr": "100*(dc1.ilim_knee - dc1.ilim_short)/dc1.ilim_knee",
+          "max": null,
+          "min": null,
+          "name": "ilim_droop_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -19.446
+        },
+        {
+          "expr": "-1000*tran1.ish_avg",
+          "max": null,
+          "min": null,
+          "name": "ishort_sustained_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 172.761
+        },
+        {
+          "expr": "100*(tran1.ish_max - tran1.ish_min)/(-tran1.ish_avg)",
+          "max": 100,
+          "min": null,
+          "name": "ishort_ripple_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": 0.01481816
+        },
+        {
+          "expr": "1000*tran1.vsh_max",
+          "max": null,
+          "min": null,
+          "name": "vout_short_mv",
+          "pass": true,
+          "reason": "",
+          "unit": "mV",
+          "value": 0.1727106
+        },
+        {
+          "expr": "-1000*tran1.ipre",
+          "max": null,
+          "min": null,
+          "name": "isup_pre_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 0.01597942
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "tt",
+      "supply_v": 3.63,
+      "temperature_c": 125.0,
+      "timed_out": false,
+      "timeout_s": 600
+    },
+    {
+      "corner_id": "ss_-40c_2.97v",
+      "elapsed_s": 13.322,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/current-limit/corners/20260825-085216-64c17cb/ss_-40c_2.97v.log",
+      "measurements": [
+        {
+          "expr": "op1.v(vout)",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.798072
+        },
+        {
+          "expr": "op1.v(vin) - op1.v(xldo.cl_cmp)",
+          "max": null,
+          "min": null,
+          "name": "cl_margin_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.02562651
+        },
+        {
+          "expr": "1000*dc1.ilim_short",
+          "max": null,
+          "min": 50,
+          "name": "ilim_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 180.3139
+        },
+        {
+          "expr": "1000*dc1.ilim_knee",
+          "max": null,
+          "min": 50,
+          "name": "ilim_knee_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 148.7388
+        },
+        {
+          "expr": "100*(dc1.ilim_knee - dc1.ilim_short)/dc1.ilim_knee",
+          "max": null,
+          "min": null,
+          "name": "ilim_droop_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -21.2286
+        },
+        {
+          "expr": "-1000*tran1.ish_avg",
+          "max": null,
+          "min": null,
+          "name": "ishort_sustained_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 180.3545
+        },
+        {
+          "expr": "100*(tran1.ish_max - tran1.ish_min)/(-tran1.ish_avg)",
+          "max": 100,
+          "min": null,
+          "name": "ishort_ripple_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": 0.01763194
+        },
+        {
+          "expr": "1000*tran1.vsh_max",
+          "max": null,
+          "min": null,
+          "name": "vout_short_mv",
+          "pass": true,
+          "reason": "",
+          "unit": "mV",
+          "value": 0.1803089
+        },
+        {
+          "expr": "-1000*tran1.ipre",
+          "max": null,
+          "min": null,
+          "name": "isup_pre_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 0.0107493
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "ss",
+      "supply_v": 2.97,
+      "temperature_c": -40.0,
+      "timed_out": false,
+      "timeout_s": 600
+    },
+    {
+      "corner_id": "ss_-40c_3.30v",
+      "elapsed_s": 13.403,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/current-limit/corners/20260825-085216-64c17cb/ss_-40c_3.30v.log",
+      "measurements": [
+        {
+          "expr": "op1.v(vout)",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.798215
+        },
+        {
+          "expr": "op1.v(vin) - op1.v(xldo.cl_cmp)",
+          "max": null,
+          "min": null,
+          "name": "cl_margin_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.02215345
+        },
+        {
+          "expr": "1000*dc1.ilim_short",
+          "max": null,
+          "min": 50,
+          "name": "ilim_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 207.5458
+        },
+        {
+          "expr": "1000*dc1.ilim_knee",
+          "max": null,
+          "min": 50,
+          "name": "ilim_knee_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 176.7197
+        },
+        {
+          "expr": "100*(dc1.ilim_knee - dc1.ilim_short)/dc1.ilim_knee",
+          "max": null,
+          "min": null,
+          "name": "ilim_droop_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -17.4435
+        },
+        {
+          "expr": "-1000*tran1.ish_avg",
+          "max": null,
+          "min": null,
+          "name": "ishort_sustained_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 207.5921
+        },
+        {
+          "expr": "100*(tran1.ish_max - tran1.ish_min)/(-tran1.ish_avg)",
+          "max": 100,
+          "min": null,
+          "name": "ishort_ripple_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": 0.01791976
+        },
+        {
+          "expr": "1000*tran1.vsh_max",
+          "max": null,
+          "min": null,
+          "name": "vout_short_mv",
+          "pass": true,
+          "reason": "",
+          "unit": "mV",
+          "value": 0.2075392
+        },
+        {
+          "expr": "-1000*tran1.ipre",
+          "max": null,
+          "min": null,
+          "name": "isup_pre_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 0.01273099
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "ss",
+      "supply_v": 3.3,
+      "temperature_c": -40.0,
+      "timed_out": false,
+      "timeout_s": 600
+    },
+    {
+      "corner_id": "ss_-40c_3.63v",
+      "elapsed_s": 13.355,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/current-limit/corners/20260825-085216-64c17cb/ss_-40c_3.63v.log",
+      "measurements": [
+        {
+          "expr": "op1.v(vout)",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.798315
+        },
+        {
+          "expr": "op1.v(vin) - op1.v(xldo.cl_cmp)",
+          "max": null,
+          "min": null,
+          "name": "cl_margin_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.01979516
+        },
+        {
+          "expr": "1000*dc1.ilim_short",
+          "max": null,
+          "min": 50,
+          "name": "ilim_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 235.9147
+        },
+        {
+          "expr": "1000*dc1.ilim_knee",
+          "max": null,
+          "min": 50,
+          "name": "ilim_knee_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 204.0836
+        },
+        {
+          "expr": "100*(dc1.ilim_knee - dc1.ilim_short)/dc1.ilim_knee",
+          "max": null,
+          "min": null,
+          "name": "ilim_droop_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -15.5971
+        },
+        {
+          "expr": "-1000*tran1.ish_avg",
+          "max": null,
+          "min": null,
+          "name": "ishort_sustained_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 235.9685
+        },
+        {
+          "expr": "100*(tran1.ish_max - tran1.ish_min)/(-tran1.ish_avg)",
+          "max": 100,
+          "min": null,
+          "name": "ishort_ripple_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": 0.01724806
+        },
+        {
+          "expr": "1000*tran1.vsh_max",
+          "max": null,
+          "min": null,
+          "name": "vout_short_mv",
+          "pass": true,
+          "reason": "",
+          "unit": "mV",
+          "value": 0.2359082
+        },
+        {
+          "expr": "-1000*tran1.ipre",
+          "max": null,
+          "min": null,
+          "name": "isup_pre_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 0.01476602
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "ss",
+      "supply_v": 3.63,
+      "temperature_c": -40.0,
+      "timed_out": false,
+      "timeout_s": 600
+    },
+    {
+      "corner_id": "ss_27c_2.97v",
+      "elapsed_s": 13.508,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/current-limit/corners/20260825-085216-64c17cb/ss_27c_2.97v.log",
+      "measurements": [
+        {
+          "expr": "op1.v(vout)",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.797746
+        },
+        {
+          "expr": "op1.v(vin) - op1.v(xldo.cl_cmp)",
+          "max": null,
+          "min": null,
+          "name": "cl_margin_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.03161046
+        },
+        {
+          "expr": "1000*dc1.ilim_short",
+          "max": null,
+          "min": 50,
+          "name": "ilim_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 170.8692
+        },
+        {
+          "expr": "1000*dc1.ilim_knee",
+          "max": null,
+          "min": 50,
+          "name": "ilim_knee_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 138.6663
+        },
+        {
+          "expr": "100*(dc1.ilim_knee - dc1.ilim_short)/dc1.ilim_knee",
+          "max": null,
+          "min": null,
+          "name": "ilim_droop_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -23.2233
+        },
+        {
+          "expr": "-1000*tran1.ish_avg",
+          "max": null,
+          "min": null,
+          "name": "ishort_sustained_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 170.9083
+        },
+        {
+          "expr": "100*(tran1.ish_max - tran1.ish_min)/(-tran1.ish_avg)",
+          "max": 100,
+          "min": null,
+          "name": "ishort_ripple_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": 0.02562778
+        },
+        {
+          "expr": "1000*tran1.vsh_max",
+          "max": null,
+          "min": null,
+          "name": "vout_short_mv",
+          "pass": true,
+          "reason": "",
+          "unit": "mV",
+          "value": 0.1708641
+        },
+        {
+          "expr": "-1000*tran1.ipre",
+          "max": null,
+          "min": null,
+          "name": "isup_pre_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 0.01105235
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "ss",
+      "supply_v": 2.97,
+      "temperature_c": 27.0,
+      "timed_out": false,
+      "timeout_s": 600
+    },
+    {
+      "corner_id": "ss_27c_3.30v",
+      "elapsed_s": 13.824,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/current-limit/corners/20260825-085216-64c17cb/ss_27c_3.30v.log",
+      "measurements": [
+        {
+          "expr": "op1.v(vout)",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.797901
+        },
+        {
+          "expr": "op1.v(vin) - op1.v(xldo.cl_cmp)",
+          "max": null,
+          "min": null,
+          "name": "cl_margin_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.02745237
+        },
+        {
+          "expr": "1000*dc1.ilim_short",
+          "max": null,
+          "min": 50,
+          "name": "ilim_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 195.8346
+        },
+        {
+          "expr": "1000*dc1.ilim_knee",
+          "max": null,
+          "min": 50,
+          "name": "ilim_knee_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 164.8643
+        },
+        {
+          "expr": "100*(dc1.ilim_knee - dc1.ilim_short)/dc1.ilim_knee",
+          "max": null,
+          "min": null,
+          "name": "ilim_droop_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -18.7853
+        },
+        {
+          "expr": "-1000*tran1.ish_avg",
+          "max": null,
+          "min": null,
+          "name": "ishort_sustained_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 195.8803
+        },
+        {
+          "expr": "100*(tran1.ish_max - tran1.ish_min)/(-tran1.ish_avg)",
+          "max": 100,
+          "min": null,
+          "name": "ishort_ripple_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": 0.02603631
+        },
+        {
+          "expr": "1000*tran1.vsh_max",
+          "max": null,
+          "min": null,
+          "name": "vout_short_mv",
+          "pass": true,
+          "reason": "",
+          "unit": "mV",
+          "value": 0.1958292
+        },
+        {
+          "expr": "-1000*tran1.ipre",
+          "max": null,
+          "min": null,
+          "name": "isup_pre_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 0.01299427
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "ss",
+      "supply_v": 3.3,
+      "temperature_c": 27.0,
+      "timed_out": false,
+      "timeout_s": 600
+    },
+    {
+      "corner_id": "ss_27c_3.63v",
+      "elapsed_s": 13.502,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/current-limit/corners/20260825-085216-64c17cb/ss_27c_3.63v.log",
+      "measurements": [
+        {
+          "expr": "op1.v(vout)",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.798004
+        },
+        {
+          "expr": "op1.v(vin) - op1.v(xldo.cl_cmp)",
+          "max": null,
+          "min": null,
+          "name": "cl_margin_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.02460999
+        },
+        {
+          "expr": "1000*dc1.ilim_short",
+          "max": null,
+          "min": 50,
+          "name": "ilim_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 221.4324
+        },
+        {
+          "expr": "1000*dc1.ilim_knee",
+          "max": null,
+          "min": 50,
+          "name": "ilim_knee_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 190.3647
+        },
+        {
+          "expr": "100*(dc1.ilim_knee - dc1.ilim_short)/dc1.ilim_knee",
+          "max": null,
+          "min": null,
+          "name": "ilim_droop_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -16.3201
+        },
+        {
+          "expr": "-1000*tran1.ish_avg",
+          "max": null,
+          "min": null,
+          "name": "ishort_sustained_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 221.4843
+        },
+        {
+          "expr": "100*(tran1.ish_max - tran1.ish_min)/(-tran1.ish_avg)",
+          "max": 100,
+          "min": null,
+          "name": "ishort_ripple_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": 0.02541941
+        },
+        {
+          "expr": "1000*tran1.vsh_max",
+          "max": null,
+          "min": null,
+          "name": "vout_short_mv",
+          "pass": true,
+          "reason": "",
+          "unit": "mV",
+          "value": 0.2214262
+        },
+        {
+          "expr": "-1000*tran1.ipre",
+          "max": null,
+          "min": null,
+          "name": "isup_pre_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 0.01499261
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "ss",
+      "supply_v": 3.63,
+      "temperature_c": 27.0,
+      "timed_out": false,
+      "timeout_s": 600
+    },
+    {
+      "corner_id": "ss_125c_2.97v",
+      "elapsed_s": 13.293,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/current-limit/corners/20260825-085216-64c17cb/ss_125c_2.97v.log",
+      "measurements": [
+        {
+          "expr": "op1.v(vout)",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.797213
+        },
+        {
+          "expr": "op1.v(vin) - op1.v(xldo.cl_cmp)",
+          "max": null,
+          "min": null,
+          "name": "cl_margin_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.04021352
+        },
+        {
+          "expr": "1000*dc1.ilim_short",
+          "max": null,
+          "min": 50,
+          "name": "ilim_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 159.246
+        },
+        {
+          "expr": "1000*dc1.ilim_knee",
+          "max": null,
+          "min": 50,
+          "name": "ilim_knee_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 126.1644
+        },
+        {
+          "expr": "100*(dc1.ilim_knee - dc1.ilim_short)/dc1.ilim_knee",
+          "max": null,
+          "min": null,
+          "name": "ilim_droop_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -26.221
+        },
+        {
+          "expr": "-1000*tran1.ish_avg",
+          "max": null,
+          "min": null,
+          "name": "ishort_sustained_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 159.2826
+        },
+        {
+          "expr": "100*(tran1.ish_max - tran1.ish_min)/(-tran1.ish_avg)",
+          "max": 100,
+          "min": null,
+          "name": "ishort_ripple_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": 0.04080797
+        },
+        {
+          "expr": "1000*tran1.vsh_max",
+          "max": null,
+          "min": null,
+          "name": "vout_short_mv",
+          "pass": true,
+          "reason": "",
+          "unit": "mV",
+          "value": 0.1592408
+        },
+        {
+          "expr": "-1000*tran1.ipre",
+          "max": null,
+          "min": null,
+          "name": "isup_pre_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 0.01111377
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "ss",
+      "supply_v": 2.97,
+      "temperature_c": 125.0,
+      "timed_out": false,
+      "timeout_s": 600
+    },
+    {
+      "corner_id": "ss_125c_3.30v",
+      "elapsed_s": 13.288,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/current-limit/corners/20260825-085216-64c17cb/ss_125c_3.30v.log",
+      "measurements": [
+        {
+          "expr": "op1.v(vout)",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.79739
+        },
+        {
+          "expr": "op1.v(vin) - op1.v(xldo.cl_cmp)",
+          "max": null,
+          "min": null,
+          "name": "cl_margin_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.03508027
+        },
+        {
+          "expr": "1000*dc1.ilim_short",
+          "max": null,
+          "min": 50,
+          "name": "ilim_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 181.5084
+        },
+        {
+          "expr": "1000*dc1.ilim_knee",
+          "max": null,
+          "min": 50,
+          "name": "ilim_knee_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 150.0473
+        },
+        {
+          "expr": "100*(dc1.ilim_knee - dc1.ilim_short)/dc1.ilim_knee",
+          "max": null,
+          "min": null,
+          "name": "ilim_droop_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -20.9675
+        },
+        {
+          "expr": "-1000*tran1.ish_avg",
+          "max": null,
+          "min": null,
+          "name": "ishort_sustained_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 181.5515
+        },
+        {
+          "expr": "100*(tran1.ish_max - tran1.ish_min)/(-tran1.ish_avg)",
+          "max": 100,
+          "min": null,
+          "name": "ishort_ripple_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": 0.04175124
+        },
+        {
+          "expr": "1000*tran1.vsh_max",
+          "max": null,
+          "min": null,
+          "name": "vout_short_mv",
+          "pass": true,
+          "reason": "",
+          "unit": "mV",
+          "value": 0.1815033
+        },
+        {
+          "expr": "-1000*tran1.ipre",
+          "max": null,
+          "min": null,
+          "name": "isup_pre_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 0.01320327
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "ss",
+      "supply_v": 3.3,
+      "temperature_c": 125.0,
+      "timed_out": false,
+      "timeout_s": 600
+    },
+    {
+      "corner_id": "ss_125c_3.63v",
+      "elapsed_s": 14.018,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/current-limit/corners/20260825-085216-64c17cb/ss_125c_3.63v.log",
+      "measurements": [
+        {
+          "expr": "op1.v(vout)",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.797497
+        },
+        {
+          "expr": "op1.v(vin) - op1.v(xldo.cl_cmp)",
+          "max": null,
+          "min": null,
+          "name": "cl_margin_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.03154825
+        },
+        {
+          "expr": "1000*dc1.ilim_short",
+          "max": null,
+          "min": 50,
+          "name": "ilim_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 204.0832
+        },
+        {
+          "expr": "1000*dc1.ilim_knee",
+          "max": null,
+          "min": 50,
+          "name": "ilim_knee_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 173.0733
+        },
+        {
+          "expr": "100*(dc1.ilim_knee - dc1.ilim_short)/dc1.ilim_knee",
+          "max": null,
+          "min": null,
+          "name": "ilim_droop_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -17.9172
+        },
+        {
+          "expr": "-1000*tran1.ish_avg",
+          "max": null,
+          "min": null,
+          "name": "ishort_sustained_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 204.132
+        },
+        {
+          "expr": "100*(tran1.ish_max - tran1.ish_min)/(-tran1.ish_avg)",
+          "max": 100,
+          "min": null,
+          "name": "ishort_ripple_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": 0.0413458
+        },
+        {
+          "expr": "1000*tran1.vsh_max",
+          "max": null,
+          "min": null,
+          "name": "vout_short_mv",
+          "pass": true,
+          "reason": "",
+          "unit": "mV",
+          "value": 0.2040775
+        },
+        {
+          "expr": "-1000*tran1.ipre",
+          "max": null,
+          "min": null,
+          "name": "isup_pre_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 0.01575569
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "ss",
+      "supply_v": 3.63,
+      "temperature_c": 125.0,
+      "timed_out": false,
+      "timeout_s": 600
+    },
+    {
+      "corner_id": "ff_-40c_2.97v",
+      "elapsed_s": 14.281,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/current-limit/corners/20260825-085216-64c17cb/ff_-40c_2.97v.log",
+      "measurements": [
+        {
+          "expr": "op1.v(vout)",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.798246
+        },
+        {
+          "expr": "op1.v(vin) - op1.v(xldo.cl_cmp)",
+          "max": null,
+          "min": null,
+          "name": "cl_margin_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.05306537
+        },
+        {
+          "expr": "1000*dc1.ilim_short",
+          "max": null,
+          "min": 50,
+          "name": "ilim_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 116.1185
+        },
+        {
+          "expr": "1000*dc1.ilim_knee",
+          "max": null,
+          "min": 50,
+          "name": "ilim_knee_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 92.46659
+        },
+        {
+          "expr": "100*(dc1.ilim_knee - dc1.ilim_short)/dc1.ilim_knee",
+          "max": null,
+          "min": null,
+          "name": "ilim_droop_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -25.5789
+        },
+        {
+          "expr": "-1000*tran1.ish_avg",
+          "max": null,
+          "min": null,
+          "name": "ishort_sustained_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 116.1528
+        },
+        {
+          "expr": "100*(tran1.ish_max - tran1.ish_min)/(-tran1.ish_avg)",
+          "max": 100,
+          "min": null,
+          "name": "ishort_ripple_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": 0.0277221
+        },
+        {
+          "expr": "1000*tran1.vsh_max",
+          "max": null,
+          "min": null,
+          "name": "vout_short_mv",
+          "pass": true,
+          "reason": "",
+          "unit": "mV",
+          "value": 0.1161474
+        },
+        {
+          "expr": "-1000*tran1.ipre",
+          "max": null,
+          "min": null,
+          "name": "isup_pre_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 0.01032581
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "ff",
+      "supply_v": 2.97,
+      "temperature_c": -40.0,
+      "timed_out": false,
+      "timeout_s": 600
+    },
+    {
+      "corner_id": "ff_-40c_3.30v",
+      "elapsed_s": 14.327,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/current-limit/corners/20260825-085216-64c17cb/ff_-40c_3.30v.log",
+      "measurements": [
+        {
+          "expr": "op1.v(vout)",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.798383
+        },
+        {
+          "expr": "op1.v(vin) - op1.v(xldo.cl_cmp)",
+          "max": null,
+          "min": null,
+          "name": "cl_margin_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.04252949
+        },
+        {
+          "expr": "1000*dc1.ilim_short",
+          "max": null,
+          "min": 50,
+          "name": "ilim_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 140.229
+        },
+        {
+          "expr": "1000*dc1.ilim_knee",
+          "max": null,
+          "min": 50,
+          "name": "ilim_knee_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 112.1053
+        },
+        {
+          "expr": "100*(dc1.ilim_knee - dc1.ilim_short)/dc1.ilim_knee",
+          "max": null,
+          "min": null,
+          "name": "ilim_droop_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -25.0869
+        },
+        {
+          "expr": "-1000*tran1.ish_avg",
+          "max": null,
+          "min": null,
+          "name": "ishort_sustained_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 140.2689
+        },
+        {
+          "expr": "100*(tran1.ish_max - tran1.ish_min)/(-tran1.ish_avg)",
+          "max": 100,
+          "min": null,
+          "name": "ishort_ripple_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": 0.01853583
+        },
+        {
+          "expr": "1000*tran1.vsh_max",
+          "max": null,
+          "min": null,
+          "name": "vout_short_mv",
+          "pass": true,
+          "reason": "",
+          "unit": "mV",
+          "value": 0.1402511
+        },
+        {
+          "expr": "-1000*tran1.ipre",
+          "max": null,
+          "min": null,
+          "name": "isup_pre_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 0.01215011
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "ff",
+      "supply_v": 3.3,
+      "temperature_c": -40.0,
+      "timed_out": false,
+      "timeout_s": 600
+    },
+    {
+      "corner_id": "ff_-40c_3.63v",
+      "elapsed_s": 14.047,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/current-limit/corners/20260825-085216-64c17cb/ff_-40c_3.63v.log",
+      "measurements": [
+        {
+          "expr": "op1.v(vout)",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.79848
+        },
+        {
+          "expr": "op1.v(vin) - op1.v(xldo.cl_cmp)",
+          "max": null,
+          "min": null,
+          "name": "cl_margin_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.03654437
+        },
+        {
+          "expr": "1000*dc1.ilim_short",
+          "max": null,
+          "min": 50,
+          "name": "ilim_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 171.8326
+        },
+        {
+          "expr": "1000*dc1.ilim_knee",
+          "max": null,
+          "min": 50,
+          "name": "ilim_knee_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 131.9632
+        },
+        {
+          "expr": "100*(dc1.ilim_knee - dc1.ilim_short)/dc1.ilim_knee",
+          "max": null,
+          "min": null,
+          "name": "ilim_droop_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -30.2125
+        },
+        {
+          "expr": "-1000*tran1.ish_avg",
+          "max": null,
+          "min": null,
+          "name": "ishort_sustained_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 171.8781
+        },
+        {
+          "expr": "100*(tran1.ish_max - tran1.ish_min)/(-tran1.ish_avg)",
+          "max": 100,
+          "min": null,
+          "name": "ishort_ripple_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": 0.01274159
+        },
+        {
+          "expr": "1000*tran1.vsh_max",
+          "max": null,
+          "min": null,
+          "name": "vout_short_mv",
+          "pass": true,
+          "reason": "",
+          "unit": "mV",
+          "value": 0.1718497
+        },
+        {
+          "expr": "-1000*tran1.ipre",
+          "max": null,
+          "min": null,
+          "name": "isup_pre_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 0.01401237
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "ff",
+      "supply_v": 3.63,
+      "temperature_c": -40.0,
+      "timed_out": false,
+      "timeout_s": 600
+    },
+    {
+      "corner_id": "ff_27c_2.97v",
+      "elapsed_s": 18.206,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/current-limit/corners/20260825-085216-64c17cb/ff_27c_2.97v.log",
+      "measurements": [
+        {
+          "expr": "op1.v(vout)",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.797945
+        },
+        {
+          "expr": "op1.v(vin) - op1.v(xldo.cl_cmp)",
+          "max": null,
+          "min": null,
+          "name": "cl_margin_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.05936165
+        },
+        {
+          "expr": "1000*dc1.ilim_short",
+          "max": null,
+          "min": 50,
+          "name": "ilim_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 113.1303
+        },
+        {
+          "expr": "1000*dc1.ilim_knee",
+          "max": null,
+          "min": 50,
+          "name": "ilim_knee_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 89.9809
+        },
+        {
+          "expr": "100*(dc1.ilim_knee - dc1.ilim_short)/dc1.ilim_knee",
+          "max": null,
+          "min": null,
+          "name": "ilim_droop_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -25.727
+        },
+        {
+          "expr": "-1000*tran1.ish_avg",
+          "max": null,
+          "min": null,
+          "name": "ishort_sustained_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 113.164
+        },
+        {
+          "expr": "100*(tran1.ish_max - tran1.ish_min)/(-tran1.ish_avg)",
+          "max": 100,
+          "min": null,
+          "name": "ishort_ripple_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": 0.02951469
+        },
+        {
+          "expr": "1000*tran1.vsh_max",
+          "max": null,
+          "min": null,
+          "name": "vout_short_mv",
+          "pass": true,
+          "reason": "",
+          "unit": "mV",
+          "value": 0.1131602
+        },
+        {
+          "expr": "-1000*tran1.ipre",
+          "max": null,
+          "min": null,
+          "name": "isup_pre_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 0.01066553
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "ff",
+      "supply_v": 2.97,
+      "temperature_c": 27.0,
+      "timed_out": false,
+      "timeout_s": 600
+    },
+    {
+      "corner_id": "ff_27c_3.30v",
+      "elapsed_s": 15.012,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/current-limit/corners/20260825-085216-64c17cb/ff_27c_3.30v.log",
+      "measurements": [
+        {
+          "expr": "op1.v(vout)",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.798092
+        },
+        {
+          "expr": "op1.v(vin) - op1.v(xldo.cl_cmp)",
+          "max": null,
+          "min": null,
+          "name": "cl_margin_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.04868465
+        },
+        {
+          "expr": "1000*dc1.ilim_short",
+          "max": null,
+          "min": 50,
+          "name": "ilim_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 134.4555
+        },
+        {
+          "expr": "1000*dc1.ilim_knee",
+          "max": null,
+          "min": 50,
+          "name": "ilim_knee_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 108.4651
+        },
+        {
+          "expr": "100*(dc1.ilim_knee - dc1.ilim_short)/dc1.ilim_knee",
+          "max": null,
+          "min": null,
+          "name": "ilim_droop_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -23.962
+        },
+        {
+          "expr": "-1000*tran1.ish_avg",
+          "max": null,
+          "min": null,
+          "name": "ishort_sustained_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 134.4949
+        },
+        {
+          "expr": "100*(tran1.ish_max - tran1.ish_min)/(-tran1.ish_avg)",
+          "max": 100,
+          "min": null,
+          "name": "ishort_ripple_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": 0.01910853
+        },
+        {
+          "expr": "1000*tran1.vsh_max",
+          "max": null,
+          "min": null,
+          "name": "vout_short_mv",
+          "pass": true,
+          "reason": "",
+          "unit": "mV",
+          "value": 0.1344774
+        },
+        {
+          "expr": "-1000*tran1.ipre",
+          "max": null,
+          "min": null,
+          "name": "isup_pre_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 0.01246967
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "ff",
+      "supply_v": 3.3,
+      "temperature_c": 27.0,
+      "timed_out": false,
+      "timeout_s": 600
+    },
+    {
+      "corner_id": "ff_27c_3.63v",
+      "elapsed_s": 15.314,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/current-limit/corners/20260825-085216-64c17cb/ff_27c_3.63v.log",
+      "measurements": [
+        {
+          "expr": "op1.v(vout)",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.798191
+        },
+        {
+          "expr": "op1.v(vin) - op1.v(xldo.cl_cmp)",
+          "max": null,
+          "min": null,
+          "name": "cl_margin_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.04230946
+        },
+        {
+          "expr": "1000*dc1.ilim_short",
+          "max": null,
+          "min": 50,
+          "name": "ilim_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 160.9874
+        },
+        {
+          "expr": "1000*dc1.ilim_knee",
+          "max": null,
+          "min": 50,
+          "name": "ilim_knee_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 127.0951
+        },
+        {
+          "expr": "100*(dc1.ilim_knee - dc1.ilim_short)/dc1.ilim_knee",
+          "max": null,
+          "min": null,
+          "name": "ilim_droop_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -26.6669
+        },
+        {
+          "expr": "-1000*tran1.ish_avg",
+          "max": null,
+          "min": null,
+          "name": "ishort_sustained_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 161.0321
+        },
+        {
+          "expr": "100*(tran1.ish_max - tran1.ish_min)/(-tran1.ish_avg)",
+          "max": 100,
+          "min": null,
+          "name": "ishort_ripple_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": 0.01210939
+        },
+        {
+          "expr": "1000*tran1.vsh_max",
+          "max": null,
+          "min": null,
+          "name": "vout_short_mv",
+          "pass": true,
+          "reason": "",
+          "unit": "mV",
+          "value": 0.1610025
+        },
+        {
+          "expr": "-1000*tran1.ipre",
+          "max": null,
+          "min": null,
+          "name": "isup_pre_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 0.01432159
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "ff",
+      "supply_v": 3.63,
+      "temperature_c": 27.0,
+      "timed_out": false,
+      "timeout_s": 600
+    },
+    {
+      "corner_id": "ff_125c_2.97v",
+      "elapsed_s": 13.419,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/current-limit/corners/20260825-085216-64c17cb/ff_125c_2.97v.log",
+      "measurements": [
+        {
+          "expr": "op1.v(vout)",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_50ma_v",
+          "pass": false,
+          "reason": "below min 1.764",
+          "unit": "V",
+          "value": 1.021733e-06
+        },
+        {
+          "expr": "op1.v(vin) - op1.v(xldo.cl_cmp)",
+          "max": null,
+          "min": null,
+          "name": "cl_margin_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 4.097041e-06
+        },
+        {
+          "expr": "1000*dc1.ilim_short",
+          "max": null,
+          "min": 50,
+          "name": "ilim_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 107.6248
+        },
+        {
+          "expr": "1000*dc1.ilim_knee",
+          "max": null,
+          "min": 50,
+          "name": "ilim_knee_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 85.17169
+        },
+        {
+          "expr": "100*(dc1.ilim_knee - dc1.ilim_short)/dc1.ilim_knee",
+          "max": null,
+          "min": null,
+          "name": "ilim_droop_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -26.3622
+        },
+        {
+          "expr": "-1000*tran1.ish_avg",
+          "max": null,
+          "min": null,
+          "name": "ishort_sustained_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 108.1706
+        },
+        {
+          "expr": "100*(tran1.ish_max - tran1.ish_min)/(-tran1.ish_avg)",
+          "max": 100,
+          "min": null,
+          "name": "ishort_ripple_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": 0.04271031
+        },
+        {
+          "expr": "1000*tran1.vsh_max",
+          "max": null,
+          "min": null,
+          "name": "vout_short_mv",
+          "pass": true,
+          "reason": "",
+          "unit": "mV",
+          "value": 0.1081803
+        },
+        {
+          "expr": "-1000*tran1.ipre",
+          "max": null,
+          "min": null,
+          "name": "isup_pre_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 0.01105605
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": false,
+      "process": "ff",
+      "supply_v": 2.97,
+      "temperature_c": 125.0,
+      "timed_out": false,
+      "timeout_s": 600
+    },
+    {
+      "corner_id": "ff_125c_3.30v",
+      "elapsed_s": 13.892,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/current-limit/corners/20260825-085216-64c17cb/ff_125c_3.30v.log",
+      "measurements": [
+        {
+          "expr": "op1.v(vout)",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_50ma_v",
+          "pass": false,
+          "reason": "below min 1.764",
+          "unit": "V",
+          "value": 1.343032e-06
+        },
+        {
+          "expr": "op1.v(vin) - op1.v(xldo.cl_cmp)",
+          "max": null,
+          "min": null,
+          "name": "cl_margin_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 3.803799e-06
+        },
+        {
+          "expr": "1000*dc1.ilim_short",
+          "max": null,
+          "min": 50,
+          "name": "ilim_short_ma",
+          "pass": false,
+          "reason": "below min 50",
+          "unit": "mA",
+          "value": 3.730513e-05
+        },
+        {
+          "expr": "1000*dc1.ilim_knee",
+          "max": null,
+          "min": 50,
+          "name": "ilim_knee_ma",
+          "pass": false,
+          "reason": "below min 50",
+          "unit": "mA",
+          "value": -0.000547091
+        },
+        {
+          "expr": "100*(dc1.ilim_knee - dc1.ilim_short)/dc1.ilim_knee",
+          "max": null,
+          "min": null,
+          "name": "ilim_droop_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": 106.8188
+        },
+        {
+          "expr": "-1000*tran1.ish_avg",
+          "max": null,
+          "min": null,
+          "name": "ishort_sustained_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 126.5708
+        },
+        {
+          "expr": "100*(tran1.ish_max - tran1.ish_min)/(-tran1.ish_avg)",
+          "max": 100,
+          "min": null,
+          "name": "ishort_ripple_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": 0.02741549
+        },
+        {
+          "expr": "1000*tran1.vsh_max",
+          "max": null,
+          "min": null,
+          "name": "vout_short_mv",
+          "pass": true,
+          "reason": "",
+          "unit": "mV",
+          "value": 0.1265636
+        },
+        {
+          "expr": "-1000*tran1.ipre",
+          "max": null,
+          "min": null,
+          "name": "isup_pre_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 0.01349934
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": false,
+      "process": "ff",
+      "supply_v": 3.3,
+      "temperature_c": 125.0,
+      "timed_out": false,
+      "timeout_s": 600
+    },
+    {
+      "corner_id": "ff_125c_3.63v",
+      "elapsed_s": 13.266,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/current-limit/corners/20260825-085216-64c17cb/ff_125c_3.63v.log",
+      "measurements": [
+        {
+          "expr": "op1.v(vout)",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_50ma_v",
+          "pass": false,
+          "reason": "below min 1.764",
+          "unit": "V",
+          "value": 1.91142e-06
+        },
+        {
+          "expr": "op1.v(vin) - op1.v(xldo.cl_cmp)",
+          "max": null,
+          "min": null,
+          "name": "cl_margin_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 3.577318e-06
+        },
+        {
+          "expr": "1000*dc1.ilim_short",
+          "max": null,
+          "min": 50,
+          "name": "ilim_short_ma",
+          "pass": false,
+          "reason": "below min 50",
+          "unit": "mA",
+          "value": 5.309392e-05
+        },
+        {
+          "expr": "1000*dc1.ilim_knee",
+          "max": null,
+          "min": 50,
+          "name": "ilim_knee_ma",
+          "pass": false,
+          "reason": "below min 50",
+          "unit": "mA",
+          "value": -0.000544839
+        },
+        {
+          "expr": "100*(dc1.ilim_knee - dc1.ilim_short)/dc1.ilim_knee",
+          "max": null,
+          "min": null,
+          "name": "ilim_droop_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": 109.7449
+        },
+        {
+          "expr": "-1000*tran1.ish_avg",
+          "max": null,
+          "min": null,
+          "name": "ishort_sustained_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 148.1636
+        },
+        {
+          "expr": "100*(tran1.ish_max - tran1.ish_min)/(-tran1.ish_avg)",
+          "max": 100,
+          "min": null,
+          "name": "ishort_ripple_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": 0.01694073
+        },
+        {
+          "expr": "1000*tran1.vsh_max",
+          "max": null,
+          "min": null,
+          "name": "vout_short_mv",
+          "pass": true,
+          "reason": "",
+          "unit": "mV",
+          "value": 0.1481413
+        },
+        {
+          "expr": "-1000*tran1.ipre",
+          "max": null,
+          "min": null,
+          "name": "isup_pre_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 0.01702886
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": false,
+      "process": "ff",
+      "supply_v": 3.63,
+      "temperature_c": 125.0,
+      "timed_out": false,
+      "timeout_s": 600
+    },
+    {
+      "corner_id": "sf_-40c_2.97v",
+      "elapsed_s": 13.177,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/current-limit/corners/20260825-085216-64c17cb/sf_-40c_2.97v.log",
+      "measurements": [
+        {
+          "expr": "op1.v(vout)",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.798101
+        },
+        {
+          "expr": "op1.v(vin) - op1.v(xldo.cl_cmp)",
+          "max": null,
+          "min": null,
+          "name": "cl_margin_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.04242282
+        },
+        {
+          "expr": "1000*dc1.ilim_short",
+          "max": null,
+          "min": 50,
+          "name": "ilim_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 131.4345
+        },
+        {
+          "expr": "1000*dc1.ilim_knee",
+          "max": null,
+          "min": 50,
+          "name": "ilim_knee_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 107.1859
+        },
+        {
+          "expr": "100*(dc1.ilim_knee - dc1.ilim_short)/dc1.ilim_knee",
+          "max": null,
+          "min": null,
+          "name": "ilim_droop_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -22.6229
+        },
+        {
+          "expr": "-1000*tran1.ish_avg",
+          "max": null,
+          "min": null,
+          "name": "ishort_sustained_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 131.4694
+        },
+        {
+          "expr": "100*(tran1.ish_max - tran1.ish_min)/(-tran1.ish_avg)",
+          "max": 100,
+          "min": null,
+          "name": "ishort_ripple_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": 0.003118596
+        },
+        {
+          "expr": "1000*tran1.vsh_max",
+          "max": null,
+          "min": null,
+          "name": "vout_short_mv",
+          "pass": true,
+          "reason": "",
+          "unit": "mV",
+          "value": 0.131435
+        },
+        {
+          "expr": "-1000*tran1.ipre",
+          "max": null,
+          "min": null,
+          "name": "isup_pre_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 0.01122913
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "sf",
+      "supply_v": 2.97,
+      "temperature_c": -40.0,
+      "timed_out": false,
+      "timeout_s": 600
+    },
+    {
+      "corner_id": "sf_-40c_3.30v",
+      "elapsed_s": 13.571,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/current-limit/corners/20260825-085216-64c17cb/sf_-40c_3.30v.log",
+      "measurements": [
+        {
+          "expr": "op1.v(vout)",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.798247
+        },
+        {
+          "expr": "op1.v(vin) - op1.v(xldo.cl_cmp)",
+          "max": null,
+          "min": null,
+          "name": "cl_margin_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.0353591
+        },
+        {
+          "expr": "1000*dc1.ilim_short",
+          "max": null,
+          "min": 50,
+          "name": "ilim_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 154.2151
+        },
+        {
+          "expr": "1000*dc1.ilim_knee",
+          "max": null,
+          "min": 50,
+          "name": "ilim_knee_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 128.5586
+        },
+        {
+          "expr": "100*(dc1.ilim_knee - dc1.ilim_short)/dc1.ilim_knee",
+          "max": null,
+          "min": null,
+          "name": "ilim_droop_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -19.957
+        },
+        {
+          "expr": "-1000*tran1.ish_avg",
+          "max": null,
+          "min": null,
+          "name": "ishort_sustained_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 154.2557
+        },
+        {
+          "expr": "100*(tran1.ish_max - tran1.ish_min)/(-tran1.ish_avg)",
+          "max": 100,
+          "min": null,
+          "name": "ishort_ripple_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": 0.0002593097
+        },
+        {
+          "expr": "1000*tran1.vsh_max",
+          "max": null,
+          "min": null,
+          "name": "vout_short_mv",
+          "pass": true,
+          "reason": "",
+          "unit": "mV",
+          "value": 0.1542108
+        },
+        {
+          "expr": "-1000*tran1.ipre",
+          "max": null,
+          "min": null,
+          "name": "isup_pre_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 0.01317509
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "sf",
+      "supply_v": 3.3,
+      "temperature_c": -40.0,
+      "timed_out": false,
+      "timeout_s": 600
+    },
+    {
+      "corner_id": "sf_-40c_3.63v",
+      "elapsed_s": 13.884,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/current-limit/corners/20260825-085216-64c17cb/sf_-40c_3.63v.log",
+      "measurements": [
+        {
+          "expr": "op1.v(vout)",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.79835
+        },
+        {
+          "expr": "op1.v(vin) - op1.v(xldo.cl_cmp)",
+          "max": null,
+          "min": null,
+          "name": "cl_margin_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.03094389
+        },
+        {
+          "expr": "1000*dc1.ilim_short",
+          "max": null,
+          "min": 50,
+          "name": "ilim_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 180.3764
+        },
+        {
+          "expr": "1000*dc1.ilim_knee",
+          "max": null,
+          "min": 50,
+          "name": "ilim_knee_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 149.993
+        },
+        {
+          "expr": "100*(dc1.ilim_knee - dc1.ilim_short)/dc1.ilim_knee",
+          "max": null,
+          "min": null,
+          "name": "ilim_droop_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -20.2565
+        },
+        {
+          "expr": "-1000*tran1.ish_avg",
+          "max": null,
+          "min": null,
+          "name": "ishort_sustained_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 180.4227
+        },
+        {
+          "expr": "100*(tran1.ish_max - tran1.ish_min)/(-tran1.ish_avg)",
+          "max": 100,
+          "min": null,
+          "name": "ishort_ripple_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": 0.002106165
+        },
+        {
+          "expr": "1000*tran1.vsh_max",
+          "max": null,
+          "min": null,
+          "name": "vout_short_mv",
+          "pass": true,
+          "reason": "",
+          "unit": "mV",
+          "value": 0.1803714
+        },
+        {
+          "expr": "-1000*tran1.ipre",
+          "max": null,
+          "min": null,
+          "name": "isup_pre_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 0.01515165
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "sf",
+      "supply_v": 3.63,
+      "temperature_c": -40.0,
+      "timed_out": false,
+      "timeout_s": 600
+    },
+    {
+      "corner_id": "sf_27c_2.97v",
+      "elapsed_s": 13.6,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/current-limit/corners/20260825-085216-64c17cb/sf_27c_2.97v.log",
+      "measurements": [
+        {
+          "expr": "op1.v(vout)",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.797786
+        },
+        {
+          "expr": "op1.v(vin) - op1.v(xldo.cl_cmp)",
+          "max": null,
+          "min": null,
+          "name": "cl_margin_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.0478458
+        },
+        {
+          "expr": "1000*dc1.ilim_short",
+          "max": null,
+          "min": 50,
+          "name": "ilim_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 129.8651
+        },
+        {
+          "expr": "1000*dc1.ilim_knee",
+          "max": null,
+          "min": 50,
+          "name": "ilim_knee_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 105.0989
+        },
+        {
+          "expr": "100*(dc1.ilim_knee - dc1.ilim_short)/dc1.ilim_knee",
+          "max": null,
+          "min": null,
+          "name": "ilim_droop_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -23.5647
+        },
+        {
+          "expr": "-1000*tran1.ish_avg",
+          "max": null,
+          "min": null,
+          "name": "ishort_sustained_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 129.9001
+        },
+        {
+          "expr": "100*(tran1.ish_max - tran1.ish_min)/(-tran1.ish_avg)",
+          "max": 100,
+          "min": null,
+          "name": "ishort_ripple_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": 0.001693609
+        },
+        {
+          "expr": "1000*tran1.vsh_max",
+          "max": null,
+          "min": null,
+          "name": "vout_short_mv",
+          "pass": true,
+          "reason": "",
+          "unit": "mV",
+          "value": 0.1298615
+        },
+        {
+          "expr": "-1000*tran1.ipre",
+          "max": null,
+          "min": null,
+          "name": "isup_pre_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 0.01148758
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "sf",
+      "supply_v": 2.97,
+      "temperature_c": 27.0,
+      "timed_out": false,
+      "timeout_s": 600
+    },
+    {
+      "corner_id": "sf_27c_3.30v",
+      "elapsed_s": 13.243,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/current-limit/corners/20260825-085216-64c17cb/sf_27c_3.30v.log",
+      "measurements": [
+        {
+          "expr": "op1.v(vout)",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.797945
+        },
+        {
+          "expr": "op1.v(vin) - op1.v(xldo.cl_cmp)",
+          "max": null,
+          "min": null,
+          "name": "cl_margin_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.04046958
+        },
+        {
+          "expr": "1000*dc1.ilim_short",
+          "max": null,
+          "min": 50,
+          "name": "ilim_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 150.8213
+        },
+        {
+          "expr": "1000*dc1.ilim_knee",
+          "max": null,
+          "min": 50,
+          "name": "ilim_knee_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 125.5158
+        },
+        {
+          "expr": "100*(dc1.ilim_knee - dc1.ilim_short)/dc1.ilim_knee",
+          "max": null,
+          "min": null,
+          "name": "ilim_droop_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -20.1612
+        },
+        {
+          "expr": "-1000*tran1.ish_avg",
+          "max": null,
+          "min": null,
+          "name": "ishort_sustained_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 150.8617
+        },
+        {
+          "expr": "100*(tran1.ish_max - tran1.ish_min)/(-tran1.ish_avg)",
+          "max": 100,
+          "min": null,
+          "name": "ishort_ripple_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": 0.005568014
+        },
+        {
+          "expr": "1000*tran1.vsh_max",
+          "max": null,
+          "min": null,
+          "name": "vout_short_mv",
+          "pass": true,
+          "reason": "",
+          "unit": "mV",
+          "value": 0.1508171
+        },
+        {
+          "expr": "-1000*tran1.ipre",
+          "max": null,
+          "min": null,
+          "name": "isup_pre_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 0.01338817
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "sf",
+      "supply_v": 3.3,
+      "temperature_c": 27.0,
+      "timed_out": false,
+      "timeout_s": 600
+    },
+    {
+      "corner_id": "sf_27c_3.63v",
+      "elapsed_s": 13.42,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/current-limit/corners/20260825-085216-64c17cb/sf_27c_3.63v.log",
+      "measurements": [
+        {
+          "expr": "op1.v(vout)",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.798053
+        },
+        {
+          "expr": "op1.v(vin) - op1.v(xldo.cl_cmp)",
+          "max": null,
+          "min": null,
+          "name": "cl_margin_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.03571798
+        },
+        {
+          "expr": "1000*dc1.ilim_short",
+          "max": null,
+          "min": 50,
+          "name": "ilim_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 173.9231
+        },
+        {
+          "expr": "1000*dc1.ilim_knee",
+          "max": null,
+          "min": 50,
+          "name": "ilim_knee_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 145.8825
+        },
+        {
+          "expr": "100*(dc1.ilim_knee - dc1.ilim_short)/dc1.ilim_knee",
+          "max": null,
+          "min": null,
+          "name": "ilim_droop_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -19.2214
+        },
+        {
+          "expr": "-1000*tran1.ish_avg",
+          "max": null,
+          "min": null,
+          "name": "ishort_sustained_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 173.9689
+        },
+        {
+          "expr": "100*(tran1.ish_max - tran1.ish_min)/(-tran1.ish_avg)",
+          "max": 100,
+          "min": null,
+          "name": "ishort_ripple_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": 0.007415118
+        },
+        {
+          "expr": "1000*tran1.vsh_max",
+          "max": null,
+          "min": null,
+          "name": "vout_short_mv",
+          "pass": true,
+          "reason": "",
+          "unit": "mV",
+          "value": 0.1739183
+        },
+        {
+          "expr": "-1000*tran1.ipre",
+          "max": null,
+          "min": null,
+          "name": "isup_pre_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 0.01531841
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "sf",
+      "supply_v": 3.63,
+      "temperature_c": 27.0,
+      "timed_out": false,
+      "timeout_s": 600
+    },
+    {
+      "corner_id": "sf_125c_2.97v",
+      "elapsed_s": 13.636,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/current-limit/corners/20260825-085216-64c17cb/sf_125c_2.97v.log",
+      "measurements": [
+        {
+          "expr": "op1.v(vout)",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_50ma_v",
+          "pass": false,
+          "reason": "below min 1.764",
+          "unit": "V",
+          "value": 8.313758e-08
+        },
+        {
+          "expr": "op1.v(vin) - op1.v(xldo.cl_cmp)",
+          "max": null,
+          "min": null,
+          "name": "cl_margin_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 6.684748e-06
+        },
+        {
+          "expr": "1000*dc1.ilim_short",
+          "max": null,
+          "min": 50,
+          "name": "ilim_short_ma",
+          "pass": false,
+          "reason": "below min 50",
+          "unit": "mA",
+          "value": 2.307604e-06
+        },
+        {
+          "expr": "1000*dc1.ilim_knee",
+          "max": null,
+          "min": 50,
+          "name": "ilim_knee_ma",
+          "pass": false,
+          "reason": "below min 50",
+          "unit": "mA",
+          "value": -0.000559521
+        },
+        {
+          "expr": "100*(dc1.ilim_knee - dc1.ilim_short)/dc1.ilim_knee",
+          "max": null,
+          "min": null,
+          "name": "ilim_droop_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": 100.4124
+        },
+        {
+          "expr": "-1000*tran1.ish_avg",
+          "max": null,
+          "min": null,
+          "name": "ishort_sustained_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 0.01193619
+        },
+        {
+          "expr": "100*(tran1.ish_max - tran1.ish_min)/(-tran1.ish_avg)",
+          "max": 100,
+          "min": null,
+          "name": "ishort_ripple_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": 5.686153
+        },
+        {
+          "expr": "1000*tran1.vsh_max",
+          "max": null,
+          "min": null,
+          "name": "vout_short_mv",
+          "pass": true,
+          "reason": "",
+          "unit": "mV",
+          "value": 6.605046e-07
+        },
+        {
+          "expr": "-1000*tran1.ipre",
+          "max": null,
+          "min": null,
+          "name": "isup_pre_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 0.01156964
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": false,
+      "process": "sf",
+      "supply_v": 2.97,
+      "temperature_c": 125.0,
+      "timed_out": false,
+      "timeout_s": 600
+    },
+    {
+      "corner_id": "sf_125c_3.30v",
+      "elapsed_s": 13.88,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/current-limit/corners/20260825-085216-64c17cb/sf_125c_3.30v.log",
+      "measurements": [
+        {
+          "expr": "op1.v(vout)",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_50ma_v",
+          "pass": false,
+          "reason": "below min 1.764",
+          "unit": "V",
+          "value": 9.975682e-08
+        },
+        {
+          "expr": "op1.v(vin) - op1.v(xldo.cl_cmp)",
+          "max": null,
+          "min": null,
+          "name": "cl_margin_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 6.200837e-06
+        },
+        {
+          "expr": "1000*dc1.ilim_short",
+          "max": null,
+          "min": 50,
+          "name": "ilim_short_ma",
+          "pass": false,
+          "reason": "below min 50",
+          "unit": "mA",
+          "value": 2.769255e-06
+        },
+        {
+          "expr": "1000*dc1.ilim_knee",
+          "max": null,
+          "min": 50,
+          "name": "ilim_knee_ma",
+          "pass": false,
+          "reason": "below min 50",
+          "unit": "mA",
+          "value": -0.000559366
+        },
+        {
+          "expr": "100*(dc1.ilim_knee - dc1.ilim_short)/dc1.ilim_knee",
+          "max": null,
+          "min": null,
+          "name": "ilim_droop_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": 100.4951
+        },
+        {
+          "expr": "-1000*tran1.ish_avg",
+          "max": null,
+          "min": null,
+          "name": "ishort_sustained_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 0.01378098
+        },
+        {
+          "expr": "100*(tran1.ish_max - tran1.ish_min)/(-tran1.ish_avg)",
+          "max": 100,
+          "min": null,
+          "name": "ishort_ripple_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": 4.897765
+        },
+        {
+          "expr": "1000*tran1.vsh_max",
+          "max": null,
+          "min": null,
+          "name": "vout_short_mv",
+          "pass": true,
+          "reason": "",
+          "unit": "mV",
+          "value": 6.608639e-07
+        },
+        {
+          "expr": "-1000*tran1.ipre",
+          "max": null,
+          "min": null,
+          "name": "isup_pre_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 0.01339594
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": false,
+      "process": "sf",
+      "supply_v": 3.3,
+      "temperature_c": 125.0,
+      "timed_out": false,
+      "timeout_s": 600
+    },
+    {
+      "corner_id": "sf_125c_3.63v",
+      "elapsed_s": 13.27,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/current-limit/corners/20260825-085216-64c17cb/sf_125c_3.63v.log",
+      "measurements": [
+        {
+          "expr": "op1.v(vout)",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_50ma_v",
+          "pass": false,
+          "reason": "below min 1.764",
+          "unit": "V",
+          "value": 1.266052e-07
+        },
+        {
+          "expr": "op1.v(vin) - op1.v(xldo.cl_cmp)",
+          "max": null,
+          "min": null,
+          "name": "cl_margin_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 5.825621e-06
+        },
+        {
+          "expr": "1000*dc1.ilim_short",
+          "max": null,
+          "min": 50,
+          "name": "ilim_short_ma",
+          "pass": false,
+          "reason": "below min 50",
+          "unit": "mA",
+          "value": 3.515053e-06
+        },
+        {
+          "expr": "1000*dc1.ilim_knee",
+          "max": null,
+          "min": 50,
+          "name": "ilim_knee_ma",
+          "pass": false,
+          "reason": "below min 50",
+          "unit": "mA",
+          "value": -0.000559194
+        },
+        {
+          "expr": "100*(dc1.ilim_knee - dc1.ilim_short)/dc1.ilim_knee",
+          "max": null,
+          "min": null,
+          "name": "ilim_droop_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": 100.6286
+        },
+        {
+          "expr": "-1000*tran1.ish_avg",
+          "max": null,
+          "min": null,
+          "name": "ishort_sustained_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 0.01566656
+        },
+        {
+          "expr": "100*(tran1.ish_max - tran1.ish_min)/(-tran1.ish_avg)",
+          "max": 100,
+          "min": null,
+          "name": "ishort_ripple_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": 4.240242
+        },
+        {
+          "expr": "1000*tran1.vsh_max",
+          "max": null,
+          "min": null,
+          "name": "vout_short_mv",
+          "pass": true,
+          "reason": "",
+          "unit": "mV",
+          "value": 6.55018e-07
+        },
+        {
+          "expr": "-1000*tran1.ipre",
+          "max": null,
+          "min": null,
+          "name": "isup_pre_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 0.01525642
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": false,
+      "process": "sf",
+      "supply_v": 3.63,
+      "temperature_c": 125.0,
+      "timed_out": false,
+      "timeout_s": 600
+    },
+    {
+      "corner_id": "fs_-40c_2.97v",
+      "elapsed_s": 13.541,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/current-limit/corners/20260825-085216-64c17cb/fs_-40c_2.97v.log",
+      "measurements": [
+        {
+          "expr": "op1.v(vout)",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.798202
+        },
+        {
+          "expr": "op1.v(vin) - op1.v(xldo.cl_cmp)",
+          "max": null,
+          "min": null,
+          "name": "cl_margin_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.0303859
+        },
+        {
+          "expr": "1000*dc1.ilim_short",
+          "max": null,
+          "min": 50,
+          "name": "ilim_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 160.7479
+        },
+        {
+          "expr": "1000*dc1.ilim_knee",
+          "max": null,
+          "min": 50,
+          "name": "ilim_knee_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 131.5697
+        },
+        {
+          "expr": "100*(dc1.ilim_knee - dc1.ilim_short)/dc1.ilim_knee",
+          "max": null,
+          "min": null,
+          "name": "ilim_droop_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -22.177
+        },
+        {
+          "expr": "-1000*tran1.ish_avg",
+          "max": null,
+          "min": null,
+          "name": "ishort_sustained_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 160.788
+        },
+        {
+          "expr": "100*(tran1.ish_max - tran1.ish_min)/(-tran1.ish_avg)",
+          "max": 100,
+          "min": null,
+          "name": "ishort_ripple_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": 0.002674329
+        },
+        {
+          "expr": "1000*tran1.vsh_max",
+          "max": null,
+          "min": null,
+          "name": "vout_short_mv",
+          "pass": true,
+          "reason": "",
+          "unit": "mV",
+          "value": 0.1607477
+        },
+        {
+          "expr": "-1000*tran1.ipre",
+          "max": null,
+          "min": null,
+          "name": "isup_pre_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 0.009789658
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "fs",
+      "supply_v": 2.97,
+      "temperature_c": -40.0,
+      "timed_out": false,
+      "timeout_s": 600
+    },
+    {
+      "corner_id": "fs_-40c_3.30v",
+      "elapsed_s": 13.478,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/current-limit/corners/20260825-085216-64c17cb/fs_-40c_3.30v.log",
+      "measurements": [
+        {
+          "expr": "op1.v(vout)",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.798337
+        },
+        {
+          "expr": "op1.v(vin) - op1.v(xldo.cl_cmp)",
+          "max": null,
+          "min": null,
+          "name": "cl_margin_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.0259578
+        },
+        {
+          "expr": "1000*dc1.ilim_short",
+          "max": null,
+          "min": 50,
+          "name": "ilim_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 187.5316
+        },
+        {
+          "expr": "1000*dc1.ilim_knee",
+          "max": null,
+          "min": 50,
+          "name": "ilim_knee_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 157.3752
+        },
+        {
+          "expr": "100*(dc1.ilim_knee - dc1.ilim_short)/dc1.ilim_knee",
+          "max": null,
+          "min": null,
+          "name": "ilim_droop_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -19.1621
+        },
+        {
+          "expr": "-1000*tran1.ish_avg",
+          "max": null,
+          "min": null,
+          "name": "ishort_sustained_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 187.5781
+        },
+        {
+          "expr": "100*(tran1.ish_max - tran1.ish_min)/(-tran1.ish_avg)",
+          "max": 100,
+          "min": null,
+          "name": "ishort_ripple_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": 0.002505623
+        },
+        {
+          "expr": "1000*tran1.vsh_max",
+          "max": null,
+          "min": null,
+          "name": "vout_short_mv",
+          "pass": true,
+          "reason": "",
+          "unit": "mV",
+          "value": 0.1875264
+        },
+        {
+          "expr": "-1000*tran1.ipre",
+          "max": null,
+          "min": null,
+          "name": "isup_pre_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 0.01160915
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "fs",
+      "supply_v": 3.3,
+      "temperature_c": -40.0,
+      "timed_out": false,
+      "timeout_s": 600
+    },
+    {
+      "corner_id": "fs_-40c_3.63v",
+      "elapsed_s": 13.989,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/current-limit/corners/20260825-085216-64c17cb/fs_-40c_3.63v.log",
+      "measurements": [
+        {
+          "expr": "op1.v(vout)",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.798429
+        },
+        {
+          "expr": "op1.v(vin) - op1.v(xldo.cl_cmp)",
+          "max": null,
+          "min": null,
+          "name": "cl_margin_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.02301846
+        },
+        {
+          "expr": "1000*dc1.ilim_short",
+          "max": null,
+          "min": 50,
+          "name": "ilim_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 217.4572
+        },
+        {
+          "expr": "1000*dc1.ilim_knee",
+          "max": null,
+          "min": 50,
+          "name": "ilim_knee_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 182.8461
+        },
+        {
+          "expr": "100*(dc1.ilim_knee - dc1.ilim_short)/dc1.ilim_knee",
+          "max": null,
+          "min": null,
+          "name": "ilim_droop_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -18.9291
+        },
+        {
+          "expr": "-1000*tran1.ish_avg",
+          "max": null,
+          "min": null,
+          "name": "ishort_sustained_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 217.5101
+        },
+        {
+          "expr": "100*(tran1.ish_max - tran1.ish_min)/(-tran1.ish_avg)",
+          "max": 100,
+          "min": null,
+          "name": "ishort_ripple_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": 0.005057236
+        },
+        {
+          "expr": "1000*tran1.vsh_max",
+          "max": null,
+          "min": null,
+          "name": "vout_short_mv",
+          "pass": true,
+          "reason": "",
+          "unit": "mV",
+          "value": 0.2174512
+        },
+        {
+          "expr": "-1000*tran1.ipre",
+          "max": null,
+          "min": null,
+          "name": "isup_pre_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 0.01347177
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "fs",
+      "supply_v": 3.63,
+      "temperature_c": -40.0,
+      "timed_out": false,
+      "timeout_s": 600
+    },
+    {
+      "corner_id": "fs_27c_2.97v",
+      "elapsed_s": 13.414,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/current-limit/corners/20260825-085216-64c17cb/fs_27c_2.97v.log",
+      "measurements": [
+        {
+          "expr": "op1.v(vout)",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.797891
+        },
+        {
+          "expr": "op1.v(vin) - op1.v(xldo.cl_cmp)",
+          "max": null,
+          "min": null,
+          "name": "cl_margin_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.03771798
+        },
+        {
+          "expr": "1000*dc1.ilim_short",
+          "max": null,
+          "min": 50,
+          "name": "ilim_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 150.1551
+        },
+        {
+          "expr": "1000*dc1.ilim_knee",
+          "max": null,
+          "min": 50,
+          "name": "ilim_knee_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 121.4218
+        },
+        {
+          "expr": "100*(dc1.ilim_knee - dc1.ilim_short)/dc1.ilim_knee",
+          "max": null,
+          "min": null,
+          "name": "ilim_droop_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -23.664
+        },
+        {
+          "expr": "-1000*tran1.ish_avg",
+          "max": null,
+          "min": null,
+          "name": "ishort_sustained_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 150.1936
+        },
+        {
+          "expr": "100*(tran1.ish_max - tran1.ish_min)/(-tran1.ish_avg)",
+          "max": 100,
+          "min": null,
+          "name": "ishort_ripple_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": 0.0005992266
+        },
+        {
+          "expr": "1000*tran1.vsh_max",
+          "max": null,
+          "min": null,
+          "name": "vout_short_mv",
+          "pass": true,
+          "reason": "",
+          "unit": "mV",
+          "value": 0.1501519
+        },
+        {
+          "expr": "-1000*tran1.ipre",
+          "max": null,
+          "min": null,
+          "name": "isup_pre_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 0.01016245
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "fs",
+      "supply_v": 2.97,
+      "temperature_c": 27.0,
+      "timed_out": false,
+      "timeout_s": 600
+    },
+    {
+      "corner_id": "fs_27c_3.30v",
+      "elapsed_s": 13.51,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/current-limit/corners/20260825-085216-64c17cb/fs_27c_3.30v.log",
+      "measurements": [
+        {
+          "expr": "op1.v(vout)",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.798034
+        },
+        {
+          "expr": "op1.v(vin) - op1.v(xldo.cl_cmp)",
+          "max": null,
+          "min": null,
+          "name": "cl_margin_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.0323854
+        },
+        {
+          "expr": "1000*dc1.ilim_short",
+          "max": null,
+          "min": 50,
+          "name": "ilim_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 174.1621
+        },
+        {
+          "expr": "1000*dc1.ilim_knee",
+          "max": null,
+          "min": 50,
+          "name": "ilim_knee_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 145.1584
+        },
+        {
+          "expr": "100*(dc1.ilim_knee - dc1.ilim_short)/dc1.ilim_knee",
+          "max": null,
+          "min": null,
+          "name": "ilim_droop_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -19.9807
+        },
+        {
+          "expr": "-1000*tran1.ish_avg",
+          "max": null,
+          "min": null,
+          "name": "ishort_sustained_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 174.2066
+        },
+        {
+          "expr": "100*(tran1.ish_max - tran1.ish_min)/(-tran1.ish_avg)",
+          "max": 100,
+          "min": null,
+          "name": "ishort_ripple_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": 0.005625504
+        },
+        {
+          "expr": "1000*tran1.vsh_max",
+          "max": null,
+          "min": null,
+          "name": "vout_short_mv",
+          "pass": true,
+          "reason": "",
+          "unit": "mV",
+          "value": 0.1741573
+        },
+        {
+          "expr": "-1000*tran1.ipre",
+          "max": null,
+          "min": null,
+          "name": "isup_pre_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 0.01197455
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "fs",
+      "supply_v": 3.3,
+      "temperature_c": 27.0,
+      "timed_out": false,
+      "timeout_s": 600
+    },
+    {
+      "corner_id": "fs_27c_3.63v",
+      "elapsed_s": 13.403,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/current-limit/corners/20260825-085216-64c17cb/fs_27c_3.63v.log",
+      "measurements": [
+        {
+          "expr": "op1.v(vout)",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.798126
+        },
+        {
+          "expr": "op1.v(vin) - op1.v(xldo.cl_cmp)",
+          "max": null,
+          "min": null,
+          "name": "cl_margin_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.0288181
+        },
+        {
+          "expr": "1000*dc1.ilim_short",
+          "max": null,
+          "min": 50,
+          "name": "ilim_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 200.1246
+        },
+        {
+          "expr": "1000*dc1.ilim_knee",
+          "max": null,
+          "min": 50,
+          "name": "ilim_knee_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 168.5686
+        },
+        {
+          "expr": "100*(dc1.ilim_knee - dc1.ilim_short)/dc1.ilim_knee",
+          "max": null,
+          "min": null,
+          "name": "ilim_droop_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -18.72
+        },
+        {
+          "expr": "-1000*tran1.ish_avg",
+          "max": null,
+          "min": null,
+          "name": "ishort_sustained_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 200.175
+        },
+        {
+          "expr": "100*(tran1.ish_max - tran1.ish_min)/(-tran1.ish_avg)",
+          "max": 100,
+          "min": null,
+          "name": "ishort_ripple_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": 0.008942176
+        },
+        {
+          "expr": "1000*tran1.vsh_max",
+          "max": null,
+          "min": null,
+          "name": "vout_short_mv",
+          "pass": true,
+          "reason": "",
+          "unit": "mV",
+          "value": 0.200119
+        },
+        {
+          "expr": "-1000*tran1.ipre",
+          "max": null,
+          "min": null,
+          "name": "isup_pre_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 0.01384608
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "fs",
+      "supply_v": 3.63,
+      "temperature_c": 27.0,
+      "timed_out": false,
+      "timeout_s": 600
+    },
+    {
+      "corner_id": "fs_125c_2.97v",
+      "elapsed_s": 13.776,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/current-limit/corners/20260825-085216-64c17cb/fs_125c_2.97v.log",
+      "measurements": [
+        {
+          "expr": "op1.v(vout)",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.797291
+        },
+        {
+          "expr": "op1.v(vin) - op1.v(xldo.cl_cmp)",
+          "max": null,
+          "min": null,
+          "name": "cl_margin_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.04803969
+        },
+        {
+          "expr": "1000*dc1.ilim_short",
+          "max": null,
+          "min": 50,
+          "name": "ilim_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 138.2049
+        },
+        {
+          "expr": "1000*dc1.ilim_knee",
+          "max": null,
+          "min": 50,
+          "name": "ilim_knee_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 109.5598
+        },
+        {
+          "expr": "100*(dc1.ilim_knee - dc1.ilim_short)/dc1.ilim_knee",
+          "max": null,
+          "min": null,
+          "name": "ilim_droop_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -26.1456
+        },
+        {
+          "expr": "-1000*tran1.ish_avg",
+          "max": null,
+          "min": null,
+          "name": "ishort_sustained_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 138.2406
+        },
+        {
+          "expr": "100*(tran1.ish_max - tran1.ish_min)/(-tran1.ish_avg)",
+          "max": 100,
+          "min": null,
+          "name": "ishort_ripple_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": 0.003327532
+        },
+        {
+          "expr": "1000*tran1.vsh_max",
+          "max": null,
+          "min": null,
+          "name": "vout_short_mv",
+          "pass": true,
+          "reason": "",
+          "unit": "mV",
+          "value": 0.1382043
+        },
+        {
+          "expr": "-1000*tran1.ipre",
+          "max": null,
+          "min": null,
+          "name": "isup_pre_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 0.01084329
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "fs",
+      "supply_v": 2.97,
+      "temperature_c": 125.0,
+      "timed_out": false,
+      "timeout_s": 600
+    },
+    {
+      "corner_id": "fs_125c_3.30v",
+      "elapsed_s": 13.709,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/current-limit/corners/20260825-085216-64c17cb/fs_125c_3.30v.log",
+      "measurements": [
+        {
+          "expr": "op1.v(vout)",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.797464
+        },
+        {
+          "expr": "op1.v(vin) - op1.v(xldo.cl_cmp)",
+          "max": null,
+          "min": null,
+          "name": "cl_margin_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.04147369
+        },
+        {
+          "expr": "1000*dc1.ilim_short",
+          "max": null,
+          "min": 50,
+          "name": "ilim_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 159.2092
+        },
+        {
+          "expr": "1000*dc1.ilim_knee",
+          "max": null,
+          "min": 50,
+          "name": "ilim_knee_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 130.6989
+        },
+        {
+          "expr": "100*(dc1.ilim_knee - dc1.ilim_short)/dc1.ilim_knee",
+          "max": null,
+          "min": null,
+          "name": "ilim_droop_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -21.8137
+        },
+        {
+          "expr": "-1000*tran1.ish_avg",
+          "max": null,
+          "min": null,
+          "name": "ishort_sustained_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 159.2507
+        },
+        {
+          "expr": "100*(tran1.ish_max - tran1.ish_min)/(-tran1.ish_avg)",
+          "max": 100,
+          "min": null,
+          "name": "ishort_ripple_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": 0.007974847
+        },
+        {
+          "expr": "1000*tran1.vsh_max",
+          "max": null,
+          "min": null,
+          "name": "vout_short_mv",
+          "pass": true,
+          "reason": "",
+          "unit": "mV",
+          "value": 0.1592047
+        },
+        {
+          "expr": "-1000*tran1.ipre",
+          "max": null,
+          "min": null,
+          "name": "isup_pre_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 0.01362456
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "fs",
+      "supply_v": 3.3,
+      "temperature_c": 125.0,
+      "timed_out": false,
+      "timeout_s": 600
+    },
+    {
+      "corner_id": "fs_125c_3.63v",
+      "elapsed_s": 13.423,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/current-limit/corners/20260825-085216-64c17cb/fs_125c_3.63v.log",
+      "measurements": [
+        {
+          "expr": "op1.v(vout)",
+          "max": 1.836,
+          "min": 1.764,
+          "name": "vout_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.797562
+        },
+        {
+          "expr": "op1.v(vin) - op1.v(xldo.cl_cmp)",
+          "max": null,
+          "min": null,
+          "name": "cl_margin_50ma_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.03704033
+        },
+        {
+          "expr": "1000*dc1.ilim_short",
+          "max": null,
+          "min": 50,
+          "name": "ilim_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 181.2746
+        },
+        {
+          "expr": "1000*dc1.ilim_knee",
+          "max": null,
+          "min": 50,
+          "name": "ilim_knee_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 151.4732
+        },
+        {
+          "expr": "100*(dc1.ilim_knee - dc1.ilim_short)/dc1.ilim_knee",
+          "max": null,
+          "min": null,
+          "name": "ilim_droop_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -19.6744
+        },
+        {
+          "expr": "-1000*tran1.ish_avg",
+          "max": null,
+          "min": null,
+          "name": "ishort_sustained_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 181.3217
+        },
+        {
+          "expr": "100*(tran1.ish_max - tran1.ish_min)/(-tran1.ish_avg)",
+          "max": 100,
+          "min": null,
+          "name": "ishort_ripple_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": 0.01450461
+        },
+        {
+          "expr": "1000*tran1.vsh_max",
+          "max": null,
+          "min": null,
+          "name": "vout_short_mv",
+          "pass": true,
+          "reason": "",
+          "unit": "mV",
+          "value": 0.1812696
+        },
+        {
+          "expr": "-1000*tran1.ipre",
+          "max": null,
+          "min": null,
+          "name": "isup_pre_short_ma",
+          "pass": true,
+          "reason": "",
+          "unit": "mA",
+          "value": 0.01790229
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "fs",
+      "supply_v": 3.63,
+      "temperature_c": 125.0,
+      "timed_out": false,
+      "timeout_s": 600
+    }
+  ],
+  "experiment": {
+    "claim": "Substantiates spec/target-spec.md's DRAFT \"Current limit\" row (constant-current (brickwall) clamp, window TBD over PVT; never engages for I_load <= 50 mA; survives continuous Vout = 0 short at Vin_max) against the sense-FET current comparator and gate clamp issue #22 added to design/ldo_3v3in_1v8out.sch (M_SENSE / M_CLN1 / M_CLN2 / M_CLP / M_CLIM -- see design/README.md's \"Current limit (#22)\"). The row is DRAFT (issue #1 not yet ratified) and it deliberately carries NO numeric clamp window: the window is \"TBD over PVT\". This experiment therefore splits the row rather than blurring it -- the clauses that carry a number are bounded below (\"never engages for I_load <= 50 mA\" becomes ilim_short_ma/ilim_knee_ma > 50 mA plus vout_50ma_v inside the DRAFT Output row's 1.764-1.836 V window), and the clause that does not (\"window TBD over PVT\", \"survives\") is measured and reported WITHOUT a bound, because establishing that window over PVT is exactly what the row asks for at this stage; inventing a ceiling would be the invented settled number CLAUDE.md forbids. \"At Vin_max\" is covered by the corner runner's own supply axis (the 3.63 V column), not by a hard-coded VIN. EN ramps from a disabled start at t=100us (dual dc/pwl form, matching sim/enable-shutdown and sim/startup) so leg 3's transient reaches regulation through a real soft-start ramp rather than depending on ngspice's t=0 DC solve landing on the regulating branch, which it does not at the ff/sf 125C corners (issue #69; fixed here per issue #76 after PR #75 shipped the same fix in the sibling benches). The short is applied as an event at t=1.0ms -- after sim/startup's measured 0.26-0.45ms soft-start ramp completes -- and HELD to t=3.0ms: 2 ms of continuous Vout = 0, a defined duration rather than a single sampled instant, since \"survives\" is a claim about holding the fault. Known-caveat, stated rather than hidden (design/README.md, \"Known accuracy caveat\"): M_SENSE is a 0.42um replica of a 2500um pass device whose drain does not sit at VOUT, so the 1:5952 ratio is neither Vds-matched nor trimmed and carries substantial random Vth mismatch -- this corner-matrix experiment measures the systematic PVT window only; the mismatch axis would need a Monte Carlo experiment (sim/bin/mc-run.py), which is not in this issue's scope.",
+    "provenance": "schematic",
+    "provenance_source": "sim/current-limit/testbench/tb_current_limit.sch",
+    "slug": "current-limit",
+    "statistical_convention": "N/A (corner-matrix check, not a distribution claim)",
+    "title": "Current limit: clamp window over PVT, non-engagement at 50mA, and a held Vout=0 short"
+  },
+  "git": {
+    "branch": "feature/issue-74",
+    "dirty": true,
+    "sha": "64c17cb"
+  },
+  "links": {
+    "corners_dir": "sim/current-limit/corners/20260825-085216-64c17cb/",
+    "json": "sim/current-limit/records/20260825-085216-64c17cb.json",
+    "manifest": "sim/current-limit/experiment.json",
+    "netlist_snapshot": "sim/current-limit/netlist-snapshots/20260825-085216-64c17cb.spice",
+    "record": "sim/current-limit/records/20260825-085216-64c17cb.md",
+    "testbench": "sim/current-limit/testbench/tb_current_limit.sch"
+  },
+  "matrix": {
+    "is_subset": false,
+    "n_points": 45,
+    "point_ids": [
+      "tt_-40c_2.97v",
+      "tt_-40c_3.30v",
+      "tt_-40c_3.63v",
+      "tt_27c_2.97v",
+      "tt_27c_3.30v",
+      "tt_27c_3.63v",
+      "tt_125c_2.97v",
+      "tt_125c_3.30v",
+      "tt_125c_3.63v",
+      "ss_-40c_2.97v",
+      "ss_-40c_3.30v",
+      "ss_-40c_3.63v",
+      "ss_27c_2.97v",
+      "ss_27c_3.30v",
+      "ss_27c_3.63v",
+      "ss_125c_2.97v",
+      "ss_125c_3.30v",
+      "ss_125c_3.63v",
+      "ff_-40c_2.97v",
+      "ff_-40c_3.30v",
+      "ff_-40c_3.63v",
+      "ff_27c_2.97v",
+      "ff_27c_3.30v",
+      "ff_27c_3.63v",
+      "ff_125c_2.97v",
+      "ff_125c_3.30v",
+      "ff_125c_3.63v",
+      "sf_-40c_2.97v",
+      "sf_-40c_3.30v",
+      "sf_-40c_3.63v",
+      "sf_27c_2.97v",
+      "sf_27c_3.30v",
+      "sf_27c_3.63v",
+      "sf_125c_2.97v",
+      "sf_125c_3.30v",
+      "sf_125c_3.63v",
+      "fs_-40c_2.97v",
+      "fs_-40c_3.30v",
+      "fs_-40c_3.63v",
+      "fs_27c_2.97v",
+      "fs_27c_3.30v",
+      "fs_27c_3.63v",
+      "fs_125c_2.97v",
+      "fs_125c_3.30v",
+      "fs_125c_3.63v"
+    ],
+    "points": [
+      [
+        "tt",
+        -40.0,
+        2.97
+      ],
+      [
+        "tt",
+        -40.0,
+        3.3
+      ],
+      [
+        "tt",
+        -40.0,
+        3.63
+      ],
+      [
+        "tt",
+        27.0,
+        2.97
+      ],
+      [
+        "tt",
+        27.0,
+        3.3
+      ],
+      [
+        "tt",
+        27.0,
+        3.63
+      ],
+      [
+        "tt",
+        125.0,
+        2.97
+      ],
+      [
+        "tt",
+        125.0,
+        3.3
+      ],
+      [
+        "tt",
+        125.0,
+        3.63
+      ],
+      [
+        "ss",
+        -40.0,
+        2.97
+      ],
+      [
+        "ss",
+        -40.0,
+        3.3
+      ],
+      [
+        "ss",
+        -40.0,
+        3.63
+      ],
+      [
+        "ss",
+        27.0,
+        2.97
+      ],
+      [
+        "ss",
+        27.0,
+        3.3
+      ],
+      [
+        "ss",
+        27.0,
+        3.63
+      ],
+      [
+        "ss",
+        125.0,
+        2.97
+      ],
+      [
+        "ss",
+        125.0,
+        3.3
+      ],
+      [
+        "ss",
+        125.0,
+        3.63
+      ],
+      [
+        "ff",
+        -40.0,
+        2.97
+      ],
+      [
+        "ff",
+        -40.0,
+        3.3
+      ],
+      [
+        "ff",
+        -40.0,
+        3.63
+      ],
+      [
+        "ff",
+        27.0,
+        2.97
+      ],
+      [
+        "ff",
+        27.0,
+        3.3
+      ],
+      [
+        "ff",
+        27.0,
+        3.63
+      ],
+      [
+        "ff",
+        125.0,
+        2.97
+      ],
+      [
+        "ff",
+        125.0,
+        3.3
+      ],
+      [
+        "ff",
+        125.0,
+        3.63
+      ],
+      [
+        "sf",
+        -40.0,
+        2.97
+      ],
+      [
+        "sf",
+        -40.0,
+        3.3
+      ],
+      [
+        "sf",
+        -40.0,
+        3.63
+      ],
+      [
+        "sf",
+        27.0,
+        2.97
+      ],
+      [
+        "sf",
+        27.0,
+        3.3
+      ],
+      [
+        "sf",
+        27.0,
+        3.63
+      ],
+      [
+        "sf",
+        125.0,
+        2.97
+      ],
+      [
+        "sf",
+        125.0,
+        3.3
+      ],
+      [
+        "sf",
+        125.0,
+        3.63
+      ],
+      [
+        "fs",
+        -40.0,
+        2.97
+      ],
+      [
+        "fs",
+        -40.0,
+        3.3
+      ],
+      [
+        "fs",
+        -40.0,
+        3.63
+      ],
+      [
+        "fs",
+        27.0,
+        2.97
+      ],
+      [
+        "fs",
+        27.0,
+        3.3
+      ],
+      [
+        "fs",
+        27.0,
+        3.63
+      ],
+      [
+        "fs",
+        125.0,
+        2.97
+      ],
+      [
+        "fs",
+        125.0,
+        3.3
+      ],
+      [
+        "fs",
+        125.0,
+        3.63
+      ]
+    ],
+    "process": [
+      "tt",
+      "ss",
+      "ff",
+      "sf",
+      "fs"
+    ],
+    "subset_reason": "",
+    "supply_v": [
+      2.97,
+      3.3,
+      3.63
+    ],
+    "temperature_c": [
+      -40.0,
+      27.0,
+      125.0
+    ]
+  },
+  "overall_pass": false,
+  "pdk": {
+    "installed_commit": "c6d73a35f524070e85faff4a6a9eef49553ebc2b",
+    "lib_file": "/home/ubuntu/.volare/sky130A/libs.tech/combined/sky130.lib.spice",
+    "matches_pin": true,
+    "pinned_commit": "c6d73a35f524070e85faff4a6a9eef49553ebc2b",
+    "root": "/home/ubuntu/.volare",
+    "variant": "sky130A"
+  },
+  "record_id": "20260825-085216-64c17cb",
+  "spread_checks": [],
+  "supersedes": "20260825-070327-d0bb614",
+  "timestamp": "2026-08-25T08:52:16Z",
+  "tools": {
+    "ngspice": "ngspice-46 : Circuit level simulation program",
+    "platform": "Linux 7.0.0-1010-aws x86_64",
+    "python": "3.12.3",
+    "xschem": "XSCHEM V3.4.7"
+  }
+}
