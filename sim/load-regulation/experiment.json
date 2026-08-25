@@ -1,0 +1,51 @@
+{
+  "slug": "load-regulation",
+  "title": "Load regulation from 0mA to 50mA at nominal VIN per corner",
+  "claim": "Substantiates spec/target-spec.md's DRAFT \"Load regulation (0-50mA)\" row (< 1% / 18mV, counted inside the +-2% Output window) against the LDO core-regulation-loop schematic landed by #14 (design/ldo_3v3in_1v8out.sch), using two discrete DC operating-point solves at the row's own two endpoints (I_LOAD = 0mA and 50mA) at each corner's own VIN ('vsup'). That row is DRAFT (issue #1 not yet ratified) -- the bound below cites it directly, not an invented final limit, and needs re-verification once #1 rules. Two .op points, not a continuous 'dc iload 0 50m ...' sweep -- a continuous sweep was tried during this testbench's bring-up and did not track a single regulating branch across the whole range (a 51-point sweep at tt/27C/VIN=3.3V measured a 1.46V peak-to-peak vout excursion, over 80% of the 1.8V target, vs. ~4mV at the same corner's two endpoints via discrete .op solves); this is the same DC-solution-multiplicity family design/README.md's dated 2026-08-25 root-cause section documents for VIN sweeps (issue #60 mechanism 4, tracked by #71), now also observed load-current-side. load_reg_v is abs(vout_50ma - vout_0ma); load_reg_pct expresses the same delta as a percentage of the 1.8V DRAFT Output target, matching design/README.md's own load-regulation screening convention (which also uses discrete no-load/full-load points, not a sweep). Uses the DR-002 proposed nominal C_out/ESR (1uF/10mOhm), not a window sweep -- same convention as load-transient/dropout-vs-load/psrr-dc. Known risk, not a testbench defect: design/README.md's dated 2026-08-25 root-cause section (issue #60, mechanism 1; tracked by #69) documents a thermal-shutdown false-trip at the ff/sf process corners at 125C, independent of load current -- a corner at that condition is expected to report a non-physical number (pass device driven off), the same documented failure mode the four existing testbenches already show there.",
+  "provenance": "schematic",
+  "provenance_source": "sim/load-regulation/testbench/tb_load_regulation.sch",
+  "schematic": "testbench/tb_load_regulation.sch",
+  "statistical_convention": "N/A (corner-matrix check, not a distribution claim)",
+  "corners": {
+    "process": ["tt", "ss", "ff", "sf", "fs"],
+    "temperature_c": [-40, 27, 125],
+    "supply_v": [2.97, 3.3, 3.63]
+  },
+  "quick_subset": [
+    ["tt", 27, 3.3],
+    ["ss", -40, 2.97],
+    ["ff", 125, 3.63]
+  ],
+  "deck": {
+    "options": ["wnflag=1"],
+    "params": {},
+    "analyses": [
+      "* --- point 1: I_LOAD = 0 (no load, deck default) ---",
+      "op",
+      "let vout_0ma = v(vout)",
+      "* --- point 2: I_LOAD = 50mA (altered, full load) ---",
+      "alter iload = 50m",
+      "op",
+      "let vout_50ma = v(vout)"
+    ]
+  },
+  "measurements": [
+    {
+      "name": "load_reg_v",
+      "expr": "abs(op2.vout_50ma - op1.vout_0ma)",
+      "unit": "V",
+      "min": null,
+      "max": 0.018,
+      "note": "abs(vout@50mA - vout@0mA), the DRAFT row's own two endpoints. DRAFT bound: spec/target-spec.md \"Load regulation (0-50mA)\" row, < 1% (18mV), counted inside the +-2% Output window."
+    },
+    {
+      "name": "load_reg_pct",
+      "expr": "100*abs(op2.vout_50ma - op1.vout_0ma)/1.8",
+      "unit": "%",
+      "min": null,
+      "max": 1,
+      "note": "Same delta as load_reg_v, expressed as a percentage of the 1.8V DRAFT Output target -- the same convention design/README.md's own load-regulation screening numbers use. DRAFT bound: < 1%."
+    }
+  ],
+  "spread_checks": []
+}

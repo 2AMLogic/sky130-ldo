@@ -100,11 +100,11 @@ EVIDENCE_MAP: dict[str, str | None] = {
     "Output": "mc-output-accuracy",
     "Load": None,
     "Dropout @ 50 mA": "dropout-vs-load",
-    "Line regulation": None,
-    "Load regulation (0–50 mA)": None,
+    "Line regulation": "line-regulation",
+    "Load regulation (0–50 mA)": "load-regulation",
     "Load transient": "load-transient",
     "PSRR": "psrr-dc",
-    "Iq (excl. load current)": None,
+    "Iq (excl. load current)": "iq",
     "Current limit": "current-limit",
     "Startup / soft-start": "startup",
     "Enable / shutdown": "enable-shutdown",
@@ -126,15 +126,6 @@ NA_REASONS: dict[str, str] = {
         "exercised as a stimulus condition (I_LOAD step/sweep) inside every "
         "PVT testbench below, not measured by a testbench of its own."
     ),
-    "Line regulation": (
-        "no dedicated testbench exists yet under `sim/` (see `sim/README.md`'s "
-        "testbench map)."
-    ),
-    "Load regulation (0–50 mA)": (
-        "no dedicated testbench exists yet under `sim/` (see `sim/README.md`'s "
-        "testbench map)."
-    ),
-    "Iq (excl. load current)": "no dedicated testbench exists yet under `sim/`.",
     "Thermal": (
         "the thermal-shutdown circuitry (issue #35) is present in the "
         "schematic, but no dedicated thermal testbench exists yet under "
