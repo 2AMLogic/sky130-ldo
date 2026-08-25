@@ -1546,6 +1546,241 @@ rejected candidates above are recorded as real, if negative, findings
 rather than folded into a claim of progress. **#79** carries the
 investigation forward with this section's data as its starting point.
 
+### Self-biased bias-generator re-derived and fixed; preload re-validated against the real branch — neither closes PSRR/Stability (#79, 2026-08-25)
+
+**Status: both candidates investigated to a real, verified conclusion;
+`ldo_3v3in_1v8out.sch` is unchanged by this issue too.** #70's own writeup
+left two open threads: (1) whether Candidate 1's self-biased reference
+could be *fixed* rather than merely re-tuned (its own working diagnosis:
+"this needs a genuine large-signal loop-gain/stability re-derivation... not
+a trial-and-error re-tune"), and (2) whether Candidate 3's preload-resistor
+trend was real on the *actual* branch `sim/loop-gain`'s corner runner
+reaches (its own finding: measured on a branch "not confirmed to be the
+same branch the documented 15-24° PM shortfall lives on"). This issue
+resolves both questions — (1) with a genuine fix, (2) with a real
+negative result — and neither, once resolved, closes the PSRR or
+Stability DRAFT rows.
+
+#### 1. Self-biased reference: root-caused #70's regenerative-loop defect and fixed it
+
+**Root cause, derived by hand before any resizing (per this issue's own
+scope instruction).** #70's Candidate 1 wired the textbook beta-multiplier
+with `M_BIASN1` (diode-connected, drain=gate=`NB`) as the *wide* (`K=4`)
+device and `M_BIASN2` (externally driven, gate=`NB`, drain=`BIASP`) as the
+*narrow*, source-degenerated-by-`R_SB` device. Writing the loop's DC
+small-signal return ratio around `NB` (`M_BIASP1`/`M_BIASP2` PMOS mirror,
+ratio `m`, closing the loop back into `NB` through the diode-connected
+NMOS) gives, in the strong-inversion square-law approximation:
+
+```
+LG(m, K) = sqrt(m/K) + 2*(1 - sqrt(m/K))   [R_SB on the WIDE/diode leg]
+         = 2 - sqrt(m/K)
+```
+
+For a 1:1 PMOS mirror (`m=1`, the natural default and what #70 built),
+`LG = 2 - 1/sqrt(K)`, which is **strictly greater than 1 for every `K>1`**
+— this specific device-role assignment is *structurally* regenerative, not
+merely mis-sized. That single derivation explains #70's entire finding:
+the loop was never going to settle at its intended few-µA point regardless
+of which `K`/`R_SB` values were tried, because the topology as wired makes
+the intended equilibrium an unstable fixed point (a latch, not a
+regulator) — consistent with the ~1mA rail-clamped branch #70 actually
+measured.
+
+**The fix: put `R_SB` on the externally-driven (narrow) leg instead of the
+diode leg, and re-derive.** Re-deriving the same loop with `R_SB` moved to
+`M_BIASN2`'s source (leaving `M_BIASN1` an *undegenerated* diode) and
+solving the same KVL/KCL gives a materially different result:
+
+```
+LG(m, K) = sqrt(m/K) / (2*sqrt(m/K) - 1)          [R_SB on the NARROW/driven leg]
+```
+
+This is monotonically *decreasing* in `r = sqrt(m/K)`, from `LG=1` at the
+`m=K` boundary down to `LG->0.5` as `m/K->infinity` — i.e. **any mirror
+ratio `m` exceeding the width ratio `K` gives `LG<1`**, the opposite
+requirement from the failed placement, and with a comfortable design
+margin available (not just barely crossing 1). This also resolves the
+apparent contradiction in the R_SB-placement choice: with `R_SB` on the
+diode leg, a physically valid (`R_SB>0`) solution requires `m<K`, which is
+incompatible with `LG<1`(`m>K`) — the two requirements can never both hold
+for that placement, which is *why* Candidate 1 could not have been fixed
+by resizing alone, only by moving the resistor.
+
+**Verified in SPICE (sky130 device models, not just the hand square-law
+formula) three independent ways, per this issue's "not just `.op`/`.tran`"
+instruction:**
+
+1. **`.dc` loop-break sweep of the candidate feedback node**, `K=1`
+   (`M_BIASN1`/`M_BIASN2` both `W=4 L=1`, no width mismatch needed — the
+   derivation above shows only the ratio `r=sqrt(m/K)` matters, so `K`
+   does not need to be large), `m=1.7` (`M_BIASP2` `W=17 nf=2` vs.
+   `M_BIASP1`'s `W=10 nf=2`), `R_SB` tuned (`res_high_po` `W=0.42 L=16`,
+   ~13.8kΩ) to reproduce the pre-#79 design's own `BIASP`/`I1` operating
+   point (see below). Breaking the loop at `NB` and sweeping an
+   independent drive from 0V to `VIN` finds **exactly one self-consistent
+   crossing** across the full range (`NB_drive ≈ NB_out ≈ 0.89V`) with a
+   measured local return-ratio slope of **0.74** — matching the hand
+   estimate (`LG≈0.81` at this `m`,`K`) in both sign and rough magnitude,
+   and confirming *no second (bad) branch exists anywhere in the swept
+   range* — unlike #70's Candidate 1, which settled onto a real,
+   reachable second branch.
+2. **A settled transient startup check** (`EN` ramping 0→`VIN` over 1-3µs,
+   the same convention #70 used and #70's Candidate 1 failed), with a
+   passive startup trickle `R_START` (`res_high_po` `W=0.42 L=10000`,
+   ~8.1MΩ, `VIN`→`NB` — replacing #70's reverted switched
+   `M_ENSTART`/`R_START`; self-quenches at `EN=0` the same way the
+   original `R_BIAS` did, since `M_ENN` cutting `M_BIASN1`'s ground return
+   lets `NB` float to `VIN`, leaving 0V across `R_START` too): settles
+   within ~3µs to `NB=0.900V`, `BIASP=2.237V` and holds flat through
+   500µs — matching the `.op`/loop-break equilibrium, not a rail-clamped
+   branch.
+3. **A 15-point process×temperature spot-check** (`{tt,ss,ff,sf,fs}` x
+   `{-40,27,125}°C`, `VIN=3.3V`, `.op` with a `.nodeset` near the expected
+   point to work around a `125°C` cold-Newton convergence slowness this
+   circuit shares with the rest of the schematic — see "#71/#81 resolved"
+   above for the same phenomenon on the main loop): every corner converges
+   to a physically sane point, `I1` ranging **1.46-3.56µA** monotonically
+   with temperature and only mildly with process — no runaway branch found
+   at any of the 15 points.
+
+**Sizing was chosen to reproduce the pre-#79 operating point, not to
+minimize current.** The pre-#79 `R_BIAS`-referenced design measures
+`NB=0.864V`, `BIASP=2.236V`, `I1≈2.0µA` (`tt`/27°C/`VIN=3.3V`, `M_BIASP1`
+unchanged `W=10 nf=2` in both designs) — `M_TAIL`/`M_CLP`/`M_SSCHG`/
+`M_TSPS`/`M_TSPR`/`M_TSHYSB` all mirror off `BIASP`'s *voltage*, not off
+`I1` directly, so matching `BIASP` (not just qualitatively "a few µA")
+keeps every downstream bias current within its pre-#79 value and avoids
+re-triggering #22's current-limit/soft-start timing or #25's compensation
+sizing, which is out of this issue's scope. The chosen `R_SB`/`m` hit
+`BIASP=2.238V`/`I1=2.05µA` at `tt`/27°C — a close match. The unavoidable
+cost of the fix is the second leg's own current, `I2≈m*I1≈3.2-3.4µA`
+(measured via total `VIN` current minus `I1`), which the pre-#79 topology
+did not have to pay (a single-leg resistor reference has no second leg).
+Against "Quiescent and shutdown current" above (24.91µA measured at
+50mA/3.63V against the DRAFT `Iq<30µA` row, ~5µA headroom), this ~3.3µA
+addition is real but survivable in isolation.
+
+**Does not move PSRR or 0mA phase margin — the reference-loop-stability
+question and the PSRR/Stability spec gaps are different questions.**
+Per this issue's own instruction ("re-screen PSRR at 1kHz/100kHz and 0mA
+phase margin... before committing to any full 45-point re-run"), this
+candidate was screened with the schematic edit actually in place (single
+run, then reverted — see below) against the same 3-corner quick subset
+#70 used:
+
+| Corner | Baseline PSRR@1kHz (pre-#70/#79) | This candidate |
+|---|---|---|
+| `tt_27c_3.30v` | 23.3dB | 23.5dB (unchanged) |
+| `ss_-40c_2.97v` | 23.6dB | **22.3dB (regression)** |
+| `ff_125c_3.63v` | 22.4dB* | 76.6dB* |
+
+\*`ff_125c_3.63v` is the #69 thermal-shutdown false-trip corner in both
+records — not real PSRR evidence either way, same caveat as #70's table.
+
+`pm_c033_0ma_deg` (0mA phase margin, `loop-gain --quick`): `tt=19.65°`,
+`ss=14.63°` — statistically identical to the already-documented baseline
+(`19.19°`/`15.64°`), not the material improvement a shippable candidate
+would need. A standalone VIN-sensitivity check of the reference current
+itself (independent `.op` at `VIN={2.97, 3.3, 3.63}V`, avoiding the same
+`.dc`-continuation-branch pitfall "#71/#81 resolved" flags) shows a real
+but modest reduction in `I1`'s own fractional VIN-sensitivity — **26.3%
+(baseline `R_BIAS`) → 16.1% (this candidate)** across the ±10% `VIN`
+window, roughly a 4dB improvement referred to the bias current alone —
+but `BIASP`'s own *voltage* still tracks `VIN` at ~0.98V/V in both
+designs (an inherent property of a PMOS-diode-referenced rail, not fixed
+by what sets the diode's current), so the downstream mirror gate rail
+still passes most of any `VIN` ripple through. This is consistent with
+this file's own pre-existing diagnosis ("PSRR at a given frequency tracks
+loop gain at that frequency") and with #70's Candidate 2 finding (cascoding
+a feedthrough path that is not dominant at 1kHz does not move the number)
+— **1kHz PSRR here is genuinely loop-gain-limited, and a bias-generator
+supply-rejection fix, however well-verified its own internal stability is,
+does not reach the actual bottleneck.** `pm_c033_0ma_deg` is independently
+already explained by this file's "pass stage's own pole falling with load
+current" mechanism (see the 45-point campaign section above), which a
+bias-generator change does not touch either.
+
+**Net effect: reverted, per the same "no material improvement -> not
+committed" discipline #70 used for its own Candidate 2.** The derivation
+and verification above are recorded as a genuine, useful result in their
+own right — the open question of *whether a stable self-biased reference
+is achievable for this topology at all* is now answered (yes, with `R_SB`
+on the correct leg and `m>K`), closing that specific thread #70 left open
+— but since it does not move either target metric and costs real,
+non-refundable `Iq` budget (~3.3µA against a ~5µA headroom) for no
+measured benefit, it is not shipped. `ldo_3v3in_1v8out.sch` is unchanged.
+
+#### 2. Preload resistor: re-validated against the real corner-runner branch — does not cleanly fix it either
+
+**Per this issue's scope, re-validated against `sim/loop-gain`'s actual
+`corner-run.py` deck** (which reaches the 0mA point via `alter rload`
+from the already-converged 50mA operating point — see its
+`experiment.json`), not #70's hand-rolled cold-`.op` deck. A screening
+`R_PRELOAD` (`res_xhigh_po`, `VOUT`->`0`) was added to the schematic (not
+part of any shipped change — reverted after screening, see below) and run
+through `sim/loop-gain --quick` at two sizes:
+
+| Measurement | Baseline (no preload) | `R_PRELOAD≈300kΩ` (~6µA) | `R_PRELOAD≈600kΩ` (~3µA) |
+|---|---|---|---|
+| `tt_27c_3.30v` `pm_c033_0ma_deg` | 19.31° | **22.67° (+3.4°)** | 19.24° (~unchanged) |
+| `tt_27c_3.30v` `pm_c47_0ma_deg` | 52.03° (PASS) | **20.12° (regression, now FAIL)** | 24.39° (regression, now FAIL) |
+| `ss_-40c_2.97v` `pm_c033_0ma_deg` | 15.60° | **24.14° (+8.5°)** | 19.67° (+4.1°) |
+| `ss_-40c_2.97v` `pm_c47_0ma_deg` | 38.06° | **16.88° (regression)** | 19.30° (regression) |
+
+The 300kΩ preload's `pm_c033_0ma_deg` improvement (#70's own hoped-for
+result, now confirmed real on the branch that matters, closing #70's own
+"not confirmed to be the same branch" caveat) is genuine — but it comes
+at the cost of a *larger* regression at the 4.7µF/0mA corner, which
+**passed** at baseline and now fails by a wider margin than the 0.33µF
+corner used to fail by. The 600kΩ (lighter) preload nearly eliminates
+both the gain and the damage, netting out close to a wash. **Working
+explanation, consistent with this file's own existing "two-sided
+optimum, not a bigger-is-better knob" note about `R_CZ`:** the preload's
+extra `gm_pass` shifts the pass-stage's output pole relative to the fixed
+compensation zero (`R_CZ`/`C_COMP`) differently depending on `C_out`,
+improving the pole/zero spacing at 0.33µF (where the pole was too low)
+while worsening it at 4.7µF (where the pole was already reasonably
+placed and gets pushed past the zero the other way) — a single passive
+preload current cannot independently tune both corners of DR-002's
+C_eff window at once, the same structural limit a fixed-value `R_CZ` has.
+
+**Iq cost is real and, like the self-biased candidate, not free**: 300kΩ
+costs ≈6µA and 600kΩ ≈3µA against the same ~5µA headroom "Quiescent and
+shutdown current" above measures, present at *every* load point (not
+just 0mA) as #70 already flagged — on top of costing budget, neither size
+is a clean net win on phase margin. **Net effect: reverted, not shipped.**
+`ldo_3v3in_1v8out.sch` is unchanged.
+
+**What this resolves for #70's own open question.** #70 could not tell
+whether its promising crossover-frequency trend was measured on the real
+branch. It now is confirmed to be real *and* to genuinely raise
+`pm_c033_0ma_deg` on the actual `sim/loop-gain` branch — but that trend
+alone was never sufficient evidence of a net fix, and checking it against
+the DR-002 window's *other* corner (`pm_c47_0ma_deg`) — which #70's
+screening never covered — shows why: a preload is a one-parameter knob
+being asked to fix a two-corner problem.
+
+**Net effect on the DRAFT spec rows.** PSRR and Stability remain **open**,
+same as after #70. Both avenues #70 identified as promising have now been
+carried to a definitive, verified conclusion (one fixed a real defect but
+does not move the metric; one is confirmed real on the correct branch but
+does not net a clean win) rather than left as an open question for a
+future issue to re-litigate. Per `CLAUDE.md`'s discipline, no DRAFT row
+is touched. **What remains unexplored**, based on this and #70's combined
+findings: closing `pm_c033_0ma_deg`/PSRR appears to require spending
+additional amplifier-side (not bias-generator- or preload-side) `Iq` —
+directly raising `M_TAIL`'s own tail current, which issue #25's own
+"Quiescent and shutdown current" section already measured as effective
+("keeps improving the no-load phase margin, up to ~40°" at 6x `M_TAIL`)
+but rejected for exceeding the DRAFT `Iq` row (33.6µA vs. 30µA) — meaning
+a durable fix plausibly needs either a compensation/amplifier topology
+change that does not cost `Iq` linearly, or a revisit of the DRAFT
+`Iq<30µA` row itself once issue #1 ratifies the spec (a decision this
+repo's `CLAUDE.md` reserves for a spec decision record, not a Builder
+default). Filing a further follow-on issue for that specific, narrower
+question is left to Curator/human triage rather than decided here.
+
 ### Thermal-shutdown trip/hysteresis testbench ships (issue #66, 2026-08-25)
 
 The Thermal DRAFT spec row's evidence gap — no dedicated `sim/` testbench for
