@@ -674,6 +674,10 @@ element feeding a comparison node, an EN-gated clamp on that node:
    linear region, matching DR-005's 15°C nominal hysteresis target
    qualitatively (the ratio here is the sizing knob; it is not yet
    calibrated against a temperature sweep — see the screening check below).
+   **Update (#77, 2026-08-25): the calibrated `sim/thermal` sweep found this
+   feedback loop's gain is real but marginal, not the clean snap this
+   qualitative description assumes — see the dated "#77" section below for
+   the full diagnosis and why a fix was not shipped.**
 6. **Dominant pole.** `C_TS` (`TS_CMP -> VIN`, 1p placeholder) is the same
    construction as `C_CL` on the current-limit comparator — it only damps
    electrical comparator chatter; the real time constant of a thermal event
@@ -1624,6 +1628,115 @@ already open before this testbench existed. Two distinct findings:
    — `reset_temp_c ≥ trip_temp_c` at 10/15, exactly `0 °C` measured
    hysteresis at the remaining 5. See DR-005's `2026-08-25 addendum` and #77
    for the full writeup; not fixed by this issue.
+
+### #77: thermal-shutdown hysteresis root-caused — a marginal regenerative loop gain, not a simple sign error (investigated, not shipped, 2026-08-25)
+
+**Status: investigated, not shipped.** #77 set out to determine whether the
+non-positive hysteresis the `#66` section above measured at every one of 15
+corners is a real circuit-sizing defect or a DC-continuation
+measurement-methodology artifact, and to fix it if a real defect was found.
+**Answer: both, and neither cleanly** — a genuine but *marginal*
+(corner-dependent) regenerative loop gain around `M_TSHYS`'s current
+injection into `TS_REF`, which the default measurement technique also
+mismeasures. `ldo_3v3in_1v8out.sch` is **unchanged** by this issue — this
+section is the record of what was found and tried, per this repo's
+"verification is the product" discipline, the same shape as the
+"Bias-generator redesign investigated, reverted (#70)" section above.
+Follow-on work continues in **#91**, seeded with this section's data.
+
+**Diagnostic 1 — a nodeset-forced bistability probe proves a real (if
+narrow) hysteresis window exists at `tt_27c_3.30v`, and that the default
+sweep loses it.** At `T=134°C` — one 2°C grid step below the vanilla `.dc
+temp` sweep's measured 0°C-hysteresis crossing (135°C) — an independent
+`.op` seeded with a `.nodeset` biasing every hysteresis-path node toward the
+*tripped* state converges to a genuine, self-consistent tripped solution:
+`V(TS_REF)`≈1.065V (matching this same corner's naturally-tripped value at
+`T=136°C`, ≈1.064V, and matching the schematic's own "raising the reference
+by tens of mV" design-intent comment above — the boost mechanism does
+exactly what it was designed to do), `V(TS_CMP)`≈0.48V (tripped),
+`V(VOUT)`≈0 (collapsed). The default sweep's Newton continuation — despite
+starting from the immediately-prior tripped point at 136°C — does not track
+this branch, reconverging to the untripped branch at the very next 2°C step
+instead. Re-running with `.options gminsteps=1` (reducing ngspice's default
+gmin-stepping homotopy fallback — the same option the `#71`/`#81` section
+above already found disrupts DC continuation on this schematic for an
+unrelated bistability question) surfaces the real branch: measured
+hysteresis flips from 0°C to a small, correctly-signed **+2°C**
+(`trip_temp_c=133°C`, `reset_temp_c=131°C`) at this one corner.
+
+**Diagnostic 2 — a fine-grid re-sweep at the worst-offending corner shows no
+clean crossing exists at all.** `ss_27c_2.97v` (screening-reproduced against
+current `HEAD`: `trip_temp_c≈147°C`, `reset_temp_c≈157°C`,
+`hysteresis_c≈−10°C` — a couple of degrees off the
+`20260825-054043-6fac47d` record's `149°C`/`157°C`/`−8°C` for this corner,
+plausibly that record's own noted "working tree dirty at run time" rather
+than a schematic difference; `git log 6fac47d..HEAD --
+design/ldo_3v3in_1v8out.sch` returns no commits) does **not** show a clean
+single crossing in either sweep direction even at a 0.25°C grid: `V(VOUT)`
+flickers erratically between the tripped (~0V) and untripped (~1.8V) states
+across a ~12°C-wide band (144–156°C on the ascending leg), including at
+least one spurious intermediate operating point (~2.98V — matching neither
+the regulated nor the tripped state), which a converged DC solve should not
+produce. `.options gminsteps=1` does **not** resolve this corner (hysteresis
+stays ≈−10°C) — unlike `tt_27c_3.30v`, this corner's loop gain is apparently
+close enough to unity that the algebraic DC system has no single
+well-defined answer over a wide band, not merely a narrow window the default
+methodology loses track of.
+
+**Interpretation: one root cause, two failure signatures.** A marginal,
+corner-dependent regenerative loop gain explains both patterns the `#66`
+section's table shows: the exact-`0°C` corners (`tt_27c_3.63v`,
+`ss_27c_3.30v`, all three `fs` corners) most plausibly have a narrow, real,
+correctly-signed window the default continuation-plus-gmin-stepping
+methodology loses (as demonstrated for `tt_27c_3.30v` above); the strongly
+negative corners (`ss`, `ff`, `sf` at several supplies) most plausibly sit in
+a genuinely marginal/flickering regime where no single crossing is
+well-defined and the first-crossing `.meas` reports whichever branch the
+solver's exact numerical path happens to land on.
+
+**Hardening attempted at `ss_27c_2.97v`, none shippable:**
+
+- Scaling `M_TSHYSB`'s injected current 2×/3×/4×/13×/20×/30× the baseline
+  width (`W=1.5, L=2`): none produced a clean, well-separated,
+  correctly-signed trip/reset pair. Because `M_TSHYS`'s pre-trip "off"
+  conduction is not exactly zero — the comparator's own finite gain lets
+  `TS_CMP` droop gradually as the die approaches the crossing, so
+  `Vsg(M_TSHYS)` is not exactly 0 pre-trip — a larger `M_TSHYSB` also couples
+  progressively more current into `TS_REF`'s *pre-trip baseline*, dragging
+  the entire transition colder as the boost grows (trip fell from ≈147°C at
+  baseline to ≈95–97°C at the largest boosts tried). At those magnitudes
+  this pushes the trip point well below the already-open #69 floor
+  violation — worsening that finding rather than fixing this one
+  independently.
+- Strengthening the comparator's own gain instead (4× `M_TCTAIL`'s tail
+  current, `W=1→4`, injection current unchanged): reduced but did not
+  eliminate the sign inversion (−10°C → −4°C) without the trip-point
+  collapse the injection-current approach caused — directionally the more
+  promising of the two single-knob attempts on its own. Combining it with
+  even a modest (2×, `W=1.5→3`) injection increase made the result *worse*
+  (−12°C), evidence this is a multi-parameter loop-gain problem, not a
+  single-knob fix reachable by trial-and-error sizing within this issue's
+  own screening budget.
+
+**Net effect.** Per `CLAUDE.md`'s "a row that proves unmeetable is
+superseded by a new decision record, never silently loosened" discipline, no
+DRAFT row or DR-005 Decision text is touched — DR-005's own `2026-08-25`
+addendum (second one) records the same finding formally. This needs a
+genuine large-signal loop-gain redesign of the trip-comparator/hysteresis
+cluster (most plausibly a real regenerative latch/Schmitt-style element,
+rather than a linear current injected into a diode-connected reference node
+whose own DC operating point that same injection perturbs) — **#91** carries
+the investigation forward with this section's data as its starting point.
+**No new `sim/thermal` record was minted**: neither the testbench deck nor
+the circuit changed, so a fresh 15-point run against the identical schematic
+and PDK pin would reproduce the same numbers, not add verification value
+(the same "no purely-redundant record" reasoning the `#71`/`#81` section
+above already applied to `dropout-vs-load`) — `20260825-054043-6fac47d`
+remains the authoritative record, and
+`measurements/build_characterization_report.py --check` still passes
+against it unchanged. **#69 unaffected**: none of the hardening attempts
+above were shipped, so #69's own (still-open) `ff`/`sf` nuisance-trip
+finding is neither worsened nor improved by this issue landing.
 
 ## Validating this schematic
 
