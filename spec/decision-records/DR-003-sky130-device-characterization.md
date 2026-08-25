@@ -1,6 +1,13 @@
 # DR-003: sky130 pass-device characterization (dropout point, sizing, Iq scope)
 
-- **Status**: proposed — not self-ratifying; input to #1
+- **Status**: **ratified** — methodology and screening-derived starting points
+  ratified by #1 (DR-006), pending operator PR approval per the 2026-08-19
+  ratification-via-PR standing policy
+  ([2AMLogic/2am#357](https://github.com/2AMLogic/2am/issues/357)). Ratified:
+  the dropout test-point convention, the `{ss, sf}` co-binding-corner finding,
+  and the sizing methodology. **Not ratified — stays an open TODO**: the Iq
+  budget number, which this record itself declines to set (see finding 4
+  below); no decision record can ratify a number this one never proposed.
 - **Date**: 2026-08-14
 - **Author**: Builder agent (drafted per #10)
 - **Ratifies against / input to**: #1 (Ratify the target spec — operator-only,
@@ -214,14 +221,18 @@ itself remains open until a bias/amplifier topology exists to characterize.
 
 ## Status notes
 
-This record stays `proposed` until #1 closes. #1's ratification of this
-record's methodology and screening-derived starting points does not by
-itself satisfy this repo's "no claim without a testbench" rule for the
-Dropout, Iq, or Leakage spec rows — a `sim/` evidentiary record, built once a
-pass-device subcircuit and (for Iq) an amplifier topology exist, is still
-required before those rows can move past DRAFT. This record's job is to give
-#1 grounded, PDK-derived starting points and an honest map of what remains
-open, not to close the rows itself.
+**Ratified by DR-006 / #1, pending operator PR approval (2026-08-19).**
+Ratification of this record's methodology and screening-derived starting
+points does not by itself satisfy this repo's "no claim without a testbench"
+rule for the Dropout row — that now has real `sim/` evidence (issue #19,
+`sim/dropout-vs-load`) which shows the current implementation does **not**
+meet the DRAFT Dropout row at any of the 45 swept corners (best case 365 mV
+at `ss`/−40 °C vs. the < 300 mV target); see DR-006 for how the ratified spec
+treats that gap. The Iq and Leakage rows remain genuinely open — no `sim/`
+evidentiary record exists for either, and this record never proposed a
+number for Iq to ratify. This record's job was to give #1 grounded,
+PDK-derived starting points and an honest map of what remains open; that map
+is unchanged by ratification.
 
 ## Appendix: screening deck and caveats
 
