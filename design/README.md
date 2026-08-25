@@ -1043,11 +1043,16 @@ Still deliberately **not** in this schematic:
   the main loop's `C_COMP`/`R_CZ` were. The limit loop's screened behaviour
   (flat into a hard short, 1.4µA pp) is a smoke test, not a phase-margin
   claim.
-- **Corner coverage.** Every `sim/` record for this block is still an
-  explicit 3-corner `--quick` subset; the 45-point PVT matrix and Monte Carlo
-  are #19's job. In particular the `ss`/−40°C corner is where the no-load
-  phase margin is worst in the subset, and no `sf`/`fs` corner has been run
-  at all.
+- **Corner coverage.** The full 45-point PVT matrix and Monte Carlo campaign
+  (#19/#37) has since run against this schematic — it is no longer an open
+  gap, but its result is: `sim/loop-gain`'s full-matrix record shows the
+  no-load phase margin failing the DRAFT 45° Stability row at most corners
+  (worst near the `ss`/`tt`/`ff` × −40°C points), and `sim/mc-output-accuracy`,
+  `sim/dropout-vs-load`, `sim/load-transient`, and `sim/psrr-dc` show
+  additional FAILs — see
+  [`measurements/characterization.md`](../measurements/characterization.md)
+  for the aggregated per-row verdict and issue #60 for the open work to close
+  these gaps.
 - **An actual on-chip voltage reference.** `VREF` is an external port (see
   "VREF interface caveat" above).
 
