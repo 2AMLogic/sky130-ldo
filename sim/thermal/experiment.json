@@ -1,0 +1,82 @@
+{
+  "slug": "thermal",
+  "title": "Thermal-shutdown trip/reset temperature and hysteresis (auto-restart)",
+  "claim": "Substantiates spec/target-spec.md's DRAFT \"Thermal\" row (Tj <= 125C operating ceiling; theta_JA delegated to package/integration) via spec/decision-records/DR-005-thermal-shutdown-trip.md's proposed thermal-shutdown target (Tj_trip = 150C nominal untrimmed, hysteresis 15C nominal / Tj_reset ~135C, auto-restart/non-latching) against the CTAT-sense + comparator + hysteresis circuit #29 added to design/ldo_3v3in_1v8out.sch. DR-005 is 'proposed', not ratified (issue #1 still open) -- the bounds below cite it directly, not an invented final number. Method: a continuous ngspice DC '.dc temp' sweep, ascending then descending in one session (DC continuation captures the comparator's hysteresis the same way a Schmitt-trigger characterization does), watching V(VOUT) collapse (trip, M_TSHUT engages and turns M_PASS off) and recover (reset, auto-restart) -- see the testbench schematic's header for the full derivation. 125C-vs-150C corner-coverage decision (required before this testbench could even be written, per this issue's own acceptance criteria): DR-004 pins this repo's PVT-corner verification temperature axis at {-40, 27, 125}C, but DR-005's 150C nominal trip sits above that pin. This testbench extends temperature coverage past 125C specifically for this one thermal-shutdown testbench (option (a) of DR-005's Consequences section, formalized in this issue's addendum to DR-005 and design/README.md's Known-gaps section, both dated 2026-08-25) rather than accepting the gap (option (b)) -- chosen because an empirical check (ngspice + the pinned sky130 BSIM models on a diode-connected core device, 2026-08-25) confirmed the models solve without numerical failure (no NaN/divergence/error) continuously from -40C to 200C, so extending is mechanically possible; the tradeoff accepted explicitly is that points above 125C are running those models in extrapolation beyond DR-004's characterized range, not confirmed against silicon, so the measured trip/reset numbers carry lower confidence than a PVT-corner point inside the pinned axis. This does not change DR-004's binding for the other four testbenches (load-transient/psrr-dc/dropout-vs-load/loop-gain) or for spec verification generally -- it is a scoped extension for this testbench only.",
+  "provenance": "schematic",
+  "provenance_source": "sim/thermal/testbench/tb_thermal_trip.sch",
+  "schematic": "testbench/tb_thermal_trip.sch",
+  "statistical_convention": "N/A (corner-matrix check, not a distribution claim)",
+  "corners": {
+    "process": ["tt", "ss", "ff", "sf", "fs"],
+    "temperature_c": [27],
+    "supply_v": [2.97, 3.3, 3.63]
+  },
+  "quick_subset": [
+    ["tt", 27, 3.3],
+    ["ss", 27, 2.97],
+    ["ff", 27, 3.63]
+  ],
+  "deck": {
+    "options": ["wnflag=1"],
+    "params": {},
+    "analyses": [
+      "* temperature_c above (27) is a placeholder only -- this experiment sweeps",
+      "* TEMP itself as the analysis variable (see claim); the corner matrix's real",
+      "* axes here are process and supply_v, not temperature. 2C step (rather than",
+      "* a finer one) is a deliberate runtime/resolution tradeoff: DR-005's own",
+      "* trip/hysteresis targets are untrimmed and PVT-loose (15C nominal hysteresis",
+      "* window), so resolving the crossing to +/-2C costs negligible accuracy",
+      "* against that window while keeping each corner's continuation sweep",
+      "* (~100 points ascending + descending, each needing gmin-stepped",
+      "* convergence) tractable.",
+      "* Floor of 80C (not the 100C DR-004 top-of-range would suggest) is",
+      "* deliberate: the fast-PMOS-skew corners (sf especially) trip as low as",
+      "* ~101C (empirically confirmed, 2026-08-25, issue #66), and ngspice's own",
+      "* '.meas dc ... find/when ... fall=1' has a confirmed edge-of-sweep",
+      "* artifact -- if the crossing falls within the FIRST swept interval",
+      "* (i.e. no data point precedes it), the interpolated result is garbage",
+      "* (observed: 1.15e7 instead of ~101 for sf/3.30V when the sweep started",
+      "* at exactly 100C). Starting well below the coldest observed trip point",
+      "* keeps every real crossing away from that edge case. This is an ngspice",
+      "* measurement-technique limitation, not a circuit finding -- noted here",
+      "* so a future re-run does not reintroduce it by narrowing the range.",
+      "* Each '.dc temp' analysis opens its own ngspice plot (dc1, dc2); a bare",
+      "* vector reference after the second analysis starts resolves against the",
+      "* CURRENT (dc2) plot, so trip_temp_c (a dc1 result) needs an explicit",
+      "* dc1. prefix once dc2 is active -- reset_temp_c/hysteresis_c need no",
+      "* prefix since they are computed while dc2 is still current.",
+      "dc temp 80 180 2",
+      "meas dc trip_temp_c when v(vout)=0.9 fall=1",
+      "dc temp 180 80 -2",
+      "meas dc reset_temp_c when v(vout)=0.9 rise=1",
+      "let hysteresis_c = dc1.trip_temp_c - reset_temp_c"
+    ]
+  },
+  "measurements": [
+    {
+      "name": "trip_temp_c",
+      "expr": "dc1.trip_temp_c",
+      "unit": "C",
+      "min": 125,
+      "max": null,
+      "note": "Rising-temperature trip point: the TEMP value where V(VOUT) first falls through 0.9V (roughly half the light-load regulated value) on the ascending 80-180C sweep (2C resolution). Bound: min=125C -- the spec's own Tj<=125C rated-operation ceiling (spec/target-spec.md's Thermal row); DR-005's Decision explicitly requires the trip to sit above rated operation, so a corner tripping at or below 125C is a genuine functional defect (see design/README.md's dated '45-point PVT + Monte Carlo campaign' section and issue #69), not a passing result under a looser reading. DR-005's own nominal target is 150C, but no upper bound is enforced here -- the reference is untrimmed/bias-generator-derived and explicitly PVT-loose (DR-005 Consequences), so this measurement reports the actual number rather than gating on the nominal target."
+    },
+    {
+      "name": "reset_temp_c",
+      "expr": "reset_temp_c",
+      "unit": "C",
+      "min": null,
+      "max": null,
+      "note": "Falling-temperature reset point: the TEMP value where V(VOUT) recovers back through 0.9V on the descending 180-80C sweep, i.e. auto-restart engaging. DR-005 target: Tj_reset ~135C nominal. No bound enforced here (untrimmed/PVT-loose per DR-005); reported for the record narrative and the hysteresis_c derivation below."
+    },
+    {
+      "name": "hysteresis_c",
+      "expr": "hysteresis_c",
+      "unit": "C",
+      "min": 0,
+      "max": null,
+      "note": "trip_temp_c - reset_temp_c. DR-005 target: 15C nominal. Bound: min=0 -- a genuine auto-restart hysteresis window must have reset_temp_c < trip_temp_c (positive feedback around the comparator per design/README.md's 'Thermal shutdown (#29)' section, item 5); a non-positive value would mean the hysteresis mechanism is not actually working, not just off-target. Resolution caveat: the 2C sweep grid means a measured value within +/-2C of zero should be read as 'no resolvable hysteresis at this grid step', not necessarily a confidently-signed defect -- see the record narrative for the per-corner reading."
+    }
+  ],
+  "spread_checks": []
+}
