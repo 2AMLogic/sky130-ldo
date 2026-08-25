@@ -1021,7 +1021,9 @@ Still deliberately **not** in this schematic:
   for the aggregated per-row verdict, and the dated "full 45-point PVT +
   Monte Carlo campaign" section below for the root-cause writeup (#60) and
   the follow-on issues (#69/#70/#71) tracking the open work to close these
-  gaps.
+  gaps. Thermal now has its own dedicated testbench (`sim/thermal`, #66) —
+  see the dated "Thermal-shutdown trip/hysteresis testbench" section below
+  for what it found.
 - **An actual on-chip voltage reference.** `VREF` is an external port (see
   "VREF interface caveat" above).
 
@@ -1350,6 +1352,85 @@ and the 45° Stability row stand as written, and the two screened-but-
 rejected candidates above are recorded as real, if negative, findings
 rather than folded into a claim of progress. **#79** carries the
 investigation forward with this section's data as its starting point.
+
+### Thermal-shutdown trip/hysteresis testbench ships (issue #66, 2026-08-25)
+
+The Thermal DRAFT spec row's evidence gap — no dedicated `sim/` testbench for
+the thermal-shutdown circuit's (#29/DR-005) actual trip/reset behavior — is
+now closed by `sim/thermal/`. Two things had to happen first, per this
+issue's own acceptance criteria:
+
+1. **The 125 °C-vs-150 °C corner-coverage decision.** DR-005's Consequences
+   section named this gap in advance: DR-004 pins this repo's PVT-corner
+   verification temperature axis at `{−40, 27, 125} °C`, but DR-005's
+   150 °C nominal trip target sits above it. **Decided: extend, scoped to
+   this one testbench** — see DR-005's `2026-08-25 addendum` for the full
+   reasoning, the empirical check that justified it, and the accepted
+   tradeoff (points above 125 °C run the pinned models in extrapolation
+   beyond DR-004's characterized range). This does not touch DR-004's
+   binding for `load-transient`/`psrr-dc`/`dropout-vs-load`/`loop-gain`.
+2. **An ngspice measurement-technique pitfall, found and worked around
+   before the authoritative record.** `.meas dc ... find/when ... fall=1`
+   returns a nonsensical result (observed: `1.15e7` instead of ≈`101`) when
+   the crossing falls inside the sweep's very first interval. The first
+   run (`20260825-050729-6fac47d`, superseded) hit this at `sf_27c_3.30v`
+   with a 100 °C sweep floor; widening the floor to 80 °C (safely below
+   every corner's actual trip point) fixed it for the authoritative record.
+   See `sim/thermal/experiment.json`'s own comments for the full writeup —
+   this is a testbench/tooling limitation, not a circuit finding.
+
+**Method**: a continuous ngspice `.dc temp` sweep, 80→180 °C ascending then
+180→80 °C descending in one session (DC continuation, so the descending leg
+starts from the ascending leg's final operating point — the standard
+technique for characterizing a hysteretic comparator's two trip points),
+watching `V(VOUT)` collapse (trip) and recover (reset, auto-restart) across
+the full `process × supply_v` matrix (`temperature_c` is a fixed manifest
+placeholder — the real temperature axis is the swept analysis variable, not
+a corner-matrix dimension, so `sim/thermal`'s auto-generated record's "Full
+PVT matrix declared..." line renders the standard −40/27/125 °C boilerplate
+inherited from the shared harness; read the experiment's own `claim` and
+this section for the accurate picture instead).
+
+**Authoritative record**: `sim/thermal/records/20260825-054043-6fac47d`
+(supersedes `20260825-050729-6fac47d`), full 15-point `process × supply_v`
+matrix:
+
+| Corner | `trip_temp_c` | `reset_temp_c` | `hysteresis_c` | Verdict |
+|---|---|---|---|---|
+| `tt_27c_2.97v` | 135.0 | 137.0 | −2.0 | FAIL (hysteresis) |
+| `tt_27c_3.30v` | 135.0 | 137.0 | −2.0 | FAIL (hysteresis) |
+| `tt_27c_3.63v` | 135.0 | 135.0 | 0.0 | PASS |
+| `ss_27c_2.97v` | 149.0 | 157.0 | −8.0 | FAIL (hysteresis) |
+| `ss_27c_3.30v` | 145.0 | 145.0 | 0.0 | PASS |
+| `ss_27c_3.63v` | 145.0 | 149.0 | −4.0 | FAIL (hysteresis) |
+| `ff_27c_2.97v` | 121.0 | 121.0 | 0.0 | FAIL (trip < 125 °C) |
+| `ff_27c_3.30v` | 117.0 | 123.0 | −6.0 | FAIL (trip < 125 °C, hysteresis) |
+| `ff_27c_3.63v` | 115.0 | 121.0 | −6.0 | FAIL (trip < 125 °C, hysteresis) |
+| `sf_27c_2.97v` | 99.0 | 105.0 | −6.0 | FAIL (trip < 125 °C, hysteresis) |
+| `sf_27c_3.30v` | 101.0 | 101.0 | 0.0 | FAIL (trip < 125 °C) |
+| `sf_27c_3.63v` | 95.0 | 105.0 | −10.0 | FAIL (trip < 125 °C, hysteresis) |
+| `fs_27c_2.97v` | 165.0 | 165.0 | 0.0 | PASS |
+| `fs_27c_3.30v` | 167.0 | 167.0 | 0.0 | PASS |
+| `fs_27c_3.63v` | 165.0 | 165.0 | 0.0 | PASS |
+
+**Overall: FAIL (5/15 PASS)** — an honest, expected finding given #69 was
+already open before this testbench existed. Two distinct findings:
+
+1. **Confirms and substantially quantifies #69.** `ff` trips at
+   115.0–121.0 °C and `sf` at 95.0–101.0 °C — both process corners fall
+   below the spec's own 125 °C operating ceiling at **every** supply corner
+   tested, more severe than #69's single confirmed `.op` point (`ff`/125 °C/
+   3.30 V) suggested. `tt` (135.0 °C), `ss` (145.0–149.0 °C) and `fs`
+   (165.0–167.0 °C) all trip comfortably above 125 °C — `fs` in fact trips
+   *above* the 150 °C nominal target. Still #69's job to fix, not re-scoped
+   here.
+2. **New finding, filed as #77: measured hysteresis is non-positive at every
+   one of the 15 corners.** DR-005's Decision requires `reset_temp_c` to sit
+   *below* `trip_temp_c` (auto-restart only after cooling further than the
+   trip point). The data shows the opposite or a wash at every corner tested
+   — `reset_temp_c ≥ trip_temp_c` at 10/15, exactly `0 °C` measured
+   hysteresis at the remaining 5. See DR-005's `2026-08-25 addendum` and #77
+   for the full writeup; not fixed by this issue.
 
 ## Validating this schematic
 

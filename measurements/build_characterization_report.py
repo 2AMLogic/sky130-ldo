@@ -108,7 +108,7 @@ EVIDENCE_MAP: dict[str, str | None] = {
     "Current limit": "current-limit",
     "Startup / soft-start": "startup",
     "Enable / shutdown": "enable-shutdown",
-    "Thermal": None,
+    "Thermal": "thermal",
     "Output noise": None,
     "Area": None,
     "Stability": "loop-gain",
@@ -135,11 +135,16 @@ NA_REASONS: dict[str, str] = {
         "testbench map)."
     ),
     "Iq (excl. load current)": "no dedicated testbench exists yet under `sim/`.",
-    "Thermal": (
-        "the thermal-shutdown circuitry (issue #35) is present in the "
-        "schematic, but no dedicated thermal testbench exists yet under "
-        "`sim/`."
+    "Current limit": (
+        "the current-limit clamp circuitry (issue #22) is present in the "
+        "schematic, but no dedicated clamp-threshold testbench exists yet "
+        "under `sim/`."
     ),
+    "Startup / soft-start": (
+        "the soft-start circuitry (issue #22) is present in the schematic, "
+        "but no dedicated startup-transient testbench exists yet under `sim/`."
+    ),
+    "Enable / shutdown": "no dedicated testbench exists yet under `sim/`.",
     "Output noise": (
         'waived by the spec row itself ("not specified — waived unless a '
         'consumer states a requirement").'
