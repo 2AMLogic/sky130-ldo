@@ -44,7 +44,12 @@ subsets, and the full 45-point matrix each of their manifests declares is
 tracked in issue #74. Per issue #19's own guardrail, none of
 this is a final pass/fail verdict against a *ratified* spec — issue #1 (spec
 ratification) is still open, so every record here cites the current DRAFT row
-only.
+only. Three further testbenches — `line-regulation`, `load-regulation` and
+`iq` (issue #64) — landed later against the three DRAFT rows the four above
+don't cover; they still use discrete `.op` points rather than the corner
+runner's usual `.dc`/`.tran` sweep style, and are `--quick`-only so far — see
+"Line regulation, load regulation and Iq (issue #64)" below for why and for
+their results.
 
 ---
 
@@ -501,6 +506,74 @@ are recorded as `FAIL`/`n/a` rather than dropped (per this directory's own
 rule), and they are excluded from the "worst plausible corner" figures quoted
 above; diagnosing them is design/harness follow-on work, not something this
 record resolves.
+
+## Line regulation, load regulation and Iq (issue #64)
+
+Three more testbenches against the same DUT (`design/ldo_3v3in_1v8out.sch`),
+covering three DRAFT rows `measurements/characterization.md` reported N/A
+until this issue: **Line regulation** (<5 mV/V over 2.97–3.63 V, at 1 mA and
+50 mA), **Load regulation (0–50 mA)** (<1%/18 mV) and **Iq (excl. load
+current)** (<30 µA at no load and full load). Same VIN/EN/VREF stimulus
+convention and output network (1 µF `C_OUT`/10 mΩ `R_ESR`) as the four
+testbenches above.
+
+**All three use discrete `.op` points at the DRAFT row's own named test
+conditions, not a continuous `.dc` sweep** — a deliberate choice, not the
+original plan. A continuous `dc vvin 2.97 3.63 ...` sweep (for line
+regulation) and a continuous `dc iload 0 50m ...` sweep (for load regulation)
+were both tried first and both hit this schematic's already-documented
+DC-solution-multiplicity behavior (the "six degenerate corners" section
+above, and design/README.md's dated 2026-08-25 root-cause section, issue #60
+mechanism 4, tracked by #71): the VIN sweep repeatedly hit
+gmin-stepping/singular-matrix non-convergence and did not complete in
+minutes of wall-clock time per corner, and the `I_LOAD` sweep measured a
+1.46 V peak-to-peak `vout` excursion at `tt`/27 °C — a solver-continuation
+artifact, not a real 81%-of-target load regulation number (design/README.md's
+own screening data puts the same two endpoints ~4 mV apart). Four (line
+regulation: VIN × I_LOAD) or two (load regulation: I_LOAD only) independent
+`.op` solves at the DRAFT row's own endpoints — `alter`-ing VIN and/or the
+load current source between them, mirroring `loop-gain`'s and `iq`'s
+multi-point convention — complete in well under a second each and reproduce
+`design/README.md`'s own screening numbers for the same points (its "DC
+operating grid" and "Quiescent and shutdown current" sections both already
+use discrete points, not a sweep, for exactly this reason).
+
+- **`line-regulation/`** — VIN ∈ {2.97 V, 3.63 V} × `I_LOAD` ∈ {1 mA, 50 mA},
+  four `.op` solves; `line_reg_<n>ma_mv_per_v` = `abs(1000*(vout_hi-vout_lo)/
+  0.66)`. First record (`--quick`, 3-corner subset, `20260825-040532-6fac47d`):
+  **PASS** at `tt_27c_3.30v` (0.295/0.378 mV/V) and `ss_-40c_2.97v`
+  (0.217/0.369 mV/V), **FAIL** at `ff_125c_3.63v` (1005.8/1010.2 mV/V, three
+  orders of magnitude over the 5 mV/V bound) — overall `FAIL`. The
+  `ff_125c_3.63v` failure is the same degenerate-corner signature described
+  above (thermal-shutdown false-trip, #69), not a new finding.
+- **`load-regulation/`** — `I_LOAD` ∈ {0 mA, 50 mA} at each corner's own VIN
+  (`'vsup'`), two `.op` solves; `load_reg_v` = `abs(vout@50mA - vout@0mA)`.
+  First record (`--quick`, `20260825-040748-6fac47d`): **PASS** at
+  `tt_27c_3.30v` (4.2 mV / 0.23%) and `ss_-40c_2.97v` (3.3 mV / 0.18%),
+  **FAIL** at `ff_125c_3.63v` (19.3 V) — overall `FAIL`, same degenerate
+  corner.
+- **`iq/`** — `I_LOAD` ∈ {0 mA (no load), 50 mA (full load)} at each corner's
+  own VIN, two `.op` solves; `iq_<point>_ua` = `-i(vvin)` minus the known
+  load-current constant, per `design/README.md`'s own "Iq = total VIN
+  current minus load current" convention. First record (`--quick`,
+  `20260825-040934-6fac47d`): **PASS at all three corners**
+  (13.3/25.5 µA at `tt_27c_3.30v`, 11.4/22.3 µA at `ss_-40c_2.97v`,
+  14.7/8.8 µA at `ff_125c_3.63v`) — overall `PASS`. The `ff_125c_3.63v`
+  point is the same degenerate corner as above (confirmed directly: `TS_CMP`
+  = 0.39 V, tripped; `vout` collapses to 0.14 V at no load and −19.2 V at
+  full load), but unlike line/load regulation the raw `-i(vvin)` figure there
+  still happens to land inside the 30 µA budget rather than reading as an
+  obviously non-physical number — so this testbench also records
+  `vout_no_load_v`/`vout_full_load_v` (unbounded) alongside the Iq figures,
+  specifically so a reader can see that corner's operating point is not
+  really regulating before trusting its in-budget Iq "PASS", the same
+  caution the PSRR "passes" above already need.
+
+**Quick-subset only, by design, matching issue #18's own original
+precedent** for newly-shipped testbenches (`load-transient`/`psrr-dc`/
+`dropout-vs-load` also shipped `--quick`-only before #19's later full
+45-point pass). Extending these three to the full PVT matrix is follow-on
+work, not part of this issue's scope.
 
 ## Monte Carlo / mismatch experiments
 

@@ -1,0 +1,61 @@
+{
+  "slug": "line-regulation",
+  "title": "Line regulation over 2.97-3.63V at 1mA and 50mA load",
+  "claim": "Substantiates spec/target-spec.md's DRAFT \"Line regulation\" row (< 5 mV/V over 2.97-3.63V, at 1mA and 50mA) against the LDO core-regulation-loop schematic landed by #14 (design/ldo_3v3in_1v8out.sch), using the row's own two named load points and the DRAFT range's own two endpoints. That row is DRAFT (issue #1 not yet ratified) -- the bound below cites it directly, not an invented final limit, and needs re-verification once #1 rules. Each corner runs four discrete .op solves (VIN in {2.97V, 3.63V} x I_LOAD in {1mA, 50mA}, via the deck's own 'alter' on VIN and the load current source, mirroring sim/loop-gain's and sim/iq's multi-point convention), NOT a continuous 'dc vvin ...' sweep -- a continuous sweep over this exact range was tried during this testbench's bring-up and repeatedly hit gmin-stepping/singular-matrix non-convergence partway through (design/README.md's dated 2026-08-25 root-cause section, issue #60 mechanism 4, tracked by #71, already documents this DC-solution-multiplicity behavior for VIN sweeps at 50mA load), taking minutes per corner without completing; four independent .op solves at the range's own endpoints complete in well under a second and reproduce design/README.md's own screening line-regulation numbers (its 'DC operating grid' section also uses discrete VIN points, not a sweep). line_reg_<n>ma_mv_per_v = abs(1000*(vout_hi-vout_lo)/(3.63-2.97)), matching that screening convention. Uses the DR-002 proposed nominal C_out/ESR (1uF/10mOhm), not a window sweep -- same convention as load-transient/dropout-vs-load/psrr-dc. Known risk, not a testbench defect: the same design/README.md section (mechanism 1) documents a thermal-shutdown false-trip at the ff/sf process corners at 125C, independent of load current -- tracked by #69. A corner at that condition is expected to report a non-physical number (pass device driven off), the same documented failure mode the four existing testbenches already show there.",
+  "provenance": "schematic",
+  "provenance_source": "sim/line-regulation/testbench/tb_line_regulation.sch",
+  "schematic": "testbench/tb_line_regulation.sch",
+  "statistical_convention": "N/A (corner-matrix check, not a distribution claim)",
+  "corners": {
+    "process": ["tt", "ss", "ff", "sf", "fs"],
+    "temperature_c": [-40, 27, 125],
+    "supply_v": [2.97, 3.3, 3.63]
+  },
+  "quick_subset": [
+    ["tt", 27, 3.3],
+    ["ss", -40, 2.97],
+    ["ff", 125, 3.63]
+  ],
+  "deck": {
+    "options": ["wnflag=1"],
+    "params": {},
+    "analyses": [
+      "* --- point 1: VIN=2.97V, I_LOAD=1mA (deck default) ---",
+      "alter vvin = 2.97",
+      "op",
+      "let vout_1ma_lo = v(vout)",
+      "* --- point 2: VIN=3.63V, I_LOAD=1mA ---",
+      "alter vvin = 3.63",
+      "op",
+      "let vout_1ma_hi = v(vout)",
+      "* --- point 3: VIN=2.97V, I_LOAD=50mA (altered) ---",
+      "alter iload = 50m",
+      "alter vvin = 2.97",
+      "op",
+      "let vout_50ma_lo = v(vout)",
+      "* --- point 4: VIN=3.63V, I_LOAD=50mA ---",
+      "alter vvin = 3.63",
+      "op",
+      "let vout_50ma_hi = v(vout)"
+    ]
+  },
+  "measurements": [
+    {
+      "name": "line_reg_1ma_mv_per_v",
+      "expr": "abs(1000*(op2.vout_1ma_hi - op1.vout_1ma_lo)/(3.63-2.97))",
+      "unit": "mV/V",
+      "min": null,
+      "max": 5,
+      "note": "Line regulation at the DRAFT row's light-load point (1mA): abs(1000*(vout@3.63V - vout@2.97V))/0.66V. DRAFT bound: spec/target-spec.md \"Line regulation\" row, < 5 mV/V, at 1mA."
+    },
+    {
+      "name": "line_reg_50ma_mv_per_v",
+      "expr": "abs(1000*(op4.vout_50ma_hi - op3.vout_50ma_lo)/(3.63-2.97))",
+      "unit": "mV/V",
+      "min": null,
+      "max": 5,
+      "note": "Line regulation at the DRAFT row's full-load point (50mA), same formula as line_reg_1ma_mv_per_v. DRAFT bound: spec/target-spec.md \"Line regulation\" row, < 5 mV/V, at 50mA."
+    }
+  ],
+  "spread_checks": []
+}

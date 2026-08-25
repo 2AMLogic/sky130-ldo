@@ -1,0 +1,69 @@
+{
+  "slug": "iq",
+  "title": "Quiescent current (excl. load current) at no load and full load",
+  "claim": "Substantiates spec/target-spec.md's DRAFT \"Iq (excl. load current)\" row (< 30uA at no load and full load) against the LDO core-regulation-loop schematic landed by #14 (design/ldo_3v3in_1v8out.sch), using the row's own two named load points. That row is DRAFT (issue #1 not yet ratified) -- the bound below cites it directly, not an invented final limit, and needs re-verification once #1 rules. Each corner runs two .op solves (0mA then 50mA, via the deck's own 'alter' on the load current source, mirroring sim/loop-gain's multi-point convention from #25): Iq is defined, per design/README.md's own \"Iq = total VIN current minus load current\" convention, as -i(vvin) at no load (no subtraction needed) and as -i(vvin) minus the deck's own known 50mA load constant at full load. Known risk, not a testbench defect -- and confirmed during this testbench's own bring-up, not just cited from elsewhere: design/README.md's dated 2026-08-25 root-cause section (issue #60, mechanism 1; tracked by #69) documents a thermal-shutdown false-trip at the ff/sf process corners at 125C, independent of load current; a direct check at ff/125C/3.63V (screening, not part of this record) confirms TS_CMP=0.39V (tripped; untripped is approximately VIN) and vout collapsed to -19.2V at full load (0.14V at no load) at that exact corner, yet -i(vvin) itself still reads a plausible-looking, in-budget microamp figure there rather than an obviously non-physical one -- unlike line-regulation/load-regulation, where the same false-trip produces an unmistakably out-of-range number. vout_no_load_v/vout_full_load_v are reported (unbounded) alongside the Iq figures specifically so a reader can see when the underlying operating point is not really regulating (roughly 1.8V) before trusting an in-budget Iq PASS at that corner, per the same PSRR caution design/README.md's mechanism 5 already states (\"PASS\" at a falsely-tripped corner is not evidence of a genuine pass).",
+  "provenance": "schematic",
+  "provenance_source": "sim/iq/testbench/tb_iq.sch",
+  "schematic": "testbench/tb_iq.sch",
+  "statistical_convention": "N/A (corner-matrix check, not a distribution claim)",
+  "corners": {
+    "process": ["tt", "ss", "ff", "sf", "fs"],
+    "temperature_c": [-40, 27, 125],
+    "supply_v": [2.97, 3.3, 3.63]
+  },
+  "quick_subset": [
+    ["tt", 27, 3.3],
+    ["ss", -40, 2.97],
+    ["ff", 125, 3.63]
+  ],
+  "deck": {
+    "options": ["wnflag=1"],
+    "params": {},
+    "analyses": [
+      "* --- point 1: I_LOAD = 0 (no load, deck default) ---",
+      "op",
+      "let iq_no_load_a = -i(vvin)",
+      "let vout_no_load = v(vout)",
+      "* --- point 2: I_LOAD = 50mA (altered, full load) ---",
+      "alter iload = 50m",
+      "op",
+      "let iq_full_load_a = -i(vvin) - 50m",
+      "let vout_full_load = v(vout)"
+    ]
+  },
+  "measurements": [
+    {
+      "name": "iq_no_load_ua",
+      "expr": "1e6*op1.iq_no_load_a",
+      "unit": "uA",
+      "min": null,
+      "max": 30,
+      "note": "Total VIN supply current (I_LOAD=0, so no subtraction needed). DRAFT bound: spec/target-spec.md \"Iq (excl. load current)\" row, < 30uA at no load."
+    },
+    {
+      "name": "iq_full_load_ua",
+      "expr": "1e6*op2.iq_full_load_a",
+      "unit": "uA",
+      "min": null,
+      "max": 30,
+      "note": "Total VIN supply current minus the deck's own known 50mA load constant. DRAFT bound: spec/target-spec.md \"Iq (excl. load current)\" row, < 30uA at full load."
+    },
+    {
+      "name": "vout_no_load_v",
+      "expr": "op1.vout_no_load",
+      "unit": "V",
+      "min": null,
+      "max": null,
+      "note": "Reported, not bounded: a sanity check that this corner's no-load .op is actually regulating (near the 1.8V DRAFT Output target) before trusting iq_no_load_ua as a genuine Iq figure -- see this experiment's own claim for why a falsely thermal-shutdown-tripped corner can still report a plausible-looking, in-budget Iq number."
+    },
+    {
+      "name": "vout_full_load_v",
+      "expr": "op2.vout_full_load",
+      "unit": "V",
+      "min": null,
+      "max": null,
+      "note": "Same sanity check as vout_no_load_v, at the full-load (50mA) .op point."
+    }
+  ],
+  "spread_checks": []
+}
