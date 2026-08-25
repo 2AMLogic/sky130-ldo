@@ -736,7 +736,7 @@ off and the amplifier is exactly the issue #14 5T OTA again.} 2240 -1600 0 0 0.2
 * the current limit's CL_CMP node.
 C {sky130_fd_pr/pfet_g5v0d10v5.sym} 2700 -100 0 0 {name=M_TSPS
 L=1
-W=2.5
+W=1.25
 nf=1
 mult=1
 model=pfet_g5v0d10v5
@@ -745,17 +745,21 @@ C {devices/lab_pin.sym} 2720 -70 0 0 {name=p_mtsps_d lab=TS_SNS}
 C {devices/lab_pin.sym} 2680 -100 0 0 {name=p_mtsps_g lab=BIASP}
 C {devices/lab_pin.sym} 2720 -130 0 0 {name=p_mtsps_s lab=VIN}
 C {devices/lab_pin.sym} 2720 -100 0 0 {name=p_mtsps_b lab=VIN}
-T {M_TSPS: sense-branch current source -- a 1/4-width copy of the M_BIASP1
-PMOS bias unit (W=2.5 against 10, same L) so the sense stack runs at a few
-hundred nA rather than the full bias unit. Gate = BIASP, so the whole
-thermal sensor dies at EN=0 for free, exactly like M_CLP and M_SSCHG.
+T {M_TSPS: sense-branch current source -- a 1/8-width copy of the M_BIASP1
+PMOS bias unit (W=1.25 against 10, same L) so the sense stack runs at ~200nA
+rather than the full bias unit. Gate = BIASP, so the whole thermal sensor
+dies at EN=0 for free, exactly like M_CLP and M_SSCHG.
 The low current density is load-bearing, not an Iq economy: it puts the
 stack devices in weak inversion, which is what makes the branch steeply
 CTAT *and* nearly insensitive to the bias current itself (see
-design/README.md "Thermal shutdown (#29)").} 2740 -100 0 0 0.2 0.2 {}
+design/README.md "Thermal shutdown (#29)").
+RE-SIZED IN #69 (was W=2.5): halving the sense-branch current is one of the
+two knobs that place the trip window; the other is M_TSPR's width. Together
+they set Tj_trip without disturbing the M_TSD*/M_TSR1 geometry ratio that
+#69 chose to cancel the corner-Vth skew.} 2740 -100 0 0 0.2 0.2 {}
 
 C {sky130_fd_pr/nfet_g5v0d10v5.sym} 2700 -400 0 0 {name=M_TSD1
-L=1
+L=4
 W=80
 nf=16
 mult=1
@@ -767,15 +771,24 @@ C {devices/lab_pin.sym} 2720 -370 0 0 {name=p_mtsd1_s lab=TS_MID}
 C {devices/lab_pin.sym} 2720 -400 0 0 {name=p_mtsd1_b lab=0}
 T {M_TSD1/M_TSD2: the thermal sense element -- two diode-connected NMOS
 stacked between TS_SNS and the EN-gated pseudo-ground AMP_ENN, so
-V(TS_SNS) = Vgs1 + Vgs2 at a low current density. Each Vgs is CTAT
-(~ -1.5mV/C at this bias), and stacking two doubles the slope: TS_SNS falls
-~3.2mV/C. Wide (W=80, nf=16 -> 5um fingers) and at ~0.4uA so both devices
-sit in weak inversion; that is what makes the branch's dV/dln(I) small
-enough that the trip point barely moves with the supply-dependent bias
-current. Source returns through the shared M_ENN2 switch (AMP_ENN).} 2740 -400 0 0 0.2 0.2 {}
+V(TS_SNS) = Vgs1 + Vgs2 at a low current density. Each Vgs is CTAT, and
+stacking two doubles the slope. Wide (W=80, nf=16 -> 5um fingers) and at
+~200nA so both devices stay in weak/moderate inversion; that is what makes
+the branch's dV/dln(I) small enough that the trip point barely moves with
+the supply-dependent bias current. Source returns through the shared
+M_ENN2 switch (AMP_ENN).
+RE-SIZED IN #69: L=1 -> L=4. THE CHANNEL LENGTH IS A PROCESS-SPREAD KNOB,
+not just a density knob. sky130's HV-nfet corner model applies its Vth0
+skew as delvto = swx_vth * (0.10*8/L + 0.90) * (0.045*7/W + 0.955) * ...,
+i.e. a SHORT channel AMPLIFIES the corner Vth shift (1.63x at L=1, 1.06x at
+L=4 for W=80). Because the sense side contributes TWO Vgs terms to the
+trip comparison and the reference only one, that amplification was doubled
+on the sense side and did not cancel -- which is why the trip moved 65C
+across the five process corners and nuisance-tripped at ff/sf/125C (#69).
+See design/README.md "Thermal shutdown (#29)" for the full derivation.} 2740 -400 0 0 0.2 0.2 {}
 
 C {sky130_fd_pr/nfet_g5v0d10v5.sym} 2700 -700 0 0 {name=M_TSD2
-L=1
+L=4
 W=80
 nf=16
 mult=1
@@ -786,11 +799,13 @@ C {devices/lab_pin.sym} 2680 -700 0 0 {name=p_mtsd2_g lab=TS_MID}
 C {devices/lab_pin.sym} 2720 -670 0 0 {name=p_mtsd2_s lab=AMP_ENN}
 C {devices/lab_pin.sym} 2720 -700 0 0 {name=p_mtsd2_b lab=0}
 T {M_TSD2: bottom device of the sense stack (see M_TSD1). Identical
-geometry to M_TSD1 -- the stack is a ratio of *counts*, not of widths.} 2740 -700 0 0 0.2 0.2 {}
+geometry to M_TSD1 -- the stack is a ratio of *counts*, not of widths.
+Re-sized in #69 with M_TSD1 (L=1 -> L=4); the two must stay identical or
+the "counts, not widths" argument above stops holding.} 2740 -700 0 0 0.2 0.2 {}
 
 C {sky130_fd_pr/pfet_g5v0d10v5.sym} 2700 -1000 0 0 {name=M_TSPR
 L=1
-W=2.5
+W=7
 nf=1
 mult=1
 model=pfet_g5v0d10v5
@@ -799,13 +814,22 @@ C {devices/lab_pin.sym} 2720 -970 0 0 {name=p_mtspr_d lab=TS_REF}
 C {devices/lab_pin.sym} 2680 -1000 0 0 {name=p_mtspr_g lab=BIASP}
 C {devices/lab_pin.sym} 2720 -1030 0 0 {name=p_mtspr_s lab=VIN}
 C {devices/lab_pin.sym} 2720 -1000 0 0 {name=p_mtspr_b lab=VIN}
-T {M_TSPR: reference-branch current source -- identical to M_TSPS, so both
-CTAT branches see the same current from the same mirror and the bias
-current's own supply/temperature drift is common-mode to the comparison.} 2740 -1000 0 0 0.2 0.2 {}
+T {M_TSPR: reference-branch current source -- a 0.7x-width copy of the
+M_BIASP1 PMOS bias unit (W=7 against 10, same L). Same gate (BIASP) as
+M_TSPS, so the bias current's own supply/temperature drift is still
+common-mode to the comparison; what is NOT common-mode any more is the
+branch-current RATIO, and that is deliberate.
+RE-SIZED IN #69 (was W=2.5, i.e. identical to M_TSPS): the reference is in
+strong inversion, where Vgs grows as sqrt(I), while the weak-inversion
+sense stack barely moves with its own current. Widening this device alone
+therefore raises TS_REF and pulls the trip temperature DOWN, which is the
+knob that places the trip window after M_TSD*/M_TSR1's geometry has been
+fixed by the corner-Vth cancellation argument. Cost: ~+0.5uA of Iq,
+measured against the DRAFT Iq < 30uA row (design/README.md).} 2740 -1000 0 0 0.2 0.2 {}
 
 C {sky130_fd_pr/nfet_g5v0d10v5.sym} 2700 -1300 0 0 {name=M_TSR1
-L=10
-W=2
+L=2
+W=0.42
 nf=1
 mult=1
 model=nfet_g5v0d10v5
@@ -815,14 +839,26 @@ C {devices/lab_pin.sym} 2680 -1300 0 0 {name=p_mtsr1_g lab=TS_REF}
 C {devices/lab_pin.sym} 2720 -1270 0 0 {name=p_mtsr1_s lab=AMP_ENN}
 C {devices/lab_pin.sym} 2720 -1300 0 0 {name=p_mtsr1_b lab=0}
 T {M_TSR1: the trip reference -- a single diode-connected NMOS of the same
-family as the sense stack but at a ~1500x higher current density (W/L =
-2/10 against 80/1 at the same current), which puts it in strong inversion.
-Its Vgs is therefore only weakly CTAT (Vth falls with temperature but the
-overdrive grows as mobility drops), while the two-high weak-inversion sense
-stack falls twice as fast. The two curves cross, and that crossing is the
-trip temperature -- DR-005's "ratioed diode/CTAT pair at different current
+family as the sense stack but at a far higher current density (W/L =
+0.42/2 = 0.21 against the stack's 80/4 = 20, ~95x, and on top of that a
+~7x larger branch current), which puts it in strong inversion. Its Vgs is
+therefore only weakly CTAT (Vth falls with temperature but the overdrive
+grows as mobility drops), while the two-high weak-inversion sense stack
+falls twice as fast. The two curves cross, and that crossing is the trip
+temperature -- DR-005's "ratioed diode/CTAT pair at different current
 densities", with the stack height supplying the slope asymmetry a
-same-height pair cannot have. W/L here is the trip-temperature knob.} 2740 -1300 0 0 0.2 0.2 {}
+same-height pair cannot have.
+RE-SIZED IN #69 (was W=2 L=10). W and L here are NOT a free trip-temperature
+knob any more -- they are pinned by the corner-Vth cancellation. sky130's
+HV-nfet corner model weights its Vth0 skew by
+  k(L,W) = (0.10*8/L + 0.90) * (0.045*7/W + 0.955) * (-0.0007*56/(L*W) + 1.0007)
+and the trip comparison is 2*Vgs(sense) - 1*Vgs(reference), so the trip's
+corner sensitivity goes as (2*k_sense - k_reference). W=0.42/L=2 gives
+k=2.114 against 2*k(L=4,W=80)=2.111 -- a residual of 0.003 instead of the
+old sizing's 2.17. W=0.42 is the PDK's minimum drawn width; that is what
+makes k large enough to match twice the sense device's. The trip
+temperature itself is placed by the two branch currents (M_TSPS/M_TSPR)
+instead. See design/README.md "Thermal shutdown (#29)".} 2740 -1300 0 0 0.2 0.2 {}
 
 C {sky130_fd_pr/nfet_g5v0d10v5.sym} 3200 -100 0 0 {name=M_TCTAIL
 L=1
@@ -927,7 +963,7 @@ dissipating element, so turning it off is what actually removes the heat.} 3240 
 
 C {sky130_fd_pr/pfet_g5v0d10v5.sym} 3200 -1900 0 0 {name=M_TSHYSB
 L=2
-W=1.5
+W=4.5
 nf=1
 mult=1
 model=pfet_g5v0d10v5
@@ -937,11 +973,18 @@ C {devices/lab_pin.sym} 3180 -1900 0 0 {name=p_mtshysb_g lab=BIASP}
 C {devices/lab_pin.sym} 3220 -1930 0 0 {name=p_mtshysb_s lab=VIN}
 C {devices/lab_pin.sym} 3220 -1900 0 0 {name=p_mtshysb_b lab=VIN}
 T {M_TSHYSB: the hysteresis current, set by a scaled-down copy of the
-M_BIASP1 bias unit (W/L = 1/2 against 10/1) rather than by the switch
+M_BIASP1 bias unit (W/L = 4.5/2 against 10/1) rather than by the switch
 M_TSHYS's own drive. Sizing the *current* rather than the switch is what
 keeps the hysteresis a device ratio instead of a strong function of VIN --
 a bare switch PMOS with Vsg = VIN would inject a supply-dependent tens of
-uA and swamp the reference branch.} 3240 -1900 0 0 0.2 0.2 {}
+uA and swamp the reference branch.
+RE-SIZED IN #69 (was W=1.5): the hysteresis in DEGREES is the injected
+reference lift divided by the sense-vs-reference gap slope, and #69's
+re-sizing both steepened that slope (3.7 -> ~4.1mV/C) and stiffened the
+reference branch (7x the current, so a given injected current moves TS_REF
+less). W=4.5 restores DR-005's 15C nominal: measured 13.6-21.7C over the
+5 process corners x 3 supplies. Costs nothing when untripped -- M_TSHYS is
+off, so this branch carries no quiescent current in normal operation.} 3240 -1900 0 0 0.2 0.2 {}
 
 C {sky130_fd_pr/pfet_g5v0d10v5.sym} 3200 -2200 0 0 {name=M_TSHYS
 L=0.5
