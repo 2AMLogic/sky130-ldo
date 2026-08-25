@@ -621,24 +621,29 @@ parallel shutdown mechanism.
 The implementation mirrors #22's current-limit structure exactly — a sense
 element feeding a comparison node, an EN-gated clamp on that node:
 
-1. **Sense (CTAT).** `M_TSD1`/`M_TSD2` are two diode-connected NMOS stacked
-   between `TS_SNS` and the EN-gated pseudo-ground `AMP_ENN`, biased from a
-   1/4-width copy of the `M_BIASP1` bias unit (`M_TSPS`, gate=`BIASP`) at a
-   few hundred nA. Each `Vgs` is CTAT; stacking two doubles the slope, so
-   `V(TS_SNS)` falls with temperature roughly twice as fast as a single
-   diode-connected device would.
+1. **Sense (CTAT).** `M_TSD1`/`M_TSD2` are two diode-connected NMOS
+   (`W=80`, `L=4`, `nf=16`) stacked between `TS_SNS` and the EN-gated
+   pseudo-ground `AMP_ENN`, biased from a 1/8-width copy of the `M_BIASP1`
+   bias unit (`M_TSPS`, `W=1.25`, gate=`BIASP`) at ~200 nA. Each `Vgs` is
+   CTAT; stacking two doubles the slope, so `V(TS_SNS)` falls with
+   temperature roughly twice as fast as a single diode-connected device
+   would.
 2. **Reference (also CTAT, but shallower).** `M_TSR1` is a single
-   diode-connected NMOS of the same device family as the sense stack, at a
-   ~1500× higher current density (`W/L = 2/10` vs. the stack's effective
-   `80/1`, same current), biased from `M_TSPR` — an identical copy of
-   `M_TSPS`, so both branches share the same bias-generator-derived current
-   and its supply/temperature drift is common-mode to the comparison. At
-   this much higher current density `M_TSR1` sits in strong inversion, where
-   `Vgs` is only weakly CTAT, versus the sense stack's weak-inversion,
-   steeply-CTAT behavior. Both quantities are internally generated and
-   bias-generator-derived — neither is `VREF` — per DR-005's reference
-   decision; the crossing of the two differently-sloped CTAT curves as
-   temperature rises is the trip point.
+   diode-connected NMOS of the same device family as the sense stack
+   (`W=0.42`, `L=2`), at a ~95× higher current density than the stack's
+   `80/4` **and** carrying ~7× the branch current, biased from `M_TSPR`
+   (`W=7`, a 0.7× copy of the `M_BIASP1` bias unit). Both branches still
+   hang off the same `BIASP` gate, so the bias generator's own
+   supply/temperature drift is common-mode to the comparison; what is
+   deliberately *not* common-mode is the branch-current ratio, which is one
+   of the two knobs that place the trip temperature (see "Sizing the trip:
+   what is a knob and what is not" below). At this much higher current
+   density `M_TSR1` sits in strong inversion, where `Vgs` is only weakly
+   CTAT, versus the sense stack's weak-inversion, steeply-CTAT behavior.
+   Both quantities are internally generated and bias-generator-derived —
+   neither is `VREF` — per DR-005's reference decision; the crossing of the
+   two differently-sloped CTAT curves as temperature rises is the trip
+   point.
 3. **Compare.** `M_TCN1`/`M_TCN2` (gates `TS_SNS`/`TS_REF`) form an NMOS
    differential pair (NMOS rather than the error amp's PMOS pair, because the
    input common mode here — 1–2.2V — sits above an NMOS pair's headroom and
@@ -671,13 +676,23 @@ element feeding a comparison node, an EN-gated clamp on that node:
    raising the reference so the comparison looks hotter than it is until the
    die actually cools past `Tj_reset`. This is positive feedback around the
    comparator, giving a clean edge rather than a slow slide through the
-   linear region, matching DR-005's 15°C nominal hysteresis target
-   qualitatively (the ratio here is the sizing knob; it is not yet
-   calibrated against a temperature sweep — see the screening check below).
+   linear region. `M_TSHYSB`'s width is the sizing knob (`W=1.5` in #29,
+   **`W=4.5`** since #69, `L=2` throughout), re-sized to restore DR-005's
+   15°C nominal at #69's new slope and branch stiffness; #69's own screening
+   puts the result at **13.9–20.4°C** over five process corners × three
+   supplies (see "Sizing the trip" below).
    **Update (#77, 2026-08-25): the calibrated `sim/thermal` sweep found this
    feedback loop's gain is real but marginal, not the clean snap this
    qualitative description assumes — see the dated "#77" section below for
-   the full diagnosis and why a fix was not shipped.**
+   the full diagnosis and why a fix was not shipped.** The two numbers are
+   not in conflict and neither supersedes the other: #77 measured the
+   *pre-#69* sizing with a `.dc temp` continuation sweep, while #69's
+   13.9–20.4°C comes from solving the rising and falling branches separately
+   on the *re-sized* pair — a technique #77's own Diagnostic 1 independently
+   shows is needed to see the window that a vanilla continuation sweep loses.
+   **Whether #69's re-size also repairs the hysteresis is therefore open**
+   until `sim/thermal` is re-run against `4cb27f8`; see "Parallel landings on
+   `main`, and what they leave stale" below.
 6. **Dominant pole.** `C_TS` (`TS_CMP -> VIN`, 1p placeholder) is the same
    construction as `C_CL` on the current-limit comparator — it only damps
    electrical comparator chatter; the real time constant of a thermal event
@@ -698,9 +713,117 @@ branch is bias-generator-derived, hence itself supply-dependent and
 untrimmed (`design/README.md`'s own caveat for `M_CLP`), so the trip point's
 absolute accuracy is loose and PVT-dependent — this is DR-005's stated,
 accepted cost of not depending on a reference-generator gap that has no
-closing date, not a hidden shortfall. Establishing the actual trip/hysteresis
-window over PVT is explicitly out of scope for this issue (DR-005
-Consequences; #19's job).
+closing date, not a hidden shortfall. The actual window is now measured, and
+its residual supply dependence is the part that is still un-narrowed — see
+immediately below.
+
+### Sizing the trip: what is a knob and what is not (re-worked in #69)
+
+**The defect #69 fixed.** As first sized in #29, this circuit's rising trip
+moved **102–175°C across the five process corners** at `VIN = 3.30V` — so at
+`ff` and `sf` it had *already tripped at 125°C*, the top of the spec's own
+rated `Tj ≤ 125°C` range, forcing the pass gate off during legitimate rated
+operation. That is precisely what DR-005's "25°C guard band above the
+spec's own `Tj ≤ 125 °C` operating ceiling … or it would nuisance-trip"
+clause exists to prevent, and it was the direct cause of the non-physical
+numbers at the six `ff`/`sf`-at-125°C points in three of the 45-point
+campaigns (see the campaign section near the end of this file).
+
+**Root cause: an un-cancelled, geometry-amplified corner `Vth0` skew.**
+sky130's continuous HV-device models implement a process corner *only* as a
+`delvto` shift — `mulu0`/`mulvsat` are commented out in both
+`sky130_fd_pr__nfet_g5v0d10v5` and `…__pfet_g5v0d10v5` in
+`libs.tech/combined/continuous/models_fet.spice` at the pinned PDK commit —
+and that shift is **geometry-weighted**:
+
+```
+delvto = swx_vth * (0.10*8/L + 0.90) * (0.045*7/W + 0.955)
+                 * (-0.0007*56/(L*W) + 1.0007)          [HV nfet]
+```
+
+Write that weighting as `k(L,W)`. The trip is the crossing of
+`2·Vgs(sense)` against `1·Vgs(reference)`, so the *difference* the
+comparator sees carries `(2·k_sense − k_reference)·swx_vth` — a term that
+does not cancel merely because both branches are the same device family.
+With the #29 sizing, `k(1, 80) = 1.63` and `k(10, 2) = 1.09`, giving
+`2·1.63 − 1.09 = 2.17`: a short-channel sense device *amplified* the corner
+shift by 1.63×, and the 2-vs-1 count then doubled it. Across the corner
+set's `swx_vth ∈ [−0.045, +0.045] V` that is ~195 mV of un-cancelled
+comparison error against a gap slope of only ~3.7 mV/°C — i.e. tens of
+degrees of trip movement, which is exactly what was measured. Note this also
+corrects the hypothesis #60 recorded: `ff` and `sf` do **not** share a
+fast-PMOS skew. In sky130 the corner name is *(pfet, nfet)*, so `sf` is
+slow-p/**fast-n** and `ff` is fast-p/**fast-n** — what they share is the
+fast **NMOS** skew, and the measured trip temperature is monotone in the
+nfet `vth0` shift (`sf` −45 mV → lowest trip, `fs` +45 mV → highest) with
+the PMOS skew barely visible.
+
+**The fix, and what it makes rigid.** Choose the two geometries so
+`2·k_sense ≈ k_reference`, and place the trip temperature with the *branch
+currents* instead:
+
+| Device | #29 | #69 | Role after the re-size |
+|---|---|---|---|
+| `M_TSD1`/`M_TSD2` | `W=80 L=1` | `W=80 **L=4**` | `k = 1.055`; long channel to stop amplifying the corner shift |
+| `M_TSR1` | `W=2 L=10` | **`W=0.42 L=2`** | `k = 2.114 ≈ 2×1.055`; `W=0.42` is the PDK's minimum drawn width, which is what makes `k` large enough to match twice the sense device's |
+| `M_TSPR` | `W=2.5` | **`W=7`** | trip-placement knob (reference is strong-inversion, so `Vgs ∝ √I`) |
+| `M_TSPS` | `W=2.5` | **`W=1.25`** | second trip-placement knob, and it *saves* Iq |
+| `M_TSHYSB` | `W=1.5` | **`W=4.5`** | restores DR-005's 15°C hysteresis at the new slope/branch stiffness |
+
+`2·k_sense − k_reference` falls from **2.17 to 0.003**. `M_TSR1`'s `W/L` is
+therefore **no longer the trip-temperature knob** the #29 sizing note called
+it — it is pinned by the cancellation, and the currents move the trip.
+
+**Measured result** (screening, from the committed schematic's own netlist,
+5 process corners × 3 supplies, PDK `sky130A` @ `c6d73a35`; the rising and
+falling branches are solved separately because the comparator is genuinely
+bistable inside its own hysteresis window and a plain `.op` sweep of the
+whole block lands on whichever branch the solver's homotopy finds):
+
+| | #29 sizing | #69 sizing |
+|---|---|---|
+| Rising trip, 5 corners @ `VIN=3.30V` | 102–175°C | **159.1–171.5°C** |
+| Rising trip, 5 corners × 3 supplies | (tripped inside the rated range) | **155.1–175.0°C** |
+| Worst-case guard band above the 125°C ceiling | **−15°C** (i.e. tripped) | **+30.1°C** |
+| Hysteresis | 13.5–15.1°C | **13.9–20.4°C** |
+| Sense-vs-reference slope at the crossing | 3.65–3.95 mV/°C | **3.90–4.24 mV/°C** |
+| `.op` over the repo's own 45 PVT points, 50 mA resistive load | **6/45 tripped** | **0/45 tripped**, `VOUT` 1.7972–1.7985 V |
+| Iq at 50 mA over the same 45 points | 22.1–28.5 µA | **22.7–29.0 µA** |
+
+**Three honest caveats on that result.**
+
+1. **The nominal lands ~15°C above DR-005's 150°C.** The window is ~20°C
+   wide (≈12°C process + ≈8°C supply), so holding DR-005's 25°C guard band
+   at the **worst** corner — the strictly stronger reading, and the one a
+   nuisance-trip defect demands — forces the nominal to ≈165°C rather than
+   150°C. Centering at 150°C instead would put the worst corner back at
+   ≈140°C, a 15°C guard band, i.e. it would re-open a weaker version of the
+   same defect. That trade is recorded here rather than resolved by
+   loosening a spec line; see the appendix appended to
+   `spec/decision-records/DR-005-thermal-shutdown-trip.md`.
+2. **The residual ~8°C of supply dependence is the bias generator's, not
+   this circuit's.** `I_bias ≈ (VIN − Vgs)/R_BIAS` rises with `VIN`, and the
+   strong-inversion reference's `Vgs ∝ √I` follows it. Narrowing that needs
+   a supply-independent or cascoded bias generator — the same missing piece
+   #70 tracks for PSRR — so it is deliberately out of this fix's scope.
+3. **The cancellation is derived from the PDK's own corner model, and is
+   only as real as that model.** The physically robust half of the fix is
+   that a short channel makes `Vth` more process-sensitive (short-channel
+   `Vth` roll-off is a real effect, and lengthening the sense devices is a
+   real mitigation). The *exact* null at `2k_s − k_r = 0.003` is fitted to
+   sky130's specific `delvto` polynomial and should not be read as a
+   silicon-accurate cancellation. The design does not rely on the exact
+   null: the ~12°C of residual process spread that remains comes from terms
+   the polynomial does not describe, so the guard band above is what carries
+   the margin, not the null.
+
+**Mismatch is not in the numbers above.** The corner sweep varies process
+globally; per-instance mismatch is a separate axis
+(`sim/mc-output-accuracy` is the only experiment in this repo that samples
+it). At ~4 mV/°C, 10 mV of comparator/device offset is ~2.5°C of trip
+movement, which is one reason the worst corner is left at 155°C rather than
+trimmed down to exactly 150°C. A Monte Carlo run of the trip point itself
+does not exist yet and is named as a gap, not claimed.
 
 ## Screening checks (screening only — not `sim/` evidence)
 
@@ -869,21 +992,54 @@ be read as belonging to the #22 revision.
 
 ### 5. Thermal shutdown
 
-**What a single-temperature DC OP check can and cannot show.** sky130's
-device models are characterized per-corner at a fixed temperature; DR-004
-binds this repo's own verification temperature axis to `{−40, 27, 125}°C`.
-DR-005's 150°C trip target sits *above* that characterized range, so no DC
-OP check run at a single temperature can demonstrate the circuit actually
-tripping at 150°C or resetting at 135°C — that is real thermal/PVT
-testbench work (#18/#19's job), not something screenable here. What follows
-is deliberately narrower: (a) correct comparator/bias polarity at a fixed,
-characterized temperature, (b) the qualitative direction of the sense/
-reference gap as temperature rises within the characterized range, and
-(c) a clean, unaffected `EN=0` shutdown with the new devices present. None
-of this is a trip-point measurement.
+> **Re-measured in #69, and the framing below changed with it.** The
+> original text of this section (kept in the "(a)/(b)/(c)" tables below,
+> which are #29-era numbers against the #29-era sizing) argued that no
+> screening deck could say anything about a trip point above 125°C. That
+> was too strong: what a temperature sweep past 125°C actually produces is
+> a **model extrapolation**, not a non-result, and the distinction matters
+> for exactly one reason — the thing this block must get right is not
+> "where does it trip", it is "**does it stay untripped everywhere inside
+> the rated range**", and that question is answered *inside* the
+> characterized range. See "(d)" below.
 
-**(a) Polarity at `tt`/27°C**, `VIN = 3.30V`, `EN` high, `VREF = 1.2V`
-(placeholder), `1.8kΩ` load (~1mA):
+**What a temperature sweep past 125°C is and is not.** DR-004 binds this
+repo's verification temperature axis to `{−40, 27, 125}°C`, and DR-005
+records that its 150°C target "sits outside this repo's own
+model-characterized temperature range". Both remain true. Consequently the
+trip temperatures quoted in "Sizing the trip" above (155–175°C) are
+**extrapolations of the pinned sky130 models past their characterized
+range** and are reported as a design window, not as verified silicon
+behaviour. What is *not* an extrapolation, and is the claim this circuit
+actually has to support, is the sign of the sense-vs-reference gap **at
+125°C** — the top of the characterized range and the top of the spec's own
+rated `Tj` range.
+
+**(d) The rated-range check, #69 sizing, all 45 PVT points.** `.op` from the
+committed schematic's own netlist, `VREF = 1.2V` (placeholder), `36Ω` load
+(~50 mA), across the repo's own 5 process corners × {−40, 27, 125}°C ×
+{2.97, 3.30, 3.63}V:
+
+| Quantity | #29 sizing | #69 sizing |
+|---|---|---|
+| Points where `TS_CMP` has tripped | **6 / 45** (all `ff`/`sf` at 125°C) | **0 / 45** |
+| Worst `TS_SNS − TS_REF` at 125°C | **−0.125 V** (`sf`, i.e. tripped) | **+0.121 V** |
+| `VOUT` range over all 45 points | 0 V at the 6 tripped points | **1.7972–1.7985 V** |
+| Iq at 50 mA over all 45 points | 22.1–28.5 µA (untripped points) | **22.7–29.0 µA** |
+
+`+0.121 V` of worst-case margin against a ~4 mV/°C gap slope is ~30°C of
+headroom, measured at a characterized temperature with no extrapolation.
+That is the correctness claim; the 155–175°C figures are the (extrapolated)
+consequence of it.
+
+The three tables that follow are the **#29-era** screening data, kept
+because the polarity and `EN=0` arguments they make are unchanged by the
+re-size and because the "(b)" table is the historical record of the gap that
+#69 turned out to be closing far too fast. Their absolute node voltages no
+longer describe the committed schematic.
+
+**(a) Polarity at `tt`/27°C** (#29 sizing), `VIN = 3.30V`, `EN` high,
+`VREF = 1.2V` (placeholder), `1.8kΩ` load (~1mA):
 
 | Node | Value | Reading |
 |---|---|---|
@@ -899,9 +1055,8 @@ reads "not yet hot"), and `TS_CMP` sitting at `VIN` with that ordering
 confirms the comparator's polarity is wired the way §"Thermal shutdown"
 above describes — `TS_CMP` falls only once `TS_SNS` drops below `TS_REF`.
 
-**(b) Direction with temperature, `tt`/125°C** (top of DR-004's
-characterized range, same bias/load conditions), for qualitative sanity
-only — **not** an extrapolation to the 150°C trip point:
+**(b) Direction with temperature, `tt`/125°C** (#29 sizing; top of DR-004's
+characterized range, same bias/load conditions):
 
 | Node | 27°C | 125°C | Direction |
 |---|---|---|---|
@@ -909,12 +1064,17 @@ only — **not** an extrapolation to the 150°C trip point:
 | `TS_CMP` | 3.300V | 3.277V | starts drooping off `VIN`, consistent with approaching the crossing |
 
 The gap closes monotonically and `TS_CMP` moves in the tripped direction as
-temperature rises — the qualitatively correct behavior for DR-005's design —
-but the gap has not crossed zero by 125°C, so this is evidence the mechanism
-points the right way, not evidence of where the crossing actually falls.
-Locating the actual crossing needs device data beyond 125°C, which this
-repo's pinned corner set does not yet cover (a named gap in DR-005's own
-Consequences section).
+temperature rises — the qualitatively correct behavior for DR-005's design.
+
+**This table is where the #69 defect was visible and was read too
+charitably.** `+0.067V` of remaining gap at `tt`/125°C is only ~18°C of
+headroom at the then-current 3.7 mV/°C slope, and this table was taken at
+`tt` only. Reading it as "the mechanism points the right way" was correct;
+not asking what that 18°C becomes at the other four process corners is what
+let a corner that had *already tripped at 125°C* ship. The #69 sizing's
+equivalent number is `+0.196V` at `tt`/125°C and `+0.121V` at the worst of
+all 45 points — see "(d)" above, which is the check that should have been
+run here in the first place.
 
 **(c) Clean `EN=0` shutdown**, `tt`/27°C, same `VIN`/load:
 
@@ -1048,6 +1208,14 @@ evidence, same convention as every other screening deck in this file). This
 section states what was actually found, in place of the stale "future work"
 framing the rest of this file otherwise still carries from before #19/#37/#40
 ran.
+
+> **Mechanism 1 below is CLOSED as of 2026-08-25 (issue #69). Its numbers
+> are kept because they are the diagnosis, but every record id quoted inside
+> it is now superseded.** The thermal-shutdown circuit was re-sized (see
+> "Sizing the trip: what is a knob and what is not" above) and all four
+> affected campaigns were re-run against the fixed schematic. Jump to
+> "What the #69 re-run changed" at the end of this section for the
+> before/after table. Mechanisms 2–6 are unchanged and still open.
 
 **Two distinct failure mechanisms were identified, plus one independent,
 previously-undesigned-for gap (PSRR):**
@@ -1972,6 +2140,129 @@ remains the authoritative record, and
 against it unchanged. **#69 unaffected**: none of the hardening attempts
 above were shipped, so #69's own (still-open) `ff`/`sf` nuisance-trip
 finding is neither worsened nor improved by this issue landing.
+
+#### What the #69 re-run changed (2026-08-25): mechanism 1 closed, campaign re-run
+
+Issue #69 re-sized the thermal shutdown (see "Sizing the trip: what is a
+knob and what is not" above) and re-ran **every** experiment that
+instantiates this schematic, because changing the shared DUT invalidates all
+of their netlist snapshots at once. New append-only records, all pinned to
+`4cb27f8`, each carrying a `Supersedes` pointer at the record it replaces:
+
+| Experiment | Superseded record | New record | Verdict |
+|---|---|---|---|
+| `dropout-vs-load` | `20260818-032811-81dc232` | `20260825-081240-4cb27f8` | 0/45 → **0/45** PASS |
+| `load-transient` | `20260818-032755-81dc232` | `20260825-081255-4cb27f8` | 23/45 → **25/45** PASS |
+| `loop-gain` | `20260818-032819-81dc232` | `20260825-081257-4cb27f8` | 3/45 → **7/45** PASS |
+| `psrr-dc` | `20260818-032803-81dc232` | `20260825-082845-4cb27f8` | 6/45 → **0/45** PASS (see below — this is a *correction*, not a regression) |
+| `current-limit` | `20260825-045313-703a889` | `20260825-082847-4cb27f8` | 2/3 → **3/3 PASS, overall PASS** (3-point subset) |
+| `startup` | `20260825-044139-703a889` | `20260825-082906-4cb27f8` | 3/3 → 3/3 PASS (3-point subset) |
+| `enable-shutdown` | `20260825-044140-703a889` | `20260825-082908-4cb27f8` | 3/3 → 3/3 PASS (3-point subset) |
+| `mc-output-accuracy` | `20260818-032827-81dc232` | `20260825-083111-4cb27f8` | 181/200 → 177/200 samples PASS, overall still FAIL |
+
+**Every non-physical number mechanism 1 was blamed for is gone.** Not one of
+the six `ff`/`sf`-at-125°C corners produces an out-of-range value in any of
+the three campaigns any more:
+
+| Quantity | Before (#60's evidence) | After (#69's re-run) |
+|---|---|---|
+| `dropout-vs-load` `dropout_v`, 45-corner range | 0.365 … **32.59 V** | 0.365 … **1.548 V** (no corner above 2 V; was 3) |
+| `dropout-vs-load` `vout_at_max_vin_v`, negative values | **−19.2 V, −20.4 V, −29.0 V ×3** | **none** — every corner is now positive and physical |
+| `load-transient` `undershoot_v`, 45-corner range | 0.102 … **22.29 V** | 0.102 … **0.393 V** (no corner above 1 V; was 6) |
+| `loop-gain` measurements returning `n/a` | 6–9 corners per measurement | **0** |
+| `loop-gain` `dcgain_c033_50ma_db`, 45-corner range | **−349.7** … 61.72 dB | **56.33 … 61.72 dB** |
+| `loop-gain` `pm_c033_50ma_deg` failures | 6/45 (all the degenerate corners) | **0/45** |
+| `current-limit` at `ff`/125°C/3.63 V | output collapsed to ~2 µV, ~0 mA of limit current, **FAIL** | regulates at **1.7977 V**, 148 mA short-circuit level, **PASS** |
+
+**Three results in that table need reading carefully rather than
+celebrating.**
+
+- **`psrr-dc` went from 6/45 to 0/45 PASS, and that is the report becoming
+  *more* accurate.** All six of the old "passes" (76–105 dB at 1 kHz) were
+  the falsely-tripped corners — AC gain measured around a collapsed,
+  non-regulating bias point, which #60 already flagged as not-real PSRR
+  ("on the evidence available, PSRR does not actually pass anywhere"). With
+  the trip gone those corners return honest numbers and the whole 1 kHz
+  column collapses to **20.31–25.68 dB** (was 20.31–76.79 dB) against the
+  50 dB DRAFT bound. #60's inference is now a measurement. Mechanism 5
+  (#70) is untouched and unchanged by this fix.
+- **`load-transient` gained four corners and lost two.** The two that
+  regressed (`ff_27c_3.30v`, `ff_27c_3.63v`) did not get a worse transient
+  — they moved onto the anomalous DC branch mechanism (4) describes. That
+  branch is identifiable in the data: it is exactly the set of corners
+  reporting `overshoot_v ≈ 0`, and it **shrank from 9/45 corners to 4/45**.
+  Within the healthy branch every corner now measures `undershoot_v ≤
+  0.268 V`; before, the same branch spanned up to 22.29 V. So the net
+  movement is a smaller anomalous set and a strictly smaller spread, with
+  two corners' membership reshuffled — a mechanism-(4)/#71 effect, not a
+  transient regression.
+- **`mc-output-accuracy` moved slightly the wrong way (181 → 177 of 200
+  samples) and that is expected to be noise, not signal.** Its single
+  sampled point is `tt`/27°C/1 mA, where the thermal clamp never tripped
+  under any sizing, so #69 cannot help it; changing the DUT simply
+  reshuffles which mismatch draws land on mechanism (4)'s non-regulating
+  branch. The distribution actually tightened (stddev 2.154 → 1.544 V, worst
+  outlier −19.3 → −18.8 V) while the individual-sample count moved the other
+  way. Mechanism 6 still closes with #70/#71, not here.
+
+**What is still open after #69.** Mechanisms 2, 4, 5 and 6 above are
+untouched by this fix: `psrr-dc` is now honestly 0/45 (#70/#79),
+`loop-gain`'s light-load `pm_c033_0ma` column still fails 36/45 (#70/#79),
+`mc-output-accuracy`'s tail still fails its sigma window, and mechanism 4's
+125 °C non-regulating equilibrium — root-caused above as a genuine circuit
+robustness gap, with its fix deferred to **#79** — is untouched too and is
+what moves two `load-transient` corners in the table above. Mechanism 3 is
+no longer open: #71/#83 fixed `dropout-vs-load`'s `dropout_v` methodology
+while this branch was in flight (see the "#71/#81 resolved" section above),
+though the row is still `FAIL` — 0/45 before and after, on either method.
+**The one DRAFT row #69 does move all the way is Current limit**, whose
+only failing corner was this nuisance trip read through a resistive load.
+
+Two further gaps #69 opens rather than closes, both named and neither
+hidden: the layout (`layout/ldo-core`) has **not** been redrawn for the new
+device sizes, so its DRC/LVS records join the already-stale PEX record in
+being correctly reported `STALE` by `measurements/characterization.md`
+(**issue #89** tracks the redraw and the re-run); and no Monte Carlo run of
+the *trip point itself* exists, so the trip window's mismatch sensitivity is
+estimated (≈2.5 °C per 10 mV of offset) rather than measured.
+
+##### Parallel landings on `main`, and what they leave stale
+
+#69's re-run covered every experiment that existed when its branch was cut.
+Six records landed on `main` in parallel and are therefore **not** part of
+the `…-4cb27f8` generation. None of them is wrong; each is simply pinned to
+a tree that differs from the merged one, and the merge makes that visible
+rather than papering over it:
+
+| Landed by | Record(s) | Interaction with #69 | State after the merge |
+|---|---|---|---|
+| #66/#80 — `sim/thermal` ships | `20260825-054043-6fac47d` | Bench did not exist when #69 was cut; it measures the **pre-#69** CTAT pair | `STALE`. Its 5/15 verdict and every `trip_temp_c`/`reset_temp_c` in the table above are "before the fix" numbers. |
+| #64/#73 — `line-regulation`, `load-regulation`, `iq` ship | `20260825-0405/0407/0409-6fac47d` | Benches did not exist when #69 was cut; all three instantiate the re-sized DUT | `STALE` — re-run needed before their PASS/FAIL is cited against the current schematic. |
+| #76/#86 — `current-limit` leg-3 cold EN ramp | `20260825-070327-d0bb614` | Revised `tb_current_limit.sch` **after** #69's re-run | #69's `…-4cb27f8` supersedes it by date but predates the bench revision, so the row reports `STALE`. Its **3/3 overall PASS** holds for the pre-#86 deck only. |
+| #71/#83 — `dropout-vs-load` `dropout_v` methodology | `20260825-055423-c000414` | Rewrote the deck in `experiment.json`; touched only comments in the `.sch` | The freshness check compares schematic netlists, not decks, so `…-4cb27f8` still reads `fresh` despite being measured with the **superseded fixed-endpoint method**. Verdict is 0/45 either way; the `dropout_v` *numbers* to cite are #83's (0.310–0.554 V at −40/27 °C). |
+| #77/#92 — hysteresis root-cause, nothing shipped | (no new record) | Investigated the **pre-#69** sizing; `ldo_3v3in_1v8out.sch` unchanged by it | Its "a fresh 15-point run against the identical schematic would reproduce the same numbers" reasoning was correct on `main`, and stops holding here: #69 *does* change the schematic, so the re-run below now adds verification value rather than being redundant. |
+| #74/#94 — full 45-point matrices for the three #65 benches | `20260825-085216-64c17cb` (`current-limit`), `…-073320-64c17cb` (`startup`), `…-073259-64c17cb` (`enable-shutdown`) | Ran breadth against the **pre-#69** DUT while #69 ran freshness against the new one | All three `STALE`. `current-limit`'s is the later run, so the report cites **39/45 FAIL** there rather than #69's 3/3; `startup`/`enable-shutdown` keep #69's fresher 3-point rows and so lose matrix breadth. Full breakdown in `sim/README.md` → "#74 and #69 crossed". |
+
+**#74's failures are this fix's own strongest re-run argument.** All three
+of its full matrices fail at `sf_125c` on all three supplies and attribute
+it to mechanism 1 — the very nuisance trip re-sized here — so those six
+`ff`/`sf` 125 °C corners are, in the merged tree, *diagnosed but not
+retested* at full-matrix breadth. #93 (`sf` more susceptible than `ff`
+during a ramped enable) rests entirely on that pre-#69 evidence.
+
+**The consequential one is `sim/thermal`.** It is the only bench that
+measures the very circuit #69 re-sized, so its record is the direct
+before-picture of this fix (`ff` 115–121 °C, `sf` 95–101 °C — both below the
+125 °C ceiling) and re-running it against `4cb27f8` is what will turn #69's
+`.op`-screened trip estimate into a measured 15-corner result. It is also
+the only way to settle whether #69's re-size moves #77's non-positive
+hysteresis, which #92 root-caused as a marginal regenerative loop gain on
+the old sizing and carried forward to **#91** — #69 changes `M_TSHYSB`
+(`W=1.5 → 4.5`), one of the two knobs #92's screening swept, so that
+question is genuinely re-opened rather than answered here. That re-run is
+follow-on work, not part of this fix: it needs the same append-only
+treatment every other record here gets, and #92's own `.options gminsteps=1`
+/ nodeset-seeded technique rather than a vanilla continuation sweep.
 
 ## Validating this schematic
 

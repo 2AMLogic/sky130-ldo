@@ -508,3 +508,114 @@ named in Consequences. If #29's implementation finds the internally
 generated reference cannot hold a defensible window, or that 150 °C is not
 achievable/appropriate once real device data exists, a superseding record
 replaces this one — this record is not edited after the fact.
+
+---
+
+## Append (2026-08-25, issue #69): the sizing this record handed to design, and where it actually landed
+
+**This is an append, not an edit.** Nothing above has been changed. Per
+`spec/decision-records/TEMPLATE.md` — and per this record's own Status
+notes — a record that turns out to be wrong is superseded, never quietly
+rewritten. This append reports what the sizing work this record explicitly
+"hands to design, unresolved" produced, and states plainly one place where
+the result does **not** match a number in the Decision table above, so that
+#1 can rule on it with the measurement in hand rather than discovering it
+later. The record's **Status stays `proposed`** and **no number above is
+changed**.
+
+### What happened first: the nuisance trip this record's guard band exists to prevent
+
+Issue #29 implemented this record's circuit. Issue #60's root-cause pass of
+the full 45-point PVT campaign found that at the `ff` and `sf` process
+corners at **125 °C — the top of `spec/target-spec.md`'s own rated `Tj`
+range, not a fault condition** — the comparator had already tripped, forcing
+the pass gate off. That is exactly the failure this record's "Trip
+temperature and hysteresis" section names ("it must **not** engage during
+legitimate rated operation at the 125 °C ceiling, or it would nuisance-trip
+the block under conditions the spec already declares acceptable"). Issue #69
+measured the rising trip across all five corners and confirmed it:
+**102–175 °C at `VIN = 3.30 V`**, i.e. two of five corners trip below the
+rated ceiling.
+
+### Root cause, and the correction it forces to this record's own framing
+
+This record predicted the trip's absolute accuracy would be "loose and
+PVT-dependent" — which was right — but framed that looseness as the accepted
+cost of a *bias-generator-derived reference* being supply-dependent and
+untrimmed. **That is not what dominated.** The dominant term was a
+geometry-amplified, un-cancelled process `Vth0` skew between the two CTAT
+branches: sky130's continuous HV models implement a process corner purely as
+a geometry-weighted `delvto`, so a short-channel sense device amplifies the
+corner shift, and the "ratioed diode/CTAT pair" this record specifies
+compares *two* sense `Vgs` terms against *one* reference `Vgs` term, leaving
+that amplified shift un-cancelled. The full derivation and the measured
+numbers are in `design/README.md` → "Sizing the trip: what is a knob and
+what is not (re-worked in #69)".
+
+The consequence for this record is narrow but real: its Reference row's
+rationale — that a ratioed diode/CTAT pair gives "a comparison whose *both*
+sides move with temperature in a related, physically-linked way" — is true
+for *temperature* and silently false for *process*. A 2-vs-1 comparison of
+same-family devices does not cancel a process `Vth` shift; it doubles one
+side of it. That is a constraint on the sizing, not on the Decision, and #69
+resolved it inside the sizing (matching the two branches' geometry weightings
+so `2·k_sense − k_reference` falls from 2.17 to 0.003).
+
+### Where the result lands against the Decision table
+
+Measured from the committed schematic's own netlist, 5 process corners ×
+3 supplies, PDK `sky130A` @ `c6d73a35f524070e85faff4a6a9eef49553ebc2b`
+(the `sim/pdk.json` pin), screening decks — not `sim/` evidence:
+
+| Decision item | This record | #69 measured |
+|---|---|---|
+| `Tj_trip` nominal | 150 °C | **165 °C** (`tt`, `VIN = 3.30 V`) |
+| Must not trip at the 125 °C ceiling | required, 25 °C guard band | **met at every corner**: worst-case trip 155.1 °C, i.e. a **30.1 °C** guard band |
+| Hysteresis | 15 °C nominal | **13.9–20.4 °C** |
+| Reference | internally generated, bias-generator-derived, not `VREF`/bandgap | **unchanged** — still the `R_BIAS`/`M_BIASN1`/`M_BIASP1` chain |
+| Behavior | auto-restart, non-latching | **unchanged** |
+
+**The one mismatch, stated plainly: the nominal is ~15 °C above this
+record's 150 °C.** It is not an oversight and it is not a relaxed spec line
+— it is forced by the two requirements in the Decision table interacting
+with a measured window width this record could not have known:
+
+- The untrimmed trip window is **~20 °C wide** over the corner set
+  (≈12 °C process + ≈8 °C supply) even after #69's cancellation.
+- This record requires a 25 °C guard band above 125 °C. Applied at the
+  **worst** corner — the only reading a nuisance-trip defect permits, since
+  a guard band that holds only at nominal is exactly what failed — the
+  window's floor must sit at ≥150 °C, which puts its centre at ≈165 °C.
+- Centering the nominal at 150 °C instead would put the worst corner back at
+  ≈140 °C: a 15 °C guard band, i.e. a weaker version of the same defect,
+  with no mismatch headroom left (per-instance mismatch is a further,
+  unmeasured axis; at the measured ~4 mV/°C slope, 10 mV of offset is
+  ~2.5 °C).
+
+`design/README.md` also records the residual ~8 °C of *supply* dependence as
+the bias generator's, not this circuit's — narrowing it needs the
+supply-independent/cascoded bias generator #70 tracks, which this record
+already anticipated in its "accuracy gap … sidestepped, not closed" framing.
+
+### What this append does and does not do
+
+- It does **not** change 150 °C, or any other number, in the Decision table.
+- It records that the as-built circuit's nominal is ≈165 °C with a
+  155–175 °C window, and *why* holding this record's own guard-band
+  requirement at the worst corner is what put it there.
+- **The choice belongs to #1, not to this append.** If #1 ratifies "150 °C
+  nominal" as literal, then either the window has to be narrowed further
+  (a supply-independent bias generator — #70 — is the only in-repo lever
+  identified) or the guard band has to be read as a nominal-only
+  requirement, which #69's defect argues against. If #1 instead ratifies the
+  guard band as the binding clause and the 150 °C as its derivation, this
+  record needs no change at all. Either way the resolution is a ruling or a
+  **superseding record**, not an edit to the Decision above.
+- The 150 °C-outside-the-characterized-range gap this record named in
+  Consequences is **still open, and is now sharper**: the 155–175 °C window
+  above is a model extrapolation past DR-004's `{−40, 27, 125} °C` axis. The
+  part that is *not* extrapolated — and is the part the guard band actually
+  rests on — is the sign and size of the sense-vs-reference gap at 125 °C
+  itself: **+0.121 V worst case over all 45 PVT points, ~30 °C of headroom
+  at the measured slope**, versus a negative (already-tripped) gap at six of
+  those points before #69.
