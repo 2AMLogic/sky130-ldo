@@ -135,16 +135,6 @@ NA_REASONS: dict[str, str] = {
         "testbench map)."
     ),
     "Iq (excl. load current)": "no dedicated testbench exists yet under `sim/`.",
-    "Current limit": (
-        "the current-limit clamp circuitry (issue #22) is present in the "
-        "schematic, but no dedicated clamp-threshold testbench exists yet "
-        "under `sim/`."
-    ),
-    "Startup / soft-start": (
-        "the soft-start circuitry (issue #22) is present in the schematic, "
-        "but no dedicated startup-transient testbench exists yet under `sim/`."
-    ),
-    "Enable / shutdown": "no dedicated testbench exists yet under `sim/`.",
     "Output noise": (
         'waived by the spec row itself ("not specified — waived unless a '
         'consumer states a requirement").'
