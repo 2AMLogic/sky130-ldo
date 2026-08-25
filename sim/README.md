@@ -17,7 +17,9 @@ from the sibling [`sky130-bandgap`](https://github.com/2AMLogic/sky130-bandgap)
 repo's harness (same PDK, same pin, issue #2), so the two evidence trails read
 as one house style. `pdk-smoke` below is harness plumbing only (PDK/tool
 liveness, not a spec claim). The block's own testbenches — `load-transient`,
-`psrr-dc`, `dropout-vs-load` (issue #18) and `loop-gain` (issue #25) — each
+`psrr-dc`, `dropout-vs-load` (issue #18), `loop-gain` (issue #25) and the three
+protection/transient benches `current-limit`, `startup`, `enable-shutdown`
+(issue #65) — each
 exercise the LDO core-regulation-loop schematic from issue #14
 (`design/ldo_3v3in_1v8out.sch`, instantiated via its companion subcircuit
 symbol `design/ldo_3v3in_1v8out.sym`) against a DRAFT row of
@@ -36,7 +38,10 @@ schematic (post-#35/#36); the earlier `…-879f035` full-matrix set is supersede
 — see "Which record set is authoritative" below. **All four testbenches still
 record `FAIL`** against their DRAFT bounds — an honest, expected finding given
 this schematic's remaining known gaps (see `design/README.md`'s "Known gaps /
-follow-on scope"), not a harness defect. Per issue #19's own guardrail, none of
+follow-on scope"), not a harness defect. Issue #65's three benches follow the
+same two-step shape one issue later: their first records are `--quick`
+subsets, and the full 45-point matrix each of their manifests declares is
+tracked in issue #74. Per issue #19's own guardrail, none of
 this is a final pass/fail verdict against a *ratified* spec — issue #1 (spec
 ratification) is still open, so every record here cites the current DRAFT row
 only.
@@ -371,6 +376,91 @@ and `loop-gain`'s 0 mA window point still fail widely. What remains is
 documented in `design/README.md`'s "Known gaps / follow-on scope" and in the
 DR-002 append: the pass device's own `gm_pass/(2π·C_out)` pole at no load and
 an Iq budget that does not exist yet.
+
+### The protection / transient testbenches (issue #65)
+
+Three more benches cover the DRAFT rows whose *circuitry* landed with issue
+#22 but which had no testbench of their own, so
+`measurements/characterization.md` reported them `N/A` — a coverage gap by
+that report's own Limitations section, neither substantiated nor refuted.
+They share the four benches' stimulus and output-network conventions above;
+what is new is that two of them drive the DUT through an **event** (a held
+short, an enable edge) rather than a steady condition, so each states in its
+own `experiment.json` `claim` how the event is applied and which clause of
+the DRAFT row it grades. First records are `--quick` subsets, same as #18/#25;
+the full 45-point matrix each manifest declares is issue #74.
+
+Two of these rows carry clauses with **no number in them at all** ("window
+TBD over PVT", "survives", "monotonic"). Where a clause has a number, it is
+bounded; where it does not, the quantity is measured and reported **without**
+a bound rather than graded against a limit nobody has ratified — inventing
+one would be exactly the fabricated-settled-number the root `CLAUDE.md`
+forbids. Each such measurement's `note` says so explicitly, and says what
+would have to change once issue #1 rules.
+
+- **`current-limit/`** — forces `VOUT` through a `VFORCE`/`RFORCE` branch
+  (`RFORCE` starts at 1e12 and the deck `alter`s it to 1 mΩ) in three legs:
+  an `op` at a 36 Ω (~50 mA) load with the branch open, a DC characteristic
+  from a dead short up to the 1.75 V knee, and a `Vout = 0` short applied at
+  t = 0.5 ms and **held for 2 ms** — a sustained fault of defined duration, not
+  one sampled instant, since "survives" is a claim about holding the fault.
+  Bounded: `vout_50ma_v` inside the DRAFT Output row's ±2% window (the
+  operative form of "never engages for I_load ≤ 50 mA") and both limit levels
+  above 50 mA. Reported unbounded: the limit window itself, its brickwall-vs-
+  foldback shape, and the sustained short current. First record
+  (`20260825-045313-703a889`, 3-point subset): **2/3 PASS** — `tt_27c_3.30v`
+  regulates at 1.798 V with a 162 mA short-circuit level against a 135 mA
+  knee, `ss_-40c_2.97v` 1.798 V / 180 mA / 149 mA, and both hold the short for
+  its full 2 ms with <0.1% supply-current ripple. The negative droop
+  (−20%/−21%: more current into a dead short than at the knee) is the
+  brickwall signature, not a foldback one. `ff_125c_3.63v` **FAILs** with the
+  output collapsed to ~2 µV and ~0 mA of limit current — the same
+  thermal-clamp nuisance trip `design/README.md` root-causes as mechanism 1
+  (issue #69), read here through a resistive load instead of an ideal current
+  sink, so the output sits at 0 V rather than at a non-physical negative
+  voltage. Overall `FAIL`, and the failing corner is a known design defect
+  this bench reproduces rather than a bench defect.
+- **`startup/`** — four independent **cold** enables in one deck (`C_out`
+  0.33/4.7 µF × load 0/50 mA, the corners of the two ranges the DRAFT row
+  quantifies over), each starting from `EN = 0` with `C_OUT` discharged and
+  the soft-start ramp held down, with `EN` rising at t = 100 µs. Bounded:
+  peak `VOUT` against the row's own overshoot ≤ +2%, and the *minimum* over
+  the settled window (from 3 ms after the edge) against its "inside ±2%
+  within a few ms" — a minimum, not a sample, so a ramp that reaches the
+  window and sags back out of it fails. First record
+  (`20260825-044139-703a889`, 3-point subset): **3/3 PASS** — worst peak
+  1.826 V against the 1.836 V ceiling (the 4.7 µF/0 mA leg), worst settled
+  floor 1.798 V, and ramp times 0.26–0.45 ms into all four load/C_out points,
+  consistent with the ~290 µs soft-start screening in `design/README.md`.
+  Note the honest limit stated in the manifest's own `claim`: a sample-by-
+  sample monotonicity predicate is **not** computed — the peak/floor bounds
+  capture the numeric consequence of a non-monotonic ramp (an excursion
+  outside ±2%), and the ramp time is reported as the "controlled ramp"
+  witness.
+- **`enable-shutdown/`** — one transient leg running a full enable →
+  shutdown **cycle** (`EN` low at t = 0, rising at 100 µs, falling again at
+  2 ms) plus three static `op` legs with `EN` held at 0. Bounded: shutdown Iq
+  against the row's < 3 µA both statically and after the falling edge,
+  `VIN`→`VOUT` leakage against its ≤ 1 µA with `VOUT` forced to 0 V, and the
+  "no active discharge" clause as the residual output 2 ms after the disable
+  edge (an active pull-down would empty `C_OUT` in microseconds; the
+  divider's own R×C is seconds). First record
+  (`20260825-044140-703a889`, 3-point subset): **3/3 PASS** — static
+  shutdown Iq 0.13 nA–49 nA, post-edge worst-case 0.6 nA–21 nA,
+  `VIN`→`VOUT` leakage 0.07 nA–52 nA, and `VOUT` still at 1.808–1.819 V two
+  milliseconds after disable. All are two to four orders of magnitude inside
+  the DRAFT bounds, which is as much a statement about that row's own
+  "pending sky130 device data" note as about the design — the models'
+  subthreshold/junction leakage is what sets these numbers.
+
+The transient leg's *rising* edge in `enable-shutdown` is load-bearing, and
+worth recording as a harness lesson: an earlier draft started that transient
+already enabled and relied on ngspice's t = 0 DC solve landing on the
+regulating branch. At `ff_125c_3.63v` it does not (mechanism 1 again), so the
+draft failed that corner for a reason having nothing to do with the enable/
+shutdown path. Ramping `EN` up from a disabled start lets the block reach
+regulation the same way `startup/` shows it does, and the corner then passes —
+the failure really was the solve, not the shutdown path.
 
 ### Which record set is authoritative (issue #19)
 

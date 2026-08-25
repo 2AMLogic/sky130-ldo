@@ -30,6 +30,10 @@ Design rules (see the issue and `sim/README.md`'s own conventions):
   other rows' testbenches, not measured by one of their own) is reported
   N/A with a stated reason, never forced into a PASS/FAIL slot it has no
   evidence for.
+- **A subset verdict is labelled as one.** A record that ran fewer corners
+  than its `experiment.json` declares is marked `(PVT subset)` and its own
+  stated `--subset-reason` is quoted, so a 3-of-45-corner `PASS` cannot be
+  read at a glance as full-matrix coverage.
 - **Deterministic, and never self-referential.** No wall-clock timestamps and
   no *generating-commit* identity (repo `HEAD` sha, dirty flag, run id) are
   embedded. That second half is what makes `--check` usable: the commit that
@@ -101,9 +105,9 @@ EVIDENCE_MAP: dict[str, str | None] = {
     "Load transient": "load-transient",
     "PSRR": "psrr-dc",
     "Iq (excl. load current)": None,
-    "Current limit": None,
-    "Startup / soft-start": None,
-    "Enable / shutdown": None,
+    "Current limit": "current-limit",
+    "Startup / soft-start": "startup",
+    "Enable / shutdown": "enable-shutdown",
     "Thermal": None,
     "Output noise": None,
     "Area": None,
@@ -131,16 +135,6 @@ NA_REASONS: dict[str, str] = {
         "testbench map)."
     ),
     "Iq (excl. load current)": "no dedicated testbench exists yet under `sim/`.",
-    "Current limit": (
-        "the current-limit clamp circuitry (issue #22) is present in the "
-        "schematic, but no dedicated clamp-threshold testbench exists yet "
-        "under `sim/`."
-    ),
-    "Startup / soft-start": (
-        "the soft-start circuitry (issue #22) is present in the schematic, "
-        "but no dedicated startup-transient testbench exists yet under `sim/`."
-    ),
-    "Enable / shutdown": "no dedicated testbench exists yet under `sim/`.",
     "Thermal": (
         "the thermal-shutdown circuitry (issue #35) is present in the "
         "schematic, but no dedicated thermal testbench exists yet under "
@@ -247,6 +241,23 @@ def sim_corner_tally(record: dict) -> str | None:
         passed = sum(1 for c in corners if c.get("pass"))
         return f"{passed}/{len(corners)} corner(s) PASS"
     return None
+
+
+def sim_subset_reason(record: dict) -> str | None:
+    """The record's own stated reason for running a PVT subset, or None if it
+    ran the full matrix its manifest declares.
+
+    A verdict extracted from a 3-corner subset is not the same claim as one
+    extracted from the full 45-point matrix — "3/3 corner(s) PASS" would
+    otherwise read, at a glance, exactly like full-matrix coverage. The runner
+    already refuses to write a subset record without a `--subset-reason`
+    (`sim/README.md`), so this is an extraction of what the record itself
+    states, not a re-derivation."""
+    matrix = record.get("matrix")
+    if not isinstance(matrix, dict) or not matrix.get("is_subset"):
+        return None
+    reason = str(matrix.get("subset_reason") or "").strip()
+    return reason or "(the record states no reason)"
 
 
 def sim_mc_sample_tally(record: dict) -> str | None:
@@ -458,15 +469,24 @@ def build_spec_row_table(
             "STALE" if freshness.startswith("STALE") else "unverified"
         )
 
+        subset_reason = sim_subset_reason(record)
+        subset_flag = " (PVT subset)" if subset_reason else ""
+
         table.append(
-            f"| {param} | {row['draft_target']} | **{verdict}** | "
+            f"| {param} | {row['draft_target']} | **{verdict}**{subset_flag} | "
             f"[`{record_id}`]({record_rel}) | {freshness_short} |"
         )
-        detail.append(
+        detail_line = (
             f"- **{param}**: **{verdict}** (vs the current DRAFT spec row) — "
             f"`sim/{slug}` record [`{record_id}`]({record_rel}), {tally}. "
             f"Freshness: {freshness}."
         )
+        if subset_reason:
+            detail_line += (
+                " **PVT subset, not the full matrix this experiment declares** — "
+                f"the record's own stated reason: {subset_reason}"
+            )
+        detail.append(detail_line)
 
     return table, detail
 
@@ -658,6 +678,14 @@ def generate_report(skip_netlist_freshness: bool = False) -> str:
         "- **N/A rows are a coverage gap, not a pass.** A row marked N/A above "
         "has no independent testbench yet — it is neither substantiated nor "
         "refuted by this report."
+    )
+    lines.append(
+        "- **A `(PVT subset)` verdict is narrower than a full-matrix one.** "
+        "That marker means the cited record ran fewer corners than its own "
+        "`experiment.json` declares (the runner refuses to write such a record "
+        "without a stated reason, quoted in the Evidence detail above). A "
+        "subset `PASS` says the corners that ran passed — it does not say the "
+        "full matrix would."
     )
     lines.append(
         "- **Freshness checks trust the tree, not the working copy.** The "

@@ -1,0 +1,116 @@
+{
+  "slug": "current-limit",
+  "title": "Current limit: clamp window over PVT, non-engagement at 50mA, and a held Vout=0 short",
+  "claim": "Substantiates spec/target-spec.md's DRAFT \"Current limit\" row (constant-current (brickwall) clamp, window TBD over PVT; never engages for I_load <= 50 mA; survives continuous Vout = 0 short at Vin_max) against the sense-FET current comparator and gate clamp issue #22 added to design/ldo_3v3in_1v8out.sch (M_SENSE / M_CLN1 / M_CLN2 / M_CLP / M_CLIM -- see design/README.md's \"Current limit (#22)\"). The row is DRAFT (issue #1 not yet ratified) and it deliberately carries NO numeric clamp window: the window is \"TBD over PVT\". This experiment therefore splits the row rather than blurring it -- the clauses that carry a number are bounded below (\"never engages for I_load <= 50 mA\" becomes ilim_short_ma/ilim_knee_ma > 50 mA plus vout_50ma_v inside the DRAFT Output row's 1.764-1.836 V window), and the clause that does not (\"window TBD over PVT\", \"survives\") is measured and reported WITHOUT a bound, because establishing that window over PVT is exactly what the row asks for at this stage; inventing a ceiling would be the invented settled number CLAUDE.md forbids. \"At Vin_max\" is covered by the corner runner's own supply axis (the 3.63 V column), not by a hard-coded VIN. The short is applied as an event at t=0.5ms and HELD to t=2.5ms -- 2 ms of continuous Vout = 0, a defined duration rather than a single sampled instant, since \"survives\" is a claim about holding the fault. Known-caveat, stated rather than hidden (design/README.md, \"Known accuracy caveat\"): M_SENSE is a 0.42um replica of a 2500um pass device whose drain does not sit at VOUT, so the 1:5952 ratio is neither Vds-matched nor trimmed and carries substantial random Vth mismatch -- this corner-matrix experiment measures the systematic PVT window only; the mismatch axis would need a Monte Carlo experiment (sim/bin/mc-run.py), which is not in this issue's scope.",
+  "provenance": "schematic",
+  "provenance_source": "sim/current-limit/testbench/tb_current_limit.sch",
+  "schematic": "testbench/tb_current_limit.sch",
+  "statistical_convention": "N/A (corner-matrix check, not a distribution claim)",
+  "corners": {
+    "process": ["tt", "ss", "ff", "sf", "fs"],
+    "temperature_c": [-40, 27, 125],
+    "supply_v": [2.97, 3.3, 3.63]
+  },
+  "quick_subset": [
+    ["tt", 27, 3.3],
+    ["ss", -40, 2.97],
+    ["ff", 125, 3.63]
+  ],
+  "deck": {
+    "options": ["wnflag=1"],
+    "params": {},
+    "analyses": [
+      "* --- leg 1: 50 mA operating point (RFORCE open) -- the clamp must be OFF ---",
+      "op",
+      "* --- leg 2: DC limit characteristic, VOUT forced from 0 V up to 1.75 V ---",
+      "alter rload = 1e12",
+      "alter rforce = 1m",
+      "dc vforce 0 1.75 0.125",
+      "meas dc ilim_short find i(vforce) at=0",
+      "meas dc ilim_knee find i(vforce) at=1.75",
+      "* --- leg 3: Vout=0 short applied at t=0.5ms and HELD to t=2.5ms ---",
+      "alter rload = 36",
+      "tran 500n 2.5m",
+      "meas tran ipre avg i(vvin) from=0.4m to=0.5m",
+      "meas tran ish_avg avg i(vvin) from=1.5m to=2.5m",
+      "meas tran ish_max max i(vvin) from=0.6m to=2.5m",
+      "meas tran ish_min min i(vvin) from=0.6m to=2.5m",
+      "meas tran vsh_max max v(vout) from=0.6m to=2.5m"
+    ]
+  },
+  "measurements": [
+    {
+      "name": "vout_50ma_v",
+      "expr": "op1.v(vout)",
+      "unit": "V",
+      "min": 1.764,
+      "max": 1.836,
+      "note": "VOUT at a 36 Ohm (~50 mA) load with the forcing branch absent. This is the operative form of the DRAFT \"Current limit\" row's \"never engages for I_load <= 50 mA\" clause: if the clamp engaged anywhere at or below the DRAFT Load row's 50 mA ceiling, the loop would stop regulating. Bound cited: spec/target-spec.md's DRAFT \"Output\" row (1.8 V +-2%, i.e. 1.764-1.836 V) -- DRAFT/unratified, not an invented limit."
+    },
+    {
+      "name": "cl_margin_50ma_v",
+      "expr": "op1.v(vin) - op1.v(xldo.cl_cmp)",
+      "unit": "V",
+      "min": null,
+      "max": null,
+      "note": "VIN - V(CL_CMP) at the same 50 mA point, read hierarchically from the DUT's current-limit comparison node. Per design/README.md's node glossary CL_CMP ~= VIN means the comparator is inactive and M_CLIM is off; CL_CMP falls when the limit engages. Reported, not bounded: turning \"how far from engaging\" into a pass/fail needs a threshold the DRAFT row does not state (its window is \"TBD over PVT\"), so this experiment measures the margin instead of grading it."
+    },
+    {
+      "name": "ilim_short_ma",
+      "expr": "1000*dc1.ilim_short",
+      "unit": "mA",
+      "min": 50,
+      "max": null,
+      "note": "LDO output current with VOUT forced to 0 V (dead short), from the DC characteristic. Lower bound 50 mA is the DRAFT row's own \"never engages for I_load <= 50 mA\" clause read as a limit-level requirement -- the clamp cannot sit at or below the load the block is specified to deliver. NO upper bound: the row says the clamp window is \"TBD over PVT\", so this experiment's job for that clause is to establish the window, not to grade it against a number nobody has ratified. Once issue #1 ratifies a window this measurement acquires a max and nothing else here changes."
+    },
+    {
+      "name": "ilim_knee_ma",
+      "expr": "1000*dc1.ilim_knee",
+      "unit": "mA",
+      "min": 50,
+      "max": null,
+      "note": "LDO output current with VOUT forced to 1.75 V -- the knee just below the regulation point, i.e. the lowest limit level the block can reach while the output is still near its target. Same DRAFT-derived 50 mA lower bound and same deliberately-absent upper bound as ilim_short_ma. Together the two values ARE the PVT window the row asks to be established."
+    },
+    {
+      "name": "ilim_droop_pct",
+      "expr": "100*(dc1.ilim_knee - dc1.ilim_short)/dc1.ilim_knee",
+      "unit": "%",
+      "min": null,
+      "max": null,
+      "note": "Shape indicator for the row's \"constant-current (brickwall)\" word, as the fall in limit current from the 1.75 V knee down to the dead short, in percent of the knee value. A foldback limiter's short-circuit current is well BELOW its knee current (large positive droop); a constant-current clamp's is not (~0 or negative). Reported, not bounded: the row names the shape but sets no numeric flatness criterion, and a knife-edge bound at zero would grade solver noise rather than topology."
+    },
+    {
+      "name": "ishort_sustained_ma",
+      "expr": "-1000*tran1.ish_avg",
+      "unit": "mA",
+      "min": null,
+      "max": null,
+      "note": "Mean supply current over the last 1 ms of the held Vout = 0 short (t = 1.5-2.5 ms), i.e. the current the pass device actually sustains into a continuous short. Read from i(vvin) rather than i(vforce) on purpose: i(vforce) also carries C_OUT's ~2 A microsecond discharge spike into the short, which is the capacitor's stored energy and not the pass device's current. Reported, not bounded, for the same reason as ilim_short_ma: the DRAFT row's window is TBD. This is the number the Thermal row's \"short-circuit ceiling set by the current limit\" will need once both rows are ratified."
+    },
+    {
+      "name": "ishort_ripple_pct",
+      "expr": "100*(tran1.ish_max - tran1.ish_min)/(-tran1.ish_avg)",
+      "unit": "%",
+      "min": null,
+      "max": 100,
+      "note": "Peak-to-peak variation of the supply current across the whole held-short window (t = 0.6-2.5 ms), in percent of its mean. This is the one part of \"survives a continuous short\" that can be bounded without inventing a number: the row calls the clamp \"constant-current\", and a limit loop swinging by more than its own mean is not delivering a constant current -- it is limit-cycling. 100% is therefore the weakest non-arbitrary reading of the row's own word, chosen deliberately over a tighter invented figure; a healthy clamp measures far below it."
+    },
+    {
+      "name": "vout_short_mv",
+      "expr": "1000*tran1.vsh_max",
+      "unit": "mV",
+      "min": null,
+      "max": null,
+      "note": "Highest VOUT reached during the held short (t = 0.6-2.5 ms). Reported as a sanity witness that the fault really was a Vout = 0 short for its whole 2 ms duration (the forcing branch is 1 mOhm, so this is essentially I_short x 1 mOhm), not as a spec bound."
+    },
+    {
+      "name": "isup_pre_short_ma",
+      "expr": "-1000*tran1.ipre",
+      "unit": "mA",
+      "min": null,
+      "max": null,
+      "note": "Mean VIN supply current over the 100 us immediately before the short is applied. Reported to document the pre-fault condition the short is applied FROM: the output node is held at the nominal 1.8 V by the forcing branch (still at 1 mOhm from the DC leg) while the 36 Ohm load draws ~50 mA, so the loop is live and delivering into a node at its own regulation target -- an active, at-target block, NOT an idle or cold-start one. Because the forcing source and the LDO share that 50 mA load, this value is the LDO's own contribution only and is expected to be well below 50 mA (the forcing source supplies the remainder); it is reported rather than bounded for exactly that reason. What matters for the \"survives\" clause is that the fault is applied to a live loop at its nominal output, which this measurement witnesses and vout_short_mv confirms the fault itself."
+    }
+  ],
+  "spread_checks": []
+}
