@@ -2243,12 +2243,84 @@ rather than papering over it:
 
 | Landed by | Record(s) | Interaction with #69 | State after the merge |
 |---|---|---|---|
-| #66/#80 — `sim/thermal` ships | `20260825-054043-6fac47d` | Bench did not exist when #69 was cut; it measures the **pre-#69** CTAT pair | `STALE`. Its 5/15 verdict and every `trip_temp_c`/`reset_temp_c` in the table above are "before the fix" numbers. |
-| #64/#73 — `line-regulation`, `load-regulation`, `iq` ship | `20260825-0405/0407/0409-6fac47d` | Benches did not exist when #69 was cut; all three instantiate the re-sized DUT | `STALE` — re-run needed before their PASS/FAIL is cited against the current schematic. |
-| #76/#86 — `current-limit` leg-3 cold EN ramp | `20260825-070327-d0bb614` | Revised `tb_current_limit.sch` **after** #69's re-run | #69's `…-4cb27f8` supersedes it by date but predates the bench revision, so the row reports `STALE`. Its **3/3 overall PASS** holds for the pre-#86 deck only. |
-| #71/#83 — `dropout-vs-load` `dropout_v` methodology | `20260825-055423-c000414` | Rewrote the deck in `experiment.json`; touched only comments in the `.sch` | The freshness check compares schematic netlists, not decks, so `…-4cb27f8` still reads `fresh` despite being measured with the **superseded fixed-endpoint method**. Verdict is 0/45 either way; the `dropout_v` *numbers* to cite are #83's (0.310–0.554 V at −40/27 °C). |
-| #77/#92 — hysteresis root-cause, nothing shipped | (no new record) | Investigated the **pre-#69** sizing; `ldo_3v3in_1v8out.sch` unchanged by it | Its "a fresh 15-point run against the identical schematic would reproduce the same numbers" reasoning was correct on `main`, and stops holding here: #69 *does* change the schematic, so the re-run below now adds verification value rather than being redundant. |
-| #74/#94 — full 45-point matrices for the three #65 benches | `20260825-085216-64c17cb` (`current-limit`), `…-073320-64c17cb` (`startup`), `…-073259-64c17cb` (`enable-shutdown`) | Ran breadth against the **pre-#69** DUT while #69 ran freshness against the new one | All three `STALE`. `current-limit`'s is the later run, so the report cites **39/45 FAIL** there rather than #69's 3/3; `startup`/`enable-shutdown` keep #69's fresher 3-point rows and so lose matrix breadth. Full breakdown in `sim/README.md` → "#74 and #69 crossed". |
+| #66/#80 — `sim/thermal` ships | `20260825-054043-6fac47d` | Bench did not exist when #69 was cut; it measures the **pre-#69** CTAT pair | `STALE` at merge time. **Re-run and closed by #95** — see below. |
+| #64/#73 — `line-regulation`, `load-regulation`, `iq` ship | `20260825-0405/0407/0409-6fac47d` | Benches did not exist when #69 was cut; all three instantiate the re-sized DUT | `STALE` at merge time. **Re-run and closed by #95** — see below. |
+| #76/#86 — `current-limit` leg-3 cold EN ramp | `20260825-070327-d0bb614` | Revised `tb_current_limit.sch` **after** #69's re-run | #69's `…-4cb27f8` supersedes it by date but predates the bench revision, so the row reported `STALE`. Its **3/3 overall PASS** held for the pre-#86 deck only. Superseded in turn by #95's full-matrix re-run (below), which is fresh against the current deck. |
+| #71/#83 — `dropout-vs-load` `dropout_v` methodology | `20260825-055423-c000414` | Rewrote the deck in `experiment.json`; touched only comments in the `.sch` | The freshness check compares schematic netlists, not decks, so `…-4cb27f8` still reads `fresh` despite being measured with the **superseded fixed-endpoint method**. Verdict is 0/45 either way; the `dropout_v` *numbers* to cite are #83's (0.310–0.554 V at −40/27 °C). Not touched by #95 — this bench's own deck did not change again, so no re-run was needed; the freshness-check blind spot itself remains open (see the "Two things that are not re-runs" note in issue #95). |
+| #77/#92 — hysteresis root-cause, nothing shipped | (no new record) | Investigated the **pre-#69** sizing; `ldo_3v3in_1v8out.sch` unchanged by it | Superseded by **#91**'s post-#69/#90 manual re-screen (below), itself now corroborated by #95's measured `sim/thermal` record. |
+| #74/#94 — full 45-point matrices for the three #65 benches | `20260825-085216-64c17cb` (`current-limit`), `…-073320-64c17cb` (`startup`), `…-073259-64c17cb` (`enable-shutdown`) | Ran breadth against the **pre-#69** DUT while #69 ran freshness against the new one | `STALE` at merge time; `current-limit`'s later run had the report citing **39/45 FAIL** there, while `startup`/`enable-shutdown` kept #69's fresher 3-point rows and lost matrix breadth. **All three re-run at full 45-point breadth against the post-#69 schematic by #95 — see below and `sim/README.md` → "#74 and #69 crossed".** |
+
+#### #95: the seven parallel-landing gaps re-run against the merged (post-#69/#90) schematic (2026-08-25)
+
+Issue #95 re-ran every bench the table above left `STALE` (or breadth-losing)
+after PR #90 merged #69 into `main`, pinning each new record to `933dfdd` —
+the commit `design/ldo_3v3in_1v8out.sch` was at post-merge — and pointing it
+back at the record it replaces via `Supersedes`:
+
+| Bench | Superseded record | New record (`933dfdd`) | Corners | Verdict |
+|---|---|---|---|---|
+| `sim/thermal` | `20260825-054043-6fac47d` | `20260825-104426-933dfdd` | 15/15 | **FAIL**, 12/15 PASS |
+| `sim/line-regulation` | `20260825-040532-6fac47d` | `20260825-104914-933dfdd` | 3/3 (subset, per #64's precedent) | **FAIL**, 1/3 PASS |
+| `sim/load-regulation` | `20260825-040748-6fac47d` | `20260825-105113-933dfdd` | 3/3 (subset, per #64's precedent) | **PASS**, 3/3 |
+| `sim/iq` | `20260825-040934-6fac47d` | `20260825-105157-933dfdd` | 3/3 (subset, per #64's precedent) | **PASS**, 3/3 |
+| `sim/current-limit` | `20260825-085216-64c17cb` (#74's full matrix) | `20260825-105322-933dfdd` | 45/45 | **PASS**, 45/45 |
+| `sim/startup` | `20260825-082906-4cb27f8` (#69's 3-point re-run, the record the merged report actually cited) | `20260825-110456-933dfdd` | 45/45 | **PASS**, 45/45 |
+| `sim/enable-shutdown` | `20260825-082908-4cb27f8` (#69's 3-point re-run, the record the merged report actually cited) | `20260825-111526-933dfdd` | 45/45 | **PASS**, 45/45 |
+
+Three findings worth stating plainly:
+
+- **#74's diagnosed `sf_125c`/`ff_125c` failures are confirmed fixed, at
+  full-matrix breadth this time.** `current-limit`, `startup` and
+  `enable-shutdown` all read a clean 45/45 `PASS` against the post-#69
+  schematic — the six corners #74's pre-#69 matrices failed at (attributed to
+  mechanism 1, the nuisance trip #69 re-sized) now pass, closing the question
+  #93 posed on pre-#69 evidence. `startup`/`enable-shutdown` also regain the
+  full-matrix breadth the merge's record-selection-by-timestamp quirk had
+  cost them (`sim/README.md` → "#74 and #69 crossed" documents that quirk in
+  full); their `Supersedes` field points at the 3-point `…-4cb27f8` record
+  the merged report was actually citing, not at #74's pre-#69 45-point one,
+  since that is the record this new one directly replaces in
+  `measurements/characterization.md`.
+- **`sim/thermal` turns #69's `.op`-screened trip estimate, and #91's manual
+  re-screen, into a measured 15-corner `sim/` record.** `ff` trips at
+  147.0–157.8 °C and `sf` at 138.8–149.0 °C — both comfortably above the
+  125 °C rated ceiling, matching #90's own `.op`-screened 155.1–175.0 °C
+  window. It also **corroborates #91's finding on #69's re-sized hysteresis
+  rather than changing it**: `trip_temp_c`/`reset_temp_c`/`hysteresis_c` at
+  all 15 corners match #91's manual re-screen table to three significant
+  figures (e.g. `ss_27c_2.97v`: −2.37 °C here vs. #91's −2.4 °C), so the same
+  three corners (`tt_27c_3.63v`, `ss_27c_2.97v`, `ff_27c_3.63v`) still read a
+  small negative hysteresis. #91's redesign-needed conclusion stands; this
+  record is the first `sim/`-evidence-trail substantiation of it, so #91's
+  "no new `sim/thermal` record was minted" note (its "Net effect" paragraph)
+  is superseded — `20260825-054043-6fac47d` is no longer the authoritative
+  `sim/thermal` record, `20260825-104426-933dfdd` is.
+- **`line-regulation` moves from `FAIL` (2/3) to `FAIL` (1/3), and the
+  *failing corner moved*, not just the count — worth flagging plainly rather
+  than glossing over.** Pre-#69, `ff_125c_3.63v` was the sole failure
+  (1005.8/1010.2 mV/V, the documented mechanism-1 thermal-false-trip
+  signature) and `tt_27c_3.30v`/`ss_-40c_2.97v` both read cleanly
+  (0.2–0.4 mV/V). Post-#69, `ff_125c_3.63v` now reads cleanly
+  (0.500/0.422 mV/V, consistent with the resize fixing that corner as
+  expected) but `tt_27c_3.30v` newly fails both legs (1739/1317 mV/V) and
+  `ss_-40c_2.97v` newly fails its 50 mA leg (2477 mV/V, its 1 mA leg still
+  clean at 0.217 mV/V). The magnitude (three orders over the 5 mV/V bound) is
+  the same non-physical signature already associated with this schematic's
+  documented DC-solution-multiplicity behavior on sequential `alter`-based
+  `.op` points (mechanism 4, `sim/README.md`'s "six degenerate corners"), now
+  apparently landing on a different subset of corners post-resize rather than
+  a new mechanism — but that is stated as the most likely explanation, not a
+  confirmed root cause; #95's scope was re-running the bench, not diagnosing
+  this. Flagged here as a genuinely new PVT-boundary observation for a future
+  issue to root-cause if pursued, rather than left for a reader to notice
+  quietly in the raw numbers. `load-regulation` and `iq` both move
+  `FAIL → PASS` and `PASS → PASS` respectively (both already-PASS at their
+  PVT subset), with the same `ff_125c_3.63v` corner fixed cleanly and no
+  comparable new failure appearing at the other two points.
+
+`measurements/characterization.md` is regenerated against these seven new
+records; `python3 measurements/build_characterization_report.py --check`
+passes.
 
 **#74's failures are this fix's own strongest re-run argument.** All three
 of its full matrices fail at `sf_125c` on all three supplies and attribute
