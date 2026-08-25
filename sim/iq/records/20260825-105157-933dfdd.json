@@ -1,0 +1,255 @@
+{
+  "author": "auditor@loom.local",
+  "corners": [
+    {
+      "corner_id": "tt_27c_3.30v",
+      "elapsed_s": 13.35,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/iq/corners/20260825-105157-933dfdd/tt_27c_3.30v.log",
+      "measurements": [
+        {
+          "expr": "1e6*op1.iq_no_load_a",
+          "max": 30,
+          "min": null,
+          "name": "iq_no_load_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 13.73251
+        },
+        {
+          "expr": "1e6*op2.iq_full_load_a",
+          "max": 30,
+          "min": null,
+          "name": "iq_full_load_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 25.92372
+        },
+        {
+          "expr": "op1.vout_no_load",
+          "max": null,
+          "min": null,
+          "name": "vout_no_load_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.802209
+        },
+        {
+          "expr": "op2.vout_full_load",
+          "max": null,
+          "min": null,
+          "name": "vout_full_load_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.797992
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "tt",
+      "supply_v": 3.3,
+      "temperature_c": 27.0,
+      "timed_out": false,
+      "timeout_s": 300
+    },
+    {
+      "corner_id": "ss_-40c_2.97v",
+      "elapsed_s": 13.353,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/iq/corners/20260825-105157-933dfdd/ss_-40c_2.97v.log",
+      "measurements": [
+        {
+          "expr": "1e6*op1.iq_no_load_a",
+          "max": 30,
+          "min": null,
+          "name": "iq_no_load_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 11.70857
+        },
+        {
+          "expr": "1e6*op2.iq_full_load_a",
+          "max": 30,
+          "min": null,
+          "name": "iq_full_load_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 22.65374
+        },
+        {
+          "expr": "op1.vout_no_load",
+          "max": null,
+          "min": null,
+          "name": "vout_no_load_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.801383
+        },
+        {
+          "expr": "op2.vout_full_load",
+          "max": null,
+          "min": null,
+          "name": "vout_full_load_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.79807
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "ss",
+      "supply_v": 2.97,
+      "temperature_c": -40.0,
+      "timed_out": false,
+      "timeout_s": 300
+    },
+    {
+      "corner_id": "ff_125c_3.63v",
+      "elapsed_s": 13.191,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/iq/corners/20260825-105157-933dfdd/ff_125c_3.63v.log",
+      "measurements": [
+        {
+          "expr": "1e6*op1.iq_no_load_a",
+          "max": 30,
+          "min": null,
+          "name": "iq_no_load_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 15.21171
+        },
+        {
+          "expr": "1e6*op2.iq_full_load_a",
+          "max": 30,
+          "min": null,
+          "name": "iq_full_load_ua",
+          "pass": true,
+          "reason": "",
+          "unit": "uA",
+          "value": 28.58799
+        },
+        {
+          "expr": "op1.vout_no_load",
+          "max": null,
+          "min": null,
+          "name": "vout_no_load_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.806884
+        },
+        {
+          "expr": "op2.vout_full_load",
+          "max": null,
+          "min": null,
+          "name": "vout_full_load_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 1.797673
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "ff",
+      "supply_v": 3.63,
+      "temperature_c": 125.0,
+      "timed_out": false,
+      "timeout_s": 300
+    }
+  ],
+  "experiment": {
+    "claim": "Substantiates spec/target-spec.md's DRAFT \"Iq (excl. load current)\" row (< 30uA at no load and full load) against the LDO core-regulation-loop schematic landed by #14 (design/ldo_3v3in_1v8out.sch), using the row's own two named load points. That row is DRAFT (issue #1 not yet ratified) -- the bound below cites it directly, not an invented final limit, and needs re-verification once #1 rules. Each corner runs two .op solves (0mA then 50mA, via the deck's own 'alter' on the load current source, mirroring sim/loop-gain's multi-point convention from #25): Iq is defined, per design/README.md's own \"Iq = total VIN current minus load current\" convention, as -i(vvin) at no load (no subtraction needed) and as -i(vvin) minus the deck's own known 50mA load constant at full load. Known risk, not a testbench defect -- and confirmed during this testbench's own bring-up, not just cited from elsewhere: design/README.md's dated 2026-08-25 root-cause section (issue #60, mechanism 1; tracked by #69) documents a thermal-shutdown false-trip at the ff/sf process corners at 125C, independent of load current; a direct check at ff/125C/3.63V (screening, not part of this record) confirms TS_CMP=0.39V (tripped; untripped is approximately VIN) and vout collapsed to -19.2V at full load (0.14V at no load) at that exact corner, yet -i(vvin) itself still reads a plausible-looking, in-budget microamp figure there rather than an obviously non-physical one -- unlike line-regulation/load-regulation, where the same false-trip produces an unmistakably out-of-range number. vout_no_load_v/vout_full_load_v are reported (unbounded) alongside the Iq figures specifically so a reader can see when the underlying operating point is not really regulating (roughly 1.8V) before trusting an in-budget Iq PASS at that corner, per the same PSRR caution design/README.md's mechanism 5 already states (\"PASS\" at a falsely-tripped corner is not evidence of a genuine pass).",
+    "provenance": "schematic",
+    "provenance_source": "sim/iq/testbench/tb_iq.sch",
+    "slug": "iq",
+    "statistical_convention": "N/A (corner-matrix check, not a distribution claim)",
+    "title": "Quiescent current (excl. load current) at no load and full load"
+  },
+  "git": {
+    "branch": "feature/issue-95",
+    "dirty": true,
+    "sha": "933dfdd"
+  },
+  "links": {
+    "corners_dir": "sim/iq/corners/20260825-105157-933dfdd/",
+    "json": "sim/iq/records/20260825-105157-933dfdd.json",
+    "manifest": "sim/iq/experiment.json",
+    "netlist_snapshot": "sim/iq/netlist-snapshots/20260825-105157-933dfdd.spice",
+    "record": "sim/iq/records/20260825-105157-933dfdd.md",
+    "testbench": "sim/iq/testbench/tb_iq.sch"
+  },
+  "matrix": {
+    "is_subset": true,
+    "n_points": 3,
+    "point_ids": [
+      "tt_27c_3.30v",
+      "ss_-40c_2.97v",
+      "ff_125c_3.63v"
+    ],
+    "points": [
+      [
+        "tt",
+        27.0,
+        3.3
+      ],
+      [
+        "ss",
+        -40.0,
+        2.97
+      ],
+      [
+        "ff",
+        125.0,
+        3.63
+      ]
+    ],
+    "process": [
+      "tt",
+      "ss",
+      "ff"
+    ],
+    "subset_reason": "Re-run of issue #64's 3-point PVT subset (same tt/27C/3.30V, ss/-40C/2.97V, ff/125C/3.63V points and the same reason) against issue #69/#90's thermal-shutdown re-sizing, which changed the shared DUT schematic and so made the prior record's netlist snapshot stale (issue #95). The full 45-point matrix this manifest declares remains follow-on work, per issue #64's own precedent.",
+    "supply_v": [
+      2.97,
+      3.3,
+      3.63
+    ],
+    "temperature_c": [
+      -40.0,
+      27.0,
+      125.0
+    ]
+  },
+  "overall_pass": true,
+  "pdk": {
+    "installed_commit": "c6d73a35f524070e85faff4a6a9eef49553ebc2b",
+    "lib_file": "/home/ubuntu/.volare/sky130A/libs.tech/combined/sky130.lib.spice",
+    "matches_pin": true,
+    "pinned_commit": "c6d73a35f524070e85faff4a6a9eef49553ebc2b",
+    "root": "/home/ubuntu/.volare",
+    "variant": "sky130A"
+  },
+  "record_id": "20260825-105157-933dfdd",
+  "spread_checks": [],
+  "supersedes": "20260825-040934-6fac47d",
+  "timestamp": "2026-08-25T10:51:57Z",
+  "tools": {
+    "ngspice": "ngspice-46 : Circuit level simulation program",
+    "platform": "Linux 7.0.0-1010-aws x86_64",
+    "python": "3.12.3",
+    "xschem": "XSCHEM V3.4.7"
+  }
+}

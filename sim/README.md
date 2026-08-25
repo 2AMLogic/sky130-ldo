@@ -666,6 +666,7 @@ whose netlist snapshots match the current `design/ldo_3v3in_1v8out.sch`:
 |---|---|---|---|
 | Pre-#36 | `…-879f035` | before #35/#36 | **Superseded** (do not cite) |
 | Pre-#69 | `…-81dc232` (four PVT + MC), `…-703a889` (the three #65 benches) | `81dc232` / `703a889` — thermal shutdown as first sized in #29 | **Superseded.** Contains the six degenerate corners above. |
+| Post-#90 merge (#95) | `…-933dfdd` (`thermal`, `line-regulation`, `load-regulation`, `iq`, `current-limit`, `startup`, `enable-shutdown`) | `933dfdd` — post-#69/#90, on `main` after the merge conflicts that left these seven `STALE` | **Authoritative for these seven.** Closes the "parallel landings" gap below — see "#95: closing the parallel-landings gap" further down. |
 | Current | `…-4cb27f8` (the eight experiments #69 re-ran) | `4cb27f8` — #69's thermal-shutdown re-sizing | **Authoritative.** |
 
 **"Third generation" is not the same thing as "every record on disk".** Six
@@ -674,13 +675,13 @@ the `…-4cb27f8` generation, and each is stale in a different, disclosed way:
 
 | Record | Landed by | Why it is not `…-4cb27f8` | Freshness now |
 |---|---|---|---|
-| `sim/thermal/20260825-054043-6fac47d` | #66/#80 | Bench did not exist when #69 was cut; measures the **pre-#69** trip points | `STALE` — re-run required before citing its 5/15 verdict |
-| `sim/line-regulation/20260825-040532-6fac47d` | #64/#73 | Bench did not exist when #69 was cut | `STALE` |
-| `sim/load-regulation/20260825-040748-6fac47d` | #64/#73 | Bench did not exist when #69 was cut | `STALE` |
-| `sim/iq/20260825-040934-6fac47d` | #64/#73 | Bench did not exist when #69 was cut | `STALE` |
-| `sim/current-limit/20260825-070327-d0bb614` | #76/#86 | Superseded by `…-4cb27f8`, but #86 revised `tb_current_limit.sch` **after** #69's re-run | `…-4cb27f8` reports `STALE` (see below) |
-| `sim/dropout-vs-load/20260825-055423-c000414` | #71/#83 | Superseded by `…-4cb27f8`, but #83 revised the `dropout_v` deck **after** #69's re-run | see the methodology caveat below |
-| `sim/current-limit/20260825-085216-64c17cb`, `sim/startup/20260825-073320-64c17cb`, `sim/enable-shutdown/20260825-073259-64c17cb` | #74/#94 | The full 45-point matrices for the three #65 benches, run against the **pre-#69** DUT | `STALE`, and they collide with #69's 3-point re-runs — see "#74 and #69 crossed" below |
+| `sim/thermal/20260825-054043-6fac47d` | #66/#80 | Bench did not exist when #69 was cut; measures the **pre-#69** trip points | `STALE` at merge time. **Superseded by `…-933dfdd` (#95)** — see below. |
+| `sim/line-regulation/20260825-040532-6fac47d` | #64/#73 | Bench did not exist when #69 was cut | `STALE` at merge time. **Superseded by `…-933dfdd` (#95)** — see below. |
+| `sim/load-regulation/20260825-040748-6fac47d` | #64/#73 | Bench did not exist when #69 was cut | `STALE` at merge time. **Superseded by `…-933dfdd` (#95)** — see below. |
+| `sim/iq/20260825-040934-6fac47d` | #64/#73 | Bench did not exist when #69 was cut | `STALE` at merge time. **Superseded by `…-933dfdd` (#95)** — see below. |
+| `sim/current-limit/20260825-070327-d0bb614` | #76/#86 | Superseded by `…-4cb27f8`, but #86 revised `tb_current_limit.sch` **after** #69's re-run | `…-4cb27f8` reported `STALE`; the chain is now superseded further by `…-933dfdd` (#95, full 45-point matrix, fresh against the current deck) — see below. |
+| `sim/dropout-vs-load/20260825-055423-c000414` | #71/#83 | Superseded by `…-4cb27f8`, but #83 revised the `dropout_v` deck **after** #69's re-run | see the methodology caveat below — **not** re-run by #95 (no further deck change since; the freshness-check blind spot itself remains open). |
+| `sim/current-limit/20260825-085216-64c17cb`, `sim/startup/20260825-073320-64c17cb`, `sim/enable-shutdown/20260825-073259-64c17cb` | #74/#94 | The full 45-point matrices for the three #65 benches, run against the **pre-#69** DUT | `STALE` at merge time, and they collided with #69's 3-point re-runs — see "#74 and #69 crossed" below. **All three re-run at full breadth by #95, closing the collision** — see "#95: closing the parallel-landings gap" below. |
 
 Two of those need reading carefully, because the re-run and the parallel
 landing crossed:
@@ -759,6 +760,65 @@ is untouched by #69.
 Full before/after detail, including the two `load-transient` corners that
 changed verdict for a mechanism-(4) reason rather than a transient one, is
 in `design/README.md` → "What the #69 re-run changed".
+
+#### #95: closing the parallel-landings gap (2026-08-25)
+
+Issue #95 re-ran the seven benches the "parallel landings" table above left
+`STALE` (or, for `startup`/`enable-shutdown`, breadth-losing) after PR #90
+merged #69 into `main`. Each new record is pinned to `933dfdd` — the merge
+commit's `design/ldo_3v3in_1v8out.sch` — and carries a `Supersedes` field
+back to the record it replaces:
+
+| Bench | Superseded | New (`933dfdd`) | Verdict |
+|---|---|---|---|
+| `thermal` | `20260825-054043-6fac47d` | `20260825-104426-933dfdd` | 5/15 FAIL → **12/15 FAIL** |
+| `line-regulation` | `20260825-040532-6fac47d` | `20260825-104914-933dfdd` | 2/3 FAIL → **1/3 FAIL** |
+| `load-regulation` | `20260825-040748-6fac47d` | `20260825-105113-933dfdd` | 2/3 FAIL → **3/3 PASS** |
+| `iq` | `20260825-040934-6fac47d` | `20260825-105157-933dfdd` | 3/3 PASS → **3/3 PASS** |
+| `current-limit` | `20260825-085216-64c17cb` (#74's full matrix) | `20260825-105322-933dfdd` | 39/45 FAIL → **45/45 PASS** |
+| `startup` | `20260825-082906-4cb27f8` (#69's 3-point re-run — the record the merged report was actually citing) | `20260825-110456-933dfdd` | 3/3 PASS (subset) → **45/45 PASS** |
+| `enable-shutdown` | `20260825-082908-4cb27f8` (#69's 3-point re-run — the record the merged report was actually citing) | `20260825-111526-933dfdd` | 3/3 PASS (subset) → **45/45 PASS** |
+
+`startup` and `enable-shutdown` point their `Supersedes` field at the
+`…-4cb27f8` record rather than #74's `…-64c17cb` one, because `…-4cb27f8` is
+what `measurements/characterization.md` was actually citing at merge time (a
+straight replacement of the currently-cited evidence); the collision this
+section documents above is resolved regardless, since the new record is both
+fresher and carries #74's full 45-point breadth.
+
+**This closes the "#74 and #69 crossed" collision above and confirms #74's
+diagnosis.** `current-limit`, `startup` and `enable-shutdown` all read a
+clean 45/45 `PASS` against the post-#69 schematic — the `sf_125c`/`ff_125c`
+corners #74's pre-#69 matrices failed at (attributed to mechanism 1) now
+pass, so #93's question (posed on that pre-#69 evidence) is answered: those
+corners were mechanism 1, and #69 fixed them.
+
+**`thermal` turns #69's `.op`-screened trip estimate into a measured
+15-corner `sim/` record, and corroborates rather than changes #91's manual
+re-screen** (`design/README.md` → "#91"): `trip_temp_c`/`reset_temp_c`/
+`hysteresis_c` at all 15 corners match #91's table to three significant
+figures, so the same three corners (`tt_27c_3.63v`, `ss_27c_2.97v`,
+`ff_27c_3.63v`) still read a small negative hysteresis post-resize.
+`20260825-054043-6fac47d` is no longer the authoritative `sim/thermal`
+record; `20260825-104426-933dfdd` is.
+
+**`line-regulation`'s failing corner moved, not just its count — flagged
+here rather than silently absorbed into a lower FAIL count.** Pre-#69, only
+`ff_125c_3.63v` failed (~1005–1010 mV/V, the mechanism-1 signature); post-#69
+that corner now passes cleanly (~0.4–0.5 mV/V), but `tt_27c_3.30v` newly
+fails both legs (~1739/1317 mV/V) and `ss_-40c_2.97v` newly fails its 50 mA
+leg (~2477 mV/V). The magnitude matches this schematic's documented
+DC-solution-multiplicity signature on sequential `alter`-based `.op` points
+(the "six degenerate corners" above), now apparently landing on a different
+corner subset post-resize — the most likely explanation, not a confirmed
+root cause, since diagnosing it was outside #95's re-run scope. Worth a
+follow-up issue if pursued further. `load-regulation` and `iq` show no
+comparable new failure; both improve or hold cleanly at the same three
+points.
+
+`measurements/characterization.md` is regenerated against these seven new
+records; `python3 measurements/build_characterization_report.py --check`
+passes.
 
 ## Line regulation, load regulation and Iq (issue #64)
 
