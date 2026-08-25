@@ -108,7 +108,7 @@ EVIDENCE_MAP: dict[str, str | None] = {
     "Current limit": "current-limit",
     "Startup / soft-start": "startup",
     "Enable / shutdown": "enable-shutdown",
-    "Thermal": None,
+    "Thermal": "thermal",
     "Output noise": None,
     "Area": None,
     "Stability": "loop-gain",
@@ -125,11 +125,6 @@ NA_REASONS: dict[str, str] = {
     "Load": (
         "exercised as a stimulus condition (I_LOAD step/sweep) inside every "
         "PVT testbench below, not measured by a testbench of its own."
-    ),
-    "Thermal": (
-        "the thermal-shutdown circuitry (issue #35) is present in the "
-        "schematic, but no dedicated thermal testbench exists yet under "
-        "`sim/`."
     ),
     "Output noise": (
         'waived by the spec row itself ("not specified — waived unless a '

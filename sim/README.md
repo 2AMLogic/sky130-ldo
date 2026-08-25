@@ -369,6 +369,26 @@ section is a map, not a duplicate of that detail.
   with 17.0–21.7 dB of gain margin, failing only at the six degenerate
   corners) — overall `FAIL`.
 
+- **`thermal/`** (issue #66) — trip/reset temperature and hysteresis for the
+  thermal-shutdown circuit (#29/DR-005) against the spec's DRAFT "Thermal"
+  row. Unlike the four above, it does not select `temperature_c` from the
+  standard PVT corner axis — `TEMP` itself is the swept analysis variable
+  (a continuous ngspice `.dc temp` sweep, 80→180 °C ascending then 180→80 °C
+  descending in one session, DC continuation so the descending leg starts
+  from the ascending leg's final operating point), walked across the full
+  `process × supply_v` matrix. This required its own corner-coverage
+  decision first (DR-005's 150 °C nominal trip target sits above DR-004's
+  `{−40, 27, 125} °C` characterized axis) — see DR-005's `2026-08-25
+  addendum` for the decision and `design/README.md`'s dated "Thermal-shutdown
+  trip/hysteresis testbench" section for the full per-corner results and
+  interpretation. First (and authoritative) full 15-point record
+  (`20260825-054043-6fac47d`, supersedes `20260825-050729-6fac47d` — an
+  ngspice `.meas`-interpolation artifact, not a circuit finding, see the
+  experiment's own comments): **5/15 PASS** — `ff`/`sf` trip below the 125 °C
+  operating ceiling at every supply corner (confirming and quantifying
+  issue #69), and measured hysteresis is non-positive at every one of the
+  15 corners (a new finding, filed as issue #77).
+
 None of the four fully meets its DRAFT bound yet. This is an honest,
 expected finding, not a harness bug — and the reason has moved. The #18
 records were dominated by two gaps issue #25/#36 has now closed: an unsized

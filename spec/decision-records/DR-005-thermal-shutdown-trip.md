@@ -278,6 +278,110 @@ chosen because:
   unaffected — that number describes rated operation, and this record's
   150 °C describes a fault-only backstop above it, not a replacement.
 
+## 2026-08-25 addendum: the 125 °C-vs-150 °C corner-coverage decision (issue #66)
+
+This addendum resolves the gap this record's own Consequences section named
+above verbatim: *"#29 (or a future `sim/` record) will need to either extend
+temperature coverage past 125 °C for the specific devices used in the
+trip/reference pair, or accept that the exact numeric trip point cannot be
+simulation-verified against the pinned corner set."* Per CLAUDE.md's
+append-only decision-record convention, this is an addendum, not an edit —
+the Decision, Alternatives and Consequences sections above are unchanged.
+
+**Decision: extend, not accept the gap — scoped to this one testbench.**
+`sim/thermal/` (issue #66) sweeps `TEMP` continuously from 80 °C to 180 °C
+(ascending, then descending in the same ngspice session, so the descending
+leg continues from the operating point the ascending leg left behind — the
+standard DC-continuation technique for characterizing a hysteretic
+comparator's two trip points) against the actual CTAT-sense + comparator +
+hysteresis circuit #29 added. This is option (a) from this record's own
+Consequences section, not option (b) (formally accepting the gap). (The
+sweep floor is 80 °C rather than DR-004's 100 °C+ characterized region
+because ngspice's own `.meas dc ... find/when ... fall=1` has a confirmed
+edge-of-sweep interpolation artifact — a crossing landing in the very first
+swept interval, with no preceding data point, returns a nonsensical
+interpolated result rather than failing cleanly. `sim/thermal`'s first run
+hit exactly this at `sf_27c_3.30v` with a 100 °C floor [superseded record
+`20260825-050729-6fac47d`]; widening the floor to 80 °C — safely below every
+corner's actual trip point, all of which land at 95 °C or above — resolved
+it for the authoritative record cited below. This is an ngspice
+measurement-technique limitation, not a circuit finding; see
+`sim/thermal/experiment.json`'s own comments for the full explanation.)
+
+**Why extend rather than accept.** An empirical check (2026-08-25, this
+issue): a `.dc temp` sweep of the pinned `sky130A` open_pdks
+`c6d73a35f524070e85faff4a6a9eef49553ebc2b` models against this schematic
+solves without NaN/divergence at every point from 80 °C up to 180 °C at
+every one of the 15 full-PVT-matrix points `sim/thermal/experiment.json`
+declares. (A `.dc` sweep continuing past ~190 °C does hit a `singular
+matrix` convergence failure at the `M_SSCHG` soft-start charge-pump PFET's
+source node — a different device than the thermal sense/reference pair this
+record is about, and not evidence the *models themselves* break down at that
+temperature, but a real, separate convergence limit of this specific
+schematic. `sim/thermal`'s 180 °C sweep ceiling stays comfortably clear of
+it.) Extending was therefore mechanically possible, and doing so is the only
+way to actually locate the real trip/reset crossing rather than reporting a
+qualitative "gap closes but has not crossed by 125 °C" finding forever, per
+`design/README.md`'s pre-#66 screening note.
+
+**Scope: this extension is for `sim/thermal` only.** It does **not** change
+DR-004's `{−40, 27, 125} °C` binding for the other four PVT testbenches
+(`load-transient`, `psrr-dc`, `dropout-vs-load`, `loop-gain`) or for spec
+verification generally — those stay pinned to DR-004's characterized axis.
+`sim/thermal`'s corner matrix instead fixes `temperature_c` as a manifest
+placeholder (`[27]`, unused — see the experiment's own comment) and sweeps
+`TEMP` itself as the analysis variable across `process` × `supply_v`, per
+the deck documented in `sim/thermal/experiment.json`.
+
+**The accepted tradeoff, stated plainly.** Every point above 125 °C in this
+sweep runs the pinned BSIM models in extrapolation beyond DR-004's
+characterized range — not confirmed against silicon. The measured
+trip/reset numbers below therefore carry lower confidence than a PVT-corner
+point inside the pinned axis, and `sim/thermal`'s own record says so
+explicitly rather than presenting them as equally trustworthy. This is the
+named cost this record's Consequences section already flagged, now actually
+paid rather than deferred.
+
+**What the authoritative run found** (2 °C sweep resolution; record
+`sim/thermal/records/20260825-054043-6fac47d`, the full 15-point PVT matrix
+substantiating the numbers cited in `measurements/characterization.md`'s
+Thermal row). Two distinct findings, neither closable by this record (a
+decision record does not resize a circuit):
+
+1. **Confirms and substantially quantifies issue #69's `ff`/`sf`-at-125 °C
+   nuisance-trip finding.** Where `design/README.md`'s prior single-point
+   `.op` screening (one corner, one supply) could only show the
+   sense/reference gap had not yet crossed by 125 °C, a full sweep across
+   all three supply corners locates the actual crossing: `ff` trips at
+   115.0–121.0 °C and `sf` trips at 95.0–101.0 °C — **both process corners
+   fall below the spec's own 125 °C operating ceiling at every one of the
+   three supply corners tested**, more severe than #69's single confirmed
+   point suggested. `tt` (135.0 °C), `ss` (145.0–149.0 °C) and `fs`
+   (165.0–167.0 °C) all trip comfortably above 125 °C. This addendum does
+   not re-open #69's scope; the fix (re-sizing the CTAT sense/reference
+   stack) is still #69's job.
+2. **A new, previously-unconfirmed finding: the measured hysteresis sign is
+   non-positive at every one of the 15 corners `sim/thermal`'s first
+   evidentiary run covers.** This record's Decision states the reset
+   temperature should sit *below* the trip temperature (positive hysteresis,
+   `Tj_reset ≈ 135 °C` under a `Tj_trip ≈ 150 °C` nominal). The measured data
+   instead shows `reset_temp_c ≥ trip_temp_c` at 10 of 15 corners (e.g.
+   `ss_27c_2.97v`: trip 149.0 °C / reset 157.0 °C; `sf_27c_3.63v`: trip
+   95.0 °C / reset 105.0 °C) and exactly `0 °C` measured hysteresis at the
+   remaining 5 (`tt_27c_3.63v`, `ss_27c_3.30v`, and all three `fs` corners)
+   — i.e. during the cooling (descending) sweep, `M_TSHUT` releases *before*
+   or *at* the temperature at which it originally tripped on the way up, the
+   opposite of the intended "must cool further before restart" behavior, at
+   every corner tested. This is a real, additional circuit-sizing question
+   this record's own accepted "loose, PVT-dependent" cost (see Decision,
+   above) already anticipated could happen, but had not been confirmed
+   until this testbench existed to check it. **Not fixed by this addendum
+   or by #66** — tracked as its own follow-on issue, **#77**, rather than
+   folded into #69, since the mechanism (hysteresis-injection sizing/
+   polarity, or possibly a DC-continuation measurement-methodology bias —
+   #77 does not prejudge which) is distinct from #69's sense/reference
+   crossing-point mechanism.
+
 ## Status notes
 
 This record stays `proposed` until #1 closes. #1's ratification of this
