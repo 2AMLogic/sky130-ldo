@@ -53,6 +53,34 @@ runner's usual `.dc`/`.tran` sweep style, and are `--quick`-only so far — see
 "Line regulation, load regulation and Iq (issue #64)" below for why and for
 their results.
 
+> **Record-generation note (2026-08-25, issue #69).** Issue #69 re-sized the
+> thermal shutdown in the shared DUT schematic and re-ran **eight**
+> experiments against it, minting a `…-4cb27f8` generation that supersedes
+> the `…-81dc232` (the four PVT benches plus `mc-output-accuracy`) and
+> `…-703a889` (the three #65 benches) record ids several per-testbench
+> sections below still name. Those sections are kept as written because their
+> *analysis* is what the superseded records actually say; for the current
+> numbers and the old→new mapping, read "Which record set is authoritative,
+> part 2 (issue #69)" below. One verdict changed outright: `current-limit`
+> went **overall PASS** on its 3-point subset — though issue #74's later
+> full-matrix record now supersedes that subset for the report's purposes,
+> see part 2's parallel-landings table.
+>
+> **Four benches were deliberately *not* part of that re-run, because they
+> landed on `main` in parallel with #69's branch and did not exist when it was
+> cut**: `line-regulation`, `load-regulation` and `iq` (issue #64) and
+> `thermal` (issue #66). All four instantiate the same DUT, so #69's re-sizing
+> makes their committed netlist snapshots stale, and
+> `measurements/characterization.md` now reports all four `STALE` — correctly,
+> and by design rather than by oversight. `sim/thermal`'s 15-point record in
+> particular characterizes the **pre-#69** trip points, so its 5/15 verdict
+> and every trip/reset number in it must be re-read as "before the fix" until
+> that bench is re-run. Two further parallel landings interact with #69's
+> re-run the same way — #83's `dropout-vs-load` methodology fix and #76/#86's
+> `current-limit` leg-3 enable ramp — and are spelled out in
+> `design/README.md` → "Parallel landings on `main`, and what they leave
+> stale".
+
 ---
 
 ## Quick start (cold machine)
@@ -579,7 +607,14 @@ the newer one characterizes the design as it stands:
 | Generation | Record ids | Pinned schematic | Status |
 |---|---|---|---|
 | Pre-#36 | `…-879f035` (`load-transient`, `psrr-dc`, `dropout-vs-load`) | `879f035` — before #35 (thermal shutdown) and #36 (rail-to-rail EA output stage + sized compensation) | **Superseded.** Kept per the append-only rule; do not cite. |
-| Current | `…-81dc232` (all four testbenches) | `81dc232` — current `main` plus the `M_ENP4`/`M_ENP5` fix below | **Authoritative** for issue #19's acceptance criteria. |
+| Current *as of #19* | `…-81dc232` (all four testbenches) | `81dc232` — `main` at the time plus the `M_ENP4`/`M_ENP5` fix below | **Authoritative for issue #19's acceptance criteria**, and superseded since — see "part 2" below. |
+
+> **Superseded again by issue #69 (2026-08-25).** The `…-81dc232` set is no
+> longer authoritative for the design as it stands: #69's thermal-shutdown
+> re-sizing changed the shared DUT, and a `…-4cb27f8` generation replaced all
+> four of these records plus the four other experiments'. The table below is
+> retained because it is the record of #19's own deliverable. See "Which
+> record set is authoritative, part 2 (issue #69)".
 
 The first generation was run before #35/#36 landed and blamed its failures on
 gaps those two commits then closed, so re-running was a correctness matter, not
@@ -597,19 +632,133 @@ The minimal rename (#36's `PB` clamp → `M_ENP5`) is carried by this issue's
 branch; issue #38 tracks the reason nothing caught it (nothing in
 `npm run check:ci` netlists the LDO core).
 
-### The six degenerate `ff`/`sf` 125 °C corners
+### The six degenerate `ff`/`sf` 125 °C corners — diagnosed, and fixed in #69
 
-`ff_125c_*` and `sf_125c_*` (six of the 45 points) return values that are not
+`ff_125c_*` and `sf_125c_*` (six of the 45 points) returned values that are not
 physically meaningful — 8.4–22.3 V of "undershoot" on a 1.8 V output, 32.6 V of
 "dropout" from a ≤3.63 V supply, `vout_at_max_vin_v` of −19 V / −29 V, `n/a`
 loop-gain measurements, and the only six 1 kHz PSRR "passes" in the matrix.
-That is one signature seen four ways: at those corners the solve does not land
+That is one signature seen four ways: at those corners the solve did not land
 on a valid regulating operating point, so the number the measurement expression
-extracts describes the solver's excursion, not the circuit's behaviour. They
+extracted described the solver's excursion, not the circuit's behaviour. They
 are recorded as `FAIL`/`n/a` rather than dropped (per this directory's own
 rule), and they are excluded from the "worst plausible corner" figures quoted
-above; diagnosing them is design/harness follow-on work, not something this
-record resolves.
+above.
+
+**Issue #60 root-caused this to a nuisance trip of the thermal shutdown
+(#29/DR-005) inside the rated `Tj ≤ 125 °C` range, and issue #69 fixed it**
+(re-sized CTAT sense/reference pair — see `design/README.md`'s "Sizing the
+trip: what is a knob and what is not"). Every experiment that instantiates
+`design/ldo_3v3in_1v8out.sch` was re-run against the fixed schematic on
+2026-08-25; the `…-4cb27f8` record generation below is the result, and **none
+of the six corners produces an out-of-range value in any experiment any
+more**. The `…-81dc232` / `…-703a889` records that show the signature stay on
+disk per the append-only rule and point forward via the new records'
+`Supersedes` field.
+
+### Which record set is authoritative, part 2 (issue #69, 2026-08-25)
+
+There is now a **third generation** of records on disk. For the eight
+experiments #69 re-ran it is the authoritative one, and the only generation
+whose netlist snapshots match the current `design/ldo_3v3in_1v8out.sch`:
+
+| Generation | Record ids | Pinned schematic | Status |
+|---|---|---|---|
+| Pre-#36 | `…-879f035` | before #35/#36 | **Superseded** (do not cite) |
+| Pre-#69 | `…-81dc232` (four PVT + MC), `…-703a889` (the three #65 benches) | `81dc232` / `703a889` — thermal shutdown as first sized in #29 | **Superseded.** Contains the six degenerate corners above. |
+| Current | `…-4cb27f8` (the eight experiments #69 re-ran) | `4cb27f8` — #69's thermal-shutdown re-sizing | **Authoritative.** |
+
+**"Third generation" is not the same thing as "every record on disk".** Six
+records that landed on `main` while #69's branch was open are *not* part of
+the `…-4cb27f8` generation, and each is stale in a different, disclosed way:
+
+| Record | Landed by | Why it is not `…-4cb27f8` | Freshness now |
+|---|---|---|---|
+| `sim/thermal/20260825-054043-6fac47d` | #66/#80 | Bench did not exist when #69 was cut; measures the **pre-#69** trip points | `STALE` — re-run required before citing its 5/15 verdict |
+| `sim/line-regulation/20260825-040532-6fac47d` | #64/#73 | Bench did not exist when #69 was cut | `STALE` |
+| `sim/load-regulation/20260825-040748-6fac47d` | #64/#73 | Bench did not exist when #69 was cut | `STALE` |
+| `sim/iq/20260825-040934-6fac47d` | #64/#73 | Bench did not exist when #69 was cut | `STALE` |
+| `sim/current-limit/20260825-070327-d0bb614` | #76/#86 | Superseded by `…-4cb27f8`, but #86 revised `tb_current_limit.sch` **after** #69's re-run | `…-4cb27f8` reports `STALE` (see below) |
+| `sim/dropout-vs-load/20260825-055423-c000414` | #71/#83 | Superseded by `…-4cb27f8`, but #83 revised the `dropout_v` deck **after** #69's re-run | see the methodology caveat below |
+| `sim/current-limit/20260825-085216-64c17cb`, `sim/startup/20260825-073320-64c17cb`, `sim/enable-shutdown/20260825-073259-64c17cb` | #74/#94 | The full 45-point matrices for the three #65 benches, run against the **pre-#69** DUT | `STALE`, and they collide with #69's 3-point re-runs — see "#74 and #69 crossed" below |
+
+Two of those need reading carefully, because the re-run and the parallel
+landing crossed:
+
+- **`current-limit`.** #76/#86 gave leg 3 a cold `EN` ramp and moved the
+  fault past soft-start, changing `tb_current_limit.sch` itself. #69's
+  `…-4cb27f8` re-run predates that change, so its netlist snapshot no longer
+  matches the current testbench and the report marks the row `STALE` — the
+  freshness check catching exactly what it exists to catch. Its **3/3 overall
+  PASS** therefore stands only for the pre-#86 deck.
+- **`dropout-vs-load`.** #71/#83 rewrote the `dropout_v` measurement in
+  `experiment.json` (downward `VIN` sweep, `.meas ... fall=1` at the −2%
+  departure point) but touched only *comments* in the testbench schematic.
+  The netlist-freshness check compares schematic netlists, not decks, so it
+  reports `…-4cb27f8` as `fresh` even though that record was measured with
+  the **superseded pre-#71 fixed-endpoint method**. Both records read 0/45
+  `FAIL`, so no verdict turns on it — but the 45-corner `dropout_v` *numbers*
+  to cite are #83's `20260825-055423-c000414` (0.310–0.554 V at −40/27 °C),
+  not `…-4cb27f8`'s. This is a freshness-check blind spot, not a defect in
+  either record; it is called out here rather than left for a reader to trip
+  over.
+
+#### #74 and #69 crossed: breadth on the old DUT vs. freshness on the new one
+
+Issue #74 ran the full 45-point matrix for the three #65 benches against
+`64c17cb` — i.e. against the **pre-#69** thermal shutdown — at the same time
+#69 was re-running the 3-point subset against the re-sized one. Neither set
+dominates the other, and `measurements/build_characterization_report.py`
+picks per bench by record id (which sorts by run timestamp), so the merged
+report lands on a mix:
+
+| Bench | #74's full matrix | #69's 3-point re-run | Report cites | Why |
+|---|---|---|---|---|
+| `current-limit` | `20260825-085216-64c17cb`, **39/45** | `20260825-082847-4cb27f8`, 3/3 | #74's — **FAIL, `STALE`** | #74's run is later (08:52 vs 08:28) |
+| `startup` | `20260825-073320-64c17cb`, **42/45** | `20260825-082906-4cb27f8`, 3/3 | #69's — **PASS (PVT subset), fresh** | #69's run is later (08:29 vs 07:33) |
+| `enable-shutdown` | `20260825-073259-64c17cb`, **42/45** | `20260825-082908-4cb27f8`, 3/3 | #69's — **PASS (PVT subset), fresh** | #69's run is later (08:29 vs 07:33) |
+
+Two consequences worth stating plainly rather than leaving to be inferred:
+
+- **`startup` and `enable-shutdown` lose matrix breadth in the report.**
+  Their rows revert from a 45-point verdict to a 3-point `(PVT subset)` one,
+  and the subset reason those records carry — "the full 45-point matrix …
+  remains issue #74's unit of work" — is now out of date, since #74
+  delivered it. The narrower row is nonetheless the *fresher* one: it is the
+  only measurement of these two benches against the schematic actually in
+  the tree.
+- **The `sf_125c` failures #74 found are #69's mechanism 1, unretested.**
+  #74's full matrices fail exactly at `sf_125c` (all three supplies, in all
+  three benches) and attribute it to the same nuisance trip #69 fixes —
+  which is the strongest single argument for the re-run these tables point
+  at. #93 (why `sf` is more susceptible than `ff` during a ramped enable) is
+  posed entirely on pre-#69 evidence and should be re-read after it.
+
+Per-experiment before/after (old → new record id, and the verdict change):
+
+| Experiment | Superseded | Current | Verdict |
+|---|---|---|---|
+| `dropout-vs-load` | `20260818-032811-81dc232` | `20260825-081240-4cb27f8` | 0/45 → 0/45 PASS |
+| `load-transient` | `20260818-032755-81dc232` | `20260825-081255-4cb27f8` | 23/45 → **25/45** PASS |
+| `psrr-dc` | `20260818-032803-81dc232` | `20260825-082845-4cb27f8` | 6/45 → **0/45** PASS (a correction, see below) |
+| `loop-gain` | `20260818-032819-81dc232` | `20260825-081257-4cb27f8` | 3/45 → **7/45** PASS |
+| `current-limit` | `20260825-045313-703a889` | `20260825-082847-4cb27f8` | 2/3 → **3/3, overall PASS** |
+| `startup` | `20260825-044139-703a889` | `20260825-082906-4cb27f8` | 3/3 → 3/3 PASS |
+| `enable-shutdown` | `20260825-044140-703a889` | `20260825-082908-4cb27f8` | 3/3 → 3/3 PASS |
+| `mc-output-accuracy` | `20260818-032827-81dc232` | `20260825-083111-4cb27f8` | 181/200 → 177/200 samples PASS |
+
+**`psrr-dc`'s 6/45 → 0/45 is the evidence trail getting more honest, not a
+regression.** All six of its old "passes" were the falsely-tripped corners
+— AC gain measured around a collapsed bias point, which this file and #60
+both already flagged as not-real PSRR. With the trip gone, the 1 kHz column
+collapses from 20.31–76.79 dB to **20.31–25.68 dB** against the 50 dB DRAFT
+bound: PSRR now demonstrably fails everywhere, which is what #60 inferred
+and #69's re-run measures. The underlying PSRR shortfall is issue #70's, and
+is untouched by #69.
+
+Full before/after detail, including the two `load-transient` corners that
+changed verdict for a mechanism-(4) reason rather than a transient one, is
+in `design/README.md` → "What the #69 re-run changed".
 
 ## Line regulation, load regulation and Iq (issue #64)
 
