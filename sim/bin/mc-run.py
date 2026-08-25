@@ -45,16 +45,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-import importlib.util
 
-from _record_common import render_record_footer, render_record_header
+from _record_common import load_corner_run_module, render_record_footer, render_record_header
 
-_spec = importlib.util.spec_from_file_location(
-    "corner_run", Path(__file__).resolve().parent / "corner-run.py"
-)
-corner_run = importlib.util.module_from_spec(_spec)
-sys.modules["corner_run"] = corner_run  # dataclass() needs this in sys.modules to resolve
-_spec.loader.exec_module(corner_run)  # type: ignore[union-attr]
+corner_run = load_corner_run_module(Path(__file__).resolve().parent)
 
 HarnessError = corner_run.HarnessError
 REPO_ROOT = corner_run.REPO_ROOT

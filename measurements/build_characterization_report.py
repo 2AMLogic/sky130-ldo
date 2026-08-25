@@ -66,7 +66,6 @@ from __future__ import annotations
 
 import argparse
 import difflib
-import importlib.util
 import json
 import os
 import re
@@ -83,7 +82,7 @@ SPEC_FILE = REPO_ROOT / "spec" / "target-spec.md"
 _SIM_BIN_DIR = str(SIM_DIR / "bin")
 if _SIM_BIN_DIR not in sys.path:
     sys.path.insert(0, _SIM_BIN_DIR)
-from _record_common import git  # shared git() helper (issue #51)
+from _record_common import git, load_corner_run_module  # shared helpers (issues #51, #96)
 
 SCHEMATIC_FILE = "design/ldo_3v3in_1v8out.sch"
 DEFAULT_OUT = MEASUREMENTS_DIR / "characterization.md"
@@ -149,25 +148,6 @@ def read_pointer(path: Path) -> str | None:
         return None
     val = path.read_text().strip()
     return val or None
-
-
-def load_corner_run_module():
-    """Import sim/bin/corner-run.py by path (its filename has a hyphen, so it
-    can't be `import`ed directly) -- same trick `sim/bin/mc-run.py` already
-    uses, reused here purely for its xschem-netlisting + PDK-resolution
-    helpers (`netlist_with_xschem`, `netlist_body`, `resolve_pdk`,
-    `load_pin`). Read-only reuse: this script never calls anything that
-    writes evidence."""
-    bin_dir = str(SIM_DIR / "bin")
-    if bin_dir not in sys.path:
-        sys.path.insert(0, bin_dir)  # corner-run.py does `from _record_common import ...`
-    spec = importlib.util.spec_from_file_location(
-        "corner_run", SIM_DIR / "bin" / "corner-run.py"
-    )
-    module = importlib.util.module_from_spec(spec)
-    sys.modules["corner_run"] = module
-    spec.loader.exec_module(module)  # type: ignore[union-attr]
-    return module
 
 
 # --------------------------------------------------------------------------
@@ -400,7 +380,11 @@ def build_spec_row_table(
     pdk = None
     if not skip_netlist_freshness:
         try:
-            module = load_corner_run_module()
+            # Reused purely for its xschem-netlisting + PDK-resolution helpers
+            # (`netlist_with_xschem`, `netlist_body`, `resolve_pdk`,
+            # `load_pin`). Read-only reuse: this script never calls anything
+            # that writes evidence.
+            module = load_corner_run_module(SIM_DIR / "bin")
             pdk = module.resolve_pdk(module.load_pin())
         except Exception as exc:  # noqa: BLE001 -- degrade to "unverified", never crash the report
             module = None
