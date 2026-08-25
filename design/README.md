@@ -1010,53 +1010,194 @@ sized against `sim/loop-gain` over DR-002's proposed window).
 
 Still deliberately **not** in this schematic:
 
-- **Thermal shutdown — trip/hysteresis window over PVT, and simulation past
-  125°C.** The circuit itself (CTAT sense stack + reference + comparator +
-  hysteresis, wired into the existing EN-gated shutdown path) is now in this
-  schematic — see "Thermal shutdown (#29)" above and its screening OP checks.
-  What is **not** landed: (1) the actual trip/reset window this circuit
-  produces over process and supply — untrimmed and bias-generator-derived per
-  DR-005's accepted accuracy cost, characterizing it is #19-scoped simulation
-  work, not a screening OP check; (2) DR-005's 150°C nominal trip target sits
-  above the 125°C top of DR-004's characterized temperature axis, so no
-  simulation against the pinned corner set can yet confirm the numeric trip
-  point — extending temperature coverage past 125°C for these specific
-  devices (or accepting the gap) is a #29-follow-on/`sim/`-record question,
-  named explicitly rather than silently dropped, per DR-005's Consequences
-  section; (3) a `sim/`-evidentiary thermal/PVT testbench proving the actual
-  trip/reset behavior is #18/#19's job — nothing here is `sim/` evidence.
-- **Phase margin at the no-load end of DR-002's window.** `sim/loop-gain`
-  records 15.6–19.3° at 0mA/0.33µF (`tt` and `ss` corners) and 38.1° at
-  0mA/4.7µF (`ss`), against the DRAFT Stability row's 45°; every other point
-  of the window, including DR-002's own low-`C_eff` corner and the 500mΩ ESR
-  ceiling, is 46.7–91.2°, and gain margin is ≥18.7dB everywhere (~70dB at the
-  0mA points). This is a genuine residual, not a rounding error, and it is
-  *not* closable by compensation alone: the pass stage's own
-  `gm_pass/(2π·C_out)` pole falls with load current, and the two levers that
-  would move it — more bias current in the amplifier, or a real preload —
-  both spend the DRAFT `Iq < 30µA` budget, which is already at 24.9µA at
-  50mA. The minimum-ESR fallback DR-002 names would not help either (its
-  zero lands three decades too high). Written up in the DR-002 append this
-  issue adds, so a superseding record has the data.
 - **`C_CL` is still a placeholder.** The current-limit comparator's dominant
   pole (`CL_CMP -> VIN`, `1p`) was not sized against a loop-gain sim; only
   the main loop's `C_COMP`/`R_CZ` were. The limit loop's screened behaviour
   (flat into a hard short, 1.4µA pp) is a smoke test, not a phase-margin
   claim.
 - **Corner coverage.** The full 45-point PVT matrix and Monte Carlo campaign
-  (#19/#37) has since run against this schematic — it is no longer an open
-  gap, but its result is: `sim/loop-gain`'s full-matrix record shows the
-  no-load phase margin failing the DRAFT 45° Stability row at most corners
-  (worst near the `ss`/`tt`/`ff` × −40°C points), and `sim/mc-output-accuracy`,
-  `sim/dropout-vs-load`, `sim/load-transient`, and `sim/psrr-dc` show
-  additional FAILs — see
+  (#19/#37/#40) has since run against this schematic — see
   [`measurements/characterization.md`](../measurements/characterization.md)
-  for the aggregated per-row verdict and issue #60 for the open work to close
-  these gaps.
+  for the aggregated per-row verdict, and the dated "full 45-point PVT +
+  Monte Carlo campaign" section below for the root-cause writeup (#60) and
+  the follow-on issues (#69/#70/#71) tracking the open work to close these
+  gaps.
 - **An actual on-chip voltage reference.** `VREF` is an external port (see
   "VREF interface caveat" above).
 
 These are real, trackable gaps, not silently dropped requirements.
+
+### The full 45-point PVT + Monte Carlo campaign has run, and it fails every DRAFT row it substantiates (#19/#37/#40 ran it; #60 root-caused the results, 2026-08-25)
+
+**Status update, superseding every "#19's job" / "3-corner `--quick` subset"
+line elsewhere in this file.** Issues #19/#37/#40 closed having actually run
+the full 45-point PVT matrix (`tt`/`ss`/`ff`/`sf`/`fs` × {−40, 27, 125}°C ×
+{2.97, 3.30, 3.63}V) against `dropout-vs-load`, `load-transient`, `psrr-dc`
+and `loop-gain`, plus a 200-sample Monte Carlo mismatch run against
+`mc-output-accuracy` — all cited below are the freshest records in the repo
+as of this section. Every one of them is **FAIL**. Issue #60 root-caused each
+row against the actual schematic (screening decks reproducing the closed-loop
+DC/AC behaviour the corner runner exercises — single corner, not `sim/`
+evidence, same convention as every other screening deck in this file). This
+section states what was actually found, in place of the stale "future work"
+framing the rest of this file otherwise still carries from before #19/#37/#40
+ran.
+
+**Two distinct failure mechanisms were identified, plus one independent,
+previously-undesigned-for gap (PSRR):**
+
+1. **A previously-unconfirmed false-trip of thermal shutdown (#29/DR-005) at
+   the `ff`/`sf` process corners at 125°C — the top of this repo's own rated
+   operating range, not a fault condition.** DR-005's own Decision explicitly
+   requires the 150°C nominal trip to sit a "25°C guard band above the spec's
+   own `Tj ≤ 125°C` operating ceiling" specifically so the block "must not
+   engage during legitimate rated operation at the 125°C ceiling, or it would
+   nuisance-trip." A single-point `.op` screening check (this issue, `ff`
+   process corner, 125°C, `VIN=3.30V`, `I_LOAD=50mA` — reproduced from the
+   committed schematic's own netlist, not `sim/` evidence) shows exactly that
+   nuisance trip happening: `TS_SNS=1.0097V` has already fallen *below*
+   `TS_REF=1.0451V` (the tripped ordering), `TS_CMP=0.385V` (fully tripped,
+   versus ≈`VIN` untripped), and `EA_OUT=3.298V` ≈ `VIN` — the thermal clamp
+   `M_TSHUT` has pulled the pass gate fully off. The same check at `tt`/125°C
+   (same bias/load) shows the correct untripped ordering
+   (`TS_SNS=1.1026V > TS_REF=1.0310V`, `TS_CMP=3.279V` ≈ `VIN`). Both `ff` and
+   `sf` (the two corners sharing a **fast PMOS** skew) show this at 125°C;
+   `ss`, `fs` and `tt` do not — implicating the PMOS-biased CTAT sense/
+   reference stack's (`M_TSPS`/`M_TSPR`, both PMOS current sources gated by
+   `BIASP`) sensitivity to PMOS process skew as the mechanism, consistent
+   with DR-005's own accepted "untrimmed, bias-generator-derived, PVT-loose"
+   accuracy cost — but this is the specific, previously-unconfirmed *direction*
+   of that looseness (trips early, inside the rated range) rather than late
+   (which would only cost margin above 125°C, not correctness at it).
+   **This single mechanism is the direct cause of every physically-impossible
+   number in the `dropout-vs-load`, `load-transient` and `loop-gain` records
+   at the six `ff`/`sf`-at-125°C corners** — e.g. `dropout-vs-load`'s
+   `ff_125c_3.30v: vout_at_max_vin_v=-19.2011V`, `sf_125c_*: dropout_v=32.5871V`;
+   `load-transient`'s `ff_125c_2.97v: undershoot_v=22.2895V`,
+   `sf_125c_*: undershoot_v≈14.37V`; `loop-gain`'s `ff_125c_*`/`sf_125c_*:
+   dcgain_c033_50ma_db≈-330dB` with most other measurements `n/a`. With the
+   pass gate driven fully off by a falsely-tripped thermal clamp, a
+   50mA-sinking ideal current-source load (the testbenches' own load model)
+   has no physically consistent DC/transient solution near the target
+   operating point, so the solver reports whatever extreme, non-physical
+   value it converges to instead (confirmed reproducible: a screening `.op`
+   at the exact same bias point returns `VOUT=-19.5043V`, matching the
+   committed record's `-19.2011V` to within re-run/precision noise). **Read
+   those specific numbers as "the pass device was driven off and the demanded
+   50mA had nowhere physical to come from," not as literal voltages** — but
+   the underlying finding (thermal shutdown nuisance-trips inside the rated
+   temperature range at two of five process corners) is a real, actionable
+   functional defect, not a reporting artifact.
+2. **A genuine, now-fully-confirmed light-load stability shortfall,
+   pervasive rather than confined to the 3-corner subset.** `sim/loop-gain`'s
+   full 45-point run passes only 3/45 corners (versus the 3-corner quick
+   subset's already-known 0mA shortfall at 2 of 3 corners). The `pm_c033_0ma`
+   column is below the 45° DRAFT Stability row at nearly every corner outside
+   125°C (typically 15–24° at −40/27°C, improving toward 30–90° as
+   temperature rises), confirming the mechanism this file already named under
+   "Compensation (sized in #25)" — the pass stage's own
+   `gm_pass/(2π·C_out)` pole falling with load current, unclosable without
+   spending amplifier bias current the DRAFT `Iq < 30µA` row does not have
+   room for — generalizes across the full corner grid rather than being a
+   quirk of the 3 quick-subset corners. The same marginal-margin/doublet-dip
+   condition is the most likely driver of `mc-output-accuracy`'s 19/200 tail
+   outliers (see below) and of the *non-pathological* (i.e. not
+   thermal-shutdown-related) FAILs in `load-transient` and `dropout-vs-load`
+   at `tt`/`ss`/`fs` corners.
+3. **`dropout-vs-load`: a real, if smaller than initially apparent, dropout
+   shortfall, distinct from (1) and (2) above at the non-`ff`/`sf`-125°C
+   corners.** The `dropout_v` measurement reads `v(vin)-v(vout)` at the
+   sweep's lowest point (`Vin=1.9V`, only 100mV above the 1.8V target) —
+   deep inside the region where 50mA load has already forced the loop out of
+   regulation, so the reported number is the pass device's residual
+   `V_sd` well past dropout, not the classic "headroom at which regulation is
+   just lost" definition. A screening re-sweep of the actual closed loop
+   (`tt`/27°C, 50mA, `Vin` 1.9→2.5V, reproducible from the committed netlist)
+   shows `Vout` climbing smoothly from 1.37V at `Vin=1.9V` to 1.79V by
+   `Vin≈2.20–2.35V` — i.e. the closed loop's own actual dropout headroom is
+   roughly **400–450mV**, worse than DR-003's pass-device-alone screening
+   (98mA available at `V_sd=0.3V`, implying ~150mV for 50mA) because that
+   screening forced full gate drive externally, while the closed loop's own
+   amplifier — whose bias/tail chain also loses headroom as `Vin` approaches
+   `Vout` — cannot quite reach full drive at this margin. 400–450mV is still
+   above the DRAFT 300mV target, a real (if smaller than the raw 530mV–1.79V
+   the record reports) gap.
+4. **The same sweep also surfaces a second, independent problem: the
+   closed-loop DC operating point is not unique in parts of this region.**
+   Sweeping `Vin` continuously from 1.9V to 3.63V at `tt`/27°C/50mA (screening,
+   not `sim/` evidence) does not track a single monotonic branch — it jumps
+   between a regulating branch (`Vout≈1.80V`) and a non-regulating one
+   (`Vout` tracking well above target, e.g. 2.26–2.54V) several times before
+   settling, with `ngspice` reporting `singular matrix` warnings at nodes
+   `ea_cz`/`n_fbb`/`amp_enn` and, on a wider sweep starting below 1.8V,
+   domain-error convergence failures in the `R_CZ` compensation resistor's
+   body-junction model at nearly every swept point. This means the
+   `dropout-vs-load` and `load-transient` records' per-corner numbers at
+   several `tt`/`ss`/`fs` corners (not just the `ff`/`sf`-125°C corners
+   mechanism (1) explains) should be read as "one of several DC solutions
+   the solver's continuation history happened to land on," not as the unique
+   physical answer — a genuine circuit robustness question (does a real,
+   fabricated device actually exhibit multiple stable operating points in
+   this region, or is this purely a simulator-continuation artifact?) that
+   this issue's screening time did not resolve.
+5. **PSRR: a real, systematic, previously-undesigned-for shortfall, not a
+   symptom of (1)/(2)/(4).** `sim/psrr-dc` fails 39/45 corners at 1kHz by a
+   wide, consistent margin (measured 20.3–25.7dB against the 50dB DRAFT
+   target — a real, non-pathological small-signal result, not a
+   non-physical one); the 6 corners that pass (`ff`/`sf` at 125°C) are
+   exactly the corners mechanism (1) shows are thermal-shutdown-tripped, so
+   those "PASS" numbers (76–105dB) are AC gain measured around a collapsed,
+   non-regulating bias point and should not be read as genuine PSRR either —
+   **on the evidence available, PSRR does not actually pass anywhere.** The
+   likely mechanism: this block's bias generator (`R_BIAS`/`M_BIASN1`/
+   `M_BIASN2`/`M_BIASP1`, unchanged since #14) has no supply-independent
+   reference or cascode — every PMOS current source in the amplifier,
+   current limit, soft-start and thermal-shutdown chains inherits `VIN`
+   ripple directly through `BIASP`. The current-mirror OTA's own pull-up path
+   (`M_MIRP1`/`M_MIRP2`, both sourced from `VIN`) compounds this: unlike the
+   NMOS pull-down side (returned through the fixed `AMP_ENN` rail), the
+   pull-up mirror's reference is itself referred to `VIN`, so it does not
+   independently attenuate `VIN` ripple the way a supply-independent-biased
+   stage would. This was never a design target for #14/#22/#25's bias
+   generator — this file already states it "remains a functional starting
+   point rather than a budgeted design" — so this is a newly-confirmed,
+   previously-out-of-scope gap, not a regression.
+6. **`mc-output-accuracy`: the aggregate sigma-window FAIL is a tail-outlier
+   artifact of (2)/(4) above, not evidence that mismatch itself is too
+   large.** 181/200 samples individually pass the ±2% window; the aggregate
+   `FAIL` comes from 19/200 tail samples, one of which reads `vout_ss=
+   -19.345V` — a device-mismatch draw pushing an already-marginal light-load
+   operating point (mechanism (2)) into the same kind of non-regulating
+   branch mechanism (4) describes, at the record's own 1mA/`tt`/27°C/`VIN=
+   3.3V` point (a condition that regulates cleanly with zero mismatch, per
+   the "DC operating grid" table above). Fixing mechanisms (2)/(4) is very
+   likely to close most or all of this row without any change to the
+   mismatch model itself.
+
+**What this means for the DRAFT spec rows.** None of Output, Dropout,
+Load-transient, PSRR or Stability can be marked closed. None of the five
+findings above is closable by a small, low-risk sizing tweak validated
+against a single corner — each requires a design change (bias-generator
+redesign for PSRR/supply-independence, a re-tuned/re-verified thermal-
+shutdown sizing for the false-trip, and a compensation/bias-current rework
+for the light-load margin that fits inside the DRAFT `Iq` budget) followed by
+a full, expensive 45-point-per-testbench re-verification pass to confirm it
+without regressing a different row — exactly the risk this issue's own
+Curator enhancement flagged ("a wrong root cause or a fix that regresses a
+different row could pass a shallow review unnoticed"). That work is
+decomposed into follow-on issues rather than attempted speculatively in this
+pass:
+
+- **#69** — thermal-shutdown false-trip at `ff`/`sf`/125°C (mechanism 1).
+- **#70** — PSRR (mechanism 5) and the pervasive light-load stability
+  shortfall (mechanism 2), bundled together since both plausibly share a
+  bias-generator-redesign fix and both compete for the same `Iq` budget.
+- **#71** — the `dropout-vs-load` testbench's `dropout_v` measurement
+  methodology (mechanism 3) and the DC-solution-multiplicity question
+  (mechanism 4).
+
+`mc-output-accuracy`'s tail-outlier FAIL (mechanism 6) has no issue of its
+own — it is expected to close mostly or entirely as a side effect of #70.
 
 ## Validating this schematic
 
