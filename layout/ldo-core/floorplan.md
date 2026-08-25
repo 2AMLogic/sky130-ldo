@@ -101,7 +101,7 @@ physically enormous next to any MOS device, a direct consequence of
 `res_high_po`'s sheet resistivity, and `klt gen res_array` draws each unit
 resistor as one straight body (no meander/fold for a single logical resistor
 at this repo's pinned `klt` commit). The result is a deliberately lopsided
-block, ~2384um x ~101um for the device row, dominated by that one resistor.
+block, ~2382um x ~101um for the device row, dominated by that one resistor.
 
 ## Routing
 
@@ -109,7 +109,7 @@ block, ~2384um x ~101um for the device row, dominated by that one resistor.
 **two-pin** point-to-point nets only, and rejects any route whose backbone
 crosses another block's bounding box; this schematic's nets fan out to
 between 2 and 50 terminals each (`VIN` alone reaches every PMOS source and
-the well tie), across a 2384um-wide row. `layout/bin/gen-ldo-blocks.py`
+the well tie), across a 2382um-wide row. `layout/bin/gen-ldo-blocks.py`
 therefore draws the wiring itself, as a single-channel two-layer channel
 route. That gap was already tracked upstream and is cross-confirmed rather
 than re-filed -- see `layout/README.md`'s "What routing the LDO core hit"

@@ -52,7 +52,14 @@ OUT_DIR="$BLOCK_DIR/reports/$RECORD_ID"
 mkdir -p "$OUT_DIR"
 echo "run-ldo-layout-flow.sh: record $RECORD_ID -> $OUT_DIR"
 
-SCHEMATIC_SHA="$(git -C "$REPO_ROOT" log -1 --format=%h -- design/ldo_3v3in_1v8out.sch design/README.md)"
+# Schematic-only: tracks the exact same path `measurements/
+# build_characterization_report.py`'s freshness check compares against
+# (`SCHEMATIC_FILE`, the .sch alone). Including design/README.md here used
+# to also fold in that doc's own last-touched commit, which meant a
+# README-only edit (documentation, no device-geometry change) could bump
+# this beyond the checker's notion of "current" and mark an up-to-date
+# layout STALE for no schematic-content reason (issue #89).
+SCHEMATIC_SHA="$(git -C "$REPO_ROOT" log -1 --format=%h -- design/ldo_3v3in_1v8out.sch)"
 
 # --- 1. Netlist the schematic headlessly (this layout's device set) --------
 XSCHEM_OUT="$OUT_DIR/xschem_out"

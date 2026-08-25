@@ -1,0 +1,2377 @@
+{
+  "schema_version": 1,
+  "netlist": "tb_pex_post_layout.spice",
+  "status": "pass",
+  "corner_count": 45,
+  "passed": 45,
+  "failed": 0,
+  "errored": 0,
+  "environment": {
+    "engine": "ngspice",
+    "engine_version": "47",
+    "models_lib": "/Users/rwalters/.volare/sky130A/libs.tech/combined/sky130.lib.spice",
+    "models_lib_sha256": "48de7c677e2c6e7d09b2559279de9f818be71010a4aa933d728eb4db3b133c84",
+    "netlist_sha256": "ceb5572f4dd3db8416d73a278a9ae1b1f53f772d3ee0042e913cf2b7ea1138f1"
+  },
+  "provenance": {
+    "klt_version": "0.2.0",
+    "klayout_version": "0.30.10",
+    "pdk": null,
+    "deck": {
+      "name": "sky130.lib.spice",
+      "content_hash": "sha256:48de7c677e2c6e7d09b2559279de9f818be71010a4aa933d728eb4db3b133c84"
+    },
+    "input": null
+  },
+  "measurements": [
+    {
+      "name": "vout_light_load_v",
+      "unit": "V",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/2.970V/-40C",
+        "value": 1.8002,
+        "margin": null
+      }
+    },
+    {
+      "name": "vout_full_load_v",
+      "unit": "V",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/2.970V/-40C",
+        "value": 1.79815,
+        "margin": null
+      }
+    },
+    {
+      "name": "vin_minus_vout_full_load_v",
+      "unit": "V",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/2.970V/-40C",
+        "value": 1.17185,
+        "margin": null
+      }
+    }
+  ],
+  "corners": [
+    {
+      "corner_id": "tt/2.970V/-40C",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": -40,
+      "status": "pass",
+      "runtime_s": 11.73,
+      "measurements": [
+        {
+          "name": "vout_light_load_v",
+          "value": 1.8002,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.79815,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vin_minus_vout_full_load_v",
+          "value": 1.17185,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "singular_matrix",
+          "message": "Warning: singular matrix:  check node ea_cz"
+        },
+        {
+          "severity": "warning",
+          "code": "nonconvergence",
+          "message": "Warning: Dynamic gmin stepping failed"
+        }
+      ],
+      "artifacts": {
+        "log": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/tt_2p970V_n40C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/tt_2p970V_n40C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "tt/2.970V/27C",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 12.067,
+      "measurements": [
+        {
+          "name": "vout_light_load_v",
+          "value": 1.80032,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.79784,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vin_minus_vout_full_load_v",
+          "value": 1.17216,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "singular_matrix",
+          "message": "Warning: singular matrix:  check nodes xldo.xr_fb_b.t2 and fb"
+        },
+        {
+          "severity": "warning",
+          "code": "nonconvergence",
+          "message": "Warning: Dynamic gmin stepping failed"
+        }
+      ],
+      "artifacts": {
+        "log": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/tt_2p970V_27C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/tt_2p970V_27C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "tt/2.970V/125C",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 11.481,
+      "measurements": [
+        {
+          "name": "vout_light_load_v",
+          "value": 1.80054,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.79731,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vin_minus_vout_full_load_v",
+          "value": 1.17269,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "singular_matrix",
+          "message": "Warning: singular matrix:  check node xldo.xr_fb_b.t2"
+        },
+        {
+          "severity": "warning",
+          "code": "nonconvergence",
+          "message": "Warning: Dynamic gmin stepping failed"
+        }
+      ],
+      "artifacts": {
+        "log": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/tt_2p970V_125C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/tt_2p970V_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "tt/3.300V/-40C",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": -40,
+      "status": "pass",
+      "runtime_s": 11.727,
+      "measurements": [
+        {
+          "name": "vout_light_load_v",
+          "value": 1.80027,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.79829,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vin_minus_vout_full_load_v",
+          "value": 1.50171,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "singular_matrix",
+          "message": "Warning: singular matrix:  check node ea_cz"
+        },
+        {
+          "severity": "warning",
+          "code": "nonconvergence",
+          "message": "Warning: Dynamic gmin stepping failed"
+        }
+      ],
+      "artifacts": {
+        "log": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/tt_3p300V_n40C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/tt_3p300V_n40C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "tt/3.300V/27C",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 12.056,
+      "measurements": [
+        {
+          "name": "vout_light_load_v",
+          "value": 3.27965,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.79799,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vin_minus_vout_full_load_v",
+          "value": 1.50201,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "singular_matrix",
+          "message": "Warning: singular matrix:  check node xldo.xr_fb_b.t2"
+        },
+        {
+          "severity": "warning",
+          "code": "nonconvergence",
+          "message": "Warning: Dynamic gmin stepping failed"
+        }
+      ],
+      "artifacts": {
+        "log": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/tt_3p300V_27C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/tt_3p300V_27C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "tt/3.300V/125C",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 12.165,
+      "measurements": [
+        {
+          "name": "vout_light_load_v",
+          "value": 1.80067,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.79748,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vin_minus_vout_full_load_v",
+          "value": 1.50252,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "singular_matrix",
+          "message": "Warning: singular matrix:  check node ea_cz"
+        },
+        {
+          "severity": "warning",
+          "code": "nonconvergence",
+          "message": "Warning: Dynamic gmin stepping failed"
+        }
+      ],
+      "artifacts": {
+        "log": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/tt_3p300V_125C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/tt_3p300V_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "tt/3.630V/-40C",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": -40,
+      "status": "pass",
+      "runtime_s": 11.943,
+      "measurements": [
+        {
+          "name": "vout_light_load_v",
+          "value": 1.80035,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.79839,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vin_minus_vout_full_load_v",
+          "value": 1.83161,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "singular_matrix",
+          "message": "Warning: singular matrix:  check node xldo.xr_fb_b.t2"
+        },
+        {
+          "severity": "warning",
+          "code": "nonconvergence",
+          "message": "Warning: Dynamic gmin stepping failed"
+        }
+      ],
+      "artifacts": {
+        "log": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/tt_3p630V_n40C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/tt_3p630V_n40C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "tt/3.630V/27C",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 11.649,
+      "measurements": [
+        {
+          "name": "vout_light_load_v",
+          "value": 1.80052,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.79809,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vin_minus_vout_full_load_v",
+          "value": 1.83191,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "singular_matrix",
+          "message": "Warning: singular matrix:  check node xldo.xr_fb_b.t2"
+        },
+        {
+          "severity": "warning",
+          "code": "nonconvergence",
+          "message": "Warning: Dynamic gmin stepping failed"
+        }
+      ],
+      "artifacts": {
+        "log": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/tt_3p630V_27C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/tt_3p630V_27C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "tt/3.630V/125C",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 11.81,
+      "measurements": [
+        {
+          "name": "vout_light_load_v",
+          "value": 3.60696,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.7974,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vin_minus_vout_full_load_v",
+          "value": 1.8326,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "singular_matrix",
+          "message": "Warning: singular matrix:  check node ea_cz"
+        },
+        {
+          "severity": "warning",
+          "code": "nonconvergence",
+          "message": "Warning: Dynamic gmin stepping failed"
+        }
+      ],
+      "artifacts": {
+        "log": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/tt_3p630V_125C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/tt_3p630V_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "ss/2.970V/-40C",
+      "process": "ss",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": -40,
+      "status": "pass",
+      "runtime_s": 12.253,
+      "measurements": [
+        {
+          "name": "vout_light_load_v",
+          "value": 1.80016,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 2.7445,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vin_minus_vout_full_load_v",
+          "value": 0.225501,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "singular_matrix",
+          "message": "Warning: singular matrix:  check node ea_cz"
+        },
+        {
+          "severity": "warning",
+          "code": "nonconvergence",
+          "message": "Warning: Dynamic gmin stepping failed"
+        }
+      ],
+      "artifacts": {
+        "log": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/ss_2p970V_n40C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/ss_2p970V_n40C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "ss/2.970V/27C",
+      "process": "ss",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 12.043,
+      "measurements": [
+        {
+          "name": "vout_light_load_v",
+          "value": 1.80028,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 2.70398,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vin_minus_vout_full_load_v",
+          "value": 0.266024,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "singular_matrix",
+          "message": "Warning: singular matrix:  check node xldo.xr_fb_b.t2"
+        },
+        {
+          "severity": "warning",
+          "code": "nonconvergence",
+          "message": "Warning: Dynamic gmin stepping failed"
+        }
+      ],
+      "artifacts": {
+        "log": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/ss_2p970V_27C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/ss_2p970V_27C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "ss/2.970V/125C",
+      "process": "ss",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 11.986,
+      "measurements": [
+        {
+          "name": "vout_light_load_v",
+          "value": 1.80048,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.79721,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vin_minus_vout_full_load_v",
+          "value": 1.17279,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "singular_matrix",
+          "message": "Warning: singular matrix:  check nodes fb and xldo.xr_fb_b.t2"
+        },
+        {
+          "severity": "warning",
+          "code": "nonconvergence",
+          "message": "Warning: Dynamic gmin stepping failed"
+        }
+      ],
+      "artifacts": {
+        "log": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/ss_2p970V_125C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/ss_2p970V_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "ss/3.300V/-40C",
+      "process": "ss",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": -40,
+      "status": "pass",
+      "runtime_s": 12.047,
+      "measurements": [
+        {
+          "name": "vout_light_load_v",
+          "value": 1.80023,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.79821,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vin_minus_vout_full_load_v",
+          "value": 1.50179,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "singular_matrix",
+          "message": "Warning: singular matrix:  check node xldo.xr_fb_b.t2"
+        },
+        {
+          "severity": "warning",
+          "code": "nonconvergence",
+          "message": "Warning: Dynamic gmin stepping failed"
+        }
+      ],
+      "artifacts": {
+        "log": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/ss_3p300V_n40C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/ss_3p300V_n40C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "ss/3.300V/27C",
+      "process": "ss",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 11.604,
+      "measurements": [
+        {
+          "name": "vout_light_load_v",
+          "value": 1.80037,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 3.052,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vin_minus_vout_full_load_v",
+          "value": 0.247998,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "singular_matrix",
+          "message": "Warning: singular matrix:  check node ea_cz"
+        },
+        {
+          "severity": "warning",
+          "code": "nonconvergence",
+          "message": "Warning: Dynamic gmin stepping failed"
+        }
+      ],
+      "artifacts": {
+        "log": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/ss_3p300V_27C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/ss_3p300V_27C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "ss/3.300V/125C",
+      "process": "ss",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 11.824,
+      "measurements": [
+        {
+          "name": "vout_light_load_v",
+          "value": 1.80061,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.79739,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vin_minus_vout_full_load_v",
+          "value": 1.50261,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "singular_matrix",
+          "message": "Warning: singular matrix:  check node ea_cz"
+        },
+        {
+          "severity": "warning",
+          "code": "nonconvergence",
+          "message": "Warning: Dynamic gmin stepping failed"
+        }
+      ],
+      "artifacts": {
+        "log": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/ss_3p300V_125C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/ss_3p300V_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "ss/3.630V/-40C",
+      "process": "ss",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": -40,
+      "status": "pass",
+      "runtime_s": 12.392,
+      "measurements": [
+        {
+          "name": "vout_light_load_v",
+          "value": 1.80031,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.79831,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vin_minus_vout_full_load_v",
+          "value": 1.83169,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "singular_matrix",
+          "message": "Warning: singular matrix:  check node xldo.xr_fb_b.t2"
+        },
+        {
+          "severity": "warning",
+          "code": "nonconvergence",
+          "message": "Warning: Dynamic gmin stepping failed"
+        }
+      ],
+      "artifacts": {
+        "log": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/ss_3p630V_n40C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/ss_3p630V_n40C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "ss/3.630V/27C",
+      "process": "ss",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 12.217,
+      "measurements": [
+        {
+          "name": "vout_light_load_v",
+          "value": 1.80047,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.798,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vin_minus_vout_full_load_v",
+          "value": 1.832,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "singular_matrix",
+          "message": "Warning: singular matrix:  check node ea_cz"
+        },
+        {
+          "severity": "warning",
+          "code": "nonconvergence",
+          "message": "Warning: Dynamic gmin stepping failed"
+        }
+      ],
+      "artifacts": {
+        "log": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/ss_3p630V_27C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/ss_3p630V_27C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "ss/3.630V/125C",
+      "process": "ss",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 12.069,
+      "measurements": [
+        {
+          "name": "vout_light_load_v",
+          "value": 1.80071,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 3.34622,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vin_minus_vout_full_load_v",
+          "value": 0.283784,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/ss_3p630V_125C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/ss_3p630V_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "ff/2.970V/-40C",
+      "process": "ff",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": -40,
+      "status": "pass",
+      "runtime_s": 11.817,
+      "measurements": [
+        {
+          "name": "vout_light_load_v",
+          "value": 1.80025,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.79825,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vin_minus_vout_full_load_v",
+          "value": 1.17175,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "singular_matrix",
+          "message": "Warning: singular matrix:  check node ea_cz"
+        },
+        {
+          "severity": "warning",
+          "code": "nonconvergence",
+          "message": "Warning: Dynamic gmin stepping failed"
+        }
+      ],
+      "artifacts": {
+        "log": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/ff_2p970V_n40C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/ff_2p970V_n40C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "ff/2.970V/27C",
+      "process": "ff",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 11.78,
+      "measurements": [
+        {
+          "name": "vout_light_load_v",
+          "value": 1.80038,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.79794,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vin_minus_vout_full_load_v",
+          "value": 1.17206,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "singular_matrix",
+          "message": "Warning: singular matrix:  check node xldo.xr_fb_b.t2"
+        },
+        {
+          "severity": "warning",
+          "code": "nonconvergence",
+          "message": "Warning: Dynamic gmin stepping failed"
+        }
+      ],
+      "artifacts": {
+        "log": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/ff_2p970V_27C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/ff_2p970V_27C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "ff/2.970V/125C",
+      "process": "ff",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 11.44,
+      "measurements": [
+        {
+          "name": "vout_light_load_v",
+          "value": 2.9846,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.79739,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vin_minus_vout_full_load_v",
+          "value": 1.17261,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "singular_matrix",
+          "message": "Warning: singular matrix:  check node xldo.xr_fb_b.t2"
+        },
+        {
+          "severity": "warning",
+          "code": "nonconvergence",
+          "message": "Warning: Dynamic gmin stepping failed"
+        }
+      ],
+      "artifacts": {
+        "log": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/ff_2p970V_125C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/ff_2p970V_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "ff/3.300V/-40C",
+      "process": "ff",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": -40,
+      "status": "pass",
+      "runtime_s": 11.698,
+      "measurements": [
+        {
+          "name": "vout_light_load_v",
+          "value": 1.80032,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.79838,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vin_minus_vout_full_load_v",
+          "value": 1.50162,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "singular_matrix",
+          "message": "Warning: singular matrix:  check node ea_cz"
+        },
+        {
+          "severity": "warning",
+          "code": "nonconvergence",
+          "message": "Warning: Dynamic gmin stepping failed"
+        }
+      ],
+      "artifacts": {
+        "log": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/ff_3p300V_n40C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/ff_3p300V_n40C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "ff/3.300V/27C",
+      "process": "ff",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 11.524,
+      "measurements": [
+        {
+          "name": "vout_light_load_v",
+          "value": 1.80048,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.79809,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vin_minus_vout_full_load_v",
+          "value": 1.50191,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "singular_matrix",
+          "message": "Warning: singular matrix:  check nodes xldo.xr_fb_b.t2 and ea_cz"
+        },
+        {
+          "severity": "warning",
+          "code": "nonconvergence",
+          "message": "Warning: Dynamic gmin stepping failed"
+        }
+      ],
+      "artifacts": {
+        "log": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/ff_3p300V_27C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/ff_3p300V_27C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "ff/3.300V/125C",
+      "process": "ff",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 11.754,
+      "measurements": [
+        {
+          "name": "vout_light_load_v",
+          "value": 1.80075,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.79757,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vin_minus_vout_full_load_v",
+          "value": 1.50243,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "singular_matrix",
+          "message": "Warning: singular matrix:  check node ea_cz"
+        },
+        {
+          "severity": "warning",
+          "code": "nonconvergence",
+          "message": "Warning: Dynamic gmin stepping failed"
+        }
+      ],
+      "artifacts": {
+        "log": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/ff_3p300V_125C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/ff_3p300V_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "ff/3.630V/-40C",
+      "process": "ff",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": -40,
+      "status": "pass",
+      "runtime_s": 12.378,
+      "measurements": [
+        {
+          "name": "vout_light_load_v",
+          "value": 1.80041,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.79848,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vin_minus_vout_full_load_v",
+          "value": 1.83152,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "singular_matrix",
+          "message": "Warning: singular matrix:  check node ea_cz"
+        },
+        {
+          "severity": "warning",
+          "code": "nonconvergence",
+          "message": "Warning: Dynamic gmin stepping failed"
+        }
+      ],
+      "artifacts": {
+        "log": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/ff_3p630V_n40C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/ff_3p630V_n40C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "ff/3.630V/27C",
+      "process": "ff",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 12.522,
+      "measurements": [
+        {
+          "name": "vout_light_load_v",
+          "value": 1.80059,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.79819,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vin_minus_vout_full_load_v",
+          "value": 1.83181,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "singular_matrix",
+          "message": "Warning: singular matrix:  check nodes ea_cz and xldo.xr_fb_b.t2"
+        },
+        {
+          "severity": "warning",
+          "code": "nonconvergence",
+          "message": "Warning: Dynamic gmin stepping failed"
+        }
+      ],
+      "artifacts": {
+        "log": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/ff_3p630V_27C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/ff_3p630V_27C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "ff/3.630V/125C",
+      "process": "ff",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 12.322,
+      "measurements": [
+        {
+          "name": "vout_light_load_v",
+          "value": 1.80067,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 3.29325,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vin_minus_vout_full_load_v",
+          "value": 0.336749,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "singular_matrix",
+          "message": "Warning: singular matrix:  check nodes ea_cz and xldo.xr_fb_b.t2"
+        },
+        {
+          "severity": "warning",
+          "code": "nonconvergence",
+          "message": "Warning: Dynamic gmin stepping failed"
+        }
+      ],
+      "artifacts": {
+        "log": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/ff_3p630V_125C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/ff_3p630V_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "sf/2.970V/-40C",
+      "process": "sf",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": -40,
+      "status": "pass",
+      "runtime_s": 11.813,
+      "measurements": [
+        {
+          "name": "vout_light_load_v",
+          "value": 2.98059,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.7981,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vin_minus_vout_full_load_v",
+          "value": 1.1719,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "singular_matrix",
+          "message": "Warning: singular matrix:  check node ea_cz"
+        },
+        {
+          "severity": "warning",
+          "code": "nonconvergence",
+          "message": "Warning: Dynamic gmin stepping failed"
+        }
+      ],
+      "artifacts": {
+        "log": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/sf_2p970V_n40C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/sf_2p970V_n40C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "sf/2.970V/27C",
+      "process": "sf",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 12.502,
+      "measurements": [
+        {
+          "name": "vout_light_load_v",
+          "value": 1.80029,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.79778,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vin_minus_vout_full_load_v",
+          "value": 1.17222,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "singular_matrix",
+          "message": "Warning: singular matrix:  check node ea_cz"
+        },
+        {
+          "severity": "warning",
+          "code": "nonconvergence",
+          "message": "Warning: Dynamic gmin stepping failed"
+        }
+      ],
+      "artifacts": {
+        "log": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/sf_2p970V_27C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/sf_2p970V_27C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "sf/2.970V/125C",
+      "process": "sf",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 12.01,
+      "measurements": [
+        {
+          "name": "vout_light_load_v",
+          "value": 1.80048,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.79728,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vin_minus_vout_full_load_v",
+          "value": 1.17272,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "singular_matrix",
+          "message": "Warning: singular matrix:  check node ea_cz"
+        },
+        {
+          "severity": "warning",
+          "code": "nonconvergence",
+          "message": "Warning: Dynamic gmin stepping failed"
+        }
+      ],
+      "artifacts": {
+        "log": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/sf_2p970V_125C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/sf_2p970V_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "sf/3.300V/-40C",
+      "process": "sf",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": -40,
+      "status": "pass",
+      "runtime_s": 11.898,
+      "measurements": [
+        {
+          "name": "vout_light_load_v",
+          "value": 1.80024,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 3.04399,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vin_minus_vout_full_load_v",
+          "value": 0.256014,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "singular_matrix",
+          "message": "Warning: singular matrix:  check node xldo.xr_fb_b.t2"
+        }
+      ],
+      "artifacts": {
+        "log": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/sf_3p300V_n40C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/sf_3p300V_n40C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "sf/3.300V/27C",
+      "process": "sf",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 11.624,
+      "measurements": [
+        {
+          "name": "vout_light_load_v",
+          "value": 1.80037,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 3.00602,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vin_minus_vout_full_load_v",
+          "value": 0.293976,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "singular_matrix",
+          "message": "Warning: singular matrix:  check node xldo.xr_fb_b.t2"
+        }
+      ],
+      "artifacts": {
+        "log": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/sf_3p300V_27C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/sf_3p300V_27C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "sf/3.300V/125C",
+      "process": "sf",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 11.581,
+      "measurements": [
+        {
+          "name": "vout_light_load_v",
+          "value": 1.8006,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.79746,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vin_minus_vout_full_load_v",
+          "value": 1.50254,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "singular_matrix",
+          "message": "Warning: singular matrix:  check node xldo.xr_fb_b.t2"
+        },
+        {
+          "severity": "warning",
+          "code": "nonconvergence",
+          "message": "Warning: Dynamic gmin stepping failed"
+        }
+      ],
+      "artifacts": {
+        "log": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/sf_3p300V_125C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/sf_3p300V_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "sf/3.630V/-40C",
+      "process": "sf",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": -40,
+      "status": "pass",
+      "runtime_s": 12.252,
+      "measurements": [
+        {
+          "name": "vout_light_load_v",
+          "value": 1.80031,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.79835,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vin_minus_vout_full_load_v",
+          "value": 1.83165,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "singular_matrix",
+          "message": "Warning: singular matrix:  check nodes ea_cz and fb"
+        },
+        {
+          "severity": "warning",
+          "code": "nonconvergence",
+          "message": "Warning: Dynamic gmin stepping failed"
+        }
+      ],
+      "artifacts": {
+        "log": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/sf_3p630V_n40C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/sf_3p630V_n40C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "sf/3.630V/27C",
+      "process": "sf",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 11.737,
+      "measurements": [
+        {
+          "name": "vout_light_load_v",
+          "value": 1.80047,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.79805,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vin_minus_vout_full_load_v",
+          "value": 1.83195,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "singular_matrix",
+          "message": "Warning: singular matrix:  check node fb"
+        },
+        {
+          "severity": "warning",
+          "code": "nonconvergence",
+          "message": "Warning: Dynamic gmin stepping failed"
+        }
+      ],
+      "artifacts": {
+        "log": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/sf_3p630V_27C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/sf_3p630V_27C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "sf/3.630V/125C",
+      "process": "sf",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 12.315,
+      "measurements": [
+        {
+          "name": "vout_light_load_v",
+          "value": 1.80072,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.79753,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vin_minus_vout_full_load_v",
+          "value": 1.83247,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "singular_matrix",
+          "message": "Warning: singular matrix:  check node ea_cz"
+        },
+        {
+          "severity": "warning",
+          "code": "nonconvergence",
+          "message": "Warning: Dynamic gmin stepping failed"
+        }
+      ],
+      "artifacts": {
+        "log": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/sf_3p630V_125C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/sf_3p630V_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "fs/2.970V/-40C",
+      "process": "fs",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": -40,
+      "status": "pass",
+      "runtime_s": 11.861,
+      "measurements": [
+        {
+          "name": "vout_light_load_v",
+          "value": 2.97918,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.7982,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vin_minus_vout_full_load_v",
+          "value": 1.1718,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "singular_matrix",
+          "message": "Warning: singular matrix:  check nodes ea_cz and xldo.xr_fb_b.t2"
+        },
+        {
+          "severity": "warning",
+          "code": "nonconvergence",
+          "message": "Warning: Dynamic gmin stepping failed"
+        }
+      ],
+      "artifacts": {
+        "log": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/fs_2p970V_n40C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/fs_2p970V_n40C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "fs/2.970V/27C",
+      "process": "fs",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 11.81,
+      "measurements": [
+        {
+          "name": "vout_light_load_v",
+          "value": 1.80037,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.79789,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vin_minus_vout_full_load_v",
+          "value": 1.17211,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "singular_matrix",
+          "message": "Warning: singular matrix:  check node xldo.xr_fb_b.t2"
+        },
+        {
+          "severity": "warning",
+          "code": "nonconvergence",
+          "message": "Warning: Dynamic gmin stepping failed"
+        }
+      ],
+      "artifacts": {
+        "log": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/fs_2p970V_27C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/fs_2p970V_27C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "fs/2.970V/125C",
+      "process": "fs",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 11.715,
+      "measurements": [
+        {
+          "name": "vout_light_load_v",
+          "value": 2.98309,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.79729,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vin_minus_vout_full_load_v",
+          "value": 1.17271,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "singular_matrix",
+          "message": "Warning: singular matrix:  check node ea_cz"
+        },
+        {
+          "severity": "warning",
+          "code": "nonconvergence",
+          "message": "Warning: Dynamic gmin stepping failed"
+        }
+      ],
+      "artifacts": {
+        "log": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/fs_2p970V_125C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/fs_2p970V_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "fs/3.300V/-40C",
+      "process": "fs",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": -40,
+      "status": "pass",
+      "runtime_s": 11.819,
+      "measurements": [
+        {
+          "name": "vout_light_load_v",
+          "value": 1.80031,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.79834,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vin_minus_vout_full_load_v",
+          "value": 1.50166,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "singular_matrix",
+          "message": "Warning: singular matrix:  check nodes xldo.xr_fb_b.t2 and fb"
+        },
+        {
+          "severity": "warning",
+          "code": "nonconvergence",
+          "message": "Warning: Dynamic gmin stepping failed"
+        }
+      ],
+      "artifacts": {
+        "log": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/fs_3p300V_n40C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/fs_3p300V_n40C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "fs/3.300V/27C",
+      "process": "fs",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 11.551,
+      "measurements": [
+        {
+          "name": "vout_light_load_v",
+          "value": 1.80046,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 3.03979,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vin_minus_vout_full_load_v",
+          "value": 0.26021,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "singular_matrix",
+          "message": "Warning: singular matrix:  check node ea_cz"
+        }
+      ],
+      "artifacts": {
+        "log": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/fs_3p300V_27C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/fs_3p300V_27C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "fs/3.300V/125C",
+      "process": "fs",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 11.615,
+      "measurements": [
+        {
+          "name": "vout_light_load_v",
+          "value": 1.80074,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.79746,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vin_minus_vout_full_load_v",
+          "value": 1.50254,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "singular_matrix",
+          "message": "Warning: singular matrix:  check node xldo.xr_fb_b.t2"
+        },
+        {
+          "severity": "warning",
+          "code": "nonconvergence",
+          "message": "Warning: Dynamic gmin stepping failed"
+        }
+      ],
+      "artifacts": {
+        "log": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/fs_3p300V_125C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/fs_3p300V_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "fs/3.630V/-40C",
+      "process": "fs",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": -40,
+      "status": "pass",
+      "runtime_s": 11.926,
+      "measurements": [
+        {
+          "name": "vout_light_load_v",
+          "value": 3.6382,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.79843,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vin_minus_vout_full_load_v",
+          "value": 1.83157,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "singular_matrix",
+          "message": "Warning: singular matrix:  check node ea_cz"
+        },
+        {
+          "severity": "warning",
+          "code": "nonconvergence",
+          "message": "Warning: Dynamic gmin stepping failed"
+        }
+      ],
+      "artifacts": {
+        "log": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/fs_3p630V_n40C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/fs_3p630V_n40C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "fs/3.630V/27C",
+      "process": "fs",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 11.287,
+      "measurements": [
+        {
+          "name": "vout_light_load_v",
+          "value": 1.80058,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.79812,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vin_minus_vout_full_load_v",
+          "value": 1.83188,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "singular_matrix",
+          "message": "Warning: singular matrix:  check node xldo.xr_fb_b.t2"
+        },
+        {
+          "severity": "warning",
+          "code": "nonconvergence",
+          "message": "Warning: Dynamic gmin stepping failed"
+        }
+      ],
+      "artifacts": {
+        "log": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/fs_3p630V_27C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/fs_3p630V_27C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "fs/3.630V/125C",
+      "process": "fs",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": 125,
+      "status": "pass",
+      "runtime_s": 11.436,
+      "measurements": [
+        {
+          "name": "vout_light_load_v",
+          "value": 1.80044,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.79674,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vin_minus_vout_full_load_v",
+          "value": 1.83326,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "singular_matrix",
+          "message": "Warning: singular matrix:  check nodes fb and xldo.xr_fb_b.t2"
+        },
+        {
+          "severity": "warning",
+          "code": "nonconvergence",
+          "message": "Warning: Dynamic gmin stepping failed"
+        }
+      ],
+      "artifacts": {
+        "log": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/fs_3p630V_125C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/sim/build/pex-post-layout/20260825-125102-3b4e121/sim/fs_3p630V_125C/corner.cir"
+      },
+      "monte_carlo": null
+    }
+  ]
+}

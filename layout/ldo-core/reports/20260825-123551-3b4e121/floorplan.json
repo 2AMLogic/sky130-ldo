@@ -1,0 +1,1591 @@
+{
+  "source_netlist": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-89/layout/ldo-core/reports/20260825-123551-3b4e121/xschem_out/ldo_3v3in_1v8out.spice",
+  "device_count": 48,
+  "mos_count": 43,
+  "res_count": 5,
+  "block_count": 48,
+  "undrawn_elements": [
+    "C_COMP VOUT EA_CZ 150p m=1",
+    "C_CL VIN CL_CMP 1p m=1",
+    "C_SS SS 0 10p m=1",
+    "C_TS VIN TS_CMP 1p m=1"
+  ],
+  "max_unit_w_um": 100.0,
+  "row_width_um": 2382.0799999999995,
+  "row_height_um": 101.12,
+  "groups": [
+    {
+      "group": "bias_resistor",
+      "blocks": [
+        "R_BIAS"
+      ],
+      "x0_um": 0.0,
+      "x1_um": 1500.84,
+      "height_um": 0.42
+    },
+    {
+      "group": "feedback_divider",
+      "blocks": [
+        "R_FB_A",
+        "R_FB_B",
+        "R_FB_C"
+      ],
+      "x0_um": 1502.84,
+      "x1_um": 2049.3599999999997,
+      "height_um": 0.42
+    },
+    {
+      "group": "compensation",
+      "blocks": [
+        "R_CZ"
+      ],
+      "x0_um": 2051.3599999999997,
+      "x1_um": 2104.2,
+      "height_um": 0.42
+    },
+    {
+      "group": "bias_enable",
+      "blocks": [
+        "M_BIASN1",
+        "M_ENN",
+        "M_BIASN2",
+        "M_ENN2",
+        "M_BIASP1",
+        "M_ENP2",
+        "M_ENP",
+        "M_ENP5",
+        "M_ENP3",
+        "M_ENP4"
+      ],
+      "x0_um": 2122.2,
+      "x1_um": 2242.6600000000017,
+      "height_um": 11.120000000000001
+    },
+    {
+      "group": "error_amp",
+      "blocks": [
+        "M_MIR1",
+        "M_MIR2",
+        "M_MIR3",
+        "M_MIR4",
+        "M_TAIL",
+        "M_IN1",
+        "M_IN2",
+        "M_MIRP1",
+        "M_MIRP2",
+        "M_IN2S"
+      ],
+      "x0_um": 2136.5600000000004,
+      "x1_um": 2277.500000000001,
+      "height_um": 41.12
+    },
+    {
+      "group": "current_limit",
+      "blocks": [
+        "M_CLN1",
+        "M_CLN2",
+        "M_SENSE",
+        "M_CLP",
+        "M_CLIM"
+      ],
+      "x0_um": 2163.920000000001,
+      "x1_um": 2288.9200000000005,
+      "height_um": 21.119999999999997
+    },
+    {
+      "group": "soft_start",
+      "blocks": [
+        "M_INVN",
+        "M_SSDIS",
+        "M_INVP",
+        "M_SSCHG"
+      ],
+      "x0_um": 2171.6000000000013,
+      "x1_um": 2303.7000000000003,
+      "height_um": 3.12
+    },
+    {
+      "group": "thermal_shutdown",
+      "blocks": [
+        "M_TSD1",
+        "M_TSD2",
+        "M_TSR1",
+        "M_TCTAIL",
+        "M_TCN1",
+        "M_TCN2",
+        "M_TSPS",
+        "M_TSPR",
+        "M_TCP1",
+        "M_TCP2",
+        "M_TSHUT",
+        "M_TSHYSB",
+        "M_TSHYS"
+      ],
+      "x0_um": 2178.2800000000016,
+      "x1_um": 2334.6799999999994,
+      "height_um": 80.82000000000001
+    },
+    {
+      "group": "output_pass",
+      "blocks": [
+        "M_PASS"
+      ],
+      "x0_um": 2336.6799999999994,
+      "x1_um": 2380.0799999999995,
+      "height_um": 101.12
+    }
+  ],
+  "body_nets": {
+    "pmos": "VIN",
+    "nmos": "0"
+  },
+  "pin_nets": [
+    "VOUT",
+    "VREF",
+    "EN",
+    "VIN"
+  ],
+  "devices": [
+    {
+      "id": "R_BIAS",
+      "name": "R_BIAS",
+      "kind": "res",
+      "group": "bias_resistor",
+      "flavor": "high",
+      "units": 1,
+      "unit_w_um": null,
+      "w_total_um": null,
+      "l_um": null,
+      "length_um": 1500.0,
+      "width_um": 0.42,
+      "nets": {
+        "A": "VIN",
+        "B": "NB",
+        "W": "0"
+      },
+      "placed_bbox_um": {
+        "x0": 0.0,
+        "y0": 0.0,
+        "x1": 1500.84,
+        "y1": 0.42
+      }
+    },
+    {
+      "id": "R_FB_A",
+      "name": "R_FB_A",
+      "kind": "res",
+      "group": "feedback_divider",
+      "flavor": "xhigh",
+      "units": 1,
+      "unit_w_um": null,
+      "w_total_um": null,
+      "l_um": null,
+      "length_um": 180.0,
+      "width_um": 0.42,
+      "nets": {
+        "A": "VOUT",
+        "B": "FB",
+        "W": "0"
+      },
+      "placed_bbox_um": {
+        "x0": 1502.84,
+        "y0": 0.0,
+        "x1": 1683.6799999999998,
+        "y1": 0.42
+      }
+    },
+    {
+      "id": "R_FB_B",
+      "name": "R_FB_B",
+      "kind": "res",
+      "group": "feedback_divider",
+      "flavor": "xhigh",
+      "units": 1,
+      "unit_w_um": null,
+      "w_total_um": null,
+      "l_um": null,
+      "length_um": 180.0,
+      "width_um": 0.42,
+      "nets": {
+        "A": "FB",
+        "B": "N_FBB",
+        "W": "0"
+      },
+      "placed_bbox_um": {
+        "x0": 1685.6799999999998,
+        "y0": 0.0,
+        "x1": 1866.5199999999998,
+        "y1": 0.42
+      }
+    },
+    {
+      "id": "R_FB_C",
+      "name": "R_FB_C",
+      "kind": "res",
+      "group": "feedback_divider",
+      "flavor": "xhigh",
+      "units": 1,
+      "unit_w_um": null,
+      "w_total_um": null,
+      "l_um": null,
+      "length_um": 180.0,
+      "width_um": 0.42,
+      "nets": {
+        "A": "N_FBB",
+        "B": "0",
+        "W": "0"
+      },
+      "placed_bbox_um": {
+        "x0": 1868.5199999999998,
+        "y0": 0.0,
+        "x1": 2049.3599999999997,
+        "y1": 0.42
+      }
+    },
+    {
+      "id": "R_CZ",
+      "name": "R_CZ",
+      "kind": "res",
+      "group": "compensation",
+      "flavor": "xhigh",
+      "units": 1,
+      "unit_w_um": null,
+      "w_total_um": null,
+      "l_um": null,
+      "length_um": 52.0,
+      "width_um": 0.42,
+      "nets": {
+        "A": "EA_CZ",
+        "B": "EA_OUT",
+        "W": "0"
+      },
+      "placed_bbox_um": {
+        "x0": 2051.3599999999997,
+        "y0": 0.0,
+        "x1": 2104.2,
+        "y1": 0.42
+      }
+    },
+    {
+      "id": "M_BIASN1",
+      "name": "M_BIASN1",
+      "kind": "mos",
+      "group": "bias_enable",
+      "flavor": "nfet",
+      "units": 1,
+      "unit_w_um": 4.0,
+      "w_total_um": 4.0,
+      "l_um": 1.0,
+      "length_um": null,
+      "width_um": null,
+      "nets": {
+        "D": "NB",
+        "G": "NB",
+        "S": "BIAS_ENN",
+        "B": "0"
+      },
+      "placed_bbox_um": {
+        "x0": 2122.2,
+        "y0": 0.0,
+        "x1": 2124.04,
+        "y1": 4.82
+      }
+    },
+    {
+      "id": "M_ENN",
+      "name": "M_ENN",
+      "kind": "mos",
+      "group": "bias_enable",
+      "flavor": "nfet",
+      "units": 1,
+      "unit_w_um": 10.0,
+      "w_total_um": 10.0,
+      "l_um": 0.5,
+      "length_um": null,
+      "width_um": null,
+      "nets": {
+        "D": "BIAS_ENN",
+        "G": "EN",
+        "S": "0",
+        "B": "0"
+      },
+      "placed_bbox_um": {
+        "x0": 2126.04,
+        "y0": 0.0,
+        "x1": 2127.38,
+        "y1": 10.82
+      }
+    },
+    {
+      "id": "M_BIASN2",
+      "name": "M_BIASN2",
+      "kind": "mos",
+      "group": "bias_enable",
+      "flavor": "nfet",
+      "units": 1,
+      "unit_w_um": 4.0,
+      "w_total_um": 4.0,
+      "l_um": 1.0,
+      "length_um": null,
+      "width_um": null,
+      "nets": {
+        "D": "BIASP",
+        "G": "NB",
+        "S": "BIAS_ENN",
+        "B": "0"
+      },
+      "placed_bbox_um": {
+        "x0": 2129.38,
+        "y0": 0.0,
+        "x1": 2131.2200000000003,
+        "y1": 4.82
+      }
+    },
+    {
+      "id": "M_ENN2",
+      "name": "M_ENN2",
+      "kind": "mos",
+      "group": "bias_enable",
+      "flavor": "nfet",
+      "units": 1,
+      "unit_w_um": 10.0,
+      "w_total_um": 10.0,
+      "l_um": 0.5,
+      "length_um": null,
+      "width_um": null,
+      "nets": {
+        "D": "AMP_ENN",
+        "G": "EN",
+        "S": "0",
+        "B": "0"
+      },
+      "placed_bbox_um": {
+        "x0": 2133.2200000000003,
+        "y0": 0.0,
+        "x1": 2134.5600000000004,
+        "y1": 10.82
+      }
+    },
+    {
+      "id": "M_MIR1",
+      "name": "M_MIR1",
+      "kind": "mos",
+      "group": "error_amp",
+      "flavor": "nfet",
+      "units": 1,
+      "unit_w_um": 10.0,
+      "w_total_um": 10.0,
+      "l_um": 4.0,
+      "length_um": null,
+      "width_um": null,
+      "nets": {
+        "D": "EA_D1",
+        "G": "EA_D1",
+        "S": "AMP_ENN",
+        "B": "0"
+      },
+      "placed_bbox_um": {
+        "x0": 2136.5600000000004,
+        "y0": 0.0,
+        "x1": 2141.4000000000005,
+        "y1": 10.82
+      }
+    },
+    {
+      "id": "M_MIR2",
+      "name": "M_MIR2",
+      "kind": "mos",
+      "group": "error_amp",
+      "flavor": "nfet",
+      "units": 1,
+      "unit_w_um": 10.0,
+      "w_total_um": 10.0,
+      "l_um": 4.0,
+      "length_um": null,
+      "width_um": null,
+      "nets": {
+        "D": "EA_OUT",
+        "G": "EA_D1",
+        "S": "AMP_ENN",
+        "B": "0"
+      },
+      "placed_bbox_um": {
+        "x0": 2143.4000000000005,
+        "y0": 0.0,
+        "x1": 2148.2400000000007,
+        "y1": 10.82
+      }
+    },
+    {
+      "id": "M_MIR3",
+      "name": "M_MIR3",
+      "kind": "mos",
+      "group": "error_amp",
+      "flavor": "nfet",
+      "units": 1,
+      "unit_w_um": 10.0,
+      "w_total_um": 10.0,
+      "l_um": 4.0,
+      "length_um": null,
+      "width_um": null,
+      "nets": {
+        "D": "EA_D2",
+        "G": "EA_D2",
+        "S": "AMP_ENN",
+        "B": "0"
+      },
+      "placed_bbox_um": {
+        "x0": 2150.2400000000007,
+        "y0": 0.0,
+        "x1": 2155.080000000001,
+        "y1": 10.82
+      }
+    },
+    {
+      "id": "M_MIR4",
+      "name": "M_MIR4",
+      "kind": "mos",
+      "group": "error_amp",
+      "flavor": "nfet",
+      "units": 1,
+      "unit_w_um": 10.0,
+      "w_total_um": 10.0,
+      "l_um": 4.0,
+      "length_um": null,
+      "width_um": null,
+      "nets": {
+        "D": "PB",
+        "G": "EA_D2",
+        "S": "AMP_ENN",
+        "B": "0"
+      },
+      "placed_bbox_um": {
+        "x0": 2157.080000000001,
+        "y0": 0.0,
+        "x1": 2161.920000000001,
+        "y1": 10.82
+      }
+    },
+    {
+      "id": "M_CLN1",
+      "name": "M_CLN1",
+      "kind": "mos",
+      "group": "current_limit",
+      "flavor": "nfet",
+      "units": 1,
+      "unit_w_um": 20.0,
+      "w_total_um": 20.0,
+      "l_um": 1.0,
+      "length_um": null,
+      "width_um": null,
+      "nets": {
+        "D": "CL_SNS",
+        "G": "CL_SNS",
+        "S": "AMP_ENN",
+        "B": "0"
+      },
+      "placed_bbox_um": {
+        "x0": 2163.920000000001,
+        "y0": 0.0,
+        "x1": 2165.760000000001,
+        "y1": 20.82
+      }
+    },
+    {
+      "id": "M_CLN2",
+      "name": "M_CLN2",
+      "kind": "mos",
+      "group": "current_limit",
+      "flavor": "nfet",
+      "units": 1,
+      "unit_w_um": 1.6,
+      "w_total_um": 1.6,
+      "l_um": 1.0,
+      "length_um": null,
+      "width_um": null,
+      "nets": {
+        "D": "CL_CMP",
+        "G": "CL_SNS",
+        "S": "AMP_ENN",
+        "B": "0"
+      },
+      "placed_bbox_um": {
+        "x0": 2167.760000000001,
+        "y0": 0.0,
+        "x1": 2169.6000000000013,
+        "y1": 2.42
+      }
+    },
+    {
+      "id": "M_INVN",
+      "name": "M_INVN",
+      "kind": "mos",
+      "group": "soft_start",
+      "flavor": "nfet",
+      "units": 1,
+      "unit_w_um": 1.0,
+      "w_total_um": 1.0,
+      "l_um": 0.5,
+      "length_um": null,
+      "width_um": null,
+      "nets": {
+        "D": "ENB",
+        "G": "EN",
+        "S": "0",
+        "B": "0"
+      },
+      "placed_bbox_um": {
+        "x0": 2171.6000000000013,
+        "y0": 0.0,
+        "x1": 2172.9400000000014,
+        "y1": 1.82
+      }
+    },
+    {
+      "id": "M_SSDIS",
+      "name": "M_SSDIS",
+      "kind": "mos",
+      "group": "soft_start",
+      "flavor": "nfet",
+      "units": 1,
+      "unit_w_um": 2.0,
+      "w_total_um": 2.0,
+      "l_um": 0.5,
+      "length_um": null,
+      "width_um": null,
+      "nets": {
+        "D": "SS",
+        "G": "ENB",
+        "S": "0",
+        "B": "0"
+      },
+      "placed_bbox_um": {
+        "x0": 2174.9400000000014,
+        "y0": 0.0,
+        "x1": 2176.2800000000016,
+        "y1": 2.82
+      }
+    },
+    {
+      "id": "M_TSD1",
+      "name": "M_TSD1",
+      "kind": "mos",
+      "group": "thermal_shutdown",
+      "flavor": "nfet",
+      "units": 1,
+      "unit_w_um": 80.0,
+      "w_total_um": 80.0,
+      "l_um": 4.0,
+      "length_um": null,
+      "width_um": null,
+      "nets": {
+        "D": "TS_SNS",
+        "G": "TS_SNS",
+        "S": "TS_MID",
+        "B": "0"
+      },
+      "placed_bbox_um": {
+        "x0": 2178.2800000000016,
+        "y0": 0.0,
+        "x1": 2183.1200000000017,
+        "y1": 80.82000000000001
+      }
+    },
+    {
+      "id": "M_TSD2",
+      "name": "M_TSD2",
+      "kind": "mos",
+      "group": "thermal_shutdown",
+      "flavor": "nfet",
+      "units": 1,
+      "unit_w_um": 80.0,
+      "w_total_um": 80.0,
+      "l_um": 4.0,
+      "length_um": null,
+      "width_um": null,
+      "nets": {
+        "D": "TS_MID",
+        "G": "TS_MID",
+        "S": "AMP_ENN",
+        "B": "0"
+      },
+      "placed_bbox_um": {
+        "x0": 2185.1200000000017,
+        "y0": 0.0,
+        "x1": 2189.960000000002,
+        "y1": 80.82000000000001
+      }
+    },
+    {
+      "id": "M_TSR1",
+      "name": "M_TSR1",
+      "kind": "mos",
+      "group": "thermal_shutdown",
+      "flavor": "nfet",
+      "units": 1,
+      "unit_w_um": 0.42,
+      "w_total_um": 0.42,
+      "l_um": 2.0,
+      "length_um": null,
+      "width_um": null,
+      "nets": {
+        "D": "TS_REF",
+        "G": "TS_REF",
+        "S": "AMP_ENN",
+        "B": "0"
+      },
+      "placed_bbox_um": {
+        "x0": 2191.960000000002,
+        "y0": 0.0,
+        "x1": 2194.800000000002,
+        "y1": 1.24
+      }
+    },
+    {
+      "id": "M_TCTAIL",
+      "name": "M_TCTAIL",
+      "kind": "mos",
+      "group": "thermal_shutdown",
+      "flavor": "nfet",
+      "units": 1,
+      "unit_w_um": 1.0,
+      "w_total_um": 1.0,
+      "l_um": 1.0,
+      "length_um": null,
+      "width_um": null,
+      "nets": {
+        "D": "TC_TAIL",
+        "G": "NB",
+        "S": "AMP_ENN",
+        "B": "0"
+      },
+      "placed_bbox_um": {
+        "x0": 2196.800000000002,
+        "y0": 0.0,
+        "x1": 2198.640000000002,
+        "y1": 1.82
+      }
+    },
+    {
+      "id": "M_TCN1",
+      "name": "M_TCN1",
+      "kind": "mos",
+      "group": "thermal_shutdown",
+      "flavor": "nfet",
+      "units": 1,
+      "unit_w_um": 10.0,
+      "w_total_um": 10.0,
+      "l_um": 2.0,
+      "length_um": null,
+      "width_um": null,
+      "nets": {
+        "D": "TC_D1",
+        "G": "TS_SNS",
+        "S": "TC_TAIL",
+        "B": "0"
+      },
+      "placed_bbox_um": {
+        "x0": 2200.640000000002,
+        "y0": 0.0,
+        "x1": 2203.4800000000023,
+        "y1": 10.82
+      }
+    },
+    {
+      "id": "M_TCN2",
+      "name": "M_TCN2",
+      "kind": "mos",
+      "group": "thermal_shutdown",
+      "flavor": "nfet",
+      "units": 1,
+      "unit_w_um": 10.0,
+      "w_total_um": 10.0,
+      "l_um": 2.0,
+      "length_um": null,
+      "width_um": null,
+      "nets": {
+        "D": "TS_CMP",
+        "G": "TS_REF",
+        "S": "TC_TAIL",
+        "B": "0"
+      },
+      "placed_bbox_um": {
+        "x0": 2205.4800000000023,
+        "y0": 0.0,
+        "x1": 2208.3200000000024,
+        "y1": 10.82
+      }
+    },
+    {
+      "id": "M_BIASP1",
+      "name": "M_BIASP1",
+      "kind": "mos",
+      "group": "bias_enable",
+      "flavor": "pfet",
+      "units": 1,
+      "unit_w_um": 10.0,
+      "w_total_um": 10.0,
+      "l_um": 1.0,
+      "length_um": null,
+      "width_um": null,
+      "nets": {
+        "D": "BIASP",
+        "G": "BIASP",
+        "S": "VIN",
+        "B": "VIN"
+      },
+      "placed_bbox_um": {
+        "x0": 2222.3200000000024,
+        "y0": 0.0,
+        "x1": 2224.4600000000023,
+        "y1": 11.120000000000001
+      }
+    },
+    {
+      "id": "M_ENP2",
+      "name": "M_ENP2",
+      "kind": "mos",
+      "group": "bias_enable",
+      "flavor": "pfet",
+      "units": 1,
+      "unit_w_um": 10.0,
+      "w_total_um": 10.0,
+      "l_um": 0.5,
+      "length_um": null,
+      "width_um": null,
+      "nets": {
+        "D": "BIASP",
+        "G": "EN",
+        "S": "VIN",
+        "B": "VIN"
+      },
+      "placed_bbox_um": {
+        "x0": 2226.4600000000023,
+        "y0": 0.0,
+        "x1": 2228.100000000002,
+        "y1": 11.120000000000001
+      }
+    },
+    {
+      "id": "M_ENP",
+      "name": "M_ENP",
+      "kind": "mos",
+      "group": "bias_enable",
+      "flavor": "pfet",
+      "units": 1,
+      "unit_w_um": 10.0,
+      "w_total_um": 10.0,
+      "l_um": 0.5,
+      "length_um": null,
+      "width_um": null,
+      "nets": {
+        "D": "EA_OUT",
+        "G": "EN",
+        "S": "VIN",
+        "B": "VIN"
+      },
+      "placed_bbox_um": {
+        "x0": 2230.100000000002,
+        "y0": 0.0,
+        "x1": 2231.740000000002,
+        "y1": 11.120000000000001
+      }
+    },
+    {
+      "id": "M_ENP5",
+      "name": "M_ENP5",
+      "kind": "mos",
+      "group": "bias_enable",
+      "flavor": "pfet",
+      "units": 1,
+      "unit_w_um": 2.0,
+      "w_total_um": 2.0,
+      "l_um": 0.5,
+      "length_um": null,
+      "width_um": null,
+      "nets": {
+        "D": "PB",
+        "G": "EN",
+        "S": "VIN",
+        "B": "VIN"
+      },
+      "placed_bbox_um": {
+        "x0": 2233.740000000002,
+        "y0": 0.0,
+        "x1": 2235.380000000002,
+        "y1": 3.12
+      }
+    },
+    {
+      "id": "M_ENP3",
+      "name": "M_ENP3",
+      "kind": "mos",
+      "group": "bias_enable",
+      "flavor": "pfet",
+      "units": 1,
+      "unit_w_um": 2.0,
+      "w_total_um": 2.0,
+      "l_um": 0.5,
+      "length_um": null,
+      "width_um": null,
+      "nets": {
+        "D": "CL_CMP",
+        "G": "EN",
+        "S": "VIN",
+        "B": "VIN"
+      },
+      "placed_bbox_um": {
+        "x0": 2237.380000000002,
+        "y0": 0.0,
+        "x1": 2239.020000000002,
+        "y1": 3.12
+      }
+    },
+    {
+      "id": "M_ENP4",
+      "name": "M_ENP4",
+      "kind": "mos",
+      "group": "bias_enable",
+      "flavor": "pfet",
+      "units": 1,
+      "unit_w_um": 2.0,
+      "w_total_um": 2.0,
+      "l_um": 0.5,
+      "length_um": null,
+      "width_um": null,
+      "nets": {
+        "D": "TS_CMP",
+        "G": "EN",
+        "S": "VIN",
+        "B": "VIN"
+      },
+      "placed_bbox_um": {
+        "x0": 2241.020000000002,
+        "y0": 0.0,
+        "x1": 2242.6600000000017,
+        "y1": 3.12
+      }
+    },
+    {
+      "id": "M_TAIL",
+      "name": "M_TAIL",
+      "kind": "mos",
+      "group": "error_amp",
+      "flavor": "pfet",
+      "units": 1,
+      "unit_w_um": 40.0,
+      "w_total_um": 40.0,
+      "l_um": 2.0,
+      "length_um": null,
+      "width_um": null,
+      "nets": {
+        "D": "EA_TAIL",
+        "G": "BIASP",
+        "S": "VIN",
+        "B": "VIN"
+      },
+      "placed_bbox_um": {
+        "x0": 2244.6600000000017,
+        "y0": 0.0,
+        "x1": 2247.8000000000015,
+        "y1": 41.12
+      }
+    },
+    {
+      "id": "M_IN1",
+      "name": "M_IN1",
+      "kind": "mos",
+      "group": "error_amp",
+      "flavor": "pfet",
+      "units": 1,
+      "unit_w_um": 10.0,
+      "w_total_um": 10.0,
+      "l_um": 2.0,
+      "length_um": null,
+      "width_um": null,
+      "nets": {
+        "D": "EA_D1",
+        "G": "FB",
+        "S": "EA_TAIL",
+        "B": "VIN"
+      },
+      "placed_bbox_um": {
+        "x0": 2249.8000000000015,
+        "y0": 0.0,
+        "x1": 2252.9400000000014,
+        "y1": 11.120000000000001
+      }
+    },
+    {
+      "id": "M_IN2",
+      "name": "M_IN2",
+      "kind": "mos",
+      "group": "error_amp",
+      "flavor": "pfet",
+      "units": 1,
+      "unit_w_um": 10.0,
+      "w_total_um": 10.0,
+      "l_um": 2.0,
+      "length_um": null,
+      "width_um": null,
+      "nets": {
+        "D": "EA_D2",
+        "G": "VREF",
+        "S": "EA_TAIL",
+        "B": "VIN"
+      },
+      "placed_bbox_um": {
+        "x0": 2254.9400000000014,
+        "y0": 0.0,
+        "x1": 2258.0800000000013,
+        "y1": 11.120000000000001
+      }
+    },
+    {
+      "id": "M_MIRP1",
+      "name": "M_MIRP1",
+      "kind": "mos",
+      "group": "error_amp",
+      "flavor": "pfet",
+      "units": 1,
+      "unit_w_um": 20.0,
+      "w_total_um": 20.0,
+      "l_um": 4.0,
+      "length_um": null,
+      "width_um": null,
+      "nets": {
+        "D": "PB",
+        "G": "PB",
+        "S": "VIN",
+        "B": "VIN"
+      },
+      "placed_bbox_um": {
+        "x0": 2260.0800000000013,
+        "y0": 0.0,
+        "x1": 2265.220000000001,
+        "y1": 21.119999999999997
+      }
+    },
+    {
+      "id": "M_MIRP2",
+      "name": "M_MIRP2",
+      "kind": "mos",
+      "group": "error_amp",
+      "flavor": "pfet",
+      "units": 1,
+      "unit_w_um": 20.0,
+      "w_total_um": 20.0,
+      "l_um": 4.0,
+      "length_um": null,
+      "width_um": null,
+      "nets": {
+        "D": "EA_OUT",
+        "G": "PB",
+        "S": "VIN",
+        "B": "VIN"
+      },
+      "placed_bbox_um": {
+        "x0": 2267.220000000001,
+        "y0": 0.0,
+        "x1": 2272.360000000001,
+        "y1": 21.119999999999997
+      }
+    },
+    {
+      "id": "M_IN2S",
+      "name": "M_IN2S",
+      "kind": "mos",
+      "group": "error_amp",
+      "flavor": "pfet",
+      "units": 1,
+      "unit_w_um": 10.0,
+      "w_total_um": 10.0,
+      "l_um": 2.0,
+      "length_um": null,
+      "width_um": null,
+      "nets": {
+        "D": "EA_D2",
+        "G": "SS",
+        "S": "EA_TAIL",
+        "B": "VIN"
+      },
+      "placed_bbox_um": {
+        "x0": 2274.360000000001,
+        "y0": 0.0,
+        "x1": 2277.500000000001,
+        "y1": 11.120000000000001
+      }
+    },
+    {
+      "id": "M_SENSE",
+      "name": "M_SENSE",
+      "kind": "mos",
+      "group": "current_limit",
+      "flavor": "pfet",
+      "units": 1,
+      "unit_w_um": 0.42,
+      "w_total_um": 0.42,
+      "l_um": 0.5,
+      "length_um": null,
+      "width_um": null,
+      "nets": {
+        "D": "CL_SNS",
+        "G": "EA_OUT",
+        "S": "VIN",
+        "B": "VIN"
+      },
+      "placed_bbox_um": {
+        "x0": 2279.500000000001,
+        "y0": 0.0,
+        "x1": 2281.140000000001,
+        "y1": 1.54
+      }
+    },
+    {
+      "id": "M_CLP",
+      "name": "M_CLP",
+      "kind": "mos",
+      "group": "current_limit",
+      "flavor": "pfet",
+      "units": 1,
+      "unit_w_um": 10.0,
+      "w_total_um": 10.0,
+      "l_um": 1.0,
+      "length_um": null,
+      "width_um": null,
+      "nets": {
+        "D": "CL_CMP",
+        "G": "BIASP",
+        "S": "VIN",
+        "B": "VIN"
+      },
+      "placed_bbox_um": {
+        "x0": 2283.140000000001,
+        "y0": 0.0,
+        "x1": 2285.2800000000007,
+        "y1": 11.120000000000001
+      }
+    },
+    {
+      "id": "M_CLIM",
+      "name": "M_CLIM",
+      "kind": "mos",
+      "group": "current_limit",
+      "flavor": "pfet",
+      "units": 1,
+      "unit_w_um": 20.0,
+      "w_total_um": 20.0,
+      "l_um": 0.5,
+      "length_um": null,
+      "width_um": null,
+      "nets": {
+        "D": "EA_OUT",
+        "G": "CL_CMP",
+        "S": "VIN",
+        "B": "VIN"
+      },
+      "placed_bbox_um": {
+        "x0": 2287.2800000000007,
+        "y0": 0.0,
+        "x1": 2288.9200000000005,
+        "y1": 21.119999999999997
+      }
+    },
+    {
+      "id": "M_INVP",
+      "name": "M_INVP",
+      "kind": "mos",
+      "group": "soft_start",
+      "flavor": "pfet",
+      "units": 1,
+      "unit_w_um": 2.0,
+      "w_total_um": 2.0,
+      "l_um": 0.5,
+      "length_um": null,
+      "width_um": null,
+      "nets": {
+        "D": "ENB",
+        "G": "EN",
+        "S": "VIN",
+        "B": "VIN"
+      },
+      "placed_bbox_um": {
+        "x0": 2290.9200000000005,
+        "y0": 0.0,
+        "x1": 2292.5600000000004,
+        "y1": 3.12
+      }
+    },
+    {
+      "id": "M_SSCHG",
+      "name": "M_SSCHG",
+      "kind": "mos",
+      "group": "soft_start",
+      "flavor": "pfet",
+      "units": 1,
+      "unit_w_um": 1.0,
+      "w_total_um": 1.0,
+      "l_um": 8.0,
+      "length_um": null,
+      "width_um": null,
+      "nets": {
+        "D": "SS",
+        "G": "BIASP",
+        "S": "VIN",
+        "B": "VIN"
+      },
+      "placed_bbox_um": {
+        "x0": 2294.5600000000004,
+        "y0": 0.0,
+        "x1": 2303.7000000000003,
+        "y1": 2.12
+      }
+    },
+    {
+      "id": "M_TSPS",
+      "name": "M_TSPS",
+      "kind": "mos",
+      "group": "thermal_shutdown",
+      "flavor": "pfet",
+      "units": 1,
+      "unit_w_um": 1.25,
+      "w_total_um": 1.25,
+      "l_um": 1.0,
+      "length_um": null,
+      "width_um": null,
+      "nets": {
+        "D": "TS_SNS",
+        "G": "BIASP",
+        "S": "VIN",
+        "B": "VIN"
+      },
+      "placed_bbox_um": {
+        "x0": 2305.7000000000003,
+        "y0": 0.0,
+        "x1": 2307.84,
+        "y1": 2.37
+      }
+    },
+    {
+      "id": "M_TSPR",
+      "name": "M_TSPR",
+      "kind": "mos",
+      "group": "thermal_shutdown",
+      "flavor": "pfet",
+      "units": 1,
+      "unit_w_um": 7.0,
+      "w_total_um": 7.0,
+      "l_um": 1.0,
+      "length_um": null,
+      "width_um": null,
+      "nets": {
+        "D": "TS_REF",
+        "G": "BIASP",
+        "S": "VIN",
+        "B": "VIN"
+      },
+      "placed_bbox_um": {
+        "x0": 2309.84,
+        "y0": 0.0,
+        "x1": 2311.98,
+        "y1": 8.12
+      }
+    },
+    {
+      "id": "M_TCP1",
+      "name": "M_TCP1",
+      "kind": "mos",
+      "group": "thermal_shutdown",
+      "flavor": "pfet",
+      "units": 1,
+      "unit_w_um": 10.0,
+      "w_total_um": 10.0,
+      "l_um": 2.0,
+      "length_um": null,
+      "width_um": null,
+      "nets": {
+        "D": "TC_D1",
+        "G": "TC_D1",
+        "S": "VIN",
+        "B": "VIN"
+      },
+      "placed_bbox_um": {
+        "x0": 2313.98,
+        "y0": 0.0,
+        "x1": 2317.12,
+        "y1": 11.120000000000001
+      }
+    },
+    {
+      "id": "M_TCP2",
+      "name": "M_TCP2",
+      "kind": "mos",
+      "group": "thermal_shutdown",
+      "flavor": "pfet",
+      "units": 1,
+      "unit_w_um": 10.0,
+      "w_total_um": 10.0,
+      "l_um": 2.0,
+      "length_um": null,
+      "width_um": null,
+      "nets": {
+        "D": "TS_CMP",
+        "G": "TC_D1",
+        "S": "VIN",
+        "B": "VIN"
+      },
+      "placed_bbox_um": {
+        "x0": 2319.12,
+        "y0": 0.0,
+        "x1": 2322.2599999999998,
+        "y1": 11.120000000000001
+      }
+    },
+    {
+      "id": "M_TSHUT",
+      "name": "M_TSHUT",
+      "kind": "mos",
+      "group": "thermal_shutdown",
+      "flavor": "pfet",
+      "units": 1,
+      "unit_w_um": 20.0,
+      "w_total_um": 20.0,
+      "l_um": 0.5,
+      "length_um": null,
+      "width_um": null,
+      "nets": {
+        "D": "EA_OUT",
+        "G": "TS_CMP",
+        "S": "VIN",
+        "B": "VIN"
+      },
+      "placed_bbox_um": {
+        "x0": 2324.2599999999998,
+        "y0": 0.0,
+        "x1": 2325.8999999999996,
+        "y1": 21.119999999999997
+      }
+    },
+    {
+      "id": "M_TSHYSB",
+      "name": "M_TSHYSB",
+      "kind": "mos",
+      "group": "thermal_shutdown",
+      "flavor": "pfet",
+      "units": 1,
+      "unit_w_um": 4.5,
+      "w_total_um": 4.5,
+      "l_um": 2.0,
+      "length_um": null,
+      "width_um": null,
+      "nets": {
+        "D": "TS_HYS",
+        "G": "BIASP",
+        "S": "VIN",
+        "B": "VIN"
+      },
+      "placed_bbox_um": {
+        "x0": 2327.8999999999996,
+        "y0": 0.0,
+        "x1": 2331.0399999999995,
+        "y1": 5.62
+      }
+    },
+    {
+      "id": "M_TSHYS",
+      "name": "M_TSHYS",
+      "kind": "mos",
+      "group": "thermal_shutdown",
+      "flavor": "pfet",
+      "units": 1,
+      "unit_w_um": 2.0,
+      "w_total_um": 2.0,
+      "l_um": 0.5,
+      "length_um": null,
+      "width_um": null,
+      "nets": {
+        "D": "TS_REF",
+        "G": "TS_CMP",
+        "S": "TS_HYS",
+        "B": "VIN"
+      },
+      "placed_bbox_um": {
+        "x0": 2333.0399999999995,
+        "y0": 0.0,
+        "x1": 2334.6799999999994,
+        "y1": 3.12
+      }
+    },
+    {
+      "id": "M_PASS",
+      "name": "M_PASS",
+      "kind": "mos",
+      "group": "output_pass",
+      "flavor": "pfet",
+      "units": 25,
+      "unit_w_um": 100.0,
+      "w_total_um": 2500.0,
+      "l_um": 0.5,
+      "length_um": null,
+      "width_um": null,
+      "nets": {
+        "D": "VOUT",
+        "G": "EA_OUT",
+        "S": "VIN",
+        "B": "VIN"
+      },
+      "placed_bbox_um": {
+        "x0": 2336.6799999999994,
+        "y0": 0.0,
+        "x1": 2380.0799999999995,
+        "y1": 101.12
+      }
+    }
+  ],
+  "routing": {
+    "channel_top_um": -3.0,
+    "track_pitch_um": 0.8,
+    "stub_width_um": 0.19,
+    "trunk_width_um": 0.3,
+    "net_count": 28,
+    "terminal_count": 211,
+    "body_ties": [
+      {
+        "kind": "nwell_tie",
+        "net": "VIN",
+        "x_um": 2218.3200000000024
+      },
+      {
+        "kind": "substrate_tie",
+        "net": "0",
+        "x_um": 2114.2
+      }
+    ],
+    "nets": [
+      {
+        "net": "0",
+        "track_y_um": -7.0,
+        "terminal_count": 5,
+        "riser_count": 0,
+        "trunk_x0_um": 2049.1499999999996,
+        "trunk_x1_um": 2175.1500000000015
+      },
+      {
+        "net": "AMP_ENN",
+        "track_y_um": -11.8,
+        "terminal_count": 10,
+        "riser_count": 0,
+        "trunk_x0_um": 2134.3500000000004,
+        "trunk_x1_um": 2197.010000000002
+      },
+      {
+        "net": "BIASP",
+        "track_y_um": -11.0,
+        "terminal_count": 10,
+        "riser_count": 7,
+        "trunk_x0_um": 2131.01,
+        "trunk_x1_um": 2329.47
+      },
+      {
+        "net": "BIAS_ENN",
+        "track_y_um": -9.4,
+        "terminal_count": 3,
+        "riser_count": 0,
+        "trunk_x0_um": 2122.41,
+        "trunk_x1_um": 2129.59
+      },
+      {
+        "net": "CL_CMP",
+        "track_y_um": -15.8,
+        "terminal_count": 4,
+        "riser_count": 1,
+        "trunk_x0_um": 2169.3900000000012,
+        "trunk_x1_um": 2288.100000000001
+      },
+      {
+        "net": "CL_SNS",
+        "track_y_um": -15.0,
+        "terminal_count": 4,
+        "riser_count": 2,
+        "trunk_x0_um": 2164.840000000001,
+        "trunk_x1_um": 2280.780000000001
+      },
+      {
+        "net": "EA_CZ",
+        "track_y_um": -7.800000000000001,
+        "terminal_count": 1,
+        "riser_count": 0,
+        "trunk_x0_um": 2051.5699999999997,
+        "trunk_x1_um": 2051.5699999999997
+      },
+      {
+        "net": "EA_D1",
+        "track_y_um": -12.600000000000001,
+        "terminal_count": 4,
+        "riser_count": 2,
+        "trunk_x0_um": 2138.9800000000005,
+        "trunk_x1_um": 2252.5800000000017
+      },
+      {
+        "net": "EA_D2",
+        "track_y_um": -13.4,
+        "terminal_count": 5,
+        "riser_count": 2,
+        "trunk_x0_um": 2152.6600000000008,
+        "trunk_x1_um": 2277.1400000000012
+      },
+      {
+        "net": "EA_OUT",
+        "track_y_um": -8.600000000000001,
+        "terminal_count": 32,
+        "riser_count": 26,
+        "trunk_x0_um": 2103.99,
+        "trunk_x1_um": 2379.2599999999993
+      },
+      {
+        "net": "EA_TAIL",
+        "track_y_um": -23.0,
+        "terminal_count": 4,
+        "riser_count": 0,
+        "trunk_x0_um": 2247.440000000002,
+        "trunk_x1_um": 2274.720000000001
+      },
+      {
+        "net": "EN",
+        "track_y_um": -10.2,
+        "terminal_count": 9,
+        "riser_count": 9,
+        "trunk_x0_um": 2126.71,
+        "trunk_x1_um": 2291.7400000000007
+      },
+      {
+        "net": "ENB",
+        "track_y_um": -16.6,
+        "terminal_count": 3,
+        "riser_count": 1,
+        "trunk_x0_um": 2172.7300000000014,
+        "trunk_x1_um": 2292.2000000000007
+      },
+      {
+        "net": "FB",
+        "track_y_um": -5.4,
+        "terminal_count": 3,
+        "riser_count": 1,
+        "trunk_x0_um": 1683.4699999999998,
+        "trunk_x1_um": 2251.3700000000017
+      },
+      {
+        "net": "NB",
+        "track_y_um": -3.8,
+        "terminal_count": 5,
+        "riser_count": 3,
+        "trunk_x0_um": 1500.6299999999999,
+        "trunk_x1_um": 2197.720000000002
+      },
+      {
+        "net": "N_FBB",
+        "track_y_um": -6.2,
+        "terminal_count": 2,
+        "riser_count": 0,
+        "trunk_x0_um": 1866.31,
+        "trunk_x1_um": 1868.7299999999998
+      },
+      {
+        "net": "PB",
+        "track_y_um": -14.200000000000001,
+        "terminal_count": 5,
+        "riser_count": 2,
+        "trunk_x0_um": 2161.710000000001,
+        "trunk_x1_um": 2269.7900000000013
+      },
+      {
+        "net": "SS",
+        "track_y_um": -17.4,
+        "terminal_count": 3,
+        "riser_count": 1,
+        "trunk_x0_um": 2176.0700000000015,
+        "trunk_x1_um": 2303.3400000000006
+      },
+      {
+        "net": "TC_D1",
+        "track_y_um": -21.400000000000002,
+        "terminal_count": 4,
+        "riser_count": 2,
+        "trunk_x0_um": 2203.2700000000023,
+        "trunk_x1_um": 2320.69
+      },
+      {
+        "net": "TC_TAIL",
+        "track_y_um": -20.6,
+        "terminal_count": 3,
+        "riser_count": 0,
+        "trunk_x0_um": 2198.430000000002,
+        "trunk_x1_um": 2205.6900000000023
+      },
+      {
+        "net": "TS_CMP",
+        "track_y_um": -22.200000000000003,
+        "terminal_count": 5,
+        "riser_count": 2,
+        "trunk_x0_um": 2208.1100000000024,
+        "trunk_x1_um": 2333.8599999999997
+      },
+      {
+        "net": "TS_HYS",
+        "track_y_um": -24.6,
+        "terminal_count": 2,
+        "riser_count": 0,
+        "trunk_x0_um": 2330.68,
+        "trunk_x1_um": 2333.3999999999996
+      },
+      {
+        "net": "TS_MID",
+        "track_y_um": -18.200000000000003,
+        "terminal_count": 3,
+        "riser_count": 1,
+        "trunk_x0_um": 2178.4900000000016,
+        "trunk_x1_um": 2189.750000000002
+      },
+      {
+        "net": "TS_REF",
+        "track_y_um": -19.8,
+        "terminal_count": 5,
+        "riser_count": 2,
+        "trunk_x0_um": 2193.380000000002,
+        "trunk_x1_um": 2334.3199999999997
+      },
+      {
+        "net": "TS_SNS",
+        "track_y_um": -19.0,
+        "terminal_count": 4,
+        "riser_count": 2,
+        "trunk_x0_um": 2180.7000000000016,
+        "trunk_x1_um": 2307.4800000000005
+      },
+      {
+        "net": "VIN",
+        "track_y_um": -3.0,
+        "terminal_count": 46,
+        "riser_count": 0,
+        "trunk_x0_um": 0.21000000000000002,
+        "trunk_x1_um": 2378.7999999999993
+      },
+      {
+        "net": "VOUT",
+        "track_y_um": -4.6,
+        "terminal_count": 26,
+        "riser_count": 0,
+        "trunk_x0_um": 1503.05,
+        "trunk_x1_um": 2379.7199999999993
+      },
+      {
+        "net": "VREF",
+        "track_y_um": -23.8,
+        "terminal_count": 1,
+        "riser_count": 1,
+        "trunk_x0_um": 2256.5100000000016,
+        "trunk_x1_um": 2256.5100000000016
+      }
+    ]
+  }
+}

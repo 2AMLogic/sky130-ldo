@@ -62,6 +62,14 @@ fi
 
 TESTBENCH_DIR="$EXP_DIR/testbench"
 
+# Append-only evidence: if a prior record already exists, this run
+# supersedes it (record the pointer rather than overwriting).
+PRIOR_RECORD_ID=""
+if compgen -G "$EXP_DIR/records/*.json" >/dev/null; then
+  PRIOR_RECORD_ID="$(basename "$(ls -1 "$EXP_DIR"/records/*.json | sort | tail -1)" .json)"
+  echo "run-pex.sh: this run will supersede prior record $PRIOR_RECORD_ID"
+fi
+
 echo "run-pex.sh: regenerating testbench pair against $LATEST_LVS_ID's layout"
 python3 "$SCRIPT_DIR/gen-pex-testbench.py" \
   --klt "$KLT" --gds "$GDS" --repo-root "$REPO_ROOT" \
@@ -125,6 +133,7 @@ python3 "$SCRIPT_DIR/render-pex-record.py" \
   --sim-schematic-response "$RESP_SIM_PATH" --sim-schematic-exit "$SIM_EXIT" \
   --pex-response "$RESP_PEX_PATH" --pex-exit "$PEX_EXIT" \
   --request "$REQ_PATH" \
+  --supersedes "$PRIOR_RECORD_ID" \
   --out-json "$RECORD_JSON_PATH" --out-md "$RECORD_MD_PATH"
 
 echo "run-pex.sh: done -> $RECORD_MD_PATH"

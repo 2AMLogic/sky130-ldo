@@ -72,7 +72,10 @@ OUT_DIR="$BLOCK_DIR/reports/$RECORD_ID"
 mkdir -p "$OUT_DIR"
 echo "run-ldo-lvs-flow.sh: record $RECORD_ID -> $OUT_DIR (layout from $LAYOUT_RECORD_ID)"
 
-SCHEMATIC_SHA="$(git -C "$REPO_ROOT" log -1 --format=%h -- design/ldo_3v3in_1v8out.sch design/README.md)"
+# Schematic-only, matching measurements/build_characterization_report.py's
+# own freshness check (SCHEMATIC_FILE, the .sch alone) -- see
+# run-ldo-layout-flow.sh's matching comment (issue #89).
+SCHEMATIC_SHA="$(git -C "$REPO_ROOT" log -1 --format=%h -- design/ldo_3v3in_1v8out.sch)"
 LAYOUT_SHA="$(git -C "$REPO_ROOT" log -1 --format=%h -- layout/ldo-core)"
 
 cp "$LAYOUT_RECORD_DIR/$CELL.gds" "$OUT_DIR/$CELL.gds"
