@@ -1,7 +1,7 @@
 {
   "slug": "current-limit",
   "title": "Current limit: clamp window over PVT, non-engagement at 50mA, and a held Vout=0 short",
-  "claim": "Substantiates spec/target-spec.md's DRAFT \"Current limit\" row (constant-current (brickwall) clamp, window TBD over PVT; never engages for I_load <= 50 mA; survives continuous Vout = 0 short at Vin_max) against the sense-FET current comparator and gate clamp issue #22 added to design/ldo_3v3in_1v8out.sch (M_SENSE / M_CLN1 / M_CLN2 / M_CLP / M_CLIM -- see design/README.md's \"Current limit (#22)\"). The row is DRAFT (issue #1 not yet ratified) and it deliberately carries NO numeric clamp window: the window is \"TBD over PVT\". This experiment therefore splits the row rather than blurring it -- the clauses that carry a number are bounded below (\"never engages for I_load <= 50 mA\" becomes ilim_short_ma/ilim_knee_ma > 50 mA plus vout_50ma_v inside the DRAFT Output row's 1.764-1.836 V window), and the clause that does not (\"window TBD over PVT\", \"survives\") is measured and reported WITHOUT a bound, because establishing that window over PVT is exactly what the row asks for at this stage; inventing a ceiling would be the invented settled number CLAUDE.md forbids. \"At Vin_max\" is covered by the corner runner's own supply axis (the 3.63 V column), not by a hard-coded VIN. The short is applied as an event at t=0.5ms and HELD to t=2.5ms -- 2 ms of continuous Vout = 0, a defined duration rather than a single sampled instant, since \"survives\" is a claim about holding the fault. Known-caveat, stated rather than hidden (design/README.md, \"Known accuracy caveat\"): M_SENSE is a 0.42um replica of a 2500um pass device whose drain does not sit at VOUT, so the 1:5952 ratio is neither Vds-matched nor trimmed and carries substantial random Vth mismatch -- this corner-matrix experiment measures the systematic PVT window only; the mismatch axis would need a Monte Carlo experiment (sim/bin/mc-run.py), which is not in this issue's scope.",
+  "claim": "Substantiates spec/target-spec.md's DRAFT \"Current limit\" row (constant-current (brickwall) clamp, window TBD over PVT; never engages for I_load <= 50 mA; survives continuous Vout = 0 short at Vin_max) against the sense-FET current comparator and gate clamp issue #22 added to design/ldo_3v3in_1v8out.sch (M_SENSE / M_CLN1 / M_CLN2 / M_CLP / M_CLIM -- see design/README.md's \"Current limit (#22)\"). The row is DRAFT (issue #1 not yet ratified) and it deliberately carries NO numeric clamp window: the window is \"TBD over PVT\". This experiment therefore splits the row rather than blurring it -- the clauses that carry a number are bounded below (\"never engages for I_load <= 50 mA\" becomes ilim_short_ma/ilim_knee_ma > 50 mA plus vout_50ma_v inside the DRAFT Output row's 1.764-1.836 V window), and the clause that does not (\"window TBD over PVT\", \"survives\") is measured and reported WITHOUT a bound, because establishing that window over PVT is exactly what the row asks for at this stage; inventing a ceiling would be the invented settled number CLAUDE.md forbids. \"At Vin_max\" is covered by the corner runner's own supply axis (the 3.63 V column), not by a hard-coded VIN. EN ramps from a disabled start at t=100us (dual dc/pwl form, matching sim/enable-shutdown and sim/startup) so leg 3's transient reaches regulation through a real soft-start ramp rather than depending on ngspice's t=0 DC solve landing on the regulating branch, which it does not at the ff/sf 125C corners (issue #69; fixed here per issue #76 after PR #75 shipped the same fix in the sibling benches). The short is applied as an event at t=1.0ms -- after sim/startup's measured 0.26-0.45ms soft-start ramp completes -- and HELD to t=3.0ms: 2 ms of continuous Vout = 0, a defined duration rather than a single sampled instant, since \"survives\" is a claim about holding the fault. Known-caveat, stated rather than hidden (design/README.md, \"Known accuracy caveat\"): M_SENSE is a 0.42um replica of a 2500um pass device whose drain does not sit at VOUT, so the 1:5952 ratio is neither Vds-matched nor trimmed and carries substantial random Vth mismatch -- this corner-matrix experiment measures the systematic PVT window only; the mismatch axis would need a Monte Carlo experiment (sim/bin/mc-run.py), which is not in this issue's scope.",
   "provenance": "schematic",
   "provenance_source": "sim/current-limit/testbench/tb_current_limit.sch",
   "schematic": "testbench/tb_current_limit.sch",
@@ -28,14 +28,14 @@
       "dc vforce 0 1.75 0.125",
       "meas dc ilim_short find i(vforce) at=0",
       "meas dc ilim_knee find i(vforce) at=1.75",
-      "* --- leg 3: Vout=0 short applied at t=0.5ms and HELD to t=2.5ms ---",
+      "* --- leg 3: cold EN ramp (t=100-101us), Vout=0 short applied at t=1.0ms (after soft-start settles) and HELD to t=3.0ms ---",
       "alter rload = 36",
-      "tran 500n 2.5m",
-      "meas tran ipre avg i(vvin) from=0.4m to=0.5m",
-      "meas tran ish_avg avg i(vvin) from=1.5m to=2.5m",
-      "meas tran ish_max max i(vvin) from=0.6m to=2.5m",
-      "meas tran ish_min min i(vvin) from=0.6m to=2.5m",
-      "meas tran vsh_max max v(vout) from=0.6m to=2.5m"
+      "tran 500n 3.0m",
+      "meas tran ipre avg i(vvin) from=0.9m to=1.0m",
+      "meas tran ish_avg avg i(vvin) from=2.0m to=3.0m",
+      "meas tran ish_max max i(vvin) from=1.1m to=3.0m",
+      "meas tran ish_min min i(vvin) from=1.1m to=3.0m",
+      "meas tran vsh_max max v(vout) from=1.1m to=3.0m"
     ]
   },
   "measurements": [
@@ -85,7 +85,7 @@
       "unit": "mA",
       "min": null,
       "max": null,
-      "note": "Mean supply current over the last 1 ms of the held Vout = 0 short (t = 1.5-2.5 ms), i.e. the current the pass device actually sustains into a continuous short. Read from i(vvin) rather than i(vforce) on purpose: i(vforce) also carries C_OUT's ~2 A microsecond discharge spike into the short, which is the capacitor's stored energy and not the pass device's current. Reported, not bounded, for the same reason as ilim_short_ma: the DRAFT row's window is TBD. This is the number the Thermal row's \"short-circuit ceiling set by the current limit\" will need once both rows are ratified."
+      "note": "Mean supply current over the last 1 ms of the held Vout = 0 short (t = 2.0-3.0 ms), i.e. the current the pass device actually sustains into a continuous short. Read from i(vvin) rather than i(vforce) on purpose: i(vforce) also carries C_OUT's ~2 A microsecond discharge spike into the short, which is the capacitor's stored energy and not the pass device's current. Reported, not bounded, for the same reason as ilim_short_ma: the DRAFT row's window is TBD. This is the number the Thermal row's \"short-circuit ceiling set by the current limit\" will need once both rows are ratified."
     },
     {
       "name": "ishort_ripple_pct",
@@ -93,7 +93,7 @@
       "unit": "%",
       "min": null,
       "max": 100,
-      "note": "Peak-to-peak variation of the supply current across the whole held-short window (t = 0.6-2.5 ms), in percent of its mean. This is the one part of \"survives a continuous short\" that can be bounded without inventing a number: the row calls the clamp \"constant-current\", and a limit loop swinging by more than its own mean is not delivering a constant current -- it is limit-cycling. 100% is therefore the weakest non-arbitrary reading of the row's own word, chosen deliberately over a tighter invented figure; a healthy clamp measures far below it."
+      "note": "Peak-to-peak variation of the supply current across the whole held-short window (t = 1.1-3.0 ms), in percent of its mean. This is the one part of \"survives a continuous short\" that can be bounded without inventing a number: the row calls the clamp \"constant-current\", and a limit loop swinging by more than its own mean is not delivering a constant current -- it is limit-cycling. 100% is therefore the weakest non-arbitrary reading of the row's own word, chosen deliberately over a tighter invented figure; a healthy clamp measures far below it."
     },
     {
       "name": "vout_short_mv",
@@ -101,7 +101,7 @@
       "unit": "mV",
       "min": null,
       "max": null,
-      "note": "Highest VOUT reached during the held short (t = 0.6-2.5 ms). Reported as a sanity witness that the fault really was a Vout = 0 short for its whole 2 ms duration (the forcing branch is 1 mOhm, so this is essentially I_short x 1 mOhm), not as a spec bound."
+      "note": "Highest VOUT reached during the held short (t = 1.1-3.0 ms). Reported as a sanity witness that the fault really was a Vout = 0 short for its whole 2 ms duration (the forcing branch is 1 mOhm, so this is essentially I_short x 1 mOhm), not as a spec bound."
     },
     {
       "name": "isup_pre_short_ma",

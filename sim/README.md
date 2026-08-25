@@ -425,26 +425,42 @@ would have to change once issue #1 rules.
 
 - **`current-limit/`** — forces `VOUT` through a `VFORCE`/`RFORCE` branch
   (`RFORCE` starts at 1e12 and the deck `alter`s it to 1 mΩ) in three legs:
-  an `op` at a 36 Ω (~50 mA) load with the branch open, a DC characteristic
-  from a dead short up to the 1.75 V knee, and a `Vout = 0` short applied at
-  t = 0.5 ms and **held for 2 ms** — a sustained fault of defined duration, not
-  one sampled instant, since "survives" is a claim about holding the fault.
-  Bounded: `vout_50ma_v` inside the DRAFT Output row's ±2% window (the
-  operative form of "never engages for I_load ≤ 50 mA") and both limit levels
-  above 50 mA. Reported unbounded: the limit window itself, its brickwall-vs-
-  foldback shape, and the sustained short current. First record
-  (`20260825-045313-703a889`, 3-point subset): **2/3 PASS** — `tt_27c_3.30v`
-  regulates at 1.798 V with a 162 mA short-circuit level against a 135 mA
-  knee, `ss_-40c_2.97v` 1.798 V / 180 mA / 149 mA, and both hold the short for
-  its full 2 ms with <0.1% supply-current ripple. The negative droop
-  (−20%/−21%: more current into a dead short than at the knee) is the
-  brickwall signature, not a foldback one. `ff_125c_3.63v` **FAILs** with the
-  output collapsed to ~2 µV and ~0 mA of limit current — the same
-  thermal-clamp nuisance trip `design/README.md` root-causes as mechanism 1
-  (issue #69), read here through a resistive load instead of an ideal current
-  sink, so the output sits at 0 V rather than at a non-physical negative
-  voltage. Overall `FAIL`, and the failing corner is a known design defect
-  this bench reproduces rather than a bench defect.
+  an `op` at a 36 Ω (~50 mA) load with the branch open (leg 1), a DC
+  characteristic from a dead short up to the 1.75 V knee (leg 2), and a
+  `Vout = 0` short applied as a transient event and **held for 2 ms** (leg 3)
+  — a sustained fault of defined duration, not one sampled instant, since
+  "survives" is a claim about holding the fault. Legs 1–2 are `op`/`dc`
+  analyses; leg 3 is a `tran`, and its `EN` is a dual `dc 'vsup'` + rising
+  `pwl` (t = 100 µs) so the fault (t = 1.0 ms, after `startup/`'s measured
+  soft-start ramp) lands on a block that reached regulation through a real
+  enable edge rather than an already-enabled t = 0 DC solve — see the
+  harness-lesson paragraph below for why, and its scope note for which legs
+  of this bench that fix does and does not reach. Bounded: `vout_50ma_v`
+  inside the DRAFT Output row's ±2% window (the operative form of "never
+  engages for I_load ≤ 50 mA") and both limit levels above 50 mA. Reported
+  unbounded: the limit window itself, its brickwall-vs-foldback shape, and
+  the sustained short current. Current record (`20260825-070327-d0bb614`,
+  3-point subset, supersedes `20260825-045313-703a889` — issue #76):
+  **2/3 PASS** — `tt_27c_3.30v` regulates at 1.798 V with a 162 mA
+  short-circuit level against a 135 mA knee, `ss_-40c_2.97v` 1.798 V / 180 mA
+  / 149 mA, and both hold the short for its full 2 ms with <0.1% supply-
+  current ripple. The negative droop (−20%/−21%: more current into a dead
+  short than at the knee) is the brickwall signature, not a foldback one.
+  `ff_125c_3.63v` **FAILs** legs 1–2: the `op`/`dc` output collapses to ~2 µV
+  and ~0 mA of limit current — the same thermal-clamp nuisance trip
+  `design/README.md` root-causes as mechanism 1 (issue #69), read here
+  through a resistive load instead of an ideal current sink, so the output
+  sits at 0 V rather than at a non-physical negative voltage. Leg 3 at that
+  same corner, by contrast, is now conclusive rather than inconclusive: with
+  the enable-ramp fix, the block reaches a genuine current-limiting state
+  before the fault and sustains 148 mA through the held short — in the same
+  100–200 mA range as the other two corners' leg-3 results, not the ~0 mA
+  the pre-#76 record showed. Overall `FAIL` is unchanged from the prior
+  record, driven entirely by legs 1–2's design defect (none of leg 3's
+  measurements carry a bound to begin with), but leg 3's `ff_125c_3.63v`
+  result changed from inconclusive (a stuck, non-regulating branch reporting
+  ~0 everywhere) to a real measurement of the clamp holding the short —
+  which is what issue #76 fixed.
 - **`startup/`** — four independent **cold** enables in one deck (`C_out`
   0.33/4.7 µF × load 0/50 mA, the corners of the two ranges the DRAFT row
   quantifies over), each starting from `EN = 0` with `C_OUT` discharged and
@@ -485,7 +501,16 @@ regulating branch. At `ff_125c_3.63v` it does not (mechanism 1 again), so the
 draft failed that corner for a reason having nothing to do with the enable/
 shutdown path. Ramping `EN` up from a disabled start lets the block reach
 regulation the same way `startup/` shows it does, and the corner then passes —
-the failure really was the solve, not the shutdown path.
+the failure really was the solve, not the shutdown path. Issue #76 found the
+same gap in `current-limit/`'s leg 3 (its `tran`) after this fix had already
+landed in `enable-shutdown/` and `startup/`, and applied the identical fix
+there. **Scope note, since `current-limit/` is not uniformly a transient
+bench**: the enable-edge lesson applies only to leg 3 — the `tran` that
+applies and holds the `Vout = 0` short. Legs 1 and 2 are `op`/`dc` analyses;
+an enable ramp cannot help a DC solve reach a different branch than it
+otherwise would (there is no "before" state for a ramp to start from), so
+their `ff_125c_3.63v` collapse is the design defect (#69) the record honestly
+reports, not a bench artifact this fix was ever going to touch.
 
 ### Which record set is authoritative (issue #19)
 
