@@ -1147,8 +1147,9 @@ previously-undesigned-for gap (PSRR):**
    physical answer — a genuine circuit robustness question (does a real,
    fabricated device actually exhibit multiple stable operating points in
    this region, or is this purely a simulator-continuation artifact?) that
-   this issue's screening time did not resolve. **Diagnosed by #71** — see
-   "#71 resolved" below.
+   this issue's screening time did not resolve. **Diagnosed by #71/#81** —
+   see "#71/#81 resolved" below: a genuine second stable equilibrium, worse
+   at 125°C, root-caused but not yet fixed (deferred to #79).
 5. **PSRR: a real, systematic, previously-undesigned-for shortfall, not a
    symptom of (1)/(2)/(4).** `sim/psrr-dc` fails 39/45 corners at 1kHz by a
    wide, consistent margin (measured 20.3–25.7dB against the 50dB DRAFT
@@ -1203,13 +1204,20 @@ pass:
   bias-generator-redesign fix and both compete for the same `Iq` budget.
 - **#71** — the `dropout-vs-load` testbench's `dropout_v` measurement
   methodology (mechanism 3) and the DC-solution-multiplicity question
-  (mechanism 4). **Resolved 2026-08-25** — see "#71 resolved" below; spun
-  off **#81** for the 125°C-wide convergence-fragility finding it surfaced.
+  (mechanism 4). **Resolved 2026-08-25** — see "#71/#81 resolved" below;
+  spun off **#81** for the 125°C-wide convergence-fragility finding it
+  surfaced.
+- **#81** — root-caused mechanism 4's 125°C-wide severity: a genuine
+  circuit robustness gap (a second, stable, non-regulating equilibrium the
+  loop's own dynamics prefer at 125°C/50mA), not a solver-tuning problem.
+  **Resolved (diagnosis) 2026-08-25** — see "#71/#81 resolved" below; the
+  actual fix is deferred to **#79** (same bias-generator/compensation
+  headroom bucket as mechanism 2).
 
 `mc-output-accuracy`'s tail-outlier FAIL (mechanism 6) has no issue of its
 own — it is expected to close mostly or entirely as a side effect of #70.
 
-#### #71 resolved: `dropout-vs-load`'s `dropout_v` methodology fixed, mechanism 4 diagnosed (2026-08-25)
+#### #71/#81 resolved: `dropout-vs-load`'s `dropout_v` methodology fixed, mechanism 4 diagnosed and root-caused (2026-08-25)
 
 **Methodology (mechanism 3).** `sim/dropout-vs-load/experiment.json`'s deck
 now sweeps `VIN` downward (3.63V → 1.5V, 20mV resolution, vs #18's original
@@ -1271,12 +1279,120 @@ caution already applied to mechanism 1's numbers, not evaluated as real
 dropout results. The −40°C/27°C corners are trustworthy under the new
 methodology.
 
-**Follow-up filed**: **#81** — investigate why the DC solve is so much less
-numerically stable at 125°C than at −40°C/27°C (isolate the near-singular
-node(s), decide whether a harness-level fix like per-point independent `.op`
-solves or a corner-runner `.options`/seeding change is sufficient, or
-whether this needs a design change), then re-run the full campaign and
-correct mechanism 1's corner-attribution claim above once resolved.
+#### #81 resolved: mechanism 4's 125°C severity root-caused — a genuine circuit robustness gap, not a solver-tuning problem (2026-08-25)
+
+**Isolated to two distinct, compounding phenomena, both worse at 125°C than
+−40/27°C (screening, reproduced from the committed schematic's own netlist,
+not `sim/` evidence):**
+
+1. **Outright Newton non-convergence at many `Vin` points, giving
+   physically self-inconsistent garbage.** An independent (no
+   sweep-continuation history) `.op` scan at `tt`/125°C/50mA across
+   `Vin=3.63V→3.30V` shows values that do not even satisfy the feedback
+   divider's own algebra (e.g. `Vin=3.63V`: `Vout=3.320V` with
+   `FB=-985.6V` — a passive resistor divider cannot produce a node voltage
+   400x its input) at most points tried (`3.63V`, `3.60V`, `3.57V`,
+   `3.54V`, `3.53V` all inconsistent), while `Vin=3.52V` alone converges to
+   a fully self-consistent point (`Vout=1.798V`, `FB=1.199V`,
+   `EA_OUT=2.008V`). This is the direct cause of the campaign's most
+   extreme numbers (`FB=-985.7V`, `N_FBB=-1974.5V`, etc.) — not a second
+   real solution, just the solver's last unconverged iterate at nodes its
+   own "singular matrix" warnings already flag (`ea_cz`/`n_fbb`/`amp_enn`).
+2. **A second, genuinely self-consistent, stable equilibrium that a
+   settled transient reaches instead of the intended 1.8V point — the
+   deeper root cause.** Rather than trusting a single-shot `.op`/`.nodeset`
+   result (which mechanism 4's -40/27°C diagnosis already showed can be
+   steered by the solver's continuation path, not real dynamics), this
+   issue ran a `tran ... uic` with `VOUT`'s own capacitor (`C_OUT`, the one
+   node with a true reactive state in this loop) initialized exactly at the
+   intended `1.8V` operating point (`.ic v(vout)=1.8 ...`), at
+   `Vin=3.60V`/50mA/125°C, run 800µs (long enough to fully settle — final
+   values flat to 6 significant figures) — a check that does not depend on
+   Newton converging to the "right" branch on the first try, since the
+   physically real state variable starts exactly where the intended branch
+   says it should be. At every process corner tried this way (`tt`, `ss`,
+   `fs`), `VOUT` **reliably drifts away from 1.8V to a different, stable
+   equilibrium**: `tt`→`Vout=2.093V` (`FB=1.114V`, `N_FBB=1.048V`),
+   `ss`→`Vout=2.014V` (`FB=1.191V`, `N_FBB=1.073V`),
+   `fs`→`Vout=2.199V` (`FB=1.286V`, `N_FBB=1.100V`) — all with `EA_OUT`
+   mid-rail (not saturated to either supply) and `TS_SNS`/`TS_REF` in the
+   correct untripped ordering (confirmed not mechanism 1's thermal-shutdown
+   false-trip). **This is a real, reproducible finding, not solver noise**:
+   the one true state variable in the loop was placed exactly at the
+   intended answer and the circuit's own dynamics carried it somewhere
+   else. At this second equilibrium the `FB`:`N_FBB` ratio (≈0.94:1) is far
+   from the ≈2:1 a passive divider of three equal resistors
+   (`R_FB_A`/`R_FB_B`/`R_FB_C`, all `sky130_fd_pr__res_xhigh_po`) would
+   produce, implicating a non-resistive current path into these nodes —
+   most likely the same resistor family's body-junction leakage this file
+   already flagged as a 125°C convergence hazard ("domain-error convergence
+   failures in the `R_CZ` compensation resistor's body-junction model")
+   becoming large enough at 125°C (junction leakage is exponential in
+   temperature) to measurably distort the divider. Not confirmed to a
+   specific model-parameter level — that would need device-level probing
+   beyond this issue's screening scope.
+
+**Hardening attempted, did not fix it — supports "genuine circuit
+robustness gap," not "needs better solver options":**
+
+- `.nodeset` seeded exactly at the intended 1.8V/1.2V/0.6V point on a plain
+  `.op` at `tt`/125°C/`Vin=3.51V`: **no effect** — converges to the
+  identical non-physical result as the unseeded run.
+- `.options gminsteps=0` (the option that reliably fixes the −40/27°C
+  continuation artifact per the diagnosis above): **no effect** at
+  `tt`/125°C/`Vin=3.51V` (identical non-physical result), and at
+  `ss`/125°C/`Vin=3.51V` combined with `.nodeset` seeding, this option made
+  the point **worse** — the solve did not converge at all within 2 minutes
+  (versus sub-second solves at −40/27°C), where it timed out and was
+  killed.
+- A properly self-consistent `.ic`-seeded settled transient (item 2 above)
+  is the strongest test available and still does not hold the intended
+  branch.
+
+Because the deeper cause (item 2) is a real second stable equilibrium the
+closed loop's own dynamics prefer at 125°C/50mA, not a solver-seeding
+problem, no harness-level fix (`.nodeset`, `.ic`, `gminsteps`, a per-point
+independent `.op` mode) can make `dropout-vs-load`'s 125°C corners produce
+trustworthy regulating-branch numbers — **this is recorded as a genuine
+circuit robustness gap requiring a design change, not fixed in this
+issue.** It most plausibly shares root cause with mechanism 2's
+already-documented light-load stability shortfall and the bias-generator/
+compensation headroom questions #70 investigated (reverted, no fix shipped)
+and **#79** continues — the same generalization mechanism 2's own writeup
+above already anticipated ("the pass stage's own pole falling with load
+current... unclosable without spending amplifier bias current"), now shown
+to be severe enough at 125°C to cost the *existence* of a robust intended
+operating point at 50mA, not just phase margin. **Recommendation for
+#79**: verify any bias-generator/compensation redesign candidate against
+this specific check (a `tt`/`ss`/`fs`/125°C/`Vin≈3.60V`/50mA settled
+transient seeded at the intended `Vout`) before considering it a fix for
+mechanism 2, since a redesign that only restores phase margin at moderate
+temperature would not by itself address this.
+
+**Campaign re-run: not repeated for `dropout-vs-load`.** The just-landed
+`20260825-055423-c000414` record already reflects the 125°C-wide exclusion
+this issue's diagnosis confirms is correct (and, per the above, not
+resolvable by a harness change) — no `experiment.json`/testbench deck
+change was made by this issue, so a fresh 45-point run against the
+identical deck and PDK pin would reproduce the same numbers, not add
+verification value; not run here to avoid a purely-redundant append-only
+record. A future campaign naturally supersedes this one once #79 (or a
+successor) actually changes the circuit.
+
+**`load-transient` checked, no widened issue found.** Unlike
+`dropout-vs-load`'s `dc` sweep, `load-transient` is a transient analysis
+that starts from a single computed operating point and applies a load
+step, rather than continuation-sweeping across many `Vin` points — the
+exact mechanism (a long, ill-conditioned continuation path) implicated
+above. The existing record
+(`sim/load-transient/records/20260818-032755-81dc232.md`) confirms this
+in practice: at 125°C, `tt`/`ss`/`fs` all report plausible, physically
+sane `undershoot_v`/`overshoot_v` values (0.157V–0.284V — real spec
+misses against the 0.15V DRAFT target, not solver artifacts), while only
+`ff`/`sf` show the extreme non-physical values (`undershoot_v` up to
+22.29V) mechanism 1's thermal-shutdown false-trip already explains. No
+re-run needed — the existing record already answers this issue's
+check.
 
 ### Bias-generator redesign investigated, reverted (#70)
 
