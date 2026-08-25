@@ -9,15 +9,14 @@ from __future__ import annotations
 
 import argparse
 import json
-import subprocess
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-
-def git(repo_root: Path, *args: str) -> str:
-    return subprocess.run(
-        ["git", "-C", str(repo_root), *args], capture_output=True, text=True, check=True
-    ).stdout.strip()
+_SIM_BIN_DIR = str(Path(__file__).resolve().parents[2] / "bin")
+if _SIM_BIN_DIR not in sys.path:
+    sys.path.insert(0, _SIM_BIN_DIR)
+from _record_common import git  # shared git() helper (issue #51/#84)
 
 
 def load_json(path: Path) -> dict | None:
