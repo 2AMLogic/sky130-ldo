@@ -7,13 +7,17 @@ open PDK, built entirely on the open-source analog flow:
 [klayout-tools](https://github.com/2AMLogic/klayout-tools) (`klt`) for layout,
 DRC, and LVS.
 
-**Status: bootstrapping. Nothing here has been fabricated, and nothing has been
-verified yet.** The repo starts with a DRAFT target specification (see
-[`spec/target-spec.md`](spec/target-spec.md)) and no design, no simulation
-evidence, and no layout. Read every number in this repo as a target awaiting
-ratification, or — once work begins — as a simulation result against an open
-PDK's models, with the corner and testbench that produced it recorded alongside
-it.
+**Status: designed, laid out, and simulated — not yet meeting its own DRAFT
+spec.** Nothing here has been fabricated. A schematic, a routed layout, DRC/LVS
+reports, and a full 45-point PVT + Monte Carlo corner campaign (with a
+post-layout PEX attempt) all exist, and the aggregated result is
+[`measurements/characterization.md`](measurements/characterization.md) — which
+currently shows the design **failing** several rows of the DRAFT target
+specification (see [`spec/target-spec.md`](spec/target-spec.md)); the
+open PVT-fix work is tracked in issue #60. Read every number in this repo as a
+simulation result against an open PDK's models, with the corner and testbench
+that produced it recorded alongside it, checked against a spec that itself
+still awaits ratification (issue #1).
 
 ## A design canary, not a reverse-engineering one
 
@@ -102,7 +106,7 @@ spec/          target spec (DRAFT) + decision records
 design/        schematics / netlists (xschem)
 sim/           testbenches + PVT corner results (ngspice)
 layout/        GDS + DRC/LVS reports (klayout-tools driven)
-measurements/  silicon characterization (empty until tape-out)
+measurements/  generated characterization report (see characterization.md)
 ```
 
 ## Environment setup
