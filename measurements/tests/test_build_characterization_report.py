@@ -101,6 +101,29 @@ class TestSimTallies(unittest.TestCase):
         self.assertIsNone(bcr.sim_mc_sample_tally({"klt_response": {"corners": []}}))
 
 
+class TestSubsetReason(unittest.TestCase):
+    """A verdict extracted from a PVT subset must be labelled as one: "3/3
+    corner(s) PASS" from a 3-point subset otherwise reads exactly like
+    full-matrix coverage next to a row citing 45 corners (issue #65)."""
+
+    def test_full_matrix_record_has_no_subset_reason(self):
+        self.assertIsNone(bcr.sim_subset_reason({"matrix": {"is_subset": False}}))
+
+    def test_record_without_a_matrix_block_is_not_flagged(self):
+        self.assertIsNone(bcr.sim_subset_reason({}))
+        self.assertIsNone(bcr.sim_subset_reason({"matrix": None}))
+
+    def test_subset_record_returns_its_own_stated_reason(self):
+        rec = {"matrix": {"is_subset": True, "subset_reason": "3-point bring-up subset"}}
+        self.assertEqual(bcr.sim_subset_reason(rec), "3-point bring-up subset")
+
+    def test_subset_without_a_reason_is_still_flagged(self):
+        """The runner will not write one, but the report must not silently
+        drop the subset marker if a record somehow lacks the reason text."""
+        rec = {"matrix": {"is_subset": True, "subset_reason": ""}}
+        self.assertEqual(bcr.sim_subset_reason(rec), "(the record states no reason)")
+
+
 class TestVerdictExtraction(unittest.TestCase):
     def test_overall_verdict_md(self):
         text = "# record\n\nprose\n\n## Overall verdict: PASS (0 violations)\n\nmore\n"
