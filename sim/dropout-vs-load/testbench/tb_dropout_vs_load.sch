@@ -17,9 +17,50 @@ v {xschem version=3.4.7 file_version=1.2
 * (always comfortably above the enable threshold across the whole
 * 2.97-3.63V corner axis), so PVT corners (process/temp, and EN's rail via
 * 'vsup') still vary per corner point while VIN is finely swept inside
-* each corner run. "dropout_v" reports the Vin-Vout margin at the lowest
-* swept Vin (worst-case headroom); "vout_at_max_vin_v" is a light-headroom
-* regulation sanity check at the sweep's top end.
+* each corner run.
+*
+* Methodology fixed by issue #71 (superseding #18's original method, which
+* measured Vin-Vout at a fixed low-VIN sweep endpoint 1.9V -- deep past the
+* point regulation is actually lost, so it reported the pass device's
+* residual V_sd rather than classic dropout voltage). experiment.json's deck
+* now sweeps VIN DOWNWARD, from a comfortably-regulating value toward a
+* value well below the 1.8V target, at finer (20mV, vs #18's 50mV)
+* resolution; "dropout_v" is the Vin-Vout margin at the VIN where VOUT first
+* falls through 98% of the 1.8V target as VIN decreases (a `.meas dc ...
+* fall=1`, interpolated between the two bracketing sweep points -- the
+* classic "regulation just lost" definition). "vout_at_max_vin_v" is a
+* light-headroom regulation sanity check at the sweep's first-swept
+* (highest-VIN) point.
+*
+* #71 also investigated the DC-solution-multiplicity this sweep direction
+* surfaces at several high/mid-VIN points (isolated points landing on a
+* non-regulating branch, "singular matrix" ngspice warnings at
+* ea_cz/n_fbb/amp_enn) -- the diagnosis differs by temperature:
+* - At -40C/27C: independent per-point checks (a fresh `.op` with NO sweep
+*   continuation history, both with and without a `.ic` seed copied node-for-
+*   node from a neighboring regulating point, and with `.options gminsteps=0`
+*   to disable ngspice's gmin-stepping homotopy fallback) reliably reconverge
+*   to the *regulating* branch at every jump point checked -- i.e. the
+*   default `dc` sweep's continuation path, not a second physically-real
+*   equilibrium, is what lands on the non-regulating branch. Confirmed the
+*   jumps never dip below the 1.764V departure threshold at these
+*   temperatures, so they do not corrupt this measurement.
+* - At 125C, across ALL FIVE process corners (not only the ff/sf
+*   thermal-shutdown false-trip #69 tracks): the same multiplicity is
+*   markedly worse -- the sweep frequently fails to find or hold the
+*   regulating branch at all, including converging to non-physical states
+*   (e.g. FB/N_FBB divider nodes at hundreds of volts, at the exact nodes
+*   ngspice already flags "singular matrix" on) rather than a second
+*   legitimate solution. This is NOT the ff/sf thermal-shutdown false-trip
+*   (confirmed: TS_SNS/TS_REF stay in the correct untripped ordering at the
+*   affected tt/125C point) -- it is this same mechanism (2)/(4), just much
+*   less numerically stable at the top of the temperature range. It DOES
+*   corrupt dropout_v/vout_at_max_vin_v at the affected 125C corners, so
+*   dropout-vs-load's 125C corners (all processes, widening the existing
+*   ff/sf-only exclusion) should be read with the same "solver artifact, not
+*   a real measurement" caution already applied to ff/sf's 125C numbers, not
+*   evaluated as real dropout results -- tracked as a follow-up, #81. See
+*   design/README.md's campaign section for the full writeup and evidence.
 *
 * VREF is a fixed 1.2V placeholder per design/README.md's "VREF interface
 * caveat" -- matching the 1:2 feedback-divider ratio issue #22 revised the

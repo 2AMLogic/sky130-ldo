@@ -1062,7 +1062,10 @@ previously-undesigned-for gap (PSRR):**
    (same bias/load) shows the correct untripped ordering
    (`TS_SNS=1.1026V > TS_REF=1.0310V`, `TS_CMP=3.279V` ≈ `VIN`). Both `ff` and
    `sf` (the two corners sharing a **fast PMOS** skew) show this at 125°C;
-   `ss`, `fs` and `tt` do not — implicating the PMOS-biased CTAT sense/
+   `ss`, `fs` and `tt` do not trip on *this* mechanism (see the #71/#81
+   correction below re: `tt`/125°C's pre-existing non-physical
+   `dropout-vs-load` number, which is a *different* mechanism) — implicating
+   the PMOS-biased CTAT sense/
    reference stack's (`M_TSPS`/`M_TSPR`, both PMOS current sources gated by
    `BIASP`) sensitivity to PMOS process skew as the mechanism, consistent
    with DR-005's own accepted "untrimmed, bias-generator-derived, PVT-loose"
@@ -1121,7 +1124,10 @@ previously-undesigned-for gap (PSRR):**
    amplifier — whose bias/tail chain also loses headroom as `Vin` approaches
    `Vout` — cannot quite reach full drive at this margin. 400–450mV is still
    above the DRAFT 300mV target, a real (if smaller than the raw 530mV–1.79V
-   the record reports) gap.
+   the record reports) gap. **Superseded by #71's fix** — see "#71 resolved"
+   below for the confirmed, `sim/`-evidentiary number (0.310V–0.554V at
+   −40°C/27°C across all five process corners) that replaces this screening
+   estimate.
 4. **The same sweep also surfaces a second, independent problem: the
    closed-loop DC operating point is not unique in parts of this region.**
    Sweeping `Vin` continuously from 1.9V to 3.63V at `tt`/27°C/50mA (screening,
@@ -1139,7 +1145,8 @@ previously-undesigned-for gap (PSRR):**
    physical answer — a genuine circuit robustness question (does a real,
    fabricated device actually exhibit multiple stable operating points in
    this region, or is this purely a simulator-continuation artifact?) that
-   this issue's screening time did not resolve.
+   this issue's screening time did not resolve. **Diagnosed by #71** — see
+   "#71 resolved" below.
 5. **PSRR: a real, systematic, previously-undesigned-for shortfall, not a
    symptom of (1)/(2)/(4).** `sim/psrr-dc` fails 39/45 corners at 1kHz by a
    wide, consistent margin (measured 20.3–25.7dB against the 50dB DRAFT
@@ -1194,10 +1201,80 @@ pass:
   bias-generator-redesign fix and both compete for the same `Iq` budget.
 - **#71** — the `dropout-vs-load` testbench's `dropout_v` measurement
   methodology (mechanism 3) and the DC-solution-multiplicity question
-  (mechanism 4).
+  (mechanism 4). **Resolved 2026-08-25** — see "#71 resolved" below; spun
+  off **#81** for the 125°C-wide convergence-fragility finding it surfaced.
 
 `mc-output-accuracy`'s tail-outlier FAIL (mechanism 6) has no issue of its
 own — it is expected to close mostly or entirely as a side effect of #70.
+
+#### #71 resolved: `dropout-vs-load`'s `dropout_v` methodology fixed, mechanism 4 diagnosed (2026-08-25)
+
+**Methodology (mechanism 3).** `sim/dropout-vs-load/experiment.json`'s deck
+now sweeps `VIN` downward (3.63V → 1.5V, 20mV resolution, vs #18's original
+50mV upward 1.9V → 3.63V) and `dropout_v` is measured as the `Vin`-`Vout`
+margin at the `Vin` where `Vout`, decreasing, first falls through 98% of the
+1.8V target (`.meas dc ... find v(vin) when v(vout)=1.764 fall=1`) — the
+classic "regulation just lost" definition — rather than the old fixed
+`Vin=1.9V` endpoint (which measured deep past dropout). The new full
+45-point record (`20260825-055423-c000414`, supersedes
+`20260818-032811-81dc232`) confirms the screening estimate: at −40°C/27°C,
+across all five process corners, `dropout_v` ranges **0.310V–0.554V**
+(worst: `ff`/27°C; best: `ss`/−40°C) — still above the DRAFT 300mV target (a
+real gap, not a testbench artifact) but well below the raw 530mV–1.79V the
+old fixed-endpoint measurement reported. 125°C corners are excluded from
+this range for the reason below.
+
+**Mechanism 4 (DC-solution-multiplicity) — diagnosed, not one finding but
+two depending on temperature.**
+
+- **At −40°C/27°C: predominantly a `dc`-sweep continuation artifact, not
+  genuine circuit bistability.** Independent per-point checks at several
+  jump points (a fresh, unseeded `.op` with no sweep-continuation history;
+  the same `.op` with a `.ic` seed copied node-for-node from a neighboring
+  regulating point; and `.options gminsteps=0` to disable `ngspice`'s
+  gmin-stepping homotopy fallback, forcing a direct Newton-Raphson solve)
+  reliably reconverge to the *regulating* branch, matching the physically
+  continuous curve neighboring corners trace out — i.e. it is the default
+  `dc` sweep's continuation path that occasionally lands on a second,
+  reachable-but-not-physically-preferred algebraic solution, not a second
+  stable equilibrium the real circuit would settle into. These jumps were
+  confirmed to never dip below the 1.764V departure threshold at these
+  temperatures, so the new `dropout_v` measurement is unaffected by them.
+- **At 125°C: markedly worse, and NOT confined to the `ff`/`sf`
+  thermal-shutdown false-trip (mechanism 1) — it affects all five process
+  corners.** A downward sweep at `tt`/125°C, 50mA frequently fails to find
+  or hold the regulating branch at all: independent `.op` checks at
+  `Vin=3.51–3.53V` converge to non-physical states (e.g. `FB=-985.7V`,
+  `N_FBB=-1974.5V` — exactly the nodes `ngspice`'s "singular matrix"
+  warnings already flag), and the continued `dc` sweep produces an outright
+  non-physical point (`Vout≈-20.29V`) at the same corner. **Confirmed NOT
+  the thermal-shutdown false-trip**: `TS_SNS`/`TS_REF` stay in the correct
+  untripped ordering at this `tt`/125°C point. This also **corrects** an
+  inaccuracy in mechanism 1's original writeup above ("`ss`, `fs` and `tt`
+  do not [show physically-impossible numbers at 125°C]") — the pre-#71
+  record (`20260818-032811-81dc232`) already contained
+  `tt_125c_3.30v: vout_at_max_vin_v=-20.3922V`, a non-physical number at a
+  `tt` corner that mechanism 1's single-point `Vin=3.30V` screening check
+  didn't catch because it wasn't itself sweeping `Vin`. `fs`/125°C stayed
+  numerically well-behaved across all three supply-corner variants
+  (`dropout_v≈0.44V`, consistent with the −40/27°C trend), so a real
+  solution is reachable there — this reads as a solver-conditioning problem
+  at 125°C, not "no valid regulating solution exists," but it was not
+  further isolated within this issue's scope.
+
+**Consequence for reading this record**: `dropout-vs-load`'s 125°C corners
+(all five processes — this widens mechanism 1's `ff`/`sf`-only exclusion)
+should be read with the same "solver artifact, not a literal measurement"
+caution already applied to mechanism 1's numbers, not evaluated as real
+dropout results. The −40°C/27°C corners are trustworthy under the new
+methodology.
+
+**Follow-up filed**: **#81** — investigate why the DC solve is so much less
+numerically stable at 125°C than at −40°C/27°C (isolate the near-singular
+node(s), decide whether a harness-level fix like per-point independent `.op`
+solves or a corner-runner `.options`/seeding change is sufficient, or
+whether this needs a design change), then re-run the full campaign and
+correct mechanism 1's corner-attribution claim above once resolved.
 
 ### Bias-generator redesign investigated, reverted (#70)
 

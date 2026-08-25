@@ -1,7 +1,7 @@
 {
   "slug": "dropout-vs-load",
   "title": "Dropout voltage at 50mA load (Vin sweep toward Vout, DR-003/gf180 convention)",
-  "claim": "Substantiates spec/target-spec.md's DRAFT \"Dropout @ 50 mA\" row (< 300mV, DRAFT stretch < 200mV) against the LDO core-regulation-loop schematic landed by #14 (design/ldo_3v3in_1v8out.sch), using the DRAFT row's own cited method (\"gf180's ss/125C/Vin~=Vout+dropout convention\"): fix I_LOAD at 50mA (the row's own test point) and sweep Vin down toward Vout to find the Vin-Vout margin at which regulation is lost, rather than sweeping load current at a single ample Vin (that measures load regulation, a different DRAFT row). That row is DRAFT (issue #1 not yet ratified) -- the bound below cites it directly, not an invented final limit, and needs re-verification once #1 rules. dropout_v reports the Vin-Vout margin at the sweep's lowest Vin point (worst-case headroom); vout_at_max_vin_v is a light-headroom regulation sanity check at the sweep's top end.",
+  "claim": "Substantiates spec/target-spec.md's DRAFT \"Dropout @ 50 mA\" row (< 300mV, DRAFT stretch < 200mV) against the LDO core-regulation-loop schematic landed by #14 (design/ldo_3v3in_1v8out.sch), using the DRAFT row's own cited method (\"gf180's ss/125C/Vin~=Vout+dropout convention\"): fix I_LOAD at 50mA (the row's own test point) and sweep Vin down toward Vout to find the Vin-Vout margin at which regulation is lost, rather than sweeping load current at a single ample Vin (that measures load regulation, a different DRAFT row). That row is DRAFT (issue #1 not yet ratified) -- the bound below cites it directly, not an invented final limit, and needs re-verification once #1 rules. Methodology fixed by issue #71 (superseding #18's original method): the deck sweeps VIN downward, from a comfortably-regulating value toward a value well below the 1.8V target, at a finer (20mV) resolution than #18's original 50mV; dropout_v is the Vin-Vout margin at the VIN where VOUT first falls (`.meas dc ... fall=1`) through 98% of the 1.8V target as VIN decreases -- the classic \"regulation just lost\" dropout definition -- not a fixed low-VIN endpoint (#18's method reported the pass device's residual V_sd well past dropout, overstating the gap; see #71's PR for the derivation and design/README.md's campaign section for the closed-loop screening that motivated the fix). vout_at_max_vin_v is a light-headroom regulation sanity check at the sweep's top (first-swept) end.",
   "provenance": "schematic",
   "provenance_source": "sim/dropout-vs-load/testbench/tb_dropout_vs_load.sch",
   "schematic": "testbench/tb_dropout_vs_load.sch",
@@ -19,24 +19,27 @@
   "deck": {
     "options": ["wnflag=1"],
     "params": {},
-    "analyses": ["dc VVIN 1.9 3.63 0.05"]
+    "analyses": [
+      "dc VVIN 3.63 1.5 -0.02",
+      "meas dc dropout_vin_x find v(vin) when v(vout)=1.764 fall=1"
+    ]
   },
   "measurements": [
     {
       "name": "dropout_v",
-      "expr": "v(vin)[0] - v(vout)[0]",
+      "expr": "dropout_vin_x - 1.764",
       "unit": "V",
       "min": null,
       "max": 0.3,
-      "note": "Vin - Vout at the sweep's lowest Vin point (1.9V, just above the 1.8V DRAFT output target) with I_LOAD fixed at 50mA -- the worst-case headroom this sweep exercises. DRAFT bound: spec/target-spec.md \"Dropout @ 50 mA\" row, < 300mV (DRAFT stretch < 200mV, not applied here)."
+      "note": "Vin - Vout margin at the VIN where VOUT, swept downward from 3.63V toward 1.5V at 20mV resolution, first falls through 1.764V (98% of the 1.8V DRAFT output target, i.e. the -2% departure-from-regulation point -- classic dropout-voltage definition) with I_LOAD fixed at 50mA. `.meas dc ... fall=1` linearly interpolates between the two bracketing sweep points, so the reported VIN is not quantized to the 20mV grid. Fixed by issue #71 -- superseding #18's original `v(vin)[0] - v(vout)[0]` at a fixed low-VIN endpoint (1.9V), which measured deep past dropout rather than at the loss-of-regulation point (see #71 for the closed-loop screening that motivated this and design/README.md's campaign section for the corrected number). At -40C/27C this measurement is reliable (confirmed against independent per-point `.op` checks -- see the testbench schematic header). At 125C (all five process corners, not just the ff/sf thermal-shutdown false-trip #69 tracks) the underlying DC-solution-multiplicity #71 investigated is severe enough to corrupt this measurement at some corners (solver convergence failures, not real dropout numbers) -- read 125C dropout_v/vout_at_max_vin_v with the same caution already applied to ff/sf's 125C numbers, not as real measurements. Follow-up: #81. DRAFT bound: spec/target-spec.md \"Dropout @ 50 mA\" row, < 300mV (DRAFT stretch < 200mV, not applied here)."
     },
     {
       "name": "vout_at_max_vin_v",
-      "expr": "v(vout)[34]",
+      "expr": "v(vout)[0]",
       "unit": "V",
       "min": 0.5,
       "max": 3.7,
-      "note": "Vout at the sweep's highest Vin point (3.63V, ample headroom -- index 34 of the 35-point 1.9V..3.63V/0.05V sweep). A wide sanity-range check (not a tight spec bound) that regulation is at least in a sane operating range at the sweep's easiest point."
+      "note": "Vout at the sweep's first-swept (highest, 3.63V) VIN point -- ample headroom. A wide sanity-range check (not a tight spec bound) that regulation is at least in a sane operating range at the sweep's easiest point. Index 0 rather than a point-count-dependent index (#71): the sweep now runs VIN high-to-low, so the first point is always the sweep's highest VIN regardless of step size."
     }
   ],
   "spread_checks": []
