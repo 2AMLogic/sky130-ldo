@@ -690,9 +690,16 @@ element feeding a comparison node, an EN-gated clamp on that node:
    13.9–20.4°C comes from solving the rising and falling branches separately
    on the *re-sized* pair — a technique #77's own Diagnostic 1 independently
    shows is needed to see the window that a vanilla continuation sweep loses.
-   **Whether #69's re-size also repairs the hysteresis is therefore open**
-   until `sim/thermal` is re-run against `4cb27f8`; see "Parallel landings on
-   `main`, and what they leave stale" below.
+   **Update (#91, 2026-08-25): re-screened against the #69/#90-resized
+   circuit — the marginal loop gain persists, essentially unchanged in
+   character.** #90 re-sized the CTAT sense/reference pair and re-confirmed
+   `M_TSHYSB` at `W=4.5`, but did not touch the comparator
+   (`M_TCTAIL`/`M_TCN1`/`M_TCN2`/`M_TCP1`/`M_TCP2`) or `M_TSHYS` itself, and
+   did not re-run `sim/thermal`. #91 answers the "is it open" question this
+   paragraph left open: **no**, #69/#90's re-size does not repair the
+   hysteresis — see the dated "#91" section below for the full re-screen and
+   an additional candidate (comparator channel length) that also proved
+   unshippable.
 6. **Dominant pole.** `C_TS` (`TS_CMP -> VIN`, 1p placeholder) is the same
    construction as `C_CL` on the current-limit comparator — it only damps
    electrical comparator chatter; the real time constant of a thermal event
@@ -2263,6 +2270,161 @@ question is genuinely re-opened rather than answered here. That re-run is
 follow-on work, not part of this fix: it needs the same append-only
 treatment every other record here gets, and #92's own `.options gminsteps=1`
 / nodeset-seeded technique rather than a vanilla continuation sweep.
+
+### #91: re-screened against the #69/#90-resized circuit — still marginal, one new knob tried and also unshippable (investigated, not shipped, 2026-08-25)
+
+**Status: investigated, not shipped.** #91 picked up exactly the question
+the "Parallel landings" table above left open: does #69/#90's re-size (which
+changed `M_TSD1`/`M_TSD2`/`M_TSR1`/`M_TSPR`/`M_TSPS`/`M_TSHYSB` but not the
+comparator itself) move #77's non-positive-hysteresis finding? **Answer:
+no — the same marginal, corner-dependent regenerative loop gain persists,
+essentially unchanged in character**, and a new candidate knob #77 did not
+try (the comparator's own differential-pair/mirror channel length) also
+fails to produce a clean, correctly-signed window at more than one corner.
+`ldo_3v3in_1v8out.sch` is **unchanged** by this issue, for the same
+"verification is the product, no partial fix" reason `design/README.md`'s
+`#70` and `#77` sections already used.
+
+**Re-screen of the committed (post-#90) schematic, vanilla `.dc temp`
+continuation sweep (the exact `sim/thermal` methodology, `.spiceinit` as
+committed), all 15 corners** (screening decks — not `sim/` evidence; the
+committed netlist is unchanged since `488bd61`, so a fresh `sim/thermal` run
+would reproduce these within the harness's own timeout noise):
+
+| Corner | trip_temp_c | reset_temp_c | hysteresis_c |
+|---|---|---|---|
+| `tt_27c_2.97v` | 155.9 | 155.9 | 0 |
+| `tt_27c_3.30v` | 150.6 | 150.6 | 0 |
+| `tt_27c_3.63v` | 147.0 | 149.0 | **−2.0** |
+| `ss_27c_2.97v` | 150.6 | 153.0 | **−2.4** |
+| `ss_27c_3.30v` | 144.8 | 144.8 | 0 |
+| `ss_27c_3.63v` | 138.9 | 138.9 | 0 |
+| `ff_27c_2.97v` | 157.8 | 157.8 | 0 |
+| `ff_27c_3.30v` | 156.1 | 156.1 | 0 |
+| `ff_27c_3.63v` | 153.0 | 161.0 | **−8.0** |
+| `sf_27c_2.97v` | 149.0 | 149.0 | 0 |
+| `sf_27c_3.30v` | 144.6 | 144.6 | 0 |
+| `sf_27c_3.63v` | 138.8 | 138.8 | 0 |
+| `fs_27c_2.97v` | 163.0 | 163.0 | 0 |
+| `fs_27c_3.30v` | 158.5 | 158.5 | 0 |
+| `fs_27c_3.63v` | 153.0 | 153.0 | 0 |
+
+12/15 corners read exactly `0°C` (same "vanilla sweep loses a real window"
+signature #77's Diagnostic 1 demonstrated on the pre-#90 sizing) and 3 read
+small-but-real negative values — the same two-signature pattern #77's
+Interpretation paragraph already named, now reproduced on the re-sized
+circuit rather than resolved by it. `ss_27c_2.97v` remains the
+worst-behaved corner, as it was pre-#90.
+
+**New candidate tried: comparator differential-pair/mirror channel length
+(`M_TCN1`/`M_TCN2`/`M_TCP1`/`M_TCP2`, `L=2 → L=3`, +50%, `W` unchanged).**
+Rationale: at the sub-µA bias currents this comparator runs at, the diff
+pair and mirror load sit deep in weak inversion, where a simple 5T OTA's
+intrinsic gain (`gm·ro`) scales roughly with channel length rather than with
+bias current — the physical reason #77's tail-current scaling (which
+raises `gm` and lowers `ro` together, leaving `gm·ro` close to flat) moved
+the result so little. Full 15-corner re-screen of this candidate, same
+methodology:
+
+| Corner | trip_temp_c | reset_temp_c | hysteresis_c |
+|---|---|---|---|
+| `tt_27c_2.97v` | 154.1 | 154.1 | 0 |
+| `tt_27c_3.30v` | 150.5 | 150.5 | 0 |
+| `tt_27c_3.63v` | 146.7 | 146.7 | 0 |
+| `ss_27c_2.97v` | 171.5 | 148.4 | **+23.1** |
+| `ss_27c_3.30v` | 144.7 | 144.7 | 0 |
+| `ss_27c_3.63v` | 139.0 | 139.0 | 0 |
+| `ff_27c_2.97v` | 159.2 | 159.2 | 0 |
+| `ff_27c_3.30v` | 157.0 | 157.0 | 0 |
+| `ff_27c_3.63v` | 152.3 | 152.3 | 0 |
+| `sf_27c_2.97v` | 147.8 | 147.8 | 0 |
+| `sf_27c_3.30v` | 144.3 | 144.3 | 0 |
+| `sf_27c_3.63v` | 138.7 | 138.7 | 0 |
+| `fs_27c_2.97v` | 160.1 | 160.1 | 0 |
+| `fs_27c_3.30v` | 159.0 | 159.0 | 0 |
+| `fs_27c_3.63v` | 153.0 | 153.0 | 0 |
+
+The hypothesis was directionally right — `ss_27c_2.97v` flips from a
+small negative (`−2.4°C`) to a clean, well-separated, correctly-signed
+`+23.1°C`, the best single-corner result either this issue or #77 produced
+— but 14 of 15 corners stay exactly flat at `0°C`, unmoved. This is not a
+"needs more of the same knob" situation: bracketing `L` at `ss_27c_2.97v`
+(the one corner the knob visibly affects) shows the usable window is a
+knife-edge, not a margin —
+
+| `L` (`M_TCN1`/`M_TCN2`/`M_TCP1`/`M_TCP2`) | `ss_27c_2.97v` hysteresis_c |
+|---|---|
+| 2 (baseline) | −2.4 |
+| 3 | **+23.1** (clean) |
+| 4 | 0.0 (collapsed back to no-window) |
+| 5, 6 | never resets across the entire 80–180 °C descending sweep — a **permanent trip**, i.e. a direct violation of DR-005's auto-restart requirement, not merely a measurement miss |
+
+— a 50% step in `L` (2→3) fixes the corner; the next 33% step (3→4) undoes
+it; the step after that (4→5) turns it into a latch. That is the same
+"marginal, corner-dependent, sometimes barely-above/below-unity loop gain"
+character #77 already found with the injection-current and tail-current
+knobs, now demonstrated on a third, independent knob.
+
+**Combined attempt, at a corner the length knob alone does not move.**
+`tt_27c_3.30v` (flat at `0°C` with `L=3` above) with `M_TSHYSB` also widened
+past #69/#90's `W=4.5`: `W=6.75` (1.5×) → still exactly `0°C`
+(`146.5 °C`/`146.5 °C`); `W=9` (2×) → still exactly `0°C` (`140.6 °C`/
+`140.6 °C`), and the trip point itself drags colder as `W` grows (`146.5 →
+140.6 °C`) — reproducing, on the new `L=3` baseline, the same "a bigger
+`M_TSHYSB` also couples more current into `TS_REF`'s pre-trip baseline"
+side effect #77 already characterized. More injection current does not
+rescue a corner the comparator's own gain leaves flat.
+
+**Ruling out a measurement artifact at the flat corners.** Two checks, both
+at `tt_27c_3.30v` with `L=3`:
+
+- Fine-grid re-sweep (0.25 °C, 130–170 °C both directions, #77's Diagnostic
+  2 technique): `trip_temp_c` and `reset_temp_c` agree to sub-`0.001 °C`
+  precision (`151.047 °C` both directions) — not a grid-discretization
+  artifact; the point is genuinely flat at this resolution.
+- `.options gminsteps=1` (#77's Diagnostic 1 technique, which flipped a
+  lost window to a real `+2 °C` reading on the *pre-#90* schematic at this
+  same corner): **no effect** here (`0 °C` with or without it), and no
+  effect either at `ss_27c_2.97v`'s already-clean `+23.1 °C` reading. Unlike
+  #77's `tt_27c_3.30v` finding, this is not a case of the continuation
+  solver losing a real branch a different homotopy path would find — to the
+  precision these two techniques can resolve, there is no branch to lose.
+
+**Does not worsen #69/#90's nuisance-trip finding.** Across every corner
+the `L=3` candidate was screened at, `trip_temp_c` stays in `138.7–171.5 °C`
+— comfortably above the 125 °C rated ceiling and close to #90's own
+measured `155.1–175.0 °C` baseline window at the 14 corners the candidate
+leaves otherwise unmoved. Confirming this was part of this issue's own
+acceptance criteria; it is confirmed for the one candidate that reached
+full-matrix screening, even though that candidate does not ship for the
+reasons above.
+
+**Net effect.** Same disposition #70 and #77 already established for this
+repo's two hardest open loop-gain problems: no DRAFT row or DR-005 Decision
+text is touched (DR-005 gains an append recording this, not an edit).
+`ldo_3v3in_1v8out.sch` is unchanged. **No new `sim/thermal` record was
+minted** — the committed schematic did not change, so a fresh 15-point run
+would reproduce the table above rather than add verification value (the
+same "no purely-redundant record" reasoning `#71`/`#81` and `#77` already
+applied); `20260825-054043-6fac47d` remains the authoritative (and, per
+`measurements/characterization.md`, correctly `STALE`-flagged against the
+`#69`/`#90` schematic change) record. A genuine fix needs the large-signal
+regenerative-latch/Schmitt-style redesign #77 already identified as the
+likely shape — three independent knobs (injection current, comparator tail
+current, and now comparator channel length) have each moved one corner at a
+time without ever producing a margin that holds across the corner set
+simultaneously, which is itself evidence *against* any remaining linear
+sizing knob on this topology closing the gap. That redesign, plus a
+decision on whether `sim/thermal`'s own testbench should adopt the
+nodeset/`gminsteps=1` technique as standard practice (mirroring `#71`/`#83`'s
+fix to `dropout-vs-load`'s methodology) so a future record measures the
+real branch rather than whichever one a vanilla continuation happens to
+find, is future follow-on scope — no new issue is filed by #91 itself since
+the repo's existing #77-authored trail already describes the needed shape
+of work; a future builder picking this up should file the redesign as a new
+issue once someone is ready to spend a full circuit-design cycle on it,
+rather than inheriting a third open issue number for the same
+still-unsolved problem.
 
 ## Validating this schematic
 
