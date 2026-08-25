@@ -619,3 +619,58 @@ already anticipated in its "accuracy gap … sidestepped, not closed" framing.
   itself: **+0.121 V worst case over all 45 PVT points, ~30 °C of headroom
   at the measured slope**, versus a negative (already-tripped) gap at six of
   those points before #69.
+
+---
+
+## Append (2026-08-25, issue #91): the hysteresis loop-gain question re-opened by this append's own re-size, and re-closed the same way
+
+**This is an append, not an edit.** Nothing above has changed, including the
+`2026-08-25` `#77` addendum. The append immediately above (issue #69)
+re-sized `M_TSD1`/`M_TSD2`/`M_TSR1`/`M_TSPR`/`M_TSPS`/`M_TSHYSB` — one of
+those, `M_TSHYSB`, is a knob the `#77` addendum's own screening swept — so
+`design/README.md`'s "Parallel landings on `main`" table (dated 2026-08-25)
+flagged the `#77` addendum's non-positive-hysteresis finding as genuinely
+re-opened against the re-sized circuit rather than answered by it. #91 is
+that re-opening, closed the same way #77 closed the original question: **the
+marginal regenerative loop gain persists, essentially unchanged in
+character, on the re-sized circuit.**
+
+**Full re-screen (15 corners, vanilla `.dc temp` continuation, the exact
+`sim/thermal` methodology) and a new candidate knob (comparator
+differential-pair/mirror channel length, `M_TCN1`/`M_TCN2`/`M_TCP1`/
+`M_TCP2`) are in `design/README.md`'s dated "`#91`" section — not
+reproduced here, per the same convention the `#77` addendum above used.
+Summary: the new candidate fixes the single worst-behaved corner
+(`ss_27c_2.97v`: `−2.4 °C → +23.1 °C`, the cleanest single-corner result
+either issue produced) but leaves 14 of 15 corners unmoved at exactly
+`0 °C`, and is a knife-edge rather than a margin at the one corner it does
+move — bracketing shows a 50% step in `L` fixes it, the next 33% step undoes
+it, and one more turns it into a **permanent trip that never auto-restarts**
+within the swept range, a direct DR-005 violation rather than a measurement
+miss. A second attempt combining the new knob with a further `M_TSHYSB`
+increase at one of the flat corners produced no change in hysteresis while
+reproducing the `#77` addendum's already-known "bigger `M_TSHYSB` drags the
+baseline colder" side effect. Two independent checks (fine-grid re-sweep;
+`.options gminsteps=1`) confirm the flat corners are genuinely
+near-zero-gain at this sizing, not a lost window the measurement technique
+merely failed to find.
+
+**Not fixed by this append**, for the same reason the `#77` addendum was
+not fixed: this needs a genuine large-signal regenerative-latch/
+Schmitt-style redesign, not a further linear-sizing knob on the existing
+current-injection topology — three independent knobs across `#77` and `#91`
+(injection current, comparator tail current, comparator channel length)
+have each moved exactly one corner at a time without ever producing a
+margin that holds across the corner set simultaneously. `#91` does not file
+a further follow-on issue for the redesign itself; a future builder taking
+this on should file it fresh once ready to spend a full circuit-design
+cycle on it, using this append's and `#77`'s data as the starting point,
+rather than inheriting a third open issue number for the same unsolved
+problem. `ldo_3v3in_1v8out.sch` is **unchanged** by #91. **No new
+`sim/thermal` record was minted**: the committed schematic did not change,
+so a fresh 15-point run would reproduce `design/README.md`'s `#91` table
+rather than add verification value; `20260825-054043-6fac47d` remains the
+authoritative (and correctly `STALE`-flagged, per
+`measurements/characterization.md`, against the `#69`/`#90` schematic
+change) record. Nothing in the Decision table above, or in either append
+before this one, is changed.
