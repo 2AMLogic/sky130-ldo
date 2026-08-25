@@ -63,7 +63,7 @@ v {xschem version=3.4.7 file_version=1.2
 *      BELOW its knee current, a constant-current clamp's is not.
 *   3. `tran` with the short APPLIED AS AN EVENT and then HELD: RLOAD is
 *      back at 36 Ohm and VFORCE is a PWL that sits at 1.8 V until
-*      t = 0.5 ms, falls to 0 V in 1 us, and stays at 0 V until the end of
+*      t = 1.0 ms, falls to 0 V in 1 us, and stays at 0 V until the end of
 *      the run. Pre-fault the output node therefore sits at the nominal
 *      1.8 V with the loop live and delivering into it -- note that RFORCE
 *      is still 1 mOhm from leg 2, so the forcing source and the LDO SHARE
@@ -78,15 +78,40 @@ v {xschem version=3.4.7 file_version=1.2
 *      "at Vin_max" is covered by the corner runner's own supply axis (the
 *      3.63 V column of the PVT matrix), not by a hard-coded VIN here.
 *
+*      The fault time (t = 1.0 ms) is deliberately AFTER the soft-start
+*      ramp completes, not at an arbitrary round number: EN itself now
+*      rises from a disabled start (see the VIN/EN block below) at
+*      t = 100 us, and sim/startup's record (20260825-044139-703a889)
+*      measures that ramp completing 0.26-0.45 ms after an enable edge
+*      across the PVT matrix (worst case ff_125c_3.63v: ~0.453 ms). Fault
+*      time 1.0 ms therefore sits comfortably after even the worst-case
+*      ramp (100 us + 0.453 ms =~ 0.553 ms), so the pre-fault leg 3
+*      measures (isup_pre_short_ma, vout_short_mv) reflect a block that
+*      actually reached regulation before the short, not a t = 0 DC solve
+*      that may or may not have landed on the regulating branch (issue #76;
+*      the mechanism is the same one issue #65's sim/enable-shutdown and
+*      sim/startup testbenches were fixed against, ff/sf 125C thermal-clamp
+*      nuisance trip, issue #69).
+*
 * The transient's clamped current is read from i(vvin), not i(vforce):
 * i(vforce) also carries C_OUT's discharge into the short (a ~2 A spike
 * lasting microseconds, which is the capacitor's energy and not the pass
 * device's current), whereas the supply current is the pass device plus a
 * few tens of uA of Iq -- the quantity the "survives" clause is about.
 *
-* VIN/EN share the corner runner's 'vsup' parameter (EN is active-high,
-* full-rail 0/VIN per design/README.md, so tying it to VIN keeps the DUT
-* enabled across the whole PVT matrix). VREF is a fixed 1.2 V placeholder
+* VIN is tied to the corner runner's 'vsup' parameter. EN (active-high,
+* full-rail 0/VIN per design/README.md) is written as
+* `dc 'vsup' pwl(0 0 100u 0 101u 'vsup' 10 'vsup')`, the same dual DC + PWL
+* form sim/enable-shutdown's tb_enable_shutdown.sch uses: ngspice uses the DC
+* value ('vsup', i.e. fully enabled) for legs 1-2 (`op`/`dc`, unaffected by
+* an enable ramp), and the PWL for leg 3's `tran` (including its own t = 0
+* operating point), which therefore starts DISABLED and rises through a
+* soft-start ramp exactly as sim/startup's cold-enable legs do, instead of
+* depending on ngspice's t = 0 DC solve landing on the regulating branch --
+* which it does not at the ff/sf 125C corners (issue #69; see also
+* sim/enable-shutdown's and sim/startup's testbench comments, and issue #76,
+* which applied this same fix here after PR #75 shipped it in those two
+* sibling benches). VREF is a fixed 1.2 V placeholder
 * per design/README.md's "VREF interface caveat, and the reference common
 * mode" -- matching the 1:2 feedback divider (VOUT = 1.5 x VREF). No
 * reference-generator block exists yet.
@@ -107,7 +132,8 @@ S {}
 E {}
 T {current-limit testbench -- exercises design/ldo_3v3in_1v8out.sch (#14/#22)
 via its companion subcircuit symbol design/ldo_3v3in_1v8out.sym
-VIN/EN = 'vsup' (corner runner); VREF = 1.2V placeholder (see design/README.md)
+VIN = 'vsup' (corner runner); EN = dc 'vsup' for legs 1-2, PWL 0 -> 'vsup'
+at 100us for leg 3's tran (issue #76); VREF = 1.2V placeholder (see design/README.md)
 VFORCE + RFORCE force VOUT: DC limit characteristic, then a held Vout=0 short
 DRAFT "Current limit" row: brickwall window TBD over PVT; never engages at 50mA} -700 -750 0 0 0.3 0.3 {}
 
@@ -116,9 +142,18 @@ C {devices/vsource.sym} -600 -300 0 0 {name=VVIN value='vsup' savecurrent=true}
 C {devices/lab_pin.sym} -600 -330 0 0 {name=p1 lab=VIN}
 C {devices/lab_pin.sym} -600 -270 0 0 {name=p2 lab=0}
 
-C {devices/vsource.sym} -400 -300 0 0 {name=VEN value='vsup' savecurrent=true}
+C {devices/vsource.sym} -400 -300 0 0 {name=VEN value="dc 'vsup' pwl(0 0 100u 0 101u 'vsup' 10 'vsup')" savecurrent=true}
 C {devices/lab_pin.sym} -400 -330 0 0 {name=p3 lab=EN}
 C {devices/lab_pin.sym} -400 -270 0 0 {name=p4 lab=0}
+T {EN carries BOTH a DC value ('vsup' -- used by legs 1-2, the `op`/`dc`
+analyses, which are unaffected by an enable ramp) and a PWL rising from 0 at
+t=100us to 'vsup' by t=101us (used by leg 3's `tran`, which therefore starts
+DISABLED and reaches regulation through a soft-start ramp the same way
+sim/startup's cold-enable legs do). Fixes issue #76: an earlier draft tied
+VEN to a plain DC 'vsup' source, so leg 3's transient started
+already-enabled and depended on ngspice's t=0 DC solve landing on the
+regulating branch, which it does not at the ff/sf 125C corners (issue #69) --
+the same mechanism PR #75 fixed in sim/enable-shutdown and sim/startup.} -360 -230 0 0 0.2 0.2 {}
 
 * ---- VREF (fixed placeholder, see design/README.md interface caveat) ----
 C {devices/vsource.sym} -200 -300 0 0 {name=VVREF value=1.2 savecurrent=true}
@@ -158,13 +193,17 @@ source, not the load, sets the operating point.} 940 -300 0 0 0.2 0.2 {}
 C {devices/res.sym} 1200 -300 0 0 {name=RFORCE value=1e12 m=1}
 C {devices/lab_pin.sym} 1200 -330 0 0 {name=p17 lab=VOUT}
 C {devices/lab_pin.sym} 1200 -270 0 0 {name=p18 lab=VF}
-C {devices/vsource.sym} 1200 -180 0 0 {name=VFORCE value="dc 1.8 pwl(0 1.8 0.5m 1.8 0.501m 0 10 0)" savecurrent=true}
+C {devices/vsource.sym} 1200 -180 0 0 {name=VFORCE value="dc 1.8 pwl(0 1.8 1m 1.8 1.001m 0 10 0)" savecurrent=true}
 C {devices/lab_pin.sym} 1200 -210 0 0 {name=p19 lab=VF}
 C {devices/lab_pin.sym} 1200 -150 0 0 {name=p20 lab=0}
 T {RFORCE starts at 1e12 (branch effectively absent) and the deck `alter`s
 it to 1m for the two forced legs. VFORCE carries BOTH a DC value (1.8V,
 used by the `op` leg and overridden by `dc vforce ...`) and a PWL that
-drops the forced output to 0V at t=0.5ms and HOLDS it there to the end
+drops the forced output to 0V at t=1.0ms and HOLDS it there to the end
 of the run -- the "continuous Vout=0 short" of the DRAFT row, applied as
-an event of defined duration rather than sampled at one instant.
+an event of defined duration rather than sampled at one instant. t=1.0ms
+(issue #76) is deliberately after the EN PWL's soft-start ramp completes
+(worst case ~0.553ms: 100us enable edge + sim/startup's measured 0.453ms
+ff_125c ramp), so the fault lands on a block that has actually reached
+regulation, not on an inconclusive t=0 DC solve.
 i(vforce) > 0 means the LDO is delivering current into the forced node.} 1250 -230 0 0 0.2 0.2 {}
