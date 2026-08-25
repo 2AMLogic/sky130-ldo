@@ -152,9 +152,12 @@ def main() -> int:
         f"- Request: `klt-requests/{args.record_id}.request.json`",
         "",
         "**Read this alongside `sim/pex-post-layout/README.md`** before drawing any conclusion from"
-        " the numbers above -- three disclosed, real, upstream `klt`/PDK-model-interaction gaps"
-        " (klayout-tools#1089, #1157, #1159) bound what this run can currently show; see that file's"
-        " full caveat before comparing anything here to `spec/target-spec.md`.",
+        " the numbers above -- two disclosed, real, upstream `klt`/PDK-model-interaction gaps"
+        " (klayout-tools#1157, #1159) block the extracted-side leg from converging at all, plus a"
+        " separate disclosed MOS-flavor-binding caveat where it would converge (klayout-tools#1369,"
+        " sky130-specific; supersedes the now-closed #1089, whose own follow-on fix (#1111) landed"
+        " gf180mcu-only) -- see that file's full caveat before comparing anything here to"
+        " `spec/target-spec.md`.",
         "",
         f"- **Timestamp**: {out['timestamp']}",
         "- **Supersedes**: (none)",
