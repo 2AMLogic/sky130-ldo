@@ -114,13 +114,28 @@ trial rather than assumed:
    core-device flavor, one flavor per class, with no caller override. This
    design's schematic uses the 5V-tolerant **g5v0d10v5** flavor throughout
    (`design/ldo_3v3in_1v8out.sch`'s own xschem netlist,
-   `sky130_fd_pr__nfet_g5v0d10v5`/`pfet_g5v0d10v5`) -- a real, **already
-   tracked upstream** gap:
+   `sky130_fd_pr__nfet_g5v0d10v5`/`pfet_g5v0d10v5`).
+
+   **Update (2026-08-24, issue #67):** originally tracked as
    [klayout-tools#1089](https://github.com/2AMLogic/klayout-tools/issues/1089)
    ("#552's warning-only fix (PR #577) leaves DRC threshold selection and MOS
-   model binding wrong for voltage-domain-marked geometry"), open as of
-   2026-08-18. Not re-filed here per CLAUDE.md's friction protocol (verify
-   before filing; already tracked).
+   model binding wrong for voltage-domain-marked geometry"). #1089 has since
+   **closed** (2026-08-24, "tracking issue, work complete"), decomposed into
+   #1110 (DRC-side) and #1111 (MOS-model-binding side) -- but re-checked live
+   against current `main` (`3c14ac2`), both landed **gf180mcu-only**;
+   #1111's own body states sky130 needs its `hvi` layer registered as a
+   prerequisite first and is explicitly out of scope there.
+   `pdk_models.py`'s `_MOS_MODEL_FLAVOURS` table confirms this directly: it
+   has marker-scoped entries for `("gf180mcu", "gf180mcu")` and
+   `("sg13g2", "sg13g2")` but none for `("sky130", "sky130")`, and
+   `decks/sky130.py`'s `UNMODELED_VOLTAGE_MARKERS` is still empty. So this
+   caveat is **unchanged in substance** -- every sky130 MOS device still
+   binds to `*_01v8` regardless of its drawn flavor -- but #1089 no longer
+   accurately describes it as tracked, since neither #1089 nor its
+   sub-issues cover sky130. Re-filed sky130-specific as
+   [klayout-tools#1369](https://github.com/2AMLogic/klayout-tools/issues/1369)
+   (friction protocol, generic -- no design-specific detail; verified no
+   existing open issue covered this before filing).
 
 ## A third gap: `--pdk`'s resistor X-card geometry convention itself fails
 
@@ -149,8 +164,10 @@ within this repo's control): the bare/generic path is blocked by #1157 (a
 3-terminal resistor class ngspice cannot simulate as an `R` card at all);
 the `--pdk` path resolves that but hits #1159 (NaN in the real resistor
 vendor model, from `--pdk`'s own geometry-unit convention) *and* carries
-the disclosed #1089 MOS-flavor-substitution caveat even where it does
-converge. The latest `klt-responses/<record-id>.pex.json` is the honest,
+the disclosed #1369 MOS-flavor-substitution caveat (sky130-specific; see the
+"Update (2026-08-24, issue #67)" note above -- supersedes the now-closed,
+gf180mcu-only #1089) even where it does converge. The latest
+`klt-responses/<record-id>.pex.json` is the honest,
 recorded result of the actual `klt pex` invocation against the landed
 layout: `status: "error"`, every `delta[]` row's extracted-side leg
 `null`/`"error"` (schematic-side values are real and populated). This is
