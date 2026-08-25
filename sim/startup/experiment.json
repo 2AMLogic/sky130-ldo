@@ -1,0 +1,148 @@
+{
+  "slug": "startup",
+  "title": "Startup / soft-start: cold enable into 0mA and 50mA across the DR-002 C_out window",
+  "claim": "Substantiates spec/target-spec.md's DRAFT \"Startup / soft-start\" row (monotonic into any load 0-50 mA and any C_out in the stability window; controlled ramp; inside +-2% within a few ms of enable; overshoot <= +2%) against the current-starved soft-start ramp issue #22 added to design/ldo_3v3in_1v8out.sch (M_SSCHG / C_SS / M_SSDIS feeding the M_IN2S min-select input -- see design/README.md's \"Soft start (#22)\"). The row is DRAFT (issue #1 not yet ratified) and the stability window it quantifies over is DR-002's *proposed* one (C_eff 0.33-4.7 uF), also unratified, so the bounds below cite those DRAFT/proposed numbers directly rather than an invented final limit. Each of the four legs is an independent COLD enable: EN sits at 0 V until t = 100 us and ngspice computes each transient's own t = 0 operating point from the source's time-zero value, so every leg starts from a disabled, fully discharged block rather than from a settled solution. Two readings of the row are made explicit rather than left implicit. (1) \"inside +-2% within a few ms of enable\": this testbench reads \"a few ms\" as 3 ms after the enable edge and checks the output is inside the DRAFT Output row's 1.764-1.836 V window continuously from there to the end of the run -- 3 ms is this testbench's stated interpretation of an unquantified phrase in a DRAFT row, not a ratified number, and it is the one thing here that would need revisiting if #1 quantifies the phrase differently. (2) \"monotonic ... controlled ramp\": the numeric consequence of a non-monotonic or uncontrolled ramp is an excursion outside that same +-2% window, which vpk_* (peak over the whole post-enable run, bounded at the row's own overshoot <= +2%) and vmin_* (floor over the settled window) do bound; a direct sample-by-sample monotonicity predicate is NOT computed here, and the 10-90% ramp time is reported instead as the \"controlled ramp\" witness. That is a stated coverage limitation of this experiment, not a claim that monotonicity is proven.",
+  "provenance": "schematic",
+  "provenance_source": "sim/startup/testbench/tb_startup.sch",
+  "schematic": "testbench/tb_startup.sch",
+  "statistical_convention": "N/A (corner-matrix check, not a distribution claim)",
+  "corners": {
+    "process": ["tt", "ss", "ff", "sf", "fs"],
+    "temperature_c": [-40, 27, 125],
+    "supply_v": [2.97, 3.3, 3.63]
+  },
+  "quick_subset": [
+    ["tt", 27, 3.3],
+    ["ss", -40, 2.97],
+    ["ff", 125, 3.63]
+  ],
+  "deck": {
+    "options": ["wnflag=1"],
+    "params": {},
+    "analyses": [
+      "* --- leg 1: C_out 0.33uF, 0 mA (feedback divider is the only preload) ---",
+      "tran 10u 4m",
+      "meas tran vpk max v(vout) from=100u to=4m",
+      "meas tran vfloor min v(vout) from=3.1m to=4m",
+      "meas tran tset when v(vout)=1.764 rise=1",
+      "* --- leg 2: C_out 0.33uF, 50 mA ---",
+      "alter rload = 36",
+      "tran 10u 4m",
+      "meas tran vpk max v(vout) from=100u to=4m",
+      "meas tran vfloor min v(vout) from=3.1m to=4m",
+      "meas tran tset when v(vout)=1.764 rise=1",
+      "* --- leg 3: C_out 4.7uF, 0 mA ---",
+      "alter cout = 4.7u",
+      "alter rload = 1e12",
+      "tran 10u 4m",
+      "meas tran vpk max v(vout) from=100u to=4m",
+      "meas tran vfloor min v(vout) from=3.1m to=4m",
+      "meas tran tset when v(vout)=1.764 rise=1",
+      "* --- leg 4: C_out 4.7uF, 50 mA ---",
+      "alter rload = 36",
+      "tran 10u 4m",
+      "meas tran vpk max v(vout) from=100u to=4m",
+      "meas tran vfloor min v(vout) from=3.1m to=4m",
+      "meas tran tset when v(vout)=1.764 rise=1"
+    ]
+  },
+  "measurements": [
+    {
+      "name": "vpk_c033_0ma_v",
+      "expr": "tran1.vpk",
+      "unit": "V",
+      "min": null,
+      "max": 1.836,
+      "note": "Peak VOUT over the whole post-enable run (t = 100 us to 4 ms) at C_out 0.33 uF / 0 mA. DRAFT bound: spec/target-spec.md's \"Startup / soft-start\" row, overshoot <= +2%, i.e. the peak must not leave the DRAFT Output row's 1.836 V ceiling. This is the binding overshoot leg by construction: at 0 mA the only discharge path for an overshoot is the block's own ~3.1 MOhm feedback divider."
+    },
+    {
+      "name": "vfloor_c033_0ma_v",
+      "expr": "tran1.vfloor",
+      "unit": "V",
+      "min": 1.764,
+      "max": null,
+      "note": "Lowest VOUT anywhere in the settled window (3.1 ms to 4 ms, i.e. from 3 ms after the enable edge onward) at C_out 0.33 uF / 0 mA. DRAFT bound: the row's \"inside +-2% within a few ms of enable\", with \"a few ms\" read as 3 ms (this testbench's stated interpretation -- see the claim field). Taking the MINIMUM over the window rather than one sample means a ramp that reaches the window and then sags back out of it fails, which is the numeric consequence of the row's \"monotonic / controlled ramp\" clause."
+    },
+    {
+      "name": "tramp_c033_0ma_ms",
+      "expr": "1000*(tran1.tset - 100u)",
+      "unit": "ms",
+      "min": null,
+      "max": null,
+      "note": "Time from the enable edge until VOUT first enters the +-2% window (first rising crossing of 1.764 V) at C_out 0.33 uF / 0 mA. Reported, not bounded: it is the \"controlled ramp\" witness, and the row's only timing number (\"within a few ms\") is already enforced by vfloor_*. design/README.md's screening puts the soft-start ramp at ~290 us 10-90%, deliberately fast relative to the row so that settling has margin while inrush stays under the current limit."
+    },
+    {
+      "name": "vpk_c033_50ma_v",
+      "expr": "tran2.vpk",
+      "unit": "V",
+      "min": null,
+      "max": 1.836,
+      "note": "Peak VOUT over the whole post-enable run at C_out 0.33 uF / 50 mA (the DRAFT Load row's ceiling). Same DRAFT overshoot <= +2% bound as vpk_c033_0ma_v."
+    },
+    {
+      "name": "vfloor_c033_50ma_v",
+      "expr": "tran2.vfloor",
+      "unit": "V",
+      "min": 1.764,
+      "max": null,
+      "note": "Lowest VOUT in the settled window at C_out 0.33 uF / 50 mA. Same DRAFT +-2%-within-3 ms bound as vfloor_c033_0ma_v."
+    },
+    {
+      "name": "tramp_c033_50ma_ms",
+      "expr": "1000*(tran2.tset - 100u)",
+      "unit": "ms",
+      "min": null,
+      "max": null,
+      "note": "Ramp time to the +-2% window at C_out 0.33 uF / 50 mA. Reported, not bounded."
+    },
+    {
+      "name": "vpk_c47_0ma_v",
+      "expr": "tran3.vpk",
+      "unit": "V",
+      "min": null,
+      "max": 1.836,
+      "note": "Peak VOUT over the whole post-enable run at C_out 4.7 uF (DR-002's proposed C_eff ceiling) / 0 mA. Same DRAFT overshoot <= +2% bound."
+    },
+    {
+      "name": "vfloor_c47_0ma_v",
+      "expr": "tran3.vfloor",
+      "unit": "V",
+      "min": 1.764,
+      "max": null,
+      "note": "Lowest VOUT in the settled window at C_out 4.7 uF / 0 mA -- the slowest-settling of the four points, so the leg where the row's \"within a few ms\" clause bites hardest. Same DRAFT +-2%-within-3 ms bound."
+    },
+    {
+      "name": "tramp_c47_0ma_ms",
+      "expr": "1000*(tran3.tset - 100u)",
+      "unit": "ms",
+      "min": null,
+      "max": null,
+      "note": "Ramp time to the +-2% window at C_out 4.7 uF / 0 mA. Reported, not bounded."
+    },
+    {
+      "name": "vpk_c47_50ma_v",
+      "expr": "tran4.vpk",
+      "unit": "V",
+      "min": null,
+      "max": 1.836,
+      "note": "Peak VOUT over the whole post-enable run at C_out 4.7 uF / 50 mA -- the largest-inrush point of the four (charging DR-002's biggest proposed C_eff while also feeding the DRAFT Load row's full 50 mA). Same DRAFT overshoot <= +2% bound."
+    },
+    {
+      "name": "vfloor_c47_50ma_v",
+      "expr": "tran4.vfloor",
+      "unit": "V",
+      "min": 1.764,
+      "max": null,
+      "note": "Lowest VOUT in the settled window at C_out 4.7 uF / 50 mA. Same DRAFT +-2%-within-3 ms bound."
+    },
+    {
+      "name": "tramp_c47_50ma_ms",
+      "expr": "1000*(tran4.tset - 100u)",
+      "unit": "ms",
+      "min": null,
+      "max": null,
+      "note": "Ramp time to the +-2% window at C_out 4.7 uF / 50 mA. Reported, not bounded: this is also the leg where a soft-start ramp fast enough to demand more than the current limit would show up, as a ramp time longer than the other three legs' (the clamp, not the ramp, would then be setting dV/dt)."
+    }
+  ],
+  "spread_checks": []
+}

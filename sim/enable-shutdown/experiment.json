@@ -1,0 +1,106 @@
+{
+  "slug": "enable-shutdown",
+  "title": "Enable / shutdown: shutdown Iq, Vin->Vout leakage, and no active discharge",
+  "claim": "Substantiates spec/target-spec.md's DRAFT \"Enable / shutdown\" row (shutdown Iq < 3 uA worst corner; disabled output = pass device fully off, no active discharge; Vin->Vout leakage <= 1 uA) against the EN-gated shutdown path in design/ldo_3v3in_1v8out.sch -- the M_ENP/M_ENP2/M_ENP3/M_ENP4/M_ENP5 clamp family and the M_ENN/M_ENN2 pseudo-ground switches, see design/README.md's \"Enable/shutdown (also revised after simulation)\". The row is DRAFT (issue #1 not yet ratified); the bounds below cite its own two numbers (3 uA, 1 uA) directly rather than an invented final limit. Three deliberate method choices: (1) shutdown Iq is measured both statically (EN held at 0) AND 1.5-2.5 ms after a falling EN edge, because a DC-only check cannot distinguish a block that HAS a clean disabled solution from one that actually REACHES it -- vout_pre_disable_v witnesses that the transient leg really was regulating before the edge, so the check cannot pass vacuously. The transient leg runs a full enable -> shutdown CYCLE (EN low at t=0, rising at 100 us, falling again at 2 ms) rather than starting already-enabled: starting enabled would make the leg depend on ngspice's t=0 DC solve landing on the regulating branch, which it does not at the ff/sf 125 C corners (design/README.md's \"What the full 45-point PVT + Monte Carlo campaign's FAILs actually mean\", mechanism 1 -- thermal-clamp nuisance trip, issue #69), so that draft failed those corners for a reason unrelated to the enable/shutdown path. (2) Vin->Vout leakage is measured with VOUT forced to 0 V, which is what isolates the clause: at VOUT = 0 the block's ~3.1 MOhm feedback divider carries no current, so the forcing source collects the VIN->VOUT path and nothing else. (3) \"no active discharge\" is bounded via the transient residual output 2 ms after the disable edge with no external load (the only discharge path a correctly disabled block has is the divider, whose R_div x C_OUT constant is seconds), checked against the DRAFT Output row's own +-2% window rather than an invented discharge-current threshold; the static counterpart -- the current a disabled block draws from an output held at 1.8 V -- is reported rather than bounded, because separating the divider's inherent preload from an active discharge by DC current alone would need a divider value this experiment does not independently measure. Stated coverage limitation: the row's \"pass device fully off\" clause is substantiated by the leakage measurement, not by a per-device check inside the DUT.",
+  "provenance": "schematic",
+  "provenance_source": "sim/enable-shutdown/testbench/tb_enable_shutdown.sch",
+  "schematic": "testbench/tb_enable_shutdown.sch",
+  "statistical_convention": "N/A (corner-matrix check, not a distribution claim)",
+  "corners": {
+    "process": ["tt", "ss", "ff", "sf", "fs"],
+    "temperature_c": [-40, 27, 125],
+    "supply_v": [2.97, 3.3, 3.63]
+  },
+  "quick_subset": [
+    ["tt", 27, 3.3],
+    ["ss", -40, 2.97],
+    ["ff", 125, 3.63]
+  ],
+  "deck": {
+    "options": ["wnflag=1"],
+    "params": {},
+    "analyses": [
+      "* --- leg 1: full cycle -- EN rises at t=100us, block regulates, EN falls at t=2ms ---",
+      "tran 5u 4.5m",
+      "meas tran vpre find v(vout) at=1.9m",
+      "meas tran iq_avg avg i(vvin) from=3.5m to=4.5m",
+      "meas tran iq_worst min i(vvin) from=3.5m to=4.5m",
+      "meas tran vhold find v(vout) at=4m",
+      "* --- leg 2: static disabled state, output free-floating ---",
+      "op",
+      "* --- leg 3: static disabled state, VOUT forced to 0 V (Vin->Vout leakage) ---",
+      "alter rforce = 1m",
+      "op",
+      "* --- leg 4: static disabled state, VOUT held at the 1.8 V nominal output ---",
+      "alter vforce = 1.8",
+      "op"
+    ]
+  },
+  "measurements": [
+    {
+      "name": "iq_shutdown_static_ua",
+      "expr": "-1e6*op1.i(vvin)",
+      "unit": "uA",
+      "min": null,
+      "max": 3.0,
+      "note": "Total VIN supply current with EN held at 0 and the output free-floating (static disabled state). DRAFT bound: spec/target-spec.md's \"Enable / shutdown\" row, shutdown Iq < 3 uA worst corner -- DRAFT/unratified, cited directly. Sign: i(vvin) is negative when the source delivers current, so the supply current is its negation."
+    },
+    {
+      "name": "iq_shutdown_after_edge_ua",
+      "expr": "-1e6*tran1.iq_worst",
+      "unit": "uA",
+      "min": null,
+      "max": 3.0,
+      "note": "Worst (largest) VIN supply current between 1.5 ms and 2.5 ms AFTER the falling EN edge at t = 2 ms, in a transient that enabled the block at t = 100 us and let it start up and regulate first. Same DRAFT 3 uA bound as iq_shutdown_static_ua, but this is the version that can fail for a block which has a clean disabled operating point yet does not settle into it from an enabled one -- a static op check never visits the enabled state, so it cannot see that failure mode at all. The worst sample in the window is used rather than the mean, because the row says \"worst corner\"."
+    },
+    {
+      "name": "iq_shutdown_after_edge_mean_ua",
+      "expr": "-1e6*tran1.iq_avg",
+      "unit": "uA",
+      "min": null,
+      "max": null,
+      "note": "Mean VIN supply current over the same post-edge window. Reported alongside the worst-case value so a record shows whether a corner's shutdown current is a steady level or a residual settling tail; only the worst-case value is bounded."
+    },
+    {
+      "name": "leak_vin_vout_ua",
+      "expr": "1e6*op2.i(vforce)",
+      "unit": "uA",
+      "min": null,
+      "max": 1.0,
+      "note": "Current the block delivers into its own output with EN = 0 and VOUT forced to 0 V. DRAFT bound: the row's \"Vin->Vout leakage <= 1 uA\", cited directly. Forcing VOUT to ground is what isolates the VIN->VOUT path: the block's ~3.1 MOhm feedback divider carries no current at 0 V, so what the forcing source collects is the (off) pass device and its junctions. The spec row's note already flags that its leakage figure is \"pending sky130 device data\", so a comfortable pass here is a statement about the DRAFT number as much as about the design."
+    },
+    {
+      "name": "vout_pre_disable_v",
+      "expr": "tran1.vpre",
+      "unit": "V",
+      "min": 1.764,
+      "max": 1.836,
+      "note": "VOUT at t = 1.9 ms -- 100 us before the disable edge and ~1.8 ms after the enable edge, i.e. the state the shutdown is entered FROM. Bounded against the DRAFT Output row's 1.764-1.836 V window so that the two post-edge measurements cannot pass vacuously: if the block was never actually regulating before the edge, \"it draws no current afterwards\" and \"its output did not collapse\" would both be trivially true and meaningless. This is also the only place this experiment grades the ENABLE edge (the block must have started up and settled within 1.8 ms of it); the ramp shape itself is sim/startup's subject, not this experiment's."
+    },
+    {
+      "name": "vout_hold_2ms_v",
+      "expr": "tran1.vhold",
+      "unit": "V",
+      "min": 1.764,
+      "max": null,
+      "note": "VOUT 2 ms after the disable edge, no external load. This is the row's \"disabled output = pass device fully off, no active discharge\" clause made numeric: the only discharge path a correctly disabled block has is its own feedback divider, whose R_div x C_OUT constant is of order seconds, so 2 ms of decay is ~1 mV and the output must still be inside the DRAFT Output row's +-2% window. An active pull-down would empty a 1 uF C_OUT in microseconds and miss this by three orders of magnitude. The bound is deliberately loose (it tolerates any decay path above ~100 kOhm) precisely so it grades the presence or absence of an active discharge and not the divider's exact value."
+    },
+    {
+      "name": "vout_disabled_static_v",
+      "expr": "op1.v(vout)",
+      "unit": "V",
+      "min": null,
+      "max": null,
+      "note": "VOUT in the static disabled state with the output free-floating (the DC solution the transient leg above is decaying toward). Reported, not bounded: the DRAFT row states no residual-output number, and its own decay behaviour -- not its endpoint -- is what the no-active-discharge clause is about."
+    },
+    {
+      "name": "ivout_held_1v8_ua",
+      "expr": "-1e6*op3.i(vforce)",
+      "unit": "uA",
+      "min": null,
+      "max": null,
+      "note": "Current a source holding VOUT at the 1.8 V nominal output has to supply into a disabled block (positive = the block is a passive load). Expected to be essentially the feedback divider's own inherent preload, which spec/target-spec.md's Load row already names as the block's only inherent preload (~0.6 uA at 1.8 V per design/README.md's measured ~3.1 MOhm divider). Reported, not bounded: separating that inherent preload from an active discharge by DC current alone would need a divider value this experiment does not independently measure -- the bounded form of the clause is vout_hold_2ms_v above."
+    }
+  ],
+  "spread_checks": []
+}
