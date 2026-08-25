@@ -62,9 +62,9 @@ DRC/LVS/post-layout PEX substantiate that the routed layout matches the schemati
 
 | Check | Verdict (record's own) | Record | Freshness |
 |---|---|---|---|
-| DRC (issue #16) | **PASS** (status=clean, violation_count=0) | [`20260825-015012-3149121`](../layout/ldo-core/reports/20260825-015012-3149121/record.md) | STALE |
-| LVS (issue #17) | **MATCH** (status=match, mismatch_count=3) | [`20260825-015029-3149121`](../layout/ldo-core/reports/20260825-015029-3149121/record.md) | STALE |
-| Post-layout PEX (issue #20) | see detail — no single PASS/FAIL ([caveat](../sim/pex-post-layout/README.md)) | [`20260825-052509-6fac47d`](../sim/pex-post-layout/records/20260825-052509-6fac47d.md) | fresh |
+| DRC (issue #16) | **PASS** (status=clean, violation_count=0) | [`20260825-123551-3b4e121`](../layout/ldo-core/reports/20260825-123551-3b4e121/record.md) | fresh |
+| LVS (issue #17) | **MATCH** (status=match, mismatch_count=3) | [`20260825-123628-3b4e121`](../layout/ldo-core/reports/20260825-123628-3b4e121/record.md) | fresh |
+| Post-layout PEX (issue #20) | see detail — no single PASS/FAIL ([caveat](../sim/pex-post-layout/README.md)) | [`20260825-125102-3b4e121`](../sim/pex-post-layout/records/20260825-125102-3b4e121.md) | fresh |
 
 Post-layout PEX detail: `klt sim` (schematic-side leg, standalone): status=pass, corners=45, passed=45, failed=0, errored=0; `klt pex` (schematic + extracted legs + delta): status=error, passed=0, failed=0, errored=135, pin_count_mismatch=None
 

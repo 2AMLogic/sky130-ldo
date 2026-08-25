@@ -38,6 +38,12 @@ def main() -> int:
     ap.add_argument("--request", required=True)
     ap.add_argument("--out-json", required=True)
     ap.add_argument("--out-md", required=True)
+    ap.add_argument(
+        "--supersedes",
+        default="",
+        help="record id this run supersedes (append-only evidence pointer; "
+        "e.g. a prior run whose cited layout/LVS record has since gone stale)",
+    )
     args = ap.parse_args()
 
     repo_root = Path(args.repo_root)
@@ -92,6 +98,7 @@ def main() -> int:
             "pex_extract": f"netlist-snapshots/{args.record_id}.pex.extract.spice",
         },
         "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "supersedes": args.supersedes or None,
     }
     Path(args.out_json).write_text(json.dumps(out, indent=2) + "\n")
 
@@ -159,7 +166,7 @@ def main() -> int:
         " `spec/target-spec.md`.",
         "",
         f"- **Timestamp**: {out['timestamp']}",
-        "- **Supersedes**: (none)",
+        f"- **Supersedes**: {args.supersedes or '(none)'}",
         "",
     ]
     Path(args.out_md).write_text("\n".join(lines))
