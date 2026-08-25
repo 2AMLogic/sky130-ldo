@@ -40,8 +40,10 @@ record `FAIL`** against their DRAFT bounds — an honest, expected finding given
 this schematic's remaining known gaps (see `design/README.md`'s "Known gaps /
 follow-on scope"), not a harness defect. Issue #65's three benches follow the
 same two-step shape one issue later: their first records are `--quick`
-subsets, and the full 45-point matrix each of their manifests declares is
-tracked in issue #74. Per issue #19's own guardrail, none of
+subsets, and issue #74 then ran the full 45-point matrix each of their
+manifests declares (39-42/45 PASS across the three; see "The protection /
+transient testbenches (issue #65)" below for per-bench results and #93 for
+a new finding the full matrix surfaced). Per issue #19's own guardrail, none of
 this is a final pass/fail verdict against a *ratified* spec — issue #1 (spec
 ratification) is still open, so every record here cites the current DRAFT row
 only. Three further testbenches — `line-regulation`, `load-regulation` and
@@ -413,7 +415,8 @@ what is new is that two of them drive the DUT through an **event** (a held
 short, an enable edge) rather than a steady condition, so each states in its
 own `experiment.json` `claim` how the event is applied and which clause of
 the DRAFT row it grades. First records are `--quick` subsets, same as #18/#25;
-the full 45-point matrix each manifest declares is issue #74.
+issue #74 then ran the full 45-point matrix each manifest declares for all
+three (see each bullet's "Full 45-point PVT record" below).
 
 Two of these rows carry clauses with **no number in them at all** ("window
 TBD over PVT", "survives", "monotonic"). Where a clause has a number, it is
@@ -460,7 +463,34 @@ would have to change once issue #1 rules.
   measurements carry a bound to begin with), but leg 3's `ff_125c_3.63v`
   result changed from inconclusive (a stuck, non-regulating branch reporting
   ~0 everywhere) to a real measurement of the clamp holding the short —
-  which is what issue #76 fixed.
+  which is what issue #76 fixed. **Full 45-point PVT record**
+  (`20260825-085216-64c17cb`, issue #74, `--timeout 600` — the default 300 s
+  budget genuinely wasn't enough at `tt_-40c_2.97v`/`tt_-40c_3.30v`, which
+  needed 260–300 s+ even at their neighboring corners; re-run with the longer
+  budget instead of accepting a timeout as the result, per this directory's
+  own append-only-but-not-lazy convention. Supersedes `20260825-070327-d0bb614`,
+  which supersedes the original `20260825-045313-703a889` — a two-hop chain
+  now, both hops kept on disk): **39/45 PASS**. All 39 tt/ss/ff/sf/fs corners
+  outside 125 °C regulate cleanly (short-circuit levels 108–236 mA against
+  85–204 mA knees, −15.6%–−30.2% droop, all brickwall-shaped, <0.05% supply
+  ripple through the full 2 ms hold). The six `ff_125c`/`sf_125c` corners
+  **FAIL** legs 1–2 exactly as the quick subset's `ff_125c_3.63v` point
+  showed — mechanism 1 (#69), not fixed here. Leg 3 (the held short, fixed by
+  #76's EN ramp) is conclusive at all six of those corners now, but the two
+  process corners tell different stories: `ff_125c` leg 3 reaches a genuine
+  current-limiting state and sustains 108–148 mA through the short (in range
+  with the neighboring corners), while `sf_125c` leg 3 shows the *same*
+  thermal-shutdown collapse as its own legs 1–2 — sub-µA sustained short
+  current (0.012–0.016 mA) rather than the 100+ mA the other corners show.
+  That is a real, converged measurement (`ngspice` exit 0, well inside the
+  600 s budget), not the pre-#76 stuck-branch artifact: the EN ramp does let
+  `sf_125c` attempt soft-start, but the same mechanism-1 trip that kills
+  legs 1–2 also kills the ramp before it reaches regulation, so leg 3 never
+  gets a fault to "survive" at that corner. `ff_125c`'s escape from that
+  trip during leg 3 (while legs 1–2 do not escape it) is a real,
+  bench-observed asymmetry between the two process corners, filed as #93
+  (why `sf` is more susceptible than `ff` to mechanism 1 during a ramped
+  enable) rather than chased here — out of this issue's scope.
 - **`startup/`** — four independent **cold** enables in one deck (`C_out`
   0.33/4.7 µF × load 0/50 mA, the corners of the two ranges the DRAFT row
   quantifies over), each starting from `EN = 0` with `C_OUT` discharged and
@@ -477,7 +507,21 @@ would have to change once issue #1 rules.
   sample monotonicity predicate is **not** computed — the peak/floor bounds
   capture the numeric consequence of a non-monotonic ramp (an excursion
   outside ±2%), and the ramp time is reported as the "controlled ramp"
-  witness.
+  witness. **Full 45-point PVT record** (`20260825-073320-64c17cb`, issue
+  #74, supersedes `20260825-044139-703a889`): **42/45 PASS** — the three
+  quick-subset points still pass, `ff_125c` passes cleanly at all three
+  supplies (its own worst peak 1.827 V against the 1.836 V ceiling, worst
+  floor 1.796 V, ramp times 0.42–0.58 ms — comparable to the rest of the
+  matrix), and 39 non-125 °C corners are inside bounds throughout. The full
+  matrix surfaces a new failure the 3-point subset never reached:
+  **`sf_125c` fails at all three supplies** — `VOUT` collapses to 7–11 mV
+  instead of settling into the regulation window (`vpk`/`vfloor` both ≈ the
+  collapsed value, `tramp` `n/a` since the settle threshold is never
+  crossed). This is the same mechanism-1 thermal-shutdown false-trip (#69)
+  documented for `ff`/`sf_125c` in the four core-regulation testbenches, now
+  confirmed to reach `startup/`'s cold-enable path at the `sf` process corner
+  specifically (`ff_125c` escapes it here, matching `current-limit/`'s leg-3
+  finding above) — filed as #93.
 - **`enable-shutdown/`** — one transient leg running a full enable →
   shutdown **cycle** (`EN` low at t = 0, rising at 100 µs, falling again at
   2 ms) plus three static `op` legs with `EN` held at 0. Bounded: shutdown Iq
@@ -492,7 +536,22 @@ would have to change once issue #1 rules.
   milliseconds after disable. All are two to four orders of magnitude inside
   the DRAFT bounds, which is as much a statement about that row's own
   "pending sky130 device data" note as about the design — the models'
-  subthreshold/junction leakage is what sets these numbers.
+  subthreshold/junction leakage is what sets these numbers. **Full 45-point
+  PVT record** (`20260825-073259-64c17cb`, issue #74, supersedes
+  `20260825-044140-703a889`): **42/45 PASS** — across the 42 passing corners,
+  static shutdown Iq 0.13 nA–65.4 nA, post-edge worst-case 0.24 nA–32.3 nA,
+  `VIN`→`VOUT` leakage 0.074 nA–75.8 nA, and `VOUT` 1.806–1.820 V two
+  milliseconds after disable — the same orders-of-magnitude-inside-bound
+  picture the quick subset showed, now confirmed everywhere the design
+  actually reaches regulation. The three `sf_125c` corners **FAIL**: `EN`'s
+  rising edge cannot bring the block into regulation there (`vout_pre_disable_v`
+  ≈ 7–11 mV, not the ~1.8 V the other 42 corners settle to), so the static/
+  post-edge Iq and leakage numbers at those three corners describe a block
+  that was never on, not a real shutdown measurement — the same mechanism-1
+  false-trip (#69) `startup/`'s full-matrix record hits at the identical
+  three corners, and the flip side of `current-limit/`'s leg-3 finding
+  above: `sf_125c` does not survive a ramped `EN` edge at all in this
+  design's current state, `ff_125c` does — filed as #93.
 
 The transient leg's *rising* edge in `enable-shutdown` is load-bearing, and
 worth recording as a harness lesson: an earlier draft started that transient
