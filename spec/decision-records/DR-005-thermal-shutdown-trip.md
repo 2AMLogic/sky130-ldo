@@ -382,6 +382,119 @@ decision record does not resize a circuit):
    #77 does not prejudge which) is distinct from #69's sense/reference
    crossing-point mechanism.
 
+## 2026-08-25 addendum: #77 root-caused the hysteresis-sign finding — a marginal regenerative loop gain, not a simple sign error
+
+This addendum resolves — as far as it can be resolved without a shipped
+circuit change — the open question the `2026-08-25 addendum` above left
+unanswered: whether the non-positive hysteresis `sim/thermal`'s first
+evidentiary run measured at every one of 15 corners is a real circuit
+defect or a DC-continuation measurement artifact (that addendum explicitly
+said "#77 does not prejudge which"). Per CLAUDE.md's append-only convention,
+this is an addendum, not an edit — the Decision, Alternatives and
+Consequences sections above, and the `2026-08-25` addendum before this one,
+are unchanged.
+
+**Answer: both, and neither cleanly. A genuine but marginal regenerative
+loop gain in the `M_TSHYS`/`M_TSHYSB` positive-feedback path, which the
+default DC-continuation measurement technique also mismeasures.**
+
+**Diagnostic method 1 — nodeset-forced bistability probe.** At
+`tt_27c_3.30v`, `T=134°C` (one 2°C grid step below the vanilla `.dc temp`
+sweep's measured 0°C-hysteresis crossing at 135°C), an independent `.op`
+seeded with a `.nodeset` biasing every hysteresis-path node toward the
+*tripped* state converges to a genuine, self-consistent tripped solution:
+`V(TS_REF)` settles at ≈1.065V (matching the ≈1.064V this same corner's own
+naturally-tripped state at `T=136°C` shows, and matching the schematic's own
+"raising the reference by tens of mV" design-intent comment — the boost
+mechanism is doing exactly what it was designed to do), `V(TS_CMP)`≈0.48V
+(low, tripped), `V(VOUT)`≈0 (collapsed). This proves a real, locally stable
+tripped branch exists at `T=134°C` that the default sweep's Newton
+continuation — despite starting from the immediately-prior tripped point at
+136°C — does not track, instead reconverging to the untripped branch at the
+very next 2°C step. Re-running the same corner with `.options gminsteps=1`
+(reducing ngspice's default gmin-stepping homotopy fallback, which
+`design/README.md`'s `#71`/`#81`-resolved section already identified as a
+continuation-path disruptor for an unrelated bistability question in this
+same schematic) surfaces the real branch: measured hysteresis flips from 0°C
+to a small,
+correctly-signed **+2°C** (`trip_temp_c=133°C`, `reset_temp_c=131°C`) at
+this one corner.
+
+**Diagnostic method 2 — fine-grid re-sweep at the worst-offending corner.**
+`ss_27c_2.97v` (screening-reproduced against current `HEAD`: `trip_temp_c
+≈147°C`, `reset_temp_c≈157°C`, `hysteresis_c≈−10°C` — a couple of degrees
+off the `20260825-054043-6fac47d` record's own `149°C`/`157°C`/`−8°C` for
+this corner, plausibly explained by that record's own noted "working tree
+dirty at run time" caveat rather than a schematic difference; `git log
+6fac47d..HEAD -- design/ldo_3v3in_1v8out.sch` returns no commits, so the
+committed schematic itself has not changed) does **not** show a clean single
+crossing in either sweep direction at a 0.25°C grid: `V(VOUT)` flickers
+erratically between the tripped (~0V) and untripped (~1.8V) states across a
+~12°C-wide band (144–156°C on the ascending leg), including at least one
+spurious intermediate operating point (~2.98V — matching neither the
+regulated nor the tripped state) that a converged DC solve should not
+produce. `.options gminsteps=1` does **not** resolve this corner (hysteresis
+stays ≈−10°C) — unlike `tt_27c_3.30v`, this corner's positive-feedback loop
+gain is apparently close enough to unity that the algebraic DC system has no
+single well-defined answer over a wide temperature band, not merely a narrow
+window the default methodology loses track of.
+
+**Interpretation.** This single mechanism — a real but *marginal*
+(corner-dependent, sometimes barely-above-unity, sometimes barely-below-unity)
+regenerative loop gain around `M_TSHYS`'s current injection into `TS_REF` —
+explains both failure signatures the `2026-08-25` addendum above reported
+under one root cause rather than two: the exact-`0°C` corners (`tt_27c_3.63v`,
+`ss_27c_3.30v`, all three `fs` corners) most plausibly have a narrow, real,
+correctly-signed hysteresis window the default continuation-plus-gmin-stepping
+methodology loses (as demonstrated for `tt_27c_3.30v` above); the strongly
+negative corners (`ss`, `ff`, `sf` at several supplies) most plausibly sit in
+a genuinely marginal/flickering regime where no single crossing is
+well-defined and the first-crossing `.meas` reports whichever branch the
+solver's exact numerical path happens to land on.
+
+**Hardening attempted at the `ss_27c_2.97v` corner, none shippable** (full
+data, and the physical reasoning for why each attempt did what it did, is in
+`design/README.md`'s dated "#77" section under "Thermal shutdown (#29)" —
+not reproduced here to keep this record from duplicating `design/`'s
+screening-detail convention):
+
+- Scaling `M_TSHYSB`'s injected current 2×–30× the baseline width: widens
+  neither corner's window cleanly, and — because `M_TSHYS`'s pre-trip "off"
+  conduction is not exactly zero (the comparator's own finite gain lets
+  `TS_CMP` droop gradually pre-trip, so `Vsg(M_TSHYS)` is not exactly 0
+  before the nominal crossing) — a larger `M_TSHYSB` also couples
+  progressively more current into `TS_REF`'s *pre-trip baseline*, dragging
+  the entire transition colder (trip fell from ≈147°C at baseline to
+  ≈95–97°C at the largest boosts tried) — at those magnitudes this pushes
+  the trip point well below the already-open #69 floor violation, making
+  that finding worse rather than fixing this one independently.
+- Strengthening the comparator's own gain instead (4× `M_TCTAIL`'s tail
+  current, injection current unchanged): reduced but did not eliminate the
+  sign inversion (−10°C → −4°C) without the trip-point collapse the
+  injection-current approach caused — directionally the more promising of
+  the two single-knob attempts — but combining it with even a modest (2×)
+  injection increase made the result worse (−12°C), which is evidence this
+  is a multi-parameter loop-gain problem, not a single-knob fix reachable by
+  trial-and-error sizing within this issue's own screening budget.
+
+**Not fixed by this addendum.** Per the reasoning above, this needs a
+genuine large-signal loop-gain redesign of the trip-comparator/hysteresis
+cluster (most plausibly a real regenerative latch/Schmitt-style element,
+rather than a linear current injected into a diode-connected reference node
+whose own DC operating point that same injection perturbs) — the same shape
+of conclusion, and the same "investigated, not shipped, follow-on issue
+carries the data forward" disposition, `design/README.md`'s "Bias-generator
+redesign investigated, reverted (#70)" section already used for the
+PSRR/stability shortfall. `ldo_3v3in_1v8out.sch` is **unchanged** by #77.
+Follow-on work continues in **#91**, seeded with this addendum's and
+`design/README.md`'s data. No new `sim/thermal` record was minted — neither
+the testbench deck nor the circuit changed, so a fresh 15-point run against
+the identical schematic and PDK pin would reproduce the same numbers, not
+add verification value (the same "no purely-redundant record" reasoning
+`design/README.md`'s `#71`/`#81` section already applied to
+`dropout-vs-load`); `20260825-054043-6fac47d` remains the authoritative
+record.
+
 ## Status notes
 
 This record stays `proposed` until #1 closes. #1's ratification of this
