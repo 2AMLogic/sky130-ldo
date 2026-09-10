@@ -49,9 +49,11 @@ ratification) is still open, so every record here cites the current DRAFT row
 only. Three further testbenches — `line-regulation`, `load-regulation` and
 `iq` (issue #64) — landed later against the three DRAFT rows the four above
 don't cover; they still use discrete `.op` points rather than the corner
-runner's usual `.dc`/`.tran` sweep style, and are `--quick`-only so far — see
-"Line regulation, load regulation and Iq (issue #64)" below for why and for
-their results.
+runner's usual `.dc`/`.tran` sweep style. They shipped `--quick`-only at
+first; issue #104 then ran the full 45-point PVT matrix each manifest
+declares for all three, mirroring issue #74's extension of the #65 benches —
+see "Line regulation, load regulation and Iq (issue #64)" below for why the
+discrete-point convention was chosen and for the full results.
 
 > **Record-generation note (2026-08-25, issue #69).** Issue #69 re-sized the
 > thermal shutdown in the shared DUT schematic and re-ran **eight**
@@ -820,6 +822,29 @@ points.
 records; `python3 measurements/build_characterization_report.py --check`
 passes.
 
+#### #104: full 45-point matrix for `line-regulation`/`load-regulation`/`iq`
+
+Issue #104 ran the full 45-point PVT matrix that `line-regulation`,
+`load-regulation` and `iq`'s manifests have always declared, closing the one
+full-matrix gap these three benches still shared with the #65 protection
+benches after #95. The schematic has not changed since `933dfdd` (the #90
+merge commit those records are pinned to, `b53a8e7`), so each new record
+supersedes #95's 3-point re-run directly and the fresh netlist snapshots
+match the superseded records' byte-for-byte:
+
+| Bench | Superseded | New (full matrix) | Verdict |
+|---|---|---|---|
+| `line-regulation` | `20260825-104914-933dfdd` (3-point subset) | `20260910-030557-6c0436d` | 1/3 FAIL (subset) → **18/45 PASS** |
+| `load-regulation` | `20260825-105113-933dfdd` (3-point subset) | `20260910-032854-6c0436d` | 3/3 PASS (subset) → **34/45 PASS** |
+| `iq` | `20260825-105157-933dfdd` (3-point subset) | `20260910-034648-6c0436d` | 3/3 PASS (subset) → **36/45 PASS** |
+
+`load-regulation` and `iq` both lose their subset-era overall `PASS`
+verdict: the narrow 3-point subset happened to sample only corners where the
+DUT regulates, and the wider matrix finds 11 and 9 further corners
+respectively where it does not — see each bench's own bullet below for the
+failing-corner lists and, for `line-regulation`, the DC-solution-
+multiplicity-vs-physical-reading split its 27 failing corners break into.
+
 ## Line regulation, load regulation and Iq (issue #64)
 
 Three more testbenches against the same DUT (`design/ldo_3v3in_1v8out.sch`),
@@ -858,13 +883,47 @@ use discrete points, not a sweep, for exactly this reason).
   (0.217/0.369 mV/V), **FAIL** at `ff_125c_3.63v` (1005.8/1010.2 mV/V, three
   orders of magnitude over the 5 mV/V bound) — overall `FAIL`. The
   `ff_125c_3.63v` failure is the same degenerate-corner signature described
-  above (thermal-shutdown false-trip, #69), not a new finding.
+  above (thermal-shutdown false-trip, #69), not a new finding. #95 re-ran the
+  same subset against #69/#90's re-sized DUT (`20260825-104914-933dfdd`,
+  supersedes the record above): **1/3 PASS** — `tt_27c_3.30v`
+  (1739/1317 mV/V) and `ss_-40c_2.97v`'s 50 mA leg (2477 mV/V) newly fail,
+  `ff_125c_3.63v` now passes cleanly (0.500/0.422 mV/V) — see "`line-regulation`'s
+  failing corner moved" above. **Full 45-point PVT record**
+  (`20260910-030557-6c0436d`, issue #104, supersedes `20260825-104914-933dfdd`):
+  **18/45 PASS**. Of the 27 failing corners, 25 show the same
+  DC-solution-multiplicity signature described above — values ≥100 mV/V, up
+  to 26186 mV/V at `fs_125c_2.97v`, three to four orders of magnitude over
+  the 5 mV/V bound — while 2 are modest, physically plausible overshoots
+  close to the bound rather than solver excursions: `tt_125c_2.97v`
+  (32.5/50.5 mV/V) and `sf_125c_2.97v` (7.1/10.9 mV/V). The two corners the
+  #95 subset flagged as "newly failing" both land in the multiplicity
+  bucket here (`tt_27c_3.30v` 1739/1317 mV/V, `ss_-40c_2.97v`
+  0.217/2477 mV/V), and `ff_125c_3.63v` again passes cleanly
+  (0.500/0.422 mV/V), confirming rather than changing the subset's own
+  result. As the #95 section above already notes, diagnosing why this
+  signature lands on a different, wider corner set than the pre-#69 six
+  degenerate `ff`/`sf`-125 °C corners is explicitly out of this issue's
+  scope — recorded here as an observation, not root-caused.
 - **`load-regulation/`** — `I_LOAD` ∈ {0 mA, 50 mA} at each corner's own VIN
   (`'vsup'`), two `.op` solves; `load_reg_v` = `abs(vout@50mA - vout@0mA)`.
   First record (`--quick`, `20260825-040748-6fac47d`): **PASS** at
   `tt_27c_3.30v` (4.2 mV / 0.23%) and `ss_-40c_2.97v` (3.3 mV / 0.18%),
   **FAIL** at `ff_125c_3.63v` (19.3 V) — overall `FAIL`, same degenerate
-  corner.
+  corner. #95 re-ran the same subset against the re-sized DUT
+  (`20260825-105113-933dfdd`, supersedes the record above): **3/3 PASS** —
+  `ff_125c_3.63v` now regulates cleanly too. **Full 45-point PVT record**
+  (`20260910-032854-6c0436d`, issue #104, supersedes `20260825-105113-933dfdd`):
+  **34/45 PASS**. The 11 failing corners (`tt_27c_2.97v`, `tt_125c_3.63v`,
+  `ss_-40c_3.30v`, `ss_27c_2.97v`, `ss_27c_3.30v`, `ff_-40c_2.97v`,
+  `sf_-40c_3.63v`, `sf_27c_3.30v`, `sf_27c_3.63v`, `fs_-40c_3.63v`,
+  `fs_27c_2.97v`) read `load_reg_v` of 0.31–1.62 V (17–90%) against the
+  18 mV/1% bound — an order of magnitude smaller than line-regulation's
+  multiplicity signature but still far outside plausible load-regulation
+  behaviour, and none of them are the pre-#69 `ff`/`sf`-125 °C corners
+  (those all pass here). This reads as the same family of non-regulating
+  operating points the DC-solution-multiplicity note documents, but that is
+  an observation, not a root cause — diagnosing it is out of this issue's
+  scope.
 - **`iq/`** — `I_LOAD` ∈ {0 mA (no load), 50 mA (full load)} at each corner's
   own VIN, two `.op` solves; `iq_<point>_ua` = `-i(vvin)` minus the known
   load-current constant, per `design/README.md`'s own "Iq = total VIN
@@ -880,13 +939,51 @@ use discrete points, not a sweep, for exactly this reason).
   `vout_no_load_v`/`vout_full_load_v` (unbounded) alongside the Iq figures,
   specifically so a reader can see that corner's operating point is not
   really regulating before trusting its in-budget Iq "PASS", the same
-  caution the PSRR "passes" above already need.
+  caution the PSRR "passes" above already need. #95 re-ran the same subset
+  against the re-sized DUT (`20260825-105157-933dfdd`, supersedes the record
+  above): **3/3 PASS** — same three corners, all now genuinely regulating
+  (`vout_no_load_v`/`vout_full_load_v` both ≈1.80 V at all three). **Full
+  45-point PVT record** (`20260910-034648-6c0436d`, issue #104, supersedes
+  `20260825-105157-933dfdd`): **36/45 PASS**. The 9 failing corners
+  (`tt_27c_2.97v`, `tt_125c_3.63v`, `ss_27c_2.97v`, `ss_27c_3.30v`,
+  `sf_-40c_3.63v`, `sf_27c_3.30v`, `sf_27c_3.63v`, `fs_-40c_3.63v`,
+  `fs_27c_2.97v`) all fail on the full-load leg, with `vout_full_load_v`
+  reading 2.67–3.43 V instead of ≈1.80 V (one, `sf_27c_3.30v`, also fails its
+  no-load leg at `vout_no_load_v` = 3.32 V) — the same "operating point
+  isn't really regulating" signature this testbench's own unbounded
+  `vout_*` sanity measurements exist to catch, now visible at 9 of 45 points
+  instead of the one degenerate corner the quick subset ever reached.
+  `iq_full_load_ua` at those 9 corners reads 3454–3582 µA against the 30 µA
+  bound — obviously non-physical, not a genuine Iq measurement. None of the
+  9 are the pre-#69 `ff`/`sf`-125 °C corners (all pass here); root-causing
+  which corners this lands on is out of this issue's scope, same as
+  line/load regulation above. **The 36/45 tally is not 36 genuine passes**:
+  two corners marked PASS — `ss_-40c_3.30v` (`vout_no_load_v` = 3.31 V,
+  `iq_no_load_ua` = −3348.6 µA) and `ff_-40c_2.97v` (`vout_full_load_v` =
+  2.71 V, `iq_full_load_ua` = −3357.9 µA) — show the same non-regulating
+  collapse signature as the 9 above with the sign flipped, and pass only
+  because this bench's `iq_*_ua` measurements are bounded one-sided
+  (`max: 30`, `min: null`) rather than `abs()`-wrapped the way
+  line-regulation's and load-regulation's are, so a large negative excursion
+  slips under the ceiling instead of tripping it. Both are independently
+  confirmed genuinely non-regulating by this same issue's `load-regulation`
+  record, where they are 2 of its 11 real FAILs (`load_reg_v` = 1.51 V and
+  0.91 V) — so at most 34 of 45 corners here have a plausible regulating
+  operating point, matching load-regulation's own 34/45. (A third corner,
+  `sf_27c_3.30v`, reads the same negative no-load figure, −3350.0 µA, but is
+  already counted among the 9 FAILs via its full-load leg.) The record and
+  its raw data are correct as recorded and are left as-run — re-bounding the
+  Iq measurement, re-classifying the tally, and root-causing the collapse are
+  all out of this issue's scope; this note exists so the headline count is
+  not read as 36 clean corners.
 
-**Quick-subset only, by design, matching issue #18's own original
+**Quick-subset first, by design, matching issue #18's own original
 precedent** for newly-shipped testbenches (`load-transient`/`psrr-dc`/
 `dropout-vs-load` also shipped `--quick`-only before #19's later full
-45-point pass). Extending these three to the full PVT matrix is follow-on
-work, not part of this issue's scope.
+45-point pass). Issue #104 then ran the full 45-point matrix each manifest
+declares for all three, mirroring issue #74's extension of the #65
+protection benches — see each bullet's "Full 45-point PVT record" above for
+the per-bench tallies.
 
 ## Monte Carlo / mismatch experiments
 
