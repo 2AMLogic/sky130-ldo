@@ -957,7 +957,25 @@ use discrete points, not a sweep, for exactly this reason).
   bound — obviously non-physical, not a genuine Iq measurement. None of the
   9 are the pre-#69 `ff`/`sf`-125 °C corners (all pass here); root-causing
   which corners this lands on is out of this issue's scope, same as
-  line/load regulation above.
+  line/load regulation above. **The 36/45 tally is not 36 genuine passes**:
+  two corners marked PASS — `ss_-40c_3.30v` (`vout_no_load_v` = 3.31 V,
+  `iq_no_load_ua` = −3348.6 µA) and `ff_-40c_2.97v` (`vout_full_load_v` =
+  2.71 V, `iq_full_load_ua` = −3357.9 µA) — show the same non-regulating
+  collapse signature as the 9 above with the sign flipped, and pass only
+  because this bench's `iq_*_ua` measurements are bounded one-sided
+  (`max: 30`, `min: null`) rather than `abs()`-wrapped the way
+  line-regulation's and load-regulation's are, so a large negative excursion
+  slips under the ceiling instead of tripping it. Both are independently
+  confirmed genuinely non-regulating by this same issue's `load-regulation`
+  record, where they are 2 of its 11 real FAILs (`load_reg_v` = 1.51 V and
+  0.91 V) — so at most 34 of 45 corners here have a plausible regulating
+  operating point, matching load-regulation's own 34/45. (A third corner,
+  `sf_27c_3.30v`, reads the same negative no-load figure, −3350.0 µA, but is
+  already counted among the 9 FAILs via its full-load leg.) The record and
+  its raw data are correct as recorded and are left as-run — re-bounding the
+  Iq measurement, re-classifying the tally, and root-causing the collapse are
+  all out of this issue's scope; this note exists so the headline count is
+  not read as 36 clean corners.
 
 **Quick-subset first, by design, matching issue #18's own original
 precedent** for newly-shipped testbenches (`load-transient`/`psrr-dc`/
