@@ -30,7 +30,7 @@ here, but the resource both candidate fixes below had to spend against.)
 
 - PSRR: **FAIL**, 0/45 corners — [`sim/psrr-dc` record `20260825-082845-4cb27f8`](../../sim/psrr-dc/records/20260825-082845-4cb27f8.md).
   1 kHz PSRR ranges **20.31 dB** (`fs_125c_2.97v`, worst) to **25.68 dB**
-  (`ss_-40c_3.63v`, best) across the full 45-point PVT grid — 24–30 dB short
+  (`sf_-40c_3.63v`, best) across the full 45-point PVT grid — 24–30 dB short
   of the 50 dB floor everywhere. The **100 kHz sub-metric is not the
   problem**: it already clears the 20 dB floor with margin at every corner
   (31.53–34.77 dB).
@@ -40,7 +40,7 @@ here, but the resource both candidate fixes below had to spend against.)
   (`tt_-40c_2.97v`, worst) up to 88.70° at 125 °C, where the pass-stage's
   own load-proportional pole (see below) is far enough up in frequency not
   to bind. Gain margin at 0 mA is **not** the problem — it measures
-  68.85–72.30 dB everywhere, tens of dB above the 10 dB floor. The **50 mA
+  68.85–72.23 dB everywhere, tens of dB above the 10 dB floor. The **50 mA
   sub-metric already clears 45°** at every corner (worst **45.91°**,
   `sf_-40c_3.63v`). The **1 mA sub-metric clears 45° at 40/45 corners**;
   the 5 misses are all at the `4.7 µF`/125 °C/2.97 V corner cluster and are
