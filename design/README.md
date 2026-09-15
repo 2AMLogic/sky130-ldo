@@ -2008,6 +2008,78 @@ informed by #70/#79/DR-007's combined data, not a further decomposition of
 results (this record's own acceptance-criteria bookkeeping, not a claim that
 #1's ratification question is settled).
 
+### #60 closed: root-cause + decomposition is complete; #107 owns what remains (2026-09-15)
+
+**Status re-check, not a new finding.** With #69, #70/#79/#81 and #71 all now
+closed, this is a fresh read of `measurements/characterization.md` (verified
+current: `python3 measurements/build_characterization_report.py --check`
+passes as of this commit) against #60's own Acceptance Criteria, to confirm
+their closure is real rather than assumed.
+
+**Current evidence — none of the five rows #60 opened against has flipped to
+PASS**, and none should have: no schematic change has landed since the
+post-#69 thermal-shutdown resize (`design/ldo_3v3in_1v8out.sch` is unchanged
+since PR #90), so the 2026-08-25 campaign (`*-4cb27f8`/`*-933dfdd` records)
+remains the freshest evidence and needed no re-run this pass:
+
+| Row | Verdict | Evidence |
+|---|---|---|
+| Output | FAIL | `mc-output-accuracy` `20260825-083111-4cb27f8` — 177/200 individual MC samples pass; aggregate sigma-window fails |
+| Dropout @ 50mA | FAIL | `dropout-vs-load` `20260825-081240-4cb27f8` — 0/45 corners pass |
+| Load transient | FAIL | `load-transient` `20260825-081255-4cb27f8` — 25/45 corners pass |
+| PSRR | FAIL | `psrr-dc` `20260825-082845-4cb27f8` — 0/45 corners pass |
+| Stability | FAIL | `loop-gain` `20260825-081257-4cb27f8` — 7/45 corners pass |
+
+**Reading this against #60's own Acceptance Criteria:**
+
+1. **Root-cause each FAIL row** — done (PR #72, this file's mechanisms 1–6
+   above), and every mechanism has since been independently confirmed or
+   resolved by its owning follow-up (#69/#70/#79/#71/#81), not merely
+   asserted.
+2. **Fix the design, or document a spec-change rationale, per row** —
+   satisfied unevenly across the five rows, and that unevenness is the
+   honest state, not a gap this issue can close alone:
+   - **PSRR and Stability**: satisfied via a documented, evidence-backed
+     spec-change rationale — DR-007 (status `proposed`, pending #1's
+     market-comparison mechanism), which proposes specific replacement
+     numbers read off the records above, cited against public comparables.
+   - **Dropout, Load transient, Output accuracy**: *not* closed by a fix or
+     by their own spec-change rationale. Each has a dated, traced
+     explanation in this file of why it cannot close without a design
+     change (dropout's real −40/27°C headroom is 0.310–0.554V, mechanism 3;
+     the DC-solution-multiplicity finding at 125°C, mechanism 4/#81; the
+     pervasive light-load stability shortfall driving both load-transient's
+     non-thermal-shutdown FAILs and output accuracy's MC tail outliers,
+     mechanism 2/6) — and each traces to the same bias-generator/
+     compensation-headroom limitation DR-007 documents for PSRR/Stability,
+     not an independent cause. No decision record proposes replacement
+     numbers for these three rows specifically; the live path to closing
+     them is a design fix, not a spec change, per **#107**'s scope (a
+     higher-DC-gain amplifier architecture) — DR-007's Consequences section
+     already flagged that a two-stage/cascoded topology is the most
+     plausible route, and #107 is expected to inform all three of these
+     rows as a side effect of its PSRR/Stability work, not just the two
+     rows it names directly. #107 had not landed a result as of this pass.
+3. **Re-run the full 45-point campaign after any design change** — no design
+   change has landed since the post-#69 resize, so there is nothing new to
+   re-run; the table above is the freshest evidence and still current.
+4. **Regenerate `measurements/characterization.md`** — already current
+   (`--check` passes); nothing to regenerate against.
+5. **Update this "Known gaps" section** — done, repeatedly, by #72/#70/#71/
+   #81's own landings and this section.
+
+**Disposition.** #60's own job — root-cause each FAIL row, decompose the
+fix-or-defer decision per row, and track each slice to either a landed fix
+or a documented rationale — is complete. It has no further independent
+code-level increment to contribute: the remaining path to flipping Dropout,
+Load transient, Output accuracy, PSRR or Stability to PASS on the DRAFT
+table runs entirely through **#107** (open, separately tracked), not through
+a new #60 increment that would just restate this same conclusion. Closing
+#60 on that basis, per this repo's "issues are suggestions" convention —
+not because the underlying FAILs are gone, but because this issue's own
+scope is exhausted and #107 is the correctly-scoped successor already
+carrying it forward.
+
 ### Thermal-shutdown trip/hysteresis testbench ships (issue #66, 2026-08-25)
 
 The Thermal DRAFT spec row's evidence gap — no dedicated `sim/` testbench for
