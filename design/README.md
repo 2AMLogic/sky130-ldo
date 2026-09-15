@@ -1381,6 +1381,10 @@ pass:
 - **#70** — PSRR (mechanism 5) and the pervasive light-load stability
   shortfall (mechanism 2), bundled together since both plausibly share a
   bias-generator-redesign fix and both compete for the same `Iq` budget.
+  **Resolved (spec recommendation) 2026-09-14** — see "DR-007 recommends
+  superseding the DRAFT PSRR/Stability rows" below; both candidate routes
+  within the single-stage topology proved verified-negative (via #79), and
+  a topology-class fix is spun off into **#107**.
 - **#71** — the `dropout-vs-load` testbench's `dropout_v` measurement
   methodology (mechanism 3) and the DC-solution-multiplicity question
   (mechanism 4). **Resolved 2026-08-25** — see "#71/#81 resolved" below;
@@ -1959,6 +1963,50 @@ change that does not cost `Iq` linearly, or a revisit of the DRAFT
 repo's `CLAUDE.md` reserves for a spec decision record, not a Builder
 default). Filing a further follow-on issue for that specific, narrower
 question is left to Curator/human triage rather than decided here.
+
+### DR-007 recommends superseding the DRAFT PSRR/Stability rows; no circuit change (#70, PR #106, 2026-09-14)
+
+**Status: `proposed`, pending #1's two-key market-comparison mechanism. No
+schematic change ships with this record — `design/ldo_3v3in_1v8out.sch`
+remains exactly as #25 sized it and #70/#79 left it.** With both #70's own
+candidates (PR #82) and #79's follow-on candidates (PR #88) carried to
+definitive, verified-negative conclusions (see the two sections above), the
+operator's 2026-09-14 scoping comment on #70 directed the next increment:
+draft a decision record recommending one of the two paths #70's original
+framing posed — spend further amplifier `Iq` chasing the DRAFT targets, or
+treat the two negative results as evidence the DRAFT PSRR/Stability rows are
+unmeetable by the shipped topology and need revision — rather than parking
+the issue indefinitely as `loom:operator-only`/`loom:operator-decision`.
+
+`spec/decision-records/DR-007-psrr-stability-vs-iq.md` recommends the
+latter. It argues the DRAFT 50dB-@-1kHz PSRR row and 45°-PM-@-0mA
+(worst-corner) Stability row are structurally unmeetable by the current
+single-stage current-mirror OTA plus its shared, un-cascoded bias generator
+within the DRAFT `Iq < 30µA` row — not an unexhausted design space a further
+Iq-spend attempt is likely to close, since the one lever that ever moved
+0mA phase margin at all (issue #25's 6x `M_TAIL` screen) already exceeds the
+Iq budget by 12% and still misses the 45° floor by 5°, with no PSRR data
+either way. It proposes replacement rows read directly off the existing
+`sim/psrr-dc` (`20260825-082845-4cb27f8`) and `sim/loop-gain`
+(`20260825-081257-4cb27f8`) records — PSRR ≥18dB @ 1kHz / ≥28dB @ 100kHz,
+and PM ≥45°/GM ≥10dB for `I_load ≥ 1mA` with no floor stated at the literal
+0mA point — against two public comparables (onsemi NCP170, Microchip
+MCP1801) that both clear the original 50dB target at or below this design's
+own Iq budget, so the market-comparison mechanism has real, cited numbers to
+rule on rather than an unsubstantiated ask. The DRAFT `Iq < 30µA` row itself
+is left untouched — neither verified-negative attempt showed it to be the
+binding constraint.
+
+**Documentation-only, per the operator's explicit scoping** ("do not
+implement a circuit change or relax any `spec/target-spec.md` row in the
+same PR" — #70, 2026-09-14). DR-007's own Consequences section notes a
+genuine fix most plausibly needs a higher-DC-gain amplifier architecture
+(two-stage or cascoded gain stage) rather than further `Iq` spent inside the
+current topology — that is scoped to a new, future issue (**#107**)
+informed by #70/#79/DR-007's combined data, not a further decomposition of
+#70's own lineage, which DR-007 treats as closed by its two verified-negative
+results (this record's own acceptance-criteria bookkeeping, not a claim that
+#1's ratification question is settled).
 
 ### Thermal-shutdown trip/hysteresis testbench ships (issue #66, 2026-08-25)
 
