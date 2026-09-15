@@ -2546,7 +2546,165 @@ issue once someone is ready to spend a full circuit-design cycle on it,
 rather than inheriting a third open issue number for the same
 still-unsolved problem.
 
-## Validating this schematic
+### Cascoded NMOS mirror screened, does not close PSRR/Stability either — verified-negative (#107, 2026-09-15)
+
+**Status: investigated, not shipped.** `spec/target-spec.md` is still DRAFT
+(issue #1 has not ratified it, and DR-007's proposed replacement PSRR/
+Stability rows are still `proposed`, not ratified), so this investigation
+screened against the same DRAFT `Iq < 30µA` row DR-007 and #70/#79 used.
+`design/ldo_3v3in_1v8out.sch` is **unchanged** by this issue — the one
+candidate built and screened here did not clear the screening bar, so per
+this repo's "verification is the product, no partial fix" convention
+(already used by `#70`, `#77`, `#91` above) it was reverted rather than
+shipped.
+
+**What this issue picked up.** DR-007's Consequences section named a
+higher-DC-gain amplifier architecture — "two-stage or cascoded gain stage"
+— as the most plausible remaining fix for the DRAFT PSRR/Stability rows,
+and explicitly scoped that investigation to a new issue rather than a
+further decomposition of #70/#79's lineage. This issue is that
+investigation. Two candidate classes exist; only one was rebuilt and
+screened fresh, for the reasons below.
+
+**Candidate A: full NMOS-side cascode current mirror on the OTA's output
+pull-down (`M_MIR1`/`M_MIR2`) — built, netlisted, screened, does not help.**
+`#70`'s own Candidate 2 (`design/README.md` §"Bias-generator redesign
+investigated, reverted (#70)") had already cascoded *only* the PMOS pull-up
+mirror (`M_MIRP1`/`M_MIRP2`) and measured "no material improvement and a
+regression at one corner" on 1kHz PSRR. That result has a clean
+explanation once you write down `EA_OUT`'s small-signal output resistance
+as `R_out ≈ ro,PMOS ‖ ro,NMOS`: raising only `ro,PMOS` cannot move a
+resistance that is dominated by whichever side is *smaller* — and it also
+cannot matter at all if the loop's crossover is set by `Gm/(2π·C_COMP)`
+(true for a Miller-dominant-pole loop, which "Compensation (sized in #25)"
+above establishes this one is), because in that regime loop gain at any
+fixed frequency above the dominant pole is `≈ GBW/f`, independent of DC
+gain — raising `R_out` only pushes the dominant pole *down* in frequency
+without moving the −20dB/decade line the crossover sits on. That is a
+textbook consequence of dominant-pole (single-stage) compensation, not
+specific to which side of the mirror was cascoded, but #70's Candidate 2
+did not test the NMOS side, so this issue built and screened it rather than
+relying on the algebra alone: convert the plain `M_MIR1`/`M_MIR2` mirror
+into a standard 4-device cascode current mirror (Razavi ch.9 textbook
+technique — not derived from any third party's implementation) by adding
+two NMOS devices, `M_MIR1C` (cascode diode stacked on `M_MIR1`, gate=drain=
+`EA_D1`, source=new internal node `N_CASN`) and `M_MIR2C` (cascode mirror
+stacked on `M_MIR2`, gate=`EA_D1`, drain=`EA_OUT`, source=new internal node
+`N_CASN2`), both `L=4 W=10 nf=2` matching the devices they stack on. The
+PMOS pull-up (`M_MIRP1`/`M_MIRP2`) was deliberately left untouched, so the
+upper output-swing ceiling issue #25 fixed (`EA_OUT` must reach near `VIN`
+at light load) is not reintroduced — only the *lower* end of `EA_OUT`'s
+swing (needed at heavy load) gains an extra series device.
+
+Screening method: same convention as the "Screening checks" section above
+and DR-007's own citations — single corner (`tt`, 27°C, `VIN=3.30V`), via
+`sim/bin/corner-run.py <experiment> --process tt --temp 27 --supply 3.3
+--no-write --subset-reason "..."` (screening only, no `sim/` record
+written), against the committed harness's own `sim/loop-gain` and
+`sim/psrr-dc` testbenches, matching the acceptance criteria's "screen
+cheaply... before committing to a full corner run."
+
+- **DC operating grid unaffected.** A `.op` sweep at the same nine `VIN` x
+  load points "Screening checks" §1 uses (2.97/3.30/3.63V x 0/1/50mA)
+  regulates at every point, `VOUT` 1.786–1.790V (vs. baseline 1.798–1.802V,
+  a consistent ≈−0.6% shift, still inside the DRAFT ±2% row) and `EA_OUT`
+  essentially unchanged from baseline at every point, including the
+  light-load/high-`VIN` ceiling case (`VIN=3.63V`/0mA: `EA_OUT`=3.0726V
+  candidate vs. 3.0726V baseline) — confirming the PMOS-side swing ceiling
+  #25 fixed is **not** reintroduced, as intended.
+- **1kHz PSRR: no material change**, exactly as the algebra above predicts
+  and exactly the pattern #70's PMOS-side cascode already showed:
+  `psrr_1khz_db` = **23.19dB** (candidate) vs. **23.25dB** (baseline,
+  re-measured this session at the same corner) — a 0.06dB difference, noise
+  not signal. `psrr_100khz_db` is likewise unchanged (33.04dB vs. 33.0dB
+  baseline).
+- **0mA phase margin: not merely unimproved, but unmeasurable — a
+  regression, not a wash.** Baseline `pm_c033_0ma_deg` = 19.3° (matches the
+  documented `sim/loop-gain` record). With the cascode candidate, the same
+  `meas ac fc when lgdb=0 cross=1` statement **fails to find any 0dB
+  crossing** at both 0mA sub-points (`pm_c033_0ma_deg` and `pm_c47_0ma_deg`
+  both read `n/a`) — the loop gain magnitude does not cross unity anywhere
+  in the swept band at the operating point the testbench's `alter`-sequence
+  reaches (50mA → 1mA → 0mA, not a cold `.op`; see `sim/loop-gain/
+  testbench/tb_loop_gain.sch`'s own header for why it reaches 0mA that way).
+  A hand-rerun of the same deck confirms the failure is a genuine "no
+  crossing found," not a harness fluke. This is evidence the candidate's
+  small-signal behavior at light load is *different in kind*, not just
+  degree, from baseline — not the outcome a gain-only change was expected
+  to produce.
+- **50mA/0.33µF corner (already-passing) regressed.** `dcgain_c033_50ma_db`
+  dropped **59.51dB → 53.16dB** and `gm_c033_50ma_db` dropped **19.13dB →
+  18.47dB** (`pm_c033_50ma_deg` essentially unchanged, 58.51° → 58.31°). The
+  likely mechanism: at this corner `EA_OUT` sits at its lowest measured
+  value (1.36–2.06V across the `VIN` range, per the DC grid above), closest
+  to the new cascode device `M_MIR2C`'s own headroom limit — the classic
+  cascode swing/gain tradeoff (trading output-swing headroom for output
+  resistance) landing exactly where this design's headroom is already
+  tightest, per DR-003's device-characterization framing. This was not
+  re-derived further since the PSRR/0mA results already settle the
+  screening verdict.
+
+**Candidate A does not screen well: no PSRR improvement, a broken (not
+merely unimproved) 0mA phase-margin measurement, and a regression at the
+one corner that was already passing.** Per the issue's acceptance criteria
+("if a candidate screens well" / "if no candidate screens well... document
+the negative result"), this stops here — no full `sim/psrr-dc` /
+`sim/loop-gain` / `sim/mc-output-accuracy` 45-point re-run was performed,
+and `measurements/characterization.md` is unchanged. The schematic edit was
+reverted; it never reached a committed state.
+
+**Candidate B: a second gain stage — not rebuilt, on the strength of
+already-verified-negative data plus this issue's own reasoning.** Issue #22
+already built and screened a PMOS common-source second stage (`M_G2`:
+`VIN → EA_OUT`, gate=stage-1 output) — see "Closed in #25: light-load
+regulation" above. It closed the *DC-accuracy* gap (since superseded by
+#25's current-mirror-OTA fix, on the same schematic this issue also leaves
+untouched) but oscillated at exactly the corner this issue's own hypothesis
+names as the risky one (`C_out=0.33µF`/50mA/`VIN=3.63V`: 351mV pp on
+`VOUT`), and the oscillation survived every compensation remedy #22 tried
+(`C_COMP`=10p and 30p, a Miller cap around stage 2, a lower-gain stage 1, a
+higher stage-2 bias current) — a genuinely exhausted, not merely
+under-explored, design space for that specific second-stage topology. This
+issue did not spend a fresh build-and-screen cycle re-testing it, for two
+reasons stated plainly rather than left implicit: (1) #22's oscillation is
+a three-pole-loop compensation failure, not a sizing shortfall — the same
+class of problem Candidate A's algebra above describes (a second
+high-impedance node adds a pole a single Miller cap cannot place correctly
+against the pass stage's own load-proportional pole), so a fresh attempt
+without a materially different compensation architecture (nested Miller,
+feedforward, or an RHP-zero-cancellation scheme #22 never tried) would very
+likely reproduce the same failure; (2) even setting the oscillation aside,
+Candidate A's own measured result — 1kHz PSRR unchanged despite a DC-gain-
+raising change — demonstrates empirically, on this exact schematic's
+compensation, that raising DC gain alone does not raise loop gain at 1kHz
+in this dominant-pole-compensated loop. A second gain stage's DC-gain
+contribution would face the identical GBW-invariance limit unless paired
+with a compensation scheme that also raises crossover — which is a
+materially different (and more invasive) redesign than "add a stage,"
+matches DR-007's own diagnosis ("more DC gain alone... runs into the same
+bandwidth wall"), and is a large enough departure that it deserves its own
+issue with its own screening, not a same-session rebuild grafted onto this
+one's already-answered verdict.
+
+**Verified-negative conclusion.** Per DR-007's own diagnosis and this
+issue's data, closing the DRAFT PSRR/Stability rows within the DRAFT
+`Iq < 30µA` row needs either raising the OTA's `Gm` (input-pair
+transconductance, i.e. more tail current — already screened by issue #25's
+6x `M_TAIL` candidate, which DR-007 cites as exceeding the Iq budget by 12%
+while still missing the 45° floor by 5°) or a compensation architecture
+that raises crossover alongside any added gain (nested Miller, feedforward,
+or similar) — not a plain cascode (screened here, no effect) and not a
+second gain stage retried on the same compensation architecture #22 already
+showed oscillates. No lever tested across #25, #70, #79, and this issue has
+closed the PSRR gap; DR-007's recommendation to supersede the DRAFT
+PSRR/Stability rows via #1's ratification mechanism stands unchanged by
+this issue. No new decision record is filed — DR-007's Consequences section
+already anticipates exactly this outcome ("Hands to design, unresolved":
+this issue was that hand-off, and it comes back with a negative result, not
+a topology change that would need a superseding DR). A materially different
+compensation architecture, if anyone wants to pursue it, is new,
+differently-shaped issue's scope — screened from a real crossover-raising
+design, not a further decomposition of this issue's own two candidates.
 
 ```bash
 source sim/bin/pdk-env.sh
