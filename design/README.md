@@ -2706,6 +2706,8 @@ compensation architecture, if anyone wants to pursue it, is new,
 differently-shaped issue's scope — screened from a real crossover-raising
 design, not a further decomposition of this issue's own two candidates.
 
+## Validating this schematic
+
 ```bash
 source sim/bin/pdk-env.sh
 xschem --rcfile "$XSCHEM_RCFILE" design/ldo_3v3in_1v8out.sch   # interactive open
