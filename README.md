@@ -7,17 +7,20 @@ open PDK, built entirely on the open-source analog flow:
 [klayout-tools](https://github.com/2AMLogic/klayout-tools) (`klt`) for layout,
 DRC, and LVS.
 
-**Status: designed, laid out, and simulated — not yet meeting its own DRAFT
-spec.** Nothing here has been fabricated. A schematic, a routed layout, DRC/LVS
-reports, and a full 45-point PVT + Monte Carlo corner campaign (with a
-post-layout PEX attempt) all exist, and the aggregated result is
-[`measurements/characterization.md`](measurements/characterization.md) — which
-currently shows the design **failing** several rows of the DRAFT target
-specification (see [`spec/target-spec.md`](spec/target-spec.md)); the
-open PVT-fix work is tracked in issue #60. Read every number in this repo as a
-simulation result against an open PDK's models, with the corner and testbench
-that produced it recorded alongside it, checked against a spec that itself
-still awaits ratification (issue #1).
+**Status: spec-ratified — designed, laid out, and simulated, not yet meeting
+its own ratified spec.** Nothing here has been fabricated. `spec/target-spec.md`
+is now **RATIFIED** (issue #1, [`DR-006`](spec/decision-records/DR-006-spec-ratification.md)
+— see the scoreboard below). A schematic, a routed layout, DRC/LVS reports,
+and a full 45-point PVT + Monte Carlo corner campaign (with a post-layout PEX
+attempt) all exist, and the aggregated result is
+[`measurements/characterization.md`](measurements/characterization.md) —
+which currently shows the design **failing** most rows of the now-ratified
+target specification; the open PVT-fix work is tracked in issue #60, and two
+rows (PSRR, Stability) additionally have a topology-level root cause and a
+proposed replacement disclosed in [`DR-007`](spec/decision-records/DR-007-psrr-stability-vs-iq.md)
+(pending its own ratification). Read every number in this repo as either a
+ratified target or a simulation result against an open PDK's models, with the
+corner and testbench that produced it recorded alongside it.
 
 ## A design canary, not a reverse-engineering one
 
@@ -65,14 +68,15 @@ the portability proof.** Where sky130 forces a departure from the gf180mcu desig
 (most notably the pass-device voltage flavor — sky130 has no native 3.3 V device,
 so a 3.3 V-in / 1.8 V-out LDO reaches for the 5.0 V `pfet_g5v0d10v5`), the
 divergence is called out in `spec/target-spec.md` and resolved through a decision
-record, not assumed. That framing question is now **ratified**: the operator's
+record, not assumed. That framing question was ratified first: the operator's
 ruling on #1
 ([2026-08-14](https://github.com/2AMLogic/sky130-ldo/issues/1#issuecomment-5297123803))
 ratified
 [DR-001](spec/decision-records/DR-001-pass-device-supply-framing.md)'s
 recommendation — `sky130_fd_pr__pfet_g5v0d10v5` as the pass device, 3.3 V ±10% in
-/ 1.8 V out / 0–50 mA, preserving port parity with gf180-ldo. The numeric spec
-rows below remain DRAFT; only the framing is ratified.
+/ 1.8 V out / 0–50 mA, preserving port parity with gf180-ldo. The full numeric
+target table is now ratified too, unchanged from its gf180-ldo-mirrored
+starting point — see the scoreboard below.
 
 ## Private, for now
 
@@ -87,22 +91,97 @@ Two consequences that matter even before it opens:
   workspace's disclosure and firewall rules. Until then, write commits, issues,
   and documents as private working material.
 
-## Target specification (DRAFT — see [`spec/target-spec.md`](spec/target-spec.md), ratify on issue #1)
+## Target specification (RATIFIED — see [`spec/target-spec.md`](spec/target-spec.md))
 
-The full DRAFT table, with every value marked "DRAFT — to be ratified" and each
-sourced from gf180-ldo's ratified spec plus published sky130 references, lives in
-[`spec/target-spec.md`](spec/target-spec.md). It is a **starting point for
-engineering ratification, not a settled datasheet.** Ratification is gated on
-issue #1 and is an operator decision.
+Ratified by the operator on issue #1 via
+[`spec/decision-records/DR-006-spec-ratification.md`](spec/decision-records/DR-006-spec-ratification.md),
+which also ratifies DR-001 (pass-device/supply framing), DR-002 (output
+capacitor / ESR window), DR-003 (sky130 device characterization), DR-004
+(corner-model names) and DR-005 (thermal-shutdown trip/hysteresis/reference).
+Changing a line below requires a new decision record; it may not be relaxed
+to make a result pass — see DR-006 for why the currently-failing rows below
+were ratified unchanged rather than loosened. Two rows (PSRR, Stability) are
+additionally covered by
+[`DR-007`](spec/decision-records/DR-007-psrr-stability-vs-iq.md), which
+root-causes their failure to the shipped topology and proposes replacement
+numbers as a starting point for a future ratification — **not adopted by the
+table below**, which keeps DR-007's rows exactly as originally ratified,
+pending DR-007's own market-comparison mechanism.
+
+| Parameter | Target | Stretch |
+|---|---|---|
+| Input | 3.3 V ±10% (2.97–3.63 V) | 5 V flavor — separate follow-on variant (DR-001) |
+| Output | 1.8 V ±2% (fixed; divider as a unit-resistor string) | programmable 1.2–3.0 V — deferred |
+| Load | 0–50 mA (0 mA = no external load; feedback divider is the only inherent preload) | 100 mA |
+| Dropout @ 50 mA | < 300 mV (note 1) | < 200 mV |
+| Line regulation | < 5 mV/V over 2.97–3.63 V, at 1 mA and 50 mA (note 2) | — |
+| Load regulation (0–50 mA) | < 1% (18 mV), counted inside the ±2% window (note 2) | — |
+| Load transient | 1↔50 mA step, ~1 µs edges: peak excursion ≤ 150 mV, recover to ±1% in ≤ 20 µs, over the ratified C_out/ESR window (note 3) | peak ≤ 100 mV |
+| PSRR | > 50 dB @ 1 kHz and > 20 dB @ 100 kHz, at 1 mA and 50 mA (note 4) | > 60 dB @ 1 kHz, > 30 dB @ 100 kHz |
+| Iq (excl. load current) | **OPEN — not ratified.** No number set (note 5) | — |
+| Current limit | constant-current (brickwall) clamp, window TBD over PVT; never engages for I_load ≤ 50 mA; survives continuous Vout = 0 short at Vin_max (note 6) | — |
+| Startup / soft-start | monotonic into any load 0–50 mA and any C_out in the stability window; controlled ramp; inside ±2% within a few ms of enable; overshoot ≤ +2% (note 6) | — |
+| Enable / shutdown | shutdown Iq < 3 µA worst corner; disabled output = pass device fully off, no active discharge; Vin→Vout leakage ≤ 1 µA (note 6) | — |
+| Thermal | continuous worst-case dissipation set by Vin_max × I_load; specified to Tj ≤ 125 °C; fault-only shutdown backstop 150 °C trip / 135 °C reset (note 7) | — |
+| Output noise | not specified — waived unless a consumer states a requirement | µVrms row if a consumer asks |
+| Area | < 0.1 mm² total core area, pass FET included, excluding pads and sealring | — |
+| Stability | stable 0–50 mA over the ratified C_out/ESR window; PM ≥ 45°, GM ≥ 10 dB worst corner (note 4) | capless variant (separate fork) |
+
+Notes — these are part of the ratified spec, not commentary:
+
+1. **Dropout**, test point `V_in = V_out + dropout`, binding corners `{ss,
+   sf}` at 125 °C (DR-003). **Current verdict: FAIL** — 0/45 PVT corners
+   pass, best case 365 mV (`ss`/−40 °C). Tracked design gap, no superseding
+   record proposed.
+2. **Line regulation / Load regulation** have no dedicated sky130 porting
+   note beyond the ratified numbers themselves. **Current verdict: FAIL** —
+   18/45 and 34/45 PVT corners pass respectively. Tracked design gaps, no
+   superseding record proposed.
+3. **Load transient**, over the ratified C_out/ESR window (0.33–4.7 µF,
+   0–500 mΩ, no minimum ESR, ceramic-stable — DR-002). **Current verdict:
+   FAIL** — 25/45 PVT corners pass. Tracked design gap, no superseding
+   record proposed.
+4. **PSRR and Stability** are disclosed FAIL — PSRR 0/45 PVT corners at the
+   one load point (~1 mA) currently testbenched; Stability 7/45 PVT corners,
+   confirmed stable at every load ≥ 1 mA within the window (DR-002 append),
+   with the 0 mA end the binding, unresolved gap. Unlike the other FAIL rows,
+   both have a topology-level root cause and a named superseding proposal:
+   [`DR-007`](spec/decision-records/DR-007-psrr-stability-vs-iq.md)
+   (`proposed`) recommends PSRR ≥ 18 dB @ 1 kHz / ≥ 28 dB @ 100 kHz and a
+   Stability floor scoped to `I_load ≥ 1 mA` only — not adopted here, and
+   pending its own ratification via the two-key market-comparison mechanism.
+5. **Iq** stays explicitly open — DR-003 declined to propose a number (no
+   amplifier/bias topology existed when it was drafted), and no other record
+   sets one. The current design's own bias draw (≈24.9 µA at 50 mA) is a
+   data point for a future record, not a ratified target.
+6. **Current limit, Startup/soft-start, and Enable/shutdown** all **PASS**
+   (45/45 PVT corners each) — the only three rows with a testbench that
+   currently meet their ratified target.
+7. **Thermal**'s fault-only 150 °C/135 °C trip/reset backstop is
+   internally-generated (not `VREF`, not a bandgap), auto-restart, per
+   DR-005; it sits outside this repo's characterized 125 °C temperature
+   ceiling and is PVT-loose. **Current verdict: FAIL** — 12/15 corners pass.
+   Tracked design gap, no superseding record proposed.
+
+**Current verdict per row**: this table states the ratified target, not the
+current pass/fail state of the evidence behind it — for that, see
+[`measurements/characterization.md`](measurements/characterization.md), a
+generated (not hand-maintained) rollup that cites the exact `sim/<slug>/records/`
+record behind every row's current verdict. Regenerate it with
+`python3 measurements/build_characterization_report.py` after any `sim/`
+record lands or `design/` changes; this table (the ratified spec + notes
+above) stays the authority on what is required, `measurements/characterization.md`
+on what the evidence currently shows.
 
 Maturity ladder: spec-ratified → simulation-complete → layout DRC/LVS-clean →
-shuttle seat → measured silicon over temperature. **Current position: pre-ladder**
-— the spec is still a draft.
+shuttle seat → measured silicon over temperature. **Current position:
+spec-ratified** — simulation and layout work are underway (see the scoreboard
+above) but do not yet clear most ratified rows.
 
 ## Repository layout
 
 ```
-spec/          target spec (DRAFT) + decision records
+spec/          ratified spec + decision records
 design/        schematics / netlists (xschem)
 sim/           testbenches + PVT corner results (ngspice)
 layout/        GDS + DRC/LVS reports (klayout-tools driven)
@@ -119,9 +198,11 @@ working harnesses in [sky130-bandgap](https://github.com/2AMLogic/sky130-bandgap
 See [`docs/environment-setup.md`](docs/environment-setup.md) for the
 reproducible bring-up, [`sim/README.md`](sim/README.md) for the sim harness,
 and [`layout/README.md`](layout/README.md) for the layout flow. The harness
-is proven end to end (env check, sim selftest, trivial-cell DRC/LVS flow) but
-carries no LDO design content yet — no schematic, no LDO layout — that starts
-once `spec/target-spec.md` is ratified (issue #1).
+was proven end to end (env check, sim selftest, trivial-cell DRC/LVS flow)
+before LDO design content — schematic, layout, testbenches — began landing
+against the (at the time still-DRAFT) target spec; `spec/target-spec.md` is
+now ratified (issue #1, DR-006) and the design work described above and in
+`design/`/`sim`/`layout/` targets that ratified table.
 
 ## License
 

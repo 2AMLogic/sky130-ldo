@@ -1,6 +1,8 @@
 # DR-004: Binding the DRAFT verification-corner set to sky130 model names
 
-- **Status**: proposed — not self-ratifying; input to #1
+- **Status**: **ratified** — corner-name binding ratified by #1 (DR-006),
+  pending operator PR approval per the 2026-08-19 ratification-via-PR
+  standing policy ([2AMLogic/2am#357](https://github.com/2AMLogic/2am/issues/357)).
 - **Date**: 2026-08-14
 - **Author**: Builder agent (drafted per #10)
 - **Ratifies against / input to**: #1 (Ratify the target spec — operator-only,
@@ -145,7 +147,10 @@ must be measured, per device, per bias point, as DR-003 illustrates.
 
 ## Status notes
 
-This record stays `proposed` until #1 closes. It does not ratify itself. If
-#1 wants a different corner subset (e.g. including mismatch or Monte Carlo
-sections for a specific claim), a superseding record follows rather than an
-edit to this one.
+**Ratified by DR-006 / #1, pending operator PR approval (2026-08-19).** The
+binding above — process axis to the five named `.lib` sections, T and Vin
+axes to their existing numeric lists — is ratified as stated; it did not
+itself change any spec-row number, and ratification does not change that. If
+a future record wants a different corner subset (e.g. including mismatch or
+Monte Carlo sections for a specific claim), a superseding record follows
+rather than an edit to this one.

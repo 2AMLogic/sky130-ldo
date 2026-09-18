@@ -1,6 +1,12 @@
 # DR-002: Output-capacitor / ESR window
 
-- **Status**: proposed — not self-ratifying; input to #1
+- **Status**: **ratified** — window ratified by #1 (DR-006), pending operator
+  PR approval per the 2026-08-19 ratification-via-PR standing policy
+  ([2AMLogic/2am#357](https://github.com/2AMLogic/2am/issues/357)). The
+  window's numeric boundaries (0.33–4.7 µF, 0–500 mΩ, no minimum ESR) are
+  ratified; the "no minimum ESR" *stability claim* is only partially
+  substantiated — see DR-006 for the disclosed 0 mA-corner gap this record's
+  own 2026-08-17 append already found.
 - **Date**: 2026-08-14
 - **Author**: Builder agent (drafted per #10)
 - **Ratifies against / input to**: #1 (Ratify the target spec — operator-only,
@@ -177,14 +183,19 @@ simulate against — and says so plainly rather than asserting either outcome.
 
 ## Status notes
 
-This record stays `proposed` until #1 closes. #1's ratification of this
-record settles the C_out/ESR **window's boundary numbers** as an input to
-#1's own ratification of the Load-transient and Stability spec rows — it
-does not, by itself, verify the "no minimum ESR" stability claim for
-sky130-ldo's actual loop, which requires a `sim/` loop-gain record against a
-real compensation topology that does not exist yet. If that future
-simulation shows this window's stability posture is unreachable, a
-superseding record replaces this one; this record is not edited after the
+**Ratified by DR-006 / #1, pending operator PR approval (2026-08-19).** This
+record's proposed window (0.33–4.7 µF, 0–500 mΩ, no minimum ESR) is adopted
+as the ratified C_out/ESR window feeding `spec/target-spec.md`'s Load-transient
+and Stability rows. Per this record's own 2026-08-17 append, the "no minimum
+ESR" stability *claim* is **confirmed at every load ≥ 1 mA** across the tested
+subset but **not confirmed at 0 mA** (15.6–19.3° PM at 0.33 µF, 38.1° at
+4.7 µF/`ss` — below the DRAFT 45° row). Ratifying the window's boundary
+numbers does not retroactively close that gap; see DR-006 for how the
+ratified spec treats it (a disclosed, tracked design gap, not a reason to
+widen the window or add a minimum ESR — the append's own root-cause analysis
+already shows a minimum ESR would not fix it). If a future simulation shows
+this window's stability posture is unreachable at any *design-fixable* point,
+a superseding record replaces this one; this record is not edited after the
 fact.
 
 ---
