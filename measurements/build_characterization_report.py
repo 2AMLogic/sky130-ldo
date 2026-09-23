@@ -227,6 +227,42 @@ def sim_subset_reason(record: dict) -> str | None:
     return reason or "(the record states no reason)"
 
 
+def sim_failing_measurements(record: dict) -> str | None:
+    """Which bounded measurement(s) a corner-matrix record's FAIL corners
+    actually failed on, as the record's own per-measurement `pass` flags state
+    them — or None if every corner passed (or the record has no corner list).
+
+    A row-level "FAIL, 12/15" does not say *which clause* failed, and a spec
+    row can carry several (issue #120: the Thermal row's FAIL was read as a
+    theta-JA/Tj question when every failing corner had in fact failed only
+    the thermal-shutdown hysteresis-sign bound). Extraction only, no
+    re-derivation: a corner that failed without any measurement flagged (e.g.
+    an ngspice error or timeout) is counted as such rather than guessed at."""
+    corners = record.get("corners")
+    if not isinstance(corners, list) or not corners:
+        return None
+    counts: dict[str, int] = {}
+    unflagged = 0
+    for corner in corners:
+        if corner.get("pass"):
+            continue
+        failed = [
+            str(m.get("name", "?"))
+            for m in corner.get("measurements") or []
+            if isinstance(m, dict) and m.get("pass") is False
+        ]
+        if not failed:
+            unflagged += 1
+        for name in failed:
+            counts[name] = counts.get(name, 0) + 1
+    if not counts and not unflagged:
+        return None
+    parts = [f"`{name}` at {n} corner(s)" for name, n in counts.items()]
+    if unflagged:
+        parts.append(f"{unflagged} corner(s) with no measurement flagged (run-level failure)")
+    return "; ".join(parts)
+
+
 def sim_mc_sample_tally(record: dict) -> str | None:
     resp = record.get("klt_response")
     if not isinstance(resp, dict):
@@ -452,6 +488,9 @@ def build_spec_row_table(
             f"`sim/{slug}` record [`{record_id}`]({record_rel}), {tally}. "
             f"Freshness: {freshness}."
         )
+        failing = sim_failing_measurements(record)
+        if failing:
+            detail_line += f" Failing measurement(s), per the record: {failing}."
         if subset_reason:
             detail_line += (
                 " **PVT subset, not the full matrix this experiment declares** — "
