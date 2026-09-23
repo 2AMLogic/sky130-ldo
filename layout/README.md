@@ -227,6 +227,40 @@ Bumping the pin to pick those up is a deliberate act (see
 re-verified against the new build — worth doing on its own issue, not as a
 side effect of a layout change.
 
+### What the ERC supply spec hit (issue #112)
+
+One new gap, filed at
+[`klayout-tools#2389`](https://github.com/2AMLogic/klayout-tools/issues/2389):
+**`klt erc`'s envelope never names a drawn conductor layer the spec's
+`stackup` omits.** `nets[]` connectivity is computed only through declared
+roles, and a committed supply spec is a long-lived artifact whose
+correctness is a property of the layout it was written against — but nothing
+in the report records that the stream drew a level the spec does not
+mention, so the model can silently narrow as a block is re-routed.
+`klt drc` already answers exactly this question about itself
+(`coverage.layers_in_stream_without_rules`, which
+`docs/design-evidence-tiers.md` item 3 leans on directly); `klt erc` has no
+counterpart, so the equivalent item-11 disclosure cannot be made from the
+envelope at all.
+
+That is why `bin/check-erc-supply-spec.py` exists here: it is a local
+stand-in for the missing disclosure, diffing "layers drawn" against "layers
+declared" (and re-deriving the substrate assertion) with `klayout.db` before
+every run. It should shrink to nothing if #2389 lands.
+
+Everything else this flow needed was already present upstream, and several
+of the item-11 capabilities it depends on are *recent* fixes to gaps other
+canaries filed — isolated `ties[]` extraction
+([#2169](https://github.com/2AMLogic/klayout-tools/issues/2169)), the
+`poly ∩ diff` antenna denominator
+([#1979](https://github.com/2AMLogic/klayout-tools/issues/1979)),
+device-body carve-outs
+([#2183](https://github.com/2AMLogic/klayout-tools/issues/2183)), and the
+native-substrate tie
+([#2255](https://github.com/2AMLogic/klayout-tools/issues/2255)). That is
+what `erc-requirements.txt`'s second pin buys, and why it is a second pin
+rather than a bump of the first.
+
 ## Extending to the LDO core (issues #15/#33)
 
 `ldo-core/` is the real block layout for `design/ldo_3v3in_1v8out.sch`: one
