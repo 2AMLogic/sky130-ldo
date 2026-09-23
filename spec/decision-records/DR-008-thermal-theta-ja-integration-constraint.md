@@ -37,15 +37,42 @@ From the record itself (not re-derived):
 | `ss_27c_2.97v` | 150.6 °C — PASS | 153.0 °C | −2.4 °C | `hysteresis_c` only |
 | `ff_27c_3.63v` | 153.0 °C — PASS | 161.0 °C | −8.0 °C | `hysteresis_c` only |
 
-`trip_temp_c` passes at **all 15** corners (lowest: 138.8 °C at
-`sf_27c_3.63v`, 13.8 °C above the rated ceiling). The "27c" in each corner
-ID is a manifest placeholder — the bench sweeps `TEMP` itself from 80 °C to
-180 °C and back (`sim/thermal/experiment.json`). All three FAILs are the
-known DR-005 auto-restart hysteresis-sign defect root-caused in #77 and
-re-confirmed on the re-sized circuit in #91 (DR-005's `#77` addendum and
-`#91` append: a marginal regenerative loop gain in the
+`trip_temp_c` passes the bench's own `min: 125` bound at **all 15** corners
+(lowest: 138.8 °C at `sf_27c_3.63v`, 13.8 °C above the rated ceiling). The
+"27c" in each corner ID is a manifest placeholder — the bench sweeps `TEMP`
+itself from 80 °C to 180 °C and back (`sim/thermal/experiment.json`). All
+three FAILs are the known DR-005 auto-restart hysteresis defect root-caused
+in #77 and re-confirmed on the re-sized circuit in #91 (DR-005's `#77`
+addendum and `#91` append: a marginal regenerative loop gain in the
 `M_TSHYS`/`M_TSHYSB` current-injection path, needing a
 Schmitt/latch-style redesign, not a sizing knob).
+
+**The hysteresis defect is wider than the three flagged corners.** The
+other 12 corners "pass" `hysteresis_c` only because the bench's bound is
+`≥ 0`: every one of them measures **exactly 0.0 °C**, against DR-005's
+15 °C nominal target. No corner shows resolvable positive hysteresis. And
+per `experiment.json`'s own `hysteresis_c` note, a value within ±2 °C of
+zero reads as "no resolvable hysteresis at this grid step", not as a
+confidently-signed inversion. So −2.0 °C (`tt_27c_3.63v`) and −2.4 °C
+(`ss_27c_2.97v`) sit at or just past the 2 °C grid, and only
+`ff_27c_3.63v` (−8.0 °C) is an unambiguous inversion. The accurate reading
+is therefore that the auto-restart hysteresis is **absent at all 15
+corners**, inverted outright at one. It is not "3 inverted corners and 12
+working". #131's acceptance bar (> 0 with margin beyond the 2 °C grid at
+all 15 corners) already covers this.
+
+**The trip point is also short of DR-005's guard band under its
+worst-corner reading.** DR-005's #69 append argues that the 25 °C guard band
+above 125 °C must hold at the **worst** corner, which puts the trip-window
+floor at ≥ 150 °C. In this record **6 of 15 corners trip below 150 °C**:
+`tt_27c_3.63v` 147.0, `ss_27c_3.30v` 144.8, `ss_27c_3.63v` 138.9,
+`sf_27c_2.97v` 149.0, `sf_27c_3.30v` 144.5 and `sf_27c_3.63v` 138.8 °C. The
+bench does not flag this because its bound is the rated ceiling (125 °C),
+not the guard band. Which reading of the guard band binds (worst-corner or
+nominal-only) is still owed a ruling by #1, per that append; this record
+does not make it. Like the hysteresis defect, this shortfall is a
+junction-temperature property of the trip comparator measured directly on
+the Tj axis. It is unrelated to θJA.
 
 ### Finding 2 — the bench assumes no θJA, no ambient, and no dissipation
 
@@ -66,9 +93,14 @@ Schmitt/latch-style redesign, not a sizing knob).
 
 **Conclusion.** The 12/15 FAIL is not a θJA, ambient, or dissipation
 finding. It is a real design defect in the DR-005 thermal-shutdown backstop
-the row's Notes column carries (auto-restart hysteresis sign). It is not a
-matter of an unstated assumption. The FAIL verdict stands unchanged; this
-record does not relax or reinterpret it.
+the row's Notes column carries: the auto-restart hysteresis is absent at
+all 15 corners (0.0 °C at 12, within the ±2 °C grid at two, inverted at
+`ff_27c_3.63v`), and the bench's `≥ 0` bound flags only three of them. The
+backstop's trip point is also below DR-005's 150 °C worst-corner guard-band
+floor at 6 of 15 corners (lowest 138.8 °C), pending #1's ruling on whether
+that reading binds. Both are Tj-axis properties of the backstop. Neither is
+a matter of an unstated θJA assumption. The FAIL verdict stands unchanged;
+this record does not relax or reinterpret it.
 
 What *is* true is #120's underlying observation: the θJA the row delegates
 has never been written down as an explicit constraint derived from this
@@ -184,7 +216,9 @@ auto-restarts. The behaviour of that cycle is exactly what the open
 - **The Thermal row's FAIL verdict is unchanged.** It is a design defect in
   the DR-005 backstop's auto-restart hysteresis, carried forward to #131. `measurements/characterization.md` now names the
   failing measurement (`hysteresis_c` at 3 corners) per row, so the verdict
-  cannot be misread as a θJA/Tj question again. The generator extracts this
+  cannot be misread as a θJA question again. (The trip guard-band shortfall
+  in Finding 1 is a Tj-axis concern the bench's bounds do not flag; it rests
+  on #1's ruling on DR-005's #69 append.) The generator extracts this
   from the record's own per-measurement `pass` flags.
 - **Records the delegated θJA constraint explicitly**, as inequalities (A)
   and (B) in the integrator's ambient. This refreshes DR-005's Context-section
