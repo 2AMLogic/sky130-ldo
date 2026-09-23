@@ -2778,6 +2778,181 @@ compensation architecture, if anyone wants to pursue it, is new,
 differently-shaped issue's scope — screened from a real crossover-raising
 design, not a further decomposition of this issue's own two candidates.
 
+### Stability: binding mechanism confirmed, a feedback-divider feedforward zero screened and reverted, coupling thesis tested against the other four DRAFT-turned-RATIFIED rows and not confirmed (#115, 2026-09-23)
+
+**Status: investigated, not shipped.** `spec/target-spec.md`'s Stability row
+is now **RATIFIED** (DR-006/#1) at `PM >= 45 deg, GM >= 10 dB worst corner,
+0-50 mA` — this issue does not touch that row, per `CLAUDE.md`'s "never
+relax a ratified spec line to make a result pass." `design/ldo_3v3in_1v8out.sch`
+is **unchanged** by this issue: one new compensation-network candidate was
+built, netlisted, and screened; it did not clear the bar, so per this repo's
+established "verification is the product, no partial fix" convention
+(`#70`, `#77`, `#91`, `#107` above) it was reverted rather than shipped.
+
+**1. Binding mechanism — re-confirmed, not re-derived.** The record this
+issue was filed against
+([`sim/loop-gain/records/20260825-081257-4cb27f8.md`](../sim/loop-gain/records/20260825-081257-4cb27f8.md))
+and this file's own "Compensation (sized in #25)" section and DR-007's
+Context section already establish the mechanism in full, and re-reading the
+raw per-corner JSON (`sim/loop-gain/records/20260825-081257-4cb27f8.json`)
+confirms it rather than finding anything new:
+
+- **It is a margin shortfall, not outright instability.** Gain margin at
+  every failing corner's binding sub-metric is 68.9-72.2 dB (`gm_c033_0ma_db`)
+  — tens of dB clear of the 10 dB floor. The failure is a phase-margin
+  *doublet dip* (the loop's phase swings toward -160 deg while the magnitude
+  is still far from crossing unity), not a magnitude/phase pair that ever
+  gets close to a genuine 0 dB/-180 deg coincidence.
+- **The binding sub-metric is `pm_c033_0ma_deg`/`pm_c47_0ma_deg` — the
+  literal-0 mA points** — at every corner except the 125 C row. Of the 38
+  FAIL corners, every single one fails on a 0 mA sub-metric (`below min 45`
+  on `pm_c033_0ma_deg` and/or `pm_c47_0ma_deg`); the 1 mA and 50 mA
+  sub-metrics clear 45 deg almost everywhere (see DR-007's Context section
+  for the exact counts: 50 mA clears at all 45 corners, 1 mA at 40/45).
+- **The 7 PASS corners are exactly the 7 `125 C` corners in the matrix**
+  (`{tt,ff,fs}_125c_{3.30v,3.63v}` + `ss_125c_3.63v`) — temperature is what
+  moves this corner from FAIL to PASS, not process or supply, because the
+  pass stage's own `gm_pass = I_load/(n*V_T)` in weak inversion rises with
+  `V_T` (thermal voltage) at fixed (near-zero) `I_load`, pushing the
+  collapsing output pole back up in frequency enough to clear 45 deg at the
+  hottest corner. This is the same physical mechanism DR-007's Context
+  section and this file's "Compensation" section already name — confirmed
+  again here at the full-matrix level rather than re-derived.
+
+**2. Re-compensation attempt: a feedback-divider feedforward capacitor —
+a genuinely untried lever, screened, does not close the gap either.**
+Three prior decomposed campaigns already exhausted the compensation-network
+and topology-change design space this issue's own scope item 2 asks about:
+issue #25's `R_CZ`/`C_COMP` two-sided-optimum sweep and `M_TAIL` 2x/6x
+screen (this file's "Compensation" section), #70/#79's bias-generator
+redesign and preload-current candidates, and #107's NMOS-cascode and
+second-gain-stage candidates (all cited above, all verified-negative). None
+of them tried reshaping the *feedback path* itself. A capacitor in parallel
+with `R_FB_A` (`VOUT -> FB`, the divider's top unit resistor) is a classic,
+textbook (Razavi-class, non-reverse-engineered) feedforward-zero technique
+that places a zero at `1/(2*pi*R_FB_A*C_FF)` in the loop's feedback factor,
+independent of `Iq` — a materially different lever from anything tried
+before, so this issue built and screened it rather than assuming the
+compensation space was exhausted without testing it.
+
+Screening method: same convention as the sections above — single corner
+(`tt`, 27 C, `VIN=3.30V`), `sim/bin/corner-run.py sim/loop-gain --process tt
+--temp 27 --supply 3.3 --no-write --subset-reason ...`, against the
+committed `sim/loop-gain` testbench, sweeping `C_FF` from 10 fF-class
+(effectively off) to 20 nF:
+
+| `C_FF` | `pm_c033_0ma_deg` | `pm_c033_50ma_deg` | `pm_c033_esr500m_50ma_deg` |
+|---|---|---|---|
+| 0 (baseline) | 19.3 | 58.5 | 70.4 |
+| 10 pF | 19.7 | 48.8 | 62.95 |
+| 50 pF | 21.1 | 47.1 | 61.2 |
+| 300 pF | 27.8 | 46.8 | 60.9 |
+| 500 pF | 29.7 | 46.8 | 60.9 |
+| **550-600 pF (peak)** | **29.7** | **46.7-46.8** | 60.8-60.9 |
+| 1 nF | 27.5 | 46.7 | 60.8 |
+| 5 nF | 19.7 | 46.7 | 60.8 |
+| 20 nF | 17.8 | 46.7 | 60.8 |
+
+A genuine two-sided optimum, same shape as `R_CZ`'s own table in
+"Compensation (sized in #25)": `pm_c033_0ma_deg` peaks at **29.7 deg**
+around `C_FF` = 550-600 pF (a real +10.4 deg gain over baseline) and falls
+off on both sides — but that peak is still **15.3 deg short of the 45 deg
+floor**, and it is bought by degrading the already-passing 50 mA corner from
+58.5 deg to 46.7-46.8 deg (still nominally PASS at this one screened corner,
+but with far less margin against the rest of the 45-point PVT grid than
+baseline carries, and the ESR-ceiling sub-metric drops 70.4 -> 60.9 deg
+alongside it). A combined candidate (`C_FF`=550 pF plus `R_CZ` doubled,
+`L=52 -> L=104`, ~300k -> ~600k ohm) pushes `pm_c033_0ma_deg` further to
+34.4 deg but **breaks** the 50 mA corner outright (`pm_c033_50ma_deg` =
+25.9 deg, `pm_c033_esr500m_50ma_deg` = 40.2 deg, both below the 45 deg
+floor) — trading a hard new FAIL for a softer partial improvement elsewhere,
+net negative. Per this issue's own screen-before-full-run instruction and
+the "if no candidate screens well, document the negative result" fallback,
+this stops here: no full `sim/loop-gain` 45-point re-run was performed for
+either candidate, and the schematic edits were reverted (`git checkout --`
+on `design/ldo_3v3in_1v8out.sch`) rather than committed.
+
+**Why this result is expected, not surprising, once written down
+algebraically.** DR-007's own diagnosis (dominant-pole/Miller compensation
+means crossover ~= `Gm/(2*pi*C_COMP)`, largely independent of the feedback
+factor's own high-frequency shape) explains why a feedback-path zero moves
+the picture only modestly: `C_FF` changes *where the loop's phase recovers*
+near the doublet, but the doublet itself is still set by the same
+`gm_pass(I_load)` collapse this file's "Compensation" section already
+names, and pushing the zero low enough to meaningfully help the 0 mA case
+inevitably drags it into the frequency range the 50 mA/`0.33 uF` corner's
+own crossover (~174-224 kHz) needs clear of the feedback path's own
+poles/zeros. Same two-sided-optimum shape, same root cause, new lever,
+same outcome.
+
+**Ratified `C_out`/ESR window: unchanged, and not itself the blocker.**
+No candidate in this issue touches DR-002's ratified 0.33-4.7 uF / 0-500 mOhm
+/ no-minimum-ESR window, and nothing in this screening campaign suggests the
+window's numeric bounds (as opposed to the compensation network behind them)
+are what is unreachable — consistent with the existing "Compensation" section's
+own finding that even DR-002's own 500 mOhm ESR ceiling would place its zero
+three decades above the light-load crossover and would not help either.
+
+**Conclusion: this issue adds a fourth verified-negative data point to the
+lineage DR-007 already closed (#25, #70/#79, #107), and does not surface
+anything that would change DR-007's standing recommendation.** `DR-007`
+(`proposed`, pending #1) already recommends superseding the RATIFIED
+Stability row with a floor scoped to `I_load >= 1 mA` (no 0 mA floor) on
+exactly this evidence trail; this issue's new `C_FF`/`R_CZ` data is
+consistent with, not contradictory to, that recommendation, and is added
+here rather than triggering a new decision record, per DR-007's own
+Consequences section anticipating exactly this kind of follow-on negative
+result. No spec row is touched by this issue, per `CLAUDE.md` and per the
+issue's own guardrail.
+
+**3. Full 45-point `sim/loop-gain` re-run: not performed, on purpose.**
+Since no schematic change ships, a fresh 45-point run would reproduce
+[`20260825-081257-4cb27f8`](../sim/loop-gain/records/20260825-081257-4cb27f8.md)
+to within simulator noise — the same "not run against the committed
+(unchanged) schematic since it is byte-identical to the prior baseline"
+convention `#79`/`#107` used above. `measurements/characterization.md` is
+unchanged; `python3 measurements/build_characterization_report.py --check`
+passes against the pre-existing records.
+
+**4. Coupling thesis — tested against the full 45-corner grid, not
+confirmed.** Issue #115's own framing hypothesized that the Stability row's
+7/45 pass rate is "upstream" of the Load transient (25/45), Load regulation
+(34/45), Line regulation (18/45), and PSRR (0/45) rows, and asked that the
+coupling be *confirmed rather than assumed*. A per-corner join of all five
+current `fresh` records
+([`sim/loop-gain/records/20260825-081257-4cb27f8`](../sim/loop-gain/records/20260825-081257-4cb27f8.md),
+[`sim/load-transient/records/20260825-081255-4cb27f8`](../sim/load-transient/records/20260825-081255-4cb27f8.md),
+[`sim/load-regulation/records/20260910-032854-6c0436d`](../sim/load-regulation/records/20260910-032854-6c0436d.md),
+[`sim/line-regulation/records/20260910-030557-6c0436d`](../sim/line-regulation/records/20260910-030557-6c0436d.md),
+[`sim/psrr-dc/records/20260825-082845-4cb27f8`](../sim/psrr-dc/records/20260825-082845-4cb27f8.md))
+on the shared `corner_id` key gives, for the 7 corners where Stability
+PASSes (all and only the 125 C corners named above):
+
+| Downstream row | Overall PASS rate | PASS rate *at the 7 Stability-PASS corners* | Reading |
+|---|---|---|---|
+| Load transient | 25/45 (55.6%) | **0/7 (0%)** | **Anti-correlated.** Every one of the 7 corners where Stability passes *fails* Load transient, on the `undershoot_v` peak-excursion sub-metric (e.g. `tt_125c_3.30v`: 171.3 mV vs. the 150 mV ceiling, `phase margin` a comfortable 69.9-92.2 deg at every sub-point). Peak excursion at 125 C is not phase-margin-limited here — a different, temperature-dependent mechanism (large-signal recovery dynamics, not small-signal loop shape) is what fails this row at the corners where the loop is best-behaved. |
+| Load regulation | 34/45 (75.6%) | 6/7 (85.7%) | Marginally above the base rate, but `n=7` and the base rate is already 75.6% — not a clean signal, and the one mismatch (`tt_125c_3.63v`: Stability PASS, Load regulation FAIL) shows the two are not simply tied together either. |
+| Line regulation | 18/45 (40.0%) | 4/7 (57.1%) | Mildly above the base rate; `n=7` is too small to call this a confirmed effect either way. |
+| PSRR | 0/45 (0%) | **0/7 (0%)** | **Uninformative for confirming coupling, but directly consistent with DR-007's independent finding that 1 kHz PSRR here is loop-gain-limited by the dominant-pole crossover, not by the specific 0 mA phase-margin-doublet mechanism** — if Stability were straightforwardly upstream of PSRR, the 7 best-behaved-loop corners would be the most likely to clear at least the easier PSRR sub-metric, and none do. |
+
+**Conclusion: the coupling thesis is not confirmed by this data, and is
+actively contradicted for the row it predicted most clearly (Load
+transient).** The two rows with the clearest signal both point away from a
+simple "fix the loop, the rest follows" story: Load transient is
+anti-correlated with Stability at the corner level, and PSRR fails
+uniformly regardless of Stability's own pass/fail state (matching DR-007's
+independent loop-gain-limited diagnosis for PSRR specifically). Load and
+line regulation show weak, statistically thin positive skew that a 7-corner
+sample cannot distinguish from noise. **Practical consequence for the
+sibling rows in #114's decomposition** (`#116` dropout, `#117` PSRR, `#118`
+DC accuracy, `#119` load transient): none of them should be sequenced to
+wait on a Stability fix, and a future Stability fix (if #1 ratifies a
+topology change or DR-007's replacement row makes one worth attempting)
+should not be assumed to move any of the four downstream rows without its
+own re-verification — exactly the caution `CLAUDE.md`'s "no claim without a
+testbench" discipline already asks for, now with corner-level data behind
+it rather than an assumption either way.
+
 ## Validating this schematic
 
 ```bash
