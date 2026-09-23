@@ -2805,10 +2805,20 @@ confirms it rather than finding anything new:
   gets close to a genuine 0 dB/-180 deg coincidence.
 - **The binding sub-metric is `pm_c033_0ma_deg`/`pm_c47_0ma_deg` — the
   literal-0 mA points** — at every corner except the 125 C row. Of the 38
-  FAIL corners, every single one fails on a 0 mA sub-metric (`below min 45`
-  on `pm_c033_0ma_deg` and/or `pm_c47_0ma_deg`); the 1 mA and 50 mA
+  FAIL corners, **36** fail on a 0 mA sub-metric (`below min 45` on
+  `pm_c033_0ma_deg` and/or `pm_c47_0ma_deg`). The two exceptions are
+  `ff_125c_2.97v` and `fs_125c_2.97v`, which fail *only* on the 1 mA
+  sub-metric `pm_c47_1ma_deg` (44.38 deg and 44.09 deg against the 45 deg
+  floor) with both of their 0 mA sub-metrics passing comfortably (59.3 deg /
+  87.1 deg and 78.9 deg / 89.3 deg respectively). They do not change the
+  conclusion: both sit in the 125 C row this bullet already excepts — the hot
+  row where the `gm_pass` argument below predicts the 0 mA points recover —
+  and both miss by under a degree, the same margin-shortfall character as the
+  other 36 rather than a different failure mode. The 1 mA and 50 mA
   sub-metrics clear 45 deg almost everywhere (see DR-007's Context section
-  for the exact counts: 50 mA clears at all 45 corners, 1 mA at 40/45).
+  for the exact counts: 50 mA clears at all 45 corners, 1 mA at 40/45 — and
+  those 5 shortfalls are exactly the 5 `125c_2.97v` corners, two of which are
+  the exceptions named here).
 - **The 7 PASS corners are exactly the 7 `125 C` corners in the matrix**
   (`{tt,ff,fs}_125c_{3.30v,3.63v}` + `ss_125c_3.63v`) — temperature is what
   moves this corner from FAIL to PASS, not process or supply, because the
