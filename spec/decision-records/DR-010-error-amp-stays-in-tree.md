@@ -1,4 +1,4 @@
-# DR-008: the error amplifier stays in-tree — `2AMLogic/sky130-opamp` is not a drop-in (2am reuse rule 9)
+# DR-010: the error amplifier stays in-tree — `2AMLogic/sky130-opamp` is not a drop-in (2am reuse rule 9)
 
 - **Status**: **proposed** — an editorial/ledger record, carried for ratification
   via the PR that lands it (Judge review + Champion/operator merge) per the
@@ -15,7 +15,7 @@
   the in-tree error amplifier). This record **sets no numeric row** in
   `spec/target-spec.md` and proposes no change to one; it records a reuse
   decision and is the `decision` target of `reuse.lock.json`'s `in_tree` entry.
-- **Supersedes**: none — eighth decision record in this repo; touches no earlier
+- **Supersedes**: none — tenth decision record in this repo; touches no earlier
   record. DR-001 (pass-device and supply framing) is cited as a binding input,
   not revised.
 
@@ -217,7 +217,7 @@ implicit.
   by the PR that lands this record.
 - `reuse.lock.json`'s `in_tree` entry points at this file by path; renaming or
   removing this file breaks `reuse-check.py`. A later decision (adopt, or a
-  changed sibling scope via `sky130-opamp`#36) produces **DR-009+** marking this
+  changed sibling scope via `sky130-opamp`#36) produces **DR-011+** marking this
   record superseded — this file is never edited to match a later outcome
   (`CLAUDE.md`, append-only records).
 - Out of scope, tracked elsewhere: the `sky130-bandgap` consumption edge
