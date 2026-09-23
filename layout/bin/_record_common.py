@@ -38,9 +38,18 @@ class Provenance:
     pdk_info: dict
 
 
-def provenance(repo_root: Path, klt: str, pdk_variant: str) -> Provenance:
+def provenance(
+    repo_root: Path, klt: str, pdk_variant: str | None = None
+) -> Provenance:
     """Gather the git-state + `klt`/PDK-version block every `render-*.py`
-    script's `main()` puts in its record.md's "Provenance" section."""
+    script's `main()` puts in its record.md's "Provenance" section.
+
+    `pdk_variant=None` skips the `klt pdk find` lookup and leaves
+    `pdk_info` empty -- for a flow that genuinely needs no PDK install
+    (issue #112's `klt erc` run reads its antenna-limit table from `klt`'s
+    own built-in transcription, not from a local PDK tree), where insisting
+    on a resolvable variant would be a fabricated dependency.
+    """
     sha = _git(repo_root, "rev-parse", "HEAD")
     branch = _git(repo_root, "rev-parse", "--abbrev-ref", "HEAD")
     dirty = _git(repo_root, "status", "--porcelain") != ""
@@ -48,13 +57,15 @@ def provenance(repo_root: Path, klt: str, pdk_variant: str) -> Provenance:
     klt_version = subprocess.run(
         [klt, "--version"], check=True, capture_output=True, text=True
     ).stdout.strip()
-    pdk_info_raw = subprocess.run(
-        [klt, "pdk", "find", "--pdk", pdk_variant, "--format", "json"],
-        check=True,
-        capture_output=True,
-        text=True,
-    ).stdout
-    pdk_info = json.loads(pdk_info_raw)
+    pdk_info: dict = {}
+    if pdk_variant is not None:
+        pdk_info_raw = subprocess.run(
+            [klt, "pdk", "find", "--pdk", pdk_variant, "--format", "json"],
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout
+        pdk_info = json.loads(pdk_info_raw)
 
     return Provenance(
         sha=sha,
