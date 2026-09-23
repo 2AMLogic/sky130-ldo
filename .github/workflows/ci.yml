@@ -4,19 +4,28 @@ name: CI
 # CLAUDE.md) and where each one runs:
 #
 #   - `package.json` `check:ci` (JSON syntax of every root-level *.json plus
-#     every sim/**/experiment.json and sim/**/records/*.json, shell/python
-#     syntax of the harness scripts, py_compile over every tracked sim/ +
-#     layout/ Python file, `sim/tests/`'s PDK-free unit coverage for the
-#     corner runner's own pure helper functions, a regex lint over tracked
-#     `.sch`/`.sym` files for xschem's embedded-quoted-attribute truncation
-#     hazard (#59), a regex lint over tracked `design/*.sch` files for
-#     duplicate component `name=` values (#38) -- catches an unusable merged
-#     netlist, e.g. two `M_ENP4` instances, without needing
-#     xschem/ngspice/the PDK at all -- and a uniqueness lint over tracked
-#     `spec/decision-records/DR-NNN-*.md` filenames (#140), which catches two
-#     parallel branches independently claiming the same DR number, as four
-#     open PRs each did with `DR-008`) -> `checks` job below, every push/PR.
-#     Headless, no PDK, no `klt` install needed.
+#     every sim/**/experiment.json, sim/**/records/*.json and
+#     signoff/**/*.json, shell/python syntax of the harness scripts,
+#     py_compile over every tracked sim/ + layout/ Python file,
+#     `sim/tests/`'s PDK-free unit coverage for the corner runner's own pure
+#     helper functions, a regex lint over tracked `.sch`/`.sym` files for
+#     xschem's embedded-quoted-attribute truncation hazard (#59), a regex
+#     lint over tracked `design/*.sch` files for duplicate component
+#     `name=` values (#38) -- catches an unusable merged netlist, e.g. two
+#     `M_ENP4` instances, without needing xschem/ngspice/the PDK at all --
+#     and a uniqueness lint over tracked `spec/decision-records/DR-NNN-*.md`
+#     filenames (#140), which catches two parallel branches independently
+#     claiming the same DR number, as four open PRs each did with `DR-008`)
+#     -> `checks` job below, every push/PR. Headless, no PDK, no `klt`
+#     install needed.
+#   - `signoff/check.sh` (re-grades this block's T1 state from
+#     signoff/block-manifest.json via `klt signoff --manifest`, and fails if a
+#     pinned content_hash no longer matches the artifact it covers or if the
+#     committed signoff/records/t1-tier-report.json no longer matches a fresh
+#     run) -> `signoff-tier-report` job below, every push/PR. Needs `klt` but
+#     NOT the PDK/KLayout/ngspice: --manifest mode only reads committed JSON
+#     envelopes and the tier doc bundled inside the klt wheel. See
+#     signoff/README.md.
 #   - `sim/selftest.sh --quick` (the harness's own liveness test: proves the
 #     pinned sky130 PDK models load in ngspice, xschem netlists headlessly,
 #     and the PVT knobs actually reach the simulator) -> requires xschem +
@@ -74,6 +83,38 @@ jobs:
 
       - name: npm run check:ci
         run: npm run check:ci
+
+  signoff-tier-report:
+    name: T1 tier report (klt signoff --manifest, no PDK)
+    # Same runner expression as `checks` above, and for the same reason (#51):
+    # GitHub-hosted minutes are billed for private repos and this org's Actions
+    # billing is blocked, so a self-hosted runner is what actually runs for
+    # same-repo events; fork PRs fall back to ubuntu-latest and must never
+    # execute on the self-hosted pool.
+    runs-on: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && fromJSON('["self-hosted","heavy"]') || 'ubuntu-latest' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install uv (fetches the pinned klt release for signoff/check.sh)
+        run: python3 -m pip install --upgrade uv
+
+      - name: Re-grade this block's T1 state
+        run: bash signoff/check.sh
+        # signoff/records/t1-tier-report.json is the verdict of record that
+        # issue #114 (the gap-to-T1 tracker) cites instead of keeping its own
+        # hand-maintained item checklist. It is only worth citing if it cannot
+        # rot: this step re-hashes every artifact behind every citation, then
+        # re-runs `klt signoff --manifest` and fails when the committed record
+        # no longer matches a fresh run. Both are real news -- either this
+        # block's evidence moved, or the T1 checklist did (it grew an eleventh
+        # item on 2026-09-17, klayout-tools#2025, which invalidated every
+        # hand-read that predates it). See signoff/README.md, and check.sh's
+        # header for why the klt release is pinned there and why that pin is
+        # deliberately NOT layout/requirements.txt's klt pin.
 
   pdk-smoke:
     name: PDK-gated harness smoke test (nightly / workflow_dispatch / 'run-pdk-smoke' label)

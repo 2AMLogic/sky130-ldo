@@ -188,6 +188,21 @@ shuttle seat → measured silicon over temperature. **Current position:
 spec-ratified** — simulation and layout work are underway (see the scoreboard
 above) but do not yet clear most ratified rows.
 
+### Where this block sits on the evidence ladder: **T1 3/11, `tier: null`**
+
+That number is not prose — it is
+[`signoff/records/t1-tier-report.json`](signoff/records/t1-tier-report.json),
+the output of `klt signoff --manifest` against
+[`signoff/block-manifest.json`](signoff/block-manifest.json), re-run by CI on
+every push so it fails rather than goes stale when either this block's
+evidence or the klayout-tools T1 checklist moves. Items 3 (DRC clean), 4 (LVS
+match) and 8 (characterization report) are `met`; the other eight are `unmet`,
+each with a machine-readable reason.
+[`signoff/README.md`](signoff/README.md) carries the per-item reading and the
+coverage disclosures the grader structurally cannot check — read it before
+drawing any conclusion from either the three `met` rows or the eight `unmet`
+ones.
+
 ## Repository layout
 
 ```
@@ -196,6 +211,7 @@ design/        schematics / netlists (xschem)
 sim/           testbenches + PVT corner results (ngspice)
 layout/        GDS + DRC/LVS reports (klayout-tools driven)
 measurements/  generated characterization report (see characterization.md)
+signoff/       klt signoff block manifest + the T1 verdict of record
 ```
 
 ## Environment setup
