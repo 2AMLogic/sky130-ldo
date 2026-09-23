@@ -151,13 +151,13 @@ Notes — these are part of the ratified spec, not commentary:
    Stability floor scoped to `I_load ≥ 1 mA` only — not adopted here, and
    pending its own ratification via the two-key market-comparison mechanism.
 5. **Iq** is set by
-   [`DR-008`](spec/decision-records/DR-008-iq-budget.md) (`proposed`; it
+   [`DR-009`](spec/decision-records/DR-009-iq-budget.md) (`proposed`; it
    ratifies on merge of its PR, per 2AMLogic/2am#357). The number comes from
    gf180-ldo parity, checked against a sky130 device-fact budget and public
    comps, not from the measured result. It closes the item DR-003/DR-006 left
    open. No named binding corner (DR-004 caveat). **Current verdict: FAIL**
    — 36/45 PVT corners pass. All 9 failing corners are non-regulating DC
-   operating points (#71/#81 → #79), not bias overspend (DR-008
+   operating points (#71/#81 → #79), not bias overspend (DR-009
    Consequences).
 6. **Current limit, Startup/soft-start, and Enable/shutdown** all **PASS**
    (45/45 PVT corners each) — the only three rows with a testbench that

@@ -11,7 +11,7 @@ for the live, regenerated rollup of current conformance, which shows several
 rows FAIL against the targets below. That is a disclosed, tracked design gap
 for follow-on work, per DR-006 — not a reason the targets themselves are
 unsettled. The Iq row, which DR-003 and DR-006 left explicitly open, is set
-by [`DR-008`](decision-records/DR-008-iq-budget.md) (`proposed`; it
+by [`DR-009`](decision-records/DR-009-iq-budget.md) (`proposed`; it
 ratifies on the same PR-merge path, per 2AMLogic/2am#357). No row is left
 without a number.
 
@@ -37,7 +37,7 @@ Two sources, cited per row, neither of which is silicon:
 Where a value cannot yet be sourced from either — because it depends on a
 sky130-specific device measurement this repo has not run — the row says so and
 carries no number rather than an invented one. At DR-006's ratification
-only the Iq row was in that state. DR-008 has since set it from gf180-ldo
+only the Iq row was in that state. DR-009 has since set it from gf180-ldo
 parity (G), checked against sky130 device facts and the block's now-existing
 topology (S), so no row is currently in that state.
 
@@ -62,14 +62,14 @@ ratified framing (A): pass device `sky130_fd_pr__pfet_g5v0d10v5`, 3.3 V ±10% in
 1.8 V out / 0–50 mA, port parity with `2AMLogic/gf180-ldo`. That ruling was
 scoped to the framing question only; the numeric table below has since been
 ratified in full via DR-006 (see "Status" above), with the Iq row DR-006
-left open set by DR-008. Framing (C) (5 V pass device with a
+left open set by DR-009. Framing (C) (5 V pass device with a
 core-device error-amplifier core) remains an open refinement inside (A),
 deferred to a later topology decision record.
 
 ## RATIFIED target table
 
 Every row is **RATIFIED (DR-006/#1)** except Iq, which is set by
-[`DR-008`](decision-records/DR-008-iq-budget.md) (`proposed`; it ratifies on
+[`DR-009`](decision-records/DR-009-iq-budget.md) (`proposed`; it ratifies on
 merge of its PR, per 2AMLogic/2am#357) — see its note. "Src" cites gf180-ldo's ratified row (G) and/or sky130 published
 references / this repo's own device characterization (S). **Ratified means
 this is the target**, not a claim the current implementation meets it — see
@@ -86,7 +86,7 @@ current conformance per row.
 | Load regulation (0–50 mA) | < 1% (18 mV), counted inside the ±2% window | — | G | Current implementation: FAIL (34/45 PVT corners), tracked design gap — see `measurements/characterization.md`. |
 | Load transient | 1↔50 mA step, ~1 µs edges: peak excursion ≤ 150 mV, recover to ±1% in ≤ 20 µs, over the ratified C_out/ESR window | peak ≤ 100 mV | G | C_out/ESR window: 0.33–4.7 µF, 0–500 mΩ, no minimum ESR, ceramic-stable — DR-002. Current implementation: FAIL (25/45 PVT corners), tracked design gap. |
 | PSRR | > 50 dB @ 1 kHz and > 20 dB @ 100 kHz, at 1 mA (light-load, binding) and at 50 mA | > 60 dB @ 1 kHz, > 30 dB @ 100 kHz | G+S | Current implementation: FAIL (0/45 PVT corners at the ~1 mA point currently covered; 50 mA point not yet testbenched), tracked design gap. [`DR-007`](decision-records/DR-007-psrr-stability-vs-iq.md) (`proposed`) root-causes this to the shipped topology and recommends replacement numbers (≥ 18 dB @ 1 kHz / ≥ 28 dB @ 100 kHz), not adopted here — see DR-006. |
-| Iq (excl. load current) | < 30 µA at no load **and** at full load (50 mA), every PVT corner; Iq = total VIN current minus load current, EN asserted | < 10 µA — subordinate to DR-002's C_out/ESR window; not to be bought back by reintroducing a minimum ESR | G+S | Set by [`DR-008`](decision-records/DR-008-iq-budget.md) (`proposed`): gf180-ldo parity, checked against a sky130 device-fact budget and public comps. It is not derived from the measured result. Divergence from gf180-ldo: no named binding corner (DR-004 caveat), so it is verified across the full matrix. Current implementation: FAIL (36/45 PVT corners). All 9 failing corners are non-regulating DC operating points (#71/#81 → #79), not bias overspend; see DR-008 Consequences and `measurements/characterization.md`. |
+| Iq (excl. load current) | < 30 µA at no load **and** at full load (50 mA), every PVT corner; Iq = total VIN current minus load current, EN asserted | < 10 µA — subordinate to DR-002's C_out/ESR window; not to be bought back by reintroducing a minimum ESR | G+S | Set by [`DR-009`](decision-records/DR-009-iq-budget.md) (`proposed`): gf180-ldo parity, checked against a sky130 device-fact budget and public comps. It is not derived from the measured result. Divergence from gf180-ldo: no named binding corner (DR-004 caveat), so it is verified across the full matrix. Current implementation: FAIL (36/45 PVT corners). All 9 failing corners are non-regulating DC operating points (#71/#81 → #79), not bias overspend; see DR-009 Consequences and `measurements/characterization.md`. |
 | Current limit | constant-current (brickwall) clamp, window TBD over PVT; never engages for I_load ≤ 50 mA; survives continuous Vout = 0 short at Vin_max | — | G | Implemented per #22/#26. Current implementation: PASS (45/45 PVT corners) — see `measurements/characterization.md`. |
 | Startup / soft-start | monotonic into any load 0–50 mA and any C_out in the stability window; controlled ramp; inside ±2% within a few ms of enable; overshoot ≤ +2% | — | G | Implemented per #22/#26. Current implementation: PASS (45/45 PVT corners) — see `measurements/characterization.md`. |
 | Enable / shutdown | shutdown Iq < 3 µA worst corner; disabled output = pass device fully off, no active discharge; Vin→Vout leakage ≤ 1 µA | — | G | Current implementation: PASS (45/45 PVT corners) — see `measurements/characterization.md`. |
@@ -124,7 +124,7 @@ it must be measured, per device, per bias point.
 3. **sky130 device characterization.** **Resolved: ratified per DR-003/#1**
    (2026-08-19, DR-006) — dropout test-point convention and binding-corner
    finding ratified. DR-003 never proposed an Iq budget number, and that item
-   is now set by DR-008 (< 30 µA at no load and full load).
+   is now set by DR-009 (< 30 µA at no load and full load).
 4. **Corner-model names.** **Resolved: ratified per DR-004/#1** (2026-08-19,
    DR-006) — bound to the sky130 `.lib` section names, no translation needed.
 

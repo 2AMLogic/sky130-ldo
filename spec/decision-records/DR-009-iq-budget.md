@@ -1,4 +1,4 @@
-# DR-008: Iq budget — ratify the Iq row at < 30 µA (no load and full load)
+# DR-009: Iq budget — ratify the Iq row at < 30 µA (no load and full load)
 
 - **Status**: proposed — does not ratify itself. Per the ratification-via-PR
   standing policy ([2AMLogic/2am#357](https://github.com/2AMLogic/2am/issues/357)),
