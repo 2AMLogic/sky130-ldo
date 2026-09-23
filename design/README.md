@@ -2963,6 +2963,154 @@ own re-verification — exactly the caution `CLAUDE.md`'s "no claim without a
 testbench" discipline already asks for, now with corner-level data behind
 it rather than an assumption either way.
 
+### #117: the PSRR row's 50 mA half is now testbenched — and the 100 kHz sub-metric fails there (measured, no circuit change, 2026-09-23)
+
+**Status: testbench corrected and re-run; `design/ldo_3v3in_1v8out.sch` is
+unchanged.** Three circuit candidates aimed specifically at this row were
+screened and all three were rejected on measured evidence; they are recorded
+below with their numbers, per this file's "#70/#77/#91/#107" convention of
+writing down verified-negative results rather than discarding them.
+
+**What was actually wrong with the evidence, not just the circuit.**
+`spec/target-spec.md`'s ratified PSRR row names **four** conditions — two
+frequencies × two load points (`> 50 dB @ 1 kHz and > 20 dB @ 100 kHz, at
+1 mA (light-load, binding) and at 50 mA`) — and the row's own status column
+said so: *"0/45 PVT corners **at the ~1 mA point currently covered**; 50 mA
+point not yet testbenched."* The v1 `sim/psrr-dc` deck measured two of the
+four. Its stated reason was correct **when it was written and is now
+obsolete**: the pre-#25 five-transistor amplifier had an output-swing
+ceiling pinned to the reference common mode and did not hold regulation at
+50 mA, so there was no valid DC operating point to linearize an AC sweep
+around. Issue #25's current-mirror-OTA rebuild removed that ceiling. A
+direct `.op` re-check at `tt`/27 °C/3.30 V measures **`VOUT` = 1.7980 V at a
+36 Ω (50 mA) load — regulating**, so the caveat no longer holds and the deck
+now sweeps both load points (`alter rload = 36`, the same single-deck /
+multi-point pattern `sim/loop-gain` uses for the DR-002 window).
+
+**Result of the corrected 45-corner run**
+([`sim/psrr-dc` record `20260923-125412-d71f4b3`](../sim/psrr-dc/records/20260923-125412-d71f4b3.md),
+supersedes `20260825-082845-4cb27f8`). The two 1 mA sub-metrics reproduce
+the superseded record **digit-for-digit** at every corner, so the deck change
+is a pure extension, not a re-measurement:
+
+| Sub-metric | Ratified floor | Measured range, 45 corners | Verdict |
+|---|---|---|---|
+| `psrr_1khz_1ma_db` | > 50 dB | 20.31 dB (`fs_125c_2.97v`) – 25.68 dB (`sf_-40c_3.63v`) | **0/45** |
+| `psrr_100khz_1ma_db` | > 20 dB | 31.53 dB (`fs_-40c_3.63v`) – 34.77 dB (`ss_125c_2.97v`) | **45/45 PASS** |
+| `psrr_1khz_50ma_db` | > 50 dB | 20.25 dB (`fs_125c_2.97v`) – 25.70 dB (`sf_-40c_3.63v`) | **0/45** |
+| `psrr_100khz_50ma_db` | > 20 dB | **13.80 dB** (`ff_-40c_2.97v`) – **16.06 dB** (`ss_125c_2.97v`) | **0/45** |
+
+**The new fact is the last row.** The row has *two* failing sub-metrics, not
+one, and they fail for different physical reasons. This also bears directly
+on `DR-007`, which states of the 100 kHz sub-metric *"this sub-metric was
+never the problem and the row should say so"* and recommends a replacement
+floor of `≥ 28 dB` — a recommendation derived, correctly for the evidence
+that existed, from the 1 mA-only data (31.53–34.77 dB). At the 50 mA point
+the same sub-metric measures 13.80–16.06 dB, i.e. it misses **both** the
+ratified 20 dB floor and DR-007's own proposed 28 dB floor. That is input
+for whoever next revisits DR-007 through #1's ratification mechanism; it is
+**not** changed here, since decision records are append-only and the
+spec row is an operator gate, not a design-time knob.
+
+**Why 1 kHz fails: measured, not inferred — it is loop gain at 1 kHz, and
+nothing else.** DR-007 and #107 reached this conclusion from the
+GBW-invariance algebra; this issue measured the two terms separately. Break
+the loop at the feedback tap (a 1 GH series inductor from the divider tap to
+`M_IN1`'s gate plus a 1 GF shunt to ground — DC path intact, AC path open)
+and sweep the same stimulus at `tt`/27 °C/3.30 V, 1 mA:
+
+| Quantity at 1 kHz | Measured |
+|---|---|
+| Open-loop supply→output gain (loop broken at `FB`) | **−1.12 dB** |
+| Closed-loop PSRR | **23.25 dB** |
+| ⇒ loop gain available at 1 kHz | **≈ 24.4 dB** |
+
+To reach the 50 dB floor from a −1.12 dB feedthrough the loop would need
+≈51 dB of gain at 1 kHz, i.e. a crossover near **355 kHz** at the *light-load*
+operating point — against a measured crossover of ≈4 kHz there. That is the
+"bandwidth wall" DR-007 names, now with the two terms measured individually
+rather than deduced.
+
+**The compensation trade, measured as a frontier rather than described.**
+`C_COMP` is the one knob that moves 1 kHz PSRR at all. Screening convention
+as elsewhere in this file: single corner (`tt`, 27 °C, `VIN = 3.30 V`),
+`sim/bin/corner-run.py --no-write`, no `sim/` record minted. PSRR column:
+`C_COMP` varied alone, `R_CZ` left at its shipped ≈300 kΩ. Phase-margin
+columns: `R_CZ` scaled to hold `R_CZ·C_COMP` (the nulling zero, ≈3.5 kHz)
+constant, so the comparison is bandwidth-vs-bandwidth and not a zero
+displacement:
+
+| `C_COMP` | PSRR @ 1 kHz, 1 mA | PM 0.33 µF/50 mA | PM 0.33 µF/1 mA | PM 0.33 µF/0 mA | PM 4.7 µF/50 mA | PM 4.7 µF/1 mA | PM 4.7 µF/0 mA | PM 500 mΩ/50 mA |
+|---|---|---|---|---|---|---|---|---|
+| **150 pF (shipped)** | **23.25 dB** | 58.5° | 90.0° | **19.3°** | 90.4° | 50.8° | 52.0° | 70.4° |
+| 50 pF | 32.43 dB | **22.6°** | 50.3° | **31.7°** | 57.7° | 62.2° | 71.9° | **34.5°** |
+| 15 pF | 42.71 dB | **10.8°** | **18.0°** | 49.4° | **22.4°** | 51.3° | 83.5° | **22.1°** |
+| ≈0 (1 fF, bound only) | 69.09 dB | — | — | — | — | — | — | — |
+
+(Bold = below the ratified 45° floor. The 1 fF row is a bandwidth ceiling
+probe, not a candidate.)
+
+The PSRR column is a clean **+20 dB per decade of `C_COMP` reduction**, which
+is what a Miller-dominant-pole loop must give. Extrapolating it, the 50 dB
+floor needs `C_COMP ≈ 7 pF` — more than a decade below the point at which
+the 0.33 µF/50 mA corner has already fallen to ≈11°. The two ratified rows
+are therefore not merely *hard* to satisfy together on this topology: they
+are on **opposite sides of a single monotone knob**, with no overlap
+anywhere along it. Note also that reducing `C_COMP` *helps* the 0 mA
+stability corner (19.3° → 31.7° → 49.4°) — the currently-failing stability
+sub-metric — while destroying the 50 mA one, which is why "just recompensate"
+does not resolve either row.
+
+**Three candidates aimed at the newly-exposed 100 kHz/50 mA failure —
+screened, all rejected.** Unlike the 1 kHz half, the 100 kHz half *is*
+supply-feedthrough-limited (`gm_pass · v_sg · Z_out`, plus the pass device's
+own `ro` divider), so it is attackable without more loop bandwidth. It was
+attacked, and the attacks cost stability:
+
+1. **Gate-ripple feedforward cap `C_PSR` (`VIN → EA_OUT`)** — a textbook
+   `C_gs`-boost that makes the pass gate follow its own source at high
+   frequency, so `v_sg → 0`. It works, and by a lot: 100 kHz/50 mA PSRR
+   **14.80 → 24.50 dB** at 20 pF and **→ 31.45 dB** at 50 pF, clearing the
+   20 dB floor, with 1 kHz untouched (23.25 → 23.18 dB) exactly as the
+   loop-gain diagnosis predicts. But the cap is a real load on the
+   high-impedance `EA_OUT` node, and the loop-gain deck says so: at 20 pF,
+   PM at 0.33 µF/50 mA falls **58.5° → 36.1°**, at the 500 mΩ ESR ceiling
+   **70.4° → 41.6°**, and at 4.7 µF/1 mA **50.8° → 43.3°** — three
+   currently-*passing* stability sub-metrics converted to failures to fix
+   one PSRR sub-metric. It also deepens the (unspecified) mid-band notch,
+   9.32 dB at ≈40 kHz vs. 13.84 dB baseline. Not shipped.
+2. **Longer pass device at constant `W/L`** (so dropout is unchanged) —
+   raises `ro,pass` and hence lowers the `VIN → VOUT` conductive divider.
+   `L = 0.5 → 1 µm`, `W_total = 2.5 → 5 mm`: 100 kHz/50 mA **14.80 →
+   18.44 dB**, still short of the 20 dB floor, and PM at 0.33 µF/50 mA falls
+   **58.5° → 40.6°** with the 500 mΩ point **70.4° → 48.0°**. `L = 2 µm`,
+   `W_total = 10 mm` does clear it (**30.93 dB**) but was ruled out on area
+   before a stability screen: ≈20,000 µm² of gate area against a 0.1 mm²
+   total-core row that already carries ≈75,000 µm² of `C_COMP` MIM. Not
+   shipped.
+3. **Output-stage output resistance** (`M_MIR1`/`M_MIR2` `L = 4 → 16`,
+   `W = 10 → 40`, `W/L` held so the mirror ratio is unchanged) — 1 kHz PSRR
+   **23.25 → 23.25 dB**, unchanged to four digits. This independently
+   reproduces #107's cascode-mirror result by a different mechanism (plain
+   channel lengthening rather than a cascode), and is further confirmation
+   that DC gain is not the binding term. A companion null test — replacing
+   `R_BIAS` with an ideal, supply-independent 2 µA source — likewise moved
+   1 kHz PSRR by **0.01 dB** (23.25 → 23.24 dB), reproducing #79's
+   bias-generator conclusion. Neither is a candidate; both are recorded as
+   the controls they were.
+
+**Conclusion, unchanged in direction from DR-007 but sharper in content.**
+The 1 kHz half of the ratified PSRR row is unreachable on this topology by
+any compensation setting, and the measured frontier above says by how much
+(a decade and a half of `C_COMP`). The 100 kHz half is reachable at 50 mA by
+feedforward or by pass-device geometry, but only at a stability or area cost
+that trades a passing ratified sub-metric for a failing one — which is not a
+fix. Both halves point at the same place DR-007 does: a compensation
+architecture that raises crossover (buffer-driven pass gate with an
+output-pole-dominant loop, nested Miller, or similar), which is a different
+design, not a re-sizing of this one, and belongs to its own issue with its
+own screening.
+
 ## Validating this schematic
 
 ```bash

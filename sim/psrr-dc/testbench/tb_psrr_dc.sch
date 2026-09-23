@@ -13,19 +13,28 @@ v {xschem version=3.4.7 file_version=1.2
 * stimulus, so vdb(vout) from the AC analysis directly gives the
 * Vin->Vout small-signal gain in dB; PSRR(dB) = -vdb(vout).
 *
-* Scope note (deliberate v1 simplification, not an oversight): this
-* testbench characterizes ONE load point (1.8kOhm, ~1mA -- the load the
-* screening OP check in design/README.md confirms actually regulates for
-* this schematic's current maturity), not both 1mA and 50mA the DRAFT row
-* names. A small-signal AC analysis needs a valid regulating DC operating
-* point to linearize around; design/README.md's OP check and this issue's
-* own sim/load-transient/sim/dropout-vs-load records already show this
-* schematic's placeholder compensation and single-stage OTA do not hold
-* regulation at 50mA load (large excursion into an invalid, non-regulating
-* OP), so an AC sweep around that OP would not be a meaningful PSRR number
-* -- not just an unmet spec bound. Extending to a real 50mA-load PSRR
-* point is follow-on scope once the amplifier/compensation matures (or is
-* covered by #19's fuller characterization).
+* Load points (BOTH of the row's, since #117). The ratified row names
+* four conditions -- two frequencies x two load points -- and the corner
+* runner's deck now measures all four, sweeping both load points inside
+* one deck: first the 1.8kOhm load instantiated below (~1mA), then
+* 'alter rload = 36' for the 50mA point, the same single-deck/multi-point
+* pattern sim/loop-gain uses for the DR-002 C_out window. RLOAD stays
+* 1.8k in this schematic because that is the DC operating point the deck
+* starts from; the 50mA value lives in sim/psrr-dc/experiment.json's
+* 'analyses' list, not here.
+*
+* History of the one-load-point v1 (kept because it explains the change):
+* the v1 deck measured only the ~1mA point, because the pre-#25
+* five-transistor amplifier had an output-swing ceiling pinned to the
+* reference common mode and did not hold regulation at 50mA -- a
+* small-signal AC analysis needs a valid regulating DC operating point to
+* linearize around, so an AC sweep there would not have been a meaningful
+* PSRR number, merely an unmet bound. Issue #25's current-mirror-OTA
+* rebuild removed that ceiling (design/README.md, "Error-amplifier output
+* stage (rebuilt in #25)"), and #117 re-checked the 50mA operating point
+* directly: VOUT = 1.798V at tt/27C/3.30V, regulating. The row's 50mA
+* half is therefore no longer un-testbenched, and the v1 simplification
+* is retired.
 *
 * EN is tied to VIN's DC value via a separate DC-only source (EN does not
 * need the AC stimulus -- only VIN does, per the DRAFT PSRR row). VREF is
@@ -46,7 +55,8 @@ E {}
 T {psrr-dc testbench -- exercises design/ldo_3v3in_1v8out.sch (#14)
 via its companion subcircuit symbol design/ldo_3v3in_1v8out.sym
 VIN = DC 'vsup' + AC 1V (corner runner sets 'vsup'); VREF = 1.2V placeholder
-PSRR(dB) = -vdb(vout); one load point only (~1mA) -- see header for why} -700 -650 0 0 0.3 0.3 {}
+PSRR(dB) = -vdb(vout); both ratified load points (1mA here, 50mA via
+'alter rload = 36' in the deck) -- see header} -700 -650 0 0 0.3 0.3 {}
 
 * ---- VIN: DC bias from the corner runner's 'vsup' + 1V AC stimulus ----
 C {devices/vsource.sym} -600 -300 0 0 {name=VVIN value="DC 'vsup' AC 1" savecurrent=true}
@@ -80,9 +90,10 @@ C {devices/lab_pin.sym} 600 -220 0 0 {name=p14 lab=0}
 T {R_ESR: 10mOhm -- a representative point inside DR-002's proposed
 0-500mOhm window (no minimum ESR); not a sweep of the window itself} 640 -300 0 0 0.2 0.2 {}
 
-* ---- load: fixed 1.8kOhm (~1mA at the light-load OP), see header ----
+* ---- load: 1.8kOhm (~1mA) as the deck's starting point, see header ----
 C {devices/res.sym} 900 -300 0 0 {name=RLOAD value=1.8k m=1}
 C {devices/lab_pin.sym} 900 -330 0 0 {name=p15 lab=VOUT}
 C {devices/lab_pin.sym} 900 -270 0 0 {name=p16 lab=0}
-T {R_LOAD: 1.8kOhm, ~1mA class at VOUT~1.8V -- the single load point this
-v1 testbench characterizes (see header "Scope note")} 940 -300 0 0 0.2 0.2 {}
+T {R_LOAD: 1.8kOhm, ~1mA class at VOUT~1.8V -- the first of the two
+ratified load points. The deck re-runs the same AC sweep after
+'alter rload = 36' for the 50mA point (see header "Load points")} 940 -300 0 0 0.2 0.2 {}

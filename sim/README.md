@@ -329,11 +329,15 @@ section is a map, not a duplicate of that detail.
   The 22 failures split into 16 that miss by a plausible margin (0.150–0.311 V
   against the 0.15 V bound, worst `ff_27c_2.97v`) and the six degenerate
   `ff`/`sf` 125 °C corners described below — overall `FAIL`.
-- **`psrr-dc/`** — small-signal AC sweep on VIN (1 kHz, 100 kHz) at a single
-  ~1 mA load point; measures PSRR against the DRAFT "PSRR" row (>50 dB @
-  1 kHz, >20 dB @ 100 kHz). Characterizes one load point, not both 1 mA and
-  50 mA the DRAFT row names — see the testbench schematic's header for why.
-  Latest quick-subset record (`20260818-015127-01b7905`, supersedes
+- **`psrr-dc/`** — small-signal AC sweep on VIN (1 kHz, 100 kHz) at **both**
+  ratified load points (~1 mA and 50 mA, swept in one deck via
+  `alter rload = 36`); measures PSRR against the "PSRR" row (>50 dB @ 1 kHz,
+  >20 dB @ 100 kHz, at 1 mA and at 50 mA). Until #117 the deck measured only
+  the ~1 mA point, because the pre-#25 amplifier had no regulating 50 mA
+  operating point to linearize around; #25's output-stage rebuild removed
+  that ceiling and #117 retired the simplification — see the testbench
+  schematic's header. History below predates that change.
+  Earlier quick-subset record (`20260818-015127-01b7905`, supersedes
   `20260817-212331-66b28fc`): `FAIL` at all three corners (1 kHz PSRR
   23.3 dB / 23.6 dB / 22.4 dB, all below the 50 dB bound). This is the one
   place the issue-#25 revision is a mixed result rather than an improvement.
@@ -354,6 +358,18 @@ section is a map, not a duplicate of that detail.
   that are degenerate in the other three testbenches, so they are not evidence
   of real PSRR headroom. No corner timed out (the two 300 s timeouts in the
   superseded pre-#36 record are gone) — overall `FAIL`.
+  **Current record, both load points** (`20260923-125412-d71f4b3`, issue
+  #117, supersedes `20260825-082845-4cb27f8`): **0/45 PASS**. The two 1 mA
+  sub-metrics reproduce the superseded record digit-for-digit at every
+  corner, so the deck change is a pure extension. Per sub-metric:
+  `psrr_1khz_1ma_db` 20.31–25.68 dB (0/45), `psrr_100khz_1ma_db`
+  31.53–34.77 dB (**45/45 PASS**), `psrr_1khz_50ma_db` 20.25–25.70 dB
+  (0/45), `psrr_100khz_50ma_db` **13.80–16.06 dB (0/45)** — the last is the
+  condition the one-load-point deck was not measuring, and it is the row's
+  second failing sub-metric. The 1 kHz half is loop-bandwidth-bound and the
+  100 kHz/50 mA half is supply-feedthrough-bound; both diagnoses, the
+  measured `C_COMP` PSRR-vs-phase-margin frontier, and three screened-and-
+  rejected circuit candidates are written up in `design/README.md` §"#117".
 - **`dropout-vs-load/`** — DC VIN sweep at a fixed 50 mA load (the DRAFT
   spec row's own gf180-mirrored "sweep Vin toward Vout" method); measures the
   Vin–Vout margin against the DRAFT "Dropout @ 50 mA" row (<300 mV). Latest
