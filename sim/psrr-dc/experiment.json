@@ -1,7 +1,7 @@
 {
   "slug": "psrr-dc",
-  "title": "PSRR at 1kHz and 100kHz (small-signal AC around the DC operating point)",
-  "claim": "Substantiates spec/target-spec.md's DRAFT \"PSRR\" row (>50dB @ 1kHz and >20dB @ 100kHz) against the LDO core-regulation-loop schematic landed by #14 (design/ldo_3v3in_1v8out.sch). That row is DRAFT (issue #1 not yet ratified) -- the bounds below cite it directly, not an invented final limit, and need re-verification once #1 rules. This v1 testbench characterizes ONE load point (~1mA, 1.8kOhm) rather than both 1mA and 50mA the DRAFT row names -- see the testbench schematic's header for why (the 50mA point does not have a valid regulating DC operating point to linearize around, per this schematic's known compensation/gain immaturity, design/README.md \"Known gaps\").",
+  "title": "PSRR at 1kHz and 100kHz, at 1mA and 50mA (small-signal AC around the DC operating point)",
+  "claim": "Substantiates spec/target-spec.md's ratified \"PSRR\" row (>50dB @ 1kHz and >20dB @ 100kHz, at 1mA (light-load, binding) and at 50mA) against the LDO core-regulation-loop schematic (design/ldo_3v3in_1v8out.sch). The row is ratified by issue #1 / DR-006, and the four bounds below cite it verbatim. As of #117 this deck measures all FOUR conditions the row names -- both frequencies at BOTH load points. The v1 deck measured only the ~1mA point because the pre-#25 five-transistor amplifier had no valid regulating DC operating point at 50mA to linearize around; #25's current-mirror-OTA rebuild removed that ceiling, and the 50mA point now regulates (VOUT = 1.798V at tt/27C/3.30V), so the row's 50mA half is no longer un-testbenched. Both load points are swept inside one deck (the 1.8kOhm schematic load, then 'alter rload = 36'), the same single-deck/multi-point pattern sim/loop-gain uses.",
   "provenance": "schematic",
   "provenance_source": "sim/psrr-dc/testbench/tb_psrr_dc.sch",
   "schematic": "testbench/tb_psrr_dc.sch",
@@ -19,24 +19,50 @@
   "deck": {
     "options": ["wnflag=1"],
     "params": {},
-    "analyses": ["ac lin 3 1e3 1e5"]
+    "analyses": [
+      "* --- point 1: 1mA (the schematic's own 1.8kOhm load), the row's light-load point ---",
+      "ac lin 3 1e3 1e5",
+      "let p1k = -vdb(vout)[0]",
+      "let p100k = -vdb(vout)[2]",
+      "* --- point 2: 50mA (36Ohm), the row's full-load point ---",
+      "alter rload = 36",
+      "ac lin 3 1e3 1e5",
+      "let p1k = -vdb(vout)[0]",
+      "let p100k = -vdb(vout)[2]"
+    ]
   },
   "measurements": [
     {
-      "name": "psrr_1khz_db",
-      "expr": "-vdb(vout)[0]",
+      "name": "psrr_1khz_1ma_db",
+      "expr": "ac1.p1k",
       "unit": "dB",
       "min": 50,
       "max": null,
-      "note": "PSRR at 1kHz (index 0 of the 3-point 'ac lin 3 1e3 1e5' sweep -- ngspice's 'ac lin 2 ...' form drops a point on this deck, so a 3rd, unused midpoint is requested to work around it). DRAFT bound: spec/target-spec.md \"PSRR\" row, >50dB @ 1kHz."
+      "note": "PSRR at 1kHz, 1mA load (index 0 of the first 3-point 'ac lin 3 1e3 1e5' sweep -- ngspice's 'ac lin 2 ...' form drops a point on this deck, so a 3rd, unused midpoint is requested to work around it). Ratified bound: spec/target-spec.md \"PSRR\" row, >50dB @ 1kHz at 1mA."
     },
     {
-      "name": "psrr_100khz_db",
-      "expr": "-vdb(vout)[2]",
+      "name": "psrr_100khz_1ma_db",
+      "expr": "ac1.p100k",
       "unit": "dB",
       "min": 20,
       "max": null,
-      "note": "PSRR at 100kHz (index 2, the sweep's upper endpoint). DRAFT bound: spec/target-spec.md \"PSRR\" row, >20dB @ 100kHz."
+      "note": "PSRR at 100kHz, 1mA load (index 2, the first sweep's upper endpoint). Ratified bound: spec/target-spec.md \"PSRR\" row, >20dB @ 100kHz at 1mA."
+    },
+    {
+      "name": "psrr_1khz_50ma_db",
+      "expr": "ac2.p1k",
+      "unit": "dB",
+      "min": 50,
+      "max": null,
+      "note": "PSRR at 1kHz, 50mA load (index 0 of the second sweep, after 'alter rload = 36'). Ratified bound: spec/target-spec.md \"PSRR\" row, >50dB @ 1kHz at 50mA."
+    },
+    {
+      "name": "psrr_100khz_50ma_db",
+      "expr": "ac2.p100k",
+      "unit": "dB",
+      "min": 20,
+      "max": null,
+      "note": "PSRR at 100kHz, 50mA load (index 2 of the second sweep). Ratified bound: spec/target-spec.md \"PSRR\" row, >20dB @ 100kHz at 50mA. This is the condition #117 found the v1 one-load-point deck was not measuring at all -- it is the second failing sub-metric of the row, and it fails for a different reason than the 1kHz half (see design/README.md \"#117\")."
     }
   ],
   "spread_checks": []

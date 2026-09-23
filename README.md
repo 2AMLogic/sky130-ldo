@@ -141,8 +141,11 @@ Notes — these are part of the ratified spec, not commentary:
    0–500 mΩ, no minimum ESR, ceramic-stable — DR-002). **Current verdict:
    FAIL** — 25/45 PVT corners pass. Tracked design gap, no superseding
    record proposed.
-4. **PSRR and Stability** are disclosed FAIL — PSRR 0/45 PVT corners at the
-   one load point (~1 mA) currently testbenched; Stability 7/45 PVT corners,
+4. **PSRR and Stability** are disclosed FAIL — PSRR 0/45 PVT corners, now
+   measured at **both** ratified load points (#117): the 1 kHz sub-metric
+   fails at 1 mA and at 50 mA alike (20.25–25.70 dB against the 50 dB floor),
+   and the 100 kHz sub-metric passes 45/45 at 1 mA (31.53–34.77 dB) but fails
+   0/45 at 50 mA (13.80–16.06 dB against the 20 dB floor); Stability 7/45 PVT corners,
    confirmed stable at every load ≥ 1 mA within the window (DR-002 append),
    with the 0 mA end the binding, unresolved gap. Unlike the other FAIL rows,
    both have a topology-level root cause and a named superseding proposal:
