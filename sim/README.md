@@ -83,6 +83,35 @@ discrete-point convention was chosen and for the full results.
 > `design/README.md` → "Parallel landings on `main`, and what they leave
 > stale".
 
+> **Record-generation note (2026-09-23, issue #116).** #116 re-sized the shared
+> DUT's **pass device** (`M_PASS` `W_total` 2500 µm → 5000 µm, and `M_SENSE`
+> with it to hold the current-limit sense ratio) after DR-008 found DR-003's
+> sizing derivation was taken at the wrong bias point — see
+> `spec/decision-records/DR-008-pass-device-resize.md` (including its
+> 2026-09-23 correction note: an early single-`.op`-point screen claimed a
+> clean closure that does not reproduce — trust the full-matrix record below,
+> not that screen). It re-ran **one** experiment against the re-sized DUT:
+> `dropout-vs-load`, the row it was filed against. New record
+> `20260923-123440-d71f4b3` supersedes `20260825-081240-4cb27f8`: **0/45 →
+> 6/45 PASS** (best case 268 mV, was 365 mV) — real, substantial improvement at
+> `−40 °C`/`27 °C` (all five process corners), but 125 °C corners are
+> additionally volatile (5 of 15 points get numerically *worse*, consistent
+> with the pre-existing mechanism-4 dc-solution-multiplicity finding
+> `design/README.md` already documents, apparently made more pervasive by the
+> resize) — read 125 °C `dropout-vs-load` numbers with that same caution, not
+> as literal measurements.
+>
+> **Every other bench here instantiates the same DUT and was deliberately not
+> re-run**, exactly as the #69 note above describes: their committed netlist
+> snapshots are stale by construction and `measurements/characterization.md`
+> reports them `STALE` — correctly, and by design rather than by oversight.
+> Read every non-`dropout-vs-load` verdict in this directory as
+> **"against the 2500 µm pass device"** until its bench is re-run. The
+> `Stability` row deserves particular caution: a wider pass device moves the
+> output pole and raises `gm_pass`, `C_COMP`/`R_CZ` were **not** re-derived,
+> and `sim/loop-gain`'s 7/45 is a pre-#116 number. A follow-up issue owns the
+> campaign re-run; #116's PR names it.
+
 ---
 
 ## Quick start (cold machine)
