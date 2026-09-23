@@ -1,0 +1,29 @@
+{
+  "netlist": "tb_pex_post_layout.spice",
+  "engine": "ngspice",
+  "models": { "lib": "$PDK_ROOT/sky130A/libs.tech/combined/sky130.lib.spice" },
+  "corners": {
+    "process": ["tt", "ss", "ff", "sf", "fs"],
+    "supply_v": { "vvin": [2.97, 3.3, 3.63] },
+    "temperature_c": [-40, 27, 125]
+  },
+  "analysis": { "kind": "dc", "args": "Iload 1m 50m 49m" },
+  "measurements": [
+    {
+      "name": "vout_light_load_v",
+      "spice": ".meas dc vout_light_load_v FIND V(VOUT) AT=1m",
+      "unit": "V"
+    },
+    {
+      "name": "vout_full_load_v",
+      "spice": ".meas dc vout_full_load_v FIND V(VOUT) AT=50m",
+      "unit": "V"
+    },
+    {
+      "name": "vin_minus_vout_full_load_v",
+      "spice": ".meas dc vin_minus_vout_full_load_v FIND PAR('V(VIN)-V(VOUT)') AT=50m",
+      "unit": "V"
+    }
+  ],
+  "options": { "timeout_s": 120, "keep_artifacts": true }
+}

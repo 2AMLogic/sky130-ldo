@@ -137,6 +137,22 @@ trial rather than assumed:
    (friction protocol, generic -- no design-specific detail; verified no
    existing open issue covered this before filing).
 
+   **Update (2026-09-23, issue #122): #1369 is fixed upstream.** PR #1381
+   (already contained in release `v0.5.0`) added the marker-scoped
+   `("sky130", "sky130")["hvi"]` -> `sky130_fd_pr__{n,p}fet_g5v0d10v5`
+   entry to `_MOS_MODEL_FLAVOURS`, with the `hvi` 75/20 pair
+   cross-checked against three independent PDK sources, plus a follow-up
+   (`a261706c`, #1912) fixing the `klt gen` side. The binding is
+   **marker-scoped**: a device binds the g5v0d10v5 model only when its
+   gate region overlaps an `hvi` (75/20) polygon. The landed `ldo_core`
+   GDS contains **no** `hvi` polygons at all (verified by a direct layer
+   scan of `layout/ldo-core/reports/<LVS-record>/ldo_core.gds`: 15
+   layer/datatype pairs, 75/20 absent), so all 67 MOS devices still bind
+   `*_01v8` -- no longer an upstream gap but a repo-local layout
+   omission. Drawing the marker is tracked in #142; the downstream
+   symptom and the residual upstream silence are covered under
+   "Consequence" below.
+
 ## A third gap: `--pdk`'s resistor X-card geometry convention itself fails
 
 Running the actual `klt pex` command (not just a standalone `klt sim` on the
@@ -157,6 +173,14 @@ w=0.42` converges to a sane operating point; unit-suffixed `l=180U w=0.42U`
 [klayout-tools#1159](https://github.com/2AMLogic/klayout-tools/issues/1159)
 (friction protocol, generic -- confirmed real via a `klt`-free reproducer
 before filing).
+
+**Update (2026-09-23, issue #122): fixed upstream.** #1159 (and #1157
+with it) closed COMPLETE via `2dc66ece` (PR #2336: "bare-mode 3-terminal
+resistor cards become X subckt calls (#1157); lock sky130 resistor bare-um
+geometry + vendor proof (#1159)"). The 2026-09-23 run below confirms both
+fixes live at the pinned commit: the extracted netlist's resistor X-cards
+carry bare-micron geometry (`l=180 w=0.42`) and the real
+`sky130_fd_pr__res_{high,xhigh}_po` vendor models converge.
 
 **Consequence: the extracted-side leg of `klt pex` does not converge for
 this layout today**, for three independent, real, disclosed reasons (none
@@ -187,6 +211,50 @@ the closest thing to a spec-comparable number this experiment produces --
 still not usable against `spec/target-spec.md`'s DRAFT rows, since there is
 no matching extracted-side number to diff it against. See
 `records/<record-id>.md` for the latest run's own summary and links.
+
+**Update (2026-09-23, issue #122): the extracted-side leg now runs --**
+**108/135 delta rows pass; the 27 surviving errors share one repo-local**
+**root cause.** With the `klt` pin moved to the `040f3406b485` main-branch
+commit (see the pin section below -- no release contained the #1157/#1159
+fixes at recording time), the extracted leg converges and produces real
+extracted-vs-schematic numbers: record
+[`20260923-183915-d9900b5`](records/20260923-183915-d9900b5.md) reports
+`passed: 108, failed: 0, errored: 27` (superseding
+`20260825-125102-3b4e121` above), the 27 being 9 `ss`-corner delta rows x
+3 measurements. Their root cause is the flavour substitution described in
+the #1369 update above: with no `hvi` markers in the layout, all 67 MOS
+devices bind `*_01v8` at g5v0d10v5 geometries, and at `ss` corners the
+substituted model's binning fails ngspice's BSIM4 parameter check
+outright (`Fatal: Pclm = -0.00876203 is not positive`, `dc
+simulation(s) aborted` -- read in the run's own
+`sim/build/pex-post-layout/<record-id>/pex/.../extracted/ss_*/ngspice.log`).
+That is a **repo-local** layout task now (#142 draws the marker), not an
+upstream gap; the residual upstream friction -- `klt extract --pdk` stays
+silent when a deck declares flavour markers but the layout contains none
+-- is filed as
+[klayout-tools#2417](https://github.com/2AMLogic/klayout-tools/issues/2417)
+(friction protocol, generic). Until #142 lands and this experiment is
+re-run, **T1 item 7 remains unmet** (item 7 accepts a `klt pex` report
+and nothing else; 27 errored corners are 27 errored corners).
+
+**`body_bias` (read per issue #122's scope).** The same report's
+`body_bias` block reads `status: "biased", unbiased_device_count: 0,
+unbiased_nets: []` -- no device body sits on an anonymous deck-synthesized
+net, so the physically-wrong-resimulation hazard of
+[klayout-tools#1983](https://github.com/2AMLogic/klayout-tools/issues/1983)
+does not bite for this layout as landed. Any claim made from this
+experiment must state this alongside the numbers (`klt signoff` surfaces
+the block but does not grade on it).
+
+**On the standalone schematic-side leg's timeouts.** The same record's
+standalone `klt sim` leg reports 36/45 passed with 9 `timeout` errors
+(`ngspice did not complete within 120s, killed` -- the testbench's own
+`options.timeout_s: 120` knob) at cold/low-supply corners, while the pex
+run's own schematic leg *completed* those same corners (every delta row
+carries a real schematic value). The timeouts are host-load-induced under
+the 120 s per-corner cap, not a model or deck failure; raise `timeout_s`
+in `testbench/tb_pex_post_layout.request.json` if the standalone leg is
+needed standalone again.
 
 ## Why generic textbook-constant `.model` cards are not used here
 
@@ -252,6 +320,16 @@ behavior in either shape alone).
 - `klt` commit: `a482d3934bd644b763cf925f6344ac05f54a1623` (2AMLogic/klayout-tools
   `main`, installed via `uv tool install git+https://github.com/2AMLogic/klayout-tools`),
   `klt --version` reports `0.2.0`.
+- **2026-09-23 run (issue #122, record `20260923-183915-d9900b5`):** `klt`
+  commit `040f3406b4858ac7a5b8faa8df5327fd62a65afa` (2AMLogic/klayout-tools
+  `main`, 300 commits past `v0.5.0`), `klt --version` reports
+  `0.6.0+g040f3406b485` (verified end-to-end: installing the pin reproduces
+  the exact version string the run's own `provenance.klt_version` records).
+  A git-commit pin rather than a release, because the #1157/#1159 fixes
+  (`2dc66ece`) postdate `v0.5.0`, the latest release at recording time --
+  the same move sky130-pll#46 already made. Install:
+  `uv tool install "klayout-tools @ git+https://github.com/2AMLogic/klayout-tools@040f3406b4858ac7a5b8faa8df5327fd62a65afa"`.
+  PDK pin unchanged.
 - PDK: `sky130A`, `open_pdks c6d73a35f524070e85faff4a6a9eef49553ebc2b` (same
   pin as `sim/pdk.json`).
 
