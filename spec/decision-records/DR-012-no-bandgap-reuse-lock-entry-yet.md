@@ -21,9 +21,13 @@
 ## Context
 
 `2AMLogic/2am`'s `repos.yml` records `consumes: [sky130-opamp, sky130-bandgap]`
-on this repo (confirmed live, `repos.yml` on the `2am` feature branch that adds
-`REUSE.md` — `2am#899` is not yet merged to `2am`'s `main` as of 2026-09-23, but
-the `consumes` line itself is the pre-existing fact this record answers to).
+on this repo — confirmed live against `2am`'s **`main`** branch on 2026-09-23
+(`gh api repos/2AMLogic/2am/contents/repos.yml?ref=main`). Rule 9 itself is on
+`main` too: `2am#899` closed 2026-09-21T20:19:54Z, and `REUSE.md`,
+`scripts/reuse-check.py`, and this repo's `consumes` line all landed on `2am`'s
+`main` in commit `9032d1d6` (2026-09-21T20:15:24Z), two days before this record.
+There is no unmerged-feature-branch caveat on any of it; the `consumes` line is
+the standing, merged fact this record answers to.
 Cross-cutting reuse rule 9 (`2am/REUSE.md`, `2am#899`) asks that a `consumes`
 edge either resolve into a pinned `imports` entry, or — for the narrower
 "in-tree duplication" case its "Adopt or record" ledger targets — an `in_tree`
@@ -43,14 +47,14 @@ same question:
 - **Rule 9's `in_tree` mechanism targets duplication, not every `consumes`
   line.** `2am/REUSE.md`'s "Adopt or record" ledger step is triggered by "a
   consumer that already carries an in-tree block a same-PDK sibling now
-  builds" (verified against a local checkout of the `2am` feature branch that
-  introduces it). With no in-tree reference here, there is nothing for that
+  builds" (`REUSE.md` § "Adopt or record", line 151, verified against `2am`'s
+  `main`). With no in-tree reference here, there is nothing for that
   mechanism to evaluate — reaching for `in_tree: evaluate` would misdescribe
   the interface (it would read as "we have a reference and haven't decided
   whether to keep it," which is false; we have no reference at all).
   `reuse-check.py`'s own `imports` schema also cannot apply: it requires a
   pinned 40-hex `commit` and per-file `sha256` stamps
-  (`2am/scripts/reuse-check.py`, `check_repo()`), and nothing from
+  (`2am/scripts/reuse-check.py` on `2am`'s `main`, `check_repo()`), and nothing from
   `sky130-bandgap` is fetched, vendored, or wired into this repo's schematic
   today — there are no bytes to pin.
 - **`sky130-bandgap`#286 is not this edge's counterpart.** It is closed, and
@@ -121,9 +125,10 @@ in either direction*.
 - **Silence — leave the edge unrecorded anywhere in this repo.** Rejected as
   the one candidate #136 itself ruled out: `repos.yml`'s `consumes` line is a
   standing fact, and letting it have no answer anywhere in this repo (not even
-  a "no entry, and here is why") is exactly the gap 2am#899's fleet audit found
-  costly elsewhere (its own Context section: undocumented cross-repo
-  assumptions cost real debug time on other canaries). The "VREF interface
+  a "no entry, and here is why") is exactly the gap 2am#899 was filed over
+  (its "The problem, measured" section: two sibling canaries held the same
+  file with nothing recording that they did, so nothing could notice they held
+  the same broken one). The "VREF interface
   caveat" section already carried the substance of this answer implicitly;
   this record and its cross-link make it explicit and findable by
   `reuse-check.py`'s human readers, even though the tool itself has nothing to
@@ -133,7 +138,8 @@ in either direction*.
 
 - **`reuse.lock.json` is unchanged by this record** — it keeps DR-010's single
   `in_tree` entry and gains no `sky130-bandgap` entry. `2am/scripts/
-  reuse-check.py <repo-dir>` has nothing new to validate; running it after this
+  reuse-check.py <repo-dir>` (the copy on `2am`'s `main`) has nothing new to
+  validate; running it after this
   record lands should be byte-identical in outcome to running it against
   DR-010 alone (confirmed in the Test plan below).
 - **The open interface question is now cross-linked, not just implicit.**
