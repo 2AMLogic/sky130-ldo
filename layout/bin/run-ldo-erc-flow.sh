@@ -76,6 +76,15 @@ if [[ ! -f "$GDS" ]]; then
   exit 1
 fi
 
+# --- 1. Pre-flight: does the spec still describe this layout? --------------
+# Two of the spec's declarations are claims ABOUT the layout that klt erc
+# cannot re-derive (the omitted met3+ levels, and the asserted substrate
+# region). Runs BEFORE the record directory exists, on purpose: a refusal
+# here must leave no half-written record behind for a later reader to
+# mistake for evidence.
+"$VENV/bin/python" "$LAYOUT_DIR/bin/check-erc-supply-spec.py" \
+  --gds "$GDS" --spec "$SPEC" --top "$CELL"
+
 TS_UTC="$(date -u +%Y%m%d-%H%M%S)"
 SHORT_SHA="$(git -C "$REPO_ROOT" rev-parse --short HEAD)"
 RECORD_ID="${TS_UTC}-${SHORT_SHA}"
@@ -91,13 +100,6 @@ LAYOUT_SHA="$(git -C "$REPO_ROOT" log -1 --format=%h -- layout/ldo-core)"
 # record the hash belongs to instead.
 echo "$LAYOUT_RECORD_ID" > "$OUT_DIR/layout-record-id.txt"
 cp "$SPEC" "$OUT_DIR/erc-supply-spec.json"
-
-# --- 1. Pre-flight: does the spec still describe this layout? --------------
-# Two of the spec's declarations are claims ABOUT the layout that klt erc
-# cannot re-derive (the omitted met3+ levels, and the asserted substrate
-# region). Fail loudly here rather than mint a record against a stale spec.
-"$VENV/bin/python" "$LAYOUT_DIR/bin/check-erc-supply-spec.py" \
-  --gds "$GDS" --spec "$SPEC" --top "$CELL"
 
 # --- 2. The graded run ------------------------------------------------------
 # `klt erc` exits 3 when the ANTENNA verdict is `violations`; that verdict is
