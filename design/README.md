@@ -390,12 +390,12 @@ and are not cited as a verified/ratified spec value.
 
 ### Pass-device width correction (found in #22)
 
-> **Superseded as a *width* by #116/DR-008 (2026-09-23).** Everything in this
+> **Superseded as a *width* by #116/DR-011 (2026-09-23).** Everything in this
 > section about `mult` semantics still holds and is still how the instance is
 > written — but the 2500 µm it lands on is no longer the shipped width. `M_PASS`
 > is now `mult=50` → `W_total` = **5000 µm**, because DR-003's 2.47 mm *target*
 > turned out to be derived at the wrong bias point. See
-> "[Pass-device re-size (#116/DR-008)](#pass-device-re-size-116dr-008)" below
+> "[Pass-device re-size (#116/DR-011)](#pass-device-re-size-116dr-011)" below
 > for the re-derivation; read this section as the `mult`-semantics history it
 > is. The paragraphs below are left as written (append-only house style).
 
@@ -437,9 +437,9 @@ comfortably above the 50mA row.
 > (0 V) gate drive — the benign corner at an unreachable bias. At the binding
 > `sf`/125 °C corner the same device delivers 44.0 mA at the same `V_sd`, and
 > at the gate drive the amplifier can actually supply it delivers 33.7 mA. The
-> "comfortably above the 50mA row" reading is what DR-008 corrects.
+> "comfortably above the 50mA row" reading is what DR-011 corrects.
 
-### Pass-device re-size (#116/DR-008)
+### Pass-device re-size (#116/DR-011)
 
 **`M_PASS`: `W_total` 2500 µm → 5000 µm (`mult` 25 → 50). `M_SENSE`: 0.42 µm →
 0.84 µm (`mult` 1 → 2), holding the current-limit sense ratio at 1:5952.**
@@ -450,7 +450,7 @@ Issue #116 was filed because `Dropout @ 50 mA` (ratified, `< 300 mV`) failed
 width its own sizing review assumed — asking this port to run the same check
 first. **Outcome, from the real full-matrix record: 0/45 → 6/45 PASS** — real
 progress, not a clean closure; see "Dropout: 0/45 → 6/45" in the campaign
-section below for the corner-by-corner picture and DR-008 for the corrected
+section below for the corner-by-corner picture and DR-011 for the corrected
 evidence.
 
 **That check comes back negative.** The committed instance was `W_total` =
@@ -487,7 +487,7 @@ instance, so the layout generator's `W * mult` convention and the `W=100 nf=25`
 `mult`-group unit are both unchanged. Full derivation, the per-corner screening
 tables, and the alternatives weighed (including two that were built and
 measured before being rejected) are in
-[`spec/decision-records/DR-008-pass-device-resize.md`](../spec/decision-records/DR-008-pass-device-resize.md).
+[`spec/decision-records/DR-011-pass-device-resize.md`](../spec/decision-records/DR-011-pass-device-resize.md).
 
 **`M_SENSE` had to move with it.** `M_SENSE` is a ratio'd replica of `M_PASS`,
 and the current limit is set by that *ratio*, not by either width. Doubling
@@ -653,7 +653,7 @@ operation and takes over `EA_OUT` when the pass current exceeds a threshold:
 1. **Sense.** `M_SENSE` is a replica of `M_PASS` — same `L=0.5`, same gate
    (`EA_OUT`), same source (`VIN`) — at two minimum-width units, giving a
    nominal 0.84µm : 5000µm = **1:5952** current ratio. (#22 wrote this as
-   0.42µm : 2500µm; #116/DR-008 doubled *both* devices together, so the ratio
+   0.42µm : 2500µm; #116/DR-011 doubled *both* devices together, so the ratio
    — the thing that actually sets the limit — is unchanged. Doubling `M_PASS`
    alone would have halved the sense signal and silently doubled the trip
    threshold.) A sense FET rather than a
@@ -3239,7 +3239,7 @@ output-pole-dominant loop, nested Miller, or similar), which is a different
 design, not a re-sizing of this one, and belongs to its own issue with its
 own screening.
 
-### Dropout: 0/45 → 6/45 — the pass device was under-sized, and re-sizing it is real but partial progress (#116, DR-008, 2026-09-23)
+### Dropout: 0/45 → 6/45 — the pass device was under-sized, and re-sizing it is real but partial progress (#116, DR-011, 2026-09-23)
 
 **First ratified row this campaign has moved off a whole-matrix failure, but
 not to a clean pass — read the corner count, not just the headline.**
@@ -3249,8 +3249,8 @@ full 45-corner record (`20260923-123440-d71f4b3`) goes to **6/45 PASS** (best
 case 268 mV) — real, substantial, physically-coherent improvement at
 `−40 °C`/`27 °C` (dropout down 60–880 mV across all five process corners
 there; `ss` closes the row outright), but **not** the clean closure an earlier
-draft of this section and of DR-008 claimed from a single `.op`-point screen.
-That screen does not reproduce (see DR-008's own correction note) and its
+draft of this section and of DR-011 claimed from a single `.op`-point screen.
+That screen does not reproduce (see DR-011's own correction note) and its
 "regulates to `V_in` = 2.000 V, dropout < 236 mV" number should not be cited.
 125 °C corners are additionally noisy — 5 of 15 get numerically *worse*,
 consistent with (and apparently worsened by the resize, not newly caused by
@@ -3271,8 +3271,8 @@ device-level current-table screening (not a closed-loop `.op` point) and does
 reproduce. Shipped: `M_PASS` `mult` 25 → 50 (5000 µm), `M_SENSE` `mult` 1 → 2
 (0.84 µm) so the 1:5952 current-limit sense ratio is held. Full derivation,
 the corrected consequences, and the rejected alternatives:
-[`DR-008`](../spec/decision-records/DR-008-pass-device-resize.md); design
-narrative: "[Pass-device re-size (#116/DR-008)](#pass-device-re-size-116dr-008)"
+[`DR-011`](../spec/decision-records/DR-011-pass-device-resize.md); design
+narrative: "[Pass-device re-size (#116/DR-011)](#pass-device-re-size-116dr-011)"
 above.
 
 **Three findings this issue produced that are *not* in the change**, recorded
@@ -3284,7 +3284,7 @@ so they are not re-discovered:
   regulating answer on some runs and a non-physical (singular-matrix-flagged)
   answer on others. Always use the continuation-based `dc` sweep
   (`sim/bin/corner-run.py`'s own methodology) for a closed-loop dropout claim;
-  see DR-008's correction note for the detail.
+  see DR-011's correction note for the detail.
 
 - **The amplifier's tail is collapsed at the ratified dropout test point.**
   With the 1.2 V input common mode, `EA_TAIL` pins near 2.09 V regardless of
@@ -3294,7 +3294,7 @@ so they are not re-discovered:
   "Rejected here, but real" subsection above.
 - **DR-003's sizing *methodology* generalises past this block.** Any
   pass-device screen that holds the gate at 0 V and measures `R_on` in deep
-  triode will over-promise by ~1.5× at a 300 mV dropout point. DR-008 states
+  triode will over-promise by ~1.5× at a 300 mV dropout point. DR-011 states
   the amended rule.
 
 **What this deliberately leaves open, rather than silently absorbing.** A wider

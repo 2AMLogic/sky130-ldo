@@ -1,4 +1,4 @@
-# DR-008: pass-device re-sizing — DR-003's sizing point was the wrong bias point
+# DR-011: pass-device re-sizing — DR-003's sizing point was the wrong bias point
 
 - **Status**: **proposed** — not self-ratifying. DR-003's *sizing methodology*
   is ratified (via #1/DR-006), and this record contradicts part of it, so it

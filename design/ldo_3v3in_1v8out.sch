@@ -18,7 +18,7 @@ v {xschem version=3.4.7 file_version=1.2
 * family rather than adopting the deferred framing (C) core-device-amplifier
 * refinement):
 *   - M_PASS: pfet_g5v0d10v5 series pass device, VIN -> VOUT. W_total =
-*     5000um, re-derived by issue #116 (DR-008, superseding DR-003 finding 3's
+*     5000um, re-derived by issue #116 (DR-011, superseding DR-003 finding 3's
 *     2.47mm -- see the M_PASS annotation for the two bias-point errors that
 *     made the old number unreachable at any gate drive).
 *   - M_IN1/M_IN2 + M_MIR1/M_MIR2 + M_MIR3/M_MIR4 + M_MIRP1/M_MIRP2 +
@@ -71,7 +71,7 @@ v {xschem version=3.4.7 file_version=1.2
 *   - M_SENSE + M_CLN1/M_CLN2 + M_CLP + M_CLIM + C_CL: constant-current
 *     (brickwall) limit. M_SENSE is a scaled replica of M_PASS (same L, same
 *     gate, same source) so its drain current tracks the pass current at a
-*     nominal 0.84um : 5000um = 1:5952 ratio (issue #116/DR-008 doubled both
+*     nominal 0.84um : 5000um = 1:5952 ratio (issue #116/DR-011 doubled both
 *     devices together -- the ratio is what #22 sized); M_CLN1/M_CLN2 mirror that sense
 *     current down by 20:1.6 and compare it against the bias-referenced
 *     current in M_CLP at the high-impedance node CL_CMP. Over-current pulls
@@ -453,7 +453,7 @@ C {devices/lab_pin.sym} 1180 -100 0 0 {name=p_mpass_g lab=EA_OUT}
 C {devices/lab_pin.sym} 1220 -130 0 0 {name=p_mpass_s lab=VIN}
 C {devices/lab_pin.sym} 1220 -100 0 0 {name=p_mpass_b lab=VIN}
 T {M_PASS: L=0.5 (bin floor), 50 parallel groups of W=100 nf=25
--> W_total = 50 x 100um = 5000um (~5.0mm). Re-derived by issue #116 (DR-008),
+-> W_total = 50 x 100um = 5000um (~5.0mm). Re-derived by issue #116 (DR-011),
 which SUPERSEDES DR-003 finding 3's 2.47mm number and the mult=25 / 2500um
 this instance carried from issue #22. NOTE: in the sky130 xschem symbols W is
 the TOTAL device width and nf only splits it into fingers -- the first draft
@@ -461,7 +461,7 @@ of this schematic (issue #14) used W=100 nf=25 mult=1 believing that meant
 W_total = W x nf = 2500um, but it netlists 100um; issue #22 fixed that with
 mult=25. See README "Pass-device width correction" for that #22 history.
 
-Why 2500um could never meet the ratified < 300mV @ 50mA row -- DR-008's two
+Why 2500um could never meet the ratified < 300mV @ 50mA row -- DR-011's two
 compounding errors inside DR-003's own derivation, both named in DR-003's own
 scope caveat and neither previously quantified:
  (1) DR-003 measured R_on.W in DEEP TRIODE (V_sd = 50mV) and applied it
@@ -475,7 +475,7 @@ scope caveat and neither previously quantified:
 Compounded, 2468um of requirement becomes ~3709um -- so the committed 2500um
 device fell short of the row at ANY gate drive, delivering only 44.0mA at
 V_sd = 300mV / sf/125C even with an ideal 0V gate. mult=50 -> 5000um is
-1.35x that requirement. See README "Pass-device re-size (#116/DR-008)".} 1240 -100 0 0 0.2 0.2 {}
+1.35x that requirement. See README "Pass-device re-size (#116/DR-011)".} 1240 -100 0 0 0.2 0.2 {}
 
 C {devices/capa.sym} 1200 -400 0 0 {name=C_COMP m=1 value=150p footprint=1206 device="mim cap (compensation)"}
 C {devices/lab_pin.sym} 1200 -370 0 0 {name=p_ccomp_m lab=EA_CZ}
@@ -553,7 +553,7 @@ Nominal sense ratio 0.84um : 5000um = 1:5952, so 50mA of pass current shows
 up as ~8uA here and the limit threshold (~110-180mA, see README) as ~19-31uA.
 A sense FET is used rather than a series sense resistor so nothing is inserted
 in the main current path and no dropout budget is spent. Issue #116 doubled
-M_PASS (2500um -> 5000um, DR-008) and doubled this replica with it (mult=1 ->
+M_PASS (2500um -> 5000um, DR-011) and doubled this replica with it (mult=1 ->
 mult=2) so the RATIO -- which is the thing #22 actually sized -- is unchanged.
 Resizing the pass device without its replica would have silently doubled the
 current-limit threshold and invalidated the 45/45 PASS the ratified Current

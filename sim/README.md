@@ -85,9 +85,9 @@ discrete-point convention was chosen and for the full results.
 
 > **Record-generation note (2026-09-23, issue #116).** #116 re-sized the shared
 > DUT's **pass device** (`M_PASS` `W_total` 2500 µm → 5000 µm, and `M_SENSE`
-> with it to hold the current-limit sense ratio) after DR-008 found DR-003's
+> with it to hold the current-limit sense ratio) after DR-011 found DR-003's
 > sizing derivation was taken at the wrong bias point — see
-> `spec/decision-records/DR-008-pass-device-resize.md` (including its
+> `spec/decision-records/DR-011-pass-device-resize.md` (including its
 > 2026-09-23 correction note: an early single-`.op`-point screen claimed a
 > clean closure that does not reproduce — trust the full-matrix record below,
 > not that screen). It re-ran **one** experiment against the re-sized DUT:
