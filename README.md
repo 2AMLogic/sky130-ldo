@@ -118,7 +118,7 @@ pending DR-007's own market-comparison mechanism.
 | Load regulation (0–50 mA) | < 1% (18 mV), counted inside the ±2% window (note 2) | — |
 | Load transient | 1↔50 mA step, ~1 µs edges: peak excursion ≤ 150 mV, recover to ±1% in ≤ 20 µs, over the ratified C_out/ESR window (note 3) | peak ≤ 100 mV |
 | PSRR | > 50 dB @ 1 kHz and > 20 dB @ 100 kHz, at 1 mA and 50 mA (note 4) | > 60 dB @ 1 kHz, > 30 dB @ 100 kHz |
-| Iq (excl. load current) | **OPEN — not ratified.** No number set (note 5) | — |
+| Iq (excl. load current) | < 30 µA at no load and at full load (50 mA), every PVT corner (note 5) | < 10 µA |
 | Current limit | constant-current (brickwall) clamp, window TBD over PVT; never engages for I_load ≤ 50 mA; survives continuous Vout = 0 short at Vin_max (note 6) | — |
 | Startup / soft-start | monotonic into any load 0–50 mA and any C_out in the stability window; controlled ramp; inside ±2% within a few ms of enable; overshoot ≤ +2% (note 6) | — |
 | Enable / shutdown | shutdown Iq < 3 µA worst corner; disabled output = pass device fully off, no active discharge; Vin→Vout leakage ≤ 1 µA (note 6) | — |
@@ -150,10 +150,15 @@ Notes — these are part of the ratified spec, not commentary:
    (`proposed`) recommends PSRR ≥ 18 dB @ 1 kHz / ≥ 28 dB @ 100 kHz and a
    Stability floor scoped to `I_load ≥ 1 mA` only — not adopted here, and
    pending its own ratification via the two-key market-comparison mechanism.
-5. **Iq** stays explicitly open — DR-003 declined to propose a number (no
-   amplifier/bias topology existed when it was drafted), and no other record
-   sets one. The current design's own bias draw (≈24.9 µA at 50 mA) is a
-   data point for a future record, not a ratified target.
+5. **Iq** is set by
+   [`DR-009`](spec/decision-records/DR-009-iq-budget.md) (`proposed`; it
+   ratifies on merge of its PR, per 2AMLogic/2am#357). The number comes from
+   gf180-ldo parity, checked against a sky130 device-fact budget and public
+   comps, not from the measured result. It closes the item DR-003/DR-006 left
+   open. No named binding corner (DR-004 caveat). **Current verdict: FAIL**
+   — 36/45 PVT corners pass. All 9 failing corners are non-regulating DC
+   operating points (#71/#81 → #79), not bias overspend (DR-009
+   Consequences).
 6. **Current limit, Startup/soft-start, and Enable/shutdown** all **PASS**
    (45/45 PVT corners each) — the only three rows with a testbench that
    currently meet their ratified target.
