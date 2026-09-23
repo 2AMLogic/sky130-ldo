@@ -27,8 +27,8 @@ No generating-commit SHA is stamped into this file, deliberately: a commit that 
 | Line regulation | < 5 mV/V over 2.97–3.63 V, at 1 mA and 50 mA | **FAIL** | [`20260910-030557-6c0436d`](../sim/line-regulation/records/20260910-030557-6c0436d.md) | STALE |
 | Load regulation (0–50 mA) | < 1% (18 mV), counted inside the ±2% window | **FAIL** | [`20260910-032854-6c0436d`](../sim/load-regulation/records/20260910-032854-6c0436d.md) | STALE |
 | Load transient | 1↔50 mA step, ~1 µs edges: peak excursion ≤ 150 mV, recover to ±1% in ≤ 20 µs, over the ratified C_out/ESR window | **FAIL** | [`20260825-081255-4cb27f8`](../sim/load-transient/records/20260825-081255-4cb27f8.md) | STALE |
-| PSRR | > 50 dB @ 1 kHz and > 20 dB @ 100 kHz, at 1 mA (light-load, binding) and at 50 mA | **FAIL** | [`20260825-082845-4cb27f8`](../sim/psrr-dc/records/20260825-082845-4cb27f8.md) | STALE |
-| Iq (excl. load current) | **OPEN — not ratified.** No number set. | **FAIL** | [`20260910-034648-6c0436d`](../sim/iq/records/20260910-034648-6c0436d.md) | STALE |
+| PSRR | > 50 dB @ 1 kHz and > 20 dB @ 100 kHz, at 1 mA (light-load, binding) and at 50 mA | **FAIL** | [`20260923-125412-d71f4b3`](../sim/psrr-dc/records/20260923-125412-d71f4b3.md) | STALE |
+| Iq (excl. load current) | < 30 µA at no load **and** at full load (50 mA), every PVT corner; Iq = total VIN current minus load current, EN asserted | **FAIL** | [`20260910-034648-6c0436d`](../sim/iq/records/20260910-034648-6c0436d.md) | STALE |
 | Current limit | constant-current (brickwall) clamp, window TBD over PVT; never engages for I_load ≤ 50 mA; survives continuous Vout = 0 short at Vin_max | **PASS** | [`20260825-105322-933dfdd`](../sim/current-limit/records/20260825-105322-933dfdd.md) | STALE |
 | Startup / soft-start | monotonic into any load 0–50 mA and any C_out in the stability window; controlled ramp; inside ±2% within a few ms of enable; overshoot ≤ +2% | **PASS** | [`20260825-110456-933dfdd`](../sim/startup/records/20260825-110456-933dfdd.md) | STALE |
 | Enable / shutdown | shutdown Iq < 3 µA worst corner; disabled output = pass device fully off, no active discharge; Vin→Vout leakage ≤ 1 µA | **PASS** | [`20260825-111526-933dfdd`](../sim/enable-shutdown/records/20260825-111526-933dfdd.md) | STALE |
@@ -46,7 +46,7 @@ No generating-commit SHA is stamped into this file, deliberately: a commit that 
 - **Line regulation**: **FAIL** (vs the ratified spec row) — `sim/line-regulation` record [`20260910-030557-6c0436d`](../sim/line-regulation/records/20260910-030557-6c0436d.md), 18/45 corner(s) PASS. Freshness: STALE (a live xschem re-netlist of the current testbench schematic no longer matches the committed netlist snapshot).
 - **Load regulation (0–50 mA)**: **FAIL** (vs the ratified spec row) — `sim/load-regulation` record [`20260910-032854-6c0436d`](../sim/load-regulation/records/20260910-032854-6c0436d.md), 34/45 corner(s) PASS. Freshness: STALE (a live xschem re-netlist of the current testbench schematic no longer matches the committed netlist snapshot).
 - **Load transient**: **FAIL** (vs the ratified spec row) — `sim/load-transient` record [`20260825-081255-4cb27f8`](../sim/load-transient/records/20260825-081255-4cb27f8.md), 25/45 corner(s) PASS. Freshness: STALE (a live xschem re-netlist of the current testbench schematic no longer matches the committed netlist snapshot).
-- **PSRR**: **FAIL** (vs the ratified spec row) — `sim/psrr-dc` record [`20260825-082845-4cb27f8`](../sim/psrr-dc/records/20260825-082845-4cb27f8.md), 0/45 corner(s) PASS. Freshness: STALE (a live xschem re-netlist of the current testbench schematic no longer matches the committed netlist snapshot).
+- **PSRR**: **FAIL** (vs the ratified spec row) — `sim/psrr-dc` record [`20260923-125412-d71f4b3`](../sim/psrr-dc/records/20260923-125412-d71f4b3.md), 0/45 corner(s) PASS. Freshness: STALE (a live xschem re-netlist of the current testbench schematic no longer matches the committed netlist snapshot).
 - **Iq (excl. load current)**: **FAIL** (vs the ratified spec row) — `sim/iq` record [`20260910-034648-6c0436d`](../sim/iq/records/20260910-034648-6c0436d.md), 36/45 corner(s) PASS. Freshness: STALE (a live xschem re-netlist of the current testbench schematic no longer matches the committed netlist snapshot).
 - **Current limit**: **PASS** (vs the ratified spec row) — `sim/current-limit` record [`20260825-105322-933dfdd`](../sim/current-limit/records/20260825-105322-933dfdd.md), 45/45 corner(s) PASS. Freshness: STALE (a live xschem re-netlist of the current testbench schematic no longer matches the committed netlist snapshot).
 - **Startup / soft-start**: **PASS** (vs the ratified spec row) — `sim/startup` record [`20260825-110456-933dfdd`](../sim/startup/records/20260825-110456-933dfdd.md), 45/45 corner(s) PASS. Freshness: STALE (a live xschem re-netlist of the current testbench schematic no longer matches the committed netlist snapshot).
@@ -64,9 +64,9 @@ DRC/LVS/post-layout PEX substantiate that the routed layout matches the schemati
 |---|---|---|---|
 | DRC (issue #16) | **PASS** (status=clean, violation_count=0) | [`20260825-123551-3b4e121`](../layout/ldo-core/reports/20260825-123551-3b4e121/record.md) | STALE |
 | LVS (issue #17) | **MATCH** (status=match, mismatch_count=3) | [`20260825-123628-3b4e121`](../layout/ldo-core/reports/20260825-123628-3b4e121/record.md) | STALE |
-| Post-layout PEX (issue #20) | see detail — no single PASS/FAIL ([caveat](../sim/pex-post-layout/README.md)) | [`20260825-125102-3b4e121`](../sim/pex-post-layout/records/20260825-125102-3b4e121.md) | fresh |
+| Post-layout PEX (issue #20) | see detail — no single PASS/FAIL ([caveat](../sim/pex-post-layout/README.md)) | [`20260923-183915-d9900b5`](../sim/pex-post-layout/records/20260923-183915-d9900b5.md) | fresh |
 
-Post-layout PEX detail: `klt sim` (schematic-side leg, standalone): status=pass, corners=45, passed=45, failed=0, errored=0; `klt pex` (schematic + extracted legs + delta): status=error, passed=0, failed=0, errored=135, pin_count_mismatch=None
+Post-layout PEX detail: `klt sim` (schematic-side leg, standalone): status=error, corners=45, passed=36, failed=0, errored=9; `klt pex` (schematic + extracted legs + delta): status=error, passed=108, failed=0, errored=27, pin_count_mismatch=None
 
 ## Limitations
 
