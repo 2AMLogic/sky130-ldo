@@ -345,6 +345,25 @@ open interface question — what `VREF`'s real value and tempco are — is
 unchanged and still belongs to whichever future issue adds a reference
 generator.
 
+**2am reuse rule 9, `sky130-bandgap` edge (#136, 2026-09-23): no
+`reuse.lock.json` entry today.** `2am/repos.yml` records `consumes:
+[sky130-opamp, sky130-bandgap]` on this repo; #123/DR-010 closed the
+`sky130-opamp` half (an in-tree error amplifier, kept). The `sky130-bandgap`
+half is different in kind, not degree: there is no in-tree bandgap/reference
+block here to adopt or keep — `VREF` is only ever the external port described
+above — so rule 9's `in_tree` adopt-or-keep ledger has nothing to evaluate,
+and no bytes are fetched or vendored from `sky130-bandgap` for an `imports`
+entry to pin either.
+[`DR-012`](../spec/decision-records/DR-012-no-bandgap-reuse-lock-entry-yet.md)
+records this as an explicit "no lock entry yet" decision — an unrealized
+future dependency, not a silently-dropped one — and names what would change
+that: a future issue actually wiring in a `sky130-bandgap` output (an
+`imports` entry), or this repo growing its own in-tree reference (an
+`in_tree` entry). `sky130-bandgap`#286 was checked and is **not** this edge's
+counterpart (it resolves a different rule-9 pairing, bandgap's own
+`error_amp` versus `sky130-opamp`); no `sky130-bandgap`-side issue currently
+names this edge.
+
 ### Feedback divider — measured, not invented, unit-resistor value
 
 Per `spec/target-spec.md`'s Output row ("divider as a unit-resistor
