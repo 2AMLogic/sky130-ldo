@@ -390,11 +390,20 @@ and are not cited as a verified/ratified spec value.
 
 ### Pass-device width correction (found in #22)
 
-`M_PASS` is now `L=0.5` (bin floor), `W=100 nf=25 mult=25` → **`W_total` =
-2500µm (~2.5mm)**, matching DR-003's sizing methodology output
+> **Superseded as a *width* by #116/DR-011 (2026-09-23).** Everything in this
+> section about `mult` semantics still holds and is still how the instance is
+> written — but the 2500 µm it lands on is no longer the shipped width. `M_PASS`
+> is now `mult=50` → `W_total` = **5000 µm**, because DR-003's 2.47 mm *target*
+> turned out to be derived at the wrong bias point. See
+> "[Pass-device re-size (#116/DR-011)](#pass-device-re-size-116dr-011)" below
+> for the re-derivation; read this section as the `mult`-semantics history it
+> is. The paragraphs below are left as written (append-only house style).
+
+`M_PASS` was, from #22 until #116, `L=0.5` (bin floor), `W=100 nf=25 mult=25`
+→ **`W_total` = 2500µm (~2.5mm)**, matching DR-003's sizing methodology output
 (`W_total ≥ 14.81kΩ·µm / 6Ω ≈ 2.47mm` at the dropout bias point /
 `{ss,sf}`@125°C co-binding corner — DR-003's own screening-derived number,
-not re-derived here).
+not re-derived there).
 
 Issue #14's committed instance was `W=100 nf=25 mult=1`, written in the
 belief that the sky130 xschem symbols treat `W` as a per-finger width, so
@@ -423,6 +432,102 @@ into a short) but implies 100µm fingers.
 With the correction in place the device does what DR-003 sized it for:
 98mA at the dropout bias point (`V_sd = 0.3V`, full gate drive, `tt`/27°C),
 comfortably above the 50mA row.
+
+> **#116 footnote on that last paragraph.** That 98 mA is `tt`/27 °C at *full*
+> (0 V) gate drive — the benign corner at an unreachable bias. At the binding
+> `sf`/125 °C corner the same device delivers 44.0 mA at the same `V_sd`, and
+> at the gate drive the amplifier can actually supply it delivers 33.7 mA. The
+> "comfortably above the 50mA row" reading is what DR-011 corrects.
+
+### Pass-device re-size (#116/DR-011)
+
+**`M_PASS`: `W_total` 2500 µm → 5000 µm (`mult` 25 → 50). `M_SENSE`: 0.42 µm →
+0.84 µm (`mult` 1 → 2), holding the current-limit sense ratio at 1:5952.**
+
+Issue #116 was filed because `Dropout @ 50 mA` (ratified, `< 300 mV`) failed
+**0/45** corners, best case 365 mV, and pointed at the sibling `gf180-ldo#139`
+— where the same block in a different PDK shipped a pass device at half the
+width its own sizing review assumed — asking this port to run the same check
+first. **Outcome, from the real full-matrix record: 0/45 → 6/45 PASS** — real
+progress, not a clean closure; see "Dropout: 0/45 → 6/45" in the campaign
+section below for the corner-by-corner picture and DR-011 for the corrected
+evidence.
+
+**That check comes back negative.** The committed instance was `W_total` =
+2500 µm against DR-003's `≥ 2468 µm`: the schematic matched its derivation to
+1 %. There was no transcription gap of the `gf180-ldo#139` kind here.
+
+**The derivation was wrong instead**, in two compounding ways DR-003 named in
+its own scope caveats but never quantified:
+
+1. **`R_on` was measured in deep triode (`V_sd` = 50 mV) and spent at the
+   row's own `V_sd` = 300 mV**, where the device is no longer triode-linear.
+   Re-measured at the row's bias point, `sf`/125 °C, `V_sg` = 2.10 V:
+   **17.03 kΩ·µm**, not 14.81 — 15 % optimistic.
+2. **DR-003 assumed an ideal 0 V gate.** Closed-loop screening measures
+   `EA_OUT` **flooring at 0.24–0.31 V** through and below the dropout region,
+   so the achievable `V_sg(M_PASS)` is ≲1.80 V, never the 2.10 V DR-003 sized
+   at — worth a further ~30 % of drive current.
+
+Compounded, DR-003's 2468 µm requirement becomes **3709 µm**
+(`2468 × 1.150 × 1.306 = 3707 µm`, which reproduces the directly-measured
+number). The decisive consequence, and the reason this is a re-size and not a
+tuning exercise:
+
+> At the binding `sf`/125 °C corner the committed 2500 µm device delivers
+> **44.0 mA** at `V_sd` = 300 mV **with an ideal 0 V gate** — against a 50 mA
+> row. It missed the ratified row at *every* gate drive, including one the
+> amplifier cannot reach. No compensation change, amplifier fix or layout work
+> could have closed that 0/45.
+
+5000 µm is 1.35× the 3709 µm requirement — deliberately not tighter, because
+that requirement inherits DR-003's own unquantified caveats (no fingering,
+contact or IR-drop margin, no self-heating) — and is exactly 2× the existing
+instance, so the layout generator's `W * mult` convention and the `W=100 nf=25`
+`mult`-group unit are both unchanged. Full derivation, the per-corner screening
+tables, and the alternatives weighed (including two that were built and
+measured before being rejected) are in
+[`spec/decision-records/DR-011-pass-device-resize.md`](../spec/decision-records/DR-011-pass-device-resize.md).
+
+**`M_SENSE` had to move with it.** `M_SENSE` is a ratio'd replica of `M_PASS`,
+and the current limit is set by that *ratio*, not by either width. Doubling
+`M_PASS` alone would have halved the sense signal and silently doubled the
+limit threshold — invalidating the ratified `Current limit` row's 45/45 PASS
+without touching anything that mentions current limiting. `mult=1 → 2` keeps
+0.84 µm : 5000 µm = 1:5952, exactly where #22 put it.
+
+**What this does not claim.** The re-size is *not* asserted to be
+stability-neutral: a wider pass device moves the output pole and raises
+`gm_pass`, `C_COMP`/`R_CZ` are **not** re-derived here, and the `Stability` row
+was already failing 7/45 before this change. #116's own scope note calls for
+coordinating the two rather than landing them independently; this change lands
+the dropout row with its own full-matrix evidence and hands the interaction to
+a named follow-up, rather than bundling an unmeasured compensation re-design
+into it. Every other `sim/` bench instantiates this DUT and therefore goes
+`STALE` against it — see the dated `#116` campaign section below.
+
+#### Rejected here, but real: the amplifier's tail headroom at low `VIN`
+
+A partial earlier attempt at #116 hypothesised that the *amplifier's* input
+common mode, not the pass device, set the dropout, and built the fix for it:
+re-tap the feedback divider 1:2 → 2:1 and add a matched 1:1 `VREF` attenuator,
+so the input pair sits at 0.6 V while the external `VREF` = 1.2 V interface is
+unchanged.
+
+The observation behind it is **correct and worth keeping**. With the shipped
+1.2 V common mode, `EA_TAIL` is pinned near `V_cm + V_sg(M_IN)` ≈ 2.09 V
+*regardless of* `VIN`, so at the ratified dropout test point (`VIN` = 2.10 V)
+`M_TAIL` has **6.7 mV** of `V_sd` — the tail current source is collapsed at the
+exact operating point the row is measured at.
+
+It is simply not this row's root cause, which is why it is not in this change:
+built and screened (`tt`/27 °C, `VIN` = 2.100 V, 50 mA) it moves `VOUT` from
+1.6738 V to 1.6805 V — **7 mV**, against the ~90 mV needed to reach the 1.764 V
+departure threshold. It restores tail headroom (`V_sd(M_TAIL)` 6.7 mV → 351 mV)
+without restoring drive, because `EA_OUT`'s floor barely moves with it
+(0.313 V → 0.306 V). Bundling a divider-ratio, soft-start-gain and loop-gain
+change into a dropout fix would also have confounded the very measurement that
+had to be taken. Preserved as a follow-up issue rather than discarded.
 
 ### Amplifier sizing revision (#22)
 
@@ -546,8 +651,12 @@ clamp** — a second feedback loop that is completely inactive in normal
 operation and takes over `EA_OUT` when the pass current exceeds a threshold:
 
 1. **Sense.** `M_SENSE` is a replica of `M_PASS` — same `L=0.5`, same gate
-   (`EA_OUT`), same source (`VIN`) — at minimum width, giving a nominal
-   0.42µm : 2500µm = **1:5952** current ratio. A sense FET rather than a
+   (`EA_OUT`), same source (`VIN`) — at two minimum-width units, giving a
+   nominal 0.84µm : 5000µm = **1:5952** current ratio. (#22 wrote this as
+   0.42µm : 2500µm; #116/DR-011 doubled *both* devices together, so the ratio
+   — the thing that actually sets the limit — is unchanged. Doubling `M_PASS`
+   alone would have halved the sense signal and silently doubled the trip
+   threshold.) A sense FET rather than a
    series sense resistor because nothing may be inserted in the main current
    path: a 1Ω sense resistor would spend 50mV of the 300mV DRAFT dropout
    budget at 50mA.
@@ -574,7 +683,7 @@ not at `VOUT`, so the replica only tracks accurately while both devices are
 saturated. That is true in the limit condition itself (where `VOUT` has
 collapsed) and is why the measured characteristic below is as flat as it is,
 but it does mean the ratio is *not* trimmed or `V_ds`-matched — and a
-0.42µm-wide device matched against a 2500µm one has substantial random
+0.84µm-wide device matched against a 5000µm one has substantial random
 `V_th` mismatch. The spec row says "window TBD over PVT" precisely because
 this kind of limit is a window, not a number; establishing that window is
 #19's job, not this record's.
@@ -3129,6 +3238,81 @@ architecture that raises crossover (buffer-driven pass gate with an
 output-pole-dominant loop, nested Miller, or similar), which is a different
 design, not a re-sizing of this one, and belongs to its own issue with its
 own screening.
+
+### Dropout: 0/45 → 6/45 — the pass device was under-sized, and re-sizing it is real but partial progress (#116, DR-011, 2026-09-23)
+
+**First ratified row this campaign has moved off a whole-matrix failure, but
+not to a clean pass — read the corner count, not just the headline.**
+`Dropout @ 50 mA` was failing **0/45** corners (best case 365 mV against a
+`< 300 mV` row) on record `20260825-081240-4cb27f8`. The re-sized device's own
+full 45-corner record (`20260923-123440-d71f4b3`) goes to **6/45 PASS** (best
+case 268 mV) — real, substantial, physically-coherent improvement at
+`−40 °C`/`27 °C` (dropout down 60–880 mV across all five process corners
+there; `ss` closes the row outright), but **not** the clean closure an earlier
+draft of this section and of DR-011 claimed from a single `.op`-point screen.
+That screen does not reproduce (see DR-011's own correction note) and its
+"regulates to `V_in` = 2.000 V, dropout < 236 mV" number should not be cited.
+125 °C corners are additionally noisy — 5 of 15 get numerically *worse*,
+consistent with (and apparently worsened by the resize, not newly caused by
+it) the already-documented mechanism-4 dc-solution-multiplicity fragility a
+few sections below.
+
+Issue #116 asked for the `gf180-ldo#139` check first — *is `M_PASS` built to
+the width this repo's own derivation called for?* — and the answer is **yes**:
+2500 µm against DR-003's ≥ 2468 µm, matching to 1 %. **The derivation was the
+defect.** DR-003 finding 3 measured `R_on` in deep triode (`V_sd` = 50 mV) and
+spent it at the row's own `V_sd` = 300 mV (15 % optimistic), and assumed an
+ideal 0 V gate the amplifier cannot supply (`EA_OUT` floors at 0.24–0.31 V, a
+further ~30 %). Compounded, the real requirement is 3709 µm, not 2468 µm — and
+at the binding `sf`/125 °C corner the shipped 2500 µm device delivered only
+44.0 mA at `V_sd` = 300 mV *with an ideal 0 V gate*, i.e. it missed the
+ratified row at **every** gate drive — that part of the diagnosis is
+device-level current-table screening (not a closed-loop `.op` point) and does
+reproduce. Shipped: `M_PASS` `mult` 25 → 50 (5000 µm), `M_SENSE` `mult` 1 → 2
+(0.84 µm) so the 1:5952 current-limit sense ratio is held. Full derivation,
+the corrected consequences, and the rejected alternatives:
+[`DR-011`](../spec/decision-records/DR-011-pass-device-resize.md); design
+narrative: "[Pass-device re-size (#116/DR-011)](#pass-device-re-size-116dr-011)"
+above.
+
+**Three findings this issue produced that are *not* in the change**, recorded
+so they are not re-discovered:
+
+- **A single isolated `.op` point is not a reliable closed-loop dropout
+  measurement for this circuit at this device size.** The same screening
+  script, same schematic, same nominal operating point gave a healthy
+  regulating answer on some runs and a non-physical (singular-matrix-flagged)
+  answer on others. Always use the continuation-based `dc` sweep
+  (`sim/bin/corner-run.py`'s own methodology) for a closed-loop dropout claim;
+  see DR-011's correction note for the detail.
+
+- **The amplifier's tail is collapsed at the ratified dropout test point.**
+  With the 1.2 V input common mode, `EA_TAIL` pins near 2.09 V regardless of
+  `VIN`, leaving `M_TAIL` **6.7 mV** of `V_sd` at `VIN` = 2.10 V. Real, but not
+  this row's root cause — the 0.6 V-common-mode fix for it was built and
+  measured and moves `VOUT` by 7 mV against the ~90 mV needed. See the
+  "Rejected here, but real" subsection above.
+- **DR-003's sizing *methodology* generalises past this block.** Any
+  pass-device screen that holds the gate at 0 V and measures `R_on` in deep
+  triode will over-promise by ~1.5× at a 300 mV dropout point. DR-011 states
+  the amended rule.
+
+**What this deliberately leaves open, rather than silently absorbing.** A wider
+pass device moves the output pole and raises `gm_pass`, and `Stability` was
+already at 7/45; `C_COMP`/`R_CZ` are **not** re-derived here and the re-size is
+**not** claimed to be stability-neutral. #116's own scope note asks for the two
+to be coordinated rather than landed independently — so the dropout row lands
+with its own evidence and the interaction goes to a named follow-up, instead of
+an unmeasured compensation re-design riding along inside a sizing fix. The
+125 °C dc-sweep volatility noted above (5 of 15 points get numerically worse)
+is likewise handed to a follow-up (#138) rather than root-caused here, since
+it is the same loop-dynamics question #81/#79 already own. Every other `sim/` bench
+instantiates this DUT, so their committed netlist snapshots are stale against
+it and `measurements/characterization.md` reports them `STALE` — the same
+correct-by-design outcome #69's re-run produced, and a follow-up owns
+re-running the campaign against the re-sized DUT. `layout/ldo-core`'s DRC/LVS
+records characterize the 2500 µm device and are likewise stale by
+construction.
 
 ## Validating this schematic
 
