@@ -22,6 +22,8 @@ proposed replacement disclosed in [`DR-007`](spec/decision-records/DR-007-psrr-s
 ratified target or a simulation result against an open PDK's models, with the
 corner and testbench that produced it recorded alongside it.
 
+![fleet burndown](https://raw.githubusercontent.com/2AMLogic/2am/main/fleet-metrics/charts/sky130-ldo.svg)
+
 ## A design canary, not a reverse-engineering one
 
 This block is a **clean-room DESIGN canary**: it is designed forward from a
