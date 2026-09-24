@@ -8,11 +8,11 @@ v {xschem version=3.4.7 file_version=1.2
 *
 * Circuit: a 1 Mohm ideal resistor biases a diode-connected sky130 core
 * nFET (nfet_01v8) from the supply rail. Deliberately uses the 1.8 V CORE
-* device family, not either candidate pass-device flavor from the open
-* "sky130 porting question" in spec/target-spec.md (pfet_g5v0d10v5 under
-* framing A, or the 1.8 V core devices under framing B) -- this testbench
-* is harness plumbing, not a design decision, and must not be read as
-* prejudging that still-open ratification question (issue #1). The two
+* device family, not the pass-device flavor the "sky130 porting question"
+* in spec/target-spec.md settled (framing A -- pfet_g5v0d10v5 -- ratified
+* per DR-001 / issue #1, over framing B's 1.8 V core devices) -- this
+* testbench is harness plumbing, not a design decision, so its device
+* choice neither implements nor revisits that ratified call. The two
 * measured quantities are strongly corner- and temperature-dependent, so a
 * record that shows identical numbers across corners means the harness is
 * not actually applying corners:

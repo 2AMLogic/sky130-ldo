@@ -9,8 +9,10 @@ of verified open-PDK analog blocks.
 - **PDK**: sky130 (open PDK). Open-source flow: xschem + ngspice for design/sim,
   klayout-tools (`klt`) for layout work. sky130 has no native 3.3 V flavor — the
   1.8 V core devices are `pfet_01v8`/`nfet_01v8` and the high-voltage devices are
-  `pfet_g5v0d10v5`/`nfet_g5v0d10v5`; the pass-device flavor for a 3.3 V input is a
-  ratification question, not an assumption (see `spec/target-spec.md`).
+  `pfet_g5v0d10v5`/`nfet_g5v0d10v5`; the pass-device flavor for a 3.3 V input is
+  **ratified** as `pfet_g5v0d10v5` (framing A, per DR-001 / issue #1 — see
+  `spec/target-spec.md`'s "Open items — all resolved"), so cite it as a settled
+  spec decision rather than an assumption of your own.
 - **Clean room (no reverse engineering)**: this block is designed from its spec
   and device physics. Do not introduce, cite, or reconstruct any other party's
   implementation — measured, delayered, netlisted, or otherwise. If a task seems

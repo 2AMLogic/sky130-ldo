@@ -244,7 +244,7 @@ number, limit and verdict, for tooling):
 |---|---|
 | Record ID | matches the filename, the snapshot and the `corners/` subdirectory |
 | Experiment | slug + title from the manifest |
-| Claim | which spec parameter/line this substantiates (`spec/target-spec.md#<row>` once the spec is ratified — see issue #1); `pdk-smoke` is harness-only, not a spec claim |
+| Claim | which spec parameter/line this substantiates (`spec/target-spec.md#<row>`, ratified by issue #1 / DR-006); `pdk-smoke` is harness-only, not a spec claim |
 | Netlist provenance | `schematic` (`design/…`, `sim/…/testbench/…`) or `extracted` (post-layout) — required so post-layout re-runs are distinguishable |
 | PDK | variant + open_pdks commit actually used, whether it matches `sim/pdk.json`, and the model library path |
 | Tools | ngspice / xschem / OS / python versions used |
@@ -323,12 +323,12 @@ headlessly, ngspice parses the deck, and the corner/temperature/supply knobs
 actually reach the simulator (asserted by the `vgs` spread check, not just
 eyeballed).
 
-It deliberately uses the 1.8 V **core** device family (`nfet_01v8`), not
-either candidate pass-device flavor from the still-open "sky130 porting
-question" in `spec/target-spec.md` (`pfet_g5v0d10v5` under framing A, the 1.8 V
-core devices under framing B) — this testbench is harness plumbing, standing
-up ahead of and independent of that ratification decision (issue #1), not a
-prejudgment of it.
+It deliberately uses the 1.8 V **core** device family (`nfet_01v8`), not the
+pass-device flavor the "sky130 porting question" in `spec/target-spec.md`
+settled (framing A — `pfet_g5v0d10v5` — ratified per DR-001 / issue #1, over
+framing B's 1.8 V core devices) — this testbench is harness plumbing, stood up
+ahead of and independent of that ratification decision, and its device choice
+neither implements nor revisits it.
 
 Keep it green: it is the first thing to run when a testbench misbehaves, to
 tell "my circuit is wrong" apart from "my harness is broken".
@@ -507,8 +507,11 @@ TBD over PVT", "survives", "monotonic"). Where a clause has a number, it is
 bounded; where it does not, the quantity is measured and reported **without**
 a bound rather than graded against a limit nobody has ratified — inventing
 one would be exactly the fabricated-settled-number the root `CLAUDE.md`
-forbids. Each such measurement's `note` says so explicitly, and says what
-would have to change once issue #1 rules.
+forbids. Issue #1 / DR-006 ratified these rows *with* those clauses left
+numberless, so the missing bounds are a deliberate, ratified property of the
+spec rather than a pending ratification — only a future decision record can
+supply a number. Each such measurement's `note` says so explicitly, and says
+what would have to change if such a record lands.
 
 - **`current-limit/`** — forces `VOUT` through a `VFORCE`/`RFORCE` branch
   (`RFORCE` starts at 1e12 and the deck `alter`s it to 1 mΩ) in three legs:

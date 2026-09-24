@@ -113,8 +113,8 @@ cp sim/spiceinit ./.spiceinit  # ngspice needs these settings to read PDK libs
 
 **No LDO layout yet** — this step proves the `klt` layout/DRC/LVS driver
 works on this repo, on a trivial known-good cell. The LDO's own layout is
-future work once `spec/target-spec.md` is ratified (issue #1) and the design
-is drawn.
+future work gated only on the design being drawn — `spec/target-spec.md` is
+already ratified (issue #1 / DR-006).
 
 ```sh
 layout/bin/setup-venv.sh          # once, or after bumping layout/requirements.txt

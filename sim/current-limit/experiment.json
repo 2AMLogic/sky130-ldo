@@ -61,7 +61,7 @@
       "unit": "mA",
       "min": 50,
       "max": null,
-      "note": "LDO output current with VOUT forced to 0 V (dead short), from the DC characteristic. Lower bound 50 mA is the ratified row's own \"never engages for I_load <= 50 mA\" clause read as a limit-level requirement -- the clamp cannot sit at or below the load the block is specified to deliver. NO upper bound: the row says the clamp window is \"TBD over PVT\", so this experiment's job for that clause is to establish the window, not to grade it against a number nobody has ratified. Once issue #1 ratifies a window this measurement acquires a max and nothing else here changes."
+      "note": "LDO output current with VOUT forced to 0 V (dead short), from the DC characteristic. Lower bound 50 mA is the ratified row's own \"never engages for I_load <= 50 mA\" clause read as a limit-level requirement -- the clamp cannot sit at or below the load the block is specified to deliver. NO upper bound: the row says the clamp window is \"TBD over PVT\", so this experiment's job for that clause is to establish the window, not to grade it against a number nobody has ratified. Issue #1 / DR-006 ratified the row with that window deliberately left as \"TBD over PVT\", so only a future decision record can set it; if one does, this measurement acquires a max and nothing else here changes."
     },
     {
       "name": "ilim_knee_ma",
