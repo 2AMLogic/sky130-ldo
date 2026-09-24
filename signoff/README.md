@@ -225,7 +225,8 @@ below refuses ("a `MET` row the tool has no basis to object to and that would
 mean nothing"), and `CLAUDE.md`'s "no claim without a testbench" rule reads the
 same way. The citation should move when a `klt` build whose parasitic-R model
 can distinguish the two GDS files above produces a record whose full-load rows
-are physical — not before.
+are physical — not before. That is tracked as **#162**, blocked on the two
+upstream issues.
 
 ### Item 8 is `met`, and what that verdict does and does not say
 
@@ -326,8 +327,8 @@ In dependency order, not effort order:
    and [#2458](https://github.com/2AMLogic/klayout-tools/issues/2458). At this
    repo's pin, 98–99 % of the modelled per-net resistance on the load-current
    nets is the device generator's own local-interconnect pads, which no knob
-   this flow has can change. See "Item 7 has a passing record that this
-   manifest declines to cite" above.
+   this flow has can change. Tracked as #162. See "Item 7 has a passing record
+   that this manifest declines to cite" above.
 3. **Item 11** needs a `klt erc` supply spec and report (issue #112).
 4. **Item 6** needs a `klt yield` report over the existing Monte Carlo
    campaign — and, before that, an Output row that passes.

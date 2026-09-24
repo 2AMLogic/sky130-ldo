@@ -379,7 +379,15 @@ layout; but this repo cannot yet *measure* the improvement, because the only
 instrument it has for post-layout resistance is blind to conductor width on
 exactly this geometry. Do not read a post-layout full-load number as a
 statement about this routing until that instrument can distinguish the two
-GDS files above.
+GDS files above. That is tracked as issue #162, blocked on the two upstream
+issues.
+
+One acceptance criterion a power conductor needs is also **not** checked here:
+current density / electromigration. The curated sky130 deck `klt drc` runs
+against declares no current-density rule, so "no new DRC violation" is not
+"this rail carries the ratified load current indefinitely". The drawn widths
+are far above any plausible EM minimum at this current, but that is an
+argument, not a check.
 
 ## Known klt-deck limitations relevant to later, LDO-specific layout issues
 

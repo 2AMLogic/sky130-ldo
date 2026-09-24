@@ -368,7 +368,10 @@ evidence about the routing in either direction.
 for -- the load-current nets are no longer drawn as signal wires, and the
 sizing is derived from the ratified spec rather than picked. It did not make
 the full-load rows physical, and the measurement above shows it could not
-have: the drawn routing was under 1 % of what the model was reporting.
+have: the drawn routing was under 1 % of what the model was reporting. The
+residual -- making these rows physical, which now depends on the `klt` pin
+moving to a build whose parasitic-R model can distinguish the two GDS files
+above -- is tracked as **#162**, blocked on the two upstream issues.
 
 **T1 item 7 status (unchanged in substance).** A `klt pex` report exists that
 ran the design's real devices at all 45 corners, which is what item 7 asks
