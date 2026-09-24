@@ -1,0 +1,3201 @@
+{
+  "schema_version": 3,
+  "file": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-142/layout/ldo-core/reports/20260924-181216-50554fe/ldo_core.gds",
+  "deck": "sky130",
+  "top": "ldo_core",
+  "dbu_um": 0.001,
+  "netlist_path": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-142/layout/ldo-core/reports/20260924-181216-50554fe/ldo_core.extract.spice",
+  "netlist_sha256": "3aab5a191dbee319b96e62f34585c251f7a8545746a306195356e5d79e6cfc50",
+  "status": "extracted",
+  "device_count": 97,
+  "net_count": 28,
+  "pin_count": 4,
+  "device_counts": {
+    "nfet": 18,
+    "pfet": 74,
+    "res_high_po": 1,
+    "res_xhigh_po": 4
+  },
+  "dummy_devices_dropped": 0,
+  "ignored_layers": [],
+  "device_recognition_only_layers": [
+    {
+      "layer": 66,
+      "datatype": 13,
+      "shapes": 5
+    },
+    {
+      "layer": 75,
+      "datatype": 20,
+      "shapes": 43
+    },
+    {
+      "layer": 79,
+      "datatype": 20,
+      "shapes": 4
+    },
+    {
+      "layer": 86,
+      "datatype": 20,
+      "shapes": 1
+    },
+    {
+      "layer": 94,
+      "datatype": 20,
+      "shapes": 5
+    }
+  ],
+  "device_classes": [
+    "nfet",
+    "pfet",
+    "pnp",
+    "sky130_fd_pr__model__cap_mim",
+    "sky130_fd_pr__model__cap_mim_m4",
+    "resistor"
+  ],
+  "devices": [
+    {
+      "name": "$1",
+      "class": "nfet",
+      "nets": {
+        "s": "AMP_ENN",
+        "g": "TS_REF",
+        "d": "TS_REF",
+        "b": "0"
+      },
+      "params": {
+        "l_um": 2.0,
+        "w_um": 0.42,
+        "as_um2": 0.1764,
+        "ad_um2": 0.1764,
+        "ps_um": 1.68,
+        "pd_um": 1.68
+      },
+      "instance_path": [
+        {
+          "cell": "M_TSR1__M_TSR1",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$14",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$10",
+      "class": "nfet",
+      "nets": {
+        "s": "AMP_ENN",
+        "g": "EA_D1",
+        "d": "EA_D1",
+        "b": "0"
+      },
+      "params": {
+        "l_um": 4.0,
+        "w_um": 10.0,
+        "as_um2": 4.2,
+        "ad_um2": 4.2,
+        "ps_um": 20.84,
+        "pd_um": 20.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_MIR1__M_MIR1",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$4",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$11",
+      "class": "nfet",
+      "nets": {
+        "s": "AMP_ENN",
+        "g": "EA_D1",
+        "d": "EA_OUT",
+        "b": "0"
+      },
+      "params": {
+        "l_um": 4.0,
+        "w_um": 10.0,
+        "as_um2": 4.2,
+        "ad_um2": 4.2,
+        "ps_um": 20.84,
+        "pd_um": 20.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_MIR2__M_MIR2",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$5",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$12",
+      "class": "nfet",
+      "nets": {
+        "s": "AMP_ENN",
+        "g": "EA_D2",
+        "d": "EA_D2",
+        "b": "0"
+      },
+      "params": {
+        "l_um": 4.0,
+        "w_um": 10.0,
+        "as_um2": 4.2,
+        "ad_um2": 4.2,
+        "ps_um": 20.84,
+        "pd_um": 20.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_MIR3__M_MIR3",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$6",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$13",
+      "class": "nfet",
+      "nets": {
+        "s": "AMP_ENN",
+        "g": "EA_D2",
+        "d": "PB",
+        "b": "0"
+      },
+      "params": {
+        "l_um": 4.0,
+        "w_um": 10.0,
+        "as_um2": 4.2,
+        "ad_um2": 4.2,
+        "ps_um": 20.84,
+        "pd_um": 20.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_MIR4__M_MIR4",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$7",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$14",
+      "class": "nfet",
+      "nets": {
+        "s": "TC_TAIL",
+        "g": "TS_SNS",
+        "d": "TC_D1",
+        "b": "0"
+      },
+      "params": {
+        "l_um": 2.0,
+        "w_um": 10.0,
+        "as_um2": 4.2,
+        "ad_um2": 4.2,
+        "ps_um": 20.84,
+        "pd_um": 20.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_TCN1__M_TCN1",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$16",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$15",
+      "class": "nfet",
+      "nets": {
+        "s": "TC_TAIL",
+        "g": "TS_REF",
+        "d": "TS_CMP",
+        "b": "0"
+      },
+      "params": {
+        "l_um": 2.0,
+        "w_um": 10.0,
+        "as_um2": 4.2,
+        "ad_um2": 4.2,
+        "ps_um": 20.84,
+        "pd_um": 20.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_TCN2__M_TCN2",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$17",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$16",
+      "class": "nfet",
+      "nets": {
+        "s": "AMP_ENN",
+        "g": "CL_SNS",
+        "d": "CL_SNS",
+        "b": "0"
+      },
+      "params": {
+        "l_um": 1.0,
+        "w_um": 20.0,
+        "as_um2": 8.4,
+        "ad_um2": 8.4,
+        "ps_um": 40.84,
+        "pd_um": 40.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_CLN1__M_CLN1",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$8",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$17",
+      "class": "nfet",
+      "nets": {
+        "s": "TS_MID",
+        "g": "TS_SNS",
+        "d": "TS_SNS",
+        "b": "0"
+      },
+      "params": {
+        "l_um": 4.0,
+        "w_um": 80.0,
+        "as_um2": 33.6,
+        "ad_um2": 33.6,
+        "ps_um": 160.84,
+        "pd_um": 160.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_TSD1__M_TSD1",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$12",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$18",
+      "class": "nfet",
+      "nets": {
+        "s": "AMP_ENN",
+        "g": "TS_MID",
+        "d": "TS_MID",
+        "b": "0"
+      },
+      "params": {
+        "l_um": 4.0,
+        "w_um": 80.0,
+        "as_um2": 33.6,
+        "ad_um2": 33.6,
+        "ps_um": 160.84,
+        "pd_um": 160.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_TSD2__M_TSD2",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$13",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$19",
+      "class": "pfet",
+      "nets": {
+        "s": "VIN",
+        "g": "BIASP",
+        "d": "BIASP",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 1.0,
+        "w_um": 10.0,
+        "as_um2": 4.2,
+        "ad_um2": 4.2,
+        "ps_um": 20.84,
+        "pd_um": 20.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_BIASP1__M_BIASP1",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$18",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$2",
+      "class": "nfet",
+      "nets": {
+        "s": "0",
+        "g": "EN",
+        "d": "ENB",
+        "b": "0"
+      },
+      "params": {
+        "l_um": 0.5,
+        "w_um": 1.0,
+        "as_um2": 0.42,
+        "ad_um2": 0.42,
+        "ps_um": 2.84,
+        "pd_um": 2.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_INVN__M_INVN",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$10",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$20",
+      "class": "pfet",
+      "nets": {
+        "s": "VIN",
+        "g": "EN",
+        "d": "BIASP",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 0.5,
+        "w_um": 10.0,
+        "as_um2": 4.2,
+        "ad_um2": 4.2,
+        "ps_um": 20.84,
+        "pd_um": 20.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_ENP2__M_ENP2",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$19",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$21",
+      "class": "pfet",
+      "nets": {
+        "s": "VIN",
+        "g": "EN",
+        "d": "EA_OUT",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 0.5,
+        "w_um": 10.0,
+        "as_um2": 4.2,
+        "ad_um2": 4.2,
+        "ps_um": 20.84,
+        "pd_um": 20.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_ENP__M_ENP",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$20",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$22",
+      "class": "pfet",
+      "nets": {
+        "s": "VIN",
+        "g": "EN",
+        "d": "PB",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 0.5,
+        "w_um": 2.0,
+        "as_um2": 0.84,
+        "ad_um2": 0.84,
+        "ps_um": 4.84,
+        "pd_um": 4.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_ENP5__M_ENP5",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$21",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$23",
+      "class": "pfet",
+      "nets": {
+        "s": "VIN",
+        "g": "EN",
+        "d": "CL_CMP",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 0.5,
+        "w_um": 2.0,
+        "as_um2": 0.84,
+        "ad_um2": 0.84,
+        "ps_um": 4.84,
+        "pd_um": 4.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_ENP3__M_ENP3",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$22",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$24",
+      "class": "pfet",
+      "nets": {
+        "s": "VIN",
+        "g": "EN",
+        "d": "TS_CMP",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 0.5,
+        "w_um": 2.0,
+        "as_um2": 0.84,
+        "ad_um2": 0.84,
+        "ps_um": 4.84,
+        "pd_um": 4.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_ENP4__M_ENP4",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$23",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$25",
+      "class": "pfet",
+      "nets": {
+        "s": "VIN",
+        "g": "BIASP",
+        "d": "EA_TAIL",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 2.0,
+        "w_um": 40.0,
+        "as_um2": 16.8,
+        "ad_um2": 16.8,
+        "ps_um": 80.84,
+        "pd_um": 80.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_TAIL__M_TAIL",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$24",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$26",
+      "class": "pfet",
+      "nets": {
+        "s": "EA_TAIL",
+        "g": "FB",
+        "d": "EA_D1",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 2.0,
+        "w_um": 10.0,
+        "as_um2": 4.2,
+        "ad_um2": 4.2,
+        "ps_um": 20.84,
+        "pd_um": 20.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_IN1__M_IN1",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$25",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$27",
+      "class": "pfet",
+      "nets": {
+        "s": "EA_TAIL",
+        "g": "VREF",
+        "d": "EA_D2",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 2.0,
+        "w_um": 10.0,
+        "as_um2": 4.2,
+        "ad_um2": 4.2,
+        "ps_um": 20.84,
+        "pd_um": 20.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_IN2__M_IN2",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$26",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$28",
+      "class": "pfet",
+      "nets": {
+        "s": "VIN",
+        "g": "PB",
+        "d": "PB",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 4.0,
+        "w_um": 20.0,
+        "as_um2": 8.4,
+        "ad_um2": 8.4,
+        "ps_um": 40.84,
+        "pd_um": 40.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_MIRP1__M_MIRP1",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$27",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$29",
+      "class": "pfet",
+      "nets": {
+        "s": "VIN",
+        "g": "PB",
+        "d": "EA_OUT",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 4.0,
+        "w_um": 20.0,
+        "as_um2": 8.4,
+        "ad_um2": 8.4,
+        "ps_um": 40.84,
+        "pd_um": 40.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_MIRP2__M_MIRP2",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$28",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$3",
+      "class": "nfet",
+      "nets": {
+        "s": "AMP_ENN",
+        "g": "NB",
+        "d": "TC_TAIL",
+        "b": "0"
+      },
+      "params": {
+        "l_um": 1.0,
+        "w_um": 1.0,
+        "as_um2": 0.42,
+        "ad_um2": 0.42,
+        "ps_um": 2.84,
+        "pd_um": 2.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_TCTAIL__M_TCTAIL",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$15",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$30",
+      "class": "pfet",
+      "nets": {
+        "s": "EA_TAIL",
+        "g": "SS",
+        "d": "EA_D2",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 2.0,
+        "w_um": 10.0,
+        "as_um2": 4.2,
+        "ad_um2": 4.2,
+        "ps_um": 20.84,
+        "pd_um": 20.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_IN2S__M_IN2S",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$29",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$31",
+      "class": "pfet",
+      "nets": {
+        "s": "VIN",
+        "g": "EA_OUT",
+        "d": "CL_SNS",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 0.5,
+        "w_um": 0.84,
+        "as_um2": 0.3528,
+        "ad_um2": 0.3528,
+        "ps_um": 2.52,
+        "pd_um": 2.52
+      },
+      "instance_path": [
+        {
+          "cell": "M_SENSE__M_SENSE",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$30",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$32",
+      "class": "pfet",
+      "nets": {
+        "s": "VIN",
+        "g": "BIASP",
+        "d": "CL_CMP",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 1.0,
+        "w_um": 10.0,
+        "as_um2": 4.2,
+        "ad_um2": 4.2,
+        "ps_um": 20.84,
+        "pd_um": 20.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_CLP__M_CLP",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$31",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$33",
+      "class": "pfet",
+      "nets": {
+        "s": "VIN",
+        "g": "CL_CMP",
+        "d": "EA_OUT",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 0.5,
+        "w_um": 20.0,
+        "as_um2": 8.4,
+        "ad_um2": 8.4,
+        "ps_um": 40.84,
+        "pd_um": 40.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_CLIM__M_CLIM",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$32",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$34",
+      "class": "pfet",
+      "nets": {
+        "s": "VIN",
+        "g": "EN",
+        "d": "ENB",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 0.5,
+        "w_um": 2.0,
+        "as_um2": 0.84,
+        "ad_um2": 0.84,
+        "ps_um": 4.84,
+        "pd_um": 4.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_INVP__M_INVP",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$33",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$35",
+      "class": "pfet",
+      "nets": {
+        "s": "VIN",
+        "g": "BIASP",
+        "d": "SS",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 8.0,
+        "w_um": 1.0,
+        "as_um2": 0.42,
+        "ad_um2": 0.42,
+        "ps_um": 2.84,
+        "pd_um": 2.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_SSCHG__M_SSCHG",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$34",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$36",
+      "class": "pfet",
+      "nets": {
+        "s": "VIN",
+        "g": "BIASP",
+        "d": "TS_SNS",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 1.0,
+        "w_um": 1.25,
+        "as_um2": 0.525,
+        "ad_um2": 0.525,
+        "ps_um": 3.34,
+        "pd_um": 3.34
+      },
+      "instance_path": [
+        {
+          "cell": "M_TSPS__M_TSPS",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$35",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$37",
+      "class": "pfet",
+      "nets": {
+        "s": "VIN",
+        "g": "BIASP",
+        "d": "TS_REF",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 1.0,
+        "w_um": 7.0,
+        "as_um2": 2.94,
+        "ad_um2": 2.94,
+        "ps_um": 14.84,
+        "pd_um": 14.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_TSPR__M_TSPR",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$36",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$38",
+      "class": "pfet",
+      "nets": {
+        "s": "VIN",
+        "g": "TC_D1",
+        "d": "TC_D1",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 2.0,
+        "w_um": 10.0,
+        "as_um2": 4.2,
+        "ad_um2": 4.2,
+        "ps_um": 20.84,
+        "pd_um": 20.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_TCP1__M_TCP1",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$37",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$39",
+      "class": "pfet",
+      "nets": {
+        "s": "VIN",
+        "g": "TC_D1",
+        "d": "TS_CMP",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 2.0,
+        "w_um": 10.0,
+        "as_um2": 4.2,
+        "ad_um2": 4.2,
+        "ps_um": 20.84,
+        "pd_um": 20.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_TCP2__M_TCP2",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$38",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$4",
+      "class": "nfet",
+      "nets": {
+        "s": "AMP_ENN",
+        "g": "CL_SNS",
+        "d": "CL_CMP",
+        "b": "0"
+      },
+      "params": {
+        "l_um": 1.0,
+        "w_um": 1.6,
+        "as_um2": 0.672,
+        "ad_um2": 0.672,
+        "ps_um": 4.04,
+        "pd_um": 4.04
+      },
+      "instance_path": [
+        {
+          "cell": "M_CLN2__M_CLN2",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$9",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$40",
+      "class": "pfet",
+      "nets": {
+        "s": "VIN",
+        "g": "TS_CMP",
+        "d": "EA_OUT",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 0.5,
+        "w_um": 20.0,
+        "as_um2": 8.4,
+        "ad_um2": 8.4,
+        "ps_um": 40.84,
+        "pd_um": 40.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_TSHUT__M_TSHUT",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$39",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$41",
+      "class": "pfet",
+      "nets": {
+        "s": "VIN",
+        "g": "BIASP",
+        "d": "TS_HYS",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 2.0,
+        "w_um": 4.5,
+        "as_um2": 1.89,
+        "ad_um2": 1.89,
+        "ps_um": 9.84,
+        "pd_um": 9.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_TSHYSB__M_TSHYSB",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$40",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$42",
+      "class": "pfet",
+      "nets": {
+        "s": "TS_HYS",
+        "g": "TS_CMP",
+        "d": "TS_REF",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 0.5,
+        "w_um": 2.0,
+        "as_um2": 0.84,
+        "ad_um2": 0.84,
+        "ps_um": 4.84,
+        "pd_um": 4.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_TSHYS__M_TSHYS",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$41",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$43",
+      "class": "pfet",
+      "nets": {
+        "s": "VIN",
+        "g": "EA_OUT",
+        "d": "VOUT",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 0.5,
+        "w_um": 100.0,
+        "as_um2": 42.0,
+        "ad_um2": 42.0,
+        "ps_um": 200.84,
+        "pd_um": 200.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_PASS__M_PASS",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$42",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$44",
+      "class": "pfet",
+      "nets": {
+        "s": "VIN",
+        "g": "EA_OUT",
+        "d": "VOUT",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 0.5,
+        "w_um": 100.0,
+        "as_um2": 42.0,
+        "ad_um2": 42.0,
+        "ps_um": 200.84,
+        "pd_um": 200.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_PASS__M_PASS",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$42",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$45",
+      "class": "pfet",
+      "nets": {
+        "s": "VIN",
+        "g": "EA_OUT",
+        "d": "VOUT",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 0.5,
+        "w_um": 100.0,
+        "as_um2": 42.0,
+        "ad_um2": 42.0,
+        "ps_um": 200.84,
+        "pd_um": 200.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_PASS__M_PASS",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$42",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$46",
+      "class": "pfet",
+      "nets": {
+        "s": "VIN",
+        "g": "EA_OUT",
+        "d": "VOUT",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 0.5,
+        "w_um": 100.0,
+        "as_um2": 42.0,
+        "ad_um2": 42.0,
+        "ps_um": 200.84,
+        "pd_um": 200.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_PASS__M_PASS",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$42",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$47",
+      "class": "pfet",
+      "nets": {
+        "s": "VIN",
+        "g": "EA_OUT",
+        "d": "VOUT",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 0.5,
+        "w_um": 100.0,
+        "as_um2": 42.0,
+        "ad_um2": 42.0,
+        "ps_um": 200.84,
+        "pd_um": 200.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_PASS__M_PASS",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$42",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$48",
+      "class": "pfet",
+      "nets": {
+        "s": "VIN",
+        "g": "EA_OUT",
+        "d": "VOUT",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 0.5,
+        "w_um": 100.0,
+        "as_um2": 42.0,
+        "ad_um2": 42.0,
+        "ps_um": 200.84,
+        "pd_um": 200.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_PASS__M_PASS",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$42",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$49",
+      "class": "pfet",
+      "nets": {
+        "s": "VIN",
+        "g": "EA_OUT",
+        "d": "VOUT",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 0.5,
+        "w_um": 100.0,
+        "as_um2": 42.0,
+        "ad_um2": 42.0,
+        "ps_um": 200.84,
+        "pd_um": 200.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_PASS__M_PASS",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$42",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$5",
+      "class": "nfet",
+      "nets": {
+        "s": "0",
+        "g": "ENB",
+        "d": "SS",
+        "b": "0"
+      },
+      "params": {
+        "l_um": 0.5,
+        "w_um": 2.0,
+        "as_um2": 0.84,
+        "ad_um2": 0.84,
+        "ps_um": 4.84,
+        "pd_um": 4.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_SSDIS__M_SSDIS",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$11",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$50",
+      "class": "pfet",
+      "nets": {
+        "s": "VIN",
+        "g": "EA_OUT",
+        "d": "VOUT",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 0.5,
+        "w_um": 100.0,
+        "as_um2": 42.0,
+        "ad_um2": 42.0,
+        "ps_um": 200.84,
+        "pd_um": 200.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_PASS__M_PASS",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$42",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$51",
+      "class": "pfet",
+      "nets": {
+        "s": "VIN",
+        "g": "EA_OUT",
+        "d": "VOUT",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 0.5,
+        "w_um": 100.0,
+        "as_um2": 42.0,
+        "ad_um2": 42.0,
+        "ps_um": 200.84,
+        "pd_um": 200.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_PASS__M_PASS",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$42",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$52",
+      "class": "pfet",
+      "nets": {
+        "s": "VIN",
+        "g": "EA_OUT",
+        "d": "VOUT",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 0.5,
+        "w_um": 100.0,
+        "as_um2": 42.0,
+        "ad_um2": 42.0,
+        "ps_um": 200.84,
+        "pd_um": 200.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_PASS__M_PASS",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$42",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$53",
+      "class": "pfet",
+      "nets": {
+        "s": "VIN",
+        "g": "EA_OUT",
+        "d": "VOUT",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 0.5,
+        "w_um": 100.0,
+        "as_um2": 42.0,
+        "ad_um2": 42.0,
+        "ps_um": 200.84,
+        "pd_um": 200.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_PASS__M_PASS",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$42",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$54",
+      "class": "pfet",
+      "nets": {
+        "s": "VIN",
+        "g": "EA_OUT",
+        "d": "VOUT",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 0.5,
+        "w_um": 100.0,
+        "as_um2": 42.0,
+        "ad_um2": 42.0,
+        "ps_um": 200.84,
+        "pd_um": 200.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_PASS__M_PASS",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$42",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$55",
+      "class": "pfet",
+      "nets": {
+        "s": "VIN",
+        "g": "EA_OUT",
+        "d": "VOUT",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 0.5,
+        "w_um": 100.0,
+        "as_um2": 42.0,
+        "ad_um2": 42.0,
+        "ps_um": 200.84,
+        "pd_um": 200.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_PASS__M_PASS",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$42",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$56",
+      "class": "pfet",
+      "nets": {
+        "s": "VIN",
+        "g": "EA_OUT",
+        "d": "VOUT",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 0.5,
+        "w_um": 100.0,
+        "as_um2": 42.0,
+        "ad_um2": 42.0,
+        "ps_um": 200.84,
+        "pd_um": 200.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_PASS__M_PASS",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$42",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$57",
+      "class": "pfet",
+      "nets": {
+        "s": "VIN",
+        "g": "EA_OUT",
+        "d": "VOUT",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 0.5,
+        "w_um": 100.0,
+        "as_um2": 42.0,
+        "ad_um2": 42.0,
+        "ps_um": 200.84,
+        "pd_um": 200.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_PASS__M_PASS",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$42",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$58",
+      "class": "pfet",
+      "nets": {
+        "s": "VIN",
+        "g": "EA_OUT",
+        "d": "VOUT",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 0.5,
+        "w_um": 100.0,
+        "as_um2": 42.0,
+        "ad_um2": 42.0,
+        "ps_um": 200.84,
+        "pd_um": 200.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_PASS__M_PASS",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$42",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$59",
+      "class": "pfet",
+      "nets": {
+        "s": "VIN",
+        "g": "EA_OUT",
+        "d": "VOUT",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 0.5,
+        "w_um": 100.0,
+        "as_um2": 42.0,
+        "ad_um2": 42.0,
+        "ps_um": 200.84,
+        "pd_um": 200.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_PASS__M_PASS",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$42",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$6",
+      "class": "nfet",
+      "nets": {
+        "s": "BIAS_ENN",
+        "g": "NB",
+        "d": "NB",
+        "b": "0"
+      },
+      "params": {
+        "l_um": 1.0,
+        "w_um": 4.0,
+        "as_um2": 1.68,
+        "ad_um2": 1.68,
+        "ps_um": 8.84,
+        "pd_um": 8.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_BIASN1__M_BIASN1",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$60",
+      "class": "pfet",
+      "nets": {
+        "s": "VIN",
+        "g": "EA_OUT",
+        "d": "VOUT",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 0.5,
+        "w_um": 100.0,
+        "as_um2": 42.0,
+        "ad_um2": 42.0,
+        "ps_um": 200.84,
+        "pd_um": 200.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_PASS__M_PASS",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$42",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$61",
+      "class": "pfet",
+      "nets": {
+        "s": "VIN",
+        "g": "EA_OUT",
+        "d": "VOUT",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 0.5,
+        "w_um": 100.0,
+        "as_um2": 42.0,
+        "ad_um2": 42.0,
+        "ps_um": 200.84,
+        "pd_um": 200.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_PASS__M_PASS",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$42",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$62",
+      "class": "pfet",
+      "nets": {
+        "s": "VIN",
+        "g": "EA_OUT",
+        "d": "VOUT",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 0.5,
+        "w_um": 100.0,
+        "as_um2": 42.0,
+        "ad_um2": 42.0,
+        "ps_um": 200.84,
+        "pd_um": 200.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_PASS__M_PASS",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$42",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$63",
+      "class": "pfet",
+      "nets": {
+        "s": "VIN",
+        "g": "EA_OUT",
+        "d": "VOUT",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 0.5,
+        "w_um": 100.0,
+        "as_um2": 42.0,
+        "ad_um2": 42.0,
+        "ps_um": 200.84,
+        "pd_um": 200.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_PASS__M_PASS",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$42",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$64",
+      "class": "pfet",
+      "nets": {
+        "s": "VIN",
+        "g": "EA_OUT",
+        "d": "VOUT",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 0.5,
+        "w_um": 100.0,
+        "as_um2": 42.0,
+        "ad_um2": 42.0,
+        "ps_um": 200.84,
+        "pd_um": 200.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_PASS__M_PASS",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$42",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$65",
+      "class": "pfet",
+      "nets": {
+        "s": "VIN",
+        "g": "EA_OUT",
+        "d": "VOUT",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 0.5,
+        "w_um": 100.0,
+        "as_um2": 42.0,
+        "ad_um2": 42.0,
+        "ps_um": 200.84,
+        "pd_um": 200.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_PASS__M_PASS",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$42",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$66",
+      "class": "pfet",
+      "nets": {
+        "s": "VIN",
+        "g": "EA_OUT",
+        "d": "VOUT",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 0.5,
+        "w_um": 100.0,
+        "as_um2": 42.0,
+        "ad_um2": 42.0,
+        "ps_um": 200.84,
+        "pd_um": 200.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_PASS__M_PASS",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$42",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$67",
+      "class": "pfet",
+      "nets": {
+        "s": "VIN",
+        "g": "EA_OUT",
+        "d": "VOUT",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 0.5,
+        "w_um": 100.0,
+        "as_um2": 42.0,
+        "ad_um2": 42.0,
+        "ps_um": 200.84,
+        "pd_um": 200.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_PASS__M_PASS",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$42",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$68",
+      "class": "pfet",
+      "nets": {
+        "s": "VIN",
+        "g": "EA_OUT",
+        "d": "VOUT",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 0.5,
+        "w_um": 100.0,
+        "as_um2": 42.0,
+        "ad_um2": 42.0,
+        "ps_um": 200.84,
+        "pd_um": 200.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_PASS__M_PASS",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$42",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$69",
+      "class": "pfet",
+      "nets": {
+        "s": "VIN",
+        "g": "EA_OUT",
+        "d": "VOUT",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 0.5,
+        "w_um": 100.0,
+        "as_um2": 42.0,
+        "ad_um2": 42.0,
+        "ps_um": 200.84,
+        "pd_um": 200.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_PASS__M_PASS",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$42",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$7",
+      "class": "nfet",
+      "nets": {
+        "s": "BIAS_ENN",
+        "g": "NB",
+        "d": "BIASP",
+        "b": "0"
+      },
+      "params": {
+        "l_um": 1.0,
+        "w_um": 4.0,
+        "as_um2": 1.68,
+        "ad_um2": 1.68,
+        "ps_um": 8.84,
+        "pd_um": 8.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_BIASN2__M_BIASN2",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$2",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$70",
+      "class": "pfet",
+      "nets": {
+        "s": "VIN",
+        "g": "EA_OUT",
+        "d": "VOUT",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 0.5,
+        "w_um": 100.0,
+        "as_um2": 42.0,
+        "ad_um2": 42.0,
+        "ps_um": 200.84,
+        "pd_um": 200.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_PASS__M_PASS",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$42",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$71",
+      "class": "pfet",
+      "nets": {
+        "s": "VIN",
+        "g": "EA_OUT",
+        "d": "VOUT",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 0.5,
+        "w_um": 100.0,
+        "as_um2": 42.0,
+        "ad_um2": 42.0,
+        "ps_um": 200.84,
+        "pd_um": 200.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_PASS__M_PASS",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$42",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$72",
+      "class": "pfet",
+      "nets": {
+        "s": "VIN",
+        "g": "EA_OUT",
+        "d": "VOUT",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 0.5,
+        "w_um": 100.0,
+        "as_um2": 42.0,
+        "ad_um2": 42.0,
+        "ps_um": 200.84,
+        "pd_um": 200.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_PASS__M_PASS",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$42",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$73",
+      "class": "pfet",
+      "nets": {
+        "s": "VIN",
+        "g": "EA_OUT",
+        "d": "VOUT",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 0.5,
+        "w_um": 100.0,
+        "as_um2": 42.0,
+        "ad_um2": 42.0,
+        "ps_um": 200.84,
+        "pd_um": 200.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_PASS__M_PASS",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$42",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$74",
+      "class": "pfet",
+      "nets": {
+        "s": "VIN",
+        "g": "EA_OUT",
+        "d": "VOUT",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 0.5,
+        "w_um": 100.0,
+        "as_um2": 42.0,
+        "ad_um2": 42.0,
+        "ps_um": 200.84,
+        "pd_um": 200.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_PASS__M_PASS",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$42",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$75",
+      "class": "pfet",
+      "nets": {
+        "s": "VIN",
+        "g": "EA_OUT",
+        "d": "VOUT",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 0.5,
+        "w_um": 100.0,
+        "as_um2": 42.0,
+        "ad_um2": 42.0,
+        "ps_um": 200.84,
+        "pd_um": 200.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_PASS__M_PASS",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$42",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$76",
+      "class": "pfet",
+      "nets": {
+        "s": "VIN",
+        "g": "EA_OUT",
+        "d": "VOUT",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 0.5,
+        "w_um": 100.0,
+        "as_um2": 42.0,
+        "ad_um2": 42.0,
+        "ps_um": 200.84,
+        "pd_um": 200.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_PASS__M_PASS",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$42",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$77",
+      "class": "pfet",
+      "nets": {
+        "s": "VIN",
+        "g": "EA_OUT",
+        "d": "VOUT",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 0.5,
+        "w_um": 100.0,
+        "as_um2": 42.0,
+        "ad_um2": 42.0,
+        "ps_um": 200.84,
+        "pd_um": 200.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_PASS__M_PASS",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$42",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$78",
+      "class": "pfet",
+      "nets": {
+        "s": "VIN",
+        "g": "EA_OUT",
+        "d": "VOUT",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 0.5,
+        "w_um": 100.0,
+        "as_um2": 42.0,
+        "ad_um2": 42.0,
+        "ps_um": 200.84,
+        "pd_um": 200.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_PASS__M_PASS",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$42",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$79",
+      "class": "pfet",
+      "nets": {
+        "s": "VIN",
+        "g": "EA_OUT",
+        "d": "VOUT",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 0.5,
+        "w_um": 100.0,
+        "as_um2": 42.0,
+        "ad_um2": 42.0,
+        "ps_um": 200.84,
+        "pd_um": 200.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_PASS__M_PASS",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$42",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$8",
+      "class": "nfet",
+      "nets": {
+        "s": "0",
+        "g": "EN",
+        "d": "BIAS_ENN",
+        "b": "0"
+      },
+      "params": {
+        "l_um": 0.5,
+        "w_um": 10.0,
+        "as_um2": 4.2,
+        "ad_um2": 4.2,
+        "ps_um": 20.84,
+        "pd_um": 20.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_ENN__M_ENN",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$1",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$80",
+      "class": "pfet",
+      "nets": {
+        "s": "VIN",
+        "g": "EA_OUT",
+        "d": "VOUT",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 0.5,
+        "w_um": 100.0,
+        "as_um2": 42.0,
+        "ad_um2": 42.0,
+        "ps_um": 200.84,
+        "pd_um": 200.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_PASS__M_PASS",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$42",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$81",
+      "class": "pfet",
+      "nets": {
+        "s": "VIN",
+        "g": "EA_OUT",
+        "d": "VOUT",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 0.5,
+        "w_um": 100.0,
+        "as_um2": 42.0,
+        "ad_um2": 42.0,
+        "ps_um": 200.84,
+        "pd_um": 200.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_PASS__M_PASS",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$42",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$82",
+      "class": "pfet",
+      "nets": {
+        "s": "VIN",
+        "g": "EA_OUT",
+        "d": "VOUT",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 0.5,
+        "w_um": 100.0,
+        "as_um2": 42.0,
+        "ad_um2": 42.0,
+        "ps_um": 200.84,
+        "pd_um": 200.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_PASS__M_PASS",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$42",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$83",
+      "class": "pfet",
+      "nets": {
+        "s": "VIN",
+        "g": "EA_OUT",
+        "d": "VOUT",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 0.5,
+        "w_um": 100.0,
+        "as_um2": 42.0,
+        "ad_um2": 42.0,
+        "ps_um": 200.84,
+        "pd_um": 200.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_PASS__M_PASS",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$42",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$84",
+      "class": "pfet",
+      "nets": {
+        "s": "VIN",
+        "g": "EA_OUT",
+        "d": "VOUT",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 0.5,
+        "w_um": 100.0,
+        "as_um2": 42.0,
+        "ad_um2": 42.0,
+        "ps_um": 200.84,
+        "pd_um": 200.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_PASS__M_PASS",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$42",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$85",
+      "class": "pfet",
+      "nets": {
+        "s": "VIN",
+        "g": "EA_OUT",
+        "d": "VOUT",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 0.5,
+        "w_um": 100.0,
+        "as_um2": 42.0,
+        "ad_um2": 42.0,
+        "ps_um": 200.84,
+        "pd_um": 200.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_PASS__M_PASS",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$42",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$86",
+      "class": "pfet",
+      "nets": {
+        "s": "VIN",
+        "g": "EA_OUT",
+        "d": "VOUT",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 0.5,
+        "w_um": 100.0,
+        "as_um2": 42.0,
+        "ad_um2": 42.0,
+        "ps_um": 200.84,
+        "pd_um": 200.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_PASS__M_PASS",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$42",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$87",
+      "class": "pfet",
+      "nets": {
+        "s": "VIN",
+        "g": "EA_OUT",
+        "d": "VOUT",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 0.5,
+        "w_um": 100.0,
+        "as_um2": 42.0,
+        "ad_um2": 42.0,
+        "ps_um": 200.84,
+        "pd_um": 200.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_PASS__M_PASS",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$42",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$88",
+      "class": "pfet",
+      "nets": {
+        "s": "VIN",
+        "g": "EA_OUT",
+        "d": "VOUT",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 0.5,
+        "w_um": 100.0,
+        "as_um2": 42.0,
+        "ad_um2": 42.0,
+        "ps_um": 200.84,
+        "pd_um": 200.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_PASS__M_PASS",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$42",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$89",
+      "class": "pfet",
+      "nets": {
+        "s": "VIN",
+        "g": "EA_OUT",
+        "d": "VOUT",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 0.5,
+        "w_um": 100.0,
+        "as_um2": 42.0,
+        "ad_um2": 42.0,
+        "ps_um": 200.84,
+        "pd_um": 200.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_PASS__M_PASS",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$42",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$9",
+      "class": "nfet",
+      "nets": {
+        "s": "0",
+        "g": "EN",
+        "d": "AMP_ENN",
+        "b": "0"
+      },
+      "params": {
+        "l_um": 0.5,
+        "w_um": 10.0,
+        "as_um2": 4.2,
+        "ad_um2": 4.2,
+        "ps_um": 20.84,
+        "pd_um": 20.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_ENN2__M_ENN2",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$3",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$90",
+      "class": "pfet",
+      "nets": {
+        "s": "VIN",
+        "g": "EA_OUT",
+        "d": "VOUT",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 0.5,
+        "w_um": 100.0,
+        "as_um2": 42.0,
+        "ad_um2": 42.0,
+        "ps_um": 200.84,
+        "pd_um": 200.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_PASS__M_PASS",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$42",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$91",
+      "class": "pfet",
+      "nets": {
+        "s": "VIN",
+        "g": "EA_OUT",
+        "d": "VOUT",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 0.5,
+        "w_um": 100.0,
+        "as_um2": 42.0,
+        "ad_um2": 42.0,
+        "ps_um": 200.84,
+        "pd_um": 200.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_PASS__M_PASS",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$42",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$92",
+      "class": "pfet",
+      "nets": {
+        "s": "VIN",
+        "g": "EA_OUT",
+        "d": "VOUT",
+        "b": "VIN"
+      },
+      "params": {
+        "l_um": 0.5,
+        "w_um": 100.0,
+        "as_um2": 42.0,
+        "ad_um2": 42.0,
+        "ps_um": 200.84,
+        "pd_um": 200.84
+      },
+      "instance_path": [
+        {
+          "cell": "M_PASS__M_PASS",
+          "array_index": null
+        },
+        {
+          "cell": "mos_array$42",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$93",
+      "class": "res_high_po",
+      "nets": {
+        "a": "VIN",
+        "b": "NB",
+        "w": "0"
+      },
+      "params": {
+        "r_ohm": 1160477.005147,
+        "l_um": 1500.0,
+        "w_um": 0.42,
+        "area_um2": 630.0,
+        "perimeter_um": 3000.84
+      },
+      "instance_path": [
+        {
+          "cell": "R_BIAS__R_BIAS",
+          "array_index": null
+        },
+        {
+          "cell": "res_array",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$94",
+      "class": "res_xhigh_po",
+      "nets": {
+        "a": "VOUT",
+        "b": "FB",
+        "w": "0"
+      },
+      "params": {
+        "r_ohm": 857142.857143,
+        "l_um": 180.0,
+        "w_um": 0.42,
+        "area_um2": 75.6,
+        "perimeter_um": 360.84
+      },
+      "instance_path": [
+        {
+          "cell": "R_FB_A__R_FB_A",
+          "array_index": null
+        },
+        {
+          "cell": "res_array$1",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$95",
+      "class": "res_xhigh_po",
+      "nets": {
+        "a": "FB",
+        "b": "N_FBB",
+        "w": "0"
+      },
+      "params": {
+        "r_ohm": 857142.857143,
+        "l_um": 180.0,
+        "w_um": 0.42,
+        "area_um2": 75.6,
+        "perimeter_um": 360.84
+      },
+      "instance_path": [
+        {
+          "cell": "R_FB_B__R_FB_B",
+          "array_index": null
+        },
+        {
+          "cell": "res_array$2",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$96",
+      "class": "res_xhigh_po",
+      "nets": {
+        "a": "N_FBB",
+        "b": "0",
+        "w": "0"
+      },
+      "params": {
+        "r_ohm": 857142.857143,
+        "l_um": 180.0,
+        "w_um": 0.42,
+        "area_um2": 75.6,
+        "perimeter_um": 360.84
+      },
+      "instance_path": [
+        {
+          "cell": "R_FB_C__R_FB_C",
+          "array_index": null
+        },
+        {
+          "cell": "res_array$3",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$97",
+      "class": "res_xhigh_po",
+      "nets": {
+        "a": "EA_CZ",
+        "b": "EA_OUT",
+        "w": "0"
+      },
+      "params": {
+        "r_ohm": 247619.047619,
+        "l_um": 52.0,
+        "w_um": 0.42,
+        "area_um2": 21.84,
+        "perimeter_um": 104.84
+      },
+      "instance_path": [
+        {
+          "cell": "R_CZ__R_CZ",
+          "array_index": null
+        },
+        {
+          "cell": "res_array$4",
+          "array_index": null
+        }
+      ]
+    }
+  ],
+  "nets": [
+    {
+      "name": "0",
+      "pin": false,
+      "device_count": 28,
+      "net_id": 29,
+      "pin_index": null,
+      "label_positions_um": [
+        {
+          "text": "0",
+          "x_um": 2049.15,
+          "y_um": -7.0
+        }
+      ]
+    },
+    {
+      "name": "AMP_ENN",
+      "pin": false,
+      "device_count": 10,
+      "net_id": 18,
+      "pin_index": null,
+      "label_positions_um": [
+        {
+          "text": "AMP_ENN",
+          "x_um": 2135.4,
+          "y_um": -11.8
+        }
+      ]
+    },
+    {
+      "name": "BIASP",
+      "pin": false,
+      "device_count": 10,
+      "net_id": 17,
+      "pin_index": null,
+      "label_positions_um": [
+        {
+          "text": "BIASP",
+          "x_um": 2131.76,
+          "y_um": -11.0
+        }
+      ]
+    },
+    {
+      "name": "BIAS_ENN",
+      "pin": false,
+      "device_count": 3,
+      "net_id": 19,
+      "pin_index": null,
+      "label_positions_um": [
+        {
+          "text": "BIAS_ENN",
+          "x_um": 2122.56,
+          "y_um": -9.4
+        }
+      ]
+    },
+    {
+      "name": "CL_CMP",
+      "pin": false,
+      "device_count": 4,
+      "net_id": 9,
+      "pin_index": null,
+      "label_positions_um": [
+        {
+          "text": "CL_CMP",
+          "x_um": 2172.24,
+          "y_um": -15.8
+        }
+      ]
+    },
+    {
+      "name": "CL_SNS",
+      "pin": false,
+      "device_count": 4,
+      "net_id": 15,
+      "pin_index": null,
+      "label_positions_um": [
+        {
+          "text": "CL_SNS",
+          "x_um": 2167.39,
+          "y_um": -15.0
+        }
+      ]
+    },
+    {
+      "name": "EA_CZ",
+      "pin": false,
+      "device_count": 1,
+      "net_id": 25,
+      "pin_index": null,
+      "label_positions_um": [
+        {
+          "text": "EA_CZ",
+          "x_um": 2051.57,
+          "y_um": -7.8
+        }
+      ]
+    },
+    {
+      "name": "EA_D1",
+      "pin": false,
+      "device_count": 4,
+      "net_id": 12,
+      "pin_index": null,
+      "label_positions_um": [
+        {
+          "text": "EA_D1",
+          "x_um": 2140.33,
+          "y_um": -12.6
+        }
+      ]
+    },
+    {
+      "name": "EA_D2",
+      "pin": false,
+      "device_count": 5,
+      "net_id": 13,
+      "pin_index": null,
+      "label_positions_um": [
+        {
+          "text": "EA_D2",
+          "x_um": 2154.61,
+          "y_um": -13.4
+        }
+      ]
+    },
+    {
+      "name": "EA_OUT",
+      "pin": false,
+      "device_count": 57,
+      "net_id": 20,
+      "pin_index": null,
+      "label_positions_um": [
+        {
+          "text": "EA_OUT",
+          "x_um": 2103.99,
+          "y_um": -8.6
+        }
+      ]
+    },
+    {
+      "name": "EA_TAIL",
+      "pin": false,
+      "device_count": 4,
+      "net_id": 2,
+      "pin_index": null,
+      "label_positions_um": [
+        {
+          "text": "EA_TAIL",
+          "x_um": 2252.84,
+          "y_um": -23.0
+        }
+      ]
+    },
+    {
+      "name": "EN",
+      "pin": true,
+      "device_count": 9,
+      "net_id": 16,
+      "pin_index": 0,
+      "label_positions_um": [
+        {
+          "text": "EN",
+          "x_um": 2127.16,
+          "y_um": -10.2
+        }
+      ]
+    },
+    {
+      "name": "ENB",
+      "pin": false,
+      "device_count": 3,
+      "net_id": 10,
+      "pin_index": null,
+      "label_positions_um": [
+        {
+          "text": "ENB",
+          "x_um": 2175.88,
+          "y_um": -16.6
+        }
+      ]
+    },
+    {
+      "name": "FB",
+      "pin": false,
+      "device_count": 3,
+      "net_id": 22,
+      "pin_index": null,
+      "label_positions_um": [
+        {
+          "text": "FB",
+          "x_um": 1683.47,
+          "y_um": -5.4
+        }
+      ]
+    },
+    {
+      "name": "NB",
+      "pin": false,
+      "device_count": 5,
+      "net_id": 27,
+      "pin_index": null,
+      "label_positions_um": [
+        {
+          "text": "NB",
+          "x_um": 1500.63,
+          "y_um": -3.8
+        }
+      ]
+    },
+    {
+      "name": "N_FBB",
+      "pin": false,
+      "device_count": 2,
+      "net_id": 23,
+      "pin_index": null,
+      "label_positions_um": [
+        {
+          "text": "N_FBB",
+          "x_um": 1866.31,
+          "y_um": -6.2
+        }
+      ]
+    },
+    {
+      "name": "PB",
+      "pin": false,
+      "device_count": 5,
+      "net_id": 14,
+      "pin_index": null,
+      "label_positions_um": [
+        {
+          "text": "PB",
+          "x_um": 2163.96,
+          "y_um": -14.2
+        }
+      ]
+    },
+    {
+      "name": "SS",
+      "pin": false,
+      "device_count": 3,
+      "net_id": 11,
+      "pin_index": null,
+      "label_positions_um": [
+        {
+          "text": "SS",
+          "x_um": 2179.52,
+          "y_um": -17.4
+        }
+      ]
+    },
+    {
+      "name": "TC_D1",
+      "pin": false,
+      "device_count": 4,
+      "net_id": 4,
+      "pin_index": null,
+      "label_positions_um": [
+        {
+          "text": "TC_D1",
+          "x_um": 2208.22,
+          "y_um": -21.4
+        }
+      ]
+    },
+    {
+      "name": "TC_TAIL",
+      "pin": false,
+      "device_count": 3,
+      "net_id": 6,
+      "pin_index": null,
+      "label_positions_um": [
+        {
+          "text": "TC_TAIL",
+          "x_um": 2203.08,
+          "y_um": -20.6
+        }
+      ]
+    },
+    {
+      "name": "TS_CMP",
+      "pin": false,
+      "device_count": 5,
+      "net_id": 3,
+      "pin_index": null,
+      "label_positions_um": [
+        {
+          "text": "TS_CMP",
+          "x_um": 2213.36,
+          "y_um": -22.2
+        }
+      ]
+    },
+    {
+      "name": "TS_HYS",
+      "pin": false,
+      "device_count": 2,
+      "net_id": 1,
+      "pin_index": null,
+      "label_positions_um": [
+        {
+          "text": "TS_HYS",
+          "x_um": 2336.08,
+          "y_um": -24.6
+        }
+      ]
+    },
+    {
+      "name": "TS_MID",
+      "pin": false,
+      "device_count": 3,
+      "net_id": 8,
+      "pin_index": null,
+      "label_positions_um": [
+        {
+          "text": "TS_MID",
+          "x_um": 2182.24,
+          "y_um": -18.2
+        }
+      ]
+    },
+    {
+      "name": "TS_REF",
+      "pin": false,
+      "device_count": 5,
+      "net_id": 5,
+      "pin_index": null,
+      "label_positions_um": [
+        {
+          "text": "TS_REF",
+          "x_um": 2197.73,
+          "y_um": -19.8
+        }
+      ]
+    },
+    {
+      "name": "TS_SNS",
+      "pin": false,
+      "device_count": 4,
+      "net_id": 7,
+      "pin_index": null,
+      "label_positions_um": [
+        {
+          "text": "TS_SNS",
+          "x_um": 2184.45,
+          "y_um": -19.0
+        }
+      ]
+    },
+    {
+      "name": "VIN",
+      "pin": true,
+      "device_count": 145,
+      "net_id": 26,
+      "pin_index": 1,
+      "label_positions_um": [
+        {
+          "text": "VIN",
+          "x_um": 0.21,
+          "y_um": -3.0
+        }
+      ]
+    },
+    {
+      "name": "VOUT",
+      "pin": true,
+      "device_count": 51,
+      "net_id": 21,
+      "pin_index": 2,
+      "label_positions_um": [
+        {
+          "text": "VOUT",
+          "x_um": 1503.05,
+          "y_um": -4.6
+        }
+      ]
+    },
+    {
+      "name": "VREF",
+      "pin": true,
+      "device_count": 1,
+      "net_id": 28,
+      "pin_index": 3,
+      "label_positions_um": [
+        {
+          "text": "VREF",
+          "x_um": 2261.91,
+          "y_um": -23.8
+        }
+      ]
+    }
+  ],
+  "warnings": [
+    "kept 24 net(s) internal: not in the declared pin set (--pins / layout.declared_pins) (0, AMP_ENN, BIASP, BIAS_ENN, CL_CMP, CL_SNS, EA_CZ, EA_D1, EA_D2, EA_OUT, EA_TAIL, ENB, FB, NB, N_FBB, PB, SS, TC_D1, TC_TAIL, TS_CMP, TS_HYS, TS_MID, TS_REF, TS_SNS) -- issue #514",
+    "1 net connect to exactly one device terminal -- source/drain/body/resistor-equivalent, not a gate -- and are not a declared pin; this can be a legitimate single-terminal tie (e.g. an intentionally unterminated dummy's diffusion tie), but confirm these nets have no other intended connectivity -- see single_terminal_nets[] for the full list."
+  ],
+  "black_box_regions": [],
+  "abstracted_cells": [],
+  "unmodelled_poly": [],
+  "merged_net_labels": [],
+  "voltage_domain_warnings": [],
+  "unbiased_pmos_body_nets": [],
+  "single_terminal_nets": [
+    {
+      "net": "EA_CZ",
+      "device": "$97",
+      "terminal": "a",
+      "terminal_kind": "a"
+    }
+  ],
+  "dead_metal": [],
+  "matched_device_groups": [],
+  "pdk": null,
+  "provenance": {
+    "klt_version": "0.6.0+g040f3406b485",
+    "klayout_version": "0.30.12",
+    "pdk": null,
+    "deck": {
+      "name": "sky130",
+      "content_hash": "sha256:d7a9ddfa4785e2427553cc8701f9ed547d1b68abb21aef2c8c9fb6c8d8ca3791",
+      "released": false
+    },
+    "input": {
+      "content_hash": "sha256:fd95e8e75eab73488faea5ff1ebede086abfd579d21411e80cb2b71191fc2591",
+      "role": "layout"
+    }
+  },
+  "parasitics": null,
+  "spef_path": null,
+  "subcircuit": null,
+  "metrics": {
+    "extract__device__count": 97,
+    "extract__net__count": 28,
+    "extract__pin__count": 4
+  }
+}

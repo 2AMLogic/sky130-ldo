@@ -26,6 +26,51 @@ def load_json(path: Path) -> dict | None:
         return None
 
 
+def summarize_delta(pex_resp: dict | None, request: dict | None) -> dict | None:
+    """Per-measurement |delta%| spread across `klt pex`'s `delta[]` rows.
+
+    Why this is in the record at all (issue #142): `klt pex`'s row `status`
+    is graded against the *declared* limits in the request's `measurements[]`
+    -- and this experiment's request declares none. So an all-`pass`,
+    exit-code-0 `klt pex` report means "both legs produced a number for every
+    row", **not** "the extracted values agree with the schematic values". The
+    spread below is the number that actually says how far apart the two legs
+    are, and `limits_declared` is the flag that says how much the verdict is
+    worth. Recording only the verdict, without these, would be the kind of
+    dressed-up pass `README.md`'s own "not a fabricated pass" note refuses.
+    """
+    if not pex_resp:
+        return None
+    rows = pex_resp.get("delta") or []
+    if not rows:
+        return None
+    declared = set()
+    for measurement in (request or {}).get("measurements", []) or []:
+        if any(k in measurement for k in ("limits", "limit", "tolerance_pct")):
+            declared.add(measurement.get("name"))
+    per_row: dict[str, dict] = {}
+    for row in rows:
+        name = row.get("spec_row")
+        value = row.get("delta_pct")
+        if name is None or value is None:
+            continue
+        per_row.setdefault(name, {"deltas": [], "worst_corner": None})
+        per_row[name]["deltas"].append((abs(value), row.get("corner_id")))
+    summary = {}
+    for name, acc in per_row.items():
+        magnitudes = sorted(m for m, _ in acc["deltas"])
+        worst = max(acc["deltas"])
+        summary[name] = {
+            "row_count": len(magnitudes),
+            "abs_delta_pct_min": round(magnitudes[0], 3),
+            "abs_delta_pct_median": round(magnitudes[len(magnitudes) // 2], 3),
+            "abs_delta_pct_max": round(magnitudes[-1], 3),
+            "worst_corner": worst[1],
+            "limits_declared": name in declared,
+        }
+    return summary or None
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--record-id", required=True)
@@ -49,6 +94,8 @@ def main() -> int:
     repo_root = Path(args.repo_root)
     sim_resp = load_json(Path(args.sim_schematic_response))
     pex_resp = load_json(Path(args.pex_response))
+    request = load_json(Path(args.request))
+    delta_summary = summarize_delta(pex_resp, request)
 
     sha = git(repo_root, "rev-parse", "HEAD")
     dirty = bool(git(repo_root, "status", "--porcelain"))
@@ -91,6 +138,7 @@ def main() -> int:
             "exit_code": args.pex_exit,
             "response": f"klt-responses/{args.record_id}.pex.json",
             "summary": pex_summary,
+            "delta_spread": delta_summary,
         },
         "request": f"klt-requests/{args.record_id}.request.json",
         "netlist_snapshots": {
@@ -157,13 +205,49 @@ def main() -> int:
         f"- Schematic DUT used: `netlist-snapshots/{args.record_id}.schematic-dut.spice`",
         f"- Request: `klt-requests/{args.record_id}.request.json`",
         "",
+    ]
+    if delta_summary:
+        ungraded = [n for n, s in delta_summary.items() if not s["limits_declared"]]
+        lines += [
+            "### `delta[]` spread (extracted vs. schematic)",
+            "",
+            "| Measurement | Rows | min \\|delta\\| % | median \\|delta\\| % |"
+            " max \\|delta\\| % | Worst corner | Limits declared |",
+            "| --- | --- | --- | --- | --- | --- | --- |",
+        ]
+        for name, stats in sorted(delta_summary.items()):
+            lines.append(
+                f"| `{name}` | {stats['row_count']} | "
+                f"{stats['abs_delta_pct_min']:g} | "
+                f"{stats['abs_delta_pct_median']:g} | "
+                f"{stats['abs_delta_pct_max']:g} | "
+                f"`{stats['worst_corner']}` | "
+                f"{'yes' if stats['limits_declared'] else '**no**'} |"
+            )
+        lines.append("")
+        if ungraded:
+            lines.append(
+                "**A row's `status` is graded against the limits its own"
+                " `measurements[]` entry declares, and "
+                + ", ".join(f"`{n}`" for n in sorted(ungraded))
+                + (" declare" if len(ungraded) > 1 else " declares")
+                + " none.** For those rows `pass` means only that"
+                " both legs produced a number -- it is *not* a statement that"
+                " the extracted value agrees with the schematic value. Read"
+                " the spread above, not the verdict, for how far apart the two"
+                " legs actually are."
+            )
+            lines.append("")
+    lines += [
         "**Read this alongside `sim/pex-post-layout/README.md`** before drawing any conclusion from"
-        " the numbers above -- two disclosed, real, upstream `klt`/PDK-model-interaction gaps"
-        " (klayout-tools#1157, #1159) block the extracted-side leg from converging at all, plus a"
-        " separate disclosed MOS-flavor-binding caveat where it would converge (klayout-tools#1369,"
-        " sky130-specific; supersedes the now-closed #1089, whose own follow-on fix (#1111) landed"
-        " gf180mcu-only) -- see that file's full caveat before comparing anything here to"
-        " `spec/target-spec.md`.",
+        " the numbers above. The three gaps that previously bounded the extracted-side leg are"
+        " closed as of this record: klayout-tools#1157 and #1159 (which blocked it from converging"
+        " at all) upstream, and the MOS-flavour-binding gap klayout-tools#1369 upstream plus its"
+        " repo-local half -- the layout now draws sky130's `hvi` (75/20) voltage-domain marker"
+        " (issue #142), so `klt extract --pdk` binds the schematic's own"
+        " `sky130_fd_pr__{n,p}fet_g5v0d10v5` models instead of substituting the 1.8V core flavour."
+        " Read that file's caveat section for what this experiment still does not cover before"
+        " comparing anything here to `spec/target-spec.md`.",
         "",
         f"- **Timestamp**: {out['timestamp']}",
         f"- **Supersedes**: {args.supersedes or '(none)'}",

@@ -144,14 +144,23 @@ trial rather than assumed:
    cross-checked against three independent PDK sources, plus a follow-up
    (`a261706c`, #1912) fixing the `klt gen` side. The binding is
    **marker-scoped**: a device binds the g5v0d10v5 model only when its
-   gate region overlaps an `hvi` (75/20) polygon. The landed `ldo_core`
-   GDS contains **no** `hvi` polygons at all (verified by a direct layer
-   scan of `layout/ldo-core/reports/<LVS-record>/ldo_core.gds`: 15
-   layer/datatype pairs, 75/20 absent), so all 67 MOS devices still bind
-   `*_01v8` -- no longer an upstream gap but a repo-local layout
-   omission. Drawing the marker is tracked in #142; the downstream
-   symptom and the residual upstream silence are covered under
-   "Consequence" below.
+   gate region overlaps an `hvi` (75/20) polygon. At that point the landed
+   `ldo_core` GDS contained **no** `hvi` polygons at all (verified by a
+   direct layer scan of `layout/ldo-core/reports/<LVS-record>/ldo_core.gds`:
+   15 layer/datatype pairs, 75/20 absent), so all 67 MOS devices still bound
+   `*_01v8` -- no longer an upstream gap but a repo-local layout omission,
+   tracked in #142.
+
+   **Update (2026-09-24, issue #142): the repo-local half is closed too.**
+   `layout/bin/gen-ldo-blocks.py` now passes `voltage_flavor="hvi"` on every
+   MOS block, keyed on the schematic's own model token
+   (`MOS_VOLTAGE_FLAVORS`, the same schematic-derived discipline its
+   `MOS_MODELS` map already followed) rather than a hand-transcribed
+   per-device list, and hard-fails if `klt gen`'s
+   `drc_hints.voltage_flavor_mark_present` comes back false instead of
+   silently drawing nothing. The marker is now really in the stream and the
+   bind really follows it -- both measured on the 2026-09-24 record, not
+   assumed; see the record note at the end of this file for the numbers.
 
 ## A third gap: `--pdk`'s resistor X-card geometry convention itself fails
 
@@ -237,6 +246,63 @@ silent when a deck declares flavour markers but the layout contains none
 re-run, **T1 item 7 remains unmet** (item 7 accepts a `klt pex` report
 and nothing else; 27 errored corners are 27 errored corners).
 
+**Update (2026-09-24, issue #142): every corner now runs -- and what that
+exposes is a *different* problem, one this repo owns.** With the `hvi`
+marker drawn (see the #142 update above), record
+[`20260924-181248-50554fe`](records/20260924-181248-50554fe.md) reports
+`status: pass, passed: 135, failed: 0, errored: 0`, exit code `0`
+(superseding `20260923-183915-d9900b5`). The 27 `ss`-corner aborts are gone:
+the extracted netlist binds `sky130_fd_pr__{n,p}fet_g5v0d10v5` on all 92 MOS
+devices (18 n + 74 p, counted directly out of
+`netlist-snapshots/20260924-181248-50554fe.pex.extract.spice`), so ngspice
+no longer hits the `Pclm` BSIM4 parameter check that the substituted
+`*_01v8` model's binning failed. Every `ss` extracted-corner log under
+`sim/build/pex-post-layout/20260924-181248-50554fe/pex/.../extracted/ss_*/`
+is clean.
+
+**Do not read that `pass` as agreement between the two legs.** This
+experiment's request (`testbench/tb_pex_post_layout.request.json`) declares
+**no limits** on any of its three measurements, so `klt pex` grades every
+`delta[]` row against nothing and `pass` means only "both legs produced a
+number". The record's own `delta[]`-spread table is the number that matters,
+and it is large:
+
+| Measurement | median \|delta\| % | max \|delta\| % |
+| --- | --- | --- |
+| `vout_light_load_v` (1 mA) | 1.9 | 161 |
+| `vout_full_load_v` (50 mA) | 385 | 3543 |
+| `vin_minus_vout_full_load_v` (50 mA) | 633 | 4775 |
+
+At light load the extracted leg tracks the schematic within ~2% at most
+corners -- a plausible parasitic delta. At **full load it is non-physical**:
+the extracted `VOUT` lands at -5.7 V (`tt/2.970V/-40C`) to -61.9 V
+(`ss/3.300V/-40C`).
+
+The traced cause is this flow's routing, not the flavour fix and not the
+extraction: `gen-ldo-blocks.py` draws every net as a `TRUNK_W_UM = 0.30`um
+met1 trunk -- signal-grade, and the same "says nothing about whether the
+signal-grade routing this flow draws is adequate for the load current
+`VIN`/`VOUT` actually carry" caveat `layout/README.md` has carried since
+issue #17. The extracted `VOUT` net's lumped star resistance runs 102 Ω to
+**64.3 kΩ** per terminal across its 51 terminals (`VIN`: 259 Ω to 29.4 kΩ
+across 145), so at 50 mA the IR drop swamps the loop and the solver leaves
+the regulating branch entirely. **This is a real layout defect the
+flavour-substitution error was previously masking** -- it is tracked
+as #154 and is *not* in #142's scope, which was to make the extracted
+netlist describe the design's own transistors.
+
+**T1 item 7 status.** A `klt pex` report now exists that ran the design's
+real devices at all 45 corners, which is what item 7 asks for -- but the
+full-load rows it contains are non-physical, so nothing in it is comparable
+to `spec/target-spec.md` at full load yet. Treat item 7 as *substantiable in
+kind but not yet in substance*: the blocker is the power routing above (#154),
+and a fresh record after that is fixed is what should be read against the
+spec. The light-load rows are the only ones worth quoting today, and only with
+the "no declared limits" caveat attached. `signoff/block-manifest.json`
+therefore still cites the older, erroring `klt pex` run for item 7 rather than
+this record -- deliberately; see `signoff/README.md`, "Item 7 has a passing
+record that this manifest declines to cite".
+
 **`body_bias` (read per issue #122's scope).** The same report's
 `body_bias` block reads `status: "biased", unbiased_device_count: 0,
 unbiased_nets: []` -- no device body sits on an anonymous deck-synthesized
@@ -274,7 +340,51 @@ reproduce prose the record does not contain -- exactly the failure issue #146
 was filed for. **When a new record is minted, update this section and re-run
 the generator; do not hand-edit `characterization.md`.**
 
-### Record `20260923-183915-d9900b5` (`klt 0.6.0+g040f3406b485`)
+### Record `20260924-181248-50554fe` (`klt 0.6.0+g040f3406b485`) — current
+
+First record cut against a layout that carries the `hvi` (75/20)
+voltage-domain marker (issue #142), and the first in which the extracted-side
+leg re-simulates the design's own transistors.
+
+- `klt sim` (schematic-side leg, standalone): `status=pass, corners=45,
+  passed=45, failed=0, errored=0`. The nine `timeout` errors the previous
+  record's standalone leg carried did not recur — consistent with the
+  "host-load-induced, not a model or deck failure" reading above (same 120 s
+  `options.timeout_s` cap, unchanged).
+- `klt pex` (schematic + extracted legs + delta): `status=pass, passed=135,
+  failed=0, errored=0, pin_count_mismatch=None`, exit code `0`. Extraction:
+  `deck=sky130, device_count=97, net_count=28`.
+- **Flavour binding is correct for the first time.** All 92 MOS devices in
+  `netlist-snapshots/20260924-181248-50554fe.pex.extract.spice` bind
+  `sky130_fd_pr__nfet_g5v0d10v5` (18) / `sky130_fd_pr__pfet_g5v0d10v5` (74) —
+  counted out of the netlist, not inferred. The prior record's 27 `ss`-corner
+  `Pclm` aborts are gone.
+- **`pass` here is ungraded — read the spread, not the verdict.** The request
+  declares no limits on any measurement, so every `delta[]` row's `pass`
+  means only that both legs produced a number. The record's own
+  `delta[]`-spread table: `vout_light_load_v` median 1.9% / max 161%,
+  `vout_full_load_v` median 385% / max 3543%,
+  `vin_minus_vout_full_load_v` median 633% / max 4775%.
+- **The full-load rows are non-physical, and the cause is this flow's power
+  routing.** Extracted `VOUT` reaches −5.7 V to −61.9 V at 50 mA. The
+  extracted `VOUT` net carries 102 Ω–64.3 kΩ of lumped star series resistance
+  across its 51 terminals (`VIN`: 259 Ω–29.4 kΩ across 145), because
+  `gen-ldo-blocks.py` draws every net — power rails included — as a 0.30 µm
+  met1 trunk. Out of #142's scope (which was the device flavour); tracked as
+  #154.
+- `body_bias`: `status=biased, unbiased_device_count=0, unbiased_nets=[]` —
+  unchanged from the prior record, so the
+  [klayout-tools#1983](https://github.com/2AMLogic/klayout-tools/issues/1983)
+  physically-wrong-resimulation hazard still does not bite for this layout.
+- Layout under test: `layout/ldo-core/reports/20260924-181216-50554fe` (LVS
+  `status: match`, 47/47 devices, 27/27 nets) on
+  `20260924-181155-50554fe`'s GDS (DRC `clean`, `violation_count=0` with
+  75/20 present in `layers_in_stream_without_rules` — the marker is drawn and
+  is DRC-neutral, measured). Both were re-cut for this record against the
+  DR-011-resized `M_PASS`/`M_SENSE` schematic, so the device count moved
+  67 → 92 MOS.
+
+### Record `20260923-183915-d9900b5` (`klt 0.6.0+g040f3406b485`) — superseded
 
 - `klt sim` (schematic-side leg, standalone): `status=error, corners=45,
   passed=36, failed=0, errored=9`. All nine errors are `timeout` under the
@@ -340,12 +450,23 @@ landed layout (`layout/ldo-core/reports/LATEST-LVS`), then runs `klt pex`
 against it and writes a new timestamped record under `records/`. Defaults to
 the ambient `klt` on `PATH`; see "Note on the `klt` pin" below for why.
 
-**Note on the `klt` pin.** `layout/requirements.txt` pins a `klt` commit
-(`acb0ae6`) predating `klt pex`'s introduction -- `layout/.venv/bin/klt
---version` reports `0.2.0` but its `<command>` list has no `pex` verb. This
-experiment therefore records its own, separate pin below rather than reusing
-`layout/`'s (a `layout/`-scoped pin bump is out of scope for this
-experiment -- `layout/` is a read-only dependency here).
+**Note on the `klt` pin.** Historically `layout/requirements.txt` pinned a
+`klt` commit (`acb0ae6`) predating `klt pex`'s introduction --
+`layout/.venv/bin/klt --version` reported `0.2.0` and its `<command>` list
+had no `pex` verb -- so this experiment recorded its own, separate pin below
+rather than reusing `layout/`'s.
+
+**Update (2026-09-24, issue #142): the two pins have converged.**
+`layout/requirements.txt` now pins `040f3406`, the same commit this
+experiment's 2026-09-23 run already used, because the layout flow itself now
+needs sky130 voltage-flavor support from that build (see that file's "Pin
+history"). `layout/.venv/bin/klt` is therefore a valid `--klt` argument here
+and is what the 2026-09-24 record below was run with -- which also means the
+layout under test and the `klt pex` run against it are, for the first time,
+the same `klt` build end to end. They are still *separately* pinned: nothing
+forces them to stay equal, so a future bump on either side must re-check the
+other rather than assume. `layout/` remains a read-only dependency of this
+experiment.
 
 **Note on `tb_pex_post_layout.request.json`'s `models.lib`.** Uses the
 literal `"$PDK_ROOT/sky130A/libs.tech/combined/sky130.lib.spice"` shape
@@ -378,6 +499,15 @@ behavior in either shape alone).
   the same move sky130-pll#46 already made. Install:
   `uv tool install "klayout-tools @ git+https://github.com/2AMLogic/klayout-tools@040f3406b4858ac7a5b8faa8df5327fd62a65afa"`.
   PDK pin unchanged.
+- **2026-09-24 run (issue #142, record `20260924-181248-50554fe`):** same
+  `klt` commit `040f3406b4858ac7a5b8faa8df5327fd62a65afa`, same reported
+  version `0.6.0+g040f3406b485` (confirmed in the run's own
+  `provenance.klt_version`). Not re-bumped — #142 needed no newer `klt`, it
+  needed the *layout* to start using what this build already had. The
+  difference from the 2026-09-23 run is therefore the drawn `hvi` marker and
+  the DR-011 schematic resize, not the tool. Run with `--klt
+  layout/.venv/bin/klt`, which `layout/requirements.txt` now pins to this
+  same commit (see "Note on the `klt` pin" above). PDK pin unchanged.
 - PDK: `sky130A`, `open_pdks c6d73a35f524070e85faff4a6a9eef49553ebc2b` (same
   pin as `sim/pdk.json`).
 
