@@ -1,0 +1,93 @@
+{
+  "comment": [
+    "Repo-side freshness pins for every citation in signoff/block-manifest.json.",
+    "",
+    "WHY THIS FILE EXISTS. `klt signoff --manifest` compares a manifest's",
+    "`content_hash` against the *cited envelope's own* claim about its input --",
+    "it never opens the underlying artifact. klt 0.6.0 says so itself, on every",
+    "pinned citation: `input: not re-hashed (content_hash compared against this",
+    "envelope's own claim only -- the artifact itself was not read)`. Two",
+    "hand-written files agreeing with each other proves nothing, so this file",
+    "records the sha256 of the artifact each citation is really about, and",
+    "signoff/check.sh re-hashes it on disk in CI. That is what makes a citation",
+    "here fail rather than rot when its artifact moves.",
+    "",
+    "It also covers the two citations `klt signoff` structurally cannot pin at",
+    "all: this repo's LVS and Monte-Carlo envelopes were produced by klt 0.2.0",
+    "(layout/requirements.txt's pin), which wrote `provenance.input: null`.",
+    "A manifest `content_hash` on either would render the item unmet/",
+    "stale_evidence -- a false negative -- so the manifest pins neither, and",
+    "the freshness claim for both lives here instead, against a hash the",
+    "envelope does carry elsewhere (`environment.layout_sha256` for LVS) or",
+    "against the committed snapshot the envelope names (Monte Carlo).",
+    "",
+    "`envelope_field` is a dotted path into the cited envelope whose value must",
+    "equal `sha256`; null means the envelope makes no hash claim about this",
+    "artifact and only the on-disk re-hash is checked."
+  ],
+  "pins": [
+    {
+      "item": "3",
+      "artifact": "layout/ldo-core/reports/20260825-123551-3b4e121/ldo_core.gds",
+      "sha256": "sha256:52307a206e6eaaa2e555dbb3aa6b62928ac2d5fab8189f9dd4f1600d220d9172",
+      "cited_envelope": "layout/ldo-core/reports/20260825-123551-3b4e121/drc.json",
+      "envelope_field": "provenance.input.content_hash",
+      "manifest_pinned": true,
+      "note": "The composed LDO-core GDS the `klt drc` run read. Also the manifest's own item-3 pin, so all three -- file on disk, envelope claim, manifest pin -- must agree."
+    },
+    {
+      "item": "4",
+      "artifact": "layout/ldo-core/reports/20260825-123628-3b4e121/ldo_core.gds",
+      "sha256": "sha256:52307a206e6eaaa2e555dbb3aa6b62928ac2d5fab8189f9dd4f1600d220d9172",
+      "cited_envelope": "layout/ldo-core/reports/20260825-123628-3b4e121/lvs.json",
+      "envelope_field": "environment.layout_sha256",
+      "manifest_pinned": false,
+      "note": "The LVS record's own copy of the same composed GDS item 3 was run on -- byte-identical, which is itself checked here by both pins carrying the same hash. klt 0.2.0's lvs envelope carries no provenance.input, so the manifest cannot pin this citation; environment.layout_sha256 is the hash it does carry."
+    },
+    {
+      "item": "4",
+      "artifact": "layout/ldo-core/reports/20260825-123628-3b4e121/reference.spice",
+      "sha256": "sha256:b2c036cd7c50e691c2033887869eca51fff75f48d26784ed8e64626ff9b61cb6",
+      "cited_envelope": "layout/ldo-core/reports/20260825-123628-3b4e121/lvs.json",
+      "envelope_field": "environment.reference_sha256",
+      "manifest_pinned": false,
+      "note": "The schematic-derived reference netlist the layout was compared against -- item 4 requires the compare to be against item 1's netlist, so the reference side needs pinning too, not just the layout side."
+    },
+    {
+      "item": "6",
+      "artifact": "sim/mc-output-accuracy/netlist-snapshots/20260825-083111-4cb27f8.spice",
+      "sha256": "sha256:5625e99d8488924c0e3163e2d278412aef748623ef0381a0fdcf21570798241b",
+      "cited_envelope": "sim/mc-output-accuracy/klt-responses/20260825-083111-4cb27f8.json",
+      "envelope_field": null,
+      "manifest_pinned": false,
+      "note": "The netlist the Monte Carlo campaign ran on. klt 0.2.0's sim envelope names it only by an absolute path from the machine that produced it and carries no hash of it, so this on-disk pin is the only freshness handle the citation has."
+    },
+    {
+      "item": "7",
+      "artifact": "layout/ldo-core/reports/20260825-123551-3b4e121/ldo_core.gds",
+      "sha256": "sha256:52307a206e6eaaa2e555dbb3aa6b62928ac2d5fab8189f9dd4f1600d220d9172",
+      "cited_envelope": "sim/pex-post-layout/klt-responses/20260825-125102-3b4e121.pex.json",
+      "envelope_field": "provenance.input.content_hash",
+      "manifest_pinned": true,
+      "note": "The `klt pex` run's input layout -- the same composed GDS items 3 and 4 were run on, which is what makes the (errored) post-layout leg comparable to them at all."
+    },
+    {
+      "item": "7",
+      "artifact": "sim/pex-post-layout/netlist-snapshots/20260825-125102-3b4e121.pex.extract.spice",
+      "sha256": "sha256:a825cc07c2410352ec1ccd9529a1bb5c281d6c9e3dd66c66f9f71dfbbd21de96",
+      "cited_envelope": "sim/pex-post-layout/klt-responses/20260825-125102-3b4e121.pex.json",
+      "envelope_field": "extraction.netlist_sha256",
+      "manifest_pinned": false,
+      "note": "The extracted netlist the post-layout re-simulation was attempted against."
+    },
+    {
+      "item": "8",
+      "artifact": "measurements/characterization.md",
+      "sha256": "sha256:ee61b3113bf3df56294cefffe5f3c1680f340a43dd6bc33a921c3d07fe4a8f02",
+      "cited_envelope": "signoff/evidence/characterization.generic.json",
+      "envelope_field": "provenance.input.content_hash",
+      "manifest_pinned": true,
+      "note": "The aggregated per-spec-row rollup the generic envelope wraps. Regenerating it (measurements/build_characterization_report.py) without re-pinning here fails CI, which is the point: item 8 asks for a *current* artifact."
+    }
+  ]
+}

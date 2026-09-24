@@ -1,0 +1,267 @@
+# signoff/ — this block's T1 state, graded rather than hand-read
+
+`signoff/records/t1-tier-report.json` is **this block's verdict of record**
+against the klayout-tools design-evidence ladder
+([`docs/design-evidence-tiers.md`](https://github.com/2AMLogic/klayout-tools/blob/main/docs/design-evidence-tiers.md)).
+It is not prose about where the block stands; it is the output of
+
+```bash
+klt signoff --manifest signoff/block-manifest.json --format json
+```
+
+re-run by CI on every push and pull request, so it cannot quietly go stale the
+way a hand-maintained checkbox list does. Issue #114 — this repo's gap-to-T1
+tracker — cites it as the item-level verdict and no longer keeps a parallel
+checklist of its own.
+
+**Today: `tier: null`, T1 3/11 items met** (items 3, 4 and 8). That is the
+honest state of the block, not a placeholder. Read the per-item notes below
+before reading anything into either the three `met` rows or the eight `unmet`
+ones — several of the `unmet` rows cover artifacts that *do* exist here, and
+none of the three `met` rows means what it might look like it means.
+
+## What is here
+
+```
+signoff/
+  block-manifest.json                     the manifest: block, kind, per-item evidence
+  artifact-pins.json                      what each citation is really about, by sha256
+  evidence/characterization.generic.json  item 8's generic evidence envelope
+  records/t1-tier-report.json             the verdict of record (generated)
+  check.sh                                re-grade + freshness gate (CI runs this)
+```
+
+- `block` is `"sky130-ldo"`. It is required: it is how this block's row is
+  identified in the fleet roll-up (`klt signoff --fleet`, 2AMLogic/2am#956),
+  which consumes exactly this manifest.
+- `kind` is `"analog"` — confirmed against the block, not taken on faith. The
+  whole design is one hand-captured xschem schematic
+  (`design/ldo_3v3in_1v8out.sch`) plus the netlist derived from it; there is no
+  RTL anywhere in the repo, no synthesis step, no place-and-route flow (the
+  layout is generated device-by-device by `layout/bin/gen-ldo-blocks.py` from
+  that same netlist), and no digital partition to declare a boundary for. The
+  thermal-shutdown and enable logic are drawn as ordinary MOS devices in the
+  same schematic, not as standard cells. So the **Analog** column of items 1,
+  2, 5, 7 and 11 applies, and `mixed-signal`'s partition-boundary declaration
+  does not arise.
+
+## Running it
+
+```bash
+bash signoff/check.sh          # verify (what CI runs)
+bash signoff/check.sh --write  # regenerate the verdict of record
+```
+
+`check.sh` pins the klayout-tools release it grades against
+(`klayout-tools==0.6.0`) — see its header for why that pin is load-bearing:
+T1 item 11 landed on 2026-09-17 (klayout-tools#2025), *after* the 0.5.0
+release, so grading this block on 0.5.0 renders a ten-item checklist with no
+item-11 row at all. That pin is deliberately independent of
+`layout/requirements.txt`'s `klt` pin, which fixes the toolchain that
+*produced* this repo's DRC/LVS/PEX evidence (klt 0.2.0) rather than the grader
+that *reads* it.
+
+It fails on three separable conditions, so a red build says which one:
+
+1. **A pinned `content_hash` no longer matches the artifact it covers.** `klt
+   signoff` compares a manifest's pin against the *cited envelope's own*
+   `provenance.input.content_hash`; it never opens the underlying artifact, and
+   says so on every pinned citation it prints (`input: not re-hashed …`). Two
+   hand-written files agreeing with each other proves nothing by itself, so
+   `signoff/artifact-pins.json` records the sha256 of the artifact behind every
+   citation and `check.sh` re-hashes each one on disk. Regenerate
+   `measurements/characterization.md`, or recompose the layout GDS, without
+   re-pinning, and this fails — which is the point: a citation that cannot rot
+   is a citation that proves nothing.
+2. **`klt signoff --manifest` could not run.** Exit 0 (T1 reached) and exit 3
+   (ran fine, not yet T1) are both clean runs; 1 and 2 mean a broken manifest
+   or a tier doc this `klt` cannot parse.
+3. **The committed record no longer matches a fresh run.** Either this block's
+   evidence moved or the checklist did. Both are real news; neither should be
+   discoverable only by someone re-reading prose.
+
+## Why each item reads the way it does
+
+The grader's verdict is in `records/t1-tier-report.json`. This section is the
+part the grader structurally *cannot* check — what was cited, what was
+deliberately not cited, and the disclosures `design-evidence-tiers.md` requires
+of the claimant rather than of the tool.
+
+| # | Status | Reading |
+|---|---|---|
+| 1 | `unmet` / `no_evidence` | The artifacts exist — `design/ldo_3v3in_1v8out.sch` plus the headless xschem netlist every downstream flow re-derives from it. Uncited on purpose, see "Items 1, 2, 9 and 10" below. |
+| 2 | `unmet` / `no_evidence` | The artifact exists — `layout/ldo-core/reports/20260825-123551-3b4e121/ldo_core.gds`, reproducibly generated by `layout/bin/gen-ldo-blocks.py` + `run-ldo-layout-flow.sh` from the same netlist, with the floorplan recorded in `layout/ldo-core/floorplan.md`. Uncited on purpose, same reason. |
+| 3 | **`met`** | `klt drc` on that GDS, `status: clean`, `violation_count: 0`, pinned to the GDS's own sha256. **Read the coverage disclosure below before treating this as "DRC clean".** |
+| 4 | **`met`** | `klt lvs`, `status: match`, layout vs. the schematic-derived reference netlist. **Three disclosed warnings and two unasked questions below.** |
+| 5 | `unmet` / `no_evidence` | The largest real gap, and not a presentation choice. `spec/target-spec.md` *is* ratified (issue #1, DR-006) and a full 45-point PVT campaign exists under `sim/*/`— but it reports **FAIL on 9 of the 12 graded rows**, and the records are this repo's own Markdown/JSON format rather than `klt sim` envelopes, so there is nothing here that could render `met` even if the rows passed. Tracked as issues #114–#121. |
+| 6 | `unmet` / `check_failed` | Cites the real Monte Carlo campaign (`sim/mc-output-accuracy/klt-responses/20260825-083111-4cb27f8.json`, a `klt sim` envelope, n=200): `status: fail`, 177/200 samples inside the ±2 % Output window. A `check_failed` row, not a `no_evidence` one — the check ran and did not pass. There is no `klt yield` report (the kind the checklist names) for this campaign. |
+| 7 | `unmet` / `check_failed` | Cites the real `klt pex` run (`sim/pex-post-layout/klt-responses/20260825-125102-3b4e121.pex.json`), pinned to the same layout GDS items 3 and 4 were run on: `status: error`, **135 of 135 delta rows errored, 0 passed**. Item 7 accepts no other evidence kind, so nothing weaker could stand in. Tracked as issue #122. |
+| 8 | **`met`** | Cites `evidence/characterization.generic.json`, a generic envelope wrapping `measurements/characterization.md`. **This says the rollup exists and is current — not that its rows pass.** See below. |
+| 9 | `unmet` / `no_evidence` | Every claimed measurement's testbench *is* committed (`sim/*/testbench/`), with a documented cold-start invocation (`sim/README.md`, `docs/environment-setup.md`) and a pinned PDK revision (`sim/pdk.json`). Uncited on purpose, see below. |
+| 10 | `unmet` / `no_evidence` | README with the spec table and reproduction instructions, an Apache-2.0 licence, and CI that keeps the harness and evidence formats valid, all exist. Uncited on purpose, see below. |
+| 11 | `unmet` / `no_evidence` | Power delivery (structural). There is no `klt erc` supply spec and no ERC report in this repo, and item 4's LVS predates `power_connectivity` entirely. Tracked as issue #112, which also records the upstream blocker (klayout-tools#2169) on declaring `ties[]`. The item has a row here, `unmet`, rather than being silently absent — it was added to the checklist on 2026-09-17 (klayout-tools#2025) and invalidated every hand-read that predates it. |
+
+### Item 3 is `met`, and the coverage its "clean" was measured inside
+
+`design-evidence-tiers.md` item 3 requires known deck coverage gaps to be
+enumerated **in the claim**, and is explicit that this is claimant-enforced:
+`klt signoff` grades item 3 on `status: "clean"` alone, so a `met` verdict is
+not evidence that the gaps were disclosed. Quoted verbatim from the cited
+envelope's own `coverage` block:
+
+- `layers_checked` — `65/20` (diff), `66/20` (poly), `66/44` (licon1), `67/20`
+  (li1), `67/44` (mcon), `68/20` (met1), `68/44` (via), `69/20` (met2). Eight
+  layers; this block routes on met1/met2 only.
+- `layers_in_stream_without_rules` — **seven layers are drawn in this stream
+  that the deck has no rule for**: `64/20` (nwell), `65/44` (tap), `66/13`
+  (poly.res marker), `68/5` (met1.pin), `79/20` (urpm), `86/20` (rpm), `94/20`
+  (psdm). Concretely: **no n-well rule was evaluated at all** — not width, not
+  spacing, not enclosure of the PMOS span the whole layout's body-tie strategy
+  depends on — and neither were the implant masks or the poly-resistor marker
+  that identify this block's precision resistors. A "clean" verdict says
+  nothing about any of them.
+- `rules_skipped` — empty: the deck did not carry a rule this run declined to
+  evaluate.
+- `deck_scope` — **absent**. This envelope was produced by klt 0.2.0, which
+  predates the field, so the artifact makes no statement about which chapters
+  of the sky130 DRM the deck transcribes at all. Per the checklist, an absent
+  `deck_scope` is "this artifact reported no scope", never "the deck covers
+  everything".
+- `rule_counts` — **empty (`{}`)**, same vintage. The report states zero
+  violations but names no rule inventory, so the artifact does not itself say
+  how many rules ran.
+
+Re-running DRC on a current `klt` would replace all three absences with real
+values. It needs the PDK, so it is not something CI can do here; it is worth
+doing the next time the layout is recomposed.
+
+### Item 4 is `met`, and what that compare did and did not ask
+
+`status: match`, 27/27 nets, 47/47 devices, 4/4 pins, engine `klayout`
+0.30.11, layout vs. `reference.spice` (mechanically translated from the
+schematic's own xschem netlist by `layout/bin/gen-ldo-reference-netlist.py`,
+so both sides descend from the one schematic). Item 4 requires warnings-only
+mismatches to be listed with the claim; there are three, all `severity:
+warning`:
+
+- Two `device.bulk_reconciled` — the request added a `W` (bulk) terminal to the
+  reference classes `RES_HIGH_PO` (1 instance) and `RES_XHIGH_PO` (3
+  instances) and tied it to reference net `0`. **That terminal's connectivity
+  was asserted by the request, not read from the reference netlist**, so the
+  resistor-body dimension of this compare is not independently verified.
+- One `topology` — a device class with no counterpart on the other side, and no
+  devices of that class extracted either; not a real topology mismatch.
+
+Two further questions this compare never asked, both because the envelope
+predates the fields:
+
+- **`power_connectivity` is absent.** klt 0.2.0 wrote no such block, so the
+  power/ground half of the compare was not reported at all. Per the checklist,
+  that is "the question was never asked" — never "verified". It is also why
+  item 11 cannot lean on this report.
+- **`body_verification` is absent**, on the same terms: this compare makes no
+  statement about whether the device body ties were verified.
+
+And one scope limit that is not a tooling artifact: **the schematic's four MiM
+capacitors are dropped from both sides of the compare** — `klt gen` at this
+repo's pinned commit has no capacitor generator (klayout-tools#1117), so they
+are neither drawn nor referenced. A match over a netlist that excludes the
+compensation and bypass capacitors is a match over the rest of the circuit.
+
+### Item 8 is `met`, and what that verdict does and does not say
+
+`measurements/characterization.md` is the one aggregated, current,
+per-spec-row rollup this item asks for, and it names the `sim/<slug>/records/`
+(or `layout/ldo-core/reports/`) evidence record behind every verdict. It is
+generated by `measurements/build_characterization_report.py`, never
+hand-edited, byte-reproducible against an unchanged tree, and carries its own
+`--check` mode.
+
+Item 8 asks for that aggregation artifact to exist and be current. It does
+**not** ask for every row in it to pass, and this `met` verdict must not be
+read as if it did: the report currently reads **FAIL on 9 of the 12 rows that
+carry a graded verdict** — Output, Dropout, Line regulation, Load regulation,
+Load transient, PSRR, Iq, Thermal and Stability — and PASS on three (Current
+limit, Startup/soft-start, Enable/shutdown). Those FAILs are item 5's subject
+matter, and item 5 is `unmet` above. Three `met` T1 rows out of eleven is not a
+claim about this block's performance.
+
+Item 8 is also the only T1 item a `generic` envelope may satisfy. Every other
+item rejects `"kind": "generic"` outright, so this hand-rolled wrapper cannot
+be pointed at items 3–7 to make their rows go green.
+
+### Items 1, 2, 9 and 10 are uncited on purpose
+
+`klt signoff` grades these four on "some passing envelope was cited at all",
+not on whether the cited evidence is topically relevant — they name no `klt`
+verb, so there is no right artifact to restrict them to. Citing this block's
+clean DRC report for item 10 would produce a `MET` row the tool has no basis
+to object to and that would mean nothing.
+
+All four are, in substance, satisfied by this repo: the schematic and its
+netlist (1), the composed GDS and its floorplan (2), the testbenches and their
+cold-start invocation (9), the README/spec/licence/CI (10). They are still
+left `unmet`/`no_evidence`, because that is the accurate machine-readable
+statement: *no check backs this claim*. `klt signoff`'s own documentation names
+this as the safest default and the shipped `examples/signoff/` follows it.
+
+### Freshness the manifest cannot pin, and where it lives instead
+
+Two of the five citations cannot carry a manifest `content_hash` at all:
+`klt` 0.2.0 wrote `provenance.input: null` into this repo's `lvs` and `sim`
+envelopes, and a manifest pin against an envelope that claims no input hash
+renders the item `unmet`/`stale_evidence` — a false negative, not a stronger
+claim. So the manifest pins items 3, 7 and 8, and **all seven artifacts behind
+all five citations are pinned in `signoff/artifact-pins.json` and re-hashed on
+disk by `check.sh`**, including the two the manifest cannot reach:
+
+| Item | Artifact re-hashed by CI | Hash claim cross-checked against |
+|---|---|---|
+| 3 | `…/20260825-123551-3b4e121/ldo_core.gds` | envelope `provenance.input.content_hash` + manifest pin |
+| 4 | `…/20260825-123628-3b4e121/ldo_core.gds` | envelope `environment.layout_sha256` |
+| 4 | `…/20260825-123628-3b4e121/reference.spice` | envelope `environment.reference_sha256` |
+| 6 | `sim/mc-output-accuracy/netlist-snapshots/20260825-083111-4cb27f8.spice` | on-disk hash only — the envelope carries no hash of it |
+| 7 | `…/20260825-123551-3b4e121/ldo_core.gds` | envelope `provenance.input.content_hash` + manifest pin |
+| 7 | `sim/pex-post-layout/netlist-snapshots/20260825-125102-3b4e121.pex.extract.spice` | envelope `extraction.netlist_sha256` |
+| 8 | `measurements/characterization.md` | envelope `provenance.input.content_hash` + manifest pin |
+
+Re-running LVS and the Monte Carlo campaign on a current `klt` would put both
+citations' input hashes in the envelopes themselves and let the manifest pin
+them directly. Both need the PDK, so neither is a CI-side fix.
+
+### Disclosures the claimant owes, not the grader
+
+- **Item 3's DRC coverage** is *reported* by `klt signoff`, never graded — see
+  the item-3 section above for all five fields, including the two the artifact
+  does not carry.
+- **Item 7's `body_bias`** is likewise reported and not graded: a `klt pex`
+  citation whose `body_bias.status` is `"unbiased"` still renders `met`, and a
+  resimulation of an unbiased extracted netlist is physically wrong rather than
+  merely imprecise. This repo's `pex` envelope carries **no `body_bias` block
+  at all** (klt 0.2.0 predates it), which per the checklist means "this
+  artifact made no body-bias statement", never "every device body was biased".
+  Moot today — the run errored on all 135 rows, so there are no post-layout
+  numbers to qualify — but it must be stated with any future item-7 claim.
+- **Item 4's `power_connectivity` and `body_verification`** are both absent;
+  `"unchecked"` is not `"verified"`, and absent is weaker still. See the item-4
+  section.
+
+## What would move the needle
+
+In dependency order, not effort order:
+
+1. **Item 5** is the block's real gap and the largest one: nine ratified rows
+   FAIL. That is a design program (issues #115–#121), not a manifest problem,
+   and no citation here can shortcut it. Emitting the PVT campaign as `klt sim`
+   envelopes is a second, separate prerequisite for the row ever grading `met`.
+2. **Item 7** needs the `klt pex` leg to stop erroring on all 135 corners
+   (issue #122) before any post-layout claim exists at all.
+3. **Item 11** needs a `klt erc` supply spec and report (issue #112).
+4. **Item 6** needs a `klt yield` report over the existing Monte Carlo
+   campaign — and, before that, an Output row that passes.
+5. **Items 1, 2, 9 and 10** need nothing built. They stay `unmet` by choice,
+   not by gap.
+
+Filing the tool-side friction this surfaces belongs at
+`2AMLogic/klayout-tools`, per this repo's friction protocol in `CLAUDE.md` —
+generically, describing the tool gap and not this design.
