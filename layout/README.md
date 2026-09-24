@@ -53,6 +53,18 @@ same commit the sibling `sky130-bandgap` repo's own trivial-cell flow already
 proved against this same sky130 PDK pin, so this repo's first layout-flow run
 starts from a known-good baseline rather than an unverified new pin.
 
+**There are two pins, deliberately.** `requirements.txt` is the build every
+committed DRC/LVS/PEX record was produced on; those records are append-only
+evidence, so bumping it invalidates their stated provenance and is done only
+alongside a re-run. `erc-requirements.txt` is a second, newer pin for the
+`klt erc` supply-spec flow, which needs capability (`nets[].kind`,
+`stackup[0].active_layer`, `devices[]`, isolated `ties[]` extraction,
+`well_layer: null` + `well_boxes`) that landed upstream long after the first
+pin. That file names each capability and the upstream issue behind it. Two
+pins, each naming the build its own evidence was produced on, beats one pin
+that is wrong for one of the flows — cross-check any report against the
+`provenance.klt_version` it carries.
+
 ## The flow
 
 ```
@@ -107,9 +119,10 @@ accident on a compare that ignores the other axis. Both must (and do) report
 ```
 layout/
   README.md                  # this file
-  requirements.txt           # pinned `klt` install (git commit SHA)
+  requirements.txt           # pinned `klt` install for the DRC/LVS/PEX flows (git commit SHA)
+  erc-requirements.txt       # SECOND pin, for the `klt erc` supply-spec flow (and why it differs)
   bin/
-    setup-venv.sh             # create/refresh layout/.venv from requirements.txt
+    setup-venv.sh             # create/refresh a venv from one of the requirements files
     run-trivial-cell-flow.sh  # the repeatable driver: gen -> drc -> extract -> lvs -> report
     render-record.py          # renders + verdict-checks a record's record.md
     run-ldo-layout-flow.sh    # LDO-core driver: xschem netlist -> gen -> gen-compose -> route -> drc -> report
@@ -118,18 +131,31 @@ layout/
     run-ldo-lvs-flow.sh       # issue #17: LDO-core LVS driver: xschem netlist -> reference -> extract -> lvs -> report
     gen-ldo-reference-netlist.py  # translates the schematic's xschem netlist into an LVS reference
     render-ldo-lvs-record.py  # renders + verdict-checks an ldo-core LVS record's record.md
+    run-ldo-erc-flow.sh       # issue #112: T1 item 11 driver: pre-flight -> klt erc -> 4 controls -> record
+    check-erc-supply-spec.py  # re-derives the spec's claims ABOUT the layout before each erc run
+    render-ldo-erc-record.py  # renders + verdict-checks an ldo-core ERC record's record.md
   .venv/                      # gitignored -- `klt` install, created by setup-venv.sh
+  .venv-erc/                  # gitignored -- the ERC flow's own pinned `klt` install
   ldo-core/                   # the real LDO layout (see "Extending to the LDO core")
     floorplan.md               # device-to-block mapping, placement + routing rationale
+    erc-supply-spec.json       # issue #112: the T1 item 11 `klt erc` supply spec (heavily commented)
     reports/
       LATEST                    # newest gen/compose/route/drc record
       LATEST-LVS                 # newest LVS record
+      LATEST-ERC                 # newest ERC supply record
       <record-id>/             # xschem_out/, gen.<device>.json/<device>.gds per device,
                                 # compose.*.json, floorplan.json, ldo_core.placed.gds,
                                 # ldo_core.gds, drc.json, report.md, record.md
       <lvs-record-id>/         # xschem_out/, reference.spice, extract.json,
                                 # ldo_core.extract.spice, lvs.request.json, lvs.json,
                                 # report.md, record.md (see "LVS" below)
+      <erc-record-id>/         # erc_supply.json, erc_control_C[1-4].json,
+                                # erc-supply-spec.json, layout-record-id.txt,
+                                # record.md (see "ERC supply spec" below).
+                                # No GDS copy: the report's own input
+                                # content-hash is of the layout record's
+                                # committed ldo_core.gds, which
+                                # layout-record-id.txt names.
   trivial-cell/
     reference.spice                    # known-good LVS reference netlist
     reference.broken-device.spice      # negative control 1: device.property corruption
@@ -200,6 +226,40 @@ Bumping the pin to pick those up is a deliberate act (see
 `requirements.txt`'s own note) that would need the whole ldo-core flow
 re-verified against the new build — worth doing on its own issue, not as a
 side effect of a layout change.
+
+### What the ERC supply spec hit (issue #112)
+
+One new gap, filed at
+[`klayout-tools#2389`](https://github.com/2AMLogic/klayout-tools/issues/2389):
+**`klt erc`'s envelope never names a drawn conductor layer the spec's
+`stackup` omits.** `nets[]` connectivity is computed only through declared
+roles, and a committed supply spec is a long-lived artifact whose
+correctness is a property of the layout it was written against — but nothing
+in the report records that the stream drew a level the spec does not
+mention, so the model can silently narrow as a block is re-routed.
+`klt drc` already answers exactly this question about itself
+(`coverage.layers_in_stream_without_rules`, which
+`docs/design-evidence-tiers.md` item 3 leans on directly); `klt erc` has no
+counterpart, so the equivalent item-11 disclosure cannot be made from the
+envelope at all.
+
+That is why `bin/check-erc-supply-spec.py` exists here: it is a local
+stand-in for the missing disclosure, diffing "layers drawn" against "layers
+declared" (and re-deriving the substrate assertion) with `klayout.db` before
+every run. It should shrink to nothing if #2389 lands.
+
+Everything else this flow needed was already present upstream, and several
+of the item-11 capabilities it depends on are *recent* fixes to gaps other
+canaries filed — isolated `ties[]` extraction
+([#2169](https://github.com/2AMLogic/klayout-tools/issues/2169)), the
+`poly ∩ diff` antenna denominator
+([#1979](https://github.com/2AMLogic/klayout-tools/issues/1979)),
+device-body carve-outs
+([#2183](https://github.com/2AMLogic/klayout-tools/issues/2183)), and the
+native-substrate tie
+([#2255](https://github.com/2AMLogic/klayout-tools/issues/2255)). That is
+what `erc-requirements.txt`'s second pin buys, and why it is a second pin
+rather than a bump of the first.
 
 ## Extending to the LDO core (issues #15/#33)
 
@@ -288,6 +348,75 @@ re-transcribing the table.
   limitations" below), and it says nothing about parasitics (issue #20) or
   about whether the signal-grade routing this flow draws is adequate for the
   load current `VIN`/`VOUT` actually carry.
+
+## ERC supply spec — T1 item 11, power delivery (structural) (issue #112)
+
+```bash
+# its OWN pinned klt build -- see layout/erc-requirements.txt for why
+layout/bin/setup-venv.sh --requirements layout/erc-requirements.txt
+layout/bin/run-ldo-erc-flow.sh    # pre-flight -> klt erc -> 4 controls -> record
+```
+
+No PDK install is needed for this one: `klt erc --pdk sky130` reads its
+antenna-limit table from `klt`'s own built-in transcription of SkyWater's
+published rule tables, not from a local PDK tree.
+
+Read the newest `ldo-core/reports/<erc-record-id>/record.md` (also pointed
+to by `ldo-core/reports/LATEST-ERC`) for the actual evidence.
+[`ldo-core/erc-supply-spec.json`](ldo-core/erc-supply-spec.json) is the spec
+itself, and it carries an inline comment block justifying every layer number
+against **two** independent sources — the sky130 PDK's own
+`libs.tech/klayout/tech/sky130A.lyp` and klayout-tools' curated `sky130`
+deck layer table — rather than copying them from another PDK's spec.
+
+**What item 11 grades, and what it does not.** The item is the *structural*
+power-delivery question ("is the supply connected to what it powers"), read
+from the report's connectivity half:
+
+- every declared supply (`VIN`, `0`, both `"kind": "supply"`) resolves to
+  exactly **one** electrical island — no `erc.unconnected_net`, no
+  `erc.supply_short`;
+- zero `erc.missing_tie`, **from ties the run actually checked**.
+
+It is *not* read from the report's top-level `status`, which is the antenna
+verdict (klayout-tools#1994), and it deliberately excludes IR-drop and EM
+(`klt power`) — the *analysis* question.
+
+Three things about this repo's spec are worth knowing before reading it:
+
+- **Both ties are declared and graded.** Issue #112 was written expecting
+  the opposite: omit `ties[]`, because klayout-tools#2169 made a declared
+  tie collapse a routed design into one island and report a false
+  `erc.supply_short`. That is fixed on the pin in
+  `erc-requirements.txt` (a tie now gets its own isolated extraction), and
+  it matters for the verdict rather than for tidiness — a spec with zero
+  `ties[]` grades `supply_spec_incomplete` (**unmet**), and a
+  `ties_disclosure` of either kind grades unmet too.
+- **The substrate tie rests on an asserted region.** sky130 NMOS sit in the
+  native p-substrate and this block draws no pwell shape, so the substrate
+  region is declared with `well_layer: null` + `well_boxes`
+  (klayout-tools#2255) — a caller assertion, graded in its own
+  `erc_coverage.checked_by_well_assertion` bucket.
+  `layout/bin/check-erc-supply-spec.py` re-derives the box from the GDS
+  before every run and fails if the committed one has gone stale or loose,
+  so a floorplan change cannot leave the assertion standing unexamined.
+- **Every run records four falsification controls.** Each item-11 check
+  passes by reporting *nothing*, so the flow also mutates the committed spec
+  four ways and records that each mutation does fire the rule the clean
+  verdict is claiming the absence of (a moved substrate box, a tie pointed
+  at the wrong rail, an undrawn supply name, and the feedback divider read
+  as wire with the `devices[]` carve-out removed). They are generated from
+  the committed spec at run time rather than committed as four more files —
+  a control that silently stopped mutating the real spec would be worse than
+  no control.
+
+**What a clean ERC verdict here does and does not certify.**
+`erc.missing_tie` asks a connectivity question — does each well (or asserted
+substrate region) hold a tap that reaches its declared net. It says nothing
+about tap **density**, and this block draws exactly one n-well tap and one
+substrate tap across a 2.4 mm span. Latch-up and body-bias robustness are
+layout-quality questions for DRC and the floorplan, outside what this item
+can see.
 
 ## Known klt-deck limitations relevant to later, LDO-specific layout issues
 

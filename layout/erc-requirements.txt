@@ -1,0 +1,44 @@
+# Pinned klayout-tools (`klt`) install for layout/'s `klt erc` supply-spec
+# flow -- the T1 item 11 (power delivery, structural) evidence.
+#
+# WHY A SECOND PIN, SEPARATE FROM requirements.txt
+#
+# layout/requirements.txt pins the build every committed DRC/LVS/PEX record
+# in layout/ldo-core/reports/ was produced on. Those records are append-only
+# evidence: bumping that pin would make them non-reproducible against their
+# own stated provenance, so it is bumped only deliberately, alongside a
+# re-run of the flows that depend on it.
+#
+# The ERC flow cannot use that pin at all. `klt erc` grew every capability
+# item 11 requires long after it:
+#
+#   * `nets[]` with `"kind": "supply"` (the supply-island check itself)
+#   * `stackup[0].active_layer` (klayout-tools#1979 -- without it a poly
+#     resistor body is treated as a gate and the antenna denominator is
+#     non-physical; this block draws five of them, one 1500 um long)
+#   * `devices[]` (klayout-tools#2183 -- without it those same resistor
+#     bodies are traced as WIRES, and declaring VOUT a supply reports a
+#     false short to ground through the feedback divider)
+#   * isolated `ties[]` extraction (klayout-tools#2169 -- BEFORE this fix a
+#     declared tie joined the well/tap regions into the primary
+#     connectivity graph and reported a false erc.supply_short on any real
+#     design. That bug is the reason issue #112 was written to expect a
+#     spec with NO ties[] and an `erc.missing_tie` documented as
+#     not-computed. It is fixed on the pin below, so this repo declares
+#     both ties and has them graded as checked work instead -- which is
+#     also the only form item 11 grades as met.)
+#   * `ties[].well_layer: null` + `well_boxes` (klayout-tools#2255 -- sky130
+#     NMOS sit in the native p-substrate and this block draws no pwell
+#     shape, so without it the substrate half of item 11 is unreachable by
+#     construction)
+#   * `tap_is_dedicated` (klayout-tools#2199 -- keeps a sky130 tap.drawing
+#     tie graded as `checked` rather than skipped-degenerate)
+#
+# So the honest arrangement is two pins, each naming the build its own
+# evidence was produced on, rather than one pin that is wrong for one flow.
+# Cross-check any committed report against the `provenance.klt_version` it
+# carries; for this pin that string is `0.6.0+gcb79a84fe3e4`.
+#
+# Bump this pin deliberately, and re-run layout/bin/run-ldo-erc-flow.sh to
+# mint a fresh record when you do (never overwrite an existing one).
+klayout-tools @ git+https://github.com/2AMLogic/klayout-tools@cb79a84fe3e4b253593d091aa6cdafb16a7672f6
