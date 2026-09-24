@@ -8,21 +8,46 @@
     "temperature_c": [-40, 27, 125]
   },
   "analysis": { "kind": "dc", "args": "Iload 1m 50m 49m" },
+  "_limits_comment": [
+    "Every measurement below declares limits (issue #154). Without them a",
+    "`klt pex` delta[] row's `status: pass` means only that both legs produced",
+    "a number -- not that the extracted value is anywhere near the schematic",
+    "one; `klt pex` grades a row against the *extracted*-side value's own",
+    "declared limits (see klayout-tools' pex.py `_row_status`).",
+    "Both bounds are quoted verbatim from spec/target-spec.md's RATIFIED",
+    "table, never invented here:",
+    "  vout_*_v            -- the ratified `Output` row, 1.8V +/-2%, i.e.",
+    "                         1.764V .. 1.836V.",
+    "  vin_minus_vout_*_v  -- the ratified `Dropout @ 50 mA` row, < 300mV, so",
+    "                         max 0.300; min 0 because a regulating pass",
+    "                         device cannot present a negative source-drain",
+    "                         drop, and a negative reading is a non-physical",
+    "                         operating point rather than an unusually good one.",
+    "Consequence, stated plainly: these are *spec* bounds, and",
+    "measurements/characterization.md already records the schematic-side",
+    "implementation as FAIL against both rows at many PVT corners. A failing",
+    "row here is therefore not automatically an extraction artifact -- read it",
+    "against the same corner's schematic_value in delta[] before attributing",
+    "it to the layout."
+  ],
   "measurements": [
     {
       "name": "vout_light_load_v",
       "spice": ".meas dc vout_light_load_v FIND V(VOUT) AT=1m",
-      "unit": "V"
+      "unit": "V",
+      "limits": { "min": 1.764, "max": 1.836 }
     },
     {
       "name": "vout_full_load_v",
       "spice": ".meas dc vout_full_load_v FIND V(VOUT) AT=50m",
-      "unit": "V"
+      "unit": "V",
+      "limits": { "min": 1.764, "max": 1.836 }
     },
     {
       "name": "vin_minus_vout_full_load_v",
       "spice": ".meas dc vin_minus_vout_full_load_v FIND PAR('V(VIN)-V(VOUT)') AT=50m",
-      "unit": "V"
+      "unit": "V",
+      "limits": { "min": 0.0, "max": 0.3 }
     }
   ],
   "options": { "timeout_s": 120, "keep_artifacts": true }
