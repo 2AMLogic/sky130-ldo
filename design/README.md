@@ -2098,10 +2098,13 @@ but rejected for exceeding the `Iq` row (33.6µA vs. 30µA, set by DR-009,
 `proposed`) — meaning
 a durable fix plausibly needs either a compensation/amplifier topology
 change that does not cost `Iq` linearly, or a revisit of the
-`Iq<30µA` row itself once issue #1 ratifies the spec (a decision this
-repo's `CLAUDE.md` reserves for a spec decision record, not a Builder
-default). Filing a further follow-on issue for that specific, narrower
-question is left to Curator/human triage rather than decided here.
+`Iq<30µA` row itself — the row `DR-009` sets (`proposed`; it ratifies on
+its own PR merge) — through a new decision record superseding DR-009 (a
+decision this repo's `CLAUDE.md` reserves for a spec decision record, not
+a Builder default; issue #1, the original ratification gate, closed
+`completed` 2026-09-18 and cannot set it). Filing a further follow-on
+issue for that specific, narrower question is left to Curator/human triage
+rather than decided here.
 
 ### DR-007 recommends superseding the ratified PSRR/Stability rows; no circuit change (#70, PR #106, 2026-09-14)
 
@@ -2761,10 +2764,13 @@ still-unsolved problem.
 
 ### Cascoded NMOS mirror screened, does not close PSRR/Stability either — verified-negative (#107, 2026-09-15)
 
-**Status: investigated, not shipped.** `spec/target-spec.md` is still DRAFT
-(issue #1 has not ratified it, and DR-007's proposed replacement PSRR/
-Stability rows are still `proposed`, not ratified), so this investigation
-screened against the same DRAFT `Iq < 30µA` row DR-007 and #70/#79 used.
+**Status: investigated, not shipped.** At the time of this investigation
+`spec/target-spec.md` was still DRAFT — issue #1 had not yet ratified it;
+it did on 2026-09-18, per DR-006 — and DR-007's proposed replacement
+PSRR/Stability rows are still `proposed`, not ratified. So this
+investigation screened against the same `Iq < 30µA` row DR-007 and #70/#79
+used, then DRAFT; ratification (DR-006, Option A: ratify unchanged) carried
+that number forward, and it is now set by `DR-009` (`proposed`).
 `design/ldo_3v3in_1v8out.sch` is **unchanged** by this issue — the one
 candidate built and screened here did not clear the screening bar, so per
 this repo's "verification is the product, no partial fix" convention

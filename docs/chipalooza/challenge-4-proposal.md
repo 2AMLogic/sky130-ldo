@@ -217,8 +217,24 @@ the `tt` process / 27 °C / 3.30 V corner where that exact corner exists in
 the run. No cell is computed by re-deriving a verdict from raw waveforms;
 that discipline mirrors `measurements/build_characterization_report.py`'s
 own "never recomputes a verdict" rule, which this table's per-row "Status"
-column cross-checks against. **Every row is against the current DRAFT
-`spec/target-spec.md` target — none of it is ratified (issue #1 open).**
+column cross-checks against. **Every row is against the `spec/target-spec.md`
+target as it stood at this document's 2026-09-05 authoring date — then still
+DRAFT, with issue #1 open.**
+
+**Ratification status since, stated once here.** That snapshot is left as
+written, and the "DRAFT target" column headings below with it: this is a
+dated proposal document, correct as authored, not a live status page — the
+live surfaces are §5's sign-off table, `measurements/characterization.md`,
+and the `sim/` records cited per row. What has changed since: issue #1
+closed `completed` 2026-09-18 and `spec/target-spec.md` is now headed
+`Status: RATIFIED` (DR-006), with the one row DR-006 left open — Iq — set
+separately by `DR-009` (`proposed`; it ratifies on its own PR merge).
+DR-006 ratified Option A (ratify unchanged, disclose the gap), so
+ratification fixes what the target numbers *are* rather than changing them,
+and it certifies nothing about conformance — the FAILs below stand as
+recorded. A pre-submission pass must re-read every "DRAFT target" cell
+against the ratified table, alongside §6's `rules-4.html` re-check, before
+this document is sent anywhere.
 
 ### 4.1 DC / regulation
 
