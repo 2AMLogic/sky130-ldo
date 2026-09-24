@@ -22,37 +22,46 @@ protection/transient benches `current-limit`, `startup`, `enable-shutdown`
 (issue #65) — each
 exercise the LDO core-regulation-loop schematic from issue #14
 (`design/ldo_3v3in_1v8out.sch`, instantiated via its companion subcircuit
-symbol `design/ldo_3v3in_1v8out.sym`) against a DRAFT row of
-`spec/target-spec.md`. `spec/target-spec.md` is not yet ratified (issue #1
-still open), so every measurement bound these testbenches use cites a DRAFT
-spec row directly rather than an invented "final" number, and each
-experiment's `claim` says so. Issues #18 and #25 stood the harness up with
-explicit `--quick` subsets (3 corners, `--subset-reason` cited in the record);
+symbol `design/ldo_3v3in_1v8out.sym`) against a row of
+`spec/target-spec.md`. That table is **RATIFIED** (issue #1 / DR-006; the Iq
+row is the one row DR-006 left open, and is set by `DR-009`, which is still
+`proposed` and ratifies on its own PR merge), so every measurement bound
+these testbenches use cites a ratified spec row verbatim rather than an
+invented "final" number, and each experiment's `claim` says so. Records
+minted before ratification quote the manifest `claim` as it then read, in
+DRAFT wording — `sim/` evidence is append-only, so that wording stays as
+history rather than being rewritten in place. Issues #18 and #25 stood the
+harness up with explicit `--quick` subsets (3 corners, `--subset-reason`
+cited in the record);
 issue #19 ran the full 45-point PVT matrix declared in each experiment's
 `experiment.json` for all four (`load-transient`, `psrr-dc`,
 `dropout-vs-load`, `loop-gain`), plus a Monte Carlo/mismatch experiment
 (`mc-output-accuracy/`, see "Monte Carlo / mismatch experiments" below) for the
-one DRAFT row that carries a statistical (population) claim rather than a
+one spec row that carries a statistical (population) claim rather than a
 PVT-corner claim. Those full-matrix records are pinned to the *current*
 schematic (post-#35/#36); the earlier `…-879f035` full-matrix set is superseded
 — see "Which record set is authoritative" below. **All four testbenches still
-record `FAIL`** against their DRAFT bounds — an honest, expected finding given
+record `FAIL`** against their spec bounds — an honest, expected finding given
 this schematic's remaining known gaps (see `design/README.md`'s "Known gaps /
 follow-on scope"), not a harness defect. Issue #65's three benches follow the
 same two-step shape one issue later: their first records are `--quick`
 subsets, and issue #74 then ran the full 45-point matrix each of their
 manifests declares (39-42/45 PASS across the three; see "The protection /
 transient testbenches (issue #65)" below for per-bench results and #93 for
-a new finding the full matrix surfaced). Per issue #19's own guardrail, none of
-this is a final pass/fail verdict against a *ratified* spec — issue #1 (spec
-ratification) is still open, so every record here cites the current DRAFT row
-only. Three further testbenches — `line-regulation`, `load-regulation` and
-`iq` (issue #64) — landed later against the three DRAFT rows the four above
-don't cover; they still use discrete `.op` points rather than the corner
-runner's usual `.dc`/`.tran` sweep style. They shipped `--quick`-only at
-first; issue #104 then ran the full 45-point PVT matrix each manifest
-declares for all three, mirroring issue #74's extension of the #65 benches —
-see "Line regulation, load regulation and Iq (issue #64)" below for why the
+a new finding the full matrix surfaced). Issue #19's own guardrail — that
+none of this was a pass/fail verdict against a *ratified* spec, because #1 was
+still open — has since been overtaken: issue #1 ratified the table (DR-006)
+and closed 2026-09-18. Records minted before that date cite the row in its
+then-current DRAFT wording; records minted since cite the same numbers as
+ratified. Ratification fixes the targets — it does not turn any of the
+`FAIL`s below into passes. Three further testbenches — `line-regulation`,
+`load-regulation` and `iq` (issue #64) — landed later against the three rows
+the four above don't cover; they still use discrete `.op` points rather than
+the corner runner's usual `.dc`/`.tran` sweep style. They shipped
+`--quick`-only at first; issue #104 then ran the full 45-point PVT matrix
+each manifest declares for all three, mirroring issue #74's extension of the
+#65 benches — see "Line regulation, load regulation and Iq (issue #64)"
+below for why the
 discrete-point convention was chosen and for the full results.
 
 > **Record-generation note (2026-08-25, issue #69).** Issue #69 re-sized the
@@ -337,15 +346,15 @@ a fixed 1.2 V placeholder — see `design/README.md`'s "VREF interface
 caveat, and the reference common mode", which explains why 1.2 V/1:2-divider
 is the value that actually regulates, unlike the earlier 0.6 V/2:1
 convention) and the same output network (1 µF `C_OUT` + 10 mΩ `R_ESR`, a
-representative point inside DR-002's *proposed* 0–500 mΩ window, not a sweep
+representative point inside DR-002's ratified 0–500 mΩ window, not a sweep
 of it). Full detail — exact stimulus, measurement expressions, and which
-DRAFT spec row each bound cites — lives in each experiment's own
+spec row each bound cites — lives in each experiment's own
 `experiment.json` `claim` field, per this directory's own convention; this
 section is a map, not a duplicate of that detail.
 
 - **`load-transient/`** — `I_LOAD` steps 1↔50 mA (1 µs edges) at `VOUT`;
-  measures undershoot/overshoot against `spec/target-spec.md`'s DRAFT "Load
-  transient" row (peak excursion ≤150 mV). Latest quick-subset record
+  measures undershoot/overshoot against `spec/target-spec.md`'s ratified
+  "Load transient" row (peak excursion ≤150 mV). Latest quick-subset record
   (`20260818-014345-01b7905`, supersedes `20260817-212623-66b28fc`):
   **PASS** at `tt_27c_3.30v` and `ss_-40c_2.97v` (undershoot 0.136 V /
   0.125 V, improved from 0.146 V / 0.137 V), **FAIL** at `ff_125c_3.63v`
@@ -399,9 +408,9 @@ section is a map, not a duplicate of that detail.
   100 kHz/50 mA half is supply-feedthrough-bound; both diagnoses, the
   measured `C_COMP` PSRR-vs-phase-margin frontier, and three screened-and-
   rejected circuit candidates are written up in `design/README.md` §"#117".
-- **`dropout-vs-load/`** — DC VIN sweep at a fixed 50 mA load (the DRAFT
+- **`dropout-vs-load/`** — DC VIN sweep at a fixed 50 mA load (the ratified
   spec row's own gf180-mirrored "sweep Vin toward Vout" method); measures the
-  Vin–Vout margin against the DRAFT "Dropout @ 50 mA" row (<300 mV). Latest
+  Vin–Vout margin against the ratified "Dropout @ 50 mA" row (<300 mV). Latest
   quick-subset record (`20260818-014918-01b7905`, supersedes
   `20260817-212426-66b28fc`):
   `FAIL` at all three corners (dropout 0.531 V / 0.365 V / 1.274 V, versus
@@ -422,10 +431,10 @@ section is a map, not a duplicate of that detail.
   cluster.
 
 - **`loop-gain/`** (issue #25) — AC loop gain, phase margin and gain margin
-  against `spec/target-spec.md`'s DRAFT "Stability" row (PM ≥ 45°, GM ≥ 10 dB
+  against `spec/target-spec.md`'s ratified "Stability" row (PM ≥ 45°, GM ≥ 10 dB
   worst corner). Unlike the three above it walks its own second axis: each
   PVT point runs **seven** AC sweeps, `alter`-ing `C_OUT`/`R_ESR`/`R_LOAD`
-  across DR-002's *proposed* window (`C_eff` ∈ {0.33 µF, 4.7 µF} × load ∈
+  across DR-002's ratified window (`C_eff` ∈ {0.33 µF, 4.7 µF} × load ∈
   {0, 1, 50 mA} at 10 mΩ, plus the 500 mΩ ESR ceiling), so the C_out/ESR axis
   is complete even in a `--quick` record. Because the block's feedback
   divider is internal — the LDO has no port a testbench can cut — the loop
@@ -447,7 +456,7 @@ section is a map, not a duplicate of that detail.
   corners) — overall `FAIL`.
 
 - **`thermal/`** (issue #66) — trip/reset temperature and hysteresis for the
-  thermal-shutdown circuit (#29/DR-005) against the spec's DRAFT "Thermal"
+  thermal-shutdown circuit (#29/DR-005) against the spec's ratified "Thermal"
   row. Unlike the four above, it does not select `temperature_c` from the
   standard PVT corner axis — `TEMP` itself is the swept analysis variable
   (a continuous ngspice `.dc temp` sweep, 80→180 °C ascending then 180→80 °C
@@ -466,7 +475,7 @@ section is a map, not a duplicate of that detail.
   issue #69), and measured hysteresis is non-positive at every one of the
   15 corners (a new finding, filed as issue #77).
 
-None of the four fully meets its DRAFT bound yet. This is an honest,
+None of the four fully meets its spec bound yet. This is an honest,
 expected finding, not a harness bug — and the reason has moved. The #18
 records were dominated by two gaps issue #25/#36 has now closed: an unsized
 placeholder compensation and a five-transistor error amplifier whose output
@@ -481,7 +490,7 @@ an Iq budget that does not exist yet.
 
 ### The protection / transient testbenches (issue #65)
 
-Three more benches cover the DRAFT rows whose *circuitry* landed with issue
+Three more benches cover the spec rows whose *circuitry* landed with issue
 #22 but which had no testbench of their own, so
 `measurements/characterization.md` reported them `N/A` — a coverage gap by
 that report's own Limitations section, neither substantiated nor refuted.
@@ -489,7 +498,7 @@ They share the four benches' stimulus and output-network conventions above;
 what is new is that two of them drive the DUT through an **event** (a held
 short, an enable edge) rather than a steady condition, so each states in its
 own `experiment.json` `claim` how the event is applied and which clause of
-the DRAFT row it grades. First records are `--quick` subsets, same as #18/#25;
+the ratified row it grades. First records are `--quick` subsets, same as #18/#25;
 issue #74 then ran the full 45-point matrix each manifest declares for all
 three (see each bullet's "Full 45-point PVT record" below).
 
@@ -514,7 +523,7 @@ would have to change once issue #1 rules.
   enable edge rather than an already-enabled t = 0 DC solve — see the
   harness-lesson paragraph below for why, and its scope note for which legs
   of this bench that fix does and does not reach. Bounded: `vout_50ma_v`
-  inside the DRAFT Output row's ±2% window (the operative form of "never
+  inside the ratified Output row's ±2% window (the operative form of "never
   engages for I_load ≤ 50 mA") and both limit levels above 50 mA. Reported
   unbounded: the limit window itself, its brickwall-vs-foldback shape, and
   the sustained short current. Current record (`20260825-070327-d0bb614`,
@@ -567,7 +576,7 @@ would have to change once issue #1 rules.
   (why `sf` is more susceptible than `ff` to mechanism 1 during a ramped
   enable) rather than chased here — out of this issue's scope.
 - **`startup/`** — four independent **cold** enables in one deck (`C_out`
-  0.33/4.7 µF × load 0/50 mA, the corners of the two ranges the DRAFT row
+  0.33/4.7 µF × load 0/50 mA, the corners of the two ranges the ratified row
   quantifies over), each starting from `EN = 0` with `C_OUT` discharged and
   the soft-start ramp held down, with `EN` rising at t = 100 µs. Bounded:
   peak `VOUT` against the row's own overshoot ≤ +2%, and the *minimum* over
@@ -609,7 +618,7 @@ would have to change once issue #1 rules.
   shutdown Iq 0.13 nA–49 nA, post-edge worst-case 0.6 nA–21 nA,
   `VIN`→`VOUT` leakage 0.07 nA–52 nA, and `VOUT` still at 1.808–1.819 V two
   milliseconds after disable. All are two to four orders of magnitude inside
-  the DRAFT bounds, which is as much a statement about that row's own
+  the ratified bounds, which is as much a statement about that row's own
   "pending sky130 device data" note as about the design — the models'
   subthreshold/junction leakage is what sets these numbers. **Full 45-point
   PVT record** (`20260825-073259-64c17cb`, issue #74, supersedes
@@ -799,7 +808,7 @@ Per-experiment before/after (old → new record id, and the verdict change):
 regression.** All six of its old "passes" were the falsely-tripped corners
 — AC gain measured around a collapsed bias point, which this file and #60
 both already flagged as not-real PSRR. With the trip gone, the 1 kHz column
-collapses from 20.31–76.79 dB to **20.31–25.68 dB** against the 50 dB DRAFT
+collapses from 20.31–76.79 dB to **20.31–25.68 dB** against the 50 dB spec
 bound: PSRR now demonstrably fails everywhere, which is what #60 inferred
 and #69's re-run measures. The underlying PSRR shortfall is issue #70's, and
 is untouched by #69.
@@ -893,14 +902,17 @@ multiplicity-vs-physical-reading split its 27 failing corners break into.
 ## Line regulation, load regulation and Iq (issue #64)
 
 Three more testbenches against the same DUT (`design/ldo_3v3in_1v8out.sch`),
-covering three DRAFT rows `measurements/characterization.md` reported N/A
+covering three spec rows `measurements/characterization.md` reported N/A
 until this issue: **Line regulation** (<5 mV/V over 2.97–3.63 V, at 1 mA and
 50 mA), **Load regulation (0–50 mA)** (<1%/18 mV) and **Iq (excl. load
-current)** (<30 µA at no load and full load). Same VIN/EN/VREF stimulus
+current)** (<30 µA at no load and full load). The first two rows are ratified
+(issue #1 / DR-006); the Iq row is the one DR-006 left open and is set by
+`DR-009`, still `proposed` — `sim/iq/experiment.json`'s `claim` says so, and
+cites DR-009's number rather than a ratified one. Same VIN/EN/VREF stimulus
 convention and output network (1 µF `C_OUT`/10 mΩ `R_ESR`) as the four
 testbenches above.
 
-**All three use discrete `.op` points at the DRAFT row's own named test
+**All three use discrete `.op` points at each row's own named test
 conditions, not a continuous `.dc` sweep** — a deliberate choice, not the
 original plan. A continuous `dc vvin 2.97 3.63 ...` sweep (for line
 regulation) and a continuous `dc iload 0 50m ...` sweep (for load regulation)
@@ -914,7 +926,7 @@ minutes of wall-clock time per corner, and the `I_LOAD` sweep measured a
 artifact, not a real 81%-of-target load regulation number (design/README.md's
 own screening data puts the same two endpoints ~4 mV apart). Four (line
 regulation: VIN × I_LOAD) or two (load regulation: I_LOAD only) independent
-`.op` solves at the DRAFT row's own endpoints — `alter`-ing VIN and/or the
+`.op` solves at each row's own endpoints — `alter`-ing VIN and/or the
 load current source between them, mirroring `loop-gain`'s and `iq`'s
 multi-point convention — complete in well under a second each and reproduce
 `design/README.md`'s own screening numbers for the same points (its "DC
@@ -1032,10 +1044,10 @@ the per-bench tallies.
 
 ## Monte Carlo / mismatch experiments
 
-Of the DRAFT spec rows, **Output** (1.8 V ±2%, i.e. 1.764–1.836 V) is the one
+Of the spec rows, **Output** (1.8 V ±2%, i.e. 1.764–1.836 V) is the one
 that names a population/statistical bound rather than a PVT-corner limit, so
 it is the one that gets a Monte Carlo mismatch experiment (issue #19) rather
-than (or in addition to) a PVT corner sweep. Every other DRAFT row (dropout,
+than (or in addition to) a PVT corner sweep. Every other row (dropout,
 PSRR, load transient, …) is itself a PVT-corner claim, already covered by the
 corner-matrix experiments above.
 
@@ -1053,14 +1065,14 @@ commit), and reports per-measurement mean/stddev/quantiles/sigma-window
 statistics plus a per-device-family "was mismatch actually active" report.
 
 - **`mc-output-accuracy/`** — samples `vout_ss` (steady-state VOUT under a
-  fixed 1 mA load, VIN=3.3 V/27 °C/`tt_mm`) against the DRAFT "Output" row's
+  fixed 1 mA load, VIN=3.3 V/27 °C/`tt_mm`) against the ratified "Output" row's
   1.764–1.836 V window. **Current record** (`20260818-032827-81dc232`,
   supersedes the pre-#36 `20260817-235656-e500d71`): N=200 samples, seed
   `20260817`, k_sigma=3 — **181/200 individual-sample PASS**, and the mean±3σ
   sigma-window check **FAILS** (mean 1.717 V, stddev 2.154 V, window
   [−4.745 V, 8.180 V] vs. the 1.764–1.836 V bound) — overall `FAIL`. The
   median sample is well inside the window (p50 = 1.802 V, p5 = 1.787 V), so
-  the distribution's *centre* meets the DRAFT row and the failure is entirely
+  the distribution's *centre* meets the ratified row and the failure is entirely
   in its tail: p95 = 3.300 V, i.e. the top few percent of draws rail to `VIN`,
   and the worst sample (`mc147`, −19.345 V) is a non-convergent solve rather
   than a physical output — the same non-regulating-operating-point signature

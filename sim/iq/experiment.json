@@ -1,7 +1,7 @@
 {
   "slug": "iq",
   "title": "Quiescent current (excl. load current) at no load and full load",
-  "claim": "Substantiates spec/target-spec.md's DRAFT \"Iq (excl. load current)\" row (< 30uA at no load and full load) against the LDO core-regulation-loop schematic landed by #14 (design/ldo_3v3in_1v8out.sch), using the row's own two named load points. That row is DRAFT (issue #1 not yet ratified) -- the bound below cites it directly, not an invented final limit, and needs re-verification once #1 rules. Each corner runs two .op solves (0mA then 50mA, via the deck's own 'alter' on the load current source, mirroring sim/loop-gain's multi-point convention from #25): Iq is defined, per design/README.md's own \"Iq = total VIN current minus load current\" convention, as -i(vvin) at no load (no subtraction needed) and as -i(vvin) minus the deck's own known 50mA load constant at full load. Known risk, not a testbench defect -- and confirmed during this testbench's own bring-up, not just cited from elsewhere: design/README.md's dated 2026-08-25 root-cause section (issue #60, mechanism 1; tracked by #69) documents a thermal-shutdown false-trip at the ff/sf process corners at 125C, independent of load current; a direct check at ff/125C/3.63V (screening, not part of this record) confirms TS_CMP=0.39V (tripped; untripped is approximately VIN) and vout collapsed to -19.2V at full load (0.14V at no load) at that exact corner, yet -i(vvin) itself still reads a plausible-looking, in-budget microamp figure there rather than an obviously non-physical one -- unlike line-regulation/load-regulation, where the same false-trip produces an unmistakably out-of-range number. vout_no_load_v/vout_full_load_v are reported (unbounded) alongside the Iq figures specifically so a reader can see when the underlying operating point is not really regulating (roughly 1.8V) before trusting an in-budget Iq PASS at that corner, per the same PSRR caution design/README.md's mechanism 5 already states (\"PASS\" at a falsely-tripped corner is not evidence of a genuine pass).",
+  "claim": "Substantiates spec/target-spec.md's \"Iq (excl. load current)\" row (< 30uA at no load and full load) against the LDO core-regulation-loop schematic landed by #14 (design/ldo_3v3in_1v8out.sch), using the row's own two named load points. That row is the one row DR-006 left open when issue #1 ratified the rest of the table: its number is set by spec/decision-records/DR-009-iq-budget.md, whose status is 'proposed' -- DR-009 does not ratify itself, and ratifies only when the pull request it ships in merges (the same path DR-006 took). The bound below cites DR-009's number verbatim, not an invented final limit, and needs re-verification if that record changes before it merges. Each corner runs two .op solves (0mA then 50mA, via the deck's own 'alter' on the load current source, mirroring sim/loop-gain's multi-point convention from #25): Iq is defined, per design/README.md's own \"Iq = total VIN current minus load current\" convention, as -i(vvin) at no load (no subtraction needed) and as -i(vvin) minus the deck's own known 50mA load constant at full load. Known risk, not a testbench defect -- and confirmed during this testbench's own bring-up, not just cited from elsewhere: design/README.md's dated 2026-08-25 root-cause section (issue #60, mechanism 1; tracked by #69) documents a thermal-shutdown false-trip at the ff/sf process corners at 125C, independent of load current; a direct check at ff/125C/3.63V (screening, not part of this record) confirms TS_CMP=0.39V (tripped; untripped is approximately VIN) and vout collapsed to -19.2V at full load (0.14V at no load) at that exact corner, yet -i(vvin) itself still reads a plausible-looking, in-budget microamp figure there rather than an obviously non-physical one -- unlike line-regulation/load-regulation, where the same false-trip produces an unmistakably out-of-range number. vout_no_load_v/vout_full_load_v are reported (unbounded) alongside the Iq figures specifically so a reader can see when the underlying operating point is not really regulating (roughly 1.8V) before trusting an in-budget Iq PASS at that corner, per the same PSRR caution design/README.md's mechanism 5 already states (\"PASS\" at a falsely-tripped corner is not evidence of a genuine pass).",
   "provenance": "schematic",
   "provenance_source": "sim/iq/testbench/tb_iq.sch",
   "schematic": "testbench/tb_iq.sch",
@@ -38,7 +38,7 @@
       "unit": "uA",
       "min": null,
       "max": 30,
-      "note": "Total VIN supply current (I_LOAD=0, so no subtraction needed). DRAFT bound: spec/target-spec.md \"Iq (excl. load current)\" row, < 30uA at no load."
+      "note": "Total VIN supply current (I_LOAD=0, so no subtraction needed). Bound set by DR-009 ('proposed', not yet ratified): spec/target-spec.md \"Iq (excl. load current)\" row, < 30uA at no load."
     },
     {
       "name": "iq_full_load_ua",
@@ -46,7 +46,7 @@
       "unit": "uA",
       "min": null,
       "max": 30,
-      "note": "Total VIN supply current minus the deck's own known 50mA load constant. DRAFT bound: spec/target-spec.md \"Iq (excl. load current)\" row, < 30uA at full load."
+      "note": "Total VIN supply current minus the deck's own known 50mA load constant. Bound set by DR-009 ('proposed', not yet ratified): spec/target-spec.md \"Iq (excl. load current)\" row, < 30uA at full load."
     },
     {
       "name": "vout_no_load_v",
@@ -54,7 +54,7 @@
       "unit": "V",
       "min": null,
       "max": null,
-      "note": "Reported, not bounded: a sanity check that this corner's no-load .op is actually regulating (near the 1.8V DRAFT Output target) before trusting iq_no_load_ua as a genuine Iq figure -- see this experiment's own claim for why a falsely thermal-shutdown-tripped corner can still report a plausible-looking, in-budget Iq number."
+      "note": "Reported, not bounded: a sanity check that this corner's no-load .op is actually regulating (near the 1.8V ratified Output target) before trusting iq_no_load_ua as a genuine Iq figure -- see this experiment's own claim for why a falsely thermal-shutdown-tripped corner can still report a plausible-looking, in-budget Iq number."
     },
     {
       "name": "vout_full_load_v",

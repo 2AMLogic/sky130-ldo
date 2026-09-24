@@ -29,9 +29,13 @@ of verified open-PDK analog blocks.
 - **The spec is a gate**: spec changes go through `spec/` with a decision record;
   agents do not relax a spec line to make a result pass. A row that proves
   unmeetable is superseded by a new decision record, never silently loosened.
-  Until issue #1 ratifies it, the whole table in `spec/target-spec.md` is DRAFT —
-  do not treat any value as final, and do not invent settled numbers to replace
-  the drafts.
+  The table in `spec/target-spec.md` is RATIFIED (issue #1 / DR-006; the Iq row
+  is set by `DR-009`, which is `proposed` and ratifies on its own PR merge).
+  Treat its values as settled targets and change them only through a new
+  decision record — and where a ratified row deliberately carries no number
+  (e.g. a window still marked TBD over PVT), leave it open rather than inventing
+  one. Ratification fixes the targets; it is not a claim that the current
+  implementation meets them.
 - **Private, for now**: this repo is private while the spec is drafted and the
   harness stood up. Going public is an operator decision that inherits the
   workspace firewall/disclosure rules — not an agent decision. Write commits,
