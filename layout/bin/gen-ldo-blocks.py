@@ -23,7 +23,8 @@ different device set than the schematic, because it reads the same file.
 What is drawn
 -------------
 * **MOS devices** -- one `klt gen mos_array` block each, `fingers=1`,
-  `rows=1`, `cols=<units>`, `dummy=0`. `cols` splits a device wider than
+  `rows=1`, `cols=<units>`, `dummy=0`, `voltage_flavor="hvi"` (issue #142 --
+  see MOS_VOLTAGE_FLAVORS). `cols` splits a device wider than
   `MAX_UNIT_W_UM` into that many *parallel* unit devices of equal width whose
   S/D/G terminals this module's router straps together, so the drawn total
   width is the schematic's own `W * mult` (e.g. the pass device's 2500um as
@@ -75,6 +76,37 @@ from _netlist_common import _merge_continuations
 MOS_MODELS = {
     "sky130_fd_pr__nfet_g5v0d10v5": "nfet",
     "sky130_fd_pr__pfet_g5v0d10v5": "pfet",
+}
+
+#: Schematic MOS model -> the `klt gen mos_array` `voltage_flavor` whose
+#: marker geometry makes an extracted device bind back to *that* model
+#: (issue #142). Keyed on the same schematic model token MOS_MODELS is, so
+#: the layout's voltage-domain marking is derived from the schematic rather
+#: than hand-transcribed per device: adding a flavor to the schematic means
+#: adding one row here, and forgetting to is a hard error (see
+#: `mos_voltage_flavor`), not a silently-unmarked device.
+#:
+#: Why this matters: `klt gen mos_array`'s `voltage_flavor="hvi"` draws
+#: sky130's `hvi.drawing` (75/20) voltage-domain marker over the unit array,
+#: and the curated sky130 extraction deck's own
+#: `EXTRACTION_DECK.mos_flavours` entry (`MOSFlavour(marker=(75, 20),
+#: flavour="hvi", ...)`) is keyed on exactly that layer. Without it, `klt
+#: extract --pdk sky130A` has nothing to key a flavor off and binds every
+#: gate to the *1.8V core* subcircuit (`sky130_fd_pr__{n,p}fet_01v8`)
+#: instead of the 5V-tolerant `g5v0d10v5` devices the schematic actually
+#: instantiates -- so the extracted netlist describes different transistors
+#: than the design, and a post-layout re-simulation against it is not
+#: comparable to the schematic-side leg at all (see
+#: `sim/pex-post-layout/README.md`).
+#:
+#: The marker is DRC-neutral on this deck by construction, not by hope:
+#: `decks/sky130.py`'s own `hvi` layer-name comment records that no rule in
+#: the curated sky130 DRC deck reads `hvi`, so every rule keeps applying its
+#: general-case threshold to geometry drawn inside it. The DRC record this
+#: flow lands is the authority on that either way.
+MOS_VOLTAGE_FLAVORS = {
+    "sky130_fd_pr__nfet_g5v0d10v5": "hvi",
+    "sky130_fd_pr__pfet_g5v0d10v5": "hvi",
 }
 RES_MODELS = {
     "sky130_fd_pr__res_high_po": "high",
@@ -147,6 +179,26 @@ class GenError(RuntimeError):
     pass
 
 
+def mos_voltage_flavor(model: str) -> str:
+    """The drawn voltage-domain marker for a schematic MOS `model`.
+
+    Hard-fails on a model that MOS_MODELS recognises but MOS_VOLTAGE_FLAVORS
+    does not: an unmarked device is not a cosmetic omission, it is a device
+    that extracts as the wrong transistor (issue #142), so a future schematic
+    that introduces a second MOS flavor must state its marker here rather
+    than silently inheriting nothing.
+    """
+    try:
+        return MOS_VOLTAGE_FLAVORS[model]
+    except KeyError:
+        raise GenError(
+            f"{model}: no MOS_VOLTAGE_FLAVORS entry -- add the sky130 "
+            "voltage-domain marker this model's devices must be drawn "
+            "inside, or `klt extract --pdk` will bind them to the wrong "
+            "device flavor (see this module's MOS_VOLTAGE_FLAVORS note)"
+        ) from None
+
+
 # --------------------------------------------------------------------------
 # Netlist parsing
 # --------------------------------------------------------------------------
@@ -212,6 +264,8 @@ def parse_netlist(path: Path) -> tuple[list[dict[str, Any]], list[str]]:
                     "id": block_id,
                     "name": name,
                     "flavor": MOS_MODELS[model],
+                    "model": model,
+                    "voltage_flavor": mos_voltage_flavor(model),
                     "l_um": float(params.get("L", "0")),
                     "w_total_um": w_um * mult,
                     "nets": {
@@ -289,6 +343,7 @@ def generate_blocks(
                 "dummy": 0,
                 "topology": "array",
                 "flavor": device["flavor"],
+                "voltage_flavor": device["voltage_flavor"],
                 "gate_contact": True,
             }
             generator = "mos_array"
@@ -314,6 +369,23 @@ def generate_blocks(
             "-o",
             str(out_dir / f"{block_id}.gds"),
         )
+        if device["kind"] == "mos":
+            # `klt gen` never *rejects* an unresolvable `voltage_flavor` -- it
+            # reports the miss through `drc_hints` and draws no marker (see
+            # `_voltage_flavor_mark_layer`'s "None means absent" contract). A
+            # silent miss here is exactly the failure mode issue #142 exists
+            # to close, so check the report rather than assume the request
+            # took effect.
+            hints = report.get("drc_hints", {})
+            if not hints.get("voltage_flavor_mark_present"):
+                raise GenError(
+                    f"{block_id}: `klt gen mos_array` resolved no marker layer "
+                    f"for voltage_flavor={device['voltage_flavor']!r} on "
+                    f"--pdk {pdk_variant} (drc_hints: "
+                    f"{json.dumps({k: hints.get(k) for k in ('voltage_flavor', 'voltage_flavor_mark_present')})})"
+                    " -- this `klt` build predates sky130 voltage-flavor "
+                    "support; bump layout/requirements.txt's pin"
+                )
         (out_dir / f"gen.{block_id}.json").write_text(json.dumps(report, indent=2))
         reports[block_id] = report
     return reports
@@ -770,6 +842,20 @@ def main() -> int:
         "device_count": len(devices),
         "mos_count": sum(1 for d in devices if d["kind"] == "mos"),
         "res_count": sum(1 for d in devices if d["kind"] == "res"),
+        # Per-marker MOS counts (issue #142). Every MOS block is drawn inside
+        # its schematic model's own voltage-domain marker, so this is also
+        # the count `klt extract --pdk` should bind to that flavor's real
+        # subcircuit -- the number the LVS/PEX records are checked against.
+        "mos_voltage_flavor_counts": {
+            flavor: sum(
+                1
+                for d in devices
+                if d["kind"] == "mos" and d["voltage_flavor"] == flavor
+            )
+            for flavor in sorted(
+                {d["voltage_flavor"] for d in devices if d["kind"] == "mos"}
+            )
+        },
         "block_count": len(plan["order"]),
         "undrawn_elements": skipped,
         "max_unit_w_um": MAX_UNIT_W_UM,
@@ -785,6 +871,8 @@ def main() -> int:
                 "kind": d["kind"],
                 "group": d["group"],
                 "flavor": d["flavor"],
+                "model": d.get("model"),
+                "voltage_flavor": d.get("voltage_flavor"),
                 "units": d.get("units", 1),
                 "unit_w_um": d.get("unit_w_um"),
                 "w_total_um": d.get("w_total_um"),

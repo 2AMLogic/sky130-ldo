@@ -15,9 +15,32 @@
 # layout/bin/run-trivial-cell-flow.sh to refresh the checked-in report) when
 # picking up new `klt` capability.
 #
-# Same commit as the sibling sky130-bandgap repo's own layout/requirements.txt
-# pin, chosen deliberately: that repo proved this exact trivial-cell DRC/LVS
-# flow (gen mos_array -> drc -> extract -> lvs) against this same sky130 PDK
-# pin already, so reusing its `klt` commit gives this repo's first layout
-# flow run a known-good starting point instead of an unverified new pin.
-klayout-tools @ git+https://github.com/2AMLogic/klayout-tools@acb0ae6c11e667eb93ee7de272d64298517f7fab
+# Pin history
+# -----------
+# * `acb0ae6c` (issue #2, retired by #142) -- the same commit the sibling
+#   sky130-bandgap repo pinned, chosen so this repo's first layout flow ran
+#   against a `klt` build that had already proved the trivial-cell
+#   `gen mos_array -> drc -> extract -> lvs` path on this same sky130 PDK pin.
+#   It predates sky130 voltage-flavor support entirely: no `hvi` (75/20)
+#   entry in `gen`'s `_PDK_VOLTAGE_FLAVOR_LAYERS`, and no `hvi` `MOSFlavour`
+#   in the curated sky130 extraction deck's `mos_flavours`.
+# * `040f3406` (issue #142, current) -- has both halves of that support:
+#   `klt gen mos_array` accepts `voltage_flavor="hvi"` on sky130 and draws
+#   the 75/20 marker (klayout-tools#1912), and `decks/sky130.py` declares the
+#   matching `MOSFlavour(marker=(75, 20), flavour="hvi", ...)` that binds a
+#   marked gate to the real `sky130_fd_pr__{n,p}fet_g5v0d10v5` subcircuits
+#   rather than the 1.8V core flavour (klayout-tools#1369/#1381).
+#   `layout/bin/gen-ldo-blocks.py` draws that marker on every MOS block as of
+#   #142, so this flow needs a `klt` that has it; the generator hard-fails
+#   (rather than silently drawing nothing) against a build that does not.
+#
+#   Chosen as a *git commit* rather than a release for the reason #122 already
+#   hit and recorded in `sim/pex-post-layout/README.md`: the fixes this flow
+#   depends on postdate the latest release, so a released-version requirement
+#   is not sufficient here. Specifically this commit, and not `main`'s tip,
+#   because it is the exact build the landed PEX record
+#   (`sim/pex-post-layout/records/20260923-183915-d9900b5`, `klt
+#   0.6.0+g040f3406b485`) already ran under -- so the only difference between
+#   that record and the one #142 mints is the `hvi` marker this repo now
+#   draws, not twelve unrelated upstream commits.
+klayout-tools @ git+https://github.com/2AMLogic/klayout-tools@040f3406b4858ac7a5b8faa8df5327fd62a65afa

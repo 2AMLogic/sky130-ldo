@@ -95,7 +95,7 @@ of the claimant rather than of the tool.
 | 4 | **`met`** | `klt lvs`, `status: match`, layout vs. the schematic-derived reference netlist. **Three disclosed warnings and two unasked questions below.** |
 | 5 | `unmet` / `no_evidence` | The largest real gap, and not a presentation choice. `spec/target-spec.md` *is* ratified (issue #1, DR-006) and a full 45-point PVT campaign exists under `sim/*/`— but it reports **FAIL on 9 of the 12 graded rows**, and the records are this repo's own Markdown/JSON format rather than `klt sim` envelopes, so there is nothing here that could render `met` even if the rows passed. Tracked as issues #114–#121. |
 | 6 | `unmet` / `check_failed` | Cites the real Monte Carlo campaign (`sim/mc-output-accuracy/klt-responses/20260825-083111-4cb27f8.json`, a `klt sim` envelope, n=200): `status: fail`, 177/200 samples inside the ±2 % Output window. A `check_failed` row, not a `no_evidence` one — the check ran and did not pass. There is no `klt yield` report (the kind the checklist names) for this campaign. |
-| 7 | `unmet` / `check_failed` | Cites the real `klt pex` run (`sim/pex-post-layout/klt-responses/20260825-125102-3b4e121.pex.json`), pinned to the same layout GDS items 3 and 4 were run on: `status: error`, **135 of 135 delta rows errored, 0 passed**. Item 7 accepts no other evidence kind, so nothing weaker could stand in. Tracked as issue #122. |
+| 7 | `unmet` / `check_failed` | Cites the real `klt pex` run (`sim/pex-post-layout/klt-responses/20260825-125102-3b4e121.pex.json`), pinned to the same layout GDS items 3 and 4 were run on: `status: error`, **135 of 135 delta rows errored, 0 passed**. Item 7 accepts no other evidence kind, so nothing weaker could stand in. A newer `klt pex` record now exists that does *not* error — **and is deliberately still not cited**; see "Item 7 has a passing record that this manifest declines to cite" below. Tracked as issues #122 and #142. |
 | 8 | **`met`** | Cites `evidence/characterization.generic.json`, a generic envelope wrapping `measurements/characterization.md`. **This says the rollup exists and is current — not that its rows pass.** See below. |
 | 9 | `unmet` / `no_evidence` | Every claimed measurement's testbench *is* committed (`sim/*/testbench/`), with a documented cold-start invocation (`sim/README.md`, `docs/environment-setup.md`) and a pinned PDK revision (`sim/pdk.json`). Uncited on purpose, see below. |
 | 10 | `unmet` / `no_evidence` | README with the spec table and reproduction instructions, an Apache-2.0 licence, and CI that keeps the harness and evidence formats valid, all exist. Uncited on purpose, see below. |
@@ -167,6 +167,39 @@ capacitors are dropped from both sides of the compare** — `klt gen` at this
 repo's pinned commit has no capacitor generator (klayout-tools#1117), so they
 are neither drawn nor referenced. A match over a netlist that excludes the
 compensation and bypass capacitors is a match over the rest of the circuit.
+
+### Item 7 has a passing record that this manifest declines to cite
+
+Issue #142 closed the last blocker under "What would move the needle" item 2:
+`layout/bin/gen-ldo-blocks.py` now draws sky130's `hvi` (75/20)
+voltage-domain marker on every MOS block, so `klt extract --pdk` binds the
+schematic's own `sky130_fd_pr__{n,p}fet_g5v0d10v5` models instead of
+substituting the 1.8 V core flavour. The resulting record,
+[`20260924-181248-50554fe`](../sim/pex-post-layout/records/20260924-181248-50554fe.md),
+reports `status: pass, passed: 135, failed: 0, errored: 0` — the erroring
+this section previously said had to stop has stopped.
+
+**It is still not cited here, on purpose.** Swapping it in would flip item 7
+to `met` and this block to T1 4/11, and that row would not mean what a reader
+would take it to mean:
+
+- **The `pass` is ungraded.** `tb_pex_post_layout.request.json` declares no
+  limits on any of its three measurements, so `klt pex` grades every `delta[]`
+  row against nothing; `pass` means only "both legs produced a number", not
+  "the extracted values agree with the schematic values".
+- **The full-load rows are non-physical.** Extracted `VOUT` lands between
+  −5.7 V and −61.9 V at 50 mA (median |delta| 385 %, max 3543 %), because
+  `gen-ldo-blocks.py` draws every net — power rails included — as a 0.30 µm
+  met1 signal trunk, leaving 102 Ω–64.3 kΩ of lumped series resistance on the
+  extracted `VOUT` net. That is a real layout defect, previously masked by the
+  flavour-substitution error; it is out of #142's scope and tracked as #154.
+
+So item 7 is now *substantiable in kind but not in substance*. Citing a green
+row over non-physical numbers is exactly the failure mode the items-1/2/9/10
+note below refuses ("a `MET` row the tool has no basis to object to and that
+would mean nothing"), and `CLAUDE.md`'s "no claim without a testbench" rule
+reads the same way. The citation should move once the power routing is fixed
+and a fresh record's full-load rows are physical — not before.
 
 ### Item 8 is `met`, and what that verdict does and does not say
 
@@ -240,8 +273,11 @@ them directly. Both need the PDK, so neither is a CI-side fix.
   merely imprecise. This repo's `pex` envelope carries **no `body_bias` block
   at all** (klt 0.2.0 predates it), which per the checklist means "this
   artifact made no body-bias statement", never "every device body was biased".
-  Moot today — the run errored on all 135 rows, so there are no post-layout
-  numbers to qualify — but it must be stated with any future item-7 claim.
+  Moot for the *cited* run — it errored on all 135 rows, so there are no
+  post-layout numbers to qualify — but it must be stated with any future
+  item-7 claim. The uncited 2026-09-24 record does carry the block, and it
+  reads `status: biased, unbiased_device_count: 0, unbiased_nets: []`, so the
+  physically-wrong-resimulation hazard would not bite for that layout.
 - **Item 4's `power_connectivity` and `body_verification`** are both absent;
   `"unchecked"` is not `"verified"`, and absent is weaker still. See the item-4
   section.
@@ -254,8 +290,12 @@ In dependency order, not effort order:
    FAIL. That is a design program (issues #115–#121), not a manifest problem,
    and no citation here can shortcut it. Emitting the PVT campaign as `klt sim`
    envelopes is a second, separate prerequisite for the row ever grading `met`.
-2. **Item 7** needs the `klt pex` leg to stop erroring on all 135 corners
-   (issue #122) before any post-layout claim exists at all.
+2. **Item 7** no longer needs the `klt pex` leg to stop erroring — issue #142
+   did that, and the 2026-09-24 record runs all 135 rows clean. What it now
+   needs is for those rows to be *physical*: the power rails must stop being
+   drawn as 0.30 µm signal trunks (issue #154), and the request must declare
+   limits so the verdict grades something. See "Item 7 has a passing record
+   that this manifest declines to cite" above.
 3. **Item 11** needs a `klt erc` supply spec and report (issue #112).
 4. **Item 6** needs a `klt yield` report over the existing Monte Carlo
    campaign — and, before that, an Output row that passes.

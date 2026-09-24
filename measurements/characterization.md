@@ -62,11 +62,11 @@ DRC/LVS/post-layout PEX substantiate that the routed layout matches the schemati
 
 | Check | Verdict (record's own) | Record | Freshness |
 |---|---|---|---|
-| DRC (issue #16) | **PASS** (status=clean, violation_count=0) | [`20260825-123551-3b4e121`](../layout/ldo-core/reports/20260825-123551-3b4e121/record.md) | STALE |
-| LVS (issue #17) | **MATCH** (status=match, mismatch_count=3) | [`20260825-123628-3b4e121`](../layout/ldo-core/reports/20260825-123628-3b4e121/record.md) | STALE |
-| Post-layout PEX (issue #20) | see detail — no single PASS/FAIL ([caveat](../sim/pex-post-layout/README.md)) | [`20260923-183915-d9900b5`](../sim/pex-post-layout/records/20260923-183915-d9900b5.md) | fresh |
+| DRC (issue #16) | **PASS** (status=clean, violation_count=0) | [`20260924-181155-50554fe`](../layout/ldo-core/reports/20260924-181155-50554fe/record.md) | fresh |
+| LVS (issue #17) | **MATCH** (status=match, mismatch_count=3) | [`20260924-181216-50554fe`](../layout/ldo-core/reports/20260924-181216-50554fe/record.md) | fresh |
+| Post-layout PEX (issue #20) | see detail — no single PASS/FAIL ([caveat](../sim/pex-post-layout/README.md)) | [`20260924-181248-50554fe`](../sim/pex-post-layout/records/20260924-181248-50554fe.md) | fresh |
 
-Post-layout PEX detail (record `20260923-183915-d9900b5`): `klt sim` (schematic-side leg, standalone): status=error, corners=45, passed=36, failed=0, errored=9; `klt pex` (schematic + extracted legs + delta): status=error, passed=108, failed=0, errored=27, pin_count_mismatch=None. This paragraph is generated from the record's own `- Result:` lines and carries no hand-written triage beyond them — the per-record narrative (`klt` pin, per-corner root-cause attribution, upstream/repo-local issue cross-references) is hand-maintained in [`sim/pex-post-layout/README.md`](../sim/pex-post-layout/README.md) instead, so do not hand-edit it in here.
+Post-layout PEX detail (record `20260924-181248-50554fe`): `klt sim` (schematic-side leg, standalone): status=pass, corners=45, passed=45, failed=0, errored=0; `klt pex` (schematic + extracted legs + delta): status=pass, passed=135, failed=0, errored=0, pin_count_mismatch=None. This paragraph is generated from the record's own `- Result:` lines and carries no hand-written triage beyond them — the per-record narrative (`klt` pin, per-corner root-cause attribution, upstream/repo-local issue cross-references) is hand-maintained in [`sim/pex-post-layout/README.md`](../sim/pex-post-layout/README.md) instead, so do not hand-edit it in here.
 
 ## Limitations
 

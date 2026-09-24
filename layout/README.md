@@ -201,6 +201,15 @@ Bumping the pin to pick those up is a deliberate act (see
 re-verified against the new build — worth doing on its own issue, not as a
 side effect of a layout change.
 
+Issue #142 was that issue: the pin moved `acb0ae6c` → `040f3406` to pick up
+sky130 voltage-flavor support, and the whole ldo-core flow (layout + DRC,
+extract + LVS, then `sim/pex-post-layout`) was re-run against the new build
+and re-landed as fresh records. Neither of the two gaps above changed how
+this flow is generated — `gen-ldo-blocks.py` still draws its own channel
+route and still uses `fingers=1` — so picking them up is available future
+work, not something the bump did on its own. `requirements.txt`'s "Pin
+history" section is the authority on what each pin does and does not carry.
+
 ## Extending to the LDO core (issues #15/#33)
 
 `ldo-core/` is the real block layout for `design/ldo_3v3in_1v8out.sch`: one
@@ -284,10 +293,15 @@ re-transcribing the table.
   capacitor generator (klayout-tools#1117), so they are drawn on neither
   side. The compensation network is exactly what the loop's stability
   depends on most, so this is a real coverage gap, not a formality.
-- It **does not** distinguish device voltage flavor (see "Known klt-deck
-  limitations" below), and it says nothing about parasitics (issue #20) or
-  about whether the signal-grade routing this flow draws is adequate for the
-  load current `VIN`/`VOUT` actually carry.
+- It **does not** distinguish device voltage flavor: `klt lvs` compares
+  `klt extract`'s generic `nfet`/`pfet` classes, which the drawn `hvi`
+  (75/20) marker does not split (re-measured at the current pin — see
+  "Known klt-deck limitations" below). The marker *is* drawn on every MOS
+  block and *is* load-bearing, but for `klt extract --pdk`'s model binding
+  (`sim/pex-post-layout`), not for this compare.
+- It says nothing about parasitics (issue #20) or about whether the
+  signal-grade routing this flow draws is adequate for the load current
+  `VIN`/`VOUT` actually carry.
 
 ## Known klt-deck limitations relevant to later, LDO-specific layout issues
 
@@ -306,14 +320,34 @@ trivial-cell proof:
   it. `ldo-core/` draws one of each, so its NMOS bodies extract as the
   schematic's own `0` rail and that warning does not appear on its LVS
   record.
-- **No voltage-flavor distinction on MOS devices.** `klt extract`'s `nfet`/
-  `pfet` classes are flavor-agnostic — a 5 V-flavor (thick-oxide) device and
-  a core-voltage device both extract as the same generic class, with no
-  `L`/`W`/oxide-thickness-based disambiguation. This matters directly once
-  issue #1 ratifies the pass-device flavor (`pfet_g5v0d10v5` vs. the 1.8 V
-  core devices): a future LVS reference netlist will need `hints`/manual
-  review to confirm the *intended* flavor correspondence, since `klt lvs`
-  cannot check it structurally.
+- **No voltage-flavor distinction on MOS devices — on the LVS path.** `klt
+  extract`'s `nfet`/`pfet` classes are flavor-agnostic — a 5 V-flavor
+  (thick-oxide) device and a core-voltage device both extract as the same
+  generic class, with no `L`/`W`/oxide-thickness-based disambiguation. This
+  matters directly once issue #1 ratifies the pass-device flavor
+  (`pfet_g5v0d10v5` vs. the 1.8 V core devices): a future LVS reference
+  netlist will need `hints`/manual review to confirm the *intended* flavor
+  correspondence, since `klt lvs` cannot check it structurally.
+
+  **Still true at the `040f3406` pin, and re-measured rather than assumed**
+  (2026-09-24, issue #142): the newest LVS record's own `extract.json`
+  reports `device_classes: ['nfet', 'pfet', 'pnp', …]` and
+  `device_counts: {'nfet': 18, 'pfet': 74, …}` — generic classes, with the
+  drawn `hvi` marker making no difference to them. `gen-ldo-reference-
+  netlist.py` therefore still collapses both `g5v0d10v5` model names onto
+  `nfet`/`pfet` and needs no flavor distinction of its own; adding one would
+  only create a mismatch against a layout side that cannot express it.
+
+  **The `--pdk` binding path is a different story, and is where the marker
+  pays off.** `klt extract --pdk sky130A` binds each extracted gate to a real
+  PDK subcircuit, and *that* table is marker-scoped: a gate overlapping `hvi`
+  (75/20) binds `sky130_fd_pr__{n,p}fet_g5v0d10v5`, and an unmarked one binds
+  the 1.8 V core flavor. `gen-ldo-blocks.py` draws that marker on every MOS
+  block (see its `MOS_VOLTAGE_FLAVORS`, keyed on the same schematic model
+  token as `MOS_MODELS`), which is what makes `sim/pex-post-layout`'s
+  extracted-side leg re-simulate the design's own devices. So the flavor is
+  expressed in the layout and checked by the `--pdk` bind — just not by
+  `klt lvs`.
 - The deck does recognize `pnp` (vertical bipolar) and poly-resistor
   sheet-rho flavors as distinct device classes (see `klt extract`'s own
   `device_classes` field) — the primitive families this repo's LDO will
