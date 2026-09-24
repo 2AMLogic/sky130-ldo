@@ -187,8 +187,10 @@ would take it to mean:
   limits on any of its three measurements, so `klt pex` grades every `delta[]`
   row against nothing; `pass` means only "both legs produced a number", not
   "the extracted values agree with the schematic values".
-- **The full-load rows are non-physical.** Extracted `VOUT` lands between
-  −5.7 V and −61.9 V at 50 mA (median |delta| 385 %, max 3543 %), because
+- **The full-load rows are non-physical.** 44 of the 45 full-load corners
+  return a *negative* extracted `VOUT` at 50 mA — the full spread runs from
+  +1.6 V (`ff/3.630V/-40C`, the one non-negative row) down to −61.9 V
+  (`ss/3.300V/-40C`), median |delta| 385 %, max 3543 % — because
   `gen-ldo-blocks.py` draws every net — power rails included — as a 0.30 µm
   met1 signal trunk, leaving 102 Ω–64.3 kΩ of lumped series resistance on the
   extracted `VOUT` net. That is a real layout defect, previously masked by the
