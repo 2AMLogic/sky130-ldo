@@ -101,6 +101,52 @@ class TestSimTallies(unittest.TestCase):
         self.assertIsNone(bcr.sim_mc_sample_tally({"klt_response": {"corners": []}}))
 
 
+class TestFailingMeasurements(unittest.TestCase):
+    """A row-level FAIL must say which bounded measurement failed (issue
+    #120: a Thermal FAIL was misread as a theta-JA question when every failing
+    corner had failed only the hysteresis-sign bound)."""
+
+    def test_all_pass_reports_nothing(self):
+        rec = {"corners": [{"pass": True, "measurements": [{"name": "a", "pass": True}]}]}
+        self.assertIsNone(bcr.sim_failing_measurements(rec))
+
+    def test_absent_corner_list_reports_nothing(self):
+        self.assertIsNone(bcr.sim_failing_measurements({}))
+        self.assertIsNone(bcr.sim_failing_measurements({"corners": []}))
+
+    def test_counts_failing_measurements_per_name_in_record_order(self):
+        rec = {
+            "corners": [
+                {"pass": True, "measurements": [{"name": "trip", "pass": True}]},
+                {
+                    "pass": False,
+                    "measurements": [
+                        {"name": "trip", "pass": True},
+                        {"name": "hyst", "pass": False},
+                    ],
+                },
+                {
+                    "pass": False,
+                    "measurements": [
+                        {"name": "trip", "pass": False},
+                        {"name": "hyst", "pass": False},
+                    ],
+                },
+            ]
+        }
+        self.assertEqual(
+            bcr.sim_failing_measurements(rec),
+            "`hyst` at 2 corner(s); `trip` at 1 corner(s)",
+        )
+
+    def test_failing_corner_without_flagged_measurement_is_not_guessed(self):
+        rec = {"corners": [{"pass": False, "measurements": [{"name": "a", "pass": True}]}]}
+        self.assertEqual(
+            bcr.sim_failing_measurements(rec),
+            "1 corner(s) with no measurement flagged (run-level failure)",
+        )
+
+
 class TestSubsetReason(unittest.TestCase):
     """A verdict extracted from a PVT subset must be labelled as one: "3/3
     corner(s) PASS" from a 3-point subset otherwise reads exactly like
