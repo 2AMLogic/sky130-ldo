@@ -217,7 +217,7 @@ layout as landed -- the evidence is an honestly-labeled `error`, not a
 sweep (`klt-responses/<record-id>.sim-schematic.json`, run directly via
 `klt sim` against the same testbench/DUT) is clean (`passed: 45`) and is
 the closest thing to a spec-comparable number this experiment produces --
-still not usable against `spec/target-spec.md`'s DRAFT rows, since there is
+still not usable against `spec/target-spec.md`'s ratified rows, since there is
 no matching extracted-side number to diff it against. See
 `records/<record-id>.md` for the latest run's own summary and links.
 

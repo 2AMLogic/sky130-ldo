@@ -5,10 +5,10 @@ v {xschem version=3.4.7 file_version=1.2
 * (design/ldo_3v3in_1v8out.sch, instantiated below via its companion
 * subcircuit symbol design/ldo_3v3in_1v8out.sym) with four discrete DC
 * operating-point solves (VIN in {2.97V, 3.63V} x I_LOAD in {1mA, 50mA}),
-* per spec/target-spec.md's DRAFT "Line regulation" row: "< 5 mV/V over
-* 2.97-3.63V, at 1mA and 50mA". That row is DRAFT (issue #1 not yet
-* ratified); the bound below cites it directly, not an invented final
-* limit, and needs re-verification once #1 rules.
+* per spec/target-spec.md's ratified "Line regulation" row: "< 5 mV/V over
+* 2.97-3.63V, at 1mA and 50mA". That row is ratified by issue #1 / DR-006;
+* the bound below cites it verbatim, not an invented final
+* limit.
 *
 * Four .op points, not a continuous .dc sweep (deliberate, found the hard
 * way): a continuous 'dc vvin 2.97 3.63 ...' sweep at this schematic's
@@ -18,7 +18,7 @@ v {xschem version=3.4.7 file_version=1.2
 * documents the same DC-solution-multiplicity behavior for VIN sweeps at
 * 50mA load) -- confirmed during this testbench's own bring-up: a 34-point
 * sweep over this exact range did not complete in minutes of wall-clock
-* time. Four independent .op solves at the DRAFT range's own two endpoints
+* time. Four independent .op solves at the ratified range's own two endpoints
 * (matching design/README.md's own "DC operating grid" screening
 * convention, which also uses discrete VIN points, not a sweep) complete in
 * well under a second and reproduce that screening data's line-regulation
@@ -27,7 +27,7 @@ v {xschem version=3.4.7 file_version=1.2
 * see sim/line-regulation/experiment.json's "deck.analyses" for the exact
 * sequence. line_reg_*_mv_per_v is computed as
 * abs(1000*(vout_hi-vout_lo)/(3.63-2.97)), i.e. mV per V of VIN span over
-* the DRAFT range's two endpoints -- the same convention design/README.md's
+* the ratified range's two endpoints -- the same convention design/README.md's
 * own line-regulation screening numbers use.
 *
 * VIN's own component value below (3.3V) is a placeholder the deck's first
@@ -99,4 +99,4 @@ C {devices/lab_pin.sym} 900 -330 0 0 {name=p15 lab=VOUT}
 C {devices/lab_pin.sym} 900 -270 0 0 {name=p16 lab=0}
 T {I_LOAD: 1mA is this schematic's placeholder component value; the deck's
 own .control block 'alter's it between 1mA and 50mA across the four .op
-points, per the DRAFT "Line regulation" row's own two test points} 940 -300 0 0 0.2 0.2 {}
+points, per the ratified "Line regulation" row's own two test points} 940 -300 0 0 0.2 0.2 {}

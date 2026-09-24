@@ -4,15 +4,15 @@ v {xschem version=3.4.7 file_version=1.2
 * Exercises the LDO core-regulation-loop schematic landed by #14
 * (design/ldo_3v3in_1v8out.sch, instantiated below via its companion
 * subcircuit symbol design/ldo_3v3in_1v8out.sym) with a DC VIN sweep at a
-* fixed 50mA load, per spec/target-spec.md's DRAFT "Dropout @ 50 mA" row:
-* "< 300 mV" (DRAFT stretch < 200mV), using the DRAFT row's own cited
+* fixed 50mA load, per spec/target-spec.md's ratified "Dropout @ 50 mA" row:
+* "< 300 mV" (stretch < 200mV), using the row's own cited
 * method: "gf180's ss/125C/Vin~=Vout+dropout convention" -- i.e. sweep Vin
 * down toward Vout at the target load and find the margin at which
 * regulation is lost, not a load sweep at a single ample Vin. That row is
-* DRAFT (issue #1 not yet ratified); the bound below cites it directly,
-* not an invented final limit, and needs re-verification once #1 rules.
+* ratified by issue #1 / DR-006; the bound below cites it verbatim,
+* not an invented final limit.
 *
-* I_LOAD is fixed at 50mA (the DRAFT row's own test point). VVIN sweeps
+* I_LOAD is fixed at 50mA (the ratified row's own test point). VVIN sweeps
 * independently of the corner runner's 'vsup' -- EN uses 'vsup' instead
 * (always comfortably above the enable threshold across the whole
 * 2.97-3.63V corner axis), so PVT corners (process/temp, and EN's rail via
@@ -87,7 +87,7 @@ S {}
 E {}
 T {dropout-vs-load testbench -- exercises design/ldo_3v3in_1v8out.sch (#14)
 via its companion subcircuit symbol design/ldo_3v3in_1v8out.sym
-I_LOAD fixed 50mA (DRAFT "Dropout @ 50mA" row); VVIN DC-swept by the deck
+I_LOAD fixed 50mA (ratified "Dropout @ 50mA" row); VVIN DC-swept by the deck
 EN = 'vsup' (corner runner, always well above threshold); VREF = 1.2V placeholder} -700 -650 0 0 0.3 0.3 {}
 
 * ---- VIN: DC-swept independently of the corner runner's 'vsup' ----
@@ -122,8 +122,8 @@ C {devices/lab_pin.sym} 600 -220 0 0 {name=p14 lab=0}
 T {R_ESR: 10mOhm -- a representative point inside DR-002's proposed
 0-500mOhm window (no minimum ESR); not a sweep of the window itself} 640 -300 0 0 0.2 0.2 {}
 
-* ---- load: fixed 50mA (the DRAFT "Dropout @ 50 mA" row's own test point) ----
+* ---- load: fixed 50mA (the ratified "Dropout @ 50 mA" row's own test point) ----
 C {devices/isource.sym} 900 -300 0 0 {name=ILOAD value=50m}
 C {devices/lab_pin.sym} 900 -330 0 0 {name=p15 lab=VOUT}
 C {devices/lab_pin.sym} 900 -270 0 0 {name=p16 lab=0}
-T {I_LOAD: fixed 50mA -- the DRAFT "Dropout @ 50 mA" row's test point} 940 -300 0 0 0.2 0.2 {}
+T {I_LOAD: fixed 50mA -- the ratified "Dropout @ 50 mA" row's test point} 940 -300 0 0 0.2 0.2 {}

@@ -4,10 +4,10 @@ v {xschem version=3.4.7 file_version=1.2
 * Exercises the LDO core-regulation-loop schematic landed by #14
 * (design/ldo_3v3in_1v8out.sch, instantiated below via its companion
 * subcircuit symbol design/ldo_3v3in_1v8out.sym) with a small-signal AC
-* sweep on VIN, per spec/target-spec.md's DRAFT "PSRR" row: ">50dB @ 1kHz
+* sweep on VIN, per spec/target-spec.md's ratified "PSRR" row: ">50dB @ 1kHz
 * and >20dB @ 100kHz, at 1mA (light-load, binding) and at 50mA". That row
-* is DRAFT (issue #1 not yet ratified); the bounds below cite it directly,
-* not an invented final limit, and need re-verification once #1 rules.
+* is ratified by issue #1 / DR-006; the bounds below cite it verbatim,
+* not an invented final limit.
 *
 * VIN carries both the corner runner's DC 'vsup' bias and a 1V AC
 * stimulus, so vdb(vout) from the AC analysis directly gives the
@@ -37,7 +37,7 @@ v {xschem version=3.4.7 file_version=1.2
 * is retired.
 *
 * EN is tied to VIN's DC value via a separate DC-only source (EN does not
-* need the AC stimulus -- only VIN does, per the DRAFT PSRR row). VREF is
+* need the AC stimulus -- only VIN does, per the ratified PSRR row). VREF is
 * a fixed 1.2V placeholder per design/README.md's "VREF interface caveat"
 * -- matching the 1:2 feedback-divider ratio issue #22 revised the
 * schematic to (VOUT = 1.5 x VREF); the earlier 0.6V/2:1 convention does

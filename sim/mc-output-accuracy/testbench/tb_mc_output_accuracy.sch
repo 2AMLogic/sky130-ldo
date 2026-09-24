@@ -7,11 +7,10 @@ v {xschem version=3.4.7 file_version=1.2
 * operating point -- nominal VIN, light load -- so that a Monte Carlo
 * sampler (klt sim's request.monte_carlo, vary="mismatch") can re-run this
 * same circuit N times with a fresh per-instance AGAUSS mismatch draw each
-* time and report the VOUT spread, per spec/target-spec.md's DRAFT "Output"
-* row (1.8V +-2%, i.e. 1.764V-1.836V). That row is DRAFT (issue #1 not yet
-* ratified) -- the bound cited by this experiment's klt sim request cites it
-* directly, not an invented final limit, and needs re-verification once #1
-* rules.
+* time and report the VOUT spread, per spec/target-spec.md's ratified "Output"
+* row (1.8V +-2%, i.e. 1.764V-1.836V). That row is ratified by issue #1 /
+* DR-006 -- the bound cited by this experiment's klt sim request cites it
+* verbatim, not an invented final limit.
 *
 * I_LOAD is fixed at 1mA (light load) -- the same light-load convention
 * sim/psrr-dc/ already uses as its single characterized load point (see
@@ -20,7 +19,7 @@ v {xschem version=3.4.7 file_version=1.2
 * ceiling is a known open item (design/README.md "Known open item"), so a
 * fixed 1mA point is a representative, not exhaustive, output-accuracy
 * check -- it does not sweep the full 0-50mA load-regulation range (a
-* separate DRAFT spec row, not this testbench's job).
+* separate ratified spec row, not this testbench's job).
 *
 * Deliberately NOT in this schematic (the corner runner / klt sim request
 * injects them, so this schematic stays PVT- and MC-agnostic): the .lib
