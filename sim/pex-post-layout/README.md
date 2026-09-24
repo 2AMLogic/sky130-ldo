@@ -256,6 +256,54 @@ the 120 s per-corner cap, not a model or deck failure; raise `timeout_s`
 in `testbench/tb_pex_post_layout.request.json` if the standalone leg is
 needed standalone again.
 
+## Narrative summary for the latest record (hand-maintained here, not in `measurements/characterization.md`)
+
+`measurements/characterization.md` is generated end-to-end by
+[`measurements/build_characterization_report.py`](../../measurements/build_characterization_report.py),
+and its "Post-layout PEX detail" paragraph can only ever reproduce the terse
+`- Result:` lines that this directory's own `records/<record-id>.md` carries.
+The triage *conclusions* below -- the `klt` pin, the per-corner root-cause
+attribution, the issue cross-references -- are not fields in the record's
+companion `.json` and cannot be regenerated from it, so **this file is where
+they live**.
+
+Hand-editing that generated paragraph (or its matching "Limitations" bullet)
+into a richer form makes `build_characterization_report.py --check` report
+`characterization.md` as stale indefinitely, because no generator run can ever
+reproduce prose the record does not contain -- exactly the failure issue #146
+was filed for. **When a new record is minted, update this section and re-run
+the generator; do not hand-edit `characterization.md`.**
+
+### Record `20260923-183915-d9900b5` (`klt 0.6.0+g040f3406b485`)
+
+- `klt sim` (schematic-side leg, standalone): `status=error, corners=45,
+  passed=36, failed=0, errored=9`. All nine errors are `timeout` under the
+  testbench's own 120 s `options.timeout_s` cap at cold/low-supply corners --
+  host-load-induced, not a model or deck failure; the `klt pex` run's own
+  schematic leg completed those same corners (see "On the standalone
+  schematic-side leg's timeouts" above).
+- `klt pex` (schematic + extracted legs + delta): `status=error, passed=108,
+  failed=0, errored=27, pin_count_mismatch=None`. The 27 are 9 `ss` corners x
+  3 measurements, all one root cause: the landed layout draws no `hvi` (75/20)
+  markers, so every MOS binds the `*_01v8` core model at g5v0d10v5 geometries
+  and the substituted model's binning fails ngspice's BSIM4 parameter check at
+  `ss`. Drawing the marker is a repo-local layout task tracked in #142; the
+  residual upstream friction (`klt extract --pdk` staying silent when a deck
+  declares flavour markers the layout does not contain) is filed as
+  [klayout-tools#2417](https://github.com/2AMLogic/klayout-tools/issues/2417).
+- `body_bias`: `status=biased, unbiased_device_count=0` -- no device body sits
+  on an anonymous deck-synthesized net, so the
+  [klayout-tools#1983](https://github.com/2AMLogic/klayout-tools/issues/1983)
+  physically-wrong-resimulation hazard does not bite for this layout as
+  landed.
+- All three previously-disclosed upstream gaps --
+  [#1157](https://github.com/2AMLogic/klayout-tools/issues/1157),
+  [#1159](https://github.com/2AMLogic/klayout-tools/issues/1159) and
+  [#1369](https://github.com/2AMLogic/klayout-tools/issues/1369) -- are fixed
+  upstream as of this record's `klt` pin (see the two "Update (2026-09-23,
+  issue #122)" notes above). What bounds the extracted-side leg today is
+  therefore repo-local (#142), not upstream.
+
 ## Why generic textbook-constant `.model` cards are not used here
 
 An earlier iteration of this testbench (before switching to `--pdk`) used
