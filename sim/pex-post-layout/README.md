@@ -366,7 +366,9 @@ leg re-simulates the design's own transistors.
   `vout_full_load_v` median 385% / max 3543%,
   `vin_minus_vout_full_load_v` median 633% / max 4775%.
 - **The full-load rows are non-physical, and the cause is this flow's power
-  routing.** Extracted `VOUT` reaches −5.7 V to −61.9 V at 50 mA. The
+  routing.** 44 of the 45 full-load corners return a negative extracted
+  `VOUT` at 50 mA; the spread runs from +1.6 V (`ff/3.630V/-40C`, the one
+  non-negative row) down to −61.9 V (`ss/3.300V/-40C`). The
   extracted `VOUT` net carries 102 Ω–64.3 kΩ of lumped star series resistance
   across its 51 terminals (`VIN`: 259 Ω–29.4 kΩ across 145), because
   `gen-ldo-blocks.py` draws every net — power rails included — as a 0.30 µm

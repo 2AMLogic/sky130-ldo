@@ -40,7 +40,9 @@
 #   is not sufficient here. Specifically this commit, and not `main`'s tip,
 #   because it is the exact build the landed PEX record
 #   (`sim/pex-post-layout/records/20260923-183915-d9900b5`, `klt
-#   0.6.0+g040f3406b485`) already ran under -- so the only difference between
-#   that record and the one #142 mints is the `hvi` marker this repo now
-#   draws, not twelve unrelated upstream commits.
+#   0.6.0+g040f3406b485`) already ran under -- so *on the tool axis* the only
+#   difference between that record and the one #142 mints is the `hvi` marker
+#   this repo now draws, not twelve unrelated upstream commits. (The records
+#   also differ on the design side, by the DR-011 schematic resize; see
+#   `sim/pex-post-layout/README.md` for the full statement.)
 klayout-tools @ git+https://github.com/2AMLogic/klayout-tools@040f3406b4858ac7a5b8faa8df5327fd62a65afa
