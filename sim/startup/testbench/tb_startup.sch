@@ -6,13 +6,13 @@ v {xschem version=3.4.7 file_version=1.2
 * subcircuit symbol design/ldo_3v3in_1v8out.sym) -- the M_SSCHG/C_SS
 * current-starved ramp feeding the M_IN2S min-select input, see
 * design/README.md's "Soft start (#22)" -- against spec/target-spec.md's
-* DRAFT "Startup / soft-start" row:
+* ratified "Startup / soft-start" row:
 *
 *   "monotonic into any load 0-50 mA and any C_out in the stability window;
 *    controlled ramp; inside +-2% within a few ms of enable; overshoot
 *    <= +2%"
 *
-* That row is DRAFT (issue #1 not yet ratified) and the stability window it
+* That row is ratified by issue #1 / DR-006, and the stability window it
 * refers to is DR-002's *proposed* one (C_eff 0.33-4.7 uF, ESR 0-500 mOhm),
 * also unratified -- the bounds in experiment.json cite those directly
 * rather than inventing a final limit.
@@ -78,7 +78,7 @@ T {startup / soft-start testbench -- exercises design/ldo_3v3in_1v8out.sch (#14/
 via its companion subcircuit symbol design/ldo_3v3in_1v8out.sym
 VIN = 'vsup' (already up); EN = PULSE 0 -> 'vsup' at t = 100us (the enable edge)
 VREF = 1.2V placeholder (see design/README.md); C_OUT / R_LOAD walked by `alter`
-DRAFT "Startup / soft-start" row: monotonic, inside +-2% within a few ms, overshoot <= +2%} -700 -750 0 0 0.3 0.3 {}
+ratified "Startup / soft-start" row: monotonic, inside +-2% within a few ms, overshoot <= +2%} -700 -750 0 0 0.3 0.3 {}
 
 * ---- VIN (already up and settled before the enable edge) ----
 C {devices/vsource.sym} -600 -300 0 0 {name=VVIN value='vsup' savecurrent=true}
@@ -123,6 +123,6 @@ C {devices/res.sym} 900 -300 0 0 {name=RLOAD value=1e12 m=1}
 C {devices/lab_pin.sym} 900 -330 0 0 {name=p15 lab=VOUT}
 C {devices/lab_pin.sym} 900 -270 0 0 {name=p16 lab=0}
 T {R_LOAD: 1e12 ("0mA", the feedback divider is the only preload) at the
-first leg; the deck `alter`s it to 36 Ohm (~50mA at the 1.8V DRAFT output
-target) for the loaded legs, covering both ends of the DRAFT row's
+first leg; the deck `alter`s it to 36 Ohm (~50mA at the 1.8V ratified output
+target) for the loaded legs, covering both ends of the ratified row's
 "any load 0-50 mA".} 940 -300 0 0 0.2 0.2 {}

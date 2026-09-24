@@ -5,13 +5,13 @@ v {xschem version=3.4.7 file_version=1.2
 * (design/ldo_3v3in_1v8out.sch, instantiated below via its companion
 * subcircuit symbol design/ldo_3v3in_1v8out.sym -- see that symbol's own
 * header for how it was generated) with a load-current step, per
-* spec/target-spec.md's DRAFT "Load transient" row: "1<->50 mA step, ~1us
+* spec/target-spec.md's ratified "Load transient" row: "1<->50 mA step, ~1us
 * edges: peak excursion <=150mV, recover to +-1% in <=20us, over the
-* ratified C_out/ESR window". That row is DRAFT (issue #1 not yet ratified)
+* ratified C_out/ESR window". That row is ratified by issue #1 / DR-006,
 * and the C_out/ESR window itself is spec/decision-records/DR-002
 * (status: proposed, not ratified) -- this testbench cites DR-002's
 * *proposed* 1uF nominal / representative-ESR point as a starting value,
-* not a ratified spec number. Re-verify the bounds once #1 and DR-002 rule.
+* not a ratified spec number. Re-verify the bounds once DR-002 rules.
 *
 * VIN/EN share the corner runner's 'vsup' parameter (EN is active-high,
 * full-rail 0/VIN per design/README.md, so tying it to VIN keeps the DUT
@@ -25,7 +25,7 @@ v {xschem version=3.4.7 file_version=1.2
 * yet.
 *
 * I_LOAD steps 1mA -> 50mA -> 1mA (PULSE, 1us edges) at VOUT, modelling the
-* DRAFT spec's load-transient stimulus literally. C_OUT (1uF) + R_ESR
+* ratified spec's load-transient stimulus literally. C_OUT (1uF) + R_ESR
 * (10mOhm, a ceramic-representative point inside DR-002's proposed
 * 0-500mOhm window, not a sweep of that window -- full C_out/ESR
 * corner-sweep is follow-on scope, e.g. #19) sit at VOUT as the external
@@ -36,7 +36,7 @@ v {xschem version=3.4.7 file_version=1.2
 * and the error amplifier still has a light-load/high-VIN output-swing
 * ceiling ("Known open item" in design/README.md) even though issue #22
 * already added the current-limit and soft-start protection circuitry, so
-* this testbench recording a FAIL against the DRAFT peak-excursion bound
+* this testbench recording a FAIL against the ratified peak-excursion bound
 * at some corners is an honest, expected verification finding at this
 * design stage, not a harness defect. CLAUDE.md: "Verification is the
 * product" -- a testbench that surfaces a real immaturity is doing its
@@ -56,7 +56,7 @@ E {}
 T {load-transient testbench -- exercises design/ldo_3v3in_1v8out.sch (#14)
 via its companion subcircuit symbol design/ldo_3v3in_1v8out.sym
 VIN/EN = 'vsup' (corner runner); VREF = 1.2V placeholder (see design/README.md)
-I_LOAD: PULSE 1mA<->50mA, 1us edges (spec/target-spec.md DRAFT "Load transient" row)
+I_LOAD: PULSE 1mA<->50mA, 1us edges (spec/target-spec.md ratified "Load transient" row)
 C_OUT/R_ESR: DR-002 proposed 1uF / representative ESR point (DR-002 is proposed, not ratified)} -700 -650 0 0 0.3 0.3 {}
 
 * ---- VIN / EN (tied to the corner runner's supply) ----
@@ -95,4 +95,4 @@ C {devices/isource.sym} 900 -300 0 0 {name=ILOAD value="PULSE(1m 50m 1m 1u 1u 1m
 C {devices/lab_pin.sym} 900 -330 0 0 {name=p15 lab=VOUT}
 C {devices/lab_pin.sym} 900 -270 0 0 {name=p16 lab=0}
 T {I_LOAD: PULSE(1m 50m 1m 1u 1u 1m 4m) -- 1mA<->50mA step, 1us edges,
-per spec/target-spec.md DRAFT "Load transient" row} 940 -300 0 0 0.2 0.2 {}
+per spec/target-spec.md ratified "Load transient" row} 940 -300 0 0 0.2 0.2 {}

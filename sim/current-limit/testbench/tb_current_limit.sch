@@ -4,12 +4,12 @@ v {xschem version=3.4.7 file_version=1.2
 * Exercises the current-limit clamp issue #22 added to the LDO core
 * (design/ldo_3v3in_1v8out.sch, instantiated below via its companion
 * subcircuit symbol design/ldo_3v3in_1v8out.sym), against
-* spec/target-spec.md's DRAFT "Current limit" row:
+* spec/target-spec.md's ratified "Current limit" row:
 *
 *   "constant-current (brickwall) clamp, window TBD over PVT; never engages
 *    for I_load <= 50 mA; survives continuous Vout = 0 short at Vin_max"
 *
-* That row is DRAFT (issue #1 is not yet ratified) and it deliberately
+* That row is ratified by issue #1 / DR-006 and it deliberately
 * carries NO numeric clamp window -- the window is "TBD over PVT". This
 * testbench therefore does two different things with the row's two halves,
 * and says which is which rather than blurring them:
@@ -51,9 +51,9 @@ v {xschem version=3.4.7 file_version=1.2
 *
 * The deck's three legs (see experiment.json "analyses"):
 *
-*   1. `op` with RFORCE open and RLOAD = 36 Ohm (~50 mA, the DRAFT Load
+*   1. `op` with RFORCE open and RLOAD = 36 Ohm (~50 mA, the ratified Load
 *      row's ceiling): the clamp must be fully OFF and the loop must still
-*      regulate inside the DRAFT Output row's +-2% window. This is the
+*      regulate inside the ratified Output row's +-2% window. This is the
 *      "never engages for I_load <= 50 mA" clause.
 *   2. `dc vforce 0 -> 1.75` with RFORCE = 1 mOhm and RLOAD open: the DC
 *      limit characteristic. Its two end points are the dead short
@@ -135,7 +135,7 @@ via its companion subcircuit symbol design/ldo_3v3in_1v8out.sym
 VIN = 'vsup' (corner runner); EN = dc 'vsup' for legs 1-2, PWL 0 -> 'vsup'
 at 100us for leg 3's tran (issue #76); VREF = 1.2V placeholder (see design/README.md)
 VFORCE + RFORCE force VOUT: DC limit characteristic, then a held Vout=0 short
-DRAFT "Current limit" row: brickwall window TBD over PVT; never engages at 50mA} -700 -750 0 0 0.3 0.3 {}
+ratified "Current limit" row: brickwall window TBD over PVT; never engages at 50mA} -700 -750 0 0 0.3 0.3 {}
 
 * ---- VIN / EN (tied to the corner runner's supply) ----
 C {devices/vsource.sym} -600 -300 0 0 {name=VVIN value='vsup' savecurrent=true}
@@ -180,11 +180,11 @@ C {devices/lab_pin.sym} 600 -220 0 0 {name=p14 lab=0}
 T {R_ESR: 10mOhm -- a representative point inside DR-002's proposed
 0-500mOhm window (no minimum ESR); not a sweep of the window itself} 640 -300 0 0 0.2 0.2 {}
 
-* ---- load: 36 Ohm (~50mA, the DRAFT Load row's ceiling) ----
+* ---- load: 36 Ohm (~50mA, the ratified Load row's ceiling) ----
 C {devices/res.sym} 900 -300 0 0 {name=RLOAD value=36 m=1}
 C {devices/lab_pin.sym} 900 -330 0 0 {name=p15 lab=VOUT}
 C {devices/lab_pin.sym} 900 -270 0 0 {name=p16 lab=0}
-T {R_LOAD: 36 Ohm (~50mA at the 1.8V DRAFT output target) for the
+T {R_LOAD: 36 Ohm (~50mA at the 1.8V ratified output target) for the
 "clamp must not engage at 50mA" leg; the deck `alter`s it to 1e12
 ("0mA") for the forced-VOUT DC characteristic, where the forcing
 source, not the load, sets the operating point.} 940 -300 0 0 0.2 0.2 {}
@@ -200,7 +200,7 @@ T {RFORCE starts at 1e12 (branch effectively absent) and the deck `alter`s
 it to 1m for the two forced legs. VFORCE carries BOTH a DC value (1.8V,
 used by the `op` leg and overridden by `dc vforce ...`) and a PWL that
 drops the forced output to 0V at t=1.0ms and HOLDS it there to the end
-of the run -- the "continuous Vout=0 short" of the DRAFT row, applied as
+of the run -- the "continuous Vout=0 short" of the ratified row, applied as
 an event of defined duration rather than sampled at one instant. t=1.0ms
 (issue #76) is deliberately after the EN PWL's soft-start ramp completes
 (worst case ~0.553ms: 100us enable edge + sim/startup's measured 0.453ms

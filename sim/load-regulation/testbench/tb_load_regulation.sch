@@ -5,10 +5,10 @@ v {xschem version=3.4.7 file_version=1.2
 * (design/ldo_3v3in_1v8out.sch, instantiated below via its companion
 * subcircuit symbol design/ldo_3v3in_1v8out.sym) with two discrete DC
 * operating-point solves (I_LOAD in {0mA, 50mA}) at a fixed VIN, per
-* spec/target-spec.md's DRAFT "Load regulation (0-50mA)" row: "< 1% (18mV),
-* counted inside the +-2% window". That row is DRAFT (issue #1 not yet
-* ratified); the bound below cites it directly, not an invented final
-* limit, and needs re-verification once #1 rules.
+* spec/target-spec.md's ratified "Load regulation (0-50mA)" row: "< 1% (18mV),
+* counted inside the +-2% window". That row is ratified by issue #1 / DR-006;
+* the bound below cites it verbatim, not an invented final
+* limit.
 *
 * Two .op points, not a continuous .dc sweep (deliberate, found the hard
 * way): a continuous 'dc iload 0 50m ...' sweep at this schematic's current
@@ -19,12 +19,12 @@ v {xschem version=3.4.7 file_version=1.2
 * data reports at these endpoints). This is the same DC-solution-
 * multiplicity family design/README.md's dated 2026-08-25 root-cause section
 * documents for VIN sweeps (issue #60 mechanism 4, tracked by #71), now
-* also observed load-current-side. Two independent .op solves at the DRAFT
+* also observed load-current-side. Two independent .op solves at the ratified
 * row's own endpoints (matching design/README.md's own "Load regulation"
 * screening convention, which also uses discrete no-load/full-load points,
 * not a sweep) complete in well under a second and reproduce that screening
 * data. VIN is tied directly to the corner runner's 'vsup' (same convention
-* load-transient/psrr-dc already use) -- this row's DRAFT bound is a
+* load-transient/psrr-dc already use) -- this row's ratified bound is a
 * function of load current at a given supply, not a function of VIN itself
 * (that is the "Line regulation" row, see sim/line-regulation). EN also ties
 * to 'vsup'. The load current source ILOAD is 'alter'ed between 0 and 50mA
@@ -97,4 +97,4 @@ C {devices/lab_pin.sym} 900 -330 0 0 {name=p15 lab=VOUT}
 C {devices/lab_pin.sym} 900 -270 0 0 {name=p16 lab=0}
 T {I_LOAD: 0A is this schematic's placeholder component value (no load); the
 deck's own .control block 'alter's it to 50mA (full load) for the second
-.op, per the DRAFT "Load regulation (0-50mA)" row's own two endpoints} 940 -300 0 0 0.2 0.2 {}
+.op, per the ratified "Load regulation (0-50mA)" row's own two endpoints} 940 -300 0 0 0.2 0.2 {}

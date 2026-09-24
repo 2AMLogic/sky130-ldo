@@ -4,9 +4,9 @@ v {xschem version=3.4.7 file_version=1.2
 * Exercises design/ldo_3v3in_1v8out.sch (the issue-#25 current-mirror-OTA
 * revision of the #14/#22 core loop), instantiated below via its companion
 * subcircuit symbol design/ldo_3v3in_1v8out.sym, against
-* spec/target-spec.md's DRAFT "Stability" row: "stable 0-50 mA over the
+* spec/target-spec.md's ratified "Stability" row: "stable 0-50 mA over the
 * ratified C_out/ESR window; PM >= 45 deg, GM >= 10 dB worst corner". That
-* row is DRAFT (issue #1 not yet ratified) and the C_out/ESR window it
+* row is ratified by issue #1 / DR-006, and the C_out/ESR window it
 * refers to is DR-002's *proposed* one (C_eff 0.33-4.7 uF, ESR 0-500 mOhm,
 * no minimum ESR) -- the bounds in experiment.json cite those directly
 * rather than inventing a final limit.
@@ -139,4 +139,4 @@ C {devices/lab_pin.sym} 900 -330 0 0 {name=p15 lab=VOUT}
 C {devices/lab_pin.sym} 900 -270 0 0 {name=p16 lab=0}
 T {R_LOAD: 36 Ohm (~50mA) at the first analysis point; the deck `alter`s it
 to 1.8k (~1mA) and 1e12 ("0mA", divider preload only) for the light-load
-points of the DRAFT Stability row's 0-50mA range.} 940 -300 0 0 0.2 0.2 {}
+points of the ratified Stability row's 0-50mA range.} 940 -300 0 0 0.2 0.2 {}

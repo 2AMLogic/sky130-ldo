@@ -18,7 +18,9 @@ per `CLAUDE.md`'s clean-room mandate.
 ## What this is, and isn't
 
 - **Is**: a real, netlist-clean xschem schematic implementing the LDO block
-  described in `spec/target-spec.md`'s DRAFT table, built on the framing
+  described in `spec/target-spec.md`'s table (ratified by issue #1 / DR-006,
+  except the Iq row, which is set separately by DR-009 and is still
+  `proposed`), built on the framing
   ratified in `spec/decision-records/DR-001-pass-device-supply-framing.md`,
   with the pass device sized per
   `spec/decision-records/DR-003-sky130-device-characterization.md`'s
@@ -382,7 +384,7 @@ assumed, via a quick op screening deck against the pinned PDK
 
 Total divider resistance ≈3.12MΩ, so at `VOUT=1.8V` the divider itself draws
 ≈0.58µA — a small, deliberate contribution to the Iq budget, consistent with
-the DRAFT spec's "0mA = no external load; feedback divider is the only
+the ratified spec's "0mA = no external load; feedback divider is the only
 inherent preload" note. **These are screening numbers** (single corner,
 single bias point, not a `sim/` evidentiary record) — real values need
 re-confirming across the full PVT matrix once a testbench exists (#18/#19),
@@ -600,12 +602,12 @@ Miller pole splitting stops working at the 50 mA/0.33 µF corner DR-002 flags
 as the risky one. `M_TAIL`'s `W` was raised `20 → 40` in the same pass, for
 `Gm`: the no-load corner has to cross over *above* a low-frequency pole/zero
 doublet, which needs bandwidth. It stops at 2× rather than the 6× that
-screening showed keeps improving that corner, because the DRAFT `Iq < 30 µA`
-row is the binding constraint — 6× measured 33.6 µA at 50 mA, over the row;
-2× measures 24.9 µA (table below), inside it.
+screening showed keeps improving that corner, because the `Iq < 30 µA` row
+(set by DR-009, `proposed`) is the binding constraint — 6× measured 33.6 µA
+at 50 mA, over the row; 2× measures 24.9 µA (table below), inside it.
 
 **Measured result** (`sim/loop-gain` record `20260818-014128-01b7905`, the
-`--quick` 3-corner subset; DRAFT bound is `spec/target-spec.md`'s Stability
+`--quick` 3-corner subset; ratified bound is `spec/target-spec.md`'s Stability
 row, PM ≥ 45° and GM ≥ 10 dB worst corner):
 
 | Window point | `tt`/27°C/3.30V | `ss`/−40°C/2.97V | `ff`/125°C/3.63V |
@@ -658,7 +660,7 @@ operation and takes over `EA_OUT` when the pass current exceeds a threshold:
    alone would have halved the sense signal and silently doubled the trip
    threshold.) A sense FET rather than a
    series sense resistor because nothing may be inserted in the main current
-   path: a 1Ω sense resistor would spend 50mV of the 300mV DRAFT dropout
+   path: a 1Ω sense resistor would spend 50mV of the 300mV ratified dropout
    budget at 50mA.
 2. **Attenuate and compare.** The sense current lands in the diode-connected
    `M_CLN1` and is mirrored down 20:1.6 (≈12.5:1) by `M_CLN2` into the
@@ -690,7 +692,8 @@ this kind of limit is a window, not a number; establishing that window is
 
 **Iq interaction, stated rather than hidden.** The sense branch carries
 `I_load / 5952`, so it adds ~8µA at the 50mA load point — about a quarter of
-the DRAFT `Iq < 30µA at no load and full load` row, and the dominant term in
+the `Iq < 30µA at no load and full load` row (set by DR-009, `proposed`), and
+the dominant term in
 the measured full-load Iq below. It is ~0 at no load. Whether that is an
 acceptable use of the Iq budget is a question for the (still nonexistent) Iq
 budget decision record; the alternative levers are a narrower sense device
@@ -713,7 +716,7 @@ The implementation is a **current-starved ramp feeding a min-select input**:
   nA) charging `C_SS = 10p`. Charging from a *current source* rather than
   through a resistor is what makes `SS` a straight line; an RC ramp of the
   same duration would need a ~10MΩ/100pF combination, which is not affordable
-  against the 0.1mm² DRAFT area row. `M_SSCHG`'s gate is `BIASP`, so the ramp
+  against the 0.1mm² ratified area row. `M_SSCHG`'s gate is `BIASP`, so the ramp
   cannot start before the bias generator is alive and stops for free at
   `EN=0`.
 - `M_IN2S` is a replica of `M_IN2` (same `L`, `W`, `nf`) wired in parallel
@@ -985,7 +988,7 @@ and the new mirror branches can, and did):
 | 3.30V | 1.8022V (+0.12%) | 1.8004V (+0.02%) | 1.7980V (−0.11%) |
 | 3.63V | 1.8025V (+0.14%) | 1.8005V (+0.03%) | 1.7981V (−0.11%) |
 
-**Every point is inside the DRAFT ±2% Output row**, including the 0mA and 1mA
+**Every point is inside the ratified ±2% Output row**, including the 0mA and 1mA
 high-`VIN` points the #22 schematic missed by +24.7% and +13.6%. For direct
 comparison, the same grid on the #22 (five-transistor OTA) schematic — the
 "known open item" this issue closes:
@@ -1005,13 +1008,13 @@ stalling at the old ≈2.5V `EA_TAIL` ceiling:
 | 3.30V | 2.734V | 2.347V | 1.708V |
 | 3.63V | **3.072V** | 2.685V | 2.057V |
 
-Against the other DRAFT rows, honestly scored:
+Against the other ratified rows, honestly scored:
 
 - **Load regulation** over the row's full 0→50mA range is 4.3mV at
-  `VIN=2.97V` (**0.24%**), inside the DRAFT `<1%` row — where the #22
+  `VIN=2.97V` (**0.24%**), inside the ratified `<1%` row — where the #22
   schematic was 55mV (3.0%) and missed it.
 - **Line regulation** at 50mA is (1.7981−1.7978)/0.66V ≈ **0.45mV/V**, inside
-  the DRAFT `<5mV/V` row — where the #22 schematic was ≈11mV/V and missed it.
+  the ratified `<5mV/V` row — where the #22 schematic was ≈11mV/V and missed it.
   At 0mA it is 0.61mV/V.
 
 These are still **screening** numbers (single process corner, single
@@ -1028,9 +1031,10 @@ the re-run `load-transient` / `dropout-vs-load` / `psrr-dc` records.
 | 3.30V | 11.28µA | 11.87µA | 23.49µA | — |
 | 3.63V | 12.88µA | 13.44µA | 24.91µA | **0.165nA** |
 
-Iq = total `VIN` current minus load current. All points are inside the DRAFT
-`Iq < 30µA at no load and full load` row, and the disabled state is four
-orders of magnitude inside the DRAFT `< 3µA` row. The 0mA→50mA Iq growth is
+Iq = total `VIN` current minus load current. All points are inside the Iq
+`< 30µA at no load and full load` row (set by DR-009, `proposed`), and the
+disabled state is four orders of magnitude inside the ratified `< 3µA` row.
+The 0mA→50mA Iq growth is
 almost entirely the current-limit sense branch (`I_load / 5952` ≈ 8µA at
 50mA) — see "Iq interaction" above.
 
@@ -1038,11 +1042,12 @@ almost entirely the current-limit sense branch (`I_load / 5952` ≈ 8µA at
 The #22 numbers were 5.55–7.38µA at 0mA and 18.0–19.3µA at 50mA; the increase
 here is the two added mirror branches plus the 2× `M_TAIL` widening. Pushing
 `M_TAIL` to 6× — which screening showed keeps improving the no-load phase
-margin, up to ~40° — measured **33.6µA at 50mA**, i.e. *over* the DRAFT row,
-so it was not taken. That trade is recorded rather than hidden, because it is
-the reason the no-load corner in "Compensation (sized in #25)" is left short
-of 45° instead of bought out with bias current: relaxing one DRAFT row to
-make another DRAFT row pass is exactly what `CLAUDE.md` forbids.
+margin, up to ~40° — measured **33.6µA at 50mA**, i.e. *over* the Iq row (set
+by DR-009, `proposed`), so it was not taken. That trade is recorded rather
+than hidden, because it is the reason the no-load corner in "Compensation
+(sized in #25)" is left short of 45° instead of bought out with bias current:
+relaxing one row to make another ratified row pass is exactly what
+`CLAUDE.md` forbids.
 
 **The disabled state is unchanged at the leakage floor.** `EN=0` measures
 133pA at `VIN=2.97V` and 165pA at `VIN=3.63V` — the same ~150pA as the #22
@@ -1228,7 +1233,7 @@ through the existing `AMP_ENN`/`BIASP`/`M_ENP4` gating described above.
 
 ### Closed in #25: light-load regulation (diagnosis and cure)
 
-**Status: closed.** The DC grid above now sits inside the DRAFT ±2% row at
+**Status: closed.** The DC grid above now sits inside the ratified ±2% row at
 all nine `VIN` × load points. What follows is the history, kept because the
 diagnosis is the reason the fix is a topology change and not a sizing tweak,
 and because the *rejected* candidate is worth not repeating.
@@ -1328,7 +1333,7 @@ Still deliberately **not** in this schematic:
 
 These are real, trackable gaps, not silently dropped requirements.
 
-### The full 45-point PVT + Monte Carlo campaign has run, and it fails every DRAFT row it substantiates (#19/#37/#40 ran it; #60 root-caused the results, 2026-08-25)
+### The full 45-point PVT + Monte Carlo campaign has run, and it fails every ratified row it substantiates (#19/#37/#40 ran it; #60 root-caused the results, 2026-08-25)
 
 **Status update, superseding every "#19's job" / "3-corner `--quick` subset"
 line elsewhere in this file.** Issues #19/#37/#40 closed having actually run
@@ -1404,13 +1409,14 @@ previously-undesigned-for gap (PSRR):**
    pervasive rather than confined to the 3-corner subset.** `sim/loop-gain`'s
    full 45-point run passes only 3/45 corners (versus the 3-corner quick
    subset's already-known 0mA shortfall at 2 of 3 corners). The `pm_c033_0ma`
-   column is below the 45° DRAFT Stability row at nearly every corner outside
-   125°C (typically 15–24° at −40/27°C, improving toward 30–90° as
+   column is below the 45° ratified Stability row at nearly every corner
+   outside 125°C (typically 15–24° at −40/27°C, improving toward 30–90° as
    temperature rises), confirming the mechanism this file already named under
    "Compensation (sized in #25)" — the pass stage's own
    `gm_pass/(2π·C_out)` pole falling with load current, unclosable without
-   spending amplifier bias current the DRAFT `Iq < 30µA` row does not have
-   room for — generalizes across the full corner grid rather than being a
+   spending amplifier bias current the `Iq < 30µA` row (set by DR-009,
+   `proposed`) does not have room for — generalizes across the full corner
+   grid rather than being a
    quirk of the 3 quick-subset corners. The same marginal-margin/doublet-dip
    condition is the most likely driver of `mc-output-accuracy`'s 19/200 tail
    outliers (see below) and of the *non-pathological* (i.e. not
@@ -1432,7 +1438,7 @@ previously-undesigned-for gap (PSRR):**
    screening forced full gate drive externally, while the closed loop's own
    amplifier — whose bias/tail chain also loses headroom as `Vin` approaches
    `Vout` — cannot quite reach full drive at this margin. 400–450mV is still
-   above the DRAFT 300mV target, a real (if smaller than the raw 530mV–1.79V
+   above the ratified 300mV target, a real (if smaller than the raw 530mV–1.79V
    the record reports) gap. **Superseded by #71's fix** — see "#71 resolved"
    below for the confirmed, `sim/`-evidentiary number (0.310V–0.554V at
    −40°C/27°C across all five process corners) that replaces this screening
@@ -1459,7 +1465,7 @@ previously-undesigned-for gap (PSRR):**
    at 125°C, root-caused but not yet fixed (deferred to #79).
 5. **PSRR: a real, systematic, previously-undesigned-for shortfall, not a
    symptom of (1)/(2)/(4).** `sim/psrr-dc` fails 39/45 corners at 1kHz by a
-   wide, consistent margin (measured 20.3–25.7dB against the 50dB DRAFT
+   wide, consistent margin (measured 20.3–25.7dB against the 50dB ratified
    target — a real, non-pathological small-signal result, not a
    non-physical one); the 6 corners that pass (`ff`/`sf` at 125°C) are
    exactly the corners mechanism (1) shows are thermal-shutdown-tripped, so
@@ -1491,13 +1497,14 @@ previously-undesigned-for gap (PSRR):**
    likely to close most or all of this row without any change to the
    mismatch model itself.
 
-**What this means for the DRAFT spec rows.** None of Output, Dropout,
+**What this means for the ratified spec rows.** None of Output, Dropout,
 Load-transient, PSRR or Stability can be marked closed. None of the five
 findings above is closable by a small, low-risk sizing tweak validated
 against a single corner — each requires a design change (bias-generator
 redesign for PSRR/supply-independence, a re-tuned/re-verified thermal-
 shutdown sizing for the false-trip, and a compensation/bias-current rework
-for the light-load margin that fits inside the DRAFT `Iq` budget) followed by
+for the light-load margin that fits inside the `Iq` budget (set by DR-009,
+`proposed`)) followed by
 a full, expensive 45-point-per-testbench re-verification pass to confirm it
 without regressing a different row — exactly the risk this issue's own
 Curator enhancement flagged ("a wrong root cause or a fix that regresses a
@@ -1510,7 +1517,7 @@ pass:
   shortfall (mechanism 2), bundled together since both plausibly share a
   bias-generator-redesign fix and both compete for the same `Iq` budget.
   **Resolved (spec recommendation) 2026-09-14** — see "DR-007 recommends
-  superseding the DRAFT PSRR/Stability rows" below; both candidate routes
+  superseding the ratified PSRR/Stability rows" below; both candidate routes
   within the single-stage topology proved verified-negative (via #79), and
   a topology-class fix is spun off into **#107**.
 - **#71** — the `dropout-vs-load` testbench's `dropout_v` measurement
@@ -1540,7 +1547,7 @@ classic "regulation just lost" definition — rather than the old fixed
 45-point record (`20260825-055423-c000414`, supersedes
 `20260818-032811-81dc232`) confirms the screening estimate: at −40°C/27°C,
 across all five process corners, `dropout_v` ranges **0.310V–0.554V**
-(worst: `ff`/27°C; best: `ss`/−40°C) — still above the DRAFT 300mV target (a
+(worst: `ff`/27°C; best: `ss`/−40°C) — still above the ratified 300mV target (a
 real gap, not a testbench artifact) but well below the raw 530mV–1.79V the
 old fixed-endpoint measurement reported. 125°C corners are excluded from
 this range for the reason below.
@@ -1699,7 +1706,7 @@ above. The existing record
 (`sim/load-transient/records/20260818-032755-81dc232.md`) confirms this
 in practice: at 125°C, `tt`/`ss`/`fs` all report plausible, physically
 sane `undershoot_v`/`overshoot_v` values (0.157V–0.284V — real spec
-misses against the 0.15V DRAFT target, not solver artifacts), while only
+misses against the 0.15V ratified target, not solver artifacts), while only
 `ff`/`sf` show the extreme non-physical values (`undershoot_v` up to
 22.29V) mechanism 1's thermal-shutdown false-trip already explains. No
 re-run needed — the existing record already answers this issue's
@@ -1746,8 +1753,9 @@ loop's degenerate `I=0` solution. This was fully implemented in place of
   `sim/README.md`) settles into a genuine, stable-but-wrong high-current
   branch at every load point tried (`tt`/27°C, `VIN=3.3V`, 0/1/50 mA):
   `NB` pulled to ≈3.297 V (≈`VIN`), `BIASP` pulled to ≈0.673 V, and total
-  supply current ≈1 mA at 0 mA external load — over 30× the DRAFT
-  `Iq < 30 µA` row, with `VOUT` collapsed to a few hundred µV to a few mV.
+  supply current ≈1 mA at 0 mA external load — over 30× the Iq
+  `< 30 µA` row (set by DR-009, `proposed`), with `VOUT` collapsed to a few
+  hundred µV to a few mV.
   This reproduces from a *settled* transient (500 µs, values steady well
   before the end of the run), not a one-shot `.op` artifact, and is
   independent of `.nodeset` hints biasing the solver toward the intended
@@ -1843,15 +1851,16 @@ shortfall.
   here.
 - Independent of that ambiguity, the `Iq` headroom for any preload is
   tight regardless: "Quiescent and shutdown current" above measures
-  24.9 µA at 50 mA against the DRAFT `Iq < 30 µA` row, leaving only ≈5 µA
+  24.9 µA at 50 mA against the `Iq < 30 µA` row (set by DR-009, `proposed`),
+  leaving only ≈5 µA
   of room for a preload that adds current at *every* load point (not just
   at 0 mA) before that row itself would be missed.
 
-**Net effect on the DRAFT spec rows.** PSRR and Stability remain **open**,
+**Net effect on the ratified spec rows.** PSRR and Stability remain **open**,
 exactly as mechanisms 2 and 5 in the campaign section above describe —
 this investigation did not close either. Per `CLAUDE.md`'s "a row that
 proves unmeetable is superseded by a new decision record, never silently
-loosened" discipline, no DRAFT row was touched: both the 50 dB PSRR row
+loosened" discipline, no ratified row was touched: both the 50 dB PSRR row
 and the 45° Stability row stand as written, and the two screened-but-
 rejected candidates above are recorded as real, if negative, findings
 rather than folded into a claim of progress. **#79** carries the
@@ -1870,7 +1879,7 @@ reaches (its own finding: measured on a branch "not confirmed to be the
 same branch the documented 15-24° PM shortfall lives on"). This issue
 resolves both questions — (1) with a genuine fix, (2) with a real
 negative result — and neither, once resolved, closes the PSRR or
-Stability DRAFT rows.
+Stability ratified rows.
 
 #### 1. Self-biased reference: root-caused #70's regenerative-loop defect and fixed it
 
@@ -1969,7 +1978,8 @@ cost of the fix is the second leg's own current, `I2≈m*I1≈3.2-3.4µA`
 (measured via total `VIN` current minus `I1`), which the pre-#79 topology
 did not have to pay (a single-leg resistor reference has no second leg).
 Against "Quiescent and shutdown current" above (24.91µA measured at
-50mA/3.63V against the DRAFT `Iq<30µA` row, ~5µA headroom), this ~3.3µA
+50mA/3.63V against the `Iq<30µA` row (set by DR-009, `proposed`), ~5µA
+headroom), this ~3.3µA
 addition is real but survivable in isolation.
 
 **Does not move PSRR or 0mA phase margin — the reference-loop-stability
@@ -2072,27 +2082,28 @@ the DR-002 window's *other* corner (`pm_c47_0ma_deg`) — which #70's
 screening never covered — shows why: a preload is a one-parameter knob
 being asked to fix a two-corner problem.
 
-**Net effect on the DRAFT spec rows.** PSRR and Stability remain **open**,
+**Net effect on the ratified spec rows.** PSRR and Stability remain **open**,
 same as after #70. Both avenues #70 identified as promising have now been
 carried to a definitive, verified conclusion (one fixed a real defect but
 does not move the metric; one is confirmed real on the correct branch but
 does not net a clean win) rather than left as an open question for a
-future issue to re-litigate. Per `CLAUDE.md`'s discipline, no DRAFT row
+future issue to re-litigate. Per `CLAUDE.md`'s discipline, no ratified row
 is touched. **What remains unexplored**, based on this and #70's combined
 findings: closing `pm_c033_0ma_deg`/PSRR appears to require spending
 additional amplifier-side (not bias-generator- or preload-side) `Iq` —
 directly raising `M_TAIL`'s own tail current, which issue #25's own
 "Quiescent and shutdown current" section already measured as effective
 ("keeps improving the no-load phase margin, up to ~40°" at 6x `M_TAIL`)
-but rejected for exceeding the DRAFT `Iq` row (33.6µA vs. 30µA) — meaning
+but rejected for exceeding the `Iq` row (33.6µA vs. 30µA, set by DR-009,
+`proposed`) — meaning
 a durable fix plausibly needs either a compensation/amplifier topology
-change that does not cost `Iq` linearly, or a revisit of the DRAFT
+change that does not cost `Iq` linearly, or a revisit of the
 `Iq<30µA` row itself once issue #1 ratifies the spec (a decision this
 repo's `CLAUDE.md` reserves for a spec decision record, not a Builder
 default). Filing a further follow-on issue for that specific, narrower
 question is left to Curator/human triage rather than decided here.
 
-### DR-007 recommends superseding the DRAFT PSRR/Stability rows; no circuit change (#70, PR #106, 2026-09-14)
+### DR-007 recommends superseding the ratified PSRR/Stability rows; no circuit change (#70, PR #106, 2026-09-14)
 
 **Status: `proposed`, pending #1's two-key market-comparison mechanism. No
 schematic change ships with this record — `design/ldo_3v3in_1v8out.sch`
@@ -2101,16 +2112,17 @@ candidates (PR #82) and #79's follow-on candidates (PR #88) carried to
 definitive, verified-negative conclusions (see the two sections above), the
 operator's 2026-09-14 scoping comment on #70 directed the next increment:
 draft a decision record recommending one of the two paths #70's original
-framing posed — spend further amplifier `Iq` chasing the DRAFT targets, or
-treat the two negative results as evidence the DRAFT PSRR/Stability rows are
+framing posed — spend further amplifier `Iq` chasing the ratified targets, or
+treat the two negative results as evidence the ratified PSRR/Stability rows are
 unmeetable by the shipped topology and need revision — rather than parking
 the issue indefinitely as `loom:operator-only`/`loom:operator-decision`.
 
 `spec/decision-records/DR-007-psrr-stability-vs-iq.md` recommends the
-latter. It argues the DRAFT 50dB-@-1kHz PSRR row and 45°-PM-@-0mA
+latter. It argues the ratified 50dB-@-1kHz PSRR row and 45°-PM-@-0mA
 (worst-corner) Stability row are structurally unmeetable by the current
 single-stage current-mirror OTA plus its shared, un-cascoded bias generator
-within the DRAFT `Iq < 30µA` row — not an unexhausted design space a further
+within the `Iq < 30µA` row (set by DR-009, `proposed`) — not an unexhausted
+design space a further
 Iq-spend attempt is likely to close, since the one lever that ever moved
 0mA phase margin at all (issue #25's 6x `M_TAIL` screen) already exceeds the
 Iq budget by 12% and still misses the 45° floor by 5°, with no PSRR data
@@ -2121,7 +2133,8 @@ and PM ≥45°/GM ≥10dB for `I_load ≥ 1mA` with no floor stated at the liter
 0mA point — against two public comparables (onsemi NCP170, Microchip
 MCP1801) that both clear the original 50dB target at or below this design's
 own Iq budget, so the market-comparison mechanism has real, cited numbers to
-rule on rather than an unsubstantiated ask. The DRAFT `Iq < 30µA` row itself
+rule on rather than an unsubstantiated ask. The `Iq < 30µA` row itself (set
+by DR-009, `proposed`)
 is left untouched — neither verified-negative attempt showed it to be the
 binding constraint.
 
@@ -2200,7 +2213,7 @@ remains the freshest evidence and needed no re-run this pass:
 fix-or-defer decision per row, and track each slice to either a landed fix
 or a documented rationale — is complete. It has no further independent
 code-level increment to contribute: the remaining path to flipping Dropout,
-Load transient, Output accuracy, PSRR or Stability to PASS on the DRAFT
+Load transient, Output accuracy, PSRR or Stability to PASS on the ratified
 table runs entirely through **#107** (open, separately tracked), not through
 a new #60 increment that would just restate this same conclusion. Closing
 #60 on that basis, per this repo's "issues are suggestions" convention —
@@ -2210,7 +2223,7 @@ carrying it forward.
 
 ### Thermal-shutdown trip/hysteresis testbench ships (issue #66, 2026-08-25)
 
-The Thermal DRAFT spec row's evidence gap — no dedicated `sim/` testbench for
+The Thermal ratified spec row's evidence gap — no dedicated `sim/` testbench for
 the thermal-shutdown circuit's (#29/DR-005) actual trip/reset behavior — is
 now closed by `sim/thermal/`. Two things had to happen first, per this
 issue's own acceptance criteria:
@@ -2378,7 +2391,7 @@ solver's exact numerical path happens to land on.
 
 **Net effect.** Per `CLAUDE.md`'s "a row that proves unmeetable is
 superseded by a new decision record, never silently loosened" discipline, no
-DRAFT row or DR-005 Decision text is touched — DR-005's own `2026-08-25`
+ratified row or DR-005 Decision text is touched — DR-005's own `2026-08-25`
 addendum (second one) records the same finding formally. This needs a
 genuine large-signal loop-gain redesign of the trip-comparator/hysteresis
 cluster (most plausibly a real regenerative latch/Schmitt-style element,
@@ -2439,7 +2452,7 @@ celebrating.**
   ("on the evidence available, PSRR does not actually pass anywhere"). With
   the trip gone those corners return honest numbers and the whole 1 kHz
   column collapses to **20.31–25.68 dB** (was 20.31–76.79 dB) against the
-  50 dB DRAFT bound. #60's inference is now a measurement. Mechanism 5
+  50 dB ratified bound. #60's inference is now a measurement. Mechanism 5
   (#70) is untouched and unchanged by this fix.
 - **`load-transient` gained four corners and lost two.** The two that
   regressed (`ff_27c_3.30v`, `ff_27c_3.63v`) did not get a worse transient
@@ -2470,7 +2483,7 @@ what moves two `load-transient` corners in the table above. Mechanism 3 is
 no longer open: #71/#83 fixed `dropout-vs-load`'s `dropout_v` methodology
 while this branch was in flight (see the "#71/#81 resolved" section above),
 though the row is still `FAIL` — 0/45 before and after, on either method.
-**The one DRAFT row #69 does move all the way is Current limit**, whose
+**The one ratified row #69 does move all the way is Current limit**, whose
 only failing corner was this nuisance trip read through a resistive load.
 
 Two further gaps #69 opens rather than closes, both named and neither
@@ -2720,7 +2733,7 @@ full-matrix screening, even though that candidate does not ship for the
 reasons above.
 
 **Net effect.** Same disposition #70 and #77 already established for this
-repo's two hardest open loop-gain problems: no DRAFT row or DR-005 Decision
+repo's two hardest open loop-gain problems: no ratified row or DR-005 Decision
 text is touched (DR-005 gains an append recording this, not an edit).
 `ldo_3v3in_1v8out.sch` is unchanged. **No new `sim/thermal` record was
 minted** — the committed schematic did not change, so a fresh 15-point run
@@ -2760,7 +2773,7 @@ shipped.
 
 **What this issue picked up.** DR-007's Consequences section named a
 higher-DC-gain amplifier architecture — "two-stage or cascoded gain stage"
-— as the most plausible remaining fix for the DRAFT PSRR/Stability rows,
+— as the most plausible remaining fix for the ratified PSRR/Stability rows,
 and explicitly scoped that investigation to a new issue rather than a
 further decomposition of #70/#79's lineage. This issue is that
 investigation. Two candidate classes exist; only one was rebuilt and
@@ -2807,7 +2820,7 @@ cheaply... before committing to a full corner run."
 - **DC operating grid unaffected.** A `.op` sweep at the same nine `VIN` x
   load points "Screening checks" §1 uses (2.97/3.30/3.63V x 0/1/50mA)
   regulates at every point, `VOUT` 1.786–1.790V (vs. baseline 1.798–1.802V,
-  a consistent ≈−0.6% shift, still inside the DRAFT ±2% row) and `EA_OUT`
+  a consistent ≈−0.6% shift, still inside the ratified ±2% row) and `EA_OUT`
   essentially unchanged from baseline at every point, including the
   light-load/high-`VIN` ceiling case (`VIN=3.63V`/0mA: `EA_OUT`=3.0726V
   candidate vs. 3.0726V baseline) — confirming the PMOS-side swing ceiling
@@ -2887,8 +2900,9 @@ issue with its own screening, not a same-session rebuild grafted onto this
 one's already-answered verdict.
 
 **Verified-negative conclusion.** Per DR-007's own diagnosis and this
-issue's data, closing the DRAFT PSRR/Stability rows within the DRAFT
-`Iq < 30µA` row needs either raising the OTA's `Gm` (input-pair
+issue's data, closing the ratified PSRR/Stability rows within the Iq
+`< 30µA` row (set by DR-009, `proposed`) needs either raising the OTA's
+`Gm` (input-pair
 transconductance, i.e. more tail current — already screened by issue #25's
 6x `M_TAIL` candidate, which DR-007 cites as exceeding the Iq budget by 12%
 while still missing the 45° floor by 5°) or a compensation architecture
@@ -2896,7 +2910,7 @@ that raises crossover alongside any added gain (nested Miller, feedforward,
 or similar) — not a plain cascode (screened here, no effect) and not a
 second gain stage retried on the same compensation architecture #22 already
 showed oscillates. No lever tested across #25, #70, #79, and this issue has
-closed the PSRR gap; DR-007's recommendation to supersede the DRAFT
+closed the PSRR gap; DR-007's recommendation to supersede the ratified
 PSRR/Stability rows via #1's ratification mechanism stands unchanged by
 this issue. No new decision record is filed — DR-007's Consequences section
 already anticipates exactly this outcome ("Hands to design, unresolved":

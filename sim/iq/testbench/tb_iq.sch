@@ -6,10 +6,13 @@ v {xschem version=3.4.7 file_version=1.2
 * (design/ldo_3v3in_1v8out.sch, instantiated below via its companion
 * subcircuit symbol design/ldo_3v3in_1v8out.sym) with two DC operating-point
 * solves -- no load, then full (50mA) load -- per spec/target-spec.md's
-* DRAFT "Iq (excl. load current)" row: "< 30uA at no load and full load".
-* That row is DRAFT (issue #1 not yet ratified); the bound below cites it
-* directly, not an invented final limit, and needs re-verification once #1
-* rules.
+* "Iq (excl. load current)" row: "< 30uA at no load and full load". That row
+* is the one row DR-006 left open when issue #1 ratified the rest of the
+* table: its number is set by spec/decision-records/DR-009-iq-budget.md,
+* whose status is 'proposed' -- DR-009 does not ratify itself, and ratifies
+* only when the pull request it ships in merges (the same path DR-006 took).
+* The bound below cites DR-009's number verbatim, not an invented final
+* limit, and needs re-verification if that record changes before it merges.
 *
 * VIN is tied directly to the corner runner's 'vsup' (same convention
 * load-transient/psrr-dc already use). EN also ties to 'vsup'. Iq is
@@ -96,4 +99,5 @@ C {devices/lab_pin.sym} 900 -270 0 0 {name=p16 lab=0}
 T {I_LOAD: 0A by default (this schematic's component value, "no load" --
 the feedback divider is the only inherent preload); the deck's own
 .control block 'alter's it to 50mA ("full load") for the second .op, per
-the DRAFT "Iq (excl. load current)" row's own two test points} 940 -300 0 0 0.2 0.2 {}
+the "Iq (excl. load current)" row's own two test points (bound set by
+DR-009, `proposed`)} 940 -300 0 0 0.2 0.2 {}
