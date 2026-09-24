@@ -573,7 +573,16 @@ def build_layout_section() -> list[str]:
             f"[`{record_id}`]({rel(pex_md)}) | {freshness_short} |"
         )
         lines.append("")
-        lines.append(f"Post-layout PEX detail: {detail}")
+        lines.append(
+            f"Post-layout PEX detail (record `{record_id}`): {detail}. "
+            "This paragraph is generated from the record's own `- Result:` "
+            "lines and carries no hand-written triage beyond them — the "
+            "per-record narrative (`klt` pin, per-corner root-cause "
+            "attribution, upstream/repo-local issue cross-references) is "
+            "hand-maintained in "
+            "[`sim/pex-post-layout/README.md`](../sim/pex-post-layout/README.md) "
+            "instead, so do not hand-edit it in here."
+        )
     else:
         lines.append(
             "| Post-layout PEX (issue #20) | **ERROR** | no `sim/pex-post-layout/records/` record | — |"
@@ -708,9 +717,12 @@ def generate_report(skip_netlist_freshness: bool = False) -> str:
     )
     lines.append(
         "- **Post-layout PEX (issue #20) has no single PASS/FAIL** — see "
-        "`sim/pex-post-layout/README.md` for the three disclosed, real "
-        "upstream `klt`/PDK-model-interaction gaps that currently bound the "
-        "extracted-side leg."
+        "`sim/pex-post-layout/README.md` for the disclosed `klt`/PDK/layout "
+        "caveats that bound the extracted-side leg for the cited record, and "
+        "for that record's own narrative summary. This bullet is generated "
+        "and deliberately makes no record-specific claim of its own: which "
+        "caveats bind, and whether they are upstream or repo-local, changes "
+        "from record to record and is tracked in that file, not here."
     )
     lines.append("")
 

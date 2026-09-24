@@ -66,7 +66,7 @@ DRC/LVS/post-layout PEX substantiate that the routed layout matches the schemati
 | LVS (issue #17) | **MATCH** (status=match, mismatch_count=3) | [`20260825-123628-3b4e121`](../layout/ldo-core/reports/20260825-123628-3b4e121/record.md) | STALE |
 | Post-layout PEX (issue #20) | see detail — no single PASS/FAIL ([caveat](../sim/pex-post-layout/README.md)) | [`20260923-183915-d9900b5`](../sim/pex-post-layout/records/20260923-183915-d9900b5.md) | fresh |
 
-Post-layout PEX detail: `klt sim` (schematic-side leg, standalone): status=error, corners=45, passed=36, failed=0, errored=9; `klt pex` (schematic + extracted legs + delta): status=error, passed=108, failed=0, errored=27, pin_count_mismatch=None
+Post-layout PEX detail (record `20260923-183915-d9900b5`): `klt sim` (schematic-side leg, standalone): status=error, corners=45, passed=36, failed=0, errored=9; `klt pex` (schematic + extracted legs + delta): status=error, passed=108, failed=0, errored=27, pin_count_mismatch=None. This paragraph is generated from the record's own `- Result:` lines and carries no hand-written triage beyond them — the per-record narrative (`klt` pin, per-corner root-cause attribution, upstream/repo-local issue cross-references) is hand-maintained in [`sim/pex-post-layout/README.md`](../sim/pex-post-layout/README.md) instead, so do not hand-edit it in here.
 
 ## Limitations
 
@@ -74,5 +74,5 @@ Post-layout PEX detail: `klt sim` (schematic-side leg, standalone): status=error
 - **N/A rows are a coverage gap, not a pass.** A row marked N/A above has no independent testbench yet — it is neither substantiated nor refuted by this report.
 - **A `(PVT subset)` verdict is narrower than a full-matrix one.** That marker means the cited record ran fewer corners than its own `experiment.json` declares (the runner refuses to write such a record without a stated reason, quoted in the Evidence detail above). A subset `PASS` says the corners that ran passed — it does not say the full matrix would.
 - **Freshness checks trust the tree, not the working copy.** The schematic-freshness check (layout section) compares against git history, so uncommitted local edits to `design/ldo_3v3in_1v8out.sch` will not be detected as stale until committed.
-- **Post-layout PEX (issue #20) has no single PASS/FAIL** — see `sim/pex-post-layout/README.md` for the three disclosed, real upstream `klt`/PDK-model-interaction gaps that currently bound the extracted-side leg.
+- **Post-layout PEX (issue #20) has no single PASS/FAIL** — see `sim/pex-post-layout/README.md` for the disclosed `klt`/PDK/layout caveats that bound the extracted-side leg for the cited record, and for that record's own narrative summary. This bullet is generated and deliberately makes no record-specific claim of its own: which caveats bind, and whether they are upstream or repo-local, changes from record to record and is tracked in that file, not here.
 
