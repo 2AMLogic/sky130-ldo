@@ -1,18 +1,18 @@
 # DR-006: Ratification of the target specification
 
-- **Status**: proposed — **Option A ruled by the operator 2026-09-15** (see
-  §Operator ruling below), but this record still does not ratify itself. Per
+- **Status**: **ratified** — **Option A ruled by the operator 2026-09-15**
+  (see §Operator ruling below) and the ratifying act has since occurred: per
   the 2026-08-19 ratification-via-PR standing policy
   ([2AMLogic/2am#357](https://github.com/2AMLogic/2am/issues/357)) as the
   pipeline has since been refined by the two-key mechanism
-  (2AMLogic/2am#372), the ratifying act is Judge review (→ `loom:pr`)
-  followed by the two-key mechanism's release and the operator's/Champion's
-  merge of the pull request this record ships in — not this record's text,
-  and not the operator's substantive ruling on Option A vs. Option B taken
-  alone. This PR had not yet gone through that pipeline when the ruling was
-  given (2026-09-15 comment on #1); a Doctor pass rebased it, reconciled the
-  disclosed-FAIL list against DR-007, and recorded the ruling here — Judge
-  review and the two-key mechanism still gate the merge.
+  (2AMLogic/2am#372), that act is the merge of the pull request this record
+  ships in — PR #50, merged 2026-09-18T05:15:36Z (`0f757bf`), one second
+  before #1 itself closed `completed` — not this record's text, and not the
+  operator's substantive ruling on Option A vs. Option B taken alone. What
+  ratification fixes is the *target* table in `spec/target-spec.md`; it is
+  not a claim that the current implementation meets it (several rows are
+  disclosed FAILs, per §Decision below). See §Append (2026-09-24, issue #153)
+  for the evidence this Status flip rests on.
 - **Date**: 2026-08-19 (drafted); Option A ruling 2026-09-15
 - **Author**: Builder agent (drafted per #1, ratification-via-PR policy)
 - **Ratifies against / input to**: #1 (Ratify the target spec — the T1 gate)
@@ -340,16 +340,44 @@ approve — a human does not need to be asked again;** cite the operator's
 
 ## Status notes
 
-This record is `proposed`. The operator's substantive ruling (Option A) is
-given — see §Operator ruling above — but per the ratification-via-PR standing
-policy cited in Context, as refined by the two-key mechanism, this record
-does not become `ratified` until the pull request it ships in completes
-Judge review (→ `loom:pr`), the two-key mechanism's release, and merge. On
-that completion: this record's own Status becomes `ratified`, DR-001 through
-DR-005 are updated in the same commit to cross-reference it (already done by
-this PR), and `spec/target-spec.md`'s banner changes from DRAFT to RATIFIED
-(already done by this PR, ahead of the formal Status flip, so the merged
-tree is internally consistent the moment it lands). If a future review
-finds cause to revisit Option A vs. B, that is a fresh operator ruling and,
-per the append-only discipline, a superseding record rather than an edit to
-this one.
+This record was `proposed` while drafted. The operator's substantive ruling
+(Option A) was given — see §Operator ruling above — but per the
+ratification-via-PR standing policy cited in Context, as refined by the
+two-key mechanism, it could not become `ratified` until the pull request it
+shipped in completed Judge review (→ `loom:pr`), the two-key mechanism's
+release, and merge. **That completion has happened** (PR #50, merged
+2026-09-18); on it: this record's own Status becomes `ratified`, DR-001
+through DR-005 are updated in the same commit to cross-reference it (done by
+that PR), and `spec/target-spec.md`'s banner changes from DRAFT to RATIFIED
+(also done by that PR, ahead of the formal Status flip, so the merged tree
+was internally consistent the moment it landed). The Status line at the top
+of this record was flipped to `ratified` afterwards, per issue #153 — see the
+append below. If a future review finds cause to revisit Option A vs. B, that
+is a fresh operator ruling and, per the append-only discipline, a superseding
+record rather than an edit to this one.
+
+## Append (2026-09-24, issue #153): the merge-based ratifying act has occurred
+
+This record's header read `proposed` on `main` for six days after its own
+stated ratifying act had already taken place, while `spec/target-spec.md`
+simultaneously cited this record as its ratification authority — a
+self-contradictory citation chain. This append records the evidence the
+Status flip above rests on; the substantive decision is unchanged, so this is
+a status reconciliation, not a new ruling (a new ruling would require a
+superseding record, per the discipline restated in §Status notes).
+
+- **Ratifying act, as this record itself defines it**: "the operator's/
+  Champion's merge of the pull request this record ships in."
+- **That pull request**: #50, *"docs(spec): draft DR-006 spec ratification —
+  ratify DR-002/003/004/005"*.
+- **Merged**: 2026-09-18T05:15:36Z, merge commit `0f757bf`.
+- **Issue #1 (the T1 ratification gate) closed** `completed` at
+  2026-09-18T05:15:37Z — one second later, as the same act.
+- **Downstream state already consistent with `ratified`**: `spec/target-spec.md`
+  is headed `Status: RATIFIED` and cites issue #1 / DR-006; DR-001 through
+  DR-005 all read `ratified` and cross-reference this record;
+  `spec/target-spec.md`'s "Open items" section is headed "all resolved".
+- **Unchanged by this append**: the Iq row, which this record left explicitly
+  open and which `DR-009` sets (still `proposed`, ratifying on its own PR
+  merge); and the disclosed-FAIL carry-forward, which ratification fixes as a
+  set of *targets* the implementation does not yet meet.

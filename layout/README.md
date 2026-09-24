@@ -324,10 +324,11 @@ trivial-cell proof:
   extract`'s `nfet`/`pfet` classes are flavor-agnostic — a 5 V-flavor
   (thick-oxide) device and a core-voltage device both extract as the same
   generic class, with no `L`/`W`/oxide-thickness-based disambiguation. This
-  matters directly once issue #1 ratifies the pass-device flavor
-  (`pfet_g5v0d10v5` vs. the 1.8 V core devices): a future LVS reference
-  netlist will need `hints`/manual review to confirm the *intended* flavor
-  correspondence, since `klt lvs` cannot check it structurally.
+  matters directly because the pass-device flavor is already ratified as
+  `pfet_g5v0d10v5` (framing A, per DR-001 / issue #1) rather than the 1.8 V
+  core devices: a future LVS reference netlist will need `hints`/manual review
+  to confirm the *intended* flavor correspondence, since `klt lvs` cannot check
+  it structurally.
 
   **Still true at the `040f3406` pin, and re-measured rather than assumed**
   (2026-09-24, issue #142): the newest LVS record's own `extract.json`
