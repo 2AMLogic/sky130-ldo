@@ -1,7 +1,7 @@
 {
   "slug": "current-limit",
   "title": "Current limit: clamp window over PVT, non-engagement at 50mA, and a held Vout=0 short",
-  "claim": "Substantiates spec/target-spec.md's DRAFT \"Current limit\" row (constant-current (brickwall) clamp, window TBD over PVT; never engages for I_load <= 50 mA; survives continuous Vout = 0 short at Vin_max) against the sense-FET current comparator and gate clamp issue #22 added to design/ldo_3v3in_1v8out.sch (M_SENSE / M_CLN1 / M_CLN2 / M_CLP / M_CLIM -- see design/README.md's \"Current limit (#22)\"). The row is DRAFT (issue #1 not yet ratified) and it deliberately carries NO numeric clamp window: the window is \"TBD over PVT\". This experiment therefore splits the row rather than blurring it -- the clauses that carry a number are bounded below (\"never engages for I_load <= 50 mA\" becomes ilim_short_ma/ilim_knee_ma > 50 mA plus vout_50ma_v inside the DRAFT Output row's 1.764-1.836 V window), and the clause that does not (\"window TBD over PVT\", \"survives\") is measured and reported WITHOUT a bound, because establishing that window over PVT is exactly what the row asks for at this stage; inventing a ceiling would be the invented settled number CLAUDE.md forbids. \"At Vin_max\" is covered by the corner runner's own supply axis (the 3.63 V column), not by a hard-coded VIN. EN ramps from a disabled start at t=100us (dual dc/pwl form, matching sim/enable-shutdown and sim/startup) so leg 3's transient reaches regulation through a real soft-start ramp rather than depending on ngspice's t=0 DC solve landing on the regulating branch, which it does not at the ff/sf 125C corners (issue #69; fixed here per issue #76 after PR #75 shipped the same fix in the sibling benches). The short is applied as an event at t=1.0ms -- after sim/startup's measured 0.26-0.45ms soft-start ramp completes -- and HELD to t=3.0ms: 2 ms of continuous Vout = 0, a defined duration rather than a single sampled instant, since \"survives\" is a claim about holding the fault. Known-caveat, stated rather than hidden (design/README.md, \"Known accuracy caveat\"): M_SENSE is a 0.42um replica of a 2500um pass device whose drain does not sit at VOUT, so the 1:5952 ratio is neither Vds-matched nor trimmed and carries substantial random Vth mismatch -- this corner-matrix experiment measures the systematic PVT window only; the mismatch axis would need a Monte Carlo experiment (sim/bin/mc-run.py), which is not in this issue's scope.",
+  "claim": "Substantiates spec/target-spec.md's ratified \"Current limit\" row (constant-current (brickwall) clamp, window TBD over PVT; never engages for I_load <= 50 mA; survives continuous Vout = 0 short at Vin_max) against the sense-FET current comparator and gate clamp issue #22 added to design/ldo_3v3in_1v8out.sch (M_SENSE / M_CLN1 / M_CLN2 / M_CLP / M_CLIM -- see design/README.md's \"Current limit (#22)\"). The row is ratified by issue #1 / DR-006 and it deliberately carries NO numeric clamp window: the window is \"TBD over PVT\". This experiment therefore splits the row rather than blurring it -- the clauses that carry a number are bounded below (\"never engages for I_load <= 50 mA\" becomes ilim_short_ma/ilim_knee_ma > 50 mA plus vout_50ma_v inside the ratified Output row's 1.764-1.836 V window), and the clause that does not (\"window TBD over PVT\", \"survives\") is measured and reported WITHOUT a bound, because establishing that window over PVT is exactly what the row asks for at this stage; inventing a ceiling would be the invented settled number CLAUDE.md forbids. \"At Vin_max\" is covered by the corner runner's own supply axis (the 3.63 V column), not by a hard-coded VIN. EN ramps from a disabled start at t=100us (dual dc/pwl form, matching sim/enable-shutdown and sim/startup) so leg 3's transient reaches regulation through a real soft-start ramp rather than depending on ngspice's t=0 DC solve landing on the regulating branch, which it does not at the ff/sf 125C corners (issue #69; fixed here per issue #76 after PR #75 shipped the same fix in the sibling benches). The short is applied as an event at t=1.0ms -- after sim/startup's measured 0.26-0.45ms soft-start ramp completes -- and HELD to t=3.0ms: 2 ms of continuous Vout = 0, a defined duration rather than a single sampled instant, since \"survives\" is a claim about holding the fault. Known-caveat, stated rather than hidden (design/README.md, \"Known accuracy caveat\"): M_SENSE is a 0.42um replica of a 2500um pass device whose drain does not sit at VOUT, so the 1:5952 ratio is neither Vds-matched nor trimmed and carries substantial random Vth mismatch -- this corner-matrix experiment measures the systematic PVT window only; the mismatch axis would need a Monte Carlo experiment (sim/bin/mc-run.py), which is not in this issue's scope.",
   "provenance": "schematic",
   "provenance_source": "sim/current-limit/testbench/tb_current_limit.sch",
   "schematic": "testbench/tb_current_limit.sch",
@@ -45,7 +45,7 @@
       "unit": "V",
       "min": 1.764,
       "max": 1.836,
-      "note": "VOUT at a 36 Ohm (~50 mA) load with the forcing branch absent. This is the operative form of the DRAFT \"Current limit\" row's \"never engages for I_load <= 50 mA\" clause: if the clamp engaged anywhere at or below the DRAFT Load row's 50 mA ceiling, the loop would stop regulating. Bound cited: spec/target-spec.md's DRAFT \"Output\" row (1.8 V +-2%, i.e. 1.764-1.836 V) -- DRAFT/unratified, not an invented limit."
+      "note": "VOUT at a 36 Ohm (~50 mA) load with the forcing branch absent. This is the operative form of the ratified \"Current limit\" row's \"never engages for I_load <= 50 mA\" clause: if the clamp engaged anywhere at or below the ratified Load row's 50 mA ceiling, the loop would stop regulating. Bound cited: spec/target-spec.md's ratified \"Output\" row (1.8 V +-2%, i.e. 1.764-1.836 V) -- ratified by issue #1 / DR-006, cited verbatim, not an invented limit."
     },
     {
       "name": "cl_margin_50ma_v",
@@ -53,7 +53,7 @@
       "unit": "V",
       "min": null,
       "max": null,
-      "note": "VIN - V(CL_CMP) at the same 50 mA point, read hierarchically from the DUT's current-limit comparison node. Per design/README.md's node glossary CL_CMP ~= VIN means the comparator is inactive and M_CLIM is off; CL_CMP falls when the limit engages. Reported, not bounded: turning \"how far from engaging\" into a pass/fail needs a threshold the DRAFT row does not state (its window is \"TBD over PVT\"), so this experiment measures the margin instead of grading it."
+      "note": "VIN - V(CL_CMP) at the same 50 mA point, read hierarchically from the DUT's current-limit comparison node. Per design/README.md's node glossary CL_CMP ~= VIN means the comparator is inactive and M_CLIM is off; CL_CMP falls when the limit engages. Reported, not bounded: turning \"how far from engaging\" into a pass/fail needs a threshold the ratified row does not state (its window is \"TBD over PVT\"), so this experiment measures the margin instead of grading it."
     },
     {
       "name": "ilim_short_ma",
@@ -61,7 +61,7 @@
       "unit": "mA",
       "min": 50,
       "max": null,
-      "note": "LDO output current with VOUT forced to 0 V (dead short), from the DC characteristic. Lower bound 50 mA is the DRAFT row's own \"never engages for I_load <= 50 mA\" clause read as a limit-level requirement -- the clamp cannot sit at or below the load the block is specified to deliver. NO upper bound: the row says the clamp window is \"TBD over PVT\", so this experiment's job for that clause is to establish the window, not to grade it against a number nobody has ratified. Once issue #1 ratifies a window this measurement acquires a max and nothing else here changes."
+      "note": "LDO output current with VOUT forced to 0 V (dead short), from the DC characteristic. Lower bound 50 mA is the ratified row's own \"never engages for I_load <= 50 mA\" clause read as a limit-level requirement -- the clamp cannot sit at or below the load the block is specified to deliver. NO upper bound: the row says the clamp window is \"TBD over PVT\", so this experiment's job for that clause is to establish the window, not to grade it against a number nobody has ratified. Once issue #1 ratifies a window this measurement acquires a max and nothing else here changes."
     },
     {
       "name": "ilim_knee_ma",
@@ -69,7 +69,7 @@
       "unit": "mA",
       "min": 50,
       "max": null,
-      "note": "LDO output current with VOUT forced to 1.75 V -- the knee just below the regulation point, i.e. the lowest limit level the block can reach while the output is still near its target. Same DRAFT-derived 50 mA lower bound and same deliberately-absent upper bound as ilim_short_ma. Together the two values ARE the PVT window the row asks to be established."
+      "note": "LDO output current with VOUT forced to 1.75 V -- the knee just below the regulation point, i.e. the lowest limit level the block can reach while the output is still near its target. Same ratified-row-derived 50 mA lower bound and same deliberately-absent upper bound as ilim_short_ma. Together the two values ARE the PVT window the row asks to be established."
     },
     {
       "name": "ilim_droop_pct",
@@ -85,7 +85,7 @@
       "unit": "mA",
       "min": null,
       "max": null,
-      "note": "Mean supply current over the last 1 ms of the held Vout = 0 short (t = 2.0-3.0 ms), i.e. the current the pass device actually sustains into a continuous short. Read from i(vvin) rather than i(vforce) on purpose: i(vforce) also carries C_OUT's ~2 A microsecond discharge spike into the short, which is the capacitor's stored energy and not the pass device's current. Reported, not bounded, for the same reason as ilim_short_ma: the DRAFT row's window is TBD. This is the number the Thermal row's \"short-circuit ceiling set by the current limit\" will need once both rows are ratified."
+      "note": "Mean supply current over the last 1 ms of the held Vout = 0 short (t = 2.0-3.0 ms), i.e. the current the pass device actually sustains into a continuous short. Read from i(vvin) rather than i(vforce) on purpose: i(vforce) also carries C_OUT's ~2 A microsecond discharge spike into the short, which is the capacitor's stored energy and not the pass device's current. Reported, not bounded, for the same reason as ilim_short_ma: the ratified row's window is TBD. This is the number the Thermal row's \"short-circuit ceiling set by the current limit\" will need once this row's PVT window is established."
     },
     {
       "name": "ishort_ripple_pct",
