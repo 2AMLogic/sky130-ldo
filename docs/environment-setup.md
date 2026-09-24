@@ -111,10 +111,14 @@ cp sim/spiceinit ./.spiceinit  # ngspice needs these settings to read PDK libs
 
 ## 4. Layout: klt DRC/LVS trivial-cell flow
 
-**No LDO layout yet** — this step proves the `klt` layout/DRC/LVS driver
-works on this repo, on a trivial known-good cell. The LDO's own layout is
-future work gated only on the design being drawn — `spec/target-spec.md` is
-already ratified (issue #1 / DR-006).
+**Start with the trivial cell** — this step proves the `klt` layout/DRC/LVS
+driver works on this repo, on a trivial known-good cell, before you point it
+at the real block. The LDO's own layout does exist: `layout/ldo-core/` holds
+a placed-and-routed layout generated from `design/ldo_3v3in_1v8out.sch`'s own
+xschem netlist, with its own DRC-clean and LVS-match records (newest ids in
+`layout/ldo-core/reports/LATEST` and `LATEST-LVS`). Its drivers are
+`layout/bin/run-ldo-layout-flow.sh` and `layout/bin/run-ldo-lvs-flow.sh` —
+see `layout/README.md` § "Extending to the LDO core".
 
 ```sh
 layout/bin/setup-venv.sh          # once, or after bumping layout/requirements.txt
