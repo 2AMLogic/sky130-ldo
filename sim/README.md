@@ -121,6 +121,40 @@ discrete-point convention was chosen and for the full results.
 > and `sim/loop-gain`'s 7/45 is a pre-#116 number. A follow-up issue owns the
 > campaign re-run; #116's PR names it.
 
+> **Record-generation note (2026-09-25, issue #118).** Three more of the benches
+> the #116 note above leaves `STALE` have now been re-run against the re-sized
+> DUT, and all three are `fresh` again:
+> `mc-output-accuracy` (`20260925-110312-8280915`, supersedes
+> `20260825-083111-4cb27f8`: **177/200 → 185/200**),
+> `load-regulation` (`20260925-111601-7701e7e`, supersedes
+> `20260910-032854-6c0436d`: **34/45 → 37/45**) and
+> `line-regulation` (`20260925-114251-1f54ca6`, supersedes
+> `20260910-030557-6c0436d`: **18/45 → 24/45**). Every row improved; every row
+> still reports `FAIL`. `design/ldo_3v3in_1v8out.sch` is **unchanged** by #118.
+>
+> **More important than the counts is what #118 found underneath them**, and it
+> changes how every number in these three records should be read: the failures
+> are not accuracy failures at all. They are points where the circuit is not on
+> its intended regulating branch — the mechanism-4 / second-stable-equilibrium
+> family `#60`/`#71`/`#81` root-caused, which this issue shows binds all three
+> rows and is reachable under **mismatch alone at 27 °C/1 mA**, not only at
+> `#81`'s 125 °C/50 mA. Two consequences for reading this directory:
+>
+> - **Line regulation's own `supply_v` axis is a negative control** — the deck
+>   `alter`s VIN itself, so that axis cannot reach the measured quantity — and
+>   22 of 30 (group × measurement) cells disagree across it by more than 2×.
+>   Its corner-level verdicts are branch-selection outcomes, not measurements.
+> - **On the regulating branch all three rows are inside their bounds**, with
+>   exactly one exception in the whole set: `load-regulation`'s
+>   `fs_125c_3.63v` at 19.93 mV against 18 mV. That single corner is the only
+>   genuine DC-accuracy gap the three rows contain.
+>
+> The full decomposition, with the per-record numbers behind each claim, is in
+> `design/README.md` → "#118: the three DC-accuracy rows do share one
+> mechanism…". The design campaign it leaves open is **#164**; the `klt sim`
+> request-shape gap that keeps both regulation matrices off the batch fleet is
+> 2AMLogic/klayout-tools#2482.
+
 ---
 
 ## Quick start (cold machine)
@@ -964,6 +998,23 @@ use discrete points, not a sweep, for exactly this reason).
   signature lands on a different, wider corner set than the pre-#69 six
   degenerate `ff`/`sf`-125 °C corners is explicitly out of this issue's
   scope — recorded here as an observation, not root-caused.
+  **Current record** (`20260925-114251-1f54ca6`, issue #118, supersedes
+  `20260910-030557-6c0436d`, first run against the post-#116 5000 µm pass
+  device): **24/45 PASS**, up from 18/45. #118 also root-caused the signature
+  the paragraph above declined to: **this bench's `supply_v` corner axis is a
+  negative control.** The testbench wires VIN to a fixed literal
+  (`VVIN VIN 0 3.3`) and only EN to `'vsup'`, and the deck `alter`s VIN to
+  2.97 V/3.63 V at all four measured points — so the corner's own supply
+  cannot reach the measurement, and the three supply points inside one
+  (process, temperature) group must return the same number. **22 of 30
+  (group × measurement) cells vary by more than 2× across it, 21 of them by
+  more than 10×**, while the one fully self-consistent group (`ff_-40c`)
+  agrees to four significant figures. On the regulating branch the row is
+  **0.017–1.62 mV/V** at 1 mA and **0.093–3.14 mV/V** at 50 mA against the
+  5 mV/V bound; the five intermediate readings (6.7–85.2 mV/V) all sit at
+  `*_125c_2.97v`. Read this bench's per-corner verdicts as branch-selection
+  outcomes, not as supply-rejection measurements — see `design/README.md`
+  → "#118: the three DC-accuracy rows do share one mechanism…".
 - **`load-regulation/`** — `I_LOAD` ∈ {0 mA, 50 mA} at each corner's own VIN
   (`'vsup'`), two `.op` solves; `load_reg_v` = `abs(vout@50mA - vout@0mA)`.
   First record (`--quick`, `20260825-040748-6fac47d`): **PASS** at
@@ -984,6 +1035,21 @@ use discrete points, not a sweep, for exactly this reason).
   operating points the DC-solution-multiplicity note documents, but that is
   an observation, not a root cause — diagnosing it is out of this issue's
   scope.
+  **Current record** (`20260925-111601-7701e7e`, issue #118, supersedes
+  `20260910-032854-6c0436d`, first run against the post-#116 5000 µm pass
+  device): **37/45 PASS**, up from 34/45 — and the distribution now separates
+  into three groups, not two. **37 corners read 2.62–14.50 mV** against the
+  18 mV bound; **7 read 881 mV–1.62 V**, with a **44× empty band** between
+  19.93 mV and 881 mV that no continuum mechanism produces; and **one corner,
+  `fs_125c_3.63v`, reads 19.93 mV (1.107 %)** — a marginal 11 % overshoot
+  whose own group is monotone in VIN (10.99 / 14.50 / 19.93 mV). That single
+  corner is the only genuine load-regulation shortfall in the matrix. Of the
+  five (process, temperature) groups containing a gross failure, **four are
+  non-monotonic in VIN** (a higher-headroom supply fails while a lower one
+  passes), which a loop-gain-bound DC error cannot be. #118 attributes the
+  seven gross failures to the non-regulating-branch family rather than to
+  loop gain — see `design/README.md` → "#118: the three DC-accuracy rows do
+  share one mechanism…".
 - **`iq/`** — `I_LOAD` ∈ {0 mA (no load), 50 mA (full load)} at each corner's
   own VIN, two `.op` solves; `iq_<point>_ua` = `-i(vvin)` minus the known
   load-current constant, per `design/README.md`'s own "Iq = total VIN
@@ -1088,6 +1154,39 @@ statistics plus a per-device-family "was mismatch actually active" report.
   stddev 0.232 V) is kept on disk per the append-only rule but is **not** the
   current evidence: it was sampled against the schematic as it stood before
   #35/#36 and before the `M_ENP4`/`M_ENP5` fix.
+- **Current record (issue #118, 2026-09-25): `20260925-110312-8280915`**,
+  supersedes `20260825-083111-4cb27f8` — same N=200 and seed `20260817` (so
+  the same sample sequence), re-run against the post-#116 5000 µm pass device
+  and **executed on the batch fleet** rather than locally. **185/200 PASS**
+  (up from 177/200), 12 out of window, 3 errored — overall `ERROR`. Two
+  things about this record are new and load-bearing:
+  - It carries a **nominal-vs-spread decomposition** that `mc-run.py` now
+    computes for every two-sided measurement, so a statistical row's record
+    says *why* it missed instead of only how often. Here it reports the
+    in-window population centred **+0.093 %** with stddev **8.33 mV** in a
+    ±36 mV window (nearer edge **4.12σ** out, a ≈99.998 % yield on its own),
+    and the nearest out-of-window sample **174σ** past that edge. Read it as
+    the function's docstring in `sim/bin/mc-run.py` explains: order-1 means a
+    contiguous tail (matching/centring is the lever), order-100 means a
+    separate mode (matching is not).
+  - It therefore **settles** the "distribution centre vs. tail" reading the
+    `20260818-032827-81dc232` bullet above reached qualitatively. It is not a
+    tail: 11 of the 12 misses sit at 3.284–3.308 V with VOUT pinned at the
+    input rail, nothing lands between 1.825 V and 3.284 V, and that has been
+    true in **all four** MC generations (exactly one sample in 800 has ever
+    missed by a genuine distribution tail). The **Output** row is not a
+    matching problem and never has been — see `design/README.md` → "#118: the
+    three DC-accuracy rows do share one mechanism…", and **#164** for the
+    design campaign that owns the rail mode.
+- **`--backend`** (added in #118) selects the `klt sim` execution backend:
+  `local`/`local-parallel` run `ngspice` on this machine, `remote`/`batch`
+  hand the expanded sample grid to `klt`'s own remote/EC2-batch backends. A
+  shared dispatch host that forbids hand-launched local `ngspice` grids needs
+  `--backend batch`; the record then names the backend, the remote job id and
+  the **remote** engine version, because the `Tools:` line describes this
+  machine, which on a remote backend ran no samples at all. `corner-run.py`
+  has no equivalent and cannot easily get one — see
+  2AMLogic/klayout-tools#2482.
 - This experiment's directory layout adds `klt-requests/` and
   `klt-responses/` (the raw `klt sim` request/response JSON, which *is* the
   append-only evidence for an MC run — see the script's docstring for why no
