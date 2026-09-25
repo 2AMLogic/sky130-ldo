@@ -299,9 +299,95 @@ re-transcribing the table.
   "Known klt-deck limitations" below). The marker *is* drawn on every MOS
   block and *is* load-bearing, but for `klt extract --pdk`'s model binding
   (`sim/pex-post-layout`), not for this compare.
-- It says nothing about parasitics (issue #20) or about whether the
-  signal-grade routing this flow draws is adequate for the load current
-  `VIN`/`VOUT` actually carry.
+- It says nothing about parasitics (issue #20). It also said nothing about
+  whether the routing this flow draws is adequate for the load current
+  `VIN`/`VOUT` actually carry — see "Power routing for the load-current nets"
+  below, which replaces that caveat with a drawn, sized conductor and a
+  measured statement about what can and cannot be verified about it here.
+
+## Power routing for the load-current nets (issue #154)
+
+Until issue #154 this flow drew **every** net as the same 0.30 µm met1
+channel trunk, `VIN` and `VOUT` included — a signal-grade wire on the two
+nets that carry every milliamp the block delivers. That is no longer true:
+`gen-ldo-blocks.py` identifies the load-current nets mechanically (the widest
+drawn MOS's own drain and source, so the layout cannot name a different pair
+than the schematic does) and draws each of them as a strapped two-level rail
+above the device row instead of a trunk below it.
+
+**The width is computed, not chosen.** `layout/bin/_spec_constants.py` reads
+the ratified `Load` and `Dropout @ 50 mA` rows out of `spec/target-spec.md`
+itself — the same discipline `MOS_MODELS`/`MOS_VOLTAGE_FLAVORS` follow, and
+the same reason issue #33 stopped transcribing the device table — and the
+sheet resistances come from `klt`'s own parasitics deck, the deck the landed
+layout is measured against. Each rail is then exactly as wide as it must be
+for the ratified load current to drop no more than its share (5%, split
+evenly across the two rails) of the ratified dropout budget across the span
+over which it actually carries that current. The required width, the drawn
+width, the resulting resistance and the resulting IR drop are all reported in
+the layout record's own `floorplan.json`, and a clamp against the floorplan
+cap would be reported rather than silent.
+
+Each load-current terminal's li1 source/drain pad is also strapped over its
+full height by met1 with an mcon every 2 µm, instead of being contacted at
+one point mid-pad — without that, a 100 µm-tall unit device's share of the
+load current runs up to half a device height along ~12.8 Ω/□ local
+interconnect before it reaches metal.
+
+### What this is verified against, and what it is not
+
+- **DRC stays clean** on the resized geometry (`violation_count=0`, all
+  layers checked) and **LVS still matches** — both in this directory's own
+  newest records. The wider rails and the extra met3 level introduced no new
+  width/spacing violation.
+- **The drawn conductor's resistance is a computed claim, not a measured
+  one.** It follows from the deck's own sheet resistances and the drawn
+  geometry, and the arithmetic is unit-tested in `layout/tests/`, but no tool
+  in this flow re-measures it from the stream.
+- **`klt extract --parasitics` cannot confirm it at this pin**, and this is
+  measured rather than assumed. Its lumped per-net R model reduces a net's
+  geometry on each conductor level to one equivalent rectangle and then
+  **sums the levels in series**, so (a) N parallel fingers read as one
+  N-times-longer series wire and (b) strapping a rail onto a second level
+  *raises* the reported resistance. Extracting the pre-#154 and post-#154
+  GDS with `--parasitics` and comparing the per-level breakdown:
+
+  | Net | role | pre-#154 | post-#154 |
+  | --- | --- | --- | --- |
+  | `VOUT` | `metal0` (li1, 12.8 Ω/□) | 165 467 Ω | 153 677 Ω |
+  | `VOUT` | met1 + met2 | 386 Ω | 813 Ω |
+  | `VIN` | `metal0` (li1) | 171 621 Ω | 160 404 Ω |
+  | `VIN` | met1 + met2 + met3 | 1 012 Ω | 2 530 Ω |
+
+  The routing levels this issue actually controls are **under 1%** of the
+  reported total in both records; 98–99% of it is the li1 term, which is the
+  device generator's own source/drain pads and is invariant under every knob
+  this flow has (the modelled square count works out to `W_total / w_pad`
+  however the width is folded). So the extracted netlist's full-load rows
+  stayed non-physical after this fix — see `sim/pex-post-layout/README.md`
+  for the record and the numbers.
+
+  Filed generically per the friction protocol as
+  [`klayout-tools#2458`](https://github.com/2AMLogic/klayout-tools/issues/2458)
+  (per-level series summation), and cross-confirmed on the already-tracked
+  [`klayout-tools#2391`](https://github.com/2AMLogic/klayout-tools/issues/2391)
+  (parallel fragments summed in series) rather than re-filed.
+
+**The honest summary**: the load-current nets are now drawn as power
+conductors sized from the ratified spec, and that is a real change in the
+layout; but this repo cannot yet *measure* the improvement, because the only
+instrument it has for post-layout resistance is blind to conductor width on
+exactly this geometry. Do not read a post-layout full-load number as a
+statement about this routing until that instrument can distinguish the two
+GDS files above. That is tracked as issue #162, blocked on the two upstream
+issues.
+
+One acceptance criterion a power conductor needs is also **not** checked here:
+current density / electromigration. The curated sky130 deck `klt drc` runs
+against declares no current-density rule, so "no new DRC violation" is not
+"this rail carries the ratified load current indefinitely". The drawn widths
+are far above any plausible EM minimum at this current, but that is an
+argument, not a check.
 
 ## Known klt-deck limitations relevant to later, LDO-specific layout issues
 

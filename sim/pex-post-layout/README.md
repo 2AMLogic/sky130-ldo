@@ -260,12 +260,15 @@ no longer hits the `Pclm` BSIM4 parameter check that the substituted
 `sim/build/pex-post-layout/20260924-181248-50554fe/pex/.../extracted/ss_*/`
 is clean.
 
-**Do not read that `pass` as agreement between the two legs.** This
-experiment's request (`testbench/tb_pex_post_layout.request.json`) declares
-**no limits** on any of its three measurements, so `klt pex` grades every
-`delta[]` row against nothing and `pass` means only "both legs produced a
-number". The record's own `delta[]`-spread table is the number that matters,
-and it is large:
+**Do not read that `pass` as agreement between the two legs.** At the time of
+that record this experiment's request
+(`testbench/tb_pex_post_layout.request.json`) declared **no limits** on any of
+its three measurements, so `klt pex` graded every `delta[]` row against
+nothing and `pass` meant only "both legs produced a number". (Limits were
+declared as of the next record — issue #154, see the 2026-09-24/#154 update
+below — so this caveat is historical for `20260924-181248-50554fe` and does
+not apply to the current record.) The record's own `delta[]`-spread table is
+the number that matters, and it is large:
 
 | Measurement | median \|delta\| % | max \|delta\| % |
 | --- | --- | --- |
@@ -291,36 +294,131 @@ flavour-substitution error was previously masking** -- it is tracked
 as #154 and is *not* in #142's scope, which was to make the extracted
 netlist describe the design's own transistors.
 
-**T1 item 7 status.** A `klt pex` report now exists that ran the design's
-real devices at all 45 corners, which is what item 7 asks for -- but the
-full-load rows it contains are non-physical, so nothing in it is comparable
-to `spec/target-spec.md` at full load yet. Treat item 7 as *substantiable in
-kind but not yet in substance*: the blocker is the power routing above (#154),
-and a fresh record after that is fixed is what should be read against the
-spec. The light-load rows are the only ones worth quoting today, and only with
-the "no declared limits" caveat attached. `signoff/block-manifest.json`
-therefore still cites the older, erroring `klt pex` run for item 7 rather than
-this record -- deliberately; see `signoff/README.md`, "Item 7 has a passing
-record that this manifest declines to cite".
+**Update (2026-09-24, issue #154): the power routing was fixed, the
+measurement barely moved, and the reason is now itself measured.** Record
+[`20260924-230726-a947aa8`](records/20260924-230726-a947aa8.md) is cut against
+a layout in which `VIN`/`VOUT` are no longer 0.30 µm signal trunks: they are
+strapped two-level rails whose width is computed from the ratified full-load
+current and dropout budget (0.15 Ω each by construction -- see
+`layout/README.md`, "Power routing for the load-current nets"), and every
+load-current terminal's li1 pad is strapped over its full height by met1. DRC
+is still `clean` and LVS still `match` on that layout.
 
-**`body_bias` (read per issue #122's scope).** The same report's
+The full-load rows are still non-physical:
+
+| Measurement | `20260924-181248` (pre-#154) | `20260924-230726` (post-#154) |
+| --- | --- | --- |
+| `vout_full_load_v` extracted, min | −61.937 V (`ss/3.300V/-40C`) | −37.909 V (`sf/2.970V/-40C`) |
+| `vout_full_load_v` extracted, max | +1.635 V (`ff/3.630V/-40C`) | −3.801 V (`ss/3.630V/125C`) |
+| `vout_full_load_v` extracted, median | −5.354 V | −5.141 V |
+| corners with negative extracted `VOUT` | 44 of 45 | **45 of 45** |
+| `vout_full_load_v` median / max \|delta\| % | 385 / 3543 | 381.5 / 2207 |
+| `vin_minus_vout_full_load_v` median / max \|delta\| % | 633 / 4775 | 613.4 / 5043.6 |
+
+The worst corner improved a lot (`ss/3.300V/-40C`: −61.9 V → −4.7 V) and the
+spread tightened, but the median hardly moved and the one previously
+non-negative corner went negative. (That corner was never a control worth
+having: `ff/3.630V/-40C`'s *schematic* `vout_full_load_v` is 3.423 V, i.e. the
+design itself is out of regulation there, so its +1.635 V extracted reading
+was a coincidence rather than a regulating point.)
+
+**Why, measured rather than inferred.** Extracting the pre-#154 and post-#154
+GDS with `klt extract --parasitics` and reading the per-level breakdown
+(`by_layer`, klayout-tools#1701):
+
+| Net | role | pre-#154 | post-#154 |
+| --- | --- | --- | --- |
+| `VOUT` | `metal0` (li1, 12.8 Ω/□) | 165 467 Ω | 153 677 Ω |
+| `VOUT` | met1 + met2 | 386 Ω | 813 Ω |
+| `VOUT` | **total** | 165 901 Ω | 154 538 Ω |
+| `VIN` | `metal0` (li1) | 171 621 Ω | 160 404 Ω |
+| `VIN` | met1 + met2 + met3 | 1 012 Ω | 2 530 Ω |
+| `VIN` | **total** | 172 681 Ω | 162 982 Ω |
+
+98–99 % of the modelled resistance is the li1 term, and the routing levels
+this repo actually controls are under 1 % of it. Two properties of `klt
+extract --parasitics`' lumped-R model produce that:
+
+1. **Parallel fingers are modelled as one series wire.** The per-level R is
+   `sheet_rho x _n_squares(merged area, merged perimeter)`, which fits a
+   single equivalent rectangle to the level's whole merged geometry. For N
+   parallel `w x h` fingers that gives `W ~ w`, `L ~ N*h`, so `~N*h/w` squares
+   -- N times *one* finger's resistance, where the physical parallel value is
+   `(h/w)/N`. A wide device drawn the standard way (N parallel unit devices
+   with strapped terminals) presents exactly that geometry on li1, and the
+   modelled square count works out to `W_total / w_pad` however the width is
+   folded -- invariant under every knob this flow has. Tracked upstream as
+   [klayout-tools#2391](https://github.com/2AMLogic/klayout-tools/issues/2391);
+   **cross-confirmed there rather than re-filed**, per `CLAUDE.md`'s friction
+   protocol.
+2. **Strapped levels are summed in series.** `base_r_ohm[net] += metal_r_ohm`
+   per conductor level, so tying two levels together with a via array to halve
+   a rail's resistance *raises* the reported number -- visible above as
+   `VOUT`'s met1+met2 going 386 Ω → 813 Ω and `VIN`'s 1 012 Ω → 2 530 Ω. Filed
+   generically as
+   [klayout-tools#2458](https://github.com/2AMLogic/klayout-tools/issues/2458).
+
+Both biases point the same way, so the reported per-net R for a power
+conductor is **essentially insensitive to how that conductor is drawn**. That
+is the operative finding: this experiment currently cannot tell an adequate
+power rail from an inadequate one, so a full-load number out of it is not
+evidence about the routing in either direction.
+
+**What #154 did and did not settle.** It closed the layout defect it was filed
+for -- the load-current nets are no longer drawn as signal wires, and the
+sizing is derived from the ratified spec rather than picked. It did not make
+the full-load rows physical, and the measurement above shows it could not
+have: the drawn routing was under 1 % of what the model was reporting. The
+residual -- making these rows physical, which now depends on the `klt` pin
+moving to a build whose parasitic-R model can distinguish the two GDS files
+above -- is tracked as **#162**, blocked on the two upstream issues.
+
+**T1 item 7 status (unchanged in substance).** A `klt pex` report exists that
+ran the design's real devices at all 45 corners, which is what item 7 asks
+for, and as of this record its rows are graded against declared limits rather
+than against nothing. But the full-load rows remain non-physical, so nothing
+in it is comparable to `spec/target-spec.md` at full load. Item 7 stays
+*substantiable in kind but not in substance*; the blocker has moved from this
+repo's routing to the extractor's lumped-R model (the two `klayout-tools`
+issues above). `signoff/block-manifest.json` therefore still declines to cite
+a passing record for item 7 -- deliberately; see `signoff/README.md`, "Item 7
+has a passing record that this manifest declines to cite".
+
+**Limits are declared as of this record (issue #154).** All three measurements
+now carry `limits`, so a `delta[]` row's `pass` means the extracted value sits
+inside a bound rather than merely being non-null. The `vout_*_v` bounds are
+the ratified `Output` row verbatim (1.764 V .. 1.836 V). The
+`vin_minus_vout_full_load_v` bound is **not** the ratified `Dropout @ 50 mA`
+row: this testbench sweeps `Iload` at a *fixed* `vvin`, so that measurement is
+the supply-to-output headroom, not the dropout voltage (dropout is
+`sim/dropout-vs-load`'s testbench). Its bounds are derived from this request's
+own declared supplies and the ratified `Output` row -- `2.97 − 1.836 = 1.134 V`
+to `3.63 − 1.764 = 1.866 V` -- so the row is a physicality check that asserts
+no spec line this testbench cannot measure. See the request's own
+`_limits_comment` for the full derivation; an earlier draft of these limits
+did read the dropout row onto this measurement and failed 41 of 45 corners on
+the *schematic* side as a result, which is how the category error was caught.
+
+**`body_bias` (read per issue #122's scope).** The current record's
 `body_bias` block reads `status: "biased", unbiased_device_count: 0,
-unbiased_nets: []` -- no device body sits on an anonymous deck-synthesized
-net, so the physically-wrong-resimulation hazard of
+unbiased_nets: []` -- unchanged across the last three records -- so no device
+body sits on an anonymous deck-synthesized net and the
+physically-wrong-resimulation hazard of
 [klayout-tools#1983](https://github.com/2AMLogic/klayout-tools/issues/1983)
 does not bite for this layout as landed. Any claim made from this
 experiment must state this alongside the numbers (`klt signoff` surfaces
 the block but does not grade on it).
 
-**On the standalone schematic-side leg's timeouts.** The same record's
-standalone `klt sim` leg reports 36/45 passed with 9 `timeout` errors
-(`ngspice did not complete within 120s, killed` -- the testbench's own
-`options.timeout_s: 120` knob) at cold/low-supply corners, while the pex
-run's own schematic leg *completed* those same corners (every delta row
-carries a real schematic value). The timeouts are host-load-induced under
-the 120 s per-corner cap, not a model or deck failure; raise `timeout_s`
-in `testbench/tb_pex_post_layout.request.json` if the standalone leg is
-needed standalone again.
+**On the standalone schematic-side leg's timeouts.** Record
+`20260923-183915-d9900b5`'s standalone `klt sim` leg reported 36/45 passed
+with 9 `timeout` errors (`ngspice did not complete within 120s, killed` -- the
+testbench's own `options.timeout_s: 120` knob) at cold/low-supply corners,
+while the pex run's own schematic leg *completed* those same corners (every
+delta row carried a real schematic value). The timeouts were host-load-induced
+under the 120 s per-corner cap, not a model or deck failure, and have not
+recurred in either record since; raise `timeout_s` in
+`testbench/tb_pex_post_layout.request.json` if the standalone leg is needed
+standalone again on a loaded host.
 
 ## Narrative summary for the latest record (hand-maintained here, not in `measurements/characterization.md`)
 
@@ -340,7 +438,53 @@ reproduce prose the record does not contain -- exactly the failure issue #146
 was filed for. **When a new record is minted, update this section and re-run
 the generator; do not hand-edit `characterization.md`.**
 
-### Record `20260924-181248-50554fe` (`klt 0.6.0+g040f3406b485`) — current
+### Record `20260924-230726-a947aa8` (`klt 0.6.0+g040f3406b485`) — current
+
+First record cut against a layout whose load-current nets are drawn as sized
+power rails rather than 0.30 µm signal trunks (issue #154), and the first
+whose `delta[]` rows are graded against declared limits.
+
+- `klt sim` (schematic-side leg, standalone): `status=fail, corners=45,
+  passed=38, failed=7, errored=0`. **This is the first record whose
+  schematic-side leg can fail at all** — limits were declared for the first
+  time here, and the 7 failures are 4 corners where the design misses the
+  ratified `Output` row at full load (plus its derived headroom window) and 3
+  where it misses it at light load. They are the design's own, already-known
+  spec gap (`measurements/characterization.md`, Output row FAIL), not an
+  extraction artefact. No `timeout` errors.
+- `klt pex` (schematic + extracted legs + delta): `status=fail, passed=39,
+  failed=96, errored=0, pin_count_mismatch=None`, exit code `3` (a delta row
+  failed its own declared limits — the documented "ran, graded, something is
+  out of bounds" code, not a tool failure). Extraction: `deck=sky130,
+  device_count=97, net_count=28`.
+- **The power routing was fixed and the measurement barely moved.** Extracted
+  `vout_full_load_v` now spans −37.909 V (`sf/2.970V/-40C`) to −3.801 V
+  (`ss/3.630V/125C`), median −5.141 V, with **45 of 45** corners negative (the
+  prior record's 44 of 45 plus `ff/3.630V/-40C`, whose *schematic* value is
+  3.423 V — the design is out of regulation at that corner, so its former
+  +1.635 V extracted reading was never a regulating control point). Median
+  \|delta\| moved 385 % → 381.5 % on `vout_full_load_v`.
+- **The reason is now measured, and it is the extractor, not the layout.**
+  98–99 % of the modelled per-net R is the li1 (`metal0`) term; the metal
+  levels this repo controls are under 1 % of it and went *up* when the rails
+  were strapped onto a second level. Full per-level before/after table and the
+  two upstream issues
+  ([klayout-tools#2391](https://github.com/2AMLogic/klayout-tools/issues/2391),
+  [#2458](https://github.com/2AMLogic/klayout-tools/issues/2458)) are in the
+  2026-09-24/#154 update above.
+- **Limits declared for the first time.** `vout_*_v` from the ratified
+  `Output` row verbatim; `vin_minus_vout_full_load_v` from this request's own
+  declared supplies minus that row (headroom, not dropout — see the update
+  above and the request's `_limits_comment`).
+- `body_bias`: `status=biased, unbiased_device_count=0, unbiased_nets=[]` —
+  unchanged.
+- Layout under test: `layout/ldo-core/reports/20260924-221912-a947aa8` (LVS
+  `status: match`, 47/47 devices, 27/27 nets) on `20260924-221821-a947aa8`'s
+  GDS (DRC `clean`, `violation_count=0`, with 75/20 still in
+  `layers_in_stream_without_rules`). The wider rails and the added met3 level
+  introduced no new width/spacing violation.
+
+### Record `20260924-181248-50554fe` (`klt 0.6.0+g040f3406b485`) — superseded
 
 First record cut against a layout that carries the `hvi` (75/20)
 voltage-domain marker (issue #142), and the first in which the extracted-side

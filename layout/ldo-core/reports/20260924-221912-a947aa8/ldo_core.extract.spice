@@ -1,0 +1,210 @@
+* extracted by klt extract --deck sky130
+
+* cell ldo_core
+* pin EN
+* pin VIN
+* pin VOUT
+* pin VREF
+.SUBCKT ldo_core EN VIN VOUT VREF
+* device instance $1 r0 *1 2197.73,0.36 nfet
+M$1 TS_REF TS_REF AMP_ENN 0 nfet L=2U W=0.42U AS=0.1764P AD=0.1764P PS=1.68U
++ PD=1.68U
+* device instance $2 r0 *1 2175.42,0.65 nfet
+M$2 ENB EN 0 0 nfet L=0.5U W=1U AS=0.42P AD=0.42P PS=2.84U PD=2.84U
+* device instance $3 r0 *1 2202.37,0.65 nfet
+M$3 TC_TAIL NB AMP_ENN 0 nfet L=1U W=1U AS=0.42P AD=0.42P PS=2.84U PD=2.84U
+* device instance $4 r0 *1 2171.53,0.95 nfet
+M$4 CL_CMP CL_SNS AMP_ENN 0 nfet L=1U W=1.6U AS=0.672P AD=0.672P PS=4.04U
++ PD=4.04U
+* device instance $5 r0 *1 2179.06,1.15 nfet
+M$5 SS ENB 0 0 nfet L=0.5U W=2U AS=0.84P AD=0.84P PS=4.84U PD=4.84U
+* device instance $6 r0 *1 2123.27,2.15 nfet
+M$6 NB NB BIAS_ENN 0 nfet L=1U W=4U AS=1.68P AD=1.68P PS=8.84U PD=8.84U
+* device instance $7 r0 *1 2131.05,2.15 nfet
+M$7 BIASP NB BIAS_ENN 0 nfet L=1U W=4U AS=1.68P AD=1.68P PS=8.84U PD=8.84U
+* device instance $8 r0 *1 2127.16,5.15 nfet
+M$8 BIAS_ENN EN 0 0 nfet L=0.5U W=10U AS=4.2P AD=4.2P PS=20.84U PD=20.84U
+* device instance $9 r0 *1 2134.94,5.15 nfet
+M$9 AMP_ENN EN 0 0 nfet L=0.5U W=10U AS=4.2P AD=4.2P PS=20.84U PD=20.84U
+* device instance $10 r0 *1 2140.33,5.15 nfet
+M$10 EA_D1 EA_D1 AMP_ENN 0 nfet L=4U W=10U AS=4.2P AD=4.2P PS=20.84U PD=20.84U
+* device instance $11 r0 *1 2147.47,5.15 nfet
+M$11 EA_OUT EA_D1 AMP_ENN 0 nfet L=4U W=10U AS=4.2P AD=4.2P PS=20.84U PD=20.84U
+* device instance $12 r0 *1 2154.61,5.15 nfet
+M$12 EA_D2 EA_D2 AMP_ENN 0 nfet L=4U W=10U AS=4.2P AD=4.2P PS=20.84U PD=20.84U
+* device instance $13 r0 *1 2161.75,5.15 nfet
+M$13 PB EA_D2 AMP_ENN 0 nfet L=4U W=10U AS=4.2P AD=4.2P PS=20.84U PD=20.84U
+* device instance $14 r0 *1 2207.01,5.15 nfet
+M$14 TC_D1 TS_SNS TC_TAIL 0 nfet L=2U W=10U AS=4.2P AD=4.2P PS=20.84U PD=20.84U
+* device instance $15 r0 *1 2212.15,5.15 nfet
+M$15 TS_CMP TS_REF TC_TAIL 0 nfet L=2U W=10U AS=4.2P AD=4.2P PS=20.84U PD=20.84U
+* device instance $16 r0 *1 2167.39,10.15 nfet
+M$16 CL_SNS CL_SNS AMP_ENN 0 nfet L=1U W=20U AS=8.4P AD=8.4P PS=40.84U PD=40.84U
+* device instance $17 r0 *1 2184.45,40.15 nfet
+M$17 TS_SNS TS_SNS TS_MID 0 nfet L=4U W=80U AS=33.6P AD=33.6P PS=160.84U
++ PD=160.84U
+* device instance $18 r0 *1 2191.59,40.15 nfet
+M$18 TS_MID TS_MID AMP_ENN 0 nfet L=4U W=80U AS=33.6P AD=33.6P PS=160.84U
++ PD=160.84U
+* device instance $19 r0 *1 2228.79,5.15 pfet
+M$19 BIASP BIASP VIN VIN pfet L=1U W=10U AS=4.2P AD=4.2P PS=20.84U PD=20.84U
+* device instance $20 r0 *1 2232.68,5.15 pfet
+M$20 BIASP EN VIN VIN pfet L=0.5U W=10U AS=4.2P AD=4.2P PS=20.84U PD=20.84U
+* device instance $21 r0 *1 2236.32,5.15 pfet
+M$21 EA_OUT EN VIN VIN pfet L=0.5U W=10U AS=4.2P AD=4.2P PS=20.84U PD=20.84U
+* device instance $22 r0 *1 2239.96,1.15 pfet
+M$22 PB EN VIN VIN pfet L=0.5U W=2U AS=0.84P AD=0.84P PS=4.84U PD=4.84U
+* device instance $23 r0 *1 2243.6,1.15 pfet
+M$23 CL_CMP EN VIN VIN pfet L=0.5U W=2U AS=0.84P AD=0.84P PS=4.84U PD=4.84U
+* device instance $24 r0 *1 2247.24,1.15 pfet
+M$24 TS_CMP EN VIN VIN pfet L=0.5U W=2U AS=0.84P AD=0.84P PS=4.84U PD=4.84U
+* device instance $25 r0 *1 2251.63,20.15 pfet
+M$25 EA_TAIL BIASP VIN VIN pfet L=2U W=40U AS=16.8P AD=16.8P PS=80.84U PD=80.84U
+* device instance $26 r0 *1 2256.77,5.15 pfet
+M$26 EA_D1 FB EA_TAIL VIN pfet L=2U W=10U AS=4.2P AD=4.2P PS=20.84U PD=20.84U
+* device instance $27 r0 *1 2261.91,5.15 pfet
+M$27 EA_D2 VREF EA_TAIL VIN pfet L=2U W=10U AS=4.2P AD=4.2P PS=20.84U PD=20.84U
+* device instance $28 r0 *1 2268.05,10.15 pfet
+M$28 PB PB VIN VIN pfet L=4U W=20U AS=8.4P AD=8.4P PS=40.84U PD=40.84U
+* device instance $29 r0 *1 2275.19,10.15 pfet
+M$29 EA_OUT PB VIN VIN pfet L=4U W=20U AS=8.4P AD=8.4P PS=40.84U PD=40.84U
+* device instance $30 r0 *1 2281.33,5.15 pfet
+M$30 EA_D2 SS EA_TAIL VIN pfet L=2U W=10U AS=4.2P AD=4.2P PS=20.84U PD=20.84U
+* device instance $31 r0 *1 2285.72,0.57 pfet
+M$31 CL_SNS EA_OUT VIN VIN pfet L=0.5U W=0.84U AS=0.3528P AD=0.3528P PS=2.52U
++ PD=2.52U
+* device instance $32 r0 *1 2289.61,5.15 pfet
+M$32 CL_CMP BIASP VIN VIN pfet L=1U W=10U AS=4.2P AD=4.2P PS=20.84U PD=20.84U
+* device instance $33 r0 *1 2293.5,10.15 pfet
+M$33 EA_OUT CL_CMP VIN VIN pfet L=0.5U W=20U AS=8.4P AD=8.4P PS=40.84U PD=40.84U
+* device instance $34 r0 *1 2297.14,1.15 pfet
+M$34 ENB EN VIN VIN pfet L=0.5U W=2U AS=0.84P AD=0.84P PS=4.84U PD=4.84U
+* device instance $35 r0 *1 2304.53,0.65 pfet
+M$35 SS BIASP VIN VIN pfet L=8U W=1U AS=0.42P AD=0.42P PS=2.84U PD=2.84U
+* device instance $36 r0 *1 2312.17,0.775 pfet
+M$36 TS_SNS BIASP VIN VIN pfet L=1U W=1.25U AS=0.525P AD=0.525P PS=3.34U
++ PD=3.34U
+* device instance $37 r0 *1 2316.31,3.65 pfet
+M$37 TS_REF BIASP VIN VIN pfet L=1U W=7U AS=2.94P AD=2.94P PS=14.84U PD=14.84U
+* device instance $38 r0 *1 2320.95,5.15 pfet
+M$38 TC_D1 TC_D1 VIN VIN pfet L=2U W=10U AS=4.2P AD=4.2P PS=20.84U PD=20.84U
+* device instance $39 r0 *1 2326.09,5.15 pfet
+M$39 TS_CMP TC_D1 VIN VIN pfet L=2U W=10U AS=4.2P AD=4.2P PS=20.84U PD=20.84U
+* device instance $40 r0 *1 2330.48,10.15 pfet
+M$40 EA_OUT TS_CMP VIN VIN pfet L=0.5U W=20U AS=8.4P AD=8.4P PS=40.84U PD=40.84U
+* device instance $41 r0 *1 2334.87,2.4 pfet
+M$41 TS_HYS BIASP VIN VIN pfet L=2U W=4.5U AS=1.89P AD=1.89P PS=9.84U PD=9.84U
+* device instance $42 r0 *1 2339.26,1.15 pfet
+M$42 TS_REF TS_CMP TS_HYS VIN pfet L=0.5U W=2U AS=0.84P AD=0.84P PS=4.84U
++ PD=4.84U
+* device instance $43 r0 *1 2342.9,50.15 pfet
+M$43 VOUT EA_OUT VIN VIN pfet L=0.5U W=100U AS=42P AD=42P PS=200.84U PD=200.84U
+* device instance $44 r0 *1 2344.64,50.15 pfet
+M$44 VOUT EA_OUT VIN VIN pfet L=0.5U W=100U AS=42P AD=42P PS=200.84U PD=200.84U
+* device instance $45 r0 *1 2346.38,50.15 pfet
+M$45 VOUT EA_OUT VIN VIN pfet L=0.5U W=100U AS=42P AD=42P PS=200.84U PD=200.84U
+* device instance $46 r0 *1 2348.12,50.15 pfet
+M$46 VOUT EA_OUT VIN VIN pfet L=0.5U W=100U AS=42P AD=42P PS=200.84U PD=200.84U
+* device instance $47 r0 *1 2349.86,50.15 pfet
+M$47 VOUT EA_OUT VIN VIN pfet L=0.5U W=100U AS=42P AD=42P PS=200.84U PD=200.84U
+* device instance $48 r0 *1 2351.6,50.15 pfet
+M$48 VOUT EA_OUT VIN VIN pfet L=0.5U W=100U AS=42P AD=42P PS=200.84U PD=200.84U
+* device instance $49 r0 *1 2353.34,50.15 pfet
+M$49 VOUT EA_OUT VIN VIN pfet L=0.5U W=100U AS=42P AD=42P PS=200.84U PD=200.84U
+* device instance $50 r0 *1 2355.08,50.15 pfet
+M$50 VOUT EA_OUT VIN VIN pfet L=0.5U W=100U AS=42P AD=42P PS=200.84U PD=200.84U
+* device instance $51 r0 *1 2356.82,50.15 pfet
+M$51 VOUT EA_OUT VIN VIN pfet L=0.5U W=100U AS=42P AD=42P PS=200.84U PD=200.84U
+* device instance $52 r0 *1 2358.56,50.15 pfet
+M$52 VOUT EA_OUT VIN VIN pfet L=0.5U W=100U AS=42P AD=42P PS=200.84U PD=200.84U
+* device instance $53 r0 *1 2360.3,50.15 pfet
+M$53 VOUT EA_OUT VIN VIN pfet L=0.5U W=100U AS=42P AD=42P PS=200.84U PD=200.84U
+* device instance $54 r0 *1 2362.04,50.15 pfet
+M$54 VOUT EA_OUT VIN VIN pfet L=0.5U W=100U AS=42P AD=42P PS=200.84U PD=200.84U
+* device instance $55 r0 *1 2363.78,50.15 pfet
+M$55 VOUT EA_OUT VIN VIN pfet L=0.5U W=100U AS=42P AD=42P PS=200.84U PD=200.84U
+* device instance $56 r0 *1 2365.52,50.15 pfet
+M$56 VOUT EA_OUT VIN VIN pfet L=0.5U W=100U AS=42P AD=42P PS=200.84U PD=200.84U
+* device instance $57 r0 *1 2367.26,50.15 pfet
+M$57 VOUT EA_OUT VIN VIN pfet L=0.5U W=100U AS=42P AD=42P PS=200.84U PD=200.84U
+* device instance $58 r0 *1 2369,50.15 pfet
+M$58 VOUT EA_OUT VIN VIN pfet L=0.5U W=100U AS=42P AD=42P PS=200.84U PD=200.84U
+* device instance $59 r0 *1 2370.74,50.15 pfet
+M$59 VOUT EA_OUT VIN VIN pfet L=0.5U W=100U AS=42P AD=42P PS=200.84U PD=200.84U
+* device instance $60 r0 *1 2372.48,50.15 pfet
+M$60 VOUT EA_OUT VIN VIN pfet L=0.5U W=100U AS=42P AD=42P PS=200.84U PD=200.84U
+* device instance $61 r0 *1 2374.22,50.15 pfet
+M$61 VOUT EA_OUT VIN VIN pfet L=0.5U W=100U AS=42P AD=42P PS=200.84U PD=200.84U
+* device instance $62 r0 *1 2375.96,50.15 pfet
+M$62 VOUT EA_OUT VIN VIN pfet L=0.5U W=100U AS=42P AD=42P PS=200.84U PD=200.84U
+* device instance $63 r0 *1 2377.7,50.15 pfet
+M$63 VOUT EA_OUT VIN VIN pfet L=0.5U W=100U AS=42P AD=42P PS=200.84U PD=200.84U
+* device instance $64 r0 *1 2379.44,50.15 pfet
+M$64 VOUT EA_OUT VIN VIN pfet L=0.5U W=100U AS=42P AD=42P PS=200.84U PD=200.84U
+* device instance $65 r0 *1 2381.18,50.15 pfet
+M$65 VOUT EA_OUT VIN VIN pfet L=0.5U W=100U AS=42P AD=42P PS=200.84U PD=200.84U
+* device instance $66 r0 *1 2382.92,50.15 pfet
+M$66 VOUT EA_OUT VIN VIN pfet L=0.5U W=100U AS=42P AD=42P PS=200.84U PD=200.84U
+* device instance $67 r0 *1 2384.66,50.15 pfet
+M$67 VOUT EA_OUT VIN VIN pfet L=0.5U W=100U AS=42P AD=42P PS=200.84U PD=200.84U
+* device instance $68 r0 *1 2386.4,50.15 pfet
+M$68 VOUT EA_OUT VIN VIN pfet L=0.5U W=100U AS=42P AD=42P PS=200.84U PD=200.84U
+* device instance $69 r0 *1 2388.14,50.15 pfet
+M$69 VOUT EA_OUT VIN VIN pfet L=0.5U W=100U AS=42P AD=42P PS=200.84U PD=200.84U
+* device instance $70 r0 *1 2389.88,50.15 pfet
+M$70 VOUT EA_OUT VIN VIN pfet L=0.5U W=100U AS=42P AD=42P PS=200.84U PD=200.84U
+* device instance $71 r0 *1 2391.62,50.15 pfet
+M$71 VOUT EA_OUT VIN VIN pfet L=0.5U W=100U AS=42P AD=42P PS=200.84U PD=200.84U
+* device instance $72 r0 *1 2393.36,50.15 pfet
+M$72 VOUT EA_OUT VIN VIN pfet L=0.5U W=100U AS=42P AD=42P PS=200.84U PD=200.84U
+* device instance $73 r0 *1 2395.1,50.15 pfet
+M$73 VOUT EA_OUT VIN VIN pfet L=0.5U W=100U AS=42P AD=42P PS=200.84U PD=200.84U
+* device instance $74 r0 *1 2396.84,50.15 pfet
+M$74 VOUT EA_OUT VIN VIN pfet L=0.5U W=100U AS=42P AD=42P PS=200.84U PD=200.84U
+* device instance $75 r0 *1 2398.58,50.15 pfet
+M$75 VOUT EA_OUT VIN VIN pfet L=0.5U W=100U AS=42P AD=42P PS=200.84U PD=200.84U
+* device instance $76 r0 *1 2400.32,50.15 pfet
+M$76 VOUT EA_OUT VIN VIN pfet L=0.5U W=100U AS=42P AD=42P PS=200.84U PD=200.84U
+* device instance $77 r0 *1 2402.06,50.15 pfet
+M$77 VOUT EA_OUT VIN VIN pfet L=0.5U W=100U AS=42P AD=42P PS=200.84U PD=200.84U
+* device instance $78 r0 *1 2403.8,50.15 pfet
+M$78 VOUT EA_OUT VIN VIN pfet L=0.5U W=100U AS=42P AD=42P PS=200.84U PD=200.84U
+* device instance $79 r0 *1 2405.54,50.15 pfet
+M$79 VOUT EA_OUT VIN VIN pfet L=0.5U W=100U AS=42P AD=42P PS=200.84U PD=200.84U
+* device instance $80 r0 *1 2407.28,50.15 pfet
+M$80 VOUT EA_OUT VIN VIN pfet L=0.5U W=100U AS=42P AD=42P PS=200.84U PD=200.84U
+* device instance $81 r0 *1 2409.02,50.15 pfet
+M$81 VOUT EA_OUT VIN VIN pfet L=0.5U W=100U AS=42P AD=42P PS=200.84U PD=200.84U
+* device instance $82 r0 *1 2410.76,50.15 pfet
+M$82 VOUT EA_OUT VIN VIN pfet L=0.5U W=100U AS=42P AD=42P PS=200.84U PD=200.84U
+* device instance $83 r0 *1 2412.5,50.15 pfet
+M$83 VOUT EA_OUT VIN VIN pfet L=0.5U W=100U AS=42P AD=42P PS=200.84U PD=200.84U
+* device instance $84 r0 *1 2414.24,50.15 pfet
+M$84 VOUT EA_OUT VIN VIN pfet L=0.5U W=100U AS=42P AD=42P PS=200.84U PD=200.84U
+* device instance $85 r0 *1 2415.98,50.15 pfet
+M$85 VOUT EA_OUT VIN VIN pfet L=0.5U W=100U AS=42P AD=42P PS=200.84U PD=200.84U
+* device instance $86 r0 *1 2417.72,50.15 pfet
+M$86 VOUT EA_OUT VIN VIN pfet L=0.5U W=100U AS=42P AD=42P PS=200.84U PD=200.84U
+* device instance $87 r0 *1 2419.46,50.15 pfet
+M$87 VOUT EA_OUT VIN VIN pfet L=0.5U W=100U AS=42P AD=42P PS=200.84U PD=200.84U
+* device instance $88 r0 *1 2421.2,50.15 pfet
+M$88 VOUT EA_OUT VIN VIN pfet L=0.5U W=100U AS=42P AD=42P PS=200.84U PD=200.84U
+* device instance $89 r0 *1 2422.94,50.15 pfet
+M$89 VOUT EA_OUT VIN VIN pfet L=0.5U W=100U AS=42P AD=42P PS=200.84U PD=200.84U
+* device instance $90 r0 *1 2424.68,50.15 pfet
+M$90 VOUT EA_OUT VIN VIN pfet L=0.5U W=100U AS=42P AD=42P PS=200.84U PD=200.84U
+* device instance $91 r0 *1 2426.42,50.15 pfet
+M$91 VOUT EA_OUT VIN VIN pfet L=0.5U W=100U AS=42P AD=42P PS=200.84U PD=200.84U
+* device instance $92 r0 *1 2428.16,50.15 pfet
+M$92 VOUT EA_OUT VIN VIN pfet L=0.5U W=100U AS=42P AD=42P PS=200.84U PD=200.84U
+* device instance $93 r0 *1 750.42,0.21 res_high_po
+X$93 VIN NB 0 res_high_po r=1160477.00515 L=1500U W=0.42U
+* device instance $94 r0 *1 1593.26,0.21 res_xhigh_po
+X$94 VOUT FB 0 res_xhigh_po r=857142.857143 L=180U W=0.42U
+* device instance $95 r0 *1 1776.1,0.21 res_xhigh_po
+X$95 FB N_FBB 0 res_xhigh_po r=857142.857143 L=180U W=0.42U
+* device instance $96 r0 *1 1958.94,0.21 res_xhigh_po
+X$96 N_FBB 0 0 res_xhigh_po r=857142.857143 L=180U W=0.42U
+* device instance $97 r0 *1 2077.78,0.21 res_xhigh_po
+X$97 EA_CZ EA_OUT 0 res_xhigh_po r=247619.047619 L=52U W=0.42U
+.ENDS ldo_core

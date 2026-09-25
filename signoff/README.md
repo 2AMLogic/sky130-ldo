@@ -179,29 +179,54 @@ substituting the 1.8 V core flavour. The resulting record,
 reports `status: pass, passed: 135, failed: 0, errored: 0` — the erroring
 this section previously said had to stop has stopped.
 
-**It is still not cited here, on purpose.** Swapping it in would flip item 7
-to `met` and this block to T1 4/11, and that row would not mean what a reader
-would take it to mean:
+**It was not cited then, on purpose**, for two reasons:
 
-- **The `pass` is ungraded.** `tb_pex_post_layout.request.json` declares no
-  limits on any of its three measurements, so `klt pex` grades every `delta[]`
-  row against nothing; `pass` means only "both legs produced a number", not
+- **The `pass` was ungraded.** `tb_pex_post_layout.request.json` declared no
+  limits on any of its three measurements, so `klt pex` graded every `delta[]`
+  row against nothing; `pass` meant only "both legs produced a number", not
   "the extracted values agree with the schematic values".
-- **The full-load rows are non-physical.** 44 of the 45 full-load corners
-  return a *negative* extracted `VOUT` at 50 mA — the full spread runs from
+- **The full-load rows were non-physical.** 44 of the 45 full-load corners
+  returned a *negative* extracted `VOUT` at 50 mA — the spread ran from
   +1.6 V (`ff/3.630V/-40C`, the one non-negative row) down to −61.9 V
-  (`ss/3.300V/-40C`), median |delta| 385 %, max 3543 % — because
-  `gen-ldo-blocks.py` draws every net — power rails included — as a 0.30 µm
-  met1 signal trunk, leaving 102 Ω–64.3 kΩ of lumped series resistance on the
-  extracted `VOUT` net. That is a real layout defect, previously masked by the
-  flavour-substitution error; it is out of #142's scope and tracked as #154.
+  (`ss/3.300V/-40C`), median |delta| 385 %, max 3543 % — attributed at the
+  time to `gen-ldo-blocks.py` drawing every net, power rails included, as a
+  0.30 µm met1 signal trunk. Tracked as #154.
 
-So item 7 is now *substantiable in kind but not in substance*. Citing a green
-row over non-physical numbers is exactly the failure mode the items-1/2/9/10
-note below refuses ("a `MET` row the tool has no basis to object to and that
-would mean nothing"), and `CLAUDE.md`'s "no claim without a testbench" rule
-reads the same way. The citation should move once the power routing is fixed
-and a fresh record's full-load rows are physical — not before.
+**Update (issue #154): the first reason is closed, the second is not — and
+its cause turned out not to be this repo's.** The current record,
+[`20260924-230726-a947aa8`](../sim/pex-post-layout/records/20260924-230726-a947aa8.md),
+was cut against a layout whose `VIN`/`VOUT` are strapped, spec-sized power
+rails rather than 0.30 µm signal trunks (still DRC-`clean` and LVS-`match`),
+and against a request that now declares limits on all three measurements. Its
+verdict is `status: fail` (39 passed / 96 failed, exit 3): it grades, and it
+does not pass.
+
+The full-load rows are still non-physical — **45 of 45** corners now return a
+negative extracted `VOUT`, median −5.141 V. Extracting the before and after
+GDS with `--parasitics` and reading the per-level breakdown shows why the
+routing fix could not have moved it: **98–99 % of the modelled per-net
+resistance is the li1 term** (`VOUT` total 165 901 Ω → 154 538 Ω, of which
+165 467 Ω → 153 677 Ω is li1), and the metal levels the layout flow controls
+are under 1 % of the total — and went *up* when the rails were strapped onto a
+second level, because the model sums levels in series. The lumped-R model
+reduces each level's merged geometry to one equivalent rectangle, so N
+parallel device fingers read as one N-times-longer series wire. Both facets
+are filed at the tool, generically, per `CLAUDE.md`'s friction protocol:
+[klayout-tools#2391](https://github.com/2AMLogic/klayout-tools/issues/2391)
+(cross-confirmed, not re-filed) and
+[#2458](https://github.com/2AMLogic/klayout-tools/issues/2458). Full evidence:
+`sim/pex-post-layout/README.md`, the 2026-09-24/#154 update.
+
+So item 7 remains *substantiable in kind but not in substance*, and the
+blocker has **moved out of this repo**: there is no longer a known layout
+change that would make those rows physical at this `klt` pin. Citing a row
+over non-physical numbers is exactly the failure mode the items-1/2/9/10 note
+below refuses ("a `MET` row the tool has no basis to object to and that would
+mean nothing"), and `CLAUDE.md`'s "no claim without a testbench" rule reads the
+same way. The citation should move when a `klt` build whose parasitic-R model
+can distinguish the two GDS files above produces a record whose full-load rows
+are physical — not before. That is tracked as **#162**, blocked on the two
+upstream issues.
 
 ### Item 8 is `met`, and what that verdict does and does not say
 
@@ -292,11 +317,17 @@ In dependency order, not effort order:
    FAIL. That is a design program (issues #115–#121), not a manifest problem,
    and no citation here can shortcut it. Emitting the PVT campaign as `klt sim`
    envelopes is a second, separate prerequisite for the row ever grading `met`.
-2. **Item 7** no longer needs the `klt pex` leg to stop erroring — issue #142
-   did that, and the 2026-09-24 record runs all 135 rows clean. What it now
-   needs is for those rows to be *physical*: the power rails must stop being
-   drawn as 0.30 µm signal trunks (issue #154), and the request must declare
-   limits so the verdict grades something. See "Item 7 has a passing record
+2. **Item 7** no longer needs the `klt pex` leg to stop erroring (issue #142
+   did that), nor the request to declare limits (issue #154 did that), nor the
+   power rails to stop being drawn as 0.30 µm signal trunks (#154 did that
+   too, and the layout is still DRC-clean and LVS-matched). What it needs now
+   is **not in this repo**: a `klt` build whose `--parasitics` lumped-R model
+   can tell a sized power rail from a signal trunk at all —
+   [klayout-tools#2391](https://github.com/2AMLogic/klayout-tools/issues/2391)
+   and [#2458](https://github.com/2AMLogic/klayout-tools/issues/2458). At this
+   repo's pin, 98–99 % of the modelled per-net resistance on the load-current
+   nets is the device generator's own local-interconnect pads, which no knob
+   this flow has can change. Tracked as #162. See "Item 7 has a passing record
    that this manifest declines to cite" above.
 3. **Item 11** needs a `klt erc` supply spec and report (issue #112).
 4. **Item 6** needs a `klt yield` report over the existing Monte Carlo
