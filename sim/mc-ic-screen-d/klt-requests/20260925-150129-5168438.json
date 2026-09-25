@@ -1,0 +1,127 @@
+{
+  "analysis": {
+    "args": "10u 3m uic",
+    "kind": "tran",
+    "note": "SCREEN VARIANT D -- `uic` added to variant A's otherwise-identical deck, with EN left as a DC level (no edge). Deliberately NOT the shipped bench: the shipped bench (variant C, sim/mc-output-accuracy) carries both `uic` AND the 100 us EN edge, and separating them is this variant's entire job."
+  },
+  "corners": {
+    "process": [
+      "tt_mm"
+    ],
+    "temperature_c": [
+      27
+    ]
+  },
+  "engine": "ngspice",
+  "measurements": [
+    {
+      "limits": {
+        "max": 1.836,
+        "min": 1.764
+      },
+      "name": "vout_ss",
+      "note": "Steady-state VOUT averaged over the settled tail (2.5ms-3ms of a 3ms transient), identical card and identical ratified window (spec/target-spec.md \"Output\", 1.8V +-2%, ratified by issue #1 / DR-006) to the one sim/mc-output-accuracy uses -- kept identical so this screen variant's tally is comparable with that bench's records. This slug substantiates no spec row; see the experiment claim.",
+      "spice": ".meas tran vout_ss avg v(vout) from=2.5m to=3m",
+      "unit": "V"
+    },
+    {
+      "name": "fb_ss",
+      "note": "Node dump (unbounded -- diagnostic, no limit and therefore no verdict): settled V(xldo.fb), averaged over the same tail as vout_ss. Why this node: the divider tap the error amp compares against VREF -- the node whose 668-1984 V (and 1.3e15 V) settled values are the whole finding: FB is fed ONLY by VOUT through a passive three-leg res_xhigh_po string, so any realizable state has 0 <= V(N_FBB) <= V(FB) <= V(VOUT) <= VIN.",
+      "spice": ".meas tran fb_ss avg v(xldo.fb) from=2.5m to=3m",
+      "unit": "V"
+    },
+    {
+      "name": "n_fbb_ss",
+      "note": "Node dump (unbounded -- diagnostic, no limit and therefore no verdict): settled V(xldo.n_fbb), averaged over the same tail as vout_ss. Why this node: the divider's lower tap -- second half of the same algebra check.",
+      "spice": ".meas tran n_fbb_ss avg v(xldo.n_fbb) from=2.5m to=3m",
+      "unit": "V"
+    },
+    {
+      "name": "ea_out_ss",
+      "note": "Node dump (unbounded -- diagnostic, no limit and therefore no verdict): settled V(xldo.ea_out), averaged over the same tail as vout_ss. Why this node: the error amp's output, i.e. the pass device's gate: #164 Scope item 1 asked what holds it low enough to keep the pass device fully on.",
+      "spice": ".meas tran ea_out_ss avg v(xldo.ea_out) from=2.5m to=3m",
+      "unit": "V"
+    },
+    {
+      "name": "ea_cz_ss",
+      "note": "Node dump (unbounded -- diagnostic, no limit and therefore no verdict): settled V(xldo.ea_cz), averaged over the same tail as vout_ss. Why this node: the Miller/compensation node (R_CZ's far end) -- one of the three res_xhigh_po instances ngspice names in its singular-matrix warnings.",
+      "spice": ".meas tran ea_cz_ss avg v(xldo.ea_cz) from=2.5m to=3m",
+      "unit": "V"
+    },
+    {
+      "name": "ss_ss",
+      "note": "Node dump (unbounded -- diagnostic, no limit and therefore no verdict): settled V(xldo.ss), averaged over the same tail as vout_ss. Why this node: soft-start ramp node -- shows whether soft-start is still holding the loop down (Scope item 1 candidate 1).",
+      "spice": ".meas tran ss_ss avg v(xldo.ss) from=2.5m to=3m",
+      "unit": "V"
+    },
+    {
+      "name": "ts_cmp_ss",
+      "note": "Node dump (unbounded -- diagnostic, no limit and therefore no verdict): settled V(xldo.ts_cmp), averaged over the same tail as vout_ss. Why this node: thermal-shutdown comparator output -- shows whether thermal shutdown has tripped (Scope item 1 candidate 2).",
+      "spice": ".meas tran ts_cmp_ss avg v(xldo.ts_cmp) from=2.5m to=3m",
+      "unit": "V"
+    },
+    {
+      "name": "cl_cmp_ss",
+      "note": "Node dump (unbounded -- diagnostic, no limit and therefore no verdict): settled V(xldo.cl_cmp), averaged over the same tail as vout_ss. Why this node: current-limit comparator output -- shows whether current limit is the holder (Scope item 1 candidate 3).",
+      "spice": ".meas tran cl_cmp_ss avg v(xldo.cl_cmp) from=2.5m to=3m",
+      "unit": "V"
+    },
+    {
+      "name": "amp_enn_ss",
+      "note": "Node dump (unbounded -- diagnostic, no limit and therefore no verdict): settled V(xldo.amp_enn), averaged over the same tail as vout_ss. Why this node: the amp's enable-gated tail return -- shows whether the enable path is holding the amp off (Scope item 1 candidate 4).",
+      "spice": ".meas tran amp_enn_ss avg v(xldo.amp_enn) from=2.5m to=3m",
+      "unit": "V"
+    },
+    {
+      "name": "ea_d1_ss",
+      "note": "Node dump (unbounded -- diagnostic, no limit and therefore no verdict): settled V(xldo.ea_d1), averaged over the same tail as vout_ss. Why this node: error-amp input-stage drain 1 -- with EA_D2, shows whether the input stage is inverted (Scope item 1 candidate 5) and, if so, that FB drives it rather than the reverse.",
+      "spice": ".meas tran ea_d1_ss avg v(xldo.ea_d1) from=2.5m to=3m",
+      "unit": "V"
+    },
+    {
+      "name": "ea_d2_ss",
+      "note": "Node dump (unbounded -- diagnostic, no limit and therefore no verdict): settled V(xldo.ea_d2), averaged over the same tail as vout_ss. Why this node: error-amp input-stage drain 2 -- see EA_D1.",
+      "spice": ".meas tran ea_d2_ss avg v(xldo.ea_d2) from=2.5m to=3m",
+      "unit": "V"
+    },
+    {
+      "name": "ea_tail_ss",
+      "note": "Node dump (unbounded -- diagnostic, no limit and therefore no verdict): settled V(xldo.ea_tail), averaged over the same tail as vout_ss. Why this node: error-amp tail node -- whether the input pair has headroom at all.",
+      "spice": ".meas tran ea_tail_ss avg v(xldo.ea_tail) from=2.5m to=3m",
+      "unit": "V"
+    },
+    {
+      "name": "biasp_ss",
+      "note": "Node dump (unbounded -- diagnostic, no limit and therefore no verdict): settled V(xldo.biasp), averaged over the same tail as vout_ss. Why this node: the PMOS bias rail feeding every tail in the block -- whether the bias generator itself is where the solve went wrong.",
+      "spice": ".meas tran biasp_ss avg v(xldo.biasp) from=2.5m to=3m",
+      "unit": "V"
+    },
+    {
+      "name": "nb_ss",
+      "note": "Node dump (unbounded -- diagnostic, no limit and therefore no verdict): settled V(xldo.nb), averaged over the same tail as vout_ss. Why this node: the NMOS bias node (the bias string's own tap).",
+      "spice": ".meas tran nb_ss avg v(xldo.nb) from=2.5m to=3m",
+      "unit": "V"
+    },
+    {
+      "name": "cl_sns_ss",
+      "note": "Node dump (unbounded -- diagnostic, no limit and therefore no verdict): settled V(xldo.cl_sns), averaged over the same tail as vout_ss. Why this node: current-limit sense node -- the sense leg's own state, distinct from the comparator output above.",
+      "spice": ".meas tran cl_sns_ss avg v(xldo.cl_sns) from=2.5m to=3m",
+      "unit": "V"
+    }
+  ],
+  "models": {
+    "lib": "libs.tech/combined/sky130.lib.spice",
+    "pdk": "sky130A"
+  },
+  "monte_carlo": {
+    "k_sigma": 3,
+    "n": 200,
+    "seed": 20260817,
+    "vary": "mismatch"
+  },
+  "netlist": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-164/sim/mc-ic-screen-d/netlist-snapshots/20260925-150129-5168438.spice",
+  "options": {
+    "keep_artifacts": false,
+    "timeout_s": 180
+  }
+}

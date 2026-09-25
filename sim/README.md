@@ -1193,6 +1193,26 @@ statistics plus a per-device-family "was mismatch actually active" report.
   per-sample `.log` files are kept by default) alongside the same
   `testbench/`, `netlist-snapshots/` and `records/` convention the PVT
   experiments use.
+- **`mc-ic-screen-a/`, `mc-ic-screen-b/`, `mc-ic-screen-d/`** (issue #164) —
+  three **diagnostic** MC slugs, not spec claims: variants A, B and D of the
+  four-variant initial-condition screen that showed the `mc-output-accuracy`
+  bench's rail mode is its own unconstrained `.op`, not a second equilibrium of
+  the loop (variant C is the shipped bench itself, i.e. `mc-output-accuracy`).
+  All three run the *same* single point (`tt_mm`, 27 °C, 3.3 V, 1 mA) and the
+  same `vout_ss` card against the same ratified window, so their tallies are
+  directly comparable with `mc-output-accuracy`'s records; all three add 14
+  hierarchical `.meas` **node-dump** cards, which are unbounded on purpose
+  (a `.meas` card with no `limits` gets a distribution but no verdict — see the
+  `margin n/a` rendering in `mc-run.py`). A freezes the *pre-#164* bench (EN a
+  DC level, no `uic`); D shares A's testbench file byte-for-byte and differs
+  only by `uic`; B is A plus one `.ic` card seeding the `.op` at regulation.
+  **Why separate slugs:** `measurements/build_characterization_report.py` maps
+  the `Output` row to `mc-output-accuracy` and reads the *lexicographically
+  last* record under the mapped slug, so a later-timestamped screen variant
+  filed there would silently become the row's evidence. Nothing maps a spec row
+  to these three (same as `pdk-smoke`), so they are inert to that pipeline.
+  Full write-up, record ids and re-derivation recipes: `design/README.md` →
+  "#164".
 
 ## `sim/selftest.sh` — the harness acceptance test
 

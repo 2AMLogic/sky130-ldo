@@ -3595,19 +3595,28 @@ record `#118` cites reports only `vout_ss`, so the campaign was re-run on the
 batch fleet against the *same* netlist snapshot, seed (`20260817`) and N (200),
 with fourteen extra hierarchical `.meas` cards added purely to dump the settled
 node set. It reproduced the record exactly — 185 pass / 12 fail / 3 error — and
-the twelve are this:
+the twelve are this (record
+[`20260925-145526-5168438`](../sim/mc-ic-screen-a/records/20260925-145526-5168438.md),
+whose `klt-responses/` twin carries all 15 measurements on all 200 samples):
 
 | Node | The 185 regulating draws | The 12 "rail mode" draws |
 |---|---|---|
-| `VOUT` | 1.779–1.825 V | 3.284–3.308 V (one at −18.09 V) |
+| `VOUT` | 1.779–1.825 V | 3.284–3.308 V (`mc17` at −18.09 V) |
 | `FB` | 1.19–1.21 V | **±668 V to ±1984 V**, and **1.34e15 V** (`mc152`) |
 | `N_FBB` | 0.59–0.60 V | **±651 V to ±1974 V**, and **1.33e15 V** (`mc27`) |
 | `EA_CZ` | = `EA_OUT` | ±7.6e14 V on `mc17`/`mc97` |
-| `EA_OUT` | 2.37–2.39 V | 1.38–1.68 V (mid-rail) |
+| `EA_OUT` | 2.37–2.39 V | 1.38–1.68 V (mid-rail) on 11 of 12; `mc17` 4.35 V |
 | `SS` | 3.30 V | 3.30 V — soft-start fully released |
 | `TS_CMP` | 3.30 V | 3.30 V — thermal shutdown **not** tripped |
-| `CL_CMP` | 3.298 V | 0.95–2.40 V — current limit **not** the holder |
+| `CL_CMP` | 3.298 V | 0.95–2.40 V on 11 of 12 (`mc17` 3.30 V) — current limit **not** the holder |
 | `AMP_ENN` | ≈2 mV | 1.7–254 mV — enable path **not** holding the amp off |
+
+`mc17` is called out separately in three rows above because it is the one draw
+whose `VOUT` went *negative* (−18.09 V) rather than to the rail: its `EA_CZ`
+blew up to −7.58e14 V and its `EA_OUT`/`CL_CMP` sit at the top rail instead of
+mid-rail. It is the same defect wearing a different sign — `EA_CZ` is a
+`res_xhigh_po` terminal too — but it is not a "rail mode" draw, and the ranges
+quoted for the mode itself are the other eleven.
 
 Scope item 1 asked which of soft-start, the enable path, the current-limit
 comparator or the amplifier's input-stage inversion holds `EA_OUT` low enough
@@ -3662,14 +3671,24 @@ touching anything causal.
 
 **4. Neither a start-up failure nor a latch (Scope item 2).** The pair `#81`
 item 2 used, run as two full 200-sample campaigns on the batch fleet plus two
-more to decompose the fix — the four-variant screen:
+more to decompose the fix — the four-variant screen. **All four have committed
+record quadruplets** (`records/` + `klt-requests/` + `klt-responses/` +
+`netlist-snapshots/`); every number in this table is re-derivable from them with
+`jq`, and the three diagnostic variants live in their own experiment slugs for
+the reason given under "Where the screen's evidence lives" below:
 
-| # | Initial condition | Verdict | `vout_ss` mean / σ | Solver diagnostics | Max abs internal node |
-|---|---|---|---|---|---|
-| A | as-committed: unconstrained `.op`, EN DC-high | **185 / 12 fail / 3 error** | 1.78397 V / 1.4639 V | **61 warnings over 43 samples**, 3 with no measurement | **1.34e15 V** |
-| B | `.op` seeded **at** regulation (`.ic v(vout)=1.8 …`) | **200 / 0 / 0** | 1.80156 V / 8.523 mV | none | 3.3 V |
-| D | `uic` cold start, EN DC-high | **200 / 0 / 0** | 1.80156 V / 8.523 mV | none | 3.3 V |
-| C | `uic` cold start + EN edge at 100 µs (**shipped**) | **200 / 0 / 0** | 1.80157 V / 8.523 mV | none | 3.3 V |
+| # | Initial condition | Record | Verdict | `vout_ss` mean / σ | Solver diagnostics | Max abs internal node |
+|---|---|---|---|---|---|---|
+| A | as-committed: unconstrained `.op`, EN DC-high | [`20260925-145526-5168438`](../sim/mc-ic-screen-a/records/20260925-145526-5168438.md) | **185 / 12 fail / 3 error** | 1.78397 V / 1.4639 V | **61 warnings over 43 samples**, 3 with no measurement | **1.34e15 V** (`mc152`, `FB`) |
+| B | `.op` seeded **at** regulation (`.ic v(vout)=1.8 …`) | [`20260925-145937-5168438`](../sim/mc-ic-screen-b/records/20260925-145937-5168438.md) | **200 / 0 / 0** | 1.80156 V / 8.5228 mV | none | 3.3 V |
+| D | `uic` cold start, EN DC-high | [`20260925-150129-5168438`](../sim/mc-ic-screen-d/records/20260925-150129-5168438.md) | **200 / 0 / 0** | 1.80156 V / 8.5228 mV | none | 3.3 V |
+| C | `uic` cold start + EN edge at 100 µs (**shipped**) | [`20260925-131502-808cece`](../sim/mc-output-accuracy/records/20260925-131502-808cece.md) | **200 / 0 / 0** | 1.80157 V / 8.5229 mV | none | 3.3 V |
+
+The A/B/D rows' "max abs internal node" is measured, not asserted: A, B and D
+each carry the same 14 hierarchical `.meas` node-dump cards on top of `vout_ss`,
+so B's and D's 3.3 V is the largest magnitude *any* of the 15 measured nodes
+reaches on *any* of the 200 samples (it is `TS_CMP` on `mc30`, i.e. the supply
+rail — nothing internal exceeds VIN), against A's 1.34e15 V.
 
 - **Not a latch.** B starts the loop *at* 1.8 V and all 200 draws stay there —
   including all 12 that failed in A. The loop never falls out of regulation.
@@ -3683,11 +3702,56 @@ more to decompose the fix — the four-variant screen:
 - **A and B agree bit-for-bit on the 185 samples that regulated in A**, so the
   seeding changes nothing where the solve already found the branch; it only
   rescues the 15 that did not.
-- **The 43 warned-about samples matter too.** A's `singular matrix` warnings
-  name `xldo.fb`, `xldo.xr_fb_b.t2` and `xldo.xr_cz.t1` — three of the four
-  `res_xhigh_po` instances — on 43 of 200 draws, 31 of which *passed* anyway.
-  B/C/D report **zero** diagnostics on all 200. The mode's visible 6 % was the
-  tip of a 21.5 % latent-fragility rate, all of it in the `.op`.
+- **The 43 warned-about samples matter too, but they are a nearly *disjoint*
+  set from the 12 — corrected 2026-09-25 against the artifacts.** A's
+  `singular matrix` warnings name `xldo.fb` (5), `xldo.xr_fb_b.t2` (7) and
+  `xldo.xr_cz.t1` (13) — three of the four `res_xhigh_po` instances — and with
+  38 `dynamic gmin stepping` non-convergence warnings make 61 diagnostics over
+  43 of 200 draws. An earlier draft of this section said "31 of which *passed*
+  anyway", which was `43 − 12` arithmetic on the assumption that the 12
+  out-of-window draws are a subset of the 43 warned ones. **They are not**:
+  **42 of the 43 passed**, and the warned set intersects the 12 in exactly one
+  draw (`mc142`). The already-committed
+  [`20260925-110312-8280915`](../sim/mc-output-accuracy/records/20260925-110312-8280915.md)
+  says the same thing — it always did — and variant A's record reproduces it
+  sample-for-sample. So the honest reading is *stronger*, not weaker, than the
+  original: the eleven rail-mode draws and the −18 V draw are states ngspice
+  converged to **without complaint**, which is precisely why a settled
+  transient looked like evidence of an equilibrium. B/C/D report **zero**
+  diagnostics on all 200. The mode's visible 6 % sits alongside a 21.5 %
+  rate of draws where the `.op` warned and still landed on the right branch —
+  both symptoms of the same unconstrained solve, not one inside the other.
+
+**Where the screen's evidence lives, and why not under
+`sim/mc-output-accuracy/`.** Variants A, B and D each got their own experiment
+slug — `sim/mc-ic-screen-a/`, `-b/`, `-d/` — rather than being appended to the
+shipped bench's `records/`. This is not filing by preference: the `Output` row's
+evidence is resolved by `measurements/build_characterization_report.py`'s
+`EVIDENCE_MAP`, and `latest_sim_record()` picks the **lexicographically last**
+`records/*.json` under the mapped slug. A screen variant dropped into
+`sim/mc-output-accuracy/records/` would sort *after* the shipped record
+`20260925-131502-808cece` (later timestamp, same-day id) and silently become the
+row's evidence — regenerating `measurements/characterization.md`'s `Output` row
+from variant A's deliberately-broken bench (185/12/3, `FAIL`) and breaking the
+`signoff/` content-hash pin that covers it. Nothing maps a spec row to these
+three slugs, the same way `sim/pdk-smoke` is harness-only rather than a spec
+claim, so they are inert to that pipeline while still being ordinary, re-runnable
+`mc-run.py` experiments with full provenance. Each one's `experiment.json` says
+in its own `claim` that it substantiates no spec row.
+
+Provenance of the three, checkable in one command each:
+
+- Variant A's netlist snapshot differs from the **committed** pre-#164 snapshot
+  `sim/mc-output-accuracy/netlist-snapshots/20260925-110312-8280915.spice` in
+  exactly one line, the `** sch_path:` comment — so variant A demonstrably is
+  the as-committed bench, not a re-drawing of it.
+- Variants A and D share one testbench *file* (D's manifest points at A's), so
+  their netlist snapshots are **byte-identical** (`sha256`
+  `c08789a9dc87…`) and the only difference between the two records is the
+  analysis card: `tran 10u 3m` vs `tran 10u 3m uic`. That is what makes "`uic`
+  alone is what closes it" a measurement rather than an inference.
+- Variant B's snapshot is variant A's plus the single `.ic` card (and the
+  `sch_path` comment), nothing else.
 
 **5. What shipped, and what deliberately did not.** Only the bench's
 initial-condition contract: `tran 10u 3m` → `tran 10u 3m uic` in
@@ -3776,6 +3840,31 @@ EOF
 #     .nodeset v(xldo.fb)=1984 v(xldo.n_fbb)=996 v(vout)=3.29 v(xldo.ea_out)=1.55
 #     to sim/mc-output-accuracy/netlist-snapshots/20260925-110312-8280915.spice,
 #     then `op` (lands on it) vs `tran 10u 3m uic` (ignores it, gives 1.8006 V).
+
+# (c) any of the three screen variants, end to end, from committed files
+#     (200-sample grids -- these go to the fleet, never hand-launched locally):
+python3 sim/bin/mc-run.py sim/mc-ic-screen-a --seed 20260817 --backend batch
+python3 sim/bin/mc-run.py sim/mc-ic-screen-b --seed 20260817 --backend batch
+python3 sim/bin/mc-run.py sim/mc-ic-screen-d --seed 20260817 --backend batch
+```
+
+Or re-derive this section's numbers from the committed responses without
+simulating anything — e.g. variant A's twelve out-of-window draws and their `FB`:
+
+```bash
+jq -r '.corners[]
+       | {s: (.corner_id|split("/")|last),
+          v: (.measurements[]|select(.name=="vout_ss").value),
+          fb: (.measurements[]|select(.name=="fb_ss").value)}
+       | select(.v != null and (.v < 1.764 or .v > 1.836))
+       | [.s, .v, .fb] | @tsv' \
+  sim/mc-ic-screen-a/klt-responses/20260925-145526-5168438.json
+
+# B and D bit-identical on all 200 (prints nothing if they are):
+for v in b d; do jq -S '[.corners[] | {s:(.corner_id|split("/")|last),
+    v:(.measurements[]|select(.name=="vout_ss").value)}]' \
+    sim/mc-ic-screen-$v/klt-responses/*.json > /tmp/$v.json; done
+diff /tmp/b.json /tmp/d.json
 ```
 
 **One note for whoever re-runs a Monte Carlo campaign.** A given
