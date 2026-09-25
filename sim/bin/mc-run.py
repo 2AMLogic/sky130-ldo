@@ -371,21 +371,40 @@ def render_record(record: dict) -> str:
             f"**{meas['status'].upper()}**"
         )
         if mcstat:
+            # Every statistic here can legitimately be absent, and a missing one
+            # must not cost the whole record (the raw klt response is already on
+            # disk by the time this renders, but the .md/.json record is not):
+            # `stddev` is `null` for a single-sample run, and `sigma_window`'s
+            # `margin` is `null` for an **unbounded** measurement -- a `.meas`
+            # card declared with no `limits`, i.e. a diagnostic node dump that
+            # klt still computes a distribution for but has no window to take a
+            # margin against (added by sim/mc-ic-screen-*'s node dumps, #164).
+            # Same convention as the `worst_case` line below.
             lines.append(
                 f"    - n={mcstat['n']} (errored={mcstat['errored']}), "
-                f"mean={mcstat['mean']:.6g}, stddev={mcstat['stddev']:.6g}, "
-                f"min={mcstat['min']:.6g}, max={mcstat['max']:.6g}"
+                + ", ".join(
+                    fmt_or_na(mcstat.get(k), k) for k in ("mean", "stddev", "min", "max")
+                )
             )
             q = mcstat.get("quantiles") or {}
             if q:
                 lines.append(
-                    "    - quantiles: " + ", ".join(f"{k}={v:.6g}" for k, v in q.items())
+                    "    - quantiles: " + ", ".join(fmt_or_na(v, k) for k, v in q.items())
                 )
             sw = mcstat.get("sigma_window")
             if sw:
+                margin = (
+                    "margin n/a — measurement declared with no limits, so there is no "
+                    "window to take a margin against"
+                    if sw.get("margin") is None
+                    else f"margin {sw['margin']:.6g}"
+                )
+                edge = ", ".join(
+                    "n/a" if sw.get(k) is None else f"{sw[k]:.6g}" for k in ("low", "high")
+                )
                 lines.append(
-                    f"    - sigma_window (k={sw['k']:g}): [{sw['low']:.6g}, {sw['high']:.6g}] "
-                    f"— **{sw['status'].upper()}** (margin {sw['margin']:.6g})"
+                    f"    - sigma_window (k={sw['k']:g}): [{edge}] "
+                    f"— **{str(sw.get('status')).upper()}** ({margin})"
                 )
         per_sample = [
             m["value"]
