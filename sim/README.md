@@ -404,6 +404,32 @@ above) and `sim/startup` (disabled-state seed, per above) already meet this
 contract: re-running them under the new check should report no diagnostic
 and leave their verdict unchanged.
 
+**#174 audited the remaining benches (`current-limit`, `dropout-vs-load`,
+`loop-gain`, `load-transient`, `psrr-dc`, `thermal`, plus a re-confirmation
+of `startup`/`enable-shutdown`) against this contract, read-only — no
+bench's `experiment.json`/`testbench/*.sch` was changed by that issue.**
+Verdicts (verified against `origin/main` @ `2a2c0e6`, 2026-09-25 — see #174
+for the full evidence trail and #177/#178/#179/#180 for the follow-up
+conversions):
+
+| Bench | Verdict | Mechanism |
+|---|---|---|
+| `current-limit` | **Exposed** | Leg 1's `op` (`experiment.json:24`) runs with `VEN`'s `dc` value (`'vsup'`, fully enabled) per `testbench/tb_current_limit.sch:145` — an unconstrained, loop-closed solve. (Leg 3's `tran` is *not* exposed: ngspice's non-`uic` transient uses the source's PWL value at t=0, which starts at 0/disabled, per the same line's comment.) Follow-up: #177. |
+| `dropout-vs-load` | **Exposed** | Its only analysis, `dc VVIN 3.63 1.5 -0.02` (`experiment.json:23`), runs with `VEN` held at a constant `'vsup'` (`testbench/tb_dropout_vs_load.sch:108`, no PWL/PULSE at all) — unconstrained, loop-closed. Follow-up: #178. |
+| `loop-gain` | **Exposed** | Its first analysis, `ac dec 30 1e-2 1e9` (`experiment.json:24`), runs with `VEN` held at a constant `'vsup'` (`testbench/tb_loop_gain.sch:102`) — the implicit linearization-point solve ngspice performs before an `ac` analysis is unconstrained. Follow-up: #179. |
+| `load-transient` | **Exposed** | `tran 200n 3m` (`experiment.json:23`), no `uic`, with `VEN` held at a constant `'vsup'` (`testbench/tb_load_transient.sch:74`) — the same "`tran` with no `uic`" defect `#164` fixed for `mc-output-accuracy`. Follow-up: #180. |
+| `psrr-dc` | **Exposed** | Its first analysis, `ac lin 3 1e3 1e5` (`experiment.json:24`), runs with `VEN` held at a constant `'vsup'` (`testbench/tb_psrr_dc.sch:67`). Follow-up: #179. |
+| `thermal` | **Exposed** | Its first analysis, `dc temp 80 180 2` (`experiment.json:48`), runs with `VEN` held at a constant `'vsup'` (`testbench/tb_thermal_trip.sch:78`). Follow-up: #178. |
+| `startup` | **Clear** | `VEN` is `PULSE(0 'vsup' 100u 1u 1u 100 200)` (`testbench/tb_startup.sch:89`) — no separate `dc` keyword, so its `.op`/`.tran` default DC value is the pulse's own initial level (0 V, disabled). The disabled state has no closed feedback loop to disambiguate, per this contract's own carve-out above. |
+| `enable-shutdown` | **Clear** | `VEN` is `dc 0 pwl(0 0 100u 0 101u 'vsup' 2m 'vsup' 2.001m 0 10 0)` (`testbench/tb_enable_shutdown.sch:117`) — leg 1's `tran` starts from the PWL's t=0 value (0 V, disabled) and reaches regulation through an EN edge (the contract's `uic` + EN-edge shape, informally: no `uic` keyword is present, but the disabled start makes the distinction moot the same way it does for `startup`); legs 2-4's `op`s explicitly carry `dc 0`, landing on the same disabled state. |
+
+Every "Exposed" verdict above is corroborated by the bench's own latest
+committed corner logs already carrying a `singular matrix` / `gmin stepping
+failed` / `out of range for ^` / `source stepping failed` diagnostic on a
+majority of corners (see #174/#177/#178/#179/#180 for the exact counts) —
+the same fingerprint `#164`/`#171` used to characterize the hazard, not just
+an inference from the deck/testbench text.
+
 ---
 
 ## Writing a new experiment
