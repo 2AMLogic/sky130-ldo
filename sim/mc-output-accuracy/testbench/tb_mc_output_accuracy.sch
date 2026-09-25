@@ -21,6 +21,30 @@ v {xschem version=3.4.7 file_version=1.2
 * check -- it does not sweep the full 0-50mA load-regulation range (a
 * separate ratified spec row, not this testbench's job).
 *
+* EN is a PULSE, not a DC level, and the experiment's analysis card carries
+* `uic` (both changed by #164). Together they give this bench a physically
+* realizable initial condition -- every node at 0 with the block disabled --
+* instead of letting ngspice's unconstrained operating-point solve choose
+* where the 3 ms transient starts from. With a DC-high EN and no `uic`, the
+* `.op` that seeds the transient has no initial condition at all; it warned
+* ("singular matrix" at xldo.fb / xr_fb_b.t2 / xr_cz.t1, "dynamic gmin
+* stepping failed") on 43 of 200 mismatch draws, and on 12 of them it handed
+* the transient a start state that is not a circuit state at all -- VOUT
+* pinned at VIN with FB at 668-1984 V (and up to 1.3e15 V), i.e. FB ABOVE the
+* VOUT node that is the only thing feeding it through a passive resistor
+* string. That is only possible because `sky130_fd_pr__res_xhigh_po`'s
+* voltco term (bp2/bq2) makes its modelled body resistance non-monotone in
+* the voltage across it: measured, the L=180 um leg falls 1.04 Mohm -> 800 ohm
+* between 1 V and 1800 V and its fitted rbody multiplier crosses zero near
+* 1.32 kV (L=52 um: ~440 V). The 3 ms transient then sits there because the
+* state is a fixed point of the model equations -- which is why a settled
+* transient was NOT independent evidence of a second circuit equilibrium.
+* With `uic` every one of the same 200 draws regulates and no sample reports
+* any solver diagnostic; `uic` alone is what closes it (measured -- see
+* design/README.md "#164" for the four-variant screen). The EN edge is the
+* house convention alignment: same enable edge sim/startup/ already uses
+* (EN rises at 100 us) -- see that testbench.
+*
 * Deliberately NOT in this schematic (the corner runner / klt sim request
 * injects them, so this schematic stays PVT- and MC-agnostic): the .lib
 * model corner include, .temp, .param vsup default, and the
@@ -38,17 +62,21 @@ S {}
 E {}
 T {mc-output-accuracy testbench -- exercises design/ldo_3v3in_1v8out.sch (#14)
 via its companion subcircuit symbol design/ldo_3v3in_1v8out.sym
-VIN/EN = 'vsup'; VREF = 1.2V placeholder (see design/README.md)
+VIN = 'vsup'; EN rises 0 -> 'vsup' at t=100us (same enable edge sim/startup uses, added by #164);
+VREF = 1.2V placeholder (see design/README.md)
 I_LOAD: fixed 1mA (light load, same convention as sim/psrr-dc)
 C_OUT/R_ESR: DR-002 proposed 1uF / representative ESR point (DR-002 is proposed, not ratified)
 Monte Carlo mismatch sampling is driven externally by klt sim (sim/bin/mc-run.py), not by this schematic} -700 -650 0 0 0.3 0.3 {}
 
 * ---- VIN / EN (tied to the corner runner's / klt sim request's supply) ----
+* EN is an edge, not a DC level: with `uic` in the analysis card the run
+* starts from the disabled state (all nodes 0) and the block powers up
+* through its own soft-start ramp. See this file's header for why (#164).
 C {devices/vsource.sym} -600 -300 0 0 {name=VVIN value='vsup' savecurrent=true}
 C {devices/lab_pin.sym} -600 -330 0 0 {name=p1 lab=VIN}
 C {devices/lab_pin.sym} -600 -270 0 0 {name=p2 lab=0}
 
-C {devices/vsource.sym} -400 -300 0 0 {name=VEN value='vsup' savecurrent=true}
+C {devices/vsource.sym} -400 -300 0 0 {name=VEN value="PULSE(0 'vsup' 100u 1u 1u 100 200)" savecurrent=true}
 C {devices/lab_pin.sym} -400 -330 0 0 {name=p3 lab=EN}
 C {devices/lab_pin.sym} -400 -270 0 0 {name=p4 lab=0}
 

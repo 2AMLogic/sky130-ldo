@@ -21,7 +21,7 @@ No generating-commit SHA is stamped into this file, deliberately: a commit that 
 | Parameter | Ratified target | Verdict (vs ratified target) | Evidence | Freshness |
 |---|---|---|---|---|
 | Input | 3.3 V ±10% (2.97–3.63 V) | N/A | — | — |
-| Output | 1.8 V ±2% (fixed; divider as a unit-resistor string) | **FAIL** | [`20260925-110312-8280915`](../sim/mc-output-accuracy/records/20260925-110312-8280915.md) | fresh |
+| Output | 1.8 V ±2% (fixed; divider as a unit-resistor string) | **PASS** | [`20260925-131502-808cece`](../sim/mc-output-accuracy/records/20260925-131502-808cece.md) | fresh |
 | Load | 0–50 mA (0 mA = no external load; feedback divider is the only inherent preload) | N/A | — | — |
 | Dropout @ 50 mA | < 300 mV | **FAIL** | [`20260923-123440-d71f4b3`](../sim/dropout-vs-load/records/20260923-123440-d71f4b3.md) | fresh |
 | Line regulation | < 5 mV/V over 2.97–3.63 V, at 1 mA and 50 mA | **FAIL** | [`20260925-114251-1f54ca6`](../sim/line-regulation/records/20260925-114251-1f54ca6.md) | fresh |
@@ -40,7 +40,7 @@ No generating-commit SHA is stamped into this file, deliberately: a commit that 
 ### Evidence detail
 
 - **Input**: N/A — exercised as a stimulus condition (VIN step/sweep) inside every PVT testbench below, not measured by a testbench of its own.
-- **Output**: **FAIL** (vs the ratified spec row) — `sim/mc-output-accuracy` record [`20260925-110312-8280915`](../sim/mc-output-accuracy/records/20260925-110312-8280915.md), 185/200 individual sample(s) PASS. Freshness: fresh (a live xschem re-netlist of the current testbench schematic matches the committed netlist snapshot verbatim).
+- **Output**: **PASS** (vs the ratified spec row) — `sim/mc-output-accuracy` record [`20260925-131502-808cece`](../sim/mc-output-accuracy/records/20260925-131502-808cece.md), 200/200 individual sample(s) PASS. Freshness: fresh (a live xschem re-netlist of the current testbench schematic matches the committed netlist snapshot verbatim).
 - **Load**: N/A — exercised as a stimulus condition (I_LOAD step/sweep) inside every PVT testbench below, not measured by a testbench of its own.
 - **Dropout @ 50 mA**: **FAIL** (vs the ratified spec row) — `sim/dropout-vs-load` record [`20260923-123440-d71f4b3`](../sim/dropout-vs-load/records/20260923-123440-d71f4b3.md), 6/45 corner(s) PASS. Freshness: fresh (a live xschem re-netlist of the current testbench schematic matches the committed netlist snapshot verbatim). Failing measurement(s), per the record: `dropout_v` at 39 corner(s); `vout_at_max_vin_v` at 2 corner(s).
 - **Line regulation**: **FAIL** (vs the ratified spec row) — `sim/line-regulation` record [`20260925-114251-1f54ca6`](../sim/line-regulation/records/20260925-114251-1f54ca6.md), 24/45 corner(s) PASS. Freshness: fresh (a live xschem re-netlist of the current testbench schematic matches the committed netlist snapshot verbatim). Failing measurement(s), per the record: `line_reg_50ma_mv_per_v` at 16 corner(s); `line_reg_1ma_mv_per_v` at 11 corner(s).
