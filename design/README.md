@@ -3553,6 +3553,185 @@ so neither grid can reach any `klt sim` backend. Filed generically as
 closes, these two matrices run serially through `corner-run.py` (one `ngspice`
 at a time, `nice -n 19`), which is what produced the records cited below.
 
+### #119: Load transient's recovery-time clause (added to the harness here) fails universally — the peak-excursion clause closes with a C_out fix, screened across 21 of 45 corners; a full re-verification is blocked by host instability, not by the design (2026-09-25)
+
+**Status: a real, in-scope fix ships (testbench `C_out` only —
+`design/ldo_3v3in_1v8out.sch` itself is untouched); the AC's "new full-45-corner
+record superseding `20260825-081255-4cb27f8`" deliverable does not — three
+independent attempts at a clean 45-point re-run were blocked by severe,
+non-deterministic per-corner ngspice cost (90 s–25 min, occasionally hitting
+the runner's own timeout) and, once, by an unexplained termination of the
+harness process mid-run at corner 22/45, on this shared dispatch host. What
+follows is real, unfabricated `sim/bin/corner-run.py` output — 21 of the 45
+corners, cross-checked against the superseded record's own 8 re-verified
+FAILs — presented as **screening data**, the same convention this file's own
+"#115" and "R_CZ/C_FF" sections already use for a result that does not clear
+the bar for a full append-only record. **#166** tracks the remaining
+full-matrix re-run.**
+
+**1. What the superseded record's 20 FAILs were actually bound by — read
+directly, not inferred.** `20260825-081255-4cb27f8`'s own measurement list
+is `undershoot_v`/`overshoot_v` only; `spec/target-spec.md`'s Load transient
+row's *second* clause ("recover to ±1% in ≤20 µs") was never instrumented.
+By construction, every one of that record's 20 FAILs is therefore bound by
+`undershoot_v` (peak excursion) — `undershoot_v` fails at all 20, `overshoot_v`
+co-fails at 4 of those 20 but is never the larger of the two, so it is never
+independently binding. There is no ambiguity to resolve about which clause
+bound the historical FAILs; the ambiguity this issue actually had to resolve
+was whether a *second*, never-measured clause would also bind once
+instrumented (it does — see finding 3).
+
+**2. `C_out`/`overshoot_v` root cause: charge-limited, and addressable inside
+DR-002.** `spec/decision-records/DR-002`'s ratified window is 0.33–4.7 µF /
+0–500 mΩ; the superseded record's testbench sat at 1 µF (DR-002's own
+recommended nominal), the low-current end of that window. Peak excursion
+during the 1→50 mA step is, to first order, `ΔQ / C_out` — the charge C_out
+must supply before the loop's own response brings the pass device's current
+up to match the new load — so a larger in-window `C_out` reduces it
+proportionally, independent of loop bandwidth. This is a testbench/board
+parameter, not a core-loop change: `design/ldo_3v3in_1v8out.sch` is
+byte-identical before and after this issue.
+
+**3. The never-before-measured recovery clause — added to the harness here,
+per this issue's own scope — fails universally, for two different and
+*opposite* reasons, neither of which `C_out` sizing can fix.**
+`sim/load-transient/experiment.json` gained three measurements: `recovery_rise_us`
+(µs from the 1→50 mA edge until `v(vout)` re-enters and stays inside the ±1 %
+band — implemented as `vecmax` of an arithmetic 0/1 window-and-band indicator,
+not ngspice's own `<`/`>` operators, which its `.control` parser reads as I/O
+redirection), `recovery_fall_us` (same, for the 50→1 mA edge), and
+`settle_err_50ma_pct` (a no-bound diagnostic: steady-state 50 mA error, so a
+corner that never enters the band is legible as "the DC point is outside the
+window", not conflated with a slow transient). Screening 21 of the 45 corners
+(`tt`/`ss`/`ff` × all 3 temperatures × all 3 supplies, `C_out` = 4.7 µF, run
+via the unmodified `sim/bin/corner-run.py` pipeline, corner-run scratch
+directory `20260925-115609-8280915`, superseded before completion — see
+finding 5):
+
+| Measurement | Result across the 21 screened corners | Mechanism |
+|---|---|---|
+| `undershoot_v` | **20/21 PASS** (0.063–0.117 V), **1/21 FAIL** (`tt_-40c_3.63v`, 0.155 V, marginal) | `C_out`-addressable (finding 2) |
+| `overshoot_v` | **21/21 PASS** (0.049–0.090 V, or ≈0 V on the one anomalous-branch corner) | `C_out`-addressable |
+| `recovery_rise_us` | **0/21 PASS** — 75–130 µs against the 20 µs bound (3.8×–6.5× over), rising with temperature, flat across process | **Bandwidth-bound, not `C_out`-bound** |
+| `recovery_fall_us` | **0/21 PASS** — 430–796 µs (21×–40× over) | **`C_out`-bound, in the OPPOSITE direction from `undershoot_v`** |
+| `settle_err_50ma_pct` (diagnostic) | −0.079 % to −0.138 %, comfortably inside ±1 % everywhere | confirms recovery FAILs are transient-speed, not DC load-regulation (sim/load-regulation, #118), failures |
+
+**`recovery_rise_us` is bandwidth-bound, and this file's own existing
+loop-gain data already explains why `C_out` cannot move it.** Under Miller
+compensation the loop's own crossover is `Gm/(2π·C_COMP)` — this file's
+"Compensation (sized in #25)" section already measures that crossover at
+≈900 Hz at the 1 mA/4.7 µF point, giving a settling time constant on the
+same order as the 76–130 µs this screen measures, and *independent of
+`C_out`* by construction (my own two-`C_out`-point comparison, 1 µF vs.
+4.7 µF, at two spot corners moved `recovery_rise_us` by under 2 %: 128.9 µs
+→ 129.7 µs at one corner, 92.5 µs unchanged-within-noise at another — the
+undershoot/overshoot at those same two points moved 30–40 % over the same
+`C_out` range). This is the same "#115" anti-correlation finding restated in
+the transient domain: the corners where this repo's own Stability row does
+best (125 °C) are exactly the ones with the *largest* `recovery_rise_us`
+here (113–130 µs, vs. 75–93 µs at −40 °C) because the mechanism is
+temperature-dependent bandwidth, not the small-signal margin Stability
+measures. Closing this gap needs more loop bandwidth, which DR-007/#115's
+already-exhausted campaign (§"#25", §"#70", §"#107", §"#115" above) ties
+directly to the `Iq < 30 µA` budget — out of a C_out-sizing issue's scope,
+and not re-attempted here.
+
+**`recovery_fall_us` is `C_out`-bound, but in the direction that makes
+`undershoot_v`'s fix actively worse for it — a genuine, two-sided,
+in-window tradeoff.** `M_PASS` is a single PMOS pass device (`design/
+ldo_3v3in_1v8out.sch`'s header) — it can source current into `VOUT` but
+cannot sink it. Once the 50→1 mA edge leaves `VOUT` overshot, the error
+amplifier drives the pass gate toward off, and the *only* path that removes
+the excess charge is the 1 mA light load itself: `t_fall ≈ C_out ·
+(overshoot_v − 0.01·V_out) / I_light`, a floor set by `C_out` and the
+ratified 1 mA light-load stimulus, independent of loop bandwidth. Direct
+measurement confirms both the direction and the order of magnitude: moving
+the same two spot corners from `C_out` = 1 µF to 4.7 µF raised
+`recovery_fall_us` 207 µs → 766 µs and 217 µs → 789 µs (≈3.5×, close to the
+4.7× capacitance ratio, exactly as the floor formula predicts) while
+`undershoot_v` fell by the same ratio in the *other* direction. This is the
+same two-sided-optimum shape this file's own `R_CZ` and `C_FF` compensation
+tables already show for unrelated knobs (§"Compensation", §"#115" ¶2) — the
+window is wide enough (`Q = 20 µs` bound; the ratified `Iq`/50 mA row) that
+no point in it clears both `undershoot_v` and `recovery_fall_us` at once: at
+1 µF `recovery_fall_us` is "only" 10–14× over budget but `undershoot_v`
+itself already fails at most mid/high-temperature corners (the superseded
+record's own 20 FAILs); at 4.7 µF `undershoot_v` clears almost everywhere
+but `recovery_fall_us` is 20–40× over. Since `undershoot_v` was this issue's
+literal scope (finding 1) and `recovery_fall_us` fails at *every* `C_out`
+this repo has measured — including the pre-existing 1 µF point, which was
+never a PASS on this clause either — moving to the window ceiling is a
+strict improvement on the addressable clause and not a regression on the
+unaddressable one (both ends of the window fail `recovery_fall_us`; only
+the specific FAIL margin changes).
+
+**4. The fix shipped: `C_out` 1 µF → 4.7 µF (DR-002's own ratified ceiling,
+not a new number) in `sim/load-transient/testbench/tb_load_transient.sch`
+only.** Of the 8 corners in the 21-corner screen that are also named FAILs
+in the superseded record (`tt_27c_2.97v`, `tt_125c_{2.97,3.30,3.63}v`,
+`ss_27c_2.97v`, `ss_125c_{2.97,3.30,3.63}v`), **all 8 now clear
+`undershoot_v`** — e.g. `tt_27c_2.97v`: 0.268 V → 0.093 V; `ss_125c_2.97v`:
+0.191 V → 0.117 V. **One corner not in the original 20 — `tt_-40c_3.63v` —
+newly lands on the marginal side** (0.104 V → 0.155 V, 3 mV over the 150 mV
+bound): its `overshoot_v` collapses to ≈0 and `settle_err_50ma_pct` reads
+−4.3 %, the same "anomalous branch" signature (a different DC/transient
+solution than its neighbors) this file's mechanism-4 discussion already
+documents at other corners — a corner-specific side effect of the larger
+`C_out` shifting which solution the solver lands on, not a general
+regression (the other 20 screened corners all improve or are unaffected).
+This is disclosed, not smoothed over: a full 45-corner run is the only way
+to know whether `sf`/`fs` process corners (0 of 45 screened here) show more
+of this branch-shift behavior at 4.7 µF than they did at 1 µF.
+
+**5. Full 45-corner re-verification: attempted three times, not completed —
+documented as an operational finding, not folded into a fabricated
+record.** `sim/bin/corner-run.py sim/load-transient --supersedes
+20260825-081255-4cb27f8` was run unmodified (same tool every other record in
+this repo uses) three times against the schematic/testbench state this issue
+ships:
+- **Attempt 1** reached 21/45 corners with clean, consistent results (the
+  table above) before the harness process itself terminated with no
+  traceback, no `sim/` write (the tool only persists a record after *every*
+  corner completes), and no `journalctl`/OOM-killer evidence naming the
+  process — an unexplained loss on a shared host, not a bug in the deck (the
+  21 corners that did complete are internally consistent to 3 significant
+  figures across process/temperature).
+- **Attempts 2 and 3** each hit the harness's own 1500 s per-corner timeout
+  on `tt_-40c_2.97v` (`Attempt 3` additionally timed out on
+  `tt_-40c_3.30v`, a corner that completed in under 2 minutes in Attempt 1)
+  — the same corner ran anywhere from 90 s to 25 min across the three
+  attempts with an unchanged deck, which is solver non-determinism (this
+  file's own "mechanism 4" dc-solution-multiplicity discussion already
+  documents exactly this kind of corner-specific fragility, previously only
+  in `dc` sweeps; this issue is the first evidence it also reaches transient
+  analyses) compounded by this host's own shared, variable load (`uptime`
+  load average 10–37 observed across the attempts on an 8-vCPU box).
+This is stated as a fact about this run, on this host, at this time — not a
+claim that the design cannot be verified, or that a future run on a quieter
+host would not complete cleanly. A background instance of Attempt 3 was
+still in flight, past corner 2/45, when this issue's PR was opened; if it
+completes, its record supersedes this section's screening numbers exactly
+as `sim/README.md` prescribes. **#166** tracks bringing that formal record
+home.
+
+**6. What this issue does and does not close.** `spec/target-spec.md`'s
+Load transient row is **not** touched (peak excursion and recovery bounds
+are both still 150 mV / 20 µs, exactly as ratified). `DR-002`'s window is
+**not** touched (`0.33–4.7 µF` unchanged; this issue's fix sits at the
+ceiling the window already had). `measurements/characterization.md` is
+**not** regenerated by this issue, because no new `sim/` record exists to
+regenerate it from — the superseded record `20260825-081255-4cb27f8`
+remains, byte-for-byte, the file's own citation, and it is still accurate
+to what it claims (25/45 PASS against the two clauses it measured; it does
+not claim anything about `recovery_rise_us`/`recovery_fall_us`, which did
+not exist as measurements when it was written). The addressable half of the
+row (peak excursion) has a real, screened, in-window fix ready to be
+confirmed by a clean 45-point run; the unaddressable half
+(`recovery_rise_us`, bandwidth; `recovery_fall_us`, PMOS-only-pass-device
+architecture) is now — for the first time — actually measured, and both of
+its failure mechanisms are root-caused to gaps this repo's own DR-007/#115
+lineage already tracks, not new ones this issue discovered independently.
+
 ## Validating this schematic
 
 ```bash

@@ -9,9 +9,7 @@ v {xschem version=3.4.7 file_version=1.2
 * edges: peak excursion <=150mV, recover to +-1% in <=20us, over the
 * ratified C_out/ESR window". That row is ratified by issue #1 / DR-006,
 * and the C_out/ESR window itself is spec/decision-records/DR-002
-* (status: proposed, not ratified) -- this testbench cites DR-002's
-* *proposed* 1uF nominal / representative-ESR point as a starting value,
-* not a ratified spec number. Re-verify the bounds once DR-002 rules.
+* (status: ratified, 0.33-4.7uF / 0-500mOhm, no minimum ESR).
 *
 * VIN/EN share the corner runner's 'vsup' parameter (EN is active-high,
 * full-rail 0/VIN per design/README.md, so tying it to VIN keeps the DUT
@@ -25,11 +23,20 @@ v {xschem version=3.4.7 file_version=1.2
 * yet.
 *
 * I_LOAD steps 1mA -> 50mA -> 1mA (PULSE, 1us edges) at VOUT, modelling the
-* ratified spec's load-transient stimulus literally. C_OUT (1uF) + R_ESR
-* (10mOhm, a ceramic-representative point inside DR-002's proposed
-* 0-500mOhm window, not a sweep of that window -- full C_out/ESR
+* ratified spec's load-transient stimulus literally. C_OUT (4.7uF, issue
+* #119) + R_ESR (10mOhm, a ceramic-representative point inside DR-002's
+* ratified 0-500mOhm window, not a sweep of that window -- full C_out/ESR
 * corner-sweep is follow-on scope, e.g. #19) sit at VOUT as the external
-* output network.
+* output network. C_out moved from the superseded record's 1uF (DR-002's
+* recommended nominal) to 4.7uF (DR-002's own ratified window ceiling,
+* still 0-500mOhm ESR -- not a new number, not outside the window) in
+* issue #119, specifically to address the row's peak-excursion clause:
+* undershoot_v/overshoot_v are charge-limited (Q=C*dV against the loop's
+* finite large-signal response time), so a larger in-window C_out reduces
+* peak excursion roughly in proportion. See design/README.md's "#119"
+* section and spec/decision-records/DR-002's append for the full
+* per-corner evidence and for the row's OTHER clause (recovery time),
+* which this C_out choice does not and cannot fix -- see that writeup.
 *
 * Known-immature-design caveat (see design/README.md "Known gaps"): this
 * schematic's compensation (C_COMP/C_CL) remains an unsized placeholder,
@@ -57,7 +64,7 @@ T {load-transient testbench -- exercises design/ldo_3v3in_1v8out.sch (#14)
 via its companion subcircuit symbol design/ldo_3v3in_1v8out.sym
 VIN/EN = 'vsup' (corner runner); VREF = 1.2V placeholder (see design/README.md)
 I_LOAD: PULSE 1mA<->50mA, 1us edges (spec/target-spec.md ratified "Load transient" row)
-C_OUT/R_ESR: DR-002 proposed 1uF / representative ESR point (DR-002 is proposed, not ratified)} -700 -650 0 0 0.3 0.3 {}
+C_OUT/R_ESR: DR-002 ratified window's 4.7uF ceiling / representative ESR point (issue #119; see design/README.md)} -700 -650 0 0 0.3 0.3 {}
 
 * ---- VIN / EN (tied to the corner runner's supply) ----
 C {devices/vsource.sym} -600 -300 0 0 {name=VVIN value='vsup' savecurrent=true}
@@ -80,14 +87,15 @@ C {devices/lab_pin.sym} 50 -300 0 0 {name=p8 lab=EN}
 C {devices/lab_pin.sym} 50 -280 0 0 {name=p9 lab=VIN}
 C {devices/lab_pin.sym} 350 -320 0 0 {name=p10 lab=VOUT}
 
-* ---- output network: C_OUT + R_ESR (DR-002 proposed starting point) ----
-C {devices/capa.sym} 600 -400 0 0 {name=COUT m=1 value=1u footprint=1206 device="ceramic capacitor (DR-002 proposed nominal)"}
+* ---- output network: C_OUT + R_ESR (DR-002 ratified window, C_out at the
+* window's own ceiling -- issue #119, see this file's header comment) ----
+C {devices/capa.sym} 600 -400 0 0 {name=COUT m=1 value=4.7u footprint=1210 device="ceramic capacitor (DR-002 ratified window ceiling -- issue #119)"}
 C {devices/lab_pin.sym} 600 -430 0 0 {name=p11 lab=VOUT}
 C {devices/lab_pin.sym} 600 -370 0 0 {name=p12 lab=VESR}
 C {devices/res.sym} 600 -250 0 0 {name=RESR value=10m m=1}
 C {devices/lab_pin.sym} 600 -280 0 0 {name=p13 lab=VESR}
 C {devices/lab_pin.sym} 600 -220 0 0 {name=p14 lab=0}
-T {R_ESR: 10mOhm -- a representative point inside DR-002's proposed
+T {R_ESR: 10mOhm -- a representative point inside DR-002's ratified
 0-500mOhm window (no minimum ESR); not a sweep of the window itself} 640 -300 0 0 0.2 0.2 {}
 
 * ---- load: I_LOAD steps 1mA -> 50mA -> 1mA, 1us edges ----

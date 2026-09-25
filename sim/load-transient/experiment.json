@@ -1,7 +1,7 @@
 {
   "slug": "load-transient",
   "title": "Load transient: 1mA <-> 50mA step response",
-  "claim": "Substantiates spec/target-spec.md's ratified \"Load transient\" row (1<->50 mA step, ~1us edges: peak excursion <=150mV, recover to +-1% in <=20us, over the ratified C_out/ESR window) against the LDO core-regulation-loop schematic landed by #14 (design/ldo_3v3in_1v8out.sch). Both the spec row and the C_out/ESR window (spec/decision-records/DR-002) are ratified by issue #1 / DR-006, and the bounds below cite those numbers verbatim, not an invented final limit. This testbench's undershoot/overshoot measurements are computed as the deviation from the pre-step (light-load) steady-state value, not an absolute vout bound. Known-immature-design caveat (design/README.md \"Known gaps\"): C_COMP/C_CL remain unsized placeholders and the error amplifier still has a light-load/high-VIN output-swing ceiling (design/README.md's \"Known open item\") even though issue #22 already added the current-limit and soft-start protection circuitry, so a FAIL here -- especially at the high-VIN corner -- is an honest, expected finding at this design stage (per CLAUDE.md's \"Verification is the product\"), not a harness defect.",
+  "claim": "Substantiates spec/target-spec.md's ratified \"Load transient\" row (1<->50 mA step, ~1us edges: peak excursion <=150mV, recover to +-1% in <=20us, over the ratified C_out/ESR window) against the LDO core-regulation-loop schematic landed by #14 (design/ldo_3v3in_1v8out.sch). Both the spec row and the C_out/ESR window (spec/decision-records/DR-002) are ratified by issue #1 / DR-006, and the bounds below cite those numbers verbatim, not an invented final limit. This testbench's undershoot/overshoot measurements are computed as the deviation from the pre-step (light-load) steady-state value, not an absolute vout bound. The row has TWO independent clauses and, until #119, this manifest measured only the first: undershoot_v/overshoot_v cover \"peak excursion <=150mV\", and recovery_rise_us/recovery_fall_us (added in #119) cover \"recover to +-1% in <=20us\" on the rising and falling load edges respectively. Both clause bounds are quoted verbatim from the same ratified row. Issue #119 also moved C_out from the superseded record's 1uF (DR-002's recommended nominal) to 4.7uF (DR-002's ratified window's own ceiling, still 0-500mOhm ESR -- not a value outside the ratified window) to address the peak-excursion clause, which #119 root-caused as charge-limited (Q=C*dV against the loop's finite large-signal response time, not phase-margin-limited -- see design/README.md's #115 anti-correlation finding). C_out/ESR remain a single representative point inside the ratified window, not a sweep of the window -- walking the window inside one deck the way sim/loop-gain does is still follow-on scope (e.g. #19). See spec/decision-records/DR-002's append and design/README.md's \"#119\" section for the full per-corner evidence, including the recovery-time clause's own, opposite-direction relationship to C_out (this record's own #119 writeup) that this C_out choice does not close. Known-immature-design caveat (design/README.md \"Known gaps\"): C_COMP/C_CL remain unsized placeholders and the error amplifier still has a light-load/high-VIN output-swing ceiling (design/README.md's \"Known open item\") even though issue #22 already added the current-limit and soft-start protection circuitry, so a FAIL here -- especially at the high-VIN corner -- is an honest, expected finding at this design stage (per CLAUDE.md's \"Verification is the product\"), not a harness defect.",
   "provenance": "schematic",
   "provenance_source": "sim/load-transient/testbench/tb_load_transient.sch",
   "schematic": "testbench/tb_load_transient.sch",
@@ -19,7 +19,26 @@
   "deck": {
     "options": ["wnflag=1"],
     "params": {},
-    "analyses": ["tran 200n 3m"]
+    "analyses": [
+      "tran 200n 3m",
+      "* --- helper vectors for the row's SECOND clause: recover to +-1% in <=20us ---",
+      "* The load step is PULSE(1m 50m 1m 1u 1u 1m 4m): the rising edge starts at",
+      "* TD = 1.000ms and the falling edge at TD+TR+PW = 2.001ms. Recovery time is",
+      "* the last instant, inside the window that follows an edge, at which |vout -",
+      "* pre-step vout| still exceeds 1% of the pre-step value -- i.e. the time at",
+      "* which the output has re-entered the +-1% band and stays there.",
+      "* 'outband' / 'w_*' are 0/1 indicator vectors built arithmetically",
+      "* (0.5*(1+x/|x|)) rather than with the comparison operators: ngspice's",
+      "* .control parser reads a bare '<' or '>' as an I/O redirection, so",
+      "* '(time > 1.0m)' does not survive into the deck.",
+      "let vpre = v(vout)[0]",
+      "let dev = abs(v(vout) - vpre)",
+      "let band = 0.01 * vpre",
+      "let outband = 0.5*(1 + (dev-band)/(abs(dev-band)+1e-18))",
+      "let w_rise = 0.5*(1 + (time-1.0m)/(abs(time-1.0m)+1e-18)) * 0.5*(1 + (2.0m-time)/(abs(2.0m-time)+1e-18))",
+      "let w_fall = 0.5*(1 + (time-2.001m)/(abs(time-2.001m)+1e-18)) * 0.5*(1 + (2.999m-time)/(abs(2.999m-time)+1e-18))",
+      "meas tran v_50ma FIND v(vout) AT=2.000m"
+    ]
   },
   "measurements": [
     {
@@ -37,6 +56,30 @@
       "min": null,
       "max": 0.15,
       "note": "Worst-case rise above the pre-step steady-state value (captures ringing on the 50mA->1mA recovery edge). Same ratified 150mV bound as undershoot_v."
+    },
+    {
+      "name": "recovery_rise_us",
+      "expr": "vecmax(outband*w_rise*(time-1.0m))*1e6",
+      "unit": "us",
+      "min": null,
+      "max": 20,
+      "note": "Recovery time on the 1mA->50mA edge: microseconds from the start of the rising load edge (t=1.000ms) until v(vout) is back inside +-1% of the pre-step value and stays there. Ratified bound: spec/target-spec.md \"Load transient\" row, \"recover to +-1% in <=20us\" (ratified by issue #1 / DR-006). Added in #119 -- the row has always had two clauses and until now the harness measured only the peak-excursion one. Read with settle_err_50ma_pct: if that diagnostic is itself outside +-1%, this corner's rising-edge recovery is bounded by steady-state load regulation (the sim/load-regulation row, #118), not by transient settling."
+    },
+    {
+      "name": "recovery_fall_us",
+      "expr": "vecmax(outband*w_fall*(time-2.001m))*1e6",
+      "unit": "us",
+      "min": null,
+      "max": 20,
+      "note": "Recovery time on the 50mA->1mA edge: microseconds from the start of the falling load edge (t=2.001ms, i.e. TD+TR+PW of the PULSE source) until v(vout) is back inside +-1% of the pre-step value and stays there. Same ratified 20us bound as recovery_rise_us. This edge is the harder one by construction: the pass device can only source current, so the excess charge the overshoot leaves on C_out can only be removed by the light load itself, which floors this measurement at C_out*(overshoot_v - 0.01*vout)/I_light regardless of the loop."
+    },
+    {
+      "name": "settle_err_50ma_pct",
+      "expr": "100*(v_50ma - v(vout)[0])/v(vout)[0]",
+      "unit": "%",
+      "min": null,
+      "max": null,
+      "note": "DIAGNOSTIC, no bound -- not a spec claim. Steady-state output error at 50mA (sampled 1ms after the rising edge, just before the falling edge) relative to the pre-step 1mA value, in percent. Present so recovery_rise_us can be read unambiguously: a corner whose 50mA steady state is already outside the +-1% band can never clear recovery_rise_us no matter how fast the loop settles, and that is a DC load-regulation shortfall (sim/load-regulation, #118) surfacing here rather than a transient one."
     }
   ],
   "spread_checks": []
