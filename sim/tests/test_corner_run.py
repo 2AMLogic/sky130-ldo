@@ -12,9 +12,12 @@ sibling sky130-bandgap repo's harness.
 from __future__ import annotations
 
 import importlib.util
+import subprocess
 import sys
+import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 SIM_DIR = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(SIM_DIR / "bin"))  # corner-run.py imports _record_common (issue #46)
@@ -108,6 +111,172 @@ class TestCsvHelpers(unittest.TestCase):
 
     def test_csv_floats(self):
         self.assertEqual(corner_run.csv_floats("1.62,1.8,1.98"), [1.62, 1.8, 1.98])
+
+
+class TestDetectSolverDiagnostic(unittest.TestCase):
+    """issue #171: corner-run.py must recognize an ngspice solver-diagnostic
+    line rather than grading the corner as if the solve converged cleanly.
+    See sim/README.md's "Initial-condition contract" for the three marker
+    forms and why they were chosen."""
+
+    def test_detects_singular_matrix(self):
+        log = "\n".join(
+            ["Note: starting op", "Warning: singular matrix:  check node xldo.ea_cz", "done"]
+        )
+        self.assertEqual(
+            corner_run.detect_solver_diagnostic(log),
+            "Warning: singular matrix:  check node xldo.ea_cz",
+        )
+
+    def test_detects_dynamic_gmin_stepping_failed(self):
+        log = "Warning: Dynamic gmin stepping failed"
+        self.assertEqual(corner_run.detect_solver_diagnostic(log), log)
+
+    def test_detects_true_gmin_stepping_failed(self):
+        log = "Warning: True gmin stepping failed"
+        self.assertEqual(corner_run.detect_solver_diagnostic(log), log)
+
+    def test_detects_out_of_range_for_caret(self):
+        log = "Error: 3.683e+157, 2 out of range for ^"
+        self.assertEqual(corner_run.detect_solver_diagnostic(log), log)
+
+    def test_clean_log_returns_none(self):
+        log = "\n".join(
+            [
+                "Circuit: * pdk-smoke corner deck",
+                "meas_vgs = 6.306570e-01",
+                "meas_isup = 1.169340e-06",
+            ]
+        )
+        self.assertIsNone(corner_run.detect_solver_diagnostic(log))
+
+    def test_empty_text_returns_none(self):
+        self.assertIsNone(corner_run.detect_solver_diagnostic(""))
+
+    def test_unrelated_out_of_range_form_is_not_matched(self):
+        # A fourth ngspice error shape ("out of range for -") seen in some
+        # committed logs is a deliberately-not-yet-matched form -- see
+        # sim/README.md's "Initial-condition contract" for why the marker
+        # set is these three confirmed forms and not a broader catalog.
+        log = "Error: inf, -inf out of range for -"
+        self.assertIsNone(corner_run.detect_solver_diagnostic(log))
+
+    def test_against_real_committed_diagnostic_log(self):
+        # sim/line-regulation/corners/20260925-114251-1f54ca6/ff_-40c_2.97v.log
+        # is a real corner-run.py-produced log carrying the exact "singular
+        # matrix" fingerprint issue #171 was filed against (issue #171,
+        # acceptance criterion 4: verify against existing committed
+        # artifacts rather than a fresh matrix re-run).
+        log_path = (
+            SIM_DIR
+            / "line-regulation"
+            / "corners"
+            / "20260925-114251-1f54ca6"
+            / "ff_-40c_2.97v.log"
+        )
+        text = log_path.read_text()
+        diagnostic = corner_run.detect_solver_diagnostic(text)
+        self.assertIsNotNone(diagnostic)
+        self.assertIn("singular matrix", diagnostic)
+
+    def test_against_real_committed_clean_log(self):
+        # sim/pdk-smoke/corners/20260814-000938-42bbf2e/ff_-40c_1.62v.log is a
+        # real corner-run.py-produced log with no solver diagnostic -- the
+        # known-clean case issue #171's acceptance criterion 4 asks for.
+        log_path = (
+            SIM_DIR / "pdk-smoke" / "corners" / "20260814-000938-42bbf2e" / "ff_-40c_1.62v.log"
+        )
+        text = log_path.read_text()
+        self.assertIsNone(corner_run.detect_solver_diagnostic(text))
+
+
+class TestRunCornerSolverDiagnostic(unittest.TestCase):
+    """issue #171: run_corner() must force a corner to FAIL when ngspice
+    emits a solver diagnostic, regardless of whether its measurements happen
+    to pass their bounds, with a reason distinct from an ordinary
+    measurement-bound failure -- and must not disturb the log's raw
+    stdout/stderr."""
+
+    def _experiment_and_pdk(self):
+        exp = corner_run.Experiment(
+            dir=SIM_DIR / "pdk-smoke",  # any real dir; not read by run_corner itself
+            raw={
+                "slug": "test-solver-diagnostic",
+                "claim": "unit test fixture",
+                "schematic": "testbench/tb_pdk_smoke.sch",
+                "corners": {},
+                "measurements": [],
+                "deck": {},
+            },
+        )
+        exp.measurements = [
+            corner_run.Measurement(name="vout", expr="v(vout)", unit="V", min=1.0, max=2.0)
+        ]
+        pdk = corner_run.Pdk(
+            pin={},
+            root=Path("/tmp/pdk-root"),
+            variant="sky130A",
+            dir=Path("/tmp/pdk-root/sky130A"),
+            installed_commit="deadbeef",
+            lib_file=Path("/tmp/pdk-root/sky130A/libs.tech/combined/sky130.lib.spice"),
+        )
+        corner = corner_run.Corner(process="tt", temp_c=27.0, supply_v=1.8)
+        return exp, pdk, corner
+
+    def _run(self, stdout: str, stderr: str = ""):
+        exp, pdk, corner = self._experiment_and_pdk()
+        fake_proc = subprocess.CompletedProcess(
+            args=["ngspice", "-b"], returncode=0, stdout=stdout, stderr=stderr
+        )
+        # run_corner() computes log_path.relative_to(REPO_ROOT) for the
+        # returned record, so the scratch dir must live under REPO_ROOT.
+        with tempfile.TemporaryDirectory(dir=corner_run.REPO_ROOT) as td:
+            run_dir = Path(td)
+            log_path = run_dir / "corner.log"
+            with mock.patch.object(corner_run.subprocess, "run", return_value=fake_proc):
+                result = corner_run.run_corner(exp, pdk, corner, [], run_dir, log_path, 60)
+            log_text = log_path.read_text()
+        return result, log_text
+
+    def test_diagnostic_forces_fail_even_when_measurement_passes(self):
+        stdout = (
+            "meas_vout = 1.500000e+00\n"
+            "Warning: singular matrix:  check node xldo.ea_cz\n"
+        )
+        result, log_text = self._run(stdout)
+
+        # The measurement itself is within [1.0, 2.0] ...
+        self.assertTrue(result["measurements"][0]["pass"])
+        # ... but the corner must still FAIL, because of the diagnostic.
+        self.assertFalse(result["pass"])
+        self.assertEqual(
+            result["solver_diagnostic"],
+            "Warning: singular matrix:  check node xldo.ea_cz",
+        )
+        # Raw ngspice stdout/stderr is still shown unchanged in the log.
+        self.assertIn("Warning: singular matrix:  check node xldo.ea_cz", log_text)
+        self.assertIn("meas_vout = 1.500000e+00", log_text)
+        self.assertIn("# result: FAIL", log_text)
+
+    def test_no_diagnostic_leaves_verdict_on_measurement_bounds(self):
+        stdout = "meas_vout = 1.500000e+00\n"
+        result, log_text = self._run(stdout)
+
+        self.assertTrue(result["pass"])
+        self.assertIsNone(result["solver_diagnostic"])
+        self.assertIn("# result: PASS", log_text)
+
+    def test_diagnostic_reason_not_overwritten_by_measurement_bound_failure(self):
+        # A corner whose measurement is ALSO out of bounds, and which ALSO
+        # emits a diagnostic -- both reasons must be independently visible,
+        # not one silently replacing the other.
+        stdout = "meas_vout = 9.000000e+00\nWarning: Dynamic gmin stepping failed\n"
+        result, _log_text = self._run(stdout)
+
+        self.assertFalse(result["pass"])
+        self.assertFalse(result["measurements"][0]["pass"])
+        self.assertEqual(result["measurements"][0]["reason"], "above max 2")
+        self.assertEqual(result["solver_diagnostic"], "Warning: Dynamic gmin stepping failed")
 
 
 if __name__ == "__main__":
