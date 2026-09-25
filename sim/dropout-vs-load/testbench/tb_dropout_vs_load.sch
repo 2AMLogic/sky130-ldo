@@ -70,6 +70,15 @@ v {xschem version=3.4.7 file_version=1.2
 *   none fixed it). Fix deferred to #79 (shares root cause with mechanism
 *   2's light-load stability shortfall). See design/README.md's campaign
 *   section ("#71/#81 resolved") for the full writeup and evidence.
+*   CORRECTED BY #169 (2026-09-25): the second equilibrium above does not
+*   exist. Re-run as committed experiments (sim/ic-screen-125c-v/-f/-b/-c,
+*   plus -h on a frozen copy of #81's DUT), every initial condition --
+*   #81's own included -- regulates at 125C/50mA with no solver diagnostic,
+*   and #81's reported VOUT/FB/N_FBB values are the regulating state's
+*   EA_OUT/TS_SNS/TS_REF. What still corrupts this bench's 125C corners is
+*   the Newton non-convergence half alone: a bench (initial-condition)
+*   problem tracked by #138/#168, not a circuit gap. See design/README.md
+*   section #169.
 *
 * VREF is a fixed 1.2V placeholder per design/README.md's "VREF interface
 * caveat" -- matching the 1:2 feedback-divider ratio issue #22 revised the
