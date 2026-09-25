@@ -3728,9 +3728,8 @@ sweep, and the other eight `FAIL` rows in
   solve this section has now shown to be unreliable at a far gentler corner.
   That check should be repeated with the full node set constrained before its
   "genuine circuit robustness gap requiring a design change" conclusion is
-  relied on — filed as a follow-up, **not** claimed closed here. `#138`
-  (the same mechanism's 125 °C severity in `dropout-vs-load`) inherits the
-  same caveat.
+  relied on — filed as **#169**, **not** claimed closed here. `#138` (the same
+  mechanism's 125 °C severity in `dropout-vs-load`) inherits the same caveat.
 - **Every other bench in `sim/` has the same exposure, and it is measurable
   today.** `line-regulation` and `load-regulation` define their figure as a
   chain of four `.op` solves with `alter` cards between them (see
@@ -3741,9 +3740,9 @@ sweep, and the other eight `FAIL` rows in
   carry solver warnings: 73 `singular matrix` at `xldo.ea_cz`, 28 at
   `xldo.n_fbb`, 47 at `xldo.amp_enn` — the same fingerprint, on the same
   resistor instances, at every corner. Converting those decks is a harness
-  campaign, not this issue, and is filed as a follow-up alongside `#133`'s
-  regulation gate (`#118` already showed #133's finding is general: no bench in
-  `sim/` asks "was the DUT regulating?" before grading).
+  campaign, not this issue, and is filed as **#168**, which also absorbs
+  `#133`'s regulation gate (`#118` already showed #133's finding is general: no
+  bench in `sim/` asks "was the DUT regulating?" before grading).
 - **`sim/startup` is unaffected and was not re-run.** It runs nominal devices
   through its own EN edge and reports 45/45; neither the DUT nor that bench
   changed here, so a re-run would reproduce it identically. Its 45/45 was never
@@ -3787,8 +3786,12 @@ difference against a 7 µV batch-to-batch delta. The seed contract is
 reproducible *given the engine*, which every record already pins in its
 **Tools** and **Execution backend** lines — but draw-for-draw comparison
 between a local probe and a fleet record is not valid, which is why every
-campaign above ran on the fleet. Filed generically at
-2AMLogic/klayout-tools per `CLAUDE.md`'s friction protocol.
+campaign above ran on the fleet. Filed generically as
+2AMLogic/klayout-tools#2490 per `CLAUDE.md`'s friction protocol, alongside
+2AMLogic/klayout-tools#2489 for the grading half: `klt sim` scored all twelve
+of variant A's non-circuit states as ordinary accuracy misses, and the 31
+warned-about samples that passed as ordinary passes, because a solve's
+convergence diagnostics do not reach `corners[].status`.
 
 ### #119: Load transient's recovery-time clause (added to the harness here) fails universally — the peak-excursion clause closes with a C_out fix, screened across 21 of 45 corners; a full re-verification is blocked by host instability, not by the design (2026-09-25)
 
