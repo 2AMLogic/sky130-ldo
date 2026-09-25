@@ -1,0 +1,286 @@
+{
+  "slug": "ic-screen-125c-h",
+  "title": "#169 item-2 re-test, variant H (historical control) -- #81's own method on #81's own circuit (frozen DUT @ 64c17cb), 125 C / 50 mA / VIN 3.60 V",
+  "claim": "One of four variants of #169's initial-condition screen at 125 C / 50 mA, which re-tests #81 item 2 (a reported second, stable, non-regulating equilibrium: tt -> VOUT 2.093 V, FB 1.114 V, N_FBB 1.048 V; ss -> 2.014 V; fs -> 2.199 V) after #164 showed the method it rested on -- a `tran ... uic` with only v(vout) constrained -- is unreliable at the far gentler 27 C / 1 mA corner. The four variants run ONE circuit (sim/dropout-vs-load's DUT, C_OUT and ideal 50 mA load, VIN held at the corner supply) and vary ONLY the initial condition: V = #81's own contract (`.ic v(vout)=1.8` only, `uic`); F = the same `uic` analysis with all eleven nodes #169 names seeded at their intended-branch values; B = #164's variant-B contract (the same full `.ic`, no `uic`: constrained `.op`, then released); C = cold start from all-zero with the EN edge and the load ramped on once the loop is up. If F/B/C all settle inside the regulating window with a realizable node set while V does not, item 2 is a method artifact; if F/B/C also settle at #81's ~2.0-2.2 V state with all four realizability slacks >= 0, item 2 is a real second equilibrium. THIS VARIANT (H) is the historical control: variant V's testbench and analysis exactly (#81's contract: `.ic v(vout)=1.8` only, `tran ... uic`), but instantiating a FROZEN copy of design/ldo_3v3in_1v8out.sch at commit 64c17cb -- #81's own merge, before #90's thermal-shutdown re-size and #116's pass-device re-size -- held at #81's own VIN (3.60 V). It answers whether #81's circuit under #81's method ever reached the state #81 recorded, so a negative result on the current circuit (V/F/B/C) cannot be attributed to #90 or #116. It additionally dumps TS_SNS and TS_REF, and EA_OUT/TS_SNS/TS_REF/VOUT at #81's own 800 us time point, so #81's reported numbers can be matched node-by-node against this record. SUBSTANTIATES NO SPEC ROW: this is diagnostic evidence for design/README.md's \"#169\" section, kept in its own experiment slug for the same reason #164's screen was (sim/mc-ic-screen-a/-b/-d): measurements/build_characterization_report.py resolves a spec row's evidence from the lexicographically last record under the slug EVIDENCE_MAP maps it to, nothing maps to this slug, and a screen record must never be picked up as sim/dropout-vs-load's Dropout-row evidence. The vout_ss window is the ratified Output row's verbatim only so that 'regulating' has one fixed meaning across the four variants.",
+  "provenance": "schematic",
+  "provenance_source": "sim/ic-screen-125c-h/testbench/tb_ic_screen_125c_hist81.sch",
+  "schematic": "testbench/tb_ic_screen_125c_hist81.sch",
+  "statistical_convention": "N/A (corner-matrix diagnostic screen, not a distribution claim)",
+  "corners": {
+    "process": [
+      "tt",
+      "ss",
+      "ff",
+      "sf",
+      "fs"
+    ],
+    "temperature_c": [
+      125
+    ],
+    "supply_v": [
+      3.6
+    ]
+  },
+  "corners_note": "125 C and VIN = 3.60 V only: this variant replays #81 item 2's exact reported point (125 C / 50 mA / VIN 3.60 V) on #81's circuit; the supply axis is V/F/B/C's job. All five process corners -- #81 reported tt/ss/fs.",
+  "deck": {
+    "options": [
+      "wnflag=1"
+    ],
+    "params": {},
+    "analyses": [
+      "tran 10u 3m uic",
+      "meas tran vout_ss avg v(vout) from=2.5m to=3m",
+      "meas tran vout_tail_min min v(vout) from=2.5m to=3m",
+      "meas tran vout_tail_max max v(vout) from=2.5m to=3m",
+      "meas tran vin_ss avg v(vin) from=2.5m to=3m",
+      "meas tran fb_ss avg v(xldo.fb) from=2.5m to=3m",
+      "meas tran n_fbb_ss avg v(xldo.n_fbb) from=2.5m to=3m",
+      "meas tran ea_out_ss avg v(xldo.ea_out) from=2.5m to=3m",
+      "meas tran ea_cz_ss avg v(xldo.ea_cz) from=2.5m to=3m",
+      "meas tran ss_ss avg v(xldo.ss) from=2.5m to=3m",
+      "meas tran biasp_ss avg v(xldo.biasp) from=2.5m to=3m",
+      "meas tran nb_ss avg v(xldo.nb) from=2.5m to=3m",
+      "meas tran ea_tail_ss avg v(xldo.ea_tail) from=2.5m to=3m",
+      "meas tran ea_d1_ss avg v(xldo.ea_d1) from=2.5m to=3m",
+      "meas tran ea_d2_ss avg v(xldo.ea_d2) from=2.5m to=3m",
+      "meas tran ts_cmp_ss avg v(xldo.ts_cmp) from=2.5m to=3m",
+      "meas tran cl_cmp_ss avg v(xldo.cl_cmp) from=2.5m to=3m",
+      "meas tran amp_enn_ss avg v(xldo.amp_enn) from=2.5m to=3m",
+      "meas tran vout_800u find v(vout) at=800u",
+      "meas tran ts_sns_ss avg v(xldo.ts_sns) from=2.5m to=3m",
+      "meas tran ts_ref_ss avg v(xldo.ts_ref) from=2.5m to=3m",
+      "meas tran ea_out_800u find v(xldo.ea_out) at=800u",
+      "meas tran ts_sns_800u find v(xldo.ts_sns) at=800u",
+      "meas tran ts_ref_800u find v(xldo.ts_ref) at=800u",
+      "meas tran fb_800u find v(xldo.fb) at=800u",
+      "meas tran n_fbb_800u find v(xldo.n_fbb) at=800u"
+    ]
+  },
+  "measurements": [
+    {
+      "name": "vout_ss",
+      "expr": "vout_ss",
+      "unit": "V",
+      "min": 1.764,
+      "max": 1.836,
+      "note": "Settled VOUT, averaged over 2.5m-3m. Bounded by the ratified Output row's window (spec/target-spec.md \"Output\", 1.8 V +-2% = 1.764-1.836 V, issue #1 / DR-006) purely as the REGULATING-BRANCH TEST this screen needs: a value inside it is the intended equilibrium, and #81 item 2's second equilibrium (2.014-2.199 V over ss/tt/fs) is far outside it. This slug substantiates no spec row -- see the claim."
+    },
+    {
+      "name": "vout_tail_span",
+      "expr": "vout_tail_max - vout_tail_min",
+      "unit": "V",
+      "min": null,
+      "max": null,
+      "note": "Peak-to-peak VOUT over the same 2.5m-3m window (unbounded, diagnostic): the settledness witness -- a small span means the averaged node set below is a settled state, not a snapshot of something still moving."
+    },
+    {
+      "name": "vin_ss",
+      "expr": "vin_ss",
+      "unit": "V",
+      "min": null,
+      "max": null,
+      "note": "Settled V(VIN) -- the top of the realizability chain below (it is the ideal source, so it equals the corner's supply)."
+    },
+    {
+      "name": "vout_800u",
+      "expr": "vout_800u",
+      "unit": "V",
+      "min": null,
+      "max": null,
+      "note": "V(VOUT) at t = 800 us, the transient length #81 item 2 reported its settled values at -- so this record can be compared with #81's numbers at #81's own time point as well as at the 3 ms settle."
+    },
+    {
+      "name": "fb_ss",
+      "expr": "fb_ss",
+      "unit": "V",
+      "min": null,
+      "max": null,
+      "note": "Node dump (unbounded -- diagnostic, no limit and therefore no verdict): settled V(xldo.fb), averaged over 2.5m-3m. Why this node: the feedback divider's tap (a sky130_fd_pr__res_xhigh_po node): #81 item 2 reported 1.114 V at tt against 1.2 V on the regulating branch."
+    },
+    {
+      "name": "n_fbb_ss",
+      "expr": "n_fbb_ss",
+      "unit": "V",
+      "min": null,
+      "max": null,
+      "note": "Node dump (unbounded -- diagnostic, no limit and therefore no verdict): settled V(xldo.n_fbb), averaged over 2.5m-3m. Why this node: the divider's lower tap (res_xhigh_po): #81 item 2 reported 1.048 V at tt, giving the FB:N_FBB ~0.94:1 ratio a passive string of three equal legs cannot produce (it must be 2:1)."
+    },
+    {
+      "name": "ea_out_ss",
+      "expr": "ea_out_ss",
+      "unit": "V",
+      "min": null,
+      "max": null,
+      "note": "Node dump (unbounded -- diagnostic, no limit and therefore no verdict): settled V(xldo.ea_out), averaged over 2.5m-3m. Why this node: the error amp's output = the pass-device gate."
+    },
+    {
+      "name": "ea_cz_ss",
+      "expr": "ea_cz_ss",
+      "unit": "V",
+      "min": null,
+      "max": null,
+      "note": "Node dump (unbounded -- diagnostic, no limit and therefore no verdict): settled V(xldo.ea_cz), averaged over 2.5m-3m. Why this node: the compensation node at R_CZ's far end (res_xhigh_po) -- the third node #164's singular-matrix warnings name."
+    },
+    {
+      "name": "ss_ss",
+      "expr": "ss_ss",
+      "unit": "V",
+      "min": null,
+      "max": null,
+      "note": "Node dump (unbounded -- diagnostic, no limit and therefore no verdict): settled V(xldo.ss), averaged over 2.5m-3m. Why this node: the soft-start node -- released (at VIN) on the regulating branch."
+    },
+    {
+      "name": "biasp_ss",
+      "expr": "biasp_ss",
+      "unit": "V",
+      "min": null,
+      "max": null,
+      "note": "Node dump (unbounded -- diagnostic, no limit and therefore no verdict): settled V(xldo.biasp), averaged over 2.5m-3m. Why this node: the PMOS bias rail feeding every tail."
+    },
+    {
+      "name": "nb_ss",
+      "expr": "nb_ss",
+      "unit": "V",
+      "min": null,
+      "max": null,
+      "note": "Node dump (unbounded -- diagnostic, no limit and therefore no verdict): settled V(xldo.nb), averaged over 2.5m-3m. Why this node: the NMOS bias node."
+    },
+    {
+      "name": "ea_tail_ss",
+      "expr": "ea_tail_ss",
+      "unit": "V",
+      "min": null,
+      "max": null,
+      "note": "Node dump (unbounded -- diagnostic, no limit and therefore no verdict): settled V(xldo.ea_tail), averaged over 2.5m-3m. Why this node: the error amp's tail node."
+    },
+    {
+      "name": "ea_d1_ss",
+      "expr": "ea_d1_ss",
+      "unit": "V",
+      "min": null,
+      "max": null,
+      "note": "Node dump (unbounded -- diagnostic, no limit and therefore no verdict): settled V(xldo.ea_d1), averaged over 2.5m-3m. Why this node: error-amp input-stage drain 1 (with EA_D2: is the input stage balanced or inverted?)."
+    },
+    {
+      "name": "ea_d2_ss",
+      "expr": "ea_d2_ss",
+      "unit": "V",
+      "min": null,
+      "max": null,
+      "note": "Node dump (unbounded -- diagnostic, no limit and therefore no verdict): settled V(xldo.ea_d2), averaged over 2.5m-3m. Why this node: error-amp input-stage drain 2."
+    },
+    {
+      "name": "ts_cmp_ss",
+      "expr": "ts_cmp_ss",
+      "unit": "V",
+      "min": null,
+      "max": null,
+      "note": "Node dump (unbounded -- diagnostic, no limit and therefore no verdict): settled V(xldo.ts_cmp), averaged over 2.5m-3m. Why this node: thermal-shutdown comparator output -- shows whether thermal shutdown tripped at 125 C (#81 item 2 said it had not)."
+    },
+    {
+      "name": "cl_cmp_ss",
+      "expr": "cl_cmp_ss",
+      "unit": "V",
+      "min": null,
+      "max": null,
+      "note": "Node dump (unbounded -- diagnostic, no limit and therefore no verdict): settled V(xldo.cl_cmp), averaged over 2.5m-3m. Why this node: current-limit comparator output -- shows whether current limit is holding the loop at 50 mA."
+    },
+    {
+      "name": "amp_enn_ss",
+      "expr": "amp_enn_ss",
+      "unit": "V",
+      "min": null,
+      "max": null,
+      "note": "Node dump (unbounded -- diagnostic, no limit and therefore no verdict): settled V(xldo.amp_enn), averaged over 2.5m-3m. Why this node: the amp's enable-gated tail return -- shows whether the enable path is holding the amp off."
+    },
+    {
+      "name": "real_nfbb_ge_0",
+      "expr": "n_fbb_ss",
+      "unit": "V",
+      "min": 0,
+      "max": null,
+      "note": "Realizability check (#169 Scope item 3), one link of 0 <= V(N_FBB) <= V(FB) <= V(VOUT) <= VIN: this is the slack of V(N_FBB) >= 0. FB and N_FBB are fed ONLY by VOUT through a passive three-leg res_xhigh_po string, so every realizable settled state has all four slacks >= 0; a negative slack means the settled 'state' is the solver's unconverged iterate (#81 item 1 / #164), not a circuit equilibrium (#81 item 2). The bound is that algebra, not a spec row."
+    },
+    {
+      "name": "real_fb_ge_nfbb",
+      "expr": "fb_ss - n_fbb_ss",
+      "unit": "V",
+      "min": 0,
+      "max": null,
+      "note": "Realizability check (#169 Scope item 3), one link of 0 <= V(N_FBB) <= V(FB) <= V(VOUT) <= VIN: this is the slack of V(FB) >= V(N_FBB). FB and N_FBB are fed ONLY by VOUT through a passive three-leg res_xhigh_po string, so every realizable settled state has all four slacks >= 0; a negative slack means the settled 'state' is the solver's unconverged iterate (#81 item 1 / #164), not a circuit equilibrium (#81 item 2). The bound is that algebra, not a spec row."
+    },
+    {
+      "name": "real_vout_ge_fb",
+      "expr": "vout_ss - fb_ss",
+      "unit": "V",
+      "min": 0,
+      "max": null,
+      "note": "Realizability check (#169 Scope item 3), one link of 0 <= V(N_FBB) <= V(FB) <= V(VOUT) <= VIN: this is the slack of V(VOUT) >= V(FB). FB and N_FBB are fed ONLY by VOUT through a passive three-leg res_xhigh_po string, so every realizable settled state has all four slacks >= 0; a negative slack means the settled 'state' is the solver's unconverged iterate (#81 item 1 / #164), not a circuit equilibrium (#81 item 2). The bound is that algebra, not a spec row."
+    },
+    {
+      "name": "real_vin_ge_vout",
+      "expr": "vin_ss - vout_ss",
+      "unit": "V",
+      "min": 0,
+      "max": null,
+      "note": "Realizability check (#169 Scope item 3), one link of 0 <= V(N_FBB) <= V(FB) <= V(VOUT) <= VIN: this is the slack of VIN >= V(VOUT). FB and N_FBB are fed ONLY by VOUT through a passive three-leg res_xhigh_po string, so every realizable settled state has all four slacks >= 0; a negative slack means the settled 'state' is the solver's unconverged iterate (#81 item 1 / #164), not a circuit equilibrium (#81 item 2). The bound is that algebra, not a spec row."
+    },
+    {
+      "name": "ts_sns_ss",
+      "expr": "ts_sns_ss",
+      "unit": "V",
+      "min": null,
+      "max": null,
+      "note": "Node dump (unbounded -- diagnostic, no limit and therefore no verdict): settled V(xldo.ts_sns), 2.5-3 ms -- the thermal-shutdown sense node #81 says it checked for 'correct untripped ordering' against TS_REF."
+    },
+    {
+      "name": "ts_ref_ss",
+      "expr": "ts_ref_ss",
+      "unit": "V",
+      "min": null,
+      "max": null,
+      "note": "Node dump (unbounded -- diagnostic, no limit and therefore no verdict): settled V(xldo.ts_ref), 2.5-3 ms -- the thermal-shutdown reference node (see ts_sns_ss)."
+    },
+    {
+      "name": "ea_out_800u",
+      "expr": "ea_out_800u",
+      "unit": "V",
+      "min": null,
+      "max": null,
+      "note": "Node dump (unbounded -- diagnostic, no limit and therefore no verdict): V(xldo.ea_out) at #81's 800 us time point."
+    },
+    {
+      "name": "ts_sns_800u",
+      "expr": "ts_sns_800u",
+      "unit": "V",
+      "min": null,
+      "max": null,
+      "note": "Node dump (unbounded -- diagnostic, no limit and therefore no verdict): V(xldo.ts_sns) at #81's 800 us time point."
+    },
+    {
+      "name": "ts_ref_800u",
+      "expr": "ts_ref_800u",
+      "unit": "V",
+      "min": null,
+      "max": null,
+      "note": "Node dump (unbounded -- diagnostic, no limit and therefore no verdict): V(xldo.ts_ref) at #81's 800 us time point."
+    },
+    {
+      "name": "fb_800u",
+      "expr": "fb_800u",
+      "unit": "V",
+      "min": null,
+      "max": null,
+      "note": "Node dump (unbounded -- diagnostic, no limit and therefore no verdict): V(xldo.fb) at #81's 800 us time point."
+    },
+    {
+      "name": "n_fbb_800u",
+      "expr": "n_fbb_800u",
+      "unit": "V",
+      "min": null,
+      "max": null,
+      "note": "Node dump (unbounded -- diagnostic, no limit and therefore no verdict): V(xldo.n_fbb) at #81's 800 us time point."
+    }
+  ],
+  "spread_checks": []
+}

@@ -1213,6 +1213,22 @@ statistics plus a per-device-family "was mismatch actually active" report.
   to these three (same as `pdk-smoke`), so they are inert to that pipeline.
   Full write-up, record ids and re-derivation recipes: `design/README.md` →
   "#164".
+- **`ic-screen-125c-v/`, `-f/`, `-b/`, `-c/`, `-h/`** (issue #169) — five
+  **diagnostic** `corner-run.py` slugs, not spec claims, filed apart from
+  `dropout-vs-load/` for the same `EVIDENCE_MAP` reason as the `mc-ic-screen-*`
+  slugs above. They re-test `#81` item 2 (a reported second equilibrium at
+  125 °C/50 mA) under four initial-condition contracts on the current DUT — V
+  `#81`'s own (`.ic v(vout)` only + `uic`), F the full eleven-node `.ic` +
+  `uic`, B the same `.ic` without `uic`, C a cold EN-edged start — plus H, V's
+  deck on a frozen copy of `#81`'s DUT under `ic-screen-125c-h/dut/`. F and B
+  share one testbench file (byte-identical netlist snapshots). Each dumps 14
+  internal nodes and grades `0 ≤ V(N_FBB) ≤ V(FB) ≤ V(VOUT) ≤ VIN` as four
+  `min = 0` slacks. Result: every variant regulates everywhere (H's one `FAIL`
+  is the pre-#90 thermal-shutdown trip at `sf`), and `#81` item 2 is withdrawn
+  — the second equilibrium had been these benches' ordinary 125 °C regulating
+  state all along (#118's blockquote above, which calls the #60/#71/#81 family a
+  "second-stable-equilibrium" family, predates both #164 and #169). Write-up:
+  `design/README.md` → "#169".
 
 ## `sim/selftest.sh` — the harness acceptance test
 

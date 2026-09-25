@@ -1537,7 +1537,11 @@ pass:
   constrained only `v(vout)`, leaving every other node to the same
   unconstrained solve. Item 2 is therefore **unverified rather than
   refuted**, and should be repeated with the full node set constrained
-  before its design-change conclusion is relied on.
+  before its design-change conclusion is relied on. **Withdrawn by #169
+  (2026-09-25)**: repeated that way (and cold, and with #81's own method on
+  #81's own circuit), every start regulates at 125 °C/50 mA; item 2's
+  reported values are the regulating state's `EA_OUT`/`TS_SNS`/`TS_REF` — see
+  "#169" below. The deferral to #79 no longer applies.
 
 `mc-output-accuracy`'s tail-outlier FAIL (mechanism 6) has no issue of its
 own — it is expected to close mostly or entirely as a side effect of #70.
@@ -1605,6 +1609,26 @@ dropout results. The −40°C/27°C corners are trustworthy under the new
 methodology.
 
 #### #81 resolved: mechanism 4's 125°C severity root-caused — a genuine circuit robustness gap, not a solver-tuning problem (2026-08-25)
+
+> **Corrected by #169 (2026-09-25) — item 2 below is withdrawn; read "#169"
+> near the end of this file before relying on it.** Re-run as committed
+> `sim/` experiments at `tt`/`ss`/`ff`/`sf`/`fs` × 125 °C × {3.30, 3.60,
+> 3.63} V / 50 mA, #81's own method (`.ic v(vout)=1.8` only, `uic`), a full
+> eleven-node seed with and without `uic`, and a cold EN-edged start all
+> regulate at 1.7985–1.7987 V on all 60 points, agree with each other to
+> ≤ 6 µV on every dumped node, and emit no solver diagnostics. #81's method on
+> a frozen copy of #81's own circuit also regulates at `tt`/`ss`/`fs`, and its
+> settled `EA_OUT`/`TS_SNS`/`TS_REF` are exactly the "`Vout`/`FB`/`N_FBB`"
+> item 2 reports below (e.g. `tt`: 2.09267 / 1.11360 / 1.04796 V against
+> "2.093 / 1.114 / 1.048 V"). There is no second equilibrium; item 2's numbers
+> are other nodes of the regulating state, and its `FB`:`N_FBB` anomaly is
+> `TS_SNS`:`TS_REF`. **Item 1 is unaffected** (#164 explains it). So the
+> conclusion below that "no harness-level fix … can make `dropout-vs-load`'s
+> 125°C corners produce trustworthy regulating-branch numbers" and that this
+> is "a genuine circuit robustness gap requiring a design change" no longer
+> has a basis: the remaining 125 °C problem is item 1, a bench problem
+> (#168/#138). The section is kept as written because it is what #81
+> recorded.
 
 **Isolated to two distinct, compounding phenomena, both worse at 125°C than
 −40/27°C (screening, reproduced from the committed schematic's own netlist,
@@ -3333,7 +3357,10 @@ with its own evidence and the interaction goes to a named follow-up, instead of
 an unmeasured compensation re-design riding along inside a sizing fix. The
 125 °C dc-sweep volatility noted above (5 of 15 points get numerically worse)
 is likewise handed to a follow-up (#138) rather than root-caused here, since
-it is the same loop-dynamics question #81/#79 already own. Every other `sim/` bench
+it is the same loop-dynamics question #81/#79 already own. *(#169, 2026-09-25:
+there is no such loop-dynamics question — #81's second equilibrium does not
+exist, see "#169" below — so #138 is a `dc`-sweep initial-condition question
+in `#168`'s family, not one waiting on a design change.)* Every other `sim/` bench
 instantiates this DUT, so their committed netlist snapshots are stale against
 it and `measurements/characterization.md` reports them `STALE` — the same
 correct-by-design outcome #69's re-run produced, and a follow-up owns
@@ -3794,6 +3821,9 @@ sweep, and the other eight `FAIL` rows in
   "genuine circuit robustness gap requiring a design change" conclusion is
   relied on — filed as **#169**, **not** claimed closed here. `#138` (the same
   mechanism's 125 °C severity in `dropout-vs-load`) inherits the same caveat.
+  **Resolved by #169**: item 2 does not reproduce under any initial condition
+  and its numbers are other nodes of the regulating state (see "#169" below),
+  so `#138` is a bench question in `#168`'s family, not a design one.
 - **Every other bench in `sim/` has the same exposure, and it is measurable
   today.** `line-regulation` and `load-regulation` define their figure as a
   chain of four `.op` solves with `alter` cards between them (see
@@ -4060,6 +4090,152 @@ confirmed by a clean 45-point run; the unaddressable half
 architecture) is now — for the first time — actually measured, and both of
 its failure mechanisms are root-caused to gaps this repo's own DR-007/#115
 lineage already tracks, not new ones this issue discovered independently.
+
+### #169: `#81` item 2's 125 °C/50 mA "second equilibrium" does not exist — its reported numbers are the regulating state's `EA_OUT`/`TS_SNS`/`TS_REF` (measured, 2026-09-25)
+
+**Status: item 2 withdrawn; `design/ldo_3v3in_1v8out.sch` is unchanged.**
+#164 left `#81` item 2 "unverified, not refuted" (§7 above) because the check it
+rested on — a `tran … uic` whose `.ic` set only `v(vout)` — leaves every other
+node to the solve #164 showed unreliable at 27 °C/1 mA. #169 re-ran it at its
+own corner under four initial-condition contracts, plus #81's exact method on
+#81's exact circuit as a historical control. **Neither outcome #169 anticipated
+occurred.** Item 2 is not a real second equilibrium (every contract regulates),
+and it is not #164's solver artifact either (every contract regulates *without
+a single solver diagnostic*, #81's own included). It is a reporting error: the
+three numbers #81 recorded as `VOUT`/`FB`/`N_FBB` at `tt`/`ss`/`fs` are, to
+every digit #81 reported, `EA_OUT`/`TS_SNS`/`TS_REF` of the ordinary
+regulating state.
+
+**1. The screen.** One circuit per variant — `sim/dropout-vs-load`'s DUT,
+`C_OUT` = 1 µF / 10 mΩ, ideal 50 mA sink, `VREF` = 1.2 V, `VIN` held at the
+corner supply — varying **only** the initial condition. Each variant is its
+own `corner-run.py` experiment slug, for the same reason #164's screen was
+(`EVIDENCE_MAP` resolves a row's evidence from the lexicographically last
+record under its slug; nothing maps to these, so none can become
+`dropout-vs-load`'s `Dropout` evidence). Every variant dumps the same 14
+hierarchical nodes and grades the four realizability slacks of
+`0 ≤ V(N_FBB) ≤ V(FB) ≤ V(VOUT) ≤ VIN` (#169 Scope item 3) as `min = 0`
+measurements, so a violation is a recorded `FAIL`, not a reading.
+
+| Variant | Initial condition | Record | Points | Regulating | Min realizability slack | Solver diagnostics |
+|---|---|---|---|---|---|---|
+| V | #81's own: `.ic v(vout)=1.8` only, `uic`, EN DC-high | [`20260925-172756-6989d23`](../sim/ic-screen-125c-v/records/20260925-172756-6989d23.md) | 15 | **15/15** | +0.5993 V | none |
+| F | the same `uic`, all **eleven** nodes #169 names seeded | [`20260925-172757-6989d23`](../sim/ic-screen-125c-f/records/20260925-172757-6989d23.md) | 15 | **15/15** | +0.5993 V | none |
+| B | #164's variant B: the same full `.ic`, **no** `uic` (constrained `.op`, then released) | [`20260925-172757-6989d23`](../sim/ic-screen-125c-b/records/20260925-172757-6989d23.md) | 15 | **15/15** | +0.5993 V | none |
+| C | cold: all-zero `uic`, EN edge at 100 µs, 50 mA ramped on at 2.5 ms | [`20260925-172757-6989d23`](../sim/ic-screen-125c-c/records/20260925-172757-6989d23.md) | 15 | **15/15** | +0.5993 V | none |
+| H | V's deck exactly, on a **frozen copy of #81's DUT** (`64c17cb`) at #81's `VIN` = 3.60 V | [`20260925-173928-a30ee60`](../sim/ic-screen-125c-h/records/20260925-173928-a30ee60.md) | 5 | **4/5** (`sf` — see 4) | +0.5990 V on the four | none |
+
+V/F/B/C's matrix is all five process corners × 125 °C × {3.30, 3.60, 3.63} V
+(3.60 V is #81 item 2's own `VIN`; 2.97 V is deliberately excluded — see each
+manifest's `corners_note`). The eleven-node seed for F/B is not invented: it is
+variant C's own settled node set at `tt`/3.60 V from a local probe, with the
+`VIN`-tracking nodes written relative to `vsup` so the seed is realizable at
+every supply (`sim/ic-screen-125c-b/testbench/tb_ic_screen_125c_seeded.sch`
+header). "Solver diagnostics" is the `# ==== ngspice stderr ====` section of
+every committed corner log, which is where the harness captures `Warning:
+singular matrix` / `gmin stepping` messages (the committed `line-regulation`
+logs #164 cites carry them there): it is empty on all 65. B is the variant for
+which that is load-bearing, since it is the only one that runs a full `.op`.
+
+**2. Warm-constrained and cold agree — to the microvolt.** This is the
+comparison #169's Scope item 2 named as the discriminator (#164's B and D were
+bit-identical at 27 °C/1 mA). Across all 15 points and all 14 dumped nodes, the
+largest difference between **any** two of V, F, B and C is **6 µV** (B against
+the others, `VOUT` at `tt_125c_3.30v`); V vs C is ≤ 0.6 µV and F vs C ≤ 1 µV.
+`vout_ss` spans **1.79848–1.79870 V** over all 60 runs, the settled window's
+peak-to-peak is ≤ 1 µV everywhere, `FB`/`N_FBB` sit at 1.1992–1.1993 V /
+0.5997–0.5998 V (the passive 2:1 exactly), and the largest magnitude any dumped
+node reaches is 3.63 V — the supply. A cold start with the enable edge, a start
+seeded at the answer, a start seeded at the answer and re-solved, and #81's own
+start all arrive at the same point. **There is one equilibrium at
+125 °C/50 mA, and #81's own method finds it.**
+
+**3. Why #81 recorded something else: the numbers are other nodes.** The
+current DUT differs from #81's (#90 re-sized the thermal shutdown, #116/DR-011
+the pass device), so a negative result on it could in principle mean those
+changes cured item 2. Variant H closes that door by running #81's method on
+#81's circuit (the frozen copy at
+`sim/ic-screen-125c-h/dut/ldo_3v3in_1v8out_at81.sch` differs from
+`git show 64c17cb:design/ldo_3v3in_1v8out.sch` only by its header comment). It
+too regulates at `tt`/`ss`/`fs` (`VOUT` 1.79749–1.79758 V, flat from 800 µs —
+#81's own time point — to 3 ms). And its node dump contains #81's numbers:
+
+| Corner | #81 reported "`VOUT` / `FB` / `N_FBB`" | H's settled `EA_OUT` / `TS_SNS` / `TS_REF` | H's actual `VOUT` / `FB` / `N_FBB` |
+|---|---|---|---|
+| `tt` | 2.093 / 1.114 / 1.048 V | 2.09267 / 1.11360 / 1.04796 V | 1.79758 / 1.19858 / 0.59938 V |
+| `ss` | 2.014 / 1.191 / 1.073 V | 2.01422 / 1.19072 / 1.07259 V | 1.79749 / 1.19851 / 0.59935 V |
+| `fs` | 2.199 / 1.286 / 1.100 V | 2.19873 / 1.28578 / 1.09960 V | 1.79755 / 1.19856 / 0.59937 V |
+
+Nine of nine values agree to all four significant figures #81 quoted. #81's
+deck was a local probe that was never committed, so *how* the labels were
+transposed cannot be recovered from it — but #81's own text says it also read
+`EA_OUT` ("mid-rail") and the `TS_SNS`/`TS_REF` ordering from the same run, so
+all three quantities were in the output it was reading. The reading also
+dissolves the one detail #81 could not explain: the "`FB`:`N_FBB` ≈ 0.94:1
+against a passive 2:1" is `TS_SNS`:`TS_REF`, two thermal-sensor nodes with no
+reason to be in any ratio. There was no divider distortion, and the
+body-junction-leakage hypothesis #81 offered for it has nothing left to explain.
+
+**4. The one violating point is mechanism 1, not item 1.** H's `sf` point is
+the only one of 65 that fails the invariant: `VOUT` = −28.97 V, `FB` =
+−19.29 V, `N_FBB` = −9.62 V. It is **not** #81 item 1 / #164's kilovolt
+artifact, although #169's Scope rule ("any violation is item 1") would file it
+there: the divider algebra *holds* (`FB`/`VOUT` = 0.666, `N_FBB`/`VOUT` =
+0.332 — the passive 2/3 and 1/3), no diagnostic was emitted, and `TS_SNS`
+(0.936 V) < `TS_REF` (1.050 V) with `TS_CMP` at 0.30 V and `EA_OUT` at the
+rail. The pre-#90 thermal shutdown has tripped inside the rated range
+(mechanism 1, `#69`, fixed by #90 — V/F/B/C's `sf` rows regulate with `TS_CMP`
+at `VIN`), the pass device is off, and the testbench's *ideal* 50 mA sink pulls
+the undriven output negative. The invariant's `0 ≤` link presumes a load that
+cannot pull a node below ground, which an ideal current sink can. #81 checked
+only `tt`/`ss`/`fs` and excluded `sf` for exactly this reason, so the point
+bears on nothing #81 claimed; it is why H's record reads `Overall: FAIL`.
+
+**5. What this changes.**
+
+- **`#81`'s "genuine circuit robustness gap requiring a design change" is
+  withdrawn.** Its item 1 (unconverged `.op`, `FB` hundreds of volts off the
+  divider) stands as #164 explained it; its item 2 was never a circuit state.
+  The "#81 resolved" section above is kept as written with a correction note,
+  per this file's convention for superseded analyses (`#118`'s section).
+- **`dropout-vs-load`'s 125 °C-wide exclusion is a bench problem, not a
+  circuit one.** What remains of it is item 1 alone: the `dc` sweep's
+  unconstrained, continuation-seeded `.op` at 125 °C — the exposure #164 §7
+  found in every `.op`-chain bench and filed as **#168**. Nothing in this
+  screen says the 125 °C `dropout_v` numbers are right; it says the reason they
+  are unreadable is the harness, not the loop.
+- **Sequencing re-pointed.** `#79` (closed `COMPLETED` 2026-08-25 — a
+  bias-generator fix for PSRR/Stability that never ran the item-2 check #81
+  recommended to it) and `#107` (closed `COMPLETED`) were not held up by item 2
+  in practice, so nothing re-opens there, and #81's "Recommendation for #79" is
+  moot. **`#138`** is the one open item sequenced behind it: its Ask is to
+  re-check a future #79-style design fix against "the existing mechanism-4
+  recipe" at 125 °C. With no second equilibrium to fix, #138 is now a
+  **bench** question — does `dropout-vs-load`'s 125 °C volatility after #116's
+  re-size survive a realizable initial condition? — in #168's family, and
+  **not** gated on any design change. This issue does not take that up.
+- **No design change, no spec change.** `design/ldo_3v3in_1v8out.sch` is
+  untouched; no ratified row is touched. `DR-009` and `DR-011` mention #81
+  item 2 in rationale text as a known 125 °C gap; decision records are
+  superseded by new records rather than edited, and neither DR's *decision*
+  rests on it, so neither is amended here.
+
+**6. Scope, stated plainly.** Nominal devices only (no mismatch) and 125 °C
+only — #81 item 2 was reported at 125 °C/50 mA with nominal devices, and #164
+already covered 27 °C under mismatch. 2.97 V is not in the matrix. The load is
+the ideal sink `dropout-vs-load` uses. Item 1's own 125 °C `.op` failures were
+not re-run; they are #164's mechanism and #168's harness campaign.
+
+**7. Reproducing it.** From committed files (≈2–5 min per point on a loaded
+host):
+
+```bash
+for v in v f b c h; do python3 sim/bin/corner-run.py sim/ic-screen-125c-$v; done
+# or, without simulating: #81's numbers inside H's own record
+jq -r '.corners[] | [.corner_id] + [.measurements[]
+       | select(.name|test("^(vout|ea_out|ts_sns|ts_ref)_ss$")) | "\(.name)=\(.value)"]
+       | @tsv' sim/ic-screen-125c-h/records/20260925-173928-a30ee60.json
+```
 
 ## Validating this schematic
 
