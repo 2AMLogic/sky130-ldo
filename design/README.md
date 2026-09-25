@@ -3351,6 +3351,22 @@ failure is a point that is not on that branch at all.** The binding mechanism
 is the mechanism-4 DC-solution-multiplicity / second-stable-equilibrium family
 `#60`/`#71`/`#81` already root-caused above, not an accuracy shortfall.
 
+All three rows were re-run in full against the current (post-#116) DUT, since
+the records #118 was filed against all predate that re-size and
+`measurements/characterization.md` reported all three `STALE`. Each new record
+supersedes the one the issue cites, and all three rows now read `fresh`:
+
+| Row | Record #118 cites | New record | Then → now |
+|---|---|---|---|
+| Output | `20260825-083111-4cb27f8` | [`20260925-110312-8280915`](../sim/mc-output-accuracy/records/20260925-110312-8280915.md) | 177/200 → **185/200** |
+| Line regulation | `20260910-030557-6c0436d` | [`20260925-114251-1f54ca6`](../sim/line-regulation/records/20260925-114251-1f54ca6.md) | 18/45 → **24/45** |
+| Load regulation | `20260910-032854-6c0436d` | [`20260925-111601-7701e7e`](../sim/load-regulation/records/20260925-111601-7701e7e.md) | 34/45 → **37/45** |
+
+Every row improved and every row still reports `FAIL`. The improvement is
+#116's pass-device re-size, not anything this issue shipped — and the
+decomposition below is why the *remaining* failures will not move for any
+amount of accuracy work.
+
 Because no candidate mechanism this issue was asked to size against turned out
 to be binding, **no sizing change was made** — per this file's standing
 "verification is the product, no speculative fix" convention (`#70`, `#77`,
@@ -3421,42 +3437,64 @@ runner's supply (`VEN EN 0 'vsup'`); the deck then `alter vvin`s to 2.97 V and
 reach the measured quantity at all — it changes only how far above threshold a
 logic-high enable sits, and it sets the DC starting point the first `.op` solve
 begins from. **The three supply points inside one (process, temperature) group
-must therefore return the same number.** Joining the superseded record
-[`20260910-030557-6c0436d`](../sim/line-regulation/records/20260910-030557-6c0436d.md)
-on that axis:
+must therefore return the same number.** New full-matrix record
+[`20260925-114251-1f54ca6`](../sim/line-regulation/records/20260925-114251-1f54ca6.md)
+(supersedes [`20260910-030557-6c0436d`](../sim/line-regulation/records/20260910-030557-6c0436d.md);
+**24/45 PASS**, up from 18/45 against the pre-#116 pass device), joined on that
+axis:
 
-- **13 of 15** (process, temperature) groups return mutually inconsistent
-  answers across it, spanning up to five orders of magnitude — e.g.
-  `ff_125c`: **1819 / 0.1027 / 0.4998 mV/V** at 1 mA; `tt_125c`:
-  **32.5 / 2737 / 0.4555 mV/V**. Only `tt_-40c` and `tt_27c` are internally
-  consistent.
-- The 2 consistent groups are consistent to **four significant figures**
-  (`tt_-40c`: 0.2217 / 0.2229 / 0.2229 mV/V), which is what a physically
-  well-posed measurement on this axis looks like — so the spread in the other
-  13 is not measurement noise, it is branch selection.
+- **22 of 30** (group × measurement) cells vary by more than **2×** across it,
+  and **21** of those by more than **10×** — e.g. `ff_125c` at 1 mA:
+  **85.16 / 0.1828 / 0.5613 mV/V**; `ss_-40c` at 50 mA:
+  **1519 / 2557 / 0.2817 mV/V**.
+- Exactly **one** group (`ff_-40c`) is self-consistent to within 1.1× on both
+  measurements, and it agrees to **four significant figures**
+  (1 mA: 0.2412 / 0.2416 / 0.2417 mV/V; 50 mA: 0.2714 / 0.2793 / 0.2793 mV/V).
+  That is what a well-posed measurement on a variable it does not depend on
+  looks like — so the spread in the other 14 is not numerical noise, it is
+  branch selection.
 - **On the regulating branch the row passes with room to spare**: every
-  in-bound reading is **0.10–1.78 mV/V** at 1 mA and **0.24–1.54 mV/V** at
-  50 mA, against a **5 mV/V** ratified bound — 3× to 50× inside it.
+  in-bound reading is **0.017–1.62 mV/V** at 1 mA (n=34) and
+  **0.093–3.14 mV/V** at 50 mA (n=29), against a **5 mV/V** ratified bound.
+- The five readings that are neither clearly on-branch nor grossly off it
+  (**6.7, 18.3, 31.2, 43.9, 85.2 mV/V**) all occur at **`*_125c_2.97v`** — one
+  single point on the negative-control axis, at the temperature `#81` already
+  identified as the fragile one. They cannot be read as a partially-degraded
+  physical line-regulation number either, for the same reason the gross ones
+  cannot.
 
 A DC supply-rejection shortfall cannot be a function of a variable the
 measurement does not depend on. Line regulation is not supply-rejection-bound
 here; it is branch-selection-bound.
 
-**3. `Load regulation`: perfectly bimodal, and non-monotonic in the one axis
-that is real.** Unlike line regulation, this bench's `corners.supply_v` does
-reach VIN (`VVIN VIN 0 'vsup'`), so the axis is physical. From the superseded
-record [`20260910-032854-6c0436d`](../sim/load-regulation/records/20260910-032854-6c0436d.md):
+**3. `Load regulation`: bimodal, non-monotonic in the one axis that is real —
+and exactly one genuine miss.** Unlike line regulation, this bench's
+`corners.supply_v` does reach VIN (`VVIN VIN 0 'vsup'`), so the axis is
+physical. New full-matrix record
+[`20260925-111601-7701e7e`](../sim/load-regulation/records/20260925-111601-7701e7e.md)
+(supersedes [`20260910-032854-6c0436d`](../sim/load-regulation/records/20260910-032854-6c0436d.md);
+**37/45 PASS**, up from 34/45):
 
-- **Every** passing corner reads **3.22–11.97 mV** against the **18 mV**
-  ratified bound (1.5× to 5.6× inside it). **Every** failing corner reads
-  **311 mV – 1.62 V**. Nothing lands between 12 mV and 311 mV — a **26×** gap
-  with zero corners in it. A loop-gain-limited DC error is a continuum; it does
-  not produce an empty two-decade band.
-- **5 of 15** (process, temperature) groups are **non-monotonic in VIN**: a
-  higher-headroom supply fails while a lower one passes (`tt_125c`, `sf_-40c`,
-  `fs_-40c`: pass/pass/**fail**; `ss_-40c`: pass/**fail**/pass; `sf_27c`:
-  pass/**fail**/**fail**). More headroom cannot make a loop-gain-bound DC error
-  worse. The verdict pattern is not a function of the physical axis.
+- **37 corners read 2.62–14.50 mV** against the **18 mV** ratified bound (1.2×
+  to 6.9× inside it). **7 corners read 881 mV – 1.62 V.** Nothing lands between
+  19.93 mV and 881 mV — a **44×** empty band. A loop-gain-limited DC error is a
+  continuum; it does not produce an empty band a decade and a half wide.
+- **The 45th corner is the interesting one.** `fs_125c_3.63v` reads
+  **19.93 mV (1.107 %)** — an 11 % overshoot of the bound, and the only reading
+  in the entire matrix that is a *marginal* miss rather than either clean or
+  catastrophic. Its own group is monotone and physically coherent
+  (`fs_125c`: **10.99 / 14.50 / 19.93 mV** rising with VIN). **This is the one
+  place in all three rows where a real, loop-limited DC accuracy shortfall is
+  visible**, and it is 2 mV over the bound at the single hottest, fastest-NMOS
+  corner — an ordinary design-margin problem, nothing like the 8-corner failure
+  count the aggregate verdict reports.
+- **4 of the 5 groups that contain a gross failure are non-monotonic in VIN**:
+  `ff_-40c` and `fs_-40c` fail only at the *middle* supply while both
+  neighbours pass; `sf_27c` fails only at the *highest*; `tt_125c` fails at
+  both ends and passes in the middle. More headroom cannot make a
+  loop-gain-bound DC error worse, and no physical mechanism is non-monotonic in
+  three samples. The verdict pattern is not a function of the physical axis
+  either.
 
 **Conclusion, and what it means for the three rows.** One mechanism, as #118
 suspected — the non-regulating-branch family of `#60` mechanism 4 as root-caused
@@ -3468,11 +3506,14 @@ light load rather than only at 125 °C/50 mA. The practical consequences:
   done. Upsizing the divider string or the input pair would buy margin on the
   one axis that already has 4.1σ of it, and would move the rail-mode rate not
   at all.
-- **Neither regulation row should be read as an accuracy result yet.** Their
-  numbers are a mixture of two populations; their pass counts measure how often
-  the solver/circuit found the intended branch, not how well the loop regulates
-  when it does. On the branch, both rows pass their ratified bounds at every
-  point measured.
+- **Neither regulation row's pass count should be read as an accuracy result.**
+  Both are a mixture of two populations, so the count measures how often the
+  intended branch was found, not how well the loop regulates when it is. On the
+  branch, `Line regulation` clears its 5 mV/V bound at **every** point measured
+  (worst 3.14 mV/V), and `Load regulation` clears its 18 mV bound at every point
+  but one (`fs_125c_3.63v`, 19.93 mV). **That single corner is the only real
+  DC-accuracy gap in all three rows**, and it is the honest remaining target —
+  a 2 mV margin problem at one hot corner, not a 34-corner failure.
 - **This is consistent with, and independent of, `#115`'s coupling finding.**
   `#115` tested whether these rows move with `Stability` and could not confirm
   it (Load regulation 6/7, Line regulation 4/7 at the 7 Stability-PASS corners,
