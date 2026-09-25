@@ -431,6 +431,41 @@ def parse_measurements(log: str) -> dict[str, float]:
     return values
 
 
+# Markers ngspice prints to stdout/stderr when a `.op`/`.tran`/`.ac`/`.dc`
+# solve did not land on a genuine circuit state -- e.g. it fell back to
+# gmin/source stepping and either that fallback itself failed, or it
+# "succeeded" onto a numerically spurious branch (a poly resistor's
+# voltage-coefficient extrapolation admitting a solution thousands of volts
+# outside the physical range is the concrete mechanism issue #164 found).
+# ngspice does NOT treat any of these as a fatal error -- the run still
+# exits 0 and still prints what looks like a converged result -- so a corner
+# that hits one must be forced to FAIL regardless of its measured values.
+# See sim/README.md's "Initial-condition contract" (issue #171) for the full
+# rationale and for why this list is deliberately these three confirmed
+# forms rather than an attempt at an exhaustive ngspice diagnostic catalog.
+SOLVER_DIAGNOSTIC_MARKERS = (
+    "singular matrix",
+    "gmin stepping failed",  # matches both "Dynamic" and "True" gmin stepping
+    "out of range for ^",
+)
+
+
+def detect_solver_diagnostic(text: str) -> str | None:
+    """Return the first ngspice solver-diagnostic line found in *text*, or
+    None if none of SOLVER_DIAGNOSTIC_MARKERS appears.
+
+    *text* is expected to be a corner's combined stdout+stderr. The returned
+    string is the matched line itself (stripped), so it can be surfaced
+    verbatim as a FAIL reason -- see sim/README.md's "Initial-condition
+    contract" (issue #171).
+    """
+    for line in text.splitlines():
+        stripped = line.strip()
+        if any(marker in stripped for marker in SOLVER_DIAGNOSTIC_MARKERS):
+            return stripped
+    return None
+
+
 def signal_name(signum: int) -> str:
     """POSIX name for a signal number, e.g. 9 -> 'SIGKILL'."""
     try:
@@ -499,8 +534,9 @@ def run_corner(
     killed_by_signal = None if timed_out else (-rc if rc < 0 else None)
 
     values = parse_measurements(stdout + "\n" + stderr)
+    solver_diagnostic = detect_solver_diagnostic(stdout + "\n" + stderr)
     checks = []
-    ok = rc == 0 and not timed_out
+    ok = rc == 0 and not timed_out and solver_diagnostic is None
     for m in exp.measurements:
         value = values.get(m.name)
         passed = value is not None
@@ -531,6 +567,11 @@ def run_corner(
             f"# ngspice exit: {rc}{exit_note(rc, timed_out, killed_by_signal)}",
             f"# wall clock: {elapsed_s:.1f}s (--timeout was {timeout}s)",
             f"# result: {'PASS' if ok else 'FAIL'}",
+            *(
+                [f"# solver diagnostic: {solver_diagnostic}"]
+                if solver_diagnostic is not None
+                else []
+            ),
             "",
             "# ==== deck (exact input given to ngspice) ====",
             *[f"| {ln}" for ln in deck_text.splitlines()],
@@ -561,6 +602,7 @@ def run_corner(
         "elapsed_s": round(elapsed_s, 3),
         "timeout_s": timeout,
         "measurements": checks,
+        "solver_diagnostic": solver_diagnostic,
         "pass": ok,
         "log": str(log_path.relative_to(REPO_ROOT)) if log_path is not None else None,
     }
@@ -651,6 +693,8 @@ def render_record(record: dict) -> str:
         detail = "; ".join(parts)
         why = ""
         fails = [c["reason"] for c in res["measurements"] if not c["pass"] and c["reason"]]
+        if res.get("solver_diagnostic"):
+            fails.append(f"solver diagnostic: {res['solver_diagnostic']}")
         if res["timed_out"]:
             fails.append(
                 "ngspice TIMED OUT — the harness killed it after "

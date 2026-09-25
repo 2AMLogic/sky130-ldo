@@ -299,6 +299,113 @@ evidence trail. Corrections mint a new record that references the prior one via
 
 ---
 
+## Initial-condition contract (issue #171)
+
+**A bench's `.op`/`.tran`/`.ac`/`.dc` analysis chain must start from a
+physically realizable state of the circuit — never from ngspice's own
+unconstrained `.op` solve.** Two shapes satisfy this:
+
+- **`uic` + an EN edge** — every node starts at its natural cold-start value
+  (0 V unless a source forces otherwise), `EN` starts low (block disabled),
+  and the deck's first analysis is a `tran … uic` (or a `.dc`/`.op` chained
+  off one) whose stimulus brings `EN` high at some later time so the block
+  powers up through its own soft-start ramp, exactly like a real power-on
+  event. `sim/mc-output-accuracy` (post-#164) uses this convention; see its
+  `experiment.json`'s `mc_analysis.note` for the worked example. A bench
+  whose analysis never leaves the disabled (`EN = 0`) state before the
+  measurement window it cares about — e.g. `sim/startup`'s cold-enable legs,
+  which measure the ramp *through* the EN edge itself rather than a settled
+  ON-state — can rely on an ordinary (non-`uic`) `.op`/`.tran` seed instead,
+  because the disabled state has no closed feedback loop to disambiguate; the
+  hazard this contract exists for is specific to seeding a solve that must
+  land on the loop's **regulating** operating point.
+- **An `.ic`-seeded `.op`** — every node the loop needs to disambiguate is
+  given an explicit `.ic` value close to the block's expected operating
+  point (a `.ic v(node)=<value> …` card in the netlist body), and the `.op`
+  solve is released from that seed rather than from ngspice's own guess.
+  `sim/ic-screen-125c-b` (`tran 10u 3m` — no `uic` — with an `.ic` card
+  constraining every node the loop needs) is a worked example of this shape
+  (see design/README.md "#164" for the multi-variant screen that established
+  it as equivalent to `uic` + EN edge for this circuit).
+
+**Why an unconstrained `.op` is not acceptable for a claim against
+`spec/target-spec.md`:** ngspice's Newton solver on a from-nowhere `.op` is
+not guaranteed to land on the circuit's actual operating point — it can
+converge to a numerically spurious branch instead, and it does not always
+tell you when it has. Issue #164 (closed via PR #170, merged `3a7d2bc6`) is
+the precedent: `mc-output-accuracy`'s original testbench seeded its transient
+from an unconstrained `.op`, and on the committed N=200 sample sequence, 12
+of the 200 draws settled with `FB` at up to 1.3e15 V while `VOUT` sat at
+`VIN` — a state that violates the passive feedback divider's own algebra
+(`FB` is a tap fed only by `VOUT` through a resistor string, so `FB` can
+never exceed `VOUT`). The mechanism was `sky130_fd_pr__res_xhigh_po`'s
+non-monotone voltage-coefficient extrapolation admitting a numerical "solution"
+thousands of volts off the physical range; a nominal-device `.nodeset`
+reproduces it with no mismatch involved, so it is a solver-seeding defect, not
+a device-mismatch finding. The fix was to seed the transient from a
+physically realizable state (`uic`, `EN` as an edge) instead — see
+`sim/mc-output-accuracy/experiment.json`'s `mc_analysis.note` and
+design/README.md "#164" for the full measurement.
+
+**The harness now detects the hazard mechanically, not just by testbench
+convention.** When an unconstrained (or otherwise poorly seeded) `.op` chain
+hits this failure mode, ngspice's Newton solver falls back to gmin/source
+stepping before it gives up, and — whether or not that fallback itself
+"succeeds" — it prints one or more diagnostic lines to stdout/stderr:
+
+- `Warning: singular matrix:  check node <node>`
+- `Warning: Dynamic gmin stepping failed` (also catches `Warning: True gmin
+  stepping failed` — both contain the substring `gmin stepping failed`)
+- `Error: <value>, 2 out of range for ^` — the solver evaluated an expression
+  (e.g. a poly-resistor's voltage-coefficient term) at a value so far outside
+  its intended domain that `pow()` itself errors
+
+`sim/bin/corner-run.py`'s `SOLVER_DIAGNOSTIC_MARKERS` is deliberately the
+three forms above, confirmed against real committed logs at the time of
+writing (issue #171) — not an attempt at an exhaustive catalog of every
+ngspice non-convergence message. In particular, `Warning: source stepping
+failed` (a fourth ngspice fallback, seen in some already-committed 125 °C
+corners of `sim/dropout-vs-load` and `sim/thermal`) is evidence of the same
+underlying class of hazard but is **not yet matched** — widening the marker
+set is a small, low-risk follow-up, not a blocker for this contract.
+
+Critically, ngspice does **not** treat any of these as fatal — the run still
+exits `0` and still prints what looks like a converged `.op`/`.meas` result,
+so a harness that only checks the exit code and the measurement bounds grades
+the corner as a clean PASS even though the state it measured may not be a
+circuit state at all. `sim/bin/corner-run.py`'s `run_corner()` scans the raw
+ngspice stdout+stderr for these markers on every corner and forces the corner
+to **FAIL** — regardless of whether its measurements happen to land inside
+their bounds — with a `reason` of the form `solver diagnostic: <the matched
+line>`, distinct from an ordinary measurement-bound failure. The raw
+stdout/stderr (where the diagnostic came from) is always written unchanged to
+the corner's `.log` file, so the diagnostic that triggered the FAIL is visible
+in the committed evidence, not just summarized.
+
+This detection mechanism lives entirely inside `sim/bin/corner-run.py` — it
+covers every bench that runner drives (`sim/pdk-smoke`, `sim/dropout-vs-load`,
+`sim/loop-gain`, `sim/line-regulation`, `sim/load-regulation`,
+`sim/ic-screen-125c-*`, etc.), not `sim/bin/mc-run.py`'s Monte Carlo/`klt sim`
+benches (`sim/mc-output-accuracy`, `sim/mc-ic-screen-*`) — those already carry
+their own per-sample `diagnostics` field in the `klt sim` response, which this
+issue does not touch (the equivalent capability at that tool layer is tracked
+by `2AMLogic/klayout-tools#2489`, not this repo's issue).
+
+**This issue (#171) is the detection mechanism only — it does not convert any
+bench's own analysis chain.** `sim/line-regulation` and `sim/load-regulation`
+currently chain four `.op` solves via `alter` cards with no `uic`/`.ic` seed
+at all (`experiment.json` → `deck.analyses`), which does **not** meet this
+contract; their committed 45-corner records predate this check and were
+graded before it existed. Converting those two benches (and `sim/iq`, and
+auditing the remaining benches) to a contract-conforming seed, and re-running
+their matrices under the new check, is deliberately out of scope here — see
+issues #172/#173/#174. `sim/ic-screen-125c-*` (`uic` or `.ic`-seeded, per
+above) and `sim/startup` (disabled-state seed, per above) already meet this
+contract: re-running them under the new check should report no diagnostic
+and leave their verdict unchanged.
+
+---
+
 ## Writing a new experiment
 
 1. `mkdir -p sim/<slug>/{testbench,netlist-snapshots,corners,records}`
