@@ -51,18 +51,35 @@ v {xschem version=3.4.7 file_version=1.2
 *
 * The deck's three legs (see experiment.json "analyses"):
 *
-*   1. `op` with RFORCE open and RLOAD = 36 Ohm (~50 mA, the ratified Load
-*      row's ceiling): the clamp must be fully OFF and the loop must still
-*      regulate inside the ratified Output row's +-2% window. This is the
-*      "never engages for I_load <= 50 mA" clause.
+*   1. `tran 5u 1.0m uic` with RFORCE open and RLOAD = 36 Ohm (~50 mA, the
+*      ratified Load row's ceiling), measured over its last 100 us: the clamp
+*      must be fully OFF and the loop must still regulate inside the ratified
+*      Output row's +-2% window. This is the "never engages for I_load <=
+*      50 mA" clause.
+*      This leg was a bare `op` until issue #177. That `op` saw VEN's DC
+*      value -- i.e. the block already fully enabled -- and had no `.ic` /
+*      `.nodeset` seed and no preceding `uic` transient, so it asked
+*      ngspice's Newton solver to find the loop's REGULATING operating point
+*      from its own unconstrained guess. sim/README.md's "Initial-condition
+*      contract (issue #171)" forbids exactly that (the precedent is #164 /
+*      PR #170: an unconstrained `.op` can settle on a numerically spurious
+*      branch and not say so). The leg is now a cold-start transient: every
+*      node begins at 0 V (`uic`), EN's PWL edge at t = 100 us powers the
+*      block up through its own soft-start ramp, and the 50 mA point is read
+*      from t = 0.9-1.0 ms, after that ramp has settled (worst case
+*      ~0.553 ms) -- so the state measured is one the circuit actually
+*      walked to, not one the solver guessed.
+*      The `uic` keyword is load-bearing, not belt-and-braces on top of the
+*      PWL's 0 V start -- see the VIN/EN block below for the measurement
+*      that establishes why.
 *   2. `dc vforce 0 -> 1.75` with RFORCE = 1 mOhm and RLOAD open: the DC
 *      limit characteristic. Its two end points are the dead short
 *      (Vout = 0) and the knee just below the regulation point
 *      (Vout = 1.75 V); the pair is what says "brickwall" rather than
 *      "foldback" -- a foldback limiter's short-circuit current is well
 *      BELOW its knee current, a constant-current clamp's is not.
-*   3. `tran` with the short APPLIED AS AN EVENT and then HELD: RLOAD is
-*      back at 36 Ohm and VFORCE is a PWL that sits at 1.8 V until
+*   3. `tran ... uic` with the short APPLIED AS AN EVENT and then HELD: RLOAD
+*      is back at 36 Ohm and VFORCE is a PWL that sits at 1.8 V until
 *      t = 1.0 ms, falls to 0 V in 1 us, and stays at 0 V until the end of
 *      the run. Pre-fault the output node therefore sits at the nominal
 *      1.8 V with the loop live and delivering into it -- note that RFORCE
@@ -102,16 +119,52 @@ v {xschem version=3.4.7 file_version=1.2
 * VIN is tied to the corner runner's 'vsup' parameter. EN (active-high,
 * full-rail 0/VIN per design/README.md) is written as
 * `dc 'vsup' pwl(0 0 100u 0 101u 'vsup' 10 'vsup')`, the same dual DC + PWL
-* form sim/enable-shutdown's tb_enable_shutdown.sch uses: ngspice uses the DC
-* value ('vsup', i.e. fully enabled) for legs 1-2 (`op`/`dc`, unaffected by
-* an enable ramp), and the PWL for leg 3's `tran` (including its own t = 0
-* operating point), which therefore starts DISABLED and rises through a
-* soft-start ramp exactly as sim/startup's cold-enable legs do, instead of
-* depending on ngspice's t = 0 DC solve landing on the regulating branch --
-* which it does not at the ff/sf 125C corners (issue #69; see also
-* sim/enable-shutdown's and sim/startup's testbench comments, and issue #76,
-* which applied this same fix here after PR #75 shipped it in those two
-* sibling benches). VREF is a fixed 1.2 V placeholder
+* form sim/enable-shutdown's tb_enable_shutdown.sch uses. The DC value
+* ('vsup', i.e. fully enabled) is what leg 2's `dc` sweep needs -- an enable
+* ramp would be meaningless there, and the sweep source pins VOUT at every
+* point through RFORCE = 1 mOhm, so the loop has no free regulating branch
+* for the solver to choose between and each point after the first continues
+* from the previous point's converged solution. The PWL, rising from 0 at
+* t = 100 us to 'vsup' by t = 101 us, is what legs 1 and 3's transients ride:
+* both start disabled and reach regulation through a soft-start ramp exactly
+* as sim/startup's cold-enable legs do, instead of depending on a t = 0 DC
+* solve landing on the regulating branch -- which it does not at the ff/sf
+* 125C corners (issue #69; see also sim/enable-shutdown's and sim/startup's
+* testbench comments, and issue #76, which gave leg 3 its edge after PR #75
+* shipped the same fix in those two sibling benches, and issue #177, which
+* gave leg 1 one).
+*
+* CORRECTION, measured by issue #177 -- the EN edge alone is NOT sufficient,
+* which is why legs 1 and 3 now carry `uic`. Both this comment and issue
+* #174's audit previously held that a non-`uic` transient seeds its own t = 0
+* operating point from the PWL's t = 0 value (0 V, disabled), so that neither
+* transient leg was exposed to the initial-condition hazard. That is wrong
+* about the operating point. ngspice runs a transient operating-point solve
+* BEFORE the first timestep of a non-`uic` `tran`, and for a source carrying
+* both a dc value and a transient function it uses the DC VALUE there. It
+* says so itself, on stderr, on every run of this deck:
+*
+*   Note: ven: dc value used for op instead of transient time=0 value.
+*
+* i.e. that solve is the fully-enabled, loop-closed, from-nowhere Newton
+* start sim/README.md's initial-condition contract (issue #171) forbids --
+* even though the transient WAVEFORM afterwards does start from the PWL's
+* 0 V. Run per-leg at tt/27C/3.30V, non-`uic`, legs 1 and 3 each tripped
+* `Warning: Dynamic gmin stepping failed` (corner-run.py's solver-diagnostic
+* FAIL gate); leg 2's `dc` sweep did not (its gmin stepping completes).
+* Adding `uic` skips the offending solve and leaves every measurement
+* unchanged (leg 1 vout_50ma = 1.79883 V, leg 3 ish_avg = -1.53348e-01 A,
+* both identical with and without it).
+*
+* sim/enable-shutdown is NOT exposed by the same mechanism even though it
+* uses the same dual form, because its dc value is `dc 0` -- its transient
+* operating point is solved with EN already low, which is the disabled state
+* the contract's own carve-out covers. sim/startup's `PULSE(...)` carries no
+* separate dc keyword at all, so its op takes the pulse's initial 0 V. This
+* bench is the only one in sim/ whose dual-form source has an ENABLED dc
+* value, and therefore the only one this correction moves.
+*
+* VREF is a fixed 1.2 V placeholder
 * per design/README.md's "VREF interface caveat, and the reference common
 * mode" -- matching the 1:2 feedback divider (VOUT = 1.5 x VREF). No
 * reference-generator block exists yet.
@@ -132,8 +185,8 @@ S {}
 E {}
 T {current-limit testbench -- exercises design/ldo_3v3in_1v8out.sch (#14/#22)
 via its companion subcircuit symbol design/ldo_3v3in_1v8out.sym
-VIN = 'vsup' (corner runner); EN = dc 'vsup' for legs 1-2, PWL 0 -> 'vsup'
-at 100us for leg 3's tran (issue #76); VREF = 1.2V placeholder (see design/README.md)
+VIN = 'vsup' (corner runner); EN = dc 'vsup' for leg 2's dc sweep, PWL 0 -> 'vsup'
+at 100us for legs 1 and 3's `tran ... uic`s (issues #76, #177); VREF = 1.2V placeholder (see design/README.md)
 VFORCE + RFORCE force VOUT: DC limit characteristic, then a held Vout=0 short
 ratified "Current limit" row: brickwall window TBD over PVT; never engages at 50mA} -700 -750 0 0 0.3 0.3 {}
 
@@ -145,15 +198,27 @@ C {devices/lab_pin.sym} -600 -270 0 0 {name=p2 lab=0}
 C {devices/vsource.sym} -400 -300 0 0 {name=VEN value="dc 'vsup' pwl(0 0 100u 0 101u 'vsup' 10 'vsup')" savecurrent=true}
 C {devices/lab_pin.sym} -400 -330 0 0 {name=p3 lab=EN}
 C {devices/lab_pin.sym} -400 -270 0 0 {name=p4 lab=0}
-T {EN carries BOTH a DC value ('vsup' -- used by legs 1-2, the `op`/`dc`
-analyses, which are unaffected by an enable ramp) and a PWL rising from 0 at
-t=100us to 'vsup' by t=101us (used by leg 3's `tran`, which therefore starts
-DISABLED and reaches regulation through a soft-start ramp the same way
-sim/startup's cold-enable legs do). Fixes issue #76: an earlier draft tied
-VEN to a plain DC 'vsup' source, so leg 3's transient started
-already-enabled and depended on ngspice's t=0 DC solve landing on the
-regulating branch, which it does not at the ff/sf 125C corners (issue #69) --
-the same mechanism PR #75 fixed in sim/enable-shutdown and sim/startup.} -360 -230 0 0 0.2 0.2 {}
+T {EN carries BOTH a DC value ('vsup' -- used by leg 2's `dc` sweep, which is
+unaffected by an enable ramp and whose VOUT is pinned by the forcing branch
+anyway) and a PWL rising from 0 at t=100us to 'vsup' by t=101us, which is the
+waveform legs 1 and 3's transients ride up through a soft-start ramp the same
+way sim/startup's cold-enable legs do.
+Fixes issue #76: an earlier draft tied VEN to a plain DC 'vsup' source, so
+leg 3's transient started already-enabled and depended on ngspice's t=0 DC
+solve landing on the regulating branch, which it does not at the ff/sf 125C
+corners (issue #69) -- the same mechanism PR #75 fixed in
+sim/enable-shutdown and sim/startup. Issue #177 then converted leg 1 from a
+bare `op` (which did see this source's DC value, i.e. a fully enabled block,
+with no seed at all) to the same cold-enable transient, per sim/README.md's
+initial-condition contract (issue #171).
+CAREFUL -- the PWL does NOT protect the transient's OPERATING POINT. ngspice
+solves a transient op before a non-`uic` `tran`, and for a source carrying
+both forms it uses the DC value there ("Note: ven: dc value used for op
+instead of transient time=0 value", printed on stderr every run), i.e. the
+fully-enabled loop-closed solve the contract forbids. #177 measured legs 1
+and 3 each tripping `Warning: Dynamic gmin stepping failed` on that solve;
+both legs therefore now carry `uic`, which skips it and changes no measured
+value. See the deck notes in experiment.json and the header comment above.} -360 -230 0 0 0.2 0.2 {}
 
 * ---- VREF (fixed placeholder, see design/README.md interface caveat) ----
 C {devices/vsource.sym} -200 -300 0 0 {name=VVREF value=1.2 savecurrent=true}
@@ -198,7 +263,8 @@ C {devices/lab_pin.sym} 1200 -210 0 0 {name=p19 lab=VF}
 C {devices/lab_pin.sym} 1200 -150 0 0 {name=p20 lab=0}
 T {RFORCE starts at 1e12 (branch effectively absent) and the deck `alter`s
 it to 1m for the two forced legs. VFORCE carries BOTH a DC value (1.8V,
-used by the `op` leg and overridden by `dc vforce ...`) and a PWL that
+overridden by `dc vforce ...` in leg 2 and irrelevant in leg 1, where
+RFORCE is still 1e12 and leg 3, which is `uic`) and a PWL that
 drops the forced output to 0V at t=1.0ms and HOLDS it there to the end
 of the run -- the "continuous Vout=0 short" of the ratified row, applied as
 an event of defined duration rather than sampled at one instant. t=1.0ms
