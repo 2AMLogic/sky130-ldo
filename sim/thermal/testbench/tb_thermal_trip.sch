@@ -48,8 +48,59 @@ v {xschem version=3.4.7 file_version=1.2
 * record says so explicitly rather than presenting them as equally
 * trustworthy.
 *
+* SEEDED BY #178 (2026-09-26) to the #171 initial-condition contract
+* (sim/README.md "Initial-condition contract"): both `dc temp` sweeps used to
+* release from ngspice's own unconstrained Newton solve with EN already at a
+* constant enabled level -- the defect class #164/#171 characterize -- and
+* the superseded record 20260825-104426-933dfdd shows it, with a solver
+* diagnostic on 14 of its 15 corner logs (which corner-run.py's #171 gate
+* now forces to FAIL outright). The IC_SEED card below is a `.nodeset` at the
+* ASCENDING sweep's own starting point (TEMP = 80C, block regulating,
+* untripped).
+* WHY `.nodeset` AND NOT `.ic`, measured rather than assumed: a temperature
+* sweep cannot be a transient (ngspice has no time-varying TEMP), so the
+* contract's `uic` + EN-edge shape -- what #170/#172/#178 used for
+* mc-output-accuracy, line-/load-regulation and dropout-vs-load -- is simply
+* unavailable to this bench. And of the two seed mechanisms, only `.nodeset`
+* reaches a `dc` analysis at all: ngspice applies `.ic` to the
+* operating-point solve that precedes a non-`uic` transient, NOT to `dc`/`op`
+* solves. Measured during #178 on the sibling dropout-vs-load bench
+* (tt/125C/3.30V, an eleven-node `.ic` copied verbatim from
+* sim/ic-screen-125c-b): the seeded `dc` sweep flails exactly as the unseeded
+* one does (singular matrix x6, dynamic gmin stepping failed x16, out of
+* range for ^ x13). `.nodeset`, which a bare solve does honour, is therefore
+* the only mechanism this bench can use -- the weaker of the two (a first-
+* iteration constraint that is then released, not a held initial state), so
+* it is the measured absence of diagnostics in the post-#178 record, not the
+* mechanism's pedigree, that is the evidence this bench conforms.
+* WHERE THE VALUES COME FROM (not invented): a settled cold-start `uic`
+* transient of THIS testbench, unmodified, at tt/80C/vsup=3.30V -- the
+* ascending sweep's own starting temperature. `uic` starts every node at 0
+* with VIN/EN stepping to their DC values, i.e. a power-up event, and the
+* loop settles on the regulating branch with ZERO solver diagnostics:
+* V(VOUT) 1.80076, FB 1.20070, N_FBB 0.600445, EA_OUT = EA_CZ 2.48682,
+* SS 3.29980, BIASP 2.32652, NB 0.803915, EA_TAIL 2.46374, TS_CMP 3.29974,
+* TS_SNS 1.46284, TS_REF 1.13593, AMP_ENN 0.00253779 V (averaged over the
+* settled 2.5ms-3ms tail). VIN-tracking nodes are written relative to 'vsup'
+* so the seed stays realizable at every supply on the corner axis;
+* ground-referenced nodes are absolute.
+* KNOWN LIMIT OF ONE CARD, stated rather than papered over: `.nodeset` is a
+* netlist card, so both `dc temp` commands in the deck share it. It is the
+* right state for the ascending sweep's 80C start; at the DESCENDING sweep's
+* own 180C start the block is expected to be TRIPPED, so the same card is a
+* deliberately wrong (though harmless -- it is only a first guess, and the
+* descending sweep converges from it with no diagnostic) guess there.
+* ngspice offers no per-analysis nodeset, and giving the descending sweep its
+* own tripped-state seed would need a second deck. Separately: this bench's
+* trip == reset degeneracy (hysteresis_c == 0 at most corners) is NOT that
+* seeding question -- it is the pre-existing DC-continuation limitation #77
+* found and #91 carries forward, and #178 neither fixes nor worsens it.
+*
 * VIN and EN are DC-only (no AC/transient stimulus needed for a DC
-* temperature sweep). VREF is a fixed 1.2V placeholder per
+* temperature sweep -- and a PULSE/PWL EN edge is not an option here: a `dc`
+* analysis evaluates a time-dependent source at t=0, which would hold EN at
+* 0 and disable the block for the whole sweep). VREF is a fixed 1.2V
+* placeholder per
 * design/README.md's "VREF interface caveat" -- matching the 1:2
 * feedback-divider ratio (VOUT = 1.5 x VREF), same convention
 * load-transient/psrr-dc/dropout-vs-load/loop-gain already use.
@@ -108,3 +159,10 @@ C {devices/lab_pin.sym} 900 -330 0 0 {name=p15 lab=VOUT}
 C {devices/lab_pin.sym} 900 -270 0 0 {name=p16 lab=0}
 T {R_LOAD: 1.8kOhm, ~1mA class at VOUT~1.8V -- same load point
 design/README.md's thermal-shutdown OP check and psrr-dc use} 940 -300 0 0 0.2 0.2 {}
+
+* ---- the ascending sweep's own starting state (issue #178, contract #171) ----
+C {devices/code_shown.sym} -700 -100 0 0 {name=IC_SEED only_toplevel=false value=".nodeset v(VOUT)=1.8008 v(xldo.FB)=1.2007 v(xldo.N_FBB)=0.6004 v(xldo.EA_OUT)=\{vsup-0.813\} v(xldo.EA_CZ)=\{vsup-0.813\} v(xldo.SS)=\{vsup-0.0002\} v(xldo.BIASP)=\{vsup-0.973\} v(xldo.NB)=0.8039 v(xldo.EA_TAIL)=\{vsup-0.836\} v(xldo.TS_CMP)=\{vsup-0.0003\} v(xldo.TS_SNS)=1.4628 v(xldo.TS_REF)=1.1359 v(xldo.AMP_ENN)=0.0025"}
+T {IC_SEED: the untripped, regulating state of THIS testbench at
+tt/80C/vsup=3.30V -- the ascending sweep's own starting point -- measured
+from a settled cold-start uic transient (issue #178; see the header for the
+node set, for why .nodeset and not .ic, and for the one-card limitation)} -700 -140 0 0 0.2 0.2 {}
