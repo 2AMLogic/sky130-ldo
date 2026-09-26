@@ -144,6 +144,10 @@ discrete-point convention was chosen and for the full results.
 >   `alter`s VIN itself, so that axis cannot reach the measured quantity — and
 >   22 of 30 (group × measurement) cells disagree across it by more than 2×.
 >   Its corner-level verdicts are branch-selection outcomes, not measurements.
+>   (**#196 named what that axis was reaching instead**: `EN`'s high level,
+>   which the bench keyed off `'vsup'` while `VIN` moved independently. With
+>   `EN` at the instantaneous VIN the axis is inert by construction and those
+>   cells should agree exactly — see "#196" below.)
 > - **On the regulating branch all three rows are inside their bounds**, with
 >   exactly one exception in the whole set: `load-regulation`'s
 >   `fs_125c_3.63v` at 19.93 mV against 18 mV. That single corner is the only
@@ -1086,7 +1090,164 @@ sanity measurement is a bench artifact nobody could explain.
 source (a line step, not `'vsup'`), so the same off-rail geometry is reachable
 there. Nothing in #187's evidence says that bench is *currently* wrong — its
 step range and corner set differ — and re-running it is a separate bench's
-re-verification, so it is filed rather than folded in here.
+re-verification, so it is filed rather than folded in here. **Resolved by #196
+— it *was* reachable there, and it was the whole of that bench's failing
+column: see the next section.**
+
+### #196: `line-regulation`'s `EN`-below-VIN convention — the same geometry, and the five corners it accounted for
+
+`line-regulation` was the last bench in `sim/` driving `EN` off the VIN rail,
+and the reason it survived #187 is that the easy fix does not apply to it.
+`dropout-vs-load` could simply let `'vsup'` set VIN *and* `EN`, because its VIN
+axis was an artifact. Here VIN is the **independent variable**: `VVIN` is this
+bench's own source, `alter`-ed between 2.97 V and 3.63 V *inside* every corner,
+while `'vsup'` is fixed per corner. So at the `*_2.97v` corners the
+VIN = 3.63 V point ran with `EN` **0.66 V below VIN** — #187's geometry exactly,
+including the part that makes it invisible: the clamps out-drive the amplifier
+without producing a single solver diagnostic, so `#171`'s gate never sees it.
+
+**The convention, and why this one.** `EN`'s high level is now the
+**instantaneous VIN** at every measured point: each point sets one literal
+(`set vinpt = <v>`) and points both `alter vvin` and
+`alter @ven[pwl] = [ 0 0 100u 0 101u $vinpt 10 $vinpt ]` at it, so VIN and
+`EN` cannot drift apart in a later edit. `design/README.md` →
+"Enable/shutdown" specifies `EN` as "active-high, full-rail (0 V / VIN)", so
+this is the documented interface at 2.97 V and at 3.63 V alike. The two
+alternatives #196 tabled were both rejected on the record: **`EN` = 3.63 V at
+every corner** puts `EN` *above* VIN at the low point — not the #187 collapse
+(the VIN-sourced PMOS clamps go harder off, not on), but a second departure
+from the documented interface and an over-drive of the `EN`-gated NMOS
+switches, for no gain; **collapsing the supply axis** for this row is a change
+to the ratified corner matrix's meaning, which `CLAUDE.md` routes through a
+decision record. Nothing in `design/` or `spec/` moves — this is a bench
+convention, and #196 was explicitly out of scope to touch either.
+
+**Confirmed, corner by corner: all five failures were the artifact.** The
+`*_125c_2.97v` column of record `20260926-001833-228fbc7` was the entire set of
+FAILs, and re-running those five corners with `EN` at the instantaneous VIN
+takes every one of them into the band the other 40 corners already occupied.
+The `VIN = 2.97 V` points are **not** changed by the convention (`EN` =
+`'vsup'` = 2.97 V = VIN there already), and they reproduce the superseded
+record's own settled values on a different host to within 0.03 mV — so the
+whole of the change is at the `VIN = 3.63 V` points:
+
+| Corner | `v(vout)` @ 3.63 V, 1 mA | `line_reg_1ma` | `line_reg_50ma` |
+|---|---|---|---|
+| `tt_125c_2.97v` | 1.78023 V → **1.80114 V** | 31.167 → **0.496970** | 43.918 → **0.340909** |
+| `ss_125c_2.97v` | 1.79206 V → **1.80106 V** | 13.147 → **0.475758** | 18.309 → **0.336364** |
+| `ff_125c_2.97v` | 1.74468 V → **1.80125 V** | 85.161 → **0.513636** | 123.409 → **0.371212** |
+| `sf_125c_2.97v` | 1.79628 V → **1.80103 V** | 6.745 → **0.443939** | 9.536 → **0.343939** |
+| `fs_125c_2.97v` | **−6.70668 V** → **1.80126 V** | 12890.2 → **0.595454** | 24026.1 → **0.353030** |
+
+(mV/V against the row's 5 mV/V bound. `fs` is the corner #187 found collapsed on
+the other bench; its four points are the 200 ms ones of the behavioural-source
+cross-check below. The other four rows' "after" numbers are a **short-window**
+re-run — the same four points and the same `EN` convention, but `tran 10u 2m
+uic` measured over its 1–2 ms tail instead of 200 ms/199–200 ms, for the
+runtime reason in "Why the 45-corner matrix is not re-run here" below.)
+
+**The short window is validated, not assumed.** `v(vout)` is flat to six
+digits across the 1–2 ms window at every one of these corners
+(`min` = `max` = 1.80081 V at `tt`, for instance), the 1–2 ms average
+reproduces the superseded record's own 199–200 ms average at the two
+unchanged VIN = 2.97 V points, and where the same corner was run **both** ways
+under the new convention the two windows agree far inside the effect being
+measured:
+
+| Corner | `line_reg_1ma`, 2 ms | 200 ms | `line_reg_50ma`, 2 ms | 200 ms |
+|---|---|---|---|---|
+| `ss_125c_2.97v` | 0.475758 | 0.483333 | 0.336364 | 0.336364 |
+| `ff_125c_2.97v` | 0.513636 | 0.563636 | 0.371212 | 0.368182 |
+
+**Independent cross-check on the implementation itself.** "`EN` = the
+instantaneous VIN" can also be written continuously rather than per-point, as a
+behavioural source multiplying a dimensionless 0 → 1 enable ramp by the supply
+node: `BEN EN 0 V='v(VIN)*v(ENRAMP)'`. Built and run at `fs_125c_2.97v`, the
+worst corner of the superseded record, over the shipped 200 ms points it
+returns `v(vout)` = 1.80087 / 1.80126 / 1.79839 / 1.79862 V, i.e.
+**0.595454 / 0.353030 mV/V**. The shipped deck keeps the plain `vsource` +
+`alter` shape instead, so `EN` stays a `.save i(ven)`-able independent source
+in the form `sim/enable-shutdown` and the `#171`/`#172` contract describe.
+
+**What `'vsup'` means on this bench now: nothing in the stimulus.** It is a
+pure corner *label* here — the decks for a corner's 2.97 V / 3.30 V / 3.63 V
+variants differ only in a `.param vsup=` line this bench no longer references,
+so the three supply columns are the same experiment and are expected to come
+back identical. That is worth keeping rather than collapsing: the supply axis
+becomes a reproducibility check on the harness instead of a stimulus axis.
+`#118` had already classified this axis as a *negative control* ("the deck
+`alter`s VIN itself, so that axis cannot reach the measured quantity") and
+found 22 of 30 cells disagreeing across it by more than 2× — that disagreement
+**was** the artifact, and it should now be identically zero.
+
+#### The rest of `sim/` — swept for the same geometry, and clean
+
+Every other bench in `sim/` was re-read for #196 (at `origin/main` `d9a46fa`,
+2026-09-26). `line-regulation` was the last holdout, and with it fixed **no
+bench drives `EN` below VIN at any simulated point**:
+
+| Bench(es) | `VVIN` | `EN` | Geometry |
+|---|---|---|---|
+| `iq`, `load-transient`, `loop-gain`, `thermal`, `psrr-dc`, `ic-screen-125c-{b,h,v}`, `mc-ic-screen-{a,b}` | `'vsup'` | `'vsup'` (plain DC) | `EN` = VIN |
+| `enable-shutdown`, `load-regulation`, `current-limit` | `'vsup'` | `pwl(… 'vsup' …)` | `EN` = VIN when asserted |
+| `startup`, `mc-output-accuracy`, `ic-screen-125c-c` | `'vsup'` | `PULSE(0 'vsup' …)` | `EN` = VIN when asserted |
+| `dropout-vs-load` | `PWL(0 0 100u 'vsup' 6m 'vsup' 14m 'vsup-2.13')` | `PULSE(0 'vsup' …)` | `EN` = VIN at the plateau, `EN` ≥ VIN on the down-ramp (post-#187) |
+| `pex-post-layout` | `DC {vvin}` | `DC {vvin}` | `EN` = VIN |
+| `pdk-smoke` | — | — | no DUT enable |
+| **`line-regulation`** | **`alter`-ed 2.97/3.63 V per point** | **`alter`-ed to the same per-point literal** | **`EN` = VIN (this issue)** |
+
+One nuance found while sweeping, deliberately **not** folded in here:
+`psrr-dc` drives `VVIN` as `DC 'vsup' AC 1` and `EN` as a plain DC `'vsup'`, so
+in the `ac` analysis the 1 V supply perturbation appears on VIN while `EN` is a
+small-signal *ground*. At DC the geometry is clean (`EN` = VIN, which is all
+#196 asked about), but per the documented full-rail interface a real supply
+ripple would appear on `EN` too, which is a different question about a
+different analysis type — **filed as #201** rather than decided here.
+
+#### Why the 45-corner matrix is not re-run here
+
+**The record is not superseded by this change — the gap is stated, not
+papered over.** `sim/line-regulation/records/20260926-001833-228fbc7` remains
+the last full-matrix record, and it was taken under the old convention, so
+after #196 the Line regulation row's committed evidence is **stale by
+construction** (`measurements/characterization.md`'s freshness check says so:
+a live re-netlist of the testbench no longer matches that record's netlist
+snapshot). This is the same state `current-limit` has been in since `#177`,
+and the reason is the same: `corner-run.py` has no remote/batch backend
+(`klt sim` has one, but this bench's multi-solve-per-corner `alter` chain
+still is not expressible as a `klt sim` request — 2AMLogic/klayout-tools#2482;
+re-checked against the installed `klt` for #196, whose generated `.control`
+block runs **one** declared analysis and `alter`s supplies only), so the
+matrix has to run in the runner itself, one `ngspice` at a time.
+
+**Measured, on the machine #196 ran on.** The re-run was started and then
+stopped: its first corner (`tt_-40c_2.97v`, a PASS at 0.228788 / 0.278788 mV/V
+— equal to six digits to the superseded record's own `tt_-40c_3.30v` cell,
+i.e. the `EN` level is simply not a lever at −40 °C) took **578.9 s**,
+against **41.7 s**
+for the same corner in the superseded record. At that rate the 45-corner matrix
+is **~7 h of serial `ngspice`**, an order of magnitude past what one dispatched
+session can hold open, and the sibling `*_125c_2.97v` corners are among the
+slower ones (three of the five exceeded a 300 s per-corner cap on a first
+attempt).
+
+**The cost is the host and the deck, not the new convention.** The same
+corner's *old-convention* deck (`EN` at `'vsup'`, otherwise identical) was run
+side by side as a control and was **still running after 13.6 min** — longer
+than the new deck's 578.9 s — when it was stopped. Read these numbers as an
+order-of-magnitude statement rather than a clean platform benchmark: this is a
+shared 8-vCPU sweep host, and load average during the runs above ranged from
+1.7 to 16.6 as other sweeps came and went.
+
+The partial evidence gathered instead is the five-corner confirmation above
+plus that first corner, and it is reported here and in #196's PR rather than
+minted as a record, **precisely because an incomplete matrix must not be minted
+as a record** (the same rule `#177` followed). Closing the gap needs one
+`python3 sim/bin/corner-run.py sim/line-regulation --supersedes
+20260926-001833-228fbc7` on a host that can hold that run; the convention under
+test is already committed, so it needs no further deck work. **Tracked as
+#200**, with the measured runtimes above and the acceptance criteria the re-run
+owes (including the identical-supply-columns prediction).
 
 ### `load-transient` after #180
 
@@ -2153,6 +2314,15 @@ use discrete points, not a sweep, for exactly this reason).
   reads 0.109–0.705 mV/V. The five survivors are all `*_125c_2.97v`, i.e. the
   same bucket #118 called "intermediate". See "…re-run under the #171 contract
   (issue #172)" below.
+  **Record note (#196): this record is the last one taken under the old
+  `EN`-at-`'vsup'` convention, and all five of its survivors are that
+  convention's artifact** — re-run with `EN` at the instantaneous VIN they read
+  0.44–0.60 / 0.34–0.37 mV/V (see "#196" above). #196 committed the corrected
+  deck but **did not re-run the matrix** (~7 h of serial `ngspice` on the sweep
+  host, measured), so this record's numbers are evidence about the **pre-#196
+  deck only**, and the row's verdict against the current deck is not
+  established. Closing that gap is one `corner-run.py --supersedes
+  20260926-001833-228fbc7` on a host that can hold the run — **#200**.
 - **`load-regulation/`** — `I_LOAD` ∈ {0 mA, 50 mA} at each corner's own VIN
   (`'vsup'`), two `.op` solves; `load_reg_v` = `abs(vout@50mA - vout@0mA)`.
   First record (`--quick`, `20260825-040748-6fac47d`): **PASS** at
@@ -2383,7 +2553,11 @@ direction `#118` predicted:
   `'vsup'` while `alter`-ing `VIN` independently (the negative-control
   wiring `#118` documented), so all five survivors are measured with `EN`
   660 mV *below* `VIN`; read them as a real, reproducible DUT behaviour
-  under that stimulus, not as a clean supply-rejection number.
+  under that stimulus, not as a clean supply-rejection number. **`#196`
+  settled which of those two readings applies: that stimulus is off-contract
+  for this DUT, and all five survivors are the `EN`-below-VIN artifact — with
+  `EN` at the instantaneous VIN they read 0.44–0.60 mV/V at 1 mA and
+  0.34–0.37 mV/V at 50 mA. See "#196" above.**
 - **`load-regulation`: exactly the 7 gross-failure corners changed, all
   FAIL → PASS**, and `#118`'s "44× empty band between 19.93 mV and 881 mV
   that no continuum mechanism produces" is gone — the 44 passing corners are
