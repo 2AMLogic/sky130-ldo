@@ -12,12 +12,16 @@ v {xschem version=3.4.7 file_version=1.2
 * ratified by issue #1 / DR-006; the bound below cites it verbatim,
 * not an invented final limit.
 *
-* I_LOAD is fixed at 50mA (the ratified row's own test point). VVIN sweeps
-* independently of the corner runner's 'vsup' -- EN uses 'vsup' instead
-* (always comfortably above the enable threshold across the whole
-* 2.97-3.63V corner axis), so PVT corners (process/temp, and EN's rail via
-* 'vsup') still vary per corner point while VIN is finely swept inside
-* each corner run.
+* I_LOAD is fixed at 50mA (the ratified row's own test point). VVIN and EN
+* both start from the corner runner's 'vsup' (issue #187): VIN is ramped up
+* to 'vsup', held, then walked down toward 1.5V, and EN's high level is
+* 'vsup' as well, so EN is always AT the VIN rail the DUT sees. Through
+* record 20260926-043132-eba96ae this bench instead pinned VIN at 3.63V for
+* every corner while EN kept 'vsup' -- which put EN 0.66V BELOW VIN at the
+* '*_2.97v' corners and broke the block at fs/125C. See the "#187" section
+* below: the assumption that any 'vsup' on the 2.97-3.63V axis is
+* "comfortably above the enable threshold" was false, because the enable
+* input is not threshold-referenced at all -- it is VIN-referenced.
 *
 * Methodology fixed by issue #71 (superseding #18's original method, which
 * measured Vin-Vout at a fixed low-VIN sweep endpoint 1.9V -- deep past the
@@ -83,7 +87,9 @@ v {xschem version=3.4.7 file_version=1.2
 * CONVERTED BY #178 (2026-09-26) to the #171 initial-condition contract
 * (sim/README.md "Initial-condition contract"): the `dc VVIN 3.63 1.5 -0.02`
 * sweep this bench used through record 20260923-123440-d71f4b3 is gone. VIN
-* is now a PWL ramp inside ONE cold-start `uic` transient:
+* is now a PWL ramp inside ONE cold-start `uic` transient (the 3.63V
+* endpoints below are #178's own; #187 replaced them with 'vsup' -- read the
+* "SUPPLY AXIS" and "#187" sections below for what ships today):
 *   0 -> 3.63V by 100us (cold start; EN steps high at 100us, the same
 *   PULSE(0 'vsup' 100u 1u 1u 100 200) edge sim/ic-screen-125c-c uses),
 *   the ideal 50mA sink ramps on over 2.5-2.6ms once the loop is up
@@ -122,10 +128,74 @@ v {xschem version=3.4.7 file_version=1.2
 * ratified bound. The 8ms ramp is what the matrix runs: it is inside the
 * rate-independent window and it costs 22s per corner where the 60ms ramp
 * cost 471s (both measured on this host).
-* SUPPLY AXIS, unchanged in meaning: VIN starts at 3.63V for every corner
-* (exactly as the `dc` sweep's own first point did, independently of 'vsup'),
-* and the corner runner's 'vsup' still sets EN's rail. So the supply axis
-* still varies per corner point, and it still does so only through EN.
+* SUPPLY AXIS, corrected by #187: the ramp now starts at 'vsup' -- 2.97V,
+* 3.30V or 3.63V -- and EN's high level is that same 'vsup', so the corner
+* runner's supply axis is the DUT's actual VIN (as it is in every other
+* bench in sim/) instead of EN's rail alone. #178 inherited the older
+* convention (VIN pinned at 3.63V, 'vsup' -> EN only) unchanged from the
+* `dc` sweep; #187 measured what that costs and replaced it. Two deliberate
+* consequences:
+*   - The down-ramp's ENDPOINT is 'vsup'-2.13V (0.84/1.17/1.50V), not a
+*     fixed 1.5V, SO THAT THE RAMP RATE STAYS CONSTANT at 266.3 V/s -- the
+*     same rate every corner of records 20260923-123440-d71f4b3 and
+*     20260926-043132-eba96ae ran, and the rate the three-point series
+*     above validated. That choice is measured, not aesthetic: the first
+*     #187 re-run (record 20260926-100003-0b63ae4) kept the fixed 1.5V
+*     endpoint, which makes the rate per-supply (183.8/225.0/266.3 V/s) and
+*     moved dropout_v by up to 20.4mV ACROSS THE SUPPLY AXIS at the
+*     cold/slow corners -- ss/27C read 0.379823V at 2.97V against
+*     0.400265V at 3.63V, tt/-40C 0.452920V against 0.472185V, sf/-40C
+*     0.535094V against 0.554380V -- monotone with rate, in the direction
+*     the #178 ramp-rate caveat already documents (a slower ramp reads
+*     lower, i.e. closer to the zero-rate answer). That is a real
+*     rate-dependence at those corners, not noise, so the bench holds the
+*     rate fixed and keeps the supply axis a pure supply axis rather than
+*     confounding supply with ramp rate. 'vsup'-2.13V still ends far below
+*     every corner's crossing (the largest is ff's ~2.44V).
+*   - "vout_at_max_vin_v" is now VOUT at VIN = 'vsup' rather than at a
+*     fixed 3.63V, i.e. it varies with the supply axis the way a
+*     light-headroom regulation check should.
+*
+* #187 (2026-09-26): WHY the supply convention changed -- an enable-path
+* headroom limit, measured. Record 20260926-043132-eba96ae's one residual
+* outlier was fs_125c_2.97v: vout_at_max_vin_v = -7.4521V with NO solver
+* diagnostic, i.e. a physically realizable solution of the circuit as the
+* bench drove it, not a Newton artifact. It is the bench's EN-below-VIN
+* convention, not a design gap, and it is a STATIC limit rather than a
+* start-up branch:
+*   - Same corner, same deck, EN high = VIN = 3.63V instead of 2.97V:
+*     VOUT settles at 1.79862V. EN high = 3.00/3.10/3.20/3.30V reads
+*     1.68637/1.78256/1.79529/1.79793V -- a monotone cliff in (VIN - EN),
+*     not a convergence coin-flip.
+*   - Bring the loop up with EN = VIN, then drop EN to 2.97V at 1ms while
+*     it is regulating (VOUT = 1.82019V at 0.85-0.95ms): BIASP steps from
+*     2.81460V to 2.90516V, EA_OUT is pushed to 3.60697V (~VIN), and VOUT
+*     collapses to -6.99V by 5.5ms. The block cannot HOLD regulation with
+*     EN 0.66V below VIN, so nothing about start-up is implicated.
+*   - Mechanism, with series ammeters in M_ENP's / M_ENP2's / M_TAIL's
+*     drains (scratch netlist only -- design/ldo_3v3in_1v8out.sch is
+*     untouched). At EN = VIN the two shutdown clamps sit at the leakage
+*     floor and the amplifier has its full tail current: I(M_ENP) = 39pA,
+*     I(M_ENP2) = 62pA, I(M_TAIL) = 3.476uA. At EN = VIN - 0.66V they are
+*     I(M_ENP) = 1.377uA and I(M_ENP2) = 1.639uA -- four to five decades up
+*     -- while I(M_TAIL) falls to 1.003uA, because M_ENP2's injection lifts
+*     BIASP by 90.6mV and BIASP gates every PMOS current source in the
+*     block (design/README.md "Enable/shutdown"). So the clamp current into
+*     EA_OUT now EXCEEDS the whole amplifier tail current it has to be sunk
+*     by: EA_OUT is dragged to VIN, M_PASS turns off, and the ideal 50mA
+*     sink discharges VOUT below ground (no clamp diode in this bench).
+*   - Why this corner and no other: 125C maximizes the clamps' subthreshold
+*     conduction while fs (slow PMOS) minimizes the intended PMOS currents
+*     that must overcome it. The degradation is visible across the whole
+*     '*_125c_2.97v' column of the superseded record -- tt 1.76943V,
+*     ss 1.78627V, sf 1.79211V, ff 1.71701V against ~1.798V at their 3.30V
+*     and 3.63V siblings -- with fs the one corner that falls off the edge.
+*   - Not a design limitation: design/README.md's "Enable/shutdown" section
+*     specifies EN as "active-high, full-rail (0V / VIN)", and every other
+*     bench in sim/ drives EN at 'vsup' WITH VIN at 'vsup'
+*     (sim/enable-shutdown exercises the EN edges themselves that way).
+*     This bench was the only one that drove EN off-rail, so the fix is to
+*     restore the documented interface, not to retune the circuit.
 *
 * VREF is a fixed 1.2V placeholder per design/README.md's "VREF interface
 * caveat" -- matching the 1:2 feedback-divider ratio issue #22 revised the
@@ -144,11 +214,12 @@ E {}
 T {dropout-vs-load testbench -- exercises design/ldo_3v3in_1v8out.sch (#14)
 via its companion subcircuit symbol design/ldo_3v3in_1v8out.sym
 I_LOAD 50mA after the loop is up (ratified "Dropout @ 50mA" row)
-VVIN cold-started to 3.63V then ramped down to 1.5V inside one uic transient (#178)
-EN = 'vsup' as an edge at 100us (corner runner); VREF = 1.2V placeholder} -700 -650 0 0 0.3 0.3 {}
+VVIN cold-started to 'vsup' then ramped down at 266.3 V/s inside one uic transient (#178, #187)
+EN = 'vsup' as an edge at 100us, i.e. AT the VIN rail (#187); VREF = 1.2V placeholder} -700 -650 0 0 0.3 0.3 {}
 
-* ---- VIN: cold start to the sweep's own 3.63V top, then the down-ramp ----
-C {devices/vsource.sym} -600 -300 0 0 {name=VVIN value="PWL(0 0 100u 3.63 6m 3.63 14m 1.5)" savecurrent=true}
+* ---- VIN: cold start to the corner's own 'vsup' top, then the down-ramp ----
+* ---- (#187: 'vsup', not a pinned 3.63V, so EN's high level is AT VIN) ----
+C {devices/vsource.sym} -600 -300 0 0 {name=VVIN value="PWL(0 0 100u 'vsup' 6m 'vsup' 14m 'vsup-2.13')" savecurrent=true}
 C {devices/lab_pin.sym} -600 -330 0 0 {name=p1 lab=VIN}
 C {devices/lab_pin.sym} -600 -270 0 0 {name=p2 lab=0}
 
