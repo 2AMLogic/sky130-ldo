@@ -698,6 +698,14 @@ was not run.
 
 #### What `thermal`'s re-run found (record `20260926-052517-eba96ae`)
 
+> **Superseded by `#189` (`20260926-095154-f6ab418`, 15/15 PASS, 0 of 15 corner
+> logs carrying a diagnostic).** This subsection is kept as written — the same
+> convention the `psrr-dc` and `loop-gain` paragraphs below use — because its two
+> candidate mechanisms are exactly what `#189` had to discriminate between, and
+> **neither** of them was the answer. See "#189" immediately below for the
+> located failures, the measured cause (one node's supply classification in the
+> seed card) and the superseding record.
+
 **Not zero diagnostics — 2 of 15 corners still trip the `#171` gate, and that is
 reported rather than suppressed.** The count falls from **14 of 15** corner logs
 (132 marker hits) in the superseded `20260825-104426-933dfdd` to **2 of 15**
@@ -778,6 +786,148 @@ both survive re-grading on the right one (`dc 0`, and no `dc` keyword at
 all) — see the per-source table in "An EN edge alone does not satisfy the
 first shape" above for the full four-way case split. No bench's verdict
 changes except `current-limit`'s, which gains leg 3.
+
+### #189: `thermal`'s last two corners — one node's supply classification in the seed card
+
+**Verdict first: `15/15 PASS`, and `0 of 15` corner logs carry a `singular
+matrix` / `gmin stepping failed` / `out of range for ^` / `source stepping
+failed` marker, nor a single `Transient op` recovery.** Record
+`20260926-095154-f6ab418` supersedes `20260926-052517-eba96ae`. The `#171`
+solver-diagnostic gate is now satisfied mechanically on this bench, which it was
+not after #178 (2 of 15) and emphatically was not before it (14 of 15).
+
+**Neither of #178's two candidate mechanisms was the cause.** It was not the trip
+bifurcation, and it was not that the seed had been derived at one supply. It was
+that **one of the thirteen seeded nodes was written as if it tracked VIN when it
+does not**.
+
+#### Where the failures actually were
+
+Answering that first, because it is what pointed at the cause. Re-running
+`ss_27c_2.97v`'s ascending sweep alone under a pty (so ngspice's stderr
+interleaves with its own ` Reference value : ` progress line and each diagnostic
+can be attributed to a sweep point) puts all three failure rounds at **TEMP =
+144, 146 and 148 °C** — the three points immediately *below* the 150.658 °C
+crossing that run then reported, each one `Dynamic gmin stepping failed` → `True
+gmin stepping failed` → `source stepping failed` → `Transient op finished
+successfully`. Points 80–142 °C converge, and 152–162 °C converge with no gmin
+stepping at all.
+
+So the failures are in the crossing's own neighbourhood — which is exactly what
+candidate 1 predicts, and is why it had to be ruled out by a *fix* rather than by
+location. With the seed corrected (below) the same sweep crosses at
+**163.001 °C** and prints **zero** failure markers anywhere, the real crossing
+included. A `dc temp` continuation across this comparator's threshold is
+therefore *not* intrinsically unsolvable here; the 144–148 °C flail was a badly
+seeded solve breaking down just before a crossing it then mislocated.
+
+#### The cause: `EA_TAIL` is not a VIN-tracking node
+
+#178's card wrote `v(xldo.EA_TAIL)={vsup-0.836}`, putting it in the
+"VIN-tracking, so write it relative to `'vsup'`" group with `EA_OUT`, `EA_CZ`,
+`SS`, `BIASP` and `TS_CMP`. But `EA_TAIL` is the **source** node of the error
+amplifier's PMOS input pair (`M_IN1`/`M_IN2`/`M_IN2S`): it sits one |Vgs| *above*
+the pair's ground-referenced gate voltages (`FB`/`VREF` ≈ 1.2 V), not one drop
+below VIN. Three cold-start `uic` settles of the unmodified testbench at
+ss/80 °C, one per supply on the corner axis (each clean — zero solver
+diagnostics), measure the difference directly:
+
+| Seeded node | 2.97 V | 3.30 V | 3.63 V | slope (V/V) | classification |
+|---|---|---|---|---|---|
+| `EA_OUT` = `EA_CZ` | 2.09175 | 2.42993 | 2.76773 | 1.02 | VIN-tracking |
+| `SS` | 2.96992 | 3.29992 | 3.62992 | 1.00 | VIN-tracking |
+| `BIASP` | 1.96056 | 2.28001 | 2.60046 | 0.97 | VIN-tracking |
+| `TS_CMP` | 2.96975 | 3.29967 | 3.62955 | 1.00 | VIN-tracking |
+| **`EA_TAIL`** | **2.42179** | **2.50138** | **2.57694** | **0.24** | **not VIN-tracking** |
+| `TS_REF` | 1.16139 | 1.19974 | 1.23646 | 0.11 | ground-referenced |
+| `TS_SNS` | 1.48843 | 1.50963 | 1.52813 | 0.06 | ground-referenced |
+| `NB` | 0.831276 | 0.841784 | 0.851316 | 0.03 | ground-referenced |
+| `VOUT` | 1.80059 | 1.80070 | 1.80085 | 0.00 | ground-referenced |
+
+Imposing slope 1.0 on a 0.24-slope node is a **−288 mV** error at
+`vsup` = 2.97 V (2.134 V seeded against 2.42179 V measured) and **+217 mV** at
+3.63 V. Only the low-supply side flailed; the sign-asymmetry of the circuit's
+tolerance to a mis-seeded tail is *measured here, not explained* — it is why
+#178 could note that "3.63 V is equally far from 3.30 V and is clean" and
+correctly treat that as evidence against a supply-derivation story, when the real
+variable was the node's slope rather than the derivation supply.
+
+**The fix carries no new number.** The card now reads
+`v(xldo.EA_TAIL)=2.4637` — the *same* value #178 measured at tt/80 °C/3.30 V,
+with only its supply classification corrected from `'vsup'`-relative to absolute.
+No per-supply seed mechanism was needed, and none was added: the acceptance
+criterion that asked for one ("every node relative to `'vsup'`, or a
+`.param`-driven card") turns out to describe a mechanism the card *already had* —
+it was one node's membership in the group that was wrong.
+
+#### A `.nodeset` is re-applied at *every* `dc` sweep point, not just the first
+
+Worth recording separately, because it contradicts the natural reading that "a
+seed can only fix a sweep's first point" — the reading that made candidate 1
+attractive. At `ss_27c_2.97v`, ascending, 51 points:
+
+| Ascending sweep at `ss_27c_2.97v` | gmin-stepping attempts | failure rounds | `trip_temp_c` |
+|---|---|---|---|
+| no `.nodeset` at all | ~every point, plus `singular matrix` | yes | — (probe stopped) |
+| #178 card (`EA_TAIL={vsup-0.836}`) | essentially all 51 | 3 (at 144/146/148 °C) | 150.658 °C |
+| #189 card (`EA_TAIL=2.4637`) | 3 (168/170/178 °C, all "completed") | **0** | **163.001 °C** |
+
+A card that only constrained the 80 °C point could not change how 82–180 °C
+solve — those start from their predecessor's solution — so ngspice must be
+re-applying the nodeset as the first-iteration guess at each point. Two
+consequences for this bench: a wrong value biases the *whole* continuation rather
+than costing one point, and the one-card limitation (#178's limit 1, both sweeps
+sharing the card) is a little less benign than "a wrong first guess at 180 °C"
+suggested — though the descending sweep is now diagnostic-free too, so it is
+still not costing anything measurable.
+
+#### What the corrected matrix says
+
+| Corner | #178 `trip_temp_c` | #189 `trip_temp_c` | #178 verdict | #189 verdict |
+|---|---|---|---|---|
+| `ss_27c_2.97v` | 150.658 °C (diagnosed) | **163.001 °C** | FAIL | PASS |
+| `sf_27c_2.97v` | 149.000 °C (diagnosed) | **161.000 °C** | FAIL | PASS |
+| the other 13 | unchanged | unchanged, to 3 decimals | PASS | PASS |
+
+**The two diagnosed numbers were artifacts, and the corrected matrix is now
+monotonic in supply at every process corner but `fs`.** Each process corner's
+trip temperature should fall as the supply rises (it does: `tt` 169.0 → 165.0 →
+161.0, `ss` **163.0** → 159.0 → 155.0, `ff` 171.0 → 169.0 → 165.0, `sf`
+**161.0** → 159.0 → 155.0). Under #178's card `ss` read 150.658 → 159.0 → 155.0
+and `sf` read 149.0 → 159.0 → 155.0 — both non-monotonic, both with the anomaly
+at the diagnosed corner. `fs` remains non-monotonic (167.0 → 165.0 → 167.0) and
+carries no diagnostic in either record, so it is not this defect.
+The whole matrix now trips between **155.0 °C and 171.0 °C**, every corner above
+the 125 °C `min` bound, and the run is also much cheaper: `ss_27c_2.97v` goes
+from 457.0 s to 39.1 s of wall clock, the 15-corner total from ~1620 s to ~955 s.
+
+**The `trip == reset` degeneracy is still there and is still not this issue's.**
+`hysteresis_c` now reads exactly 0.00 °C at all fifteen corners, which *passes*
+the `min: 0` bound but is not a measured 15 °C window either — it is #77's
+finding, carried by #91. What #189 does settle is that the two **negative**
+readings (−12.34 °C and −12.00 °C) were not a second, deeper form of it: they
+were the same seeding defect as the diagnostics, and they are gone.
+
+**What a conforming measurement of a hysteretic trip point would have to be**, if
+#91 is ever to close: not one `dc temp` continuation but **two decks** — a
+temperature staircase of *independent* cold-start `uic` transients, one run per
+TEMP point, each starting from `EN` = 0 with `C_OUT` discharged and the
+soft-start ramp held down (giving the trip direction by asking "does the block
+come up at all at this TEMP?"), and the same staircase released from a
+tripped-state seed for the reset direction. ngspice has no time-varying `TEMP`,
+which is what forces the staircase to be a grid of separate runs rather than one
+analysis, and is why this was sketched in #178 and again here rather than
+attempted: it is a per-TEMP-point corner grid on top of the existing
+process × supply matrix, and it is not needed for the trip point this bench
+actually bounds.
+
+#### How it was run
+
+`corner-run.py` has no remote/batch backend (see `--backend` under "Writing a new
+Monte Carlo experiment" and 2AMLogic/klayout-tools#2482), so the 15-corner matrix
+ran through the runner itself — one `ngspice` process at a time, sequentially,
+~16 minutes total — and the probes above are single-corner debug runs, one
+`ngspice -b` each. No `ngspice` grid was hand-launched.
 
 ### `load-transient` after #180
 
@@ -1248,19 +1398,34 @@ section is a map, not a duplicate of that detail.
   operating ceiling at every supply corner (confirming and quantifying
   issue #69), and measured hysteresis is non-positive at every one of the
   15 corners (a new finding, filed as issue #77).
-  **Current record** (`20260926-052517-eba96ae`, issue #178, supersedes
+  **Superseded record** (`20260926-052517-eba96ae`, issue #178, supersedes
   `20260825-104426-933dfdd`, first run with both `dc temp` sweeps seeded from a
   measured untripped state): **13/15 PASS, up from 12/15**, and solver
   diagnostics down from **14 of 15** corner logs (132 hits) to **2 of 15**
   (18 hits) — `ss_27c_2.97v` and `sf_27c_2.97v`, which the #171 gate correctly
   forces to FAIL and which an ascending-sweep-only probe shows are *not* the
   shared-`.nodeset` limitation. Every trip temperature moved up 13–16 °C at the
-  eleven undiagnosed corners (matrix now 149.0–171.0 °C, all above the 125 °C
-  bound) — but this is *also* this bench's first run against the post-#69/#116
-  DUT (its Thermal row goes `STALE` → `fresh`), and #69 re-sized the very
-  thermal-shutdown circuit measured here, so that shift is not attributable to
-  the seeding alone. The `trip == reset` degeneracy (#77/#91) is unchanged, as
-  expected. See "#178: dropout-vs-load and thermal" above.
+  eleven undiagnosed corners — but this is *also* this bench's first run against
+  the post-#69/#116 DUT (its Thermal row goes `STALE` → `fresh`), and #69
+  re-sized the very thermal-shutdown circuit measured here, so that shift is not
+  attributable to the seeding alone. See "#178: dropout-vs-load and thermal"
+  above.
+  **Current record** (`20260926-095154-f6ab418`, issue #189, supersedes
+  `20260926-052517-eba96ae`): **15/15 PASS**, and **0 of 15** corner logs carry a
+  solver diagnostic or a `Transient op` recovery — the `#171` gate is satisfied
+  mechanically. The two residual corners were a single misclassified value in the
+  seed card: `EA_TAIL`, the PMOS input pair's source node, was written
+  `'vsup'`-relative although a three-supply measurement puts its supply slope at
+  0.24 V/V, so the card sat 288 mV below the real node at `vsup` = 2.97 V. With
+  that corrected their trip points move 150.658 → **163.001 °C** and 149.000 →
+  **161.000 °C**, making the matrix monotonic in supply at every process corner
+  but `fs`; the other thirteen corners are unchanged to three decimals. Matrix
+  now trips 155.0–171.0 °C, all above the 125 °C bound. The `trip == reset`
+  degeneracy (#77/#91) is still there — `hysteresis_c` is now exactly 0.00 °C at
+  all fifteen corners, which passes the `min: 0` bound without being a measured
+  window — but the two *negative* hysteresis readings turned out to be the same
+  seeding defect, not a deeper form of it. See "#189" above, which also states
+  what a conforming hysteretic-trip measurement would have to be.
 
 None of the four fully meets its spec bound yet. This is an honest,
 expected finding, not a harness bug — and the reason has moved. The #18
