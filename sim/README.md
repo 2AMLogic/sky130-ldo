@@ -449,6 +449,14 @@ remaining benches' audit is #174 (verdict table below). `sim/ic-screen-125c-*`
 per above) already meet this contract: re-running them under the new check
 should report no diagnostic and leave their verdict unchanged.
 
+**Issue #178 converted the two benches whose exposed analysis was a bare `dc`
+sweep** — `sim/dropout-vs-load` (a VIN sweep) and `sim/thermal` (two `dc temp`
+sweeps). That turned out to be a case neither #170 nor #172 could have covered,
+because ngspice honours `.ic` only for the operating-point solve preceding a
+non-`uic` transient: a `dc` analysis cannot be given either of the two seed
+shapes this contract names. See "#178: dropout-vs-load and thermal" below for
+the measurement behind that statement and for what each bench did instead.
+
 **#174 audited the remaining benches (`current-limit`, `dropout-vs-load`,
 `loop-gain`, `load-transient`, `psrr-dc`, `thermal`, plus a re-confirmation
 of `startup`/`enable-shutdown`) against this contract, read-only — no
@@ -460,13 +468,212 @@ conversions):
 | Bench | Verdict | Mechanism |
 |---|---|---|
 | `current-limit` | **Exposed** — on **all** of legs 1 and 3, not just leg 1 (corrected by #177, see below) | Leg 1's `op` (`experiment.json:24`) runs with `VEN`'s `dc` value (`'vsup'`, fully enabled) per `testbench/tb_current_limit.sch:145` — an unconstrained, loop-closed solve. ~~(Leg 3's `tran` is *not* exposed: ngspice's non-`uic` transient uses the source's PWL value at t=0, which starts at 0/disabled, per the same line's comment.)~~ **That parenthesis is wrong**, and #177 measured it wrong: a non-`uic` `tran` performs an operating-point solve first and reads the `dc` keyword value there, so leg 3's `tran` was exposed by the same mechanism as leg 1's `op` — see "An EN edge alone does not satisfy the first shape" above. Run per-leg at `tt_27c_3.30v` with no `uic`, legs 1 and 3 each tripped `Warning: Dynamic gmin stepping failed`; leg 2's `dc` sweep did not. Converted by #177: both transient legs now carry `uic`. |
-| `dropout-vs-load` | **Exposed** | Its only analysis, `dc VVIN 3.63 1.5 -0.02` (`experiment.json:23`), runs with `VEN` held at a constant `'vsup'` (`testbench/tb_dropout_vs_load.sch:108`, no PWL/PULSE at all) — unconstrained, loop-closed. Follow-up: #178. |
+| `dropout-vs-load` | **Exposed** → **converted (#178)** | Its only analysis, `dc VVIN 3.63 1.5 -0.02` (`experiment.json:23`), ran with `VEN` held at a constant `'vsup'` (`testbench/tb_dropout_vs_load.sch:108`, no PWL/PULSE at all) — unconstrained, loop-closed. **#178 replaced the `dc` sweep with a cold-start `uic` transient whose VIN is a quasi-static down-ramp** — see "#178: dropout-vs-load and thermal" below. |
 | `loop-gain` | **Exposed** | Its first analysis, `ac dec 30 1e-2 1e9` (`experiment.json:24`), runs with `VEN` held at a constant `'vsup'` (`testbench/tb_loop_gain.sch:102`) — the implicit linearization-point solve ngspice performs before an `ac` analysis is unconstrained. Follow-up: #179. |
 | `load-transient` | **Exposed → CONVERTED (#180)** | Was `tran 200n 3m` with no `uic`, with `VEN` held at a constant `'vsup'` (`testbench/tb_load_transient.sch`) — the same "`tran` with no `uic`" defect `#164` fixed for `mc-output-accuracy`. **#180 converted it** to the `.ic`-seeded shape (variant B): `testbench/tb_load_transient.sch`'s `IC_SEED` card constrains the operating-point solve to the loop's regulating branch at the pre-step 1 mA load and the (still non-`uic`) transient is released from it. See "`load-transient` after #180" below. |
 | `psrr-dc` | **Exposed** | Its first analysis, `ac lin 3 1e3 1e5` (`experiment.json:24`), runs with `VEN` held at a constant `'vsup'` (`testbench/tb_psrr_dc.sch:67`). Follow-up: #179. |
-| `thermal` | **Exposed** | Its first analysis, `dc temp 80 180 2` (`experiment.json:48`), runs with `VEN` held at a constant `'vsup'` (`testbench/tb_thermal_trip.sch:78`). Follow-up: #178. |
+| `thermal` | **Exposed** → **seeded (#178)** | Its first analysis, `dc temp 80 180 2` (`experiment.json:48`), ran with `VEN` held at a constant `'vsup'` (`testbench/tb_thermal_trip.sch:78`). **#178 seeded both `dc temp` sweeps with a `.nodeset` measured from a settled cold-start transient** — the only mechanism available to a temperature sweep, see "#178: dropout-vs-load and thermal" below. |
 | `startup` | **Clear** | `VEN` is `PULSE(0 'vsup' 100u 1u 1u 100 200)` (`testbench/tb_startup.sch:89`) — no separate `dc` keyword, so its `.op`/`.tran` default DC value is the pulse's own initial level (0 V, disabled). The disabled state has no closed feedback loop to disambiguate, per this contract's own carve-out above. |
 | `enable-shutdown` | **Clear** | `VEN` is `dc 0 pwl(0 0 100u 0 101u 'vsup' 2m 'vsup' 2.001m 0 10 0)` (`testbench/tb_enable_shutdown.sch:117`) — the **`dc 0`** is what earns this verdict (not the PWL's t=0 value: #177 showed a non-`uic` `tran`'s op reads the `dc` keyword, so an enabled `dc` value would have exposed it). Leg 1's `tran` therefore solves its op at `EN = 0`, disabled, and reaches regulation through an EN edge (the contract's `uic` + EN-edge shape, informally: no `uic` keyword is present, but the disabled start makes the distinction moot the same way it does for `startup`); legs 2-4's `op`s carry the same `dc 0`, landing on the same disabled state. |
+
+### #178: dropout-vs-load and thermal — and what a `dc` analysis can and cannot be seeded with
+
+Both benches #178 owns ran a bare `dc` sweep as their only (`dropout-vs-load`)
+or first (`thermal`) analysis. Converting them measured something the contract
+above did not yet say, and that the other conversions (#170, #172) never had to
+find out, because none of them had a `dc` sweep to keep:
+
+- **`.ic` does not reach a `dc` analysis at all.** ngspice applies `.ic` to the
+  operating-point solve that precedes a *non-`uic` transient*; a `dc`/`op`
+  solve ignores it. Measured directly on `dropout-vs-load` (tt/125 °C/3.30 V,
+  one corner): adding the eleven-node `.ic` card copied verbatim from
+  `sim/ic-screen-125c-b` left the sweep's flail completely intact — `singular
+  matrix` ×6, `Dynamic gmin stepping failed` ×16, `out of range for ^` ×13,
+  with iterates at 1e155–1e188 V on the `sky130_fd_pr__res_xhigh_po` body
+  expressions (`xr_fb_b`, `xr_fb_c`, `xr_cz`) — i.e. indistinguishable from the
+  unseeded run. #172 had already measured the other half on the regulation
+  benches: `.nodeset`, which a bare solve *does* honour, still printed
+  `singular matrix` plus `Dynamic gmin stepping failed` at 3 of 5 corners
+  probed there.
+- **A seed can only ever fix a sweep's first point.** `dropout-vs-load`'s
+  superseded record carries *thousands* of diagnostics per corner log, not one
+  each: the continuation re-derives — and repeatedly re-loses — the regulating
+  branch all the way down the sweep. Seeding the start cannot address that.
+
+So the two benches took different routes, for a reason that is about ngspice's
+capabilities, not about taste:
+
+- **`dropout-vs-load` stopped being a `dc` sweep.** VIN is now a PWL ramp
+  inside one cold-start `uic` transient (`tran 10u 26m uic`): 0 → 3.63 V by
+  100 µs with `VEN` stepping high at 100 µs, the ideal 50 mA sink ramped on
+  over 2.5–2.6 ms once the loop is up (`sim/ic-screen-125c-c`'s own cold-start
+  convention, verbatim — an ideal sink on a disabled, discharged output is not
+  a realizable state), settled by 5.5 ms, then VIN walked down 3.63 → 1.5 V
+  over 6–26 ms at 106.5 V/s. There is no operating-point solve in the deck at
+  all: the contract's `uic` + EN-edge shape, the same one #170 and #172 landed.
+  **Quasi-static, measured not assumed** (tt/27 °C/3.30 V): the 20 ms ramp
+  reads `dropout_v` = 0.397295 V, a 3× slower 60 ms ramp reads 0.398492 V, and
+  the superseded `dc` record — the zero-rate limit of the same experiment —
+  reads 0.399743 V. ~1.2 mV per 3× rate change, moving *toward* the DC answer
+  as the ramp slows, 2.4 mV of total span against a 300 mV ratified bound. The
+  supply axis keeps its pre-#178 meaning exactly: VIN starts at 3.63 V for
+  every corner (as the `dc` sweep's own first point did, independently of
+  `'vsup'`) and `'vsup'` still sets `EN`'s rail alone.
+- **`thermal` could not stop being a `dc` sweep.** ngspice has no
+  time-varying `TEMP`, so a temperature sweep cannot be a transient, and the
+  `uic` + EN-edge shape is unavailable to this bench — a `dc` analysis
+  evaluates a time-dependent source at t = 0, so giving `VEN` a PULSE edge
+  would hold `EN` at 0 and disable the block for the whole sweep. That leaves
+  `.nodeset` as the only seed mechanism that reaches the solve at all. The card
+  seeds the **ascending** sweep's own 80 °C starting point with the node set of
+  a settled cold-start `uic` transient of that same testbench at
+  tt/80 °C/3.30 V (V(VOUT) 1.80076 V, regulating, zero solver diagnostics), so
+  the values are a *measured* realizable state rather than a guess. Two limits
+  are recorded in the testbench header rather than papered over: `.nodeset` is
+  a netlist card, so both sweeps share it (right at 80 °C ascending, a
+  deliberately wrong — but first-guess-only — state at the descending sweep's
+  180 °C start, where the block is expected to be tripped; ngspice offers no
+  per-analysis nodeset), and this bench's `trip == reset` degeneracy is the
+  pre-existing DC-continuation limitation #77 found and #91 carries forward,
+  which #178 neither fixes nor worsens.
+
+Because `.nodeset` is the weaker mechanism (a first-iteration constraint that
+is then released, not a held state), `thermal`'s conformance is established by
+the measured absence of solver diagnostics in its post-#178 record, not by the
+mechanism's pedigree.
+
+#### What `dropout-vs-load`'s re-run found (record `20260926-043132-eba96ae`)
+
+**Zero solver diagnostics on all 45 corners, and zero timeouts** — against
+**45 of 45** corner logs carrying one in the superseded `20260923-123440-d71f4b3`
+(7070 marker hits in total there, plus `source stepping failed` on 3 of them;
+the new record has 0 of each, that fourth marker included). The `#171` gate is
+therefore satisfied mechanically, not by assertion.
+
+**The verdict changed, and not in the flattering direction: 6/45 → 0/45 PASS.**
+All six of the superseded record's PASSes were `ss`/−40 °C and `ss`/27 °C
+(0.268–0.298 V against the 300 mV bound); those same corners now read 0.513 V
+and 0.400 V. The rest of the matrix mostly *agrees* with the old numbers —
+`tt`/27 °C to 2 mV, `ff`/−40 °C and `ff`/27 °C to 7 mV, `sf`/125 °C and
+`fs`/125 °C (3.30/3.63 V) to 4 mV — so this is not a wholesale shift; it is the
+`ss` column moving.
+
+**That flip is validated at zero ramp rate, at the exact corner, rather than
+argued.** A static two-point hold at `ss`/−40 °C/2.97 V (cold start, settle at
+3.63 V, step to a held VIN, 6 ms of settling at each hold, no ramp anywhere
+near the measurement) reads:
+
+| Held VIN | Settled V(VOUT) | Regulating (≥ 1.764 V)? |
+|---|---|---|
+| 2.28 V | 1.79746 V | yes, by 33 mV |
+| 2.10 V | 1.73008 V | **no** |
+
+So the static crossing lies just below 2.28 V — i.e. `dropout_v` just under
+0.516 V, within 3 mV of the ramp's own 0.5134 V — and the superseded record's
+0.268 V would require regulation to hold at VIN = 2.032 V, where this test
+shows the block is already 34 mV out of regulation at 2.10 V. **The old PASSes
+were an artifact of the unseeded sweep, not a capability the design has.**
+
+**The 125 °C caution this bench has carried since #71/#81 is discharged for
+`dropout_v`.** The five corners the superseded record returned as obvious
+garbage — `ss_125c_*` at 1.41–1.83 V, `ff_125c_2.97v` at 1.82 V,
+`fs_125c_2.97v` at 1.83 V — now read 0.330 V, 0.673 V and 0.432 V, i.e. in
+family with their own process/temperature siblings to within a few mV, and the
+whole matrix now spans a tight **0.330–0.673 V** with supply scatter below
+1 mV (as it should: VIN is the same ramp at every corner, and `'vsup'` only
+sets `EN`'s rail). `ff_-40c_3.63v`, a 300 s timeout with no measurement at all
+in the superseded record, now completes and reads 0.6585 V.
+
+**One residual, reported rather than suppressed**: `fs_125c_2.97v`'s
+`vout_at_max_vin_v` sanity measurement reads **−7.45 V** (it was −14.06 V in
+the superseded record) while its `dropout_v` reads a perfectly in-family
+0.432 V. It is the only one of the 45 corners outside the sanity band — the
+superseded record had 7 (six on a non-regulating 3.17–3.49 V branch, plus that
+−14 V) — and it carries **no** solver diagnostic, so it is not the seeding
+defect: the block is not coming up at all at that corner, and the ideal 50 mA
+sink then drags the discharged output negative. Note what is peculiar to it:
+`'vsup'` = 2.97 V sets `EN` 0.66 V *below* the 3.63 V VIN the ramp starts from,
+which is this bench's own pre-#178 convention (see "SUPPLY AXIS" in the
+testbench header), and the `*_125c_2.97v` column is where both records put
+their worst `vout_at_max_vin_v` outliers. That is a finding for a follow-up,
+not something #178 fixes.
+
+**Ramp-rate caveat, stated because it is real**: rate independence was measured
+at tt/27 °C (1.2 mV over a 7.5× rate range) and confirmed against a static hold
+at ss/−40 °C (3 mV). It is *not* rate-independent everywhere: a 765 V/s hold
+probe at ss/−40 °C read 0.581 V against the 266 V/s matrix's 0.513 V, so at the
+cold/slow corners a faster ramp does inflate the number. 266 V/s is inside the
+validated window at both corners checked; a bench-wide per-corner rate sweep
+was not run.
+
+#### What `thermal`'s re-run found (record `20260926-052517-eba96ae`)
+
+**Not zero diagnostics — 2 of 15 corners still trip the `#171` gate, and that is
+reported rather than suppressed.** The count falls from **14 of 15** corner logs
+(132 marker hits) in the superseded `20260825-104426-933dfdd` to **2 of 15**
+(18 hits): `ss_27c_2.97v` and `sf_27c_2.97v`, both on
+`Dynamic gmin stepping failed` → `True gmin stepping failed` →
+`source stepping failed`, each time recovered by ngspice's own "Transient op"
+fallback. `corner-run.py` forces both to `FAIL` with
+`solver diagnostic: Warning: Dynamic gmin stepping failed`, which is the gate
+working as designed.
+
+**The residual is not the one-card seeding limitation.** Re-running the
+**ascending** sweep *alone* at `ss_27c_2.97v` — the sweep whose own 80 °C start
+point the `.nodeset` describes exactly — still prints 6 `gmin stepping failed`
+plus 3 `source stepping failed`, and returns `trip_temp_c` = 150.6582 °C, the
+same value to four decimals as the full two-sweep run. So the descending sweep's
+deliberately-wrong 180 °C seed is *not* what produces them: a correctly seeded
+ascending sweep flails too, somewhere along its own path rather than at its
+start. Two candidate mechanisms, neither isolated here:
+
+1. **The trip transition itself.** A `dc` continuation has no continuous branch
+   to follow across a comparator threshold with positive feedback around it —
+   VOUT collapses and the comparator latches over, so the solver has to jump. A
+   *start* seed cannot help with a difficulty located at the crossing. This
+   would make the residual a methodology limit of `dc temp` continuation, of the
+   same family as (though distinct from) the `trip == reset` degeneracy #77
+   found and #91 carries.
+2. **The seed being derived at one supply.** Both surviving corners are
+   `*_2.97v`, and the `.nodeset`'s VIN-relative values were measured at
+   `vsup` = 3.30 V. A per-supply seed would settle this; 3.63 V is equally far
+   from 3.30 V and is clean, which argues against it, but not decisively.
+
+**Verdict: 12/15 → 13/15 PASS**, with three corners changing in each direction's
+favour: `tt_27c_3.63v` and `ff_27c_3.63v` go FAIL → PASS (their −2.00 °C and
+−8.00 °C hysteresis readings are now 0.00 °C), and `sf_27c_2.97v` goes
+PASS → FAIL (0.00 °C → −12.00 °C, alongside its diagnostic). `ss_27c_2.97v`
+stays FAIL with its negative hysteresis deepening from −2.37 °C to −12.34 °C.
+
+**Every trip temperature moved up, substantially and consistently**: +13 to
++16 °C at eleven of the fifteen corners (e.g. `ss_27c_3.63v` 138.914 → 155.001,
+`sf_27c_3.63v` 138.769 → 155.001, `tt_27c_3.30v` 150.587 → 165.001), while the
+two corners that still carry a diagnostic barely moved (`ss_27c_2.97v` 150.632 →
+150.658, `sf_27c_2.97v` 149.000 → 149.000). The whole matrix now trips between
+**149.0 °C and 171.0 °C**, i.e. every corner above the 125 °C `min` bound and
+closer to DR-005's 150 °C nominal target than the superseded record's
+138.8–163.0 °C suggested.
+
+**That shift must NOT be attributed to the seeding.** This record is also this
+bench's **first run against the current DUT**: `thermal` was one of the four
+benches deliberately left out of #69's re-run generation (see the 2026-08-25
+record-generation note above) and was not part of #116's either, so its
+superseded record was reported `STALE` in `measurements/characterization.md`
+precisely because its netlist snapshot no longer matched the schematic — and #69
+**re-sized the thermal-shutdown circuit this bench measures**, while #116
+re-sized the pass device. The Thermal row's freshness goes `STALE` → `fresh`
+with this record. Seeding and two DUT re-sizes changed together here; the two
+effects are not separable from these two records, and this section does not
+claim they are. (`dropout-vs-load` has no such confound: its superseded record
+*was* #116's own re-run, i.e. the same DUT.)
+
+**The `trip == reset` degeneracy is untouched, as #178 said it would be**:
+hysteresis reads exactly 0.00 °C at thirteen corners and negative at the two
+diagnosed ones. That is #77's finding, carried by #91, and a seed at the
+sweep's start was never going to address it.
+
+**Both benches' bullets under "The LDO's own testbenches" carry the same
+numbers.**
 
 Every "Exposed" verdict above is corroborated by the bench's own latest
 committed corner logs already carrying a `singular matrix` / `gmin stepping
@@ -756,6 +963,21 @@ section is a map, not a duplicate of that detail.
   overall `FAIL`. The `vout_at_max_vin_v` sanity measurement lands on a
   non-regulating branch at 6 of 45 corners, the same `ff`/`sf` 125 °C
   cluster.
+  **Current record** (`20260926-043132-eba96ae`, issue #178, supersedes
+  `20260923-123440-d71f4b3`, first run under the #171 initial-condition
+  contract — the `dc VVIN` sweep is gone, replaced by a cold-start `uic`
+  transient with a 266 V/s VIN down-ramp): **0/45 PASS, down from 6/45**, with
+  **zero solver diagnostics on all 45 corners** (the superseded record carried
+  one on all 45, 7070 hits in total). The six lost PASSes are exactly the
+  superseded record's `ss`/−40 °C and `ss`/27 °C corners, and a static
+  zero-rate hold test at `ss`/−40 °C confirms the new, larger numbers (VOUT
+  settles at 1.7301 V with VIN held at 2.10 V, where the old 0.268 V reading
+  would need regulation to hold at 2.032 V). The matrix is now a tight
+  **0.330–0.673 V**: the five 125 °C corners the superseded record returned as
+  1.41–1.83 V garbage now read in family with their siblings, so this bench's
+  125 °C caution is discharged for `dropout_v`. One residual outlier remains,
+  `fs_125c_2.97v`'s `vout_at_max_vin_v` at −7.45 V with no solver diagnostic.
+  See "#178: dropout-vs-load and thermal" above for the full accounting.
 
 - **`loop-gain/`** (issue #25) — AC loop gain, phase margin and gain margin
   against `spec/target-spec.md`'s ratified "Stability" row (PM ≥ 45°, GM ≥ 10 dB
@@ -801,6 +1023,19 @@ section is a map, not a duplicate of that detail.
   operating ceiling at every supply corner (confirming and quantifying
   issue #69), and measured hysteresis is non-positive at every one of the
   15 corners (a new finding, filed as issue #77).
+  **Current record** (`20260926-052517-eba96ae`, issue #178, supersedes
+  `20260825-104426-933dfdd`, first run with both `dc temp` sweeps seeded from a
+  measured untripped state): **13/15 PASS, up from 12/15**, and solver
+  diagnostics down from **14 of 15** corner logs (132 hits) to **2 of 15**
+  (18 hits) — `ss_27c_2.97v` and `sf_27c_2.97v`, which the #171 gate correctly
+  forces to FAIL and which an ascending-sweep-only probe shows are *not* the
+  shared-`.nodeset` limitation. Every trip temperature moved up 13–16 °C at the
+  eleven undiagnosed corners (matrix now 149.0–171.0 °C, all above the 125 °C
+  bound) — but this is *also* this bench's first run against the post-#69/#116
+  DUT (its Thermal row goes `STALE` → `fresh`), and #69 re-sized the very
+  thermal-shutdown circuit measured here, so that shift is not attributable to
+  the seeding alone. The `trip == reset` degeneracy (#77/#91) is unchanged, as
+  expected. See "#178: dropout-vs-load and thermal" above.
 
 None of the four fully meets its spec bound yet. This is an honest,
 expected finding, not a harness bug — and the reason has moved. The #18

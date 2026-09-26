@@ -80,6 +80,53 @@ v {xschem version=3.4.7 file_version=1.2
 *   problem tracked by #138/#168, not a circuit gap. See design/README.md
 *   section #169.
 *
+* CONVERTED BY #178 (2026-09-26) to the #171 initial-condition contract
+* (sim/README.md "Initial-condition contract"): the `dc VVIN 3.63 1.5 -0.02`
+* sweep this bench used through record 20260923-123440-d71f4b3 is gone. VIN
+* is now a PWL ramp inside ONE cold-start `uic` transient:
+*   0 -> 3.63V by 100us (cold start; EN steps high at 100us, the same
+*   PULSE(0 'vsup' 100u 1u 1u 100 200) edge sim/ic-screen-125c-c uses),
+*   the ideal 50mA sink ramps on over 2.5-2.6ms once the loop is up
+*   (ic-screen-125c-c's own PWL, verbatim -- an ideal sink on a disabled,
+*   discharged output is not a realizable state), settled by 5.5ms,
+*   then 3.63V -> 1.5V over 6ms-14ms: the same VIN range the `dc` sweep
+*   covered, walked as a quasi-static line droop instead.
+* WHY the analysis changed shape rather than just gaining a seed: for a `dc`
+* analysis ngspice honours neither accepted seed shape. Measured on this very
+* bench during #178 (tt/125C/3.30V, one corner, `.ic` card copied verbatim
+* from sim/ic-screen-125c-b): adding the eleven-node `.ic` changes nothing --
+* `singular matrix` x6, `Dynamic gmin stepping failed` x16 and
+* `out of range for ^` x13 (iterates at 1e155-1e188 V on the
+* sky130_fd_pr__res_xhigh_po body expressions xr_fb_b/xr_fb_c/xr_cz), the
+* same flail as the unseeded run, because `.ic` is applied to the
+* operating-point solve that precedes a non-`uic` transient, not to a `dc`
+* sweep's own solves. #172 measured the other half on the regulation benches:
+* `.nodeset`, which a bare solve does honour, still printed `singular matrix`
+* plus `Dynamic gmin stepping failed` at 3 of 5 corners probed. And a seed
+* could only ever fix the sweep's FIRST point: the superseded record's logs
+* carry thousands of diagnostics per corner, i.e. the continuation re-derives
+* (and re-loses) the branch at points all the way down the sweep. A `uic`
+* transient has no operating-point solve at all, which is why it is the shape
+* #170 (mc-output-accuracy) and #172 (line-/load-regulation) also landed on.
+* QUASI-STATIC, MEASURED not assumed -- a three-point ramp-rate series at
+* tt/27C/3.30V (a corner this bench's own header calls reliable), all three
+* with zero solver diagnostics:
+*     8ms ramp (266.3 V/s): dropout_v = 0.397657V
+*    20ms ramp (106.5 V/s): dropout_v = 0.397295V
+*    60ms ramp ( 35.5 V/s): dropout_v = 0.398492V
+* The spread over a 7.5x rate range is 1.2mV with no monotone trend, i.e. the
+* answer is rate-INDEPENDENT here, not merely "slow enough". The superseded
+* `dc` record -- the zero-rate limit of the same experiment -- reads 0.399743V
+* at this corner, 2.1mV above the 8ms ramp; that residual is the `dc` sweep's
+* own 20mV grid interpolation, and the whole 2.4mV span sits against a 300mV
+* ratified bound. The 8ms ramp is what the matrix runs: it is inside the
+* rate-independent window and it costs 22s per corner where the 60ms ramp
+* cost 471s (both measured on this host).
+* SUPPLY AXIS, unchanged in meaning: VIN starts at 3.63V for every corner
+* (exactly as the `dc` sweep's own first point did, independently of 'vsup'),
+* and the corner runner's 'vsup' still sets EN's rail. So the supply axis
+* still varies per corner point, and it still does so only through EN.
+*
 * VREF is a fixed 1.2V placeholder per design/README.md's "VREF interface
 * caveat" -- matching the 1:2 feedback-divider ratio issue #22 revised the
 * schematic to (VOUT = 1.5 x VREF); the earlier 0.6V/2:1 convention does
@@ -96,16 +143,17 @@ S {}
 E {}
 T {dropout-vs-load testbench -- exercises design/ldo_3v3in_1v8out.sch (#14)
 via its companion subcircuit symbol design/ldo_3v3in_1v8out.sym
-I_LOAD fixed 50mA (ratified "Dropout @ 50mA" row); VVIN DC-swept by the deck
-EN = 'vsup' (corner runner, always well above threshold); VREF = 1.2V placeholder} -700 -650 0 0 0.3 0.3 {}
+I_LOAD 50mA after the loop is up (ratified "Dropout @ 50mA" row)
+VVIN cold-started to 3.63V then ramped down to 1.5V inside one uic transient (#178)
+EN = 'vsup' as an edge at 100us (corner runner); VREF = 1.2V placeholder} -700 -650 0 0 0.3 0.3 {}
 
-* ---- VIN: DC-swept independently of the corner runner's 'vsup' ----
-C {devices/vsource.sym} -600 -300 0 0 {name=VVIN value=3.3 savecurrent=true}
+* ---- VIN: cold start to the sweep's own 3.63V top, then the down-ramp ----
+C {devices/vsource.sym} -600 -300 0 0 {name=VVIN value="PWL(0 0 100u 3.63 6m 3.63 14m 1.5)" savecurrent=true}
 C {devices/lab_pin.sym} -600 -330 0 0 {name=p1 lab=VIN}
 C {devices/lab_pin.sym} -600 -270 0 0 {name=p2 lab=0}
 
-* ---- EN (tied to the corner runner's supply -- always enabled) ----
-C {devices/vsource.sym} -400 -300 0 0 {name=VEN value='vsup' savecurrent=true}
+* ---- EN (the corner runner's supply, as an edge -- issue #178) ----
+C {devices/vsource.sym} -400 -300 0 0 {name=VEN value="PULSE(0 'vsup' 100u 1u 1u 100 200)" savecurrent=true}
 C {devices/lab_pin.sym} -400 -330 0 0 {name=p3 lab=EN}
 C {devices/lab_pin.sym} -400 -270 0 0 {name=p4 lab=0}
 
@@ -132,7 +180,7 @@ T {R_ESR: 10mOhm -- a representative point inside DR-002's proposed
 0-500mOhm window (no minimum ESR); not a sweep of the window itself} 640 -300 0 0 0.2 0.2 {}
 
 * ---- load: fixed 50mA (the ratified "Dropout @ 50 mA" row's own test point) ----
-C {devices/isource.sym} 900 -300 0 0 {name=ILOAD value=50m}
+C {devices/isource.sym} 900 -300 0 0 {name=ILOAD value="PWL(0 0 2.5m 0 2.6m 50m)"}
 C {devices/lab_pin.sym} 900 -330 0 0 {name=p15 lab=VOUT}
 C {devices/lab_pin.sym} 900 -270 0 0 {name=p16 lab=0}
 T {I_LOAD: fixed 50mA -- the ratified "Dropout @ 50 mA" row's test point} 940 -300 0 0 0.2 0.2 {}
