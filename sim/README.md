@@ -686,7 +686,9 @@ sink then drags the discharged output negative. Note what is peculiar to it:
 which is this bench's own pre-#178 convention (see "SUPPLY AXIS" in the
 testbench header), and the `*_125c_2.97v` column is where both records put
 their worst `vout_at_max_vin_v` outliers. That is a finding for a follow-up,
-not something #178 fixes.
+not something #178 fixes. **That follow-up is #187, and the hunch was right** —
+see "#187" below: the convention, not the design, and the whole
+`*_125c_2.97v` column was reading low because of it.
 
 **Ramp-rate caveat, stated because it is real**: rate independence was measured
 at tt/27 °C (1.2 mV over a 7.5× rate range) and confirmed against a static hold
@@ -778,6 +780,134 @@ both survive re-grading on the right one (`dc 0`, and no `dc` keyword at
 all) — see the per-source table in "An EN edge alone does not satisfy the
 first shape" above for the full four-way case split. No bench's verdict
 changes except `current-limit`'s, which gains leg 3.
+
+### #187: `dropout-vs-load`'s `EN`-below-VIN supply convention — an enable-path headroom limit, and the bench convention that walked into it
+
+`dropout-vs-load` was the only bench in `sim/` that drove `EN` off the VIN rail.
+Every other bench sets `VVIN` to `'vsup'` and `EN`'s high level to that same
+`'vsup'`; this one pinned VIN at 3.63 V for *every* corner and let `'vsup'`
+drive `EN` alone — a convention inherited unchanged from the pre-#178 `dc`
+sweep, whose first swept point was 3.63 V independently of the supply axis. At
+the `*_2.97v` corners that put `EN` **0.66 V below VIN**, and at
+`fs_125c_2.97v` it stopped the block coming up at all: record
+`20260926-043132-eba96ae` reported `vout_at_max_vin_v` = **−7.4521 V** there
+(−14.0589 V in the record before it) with **zero** solver diagnostics — a
+physically realizable solution of the circuit *as the bench drove it*, not a
+Newton artifact, which is exactly why the `#171` gate did not catch it.
+
+**It is a static enable-path headroom limit, not a start-up branch.** Bring the
+loop up with `EN` = VIN = 3.63 V at fs/125 °C (VOUT = 1.82019 V averaged over
+0.85–0.95 ms), then drop `EN` to 2.97 V at 1 ms while it is regulating: `BIASP`
+steps 2.81460 → 2.90516 V, `EA_OUT` is pushed to 3.60697 V (≈ VIN), and VOUT
+collapses to −6.99 V by 5.5 ms. Nothing about the cold start is implicated — the
+block cannot *hold* regulation off-rail. The dependence on (VIN − `EN`) is a
+monotone cliff, not a coin flip:
+
+| `EN` high level (VIN = 3.63 V) | VIN − `EN` | settled V(VOUT), fs/125 °C |
+|---|---|---|
+| 2.97 V | 0.66 V | **−7.45 V** (collapsed) |
+| 3.00 V | 0.63 V | 1.68637 V (out of the ±2 % window) |
+| 3.10 V | 0.53 V | 1.78256 V |
+| 3.20 V | 0.43 V | 1.79529 V |
+| 3.30 V | 0.33 V | 1.79793 V |
+| 3.63 V | 0 V | 1.79862 V |
+
+**Mechanism, with series ammeters in the clamps' drains** (a scratch flattened
+netlist — `design/ldo_3v3in_1v8out.sch` is untouched). `EN` gates five PMOS
+shutdown clamps whose *sources are VIN* (`design/README.md` →
+"Enable/shutdown"), so their gate drive is VIN-referenced, not
+threshold-referenced:
+
+| fs/125 °C, VIN = 3.63 V | I(`M_ENP`) → `EA_OUT` | I(`M_ENP2`) → `BIASP` | I(`M_TAIL`) (EA tail) | `BIASP` |
+|---|---|---|---|---|
+| `EN` = 3.63 V (at the rail) | 39 pA | 62 pA | 3.476 µA | 2.81460 V |
+| `EN` = 2.97 V (0.66 V down) | 1.377 µA | 1.639 µA | **1.003 µA** | 2.90516 V |
+
+Both clamps come up four to five decades off the leakage floor, and the damage
+compounds: `M_ENP2`'s injection lifts `BIASP` by 90.6 mV, and `BIASP` gates
+*every* PMOS current source in the block, so the error amplifier's own tail
+current falls to a third. The clamp current into `EA_OUT` (1.377 µA) then
+exceeds the entire tail current that has to sink it (1.003 µA) — `EA_OUT` is
+dragged to VIN, `M_PASS` turns off, and the bench's ideal 50 mA sink discharges
+VOUT below ground. The −7.45 V magnitude is pure bench artifact (−I·t/C_OUT,
+with no clamp diode in the testbench); only its *sign* carries information.
+
+**Attribution, one clamp at a time** (same corner, same deck, each clamp's gate
+moved to a full-rail node in turn while the rest keep 2.97 V): re-railing
+`M_ENP` alone gives 1.96001 V, `M_ENP2` alone gives 1.69625 V, `M_ENP5` alone
+leaves it collapsed at −7.48 V, and all six PMOS clamps together give
+1.79839 V. So it takes *both* dominant clamps to explain it, and each alone
+leaves a residual error in the opposite direction — which is why the failure is
+a cliff rather than a gradual droop.
+
+**Why that corner and no other, and the column that was quietly low.** 125 °C
+maximizes the clamps' subthreshold conduction while `fs` (slow PMOS) minimizes
+the intended PMOS currents that must overcome it. The superseded record's whole
+`*_125c_2.97v` column was already reading low for the same reason, which is the
+signature that says "systematic mechanism", not "one flaky corner":
+
+| Corner | `vout_at_max_vin_v` @ 2.97 V | @ 3.30 V | @ 3.63 V |
+|---|---|---|---|
+| `tt_125c` | 1.76943 V | 1.79848 V | 1.79864 V |
+| `ss_125c` | 1.78627 V | 1.79851 V | 1.79858 V |
+| `sf_125c` | 1.79211 V | 1.79859 V | 1.79863 V |
+| `ff_125c` | 1.71701 V | 1.79833 V | 1.79870 V |
+| `fs_125c` | **−7.4521 V** | 1.79793 V | 1.79862 V |
+
+**Verdict: a testbench-convention artifact, not a design limitation.**
+`design/README.md`'s "Enable/shutdown" section specifies `EN` as "active-high,
+full-rail (0 V / VIN)" — the enable input is VIN-referenced by construction, and
+`sim/enable-shutdown` exercises the `EN` edges themselves with `'vsup'` = VIN.
+This bench was the only one driving `EN` off-rail, so the fix restores the
+documented interface rather than retuning the circuit (which #187 is explicitly
+out of scope to touch).
+
+**The fix.** `VVIN` now ramps 0 → `'vsup'` by 100 µs, holds to 6 ms and walks
+down to **`'vsup'` − 2.13 V** by 14 ms, with `EN`'s high level at that same
+`'vsup'` — i.e. `'vsup'` finally means the DUT's actual supply on this bench
+too. `vout_at_max_vin_v` is consequently VOUT at VIN = `'vsup'` rather than at a
+pinned 3.63 V, so a light-headroom regulation check finally varies with the
+supply axis it is indexed by (its 0.5–3.7 V sanity band is unchanged).
+
+**Why the ramp's endpoint tracks `'vsup'` instead of staying at 1.5 V — measured,
+and it took two matrix runs to get right.** The obvious version of the fix keeps
+the endpoint pinned at 1.5 V, which makes the *rate* per-supply
+(183.8 / 225.0 / 266.3 V/s) because the 6–14 ms window is fixed. #187's first
+full re-run did exactly that (record `20260926-100003-0b63ae4`) and it moved
+`dropout_v` by **up to 20.4 mV across the supply axis** at the cold/slow
+corners — where the superseded record's supply spread had been under 0.1 mV:
+
+| Corner | 2.97 V (183.8 V/s) | 3.30 V (225.0 V/s) | 3.63 V (266.3 V/s) | spread |
+|---|---|---|---|---|
+| `ss_27c` | 0.379823 V | 0.390724 V | 0.400265 V | 20.4 mV |
+| `sf_-40c` | 0.535094 V | 0.545444 V | 0.554380 V | 19.3 mV |
+| `tt_-40c` | 0.452920 V | 0.463248 V | 0.472185 V | 19.3 mV |
+| `fs_125c` | 0.432667 V | 0.432425 V | 0.432251 V | 0.4 mV |
+
+It is monotone with rate and in the direction #178's own ramp-rate caveat
+records (a slower ramp reads *lower*, i.e. closer to the zero-rate answer), so
+it is real rate-dependence at those corners, not noise — and it would have made
+the supply axis carry a ramp-rate effect it has no business carrying. Holding
+the endpoint at `'vsup'` − 2.13 V instead keeps the rate at a constant
+**266.3 V/s** at all 45 corners, the same rate every earlier record ran, and
+`'vsup'` − 2.13 V (0.84 / 1.17 / 1.50 V) still ends far below every corner's
+crossing (the largest is `ff`'s ~2.44 V). Held that way the dropout number is
+not merely close to the superseded record's, it is **identical**:
+`fs_125c_2.97v`'s crossing VIN reads 2.19615 V under both conventions, i.e.
+`dropout_v` = 0.432153 V to six digits. So the correction moves
+`vout_at_max_vin_v` and nothing else.
+
+Both runs are kept as evidence, per the append-only rule: the shipped record
+supersedes `20260926-100003-0b63ae4`, which supersedes #178's
+`20260926-043132-eba96ae`. The intermediate record is the measurement that
+motivated the constant-rate endpoint, not a discarded draft.
+
+**One convention mismatch left standing, deliberately out of scope**:
+`sim/line-regulation` also drives `EN` at `'vsup'` while its `VVIN` is its own
+source (a line step, not `'vsup'`), so the same off-rail geometry is reachable
+there. Nothing in #187's evidence says that bench is *currently* wrong — its
+step range and corner set differ — and re-running it is a separate bench's
+re-verification, so it is filed rather than folded in here.
 
 ### `load-transient` after #180
 

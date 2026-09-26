@@ -295,6 +295,44 @@ confirms the fix: in the #14 record `EN=0` measured **`ipass` ≈ 46pA**
 (leakage-floor, screening-model only) versus the ~440µA–1.2mA shoot-through
 of the earlier drafts.
 
+**"Full-rail" is a hard interface requirement, and #187 measured what it costs
+to violate it.** The clamps above are PMOS with their *sources at VIN*, so their
+gate drive is `VIN - EN`: an `EN` high level below VIN leaves them partly
+conducting, and there is no level-shifter or threshold-referenced receiver on
+this pin. Measured at fs/125 °C, VIN = 3.63 V (`sim/README.md` → "#187", from a
+scratch flattened netlist with series ammeters — no schematic change):
+
+| `EN` high level | I(`M_ENP`) → `EA_OUT` | I(`M_ENP2`) → `BIASP` | I(`M_TAIL`) | settled V(VOUT) |
+|---|---|---|---|---|
+| 3.63 V (at the rail) | 39 pA | 62 pA | 3.476 µA | 1.79862 V |
+| 3.30 V | — | — | — | 1.79793 V |
+| 3.10 V | — | — | — | 1.78256 V |
+| 3.00 V | — | — | — | 1.68637 V |
+| 2.97 V | 1.377 µA | 1.639 µA | 1.003 µA | **collapsed** |
+
+The compounding is the point: `M_ENP2`'s residual current lifts `BIASP` by
+90.6 mV, which starves every BIASP-gated PMOS current source (the amplifier's
+tail current falls to 1.003 µA), while `M_ENP`'s residual current into `EA_OUT`
+*rises* to 1.377 µA — so the clamp out-drives the whole amplifier, `EA_OUT` is
+pulled to VIN and `M_PASS` turns off. It is a static limit, not a start-up
+branch: dropping `EN` to 2.97 V at 1 ms while the loop is already regulating
+collapses it. 125 °C maximizes the clamps' subthreshold conduction and `fs`
+(slow PMOS) minimizes the currents that must overcome it, so fs/125 °C is the
+worst case of the corner matrix, but the whole 125 °C/`EN` = VIN − 0.66 V column
+reads low (1.717–1.792 V).
+
+**This is a documented-interface fact, not a known gap**: nothing about it needs
+a circuit change, and no bench that honours the `0 V / VIN` contract sees it.
+`sim/enable-shutdown` — the row's own bench, which exercises the `EN` edges
+themselves — drives `EN` at `'vsup'` *with* VIN at `'vsup'`, as does every other
+bench in `sim/`. `sim/dropout-vs-load` was the single exception (VIN pinned at
+3.63 V while `'vsup'` drove `EN` alone), which is what produced the −7.4521 V
+`vout_at_max_vin_v` outlier in record `20260926-043132-eba96ae`; #187 corrected
+that bench's convention rather than this circuit. If a *system* ever needs a
+logic-level (e.g. 1.8 V) enable against a 3.3 V VIN, that is a new
+level-shifter/receiver requirement for the spec to state, not a defect in this
+implementation of a full-rail pin.
+
 Issue #22's additions were designed to slot into that discipline rather than
 work around it: the current-limit comparator's two NMOS branches
 (`M_CLN1`/`M_CLN2`) return through the same `AMP_ENN` switch, the soft-start
