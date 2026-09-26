@@ -89,7 +89,7 @@ v {xschem version=3.4.7 file_version=1.2
 *   the ideal 50mA sink ramps on over 2.5-2.6ms once the loop is up
 *   (ic-screen-125c-c's own PWL, verbatim -- an ideal sink on a disabled,
 *   discharged output is not a realizable state), settled by 5.5ms,
-*   then 3.63V -> 1.5V over 6ms-26ms: the same VIN range the `dc` sweep
+*   then 3.63V -> 1.5V over 6ms-14ms: the same VIN range the `dc` sweep
 *   covered, walked as a quasi-static line droop instead.
 * WHY the analysis changed shape rather than just gaining a seed: for a `dc`
 * analysis ngspice honours neither accepted seed shape. Measured on this very
@@ -108,16 +108,20 @@ v {xschem version=3.4.7 file_version=1.2
 * (and re-loses) the branch at points all the way down the sweep. A `uic`
 * transient has no operating-point solve at all, which is why it is the shape
 * #170 (mc-output-accuracy) and #172 (line-/load-regulation) also landed on.
-* QUASI-STATIC, MEASURED not assumed (tt/27C/3.30V, a corner this bench's own
-* header calls reliable): the 20ms ramp (106.5 V/s) reads dropout_v =
-* 0.397295V; a 3x slower 60ms ramp (35.5 V/s) reads 0.398492V. 1.2mV apart
-* for a 3x rate change, and the superseded `dc` record -- the zero-rate limit
-* of the same experiment -- reads 0.399743V at the same corner. So the
-* residual rate dependence is ~1.2mV per 3x, it moves TOWARD the DC answer as
-* the ramp slows (0.3973 -> 0.3985 -> 0.3997), and the whole span is 2.4mV
-* against a 300mV ratified bound. The 20ms ramp is used for the matrix
-* because 2.4mV of quasi-static error is negligible at that bound while a
-* 60ms ramp costs 4x the runtime per corner (471s vs 111s measured here).
+* QUASI-STATIC, MEASURED not assumed -- a three-point ramp-rate series at
+* tt/27C/3.30V (a corner this bench's own header calls reliable), all three
+* with zero solver diagnostics:
+*     8ms ramp (266.3 V/s): dropout_v = 0.397657V
+*    20ms ramp (106.5 V/s): dropout_v = 0.397295V
+*    60ms ramp ( 35.5 V/s): dropout_v = 0.398492V
+* The spread over a 7.5x rate range is 1.2mV with no monotone trend, i.e. the
+* answer is rate-INDEPENDENT here, not merely "slow enough". The superseded
+* `dc` record -- the zero-rate limit of the same experiment -- reads 0.399743V
+* at this corner, 2.1mV above the 8ms ramp; that residual is the `dc` sweep's
+* own 20mV grid interpolation, and the whole 2.4mV span sits against a 300mV
+* ratified bound. The 8ms ramp is what the matrix runs: it is inside the
+* rate-independent window and it costs 22s per corner where the 60ms ramp
+* cost 471s (both measured on this host).
 * SUPPLY AXIS, unchanged in meaning: VIN starts at 3.63V for every corner
 * (exactly as the `dc` sweep's own first point did, independently of 'vsup'),
 * and the corner runner's 'vsup' still sets EN's rail. So the supply axis
@@ -144,7 +148,7 @@ VVIN cold-started to 3.63V then ramped down to 1.5V inside one uic transient (#1
 EN = 'vsup' as an edge at 100us (corner runner); VREF = 1.2V placeholder} -700 -650 0 0 0.3 0.3 {}
 
 * ---- VIN: cold start to the sweep's own 3.63V top, then the down-ramp ----
-C {devices/vsource.sym} -600 -300 0 0 {name=VVIN value="PWL(0 0 100u 3.63 6m 3.63 26m 1.5)" savecurrent=true}
+C {devices/vsource.sym} -600 -300 0 0 {name=VVIN value="PWL(0 0 100u 3.63 6m 3.63 14m 1.5)" savecurrent=true}
 C {devices/lab_pin.sym} -600 -330 0 0 {name=p1 lab=VIN}
 C {devices/lab_pin.sym} -600 -270 0 0 {name=p2 lab=0}
 

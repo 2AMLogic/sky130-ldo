@@ -1,23 +1,51 @@
 {
   "slug": "dropout-vs-load",
   "title": "Dropout voltage at 50mA load (Vin sweep toward Vout, DR-003/gf180 convention)",
-  "claim": "Substantiates spec/target-spec.md's ratified \"Dropout @ 50 mA\" row (< 300mV, stretch goal < 200mV) against the LDO core-regulation-loop schematic landed by #14 (design/ldo_3v3in_1v8out.sch), using the ratified row's own cited method (\"gf180's ss/125C/Vin~=Vout+dropout convention\"): fix I_LOAD at 50mA (the row's own test point) and sweep Vin down toward Vout to find the Vin-Vout margin at which regulation is lost, rather than sweeping load current at a single ample Vin (that measures load regulation, a different spec row). That row is ratified by issue #1 / DR-006, and the bound below cites it verbatim, not an invented final limit. Methodology fixed by issue #71 (superseding #18's original method): the deck sweeps VIN downward, from a comfortably-regulating value toward a value well below the 1.8V target, at a finer (20mV) resolution than #18's original 50mV; dropout_v is the Vin-Vout margin at the VIN where VOUT first falls (`.meas dc ... fall=1`) through 98% of the 1.8V target as VIN decreases -- the classic \"regulation just lost\" dropout definition -- not a fixed low-VIN endpoint (#18's method reported the pass device's residual V_sd well past dropout, overstating the gap; see #71's PR for the derivation and design/README.md's campaign section for the closed-loop screening that motivated the fix). vout_at_max_vin_v is a light-headroom regulation sanity check at the sweep's top (first-swept) end. INITIAL-CONDITION CONTRACT (#171, converted by #178): the analysis is no longer a `dc VVIN 3.63 1.5 -0.02` sweep. It is ONE cold-start, settled transient ('tran 10u 26m uic') in which VIN is a PWL ramp -- 0V to the sweep's own 3.63V top by 100us, EN stepping high at 100us, the ideal 50mA sink ramped on over 2.5-2.6ms once the loop is up (sim/ic-screen-125c-c's own cold-start convention, verbatim), settled by 5.5ms, then VIN walked DOWN 3.63V->1.5V over 6ms-26ms at 106.5 V/s as a quasi-static line droop -- so there is no operating-point solve in the deck at all: the contract's 'uic' + EN-edge shape, the one PR #170 landed for mc-output-accuracy and #172 for line-/load-regulation. WHY a shape change rather than a seed: ngspice honours neither accepted seed shape for a `dc` analysis. Measured during #178 on this bench (tt/125C/3.30V, the eleven-node `.ic` card copied verbatim from sim/ic-screen-125c-b): the seeded `dc` sweep flails exactly as the unseeded one does -- 'singular matrix' x6, 'Dynamic gmin stepping failed' x16, 'out of range for ^' x13, with iterates at 1e155-1e188 V on the sky130_fd_pr__res_xhigh_po body expressions -- because `.ic` is applied to the operating-point solve preceding a non-'uic' transient, not to a `dc` sweep's solves; and #172 measured the other half, that `.nodeset` (which a bare solve does honour) still printed 'singular matrix' plus 'Dynamic gmin stepping failed' at 3 of 5 corners probed. A seed could in any case only fix the sweep's FIRST point, and the superseded record 20260923-123440-d71f4b3 carries thousands of diagnostics per corner log (45 of 45 corners diagnosed), i.e. the continuation loses the branch repeatedly all the way down the sweep -- which sim/bin/corner-run.py's #171 gate now forces to FAIL outright. QUASI-STATIC, MEASURED not assumed (tt/27C/3.30V): the 20ms ramp reads dropout_v = 0.397295V, a 3x slower 60ms ramp reads 0.398492V, and the superseded `dc` record -- the zero-rate limit of the same experiment -- reads 0.399743V; ~1.2mV per 3x rate change, moving toward the DC answer as the ramp slows, a 2.4mV total span against a 300mV ratified bound. The supply axis keeps its pre-#178 meaning exactly: VIN starts at 3.63V for every corner (as the `dc` sweep's own first point did, independently of 'vsup') and 'vsup' still sets EN's rail alone.",
+  "claim": "Substantiates spec/target-spec.md's ratified \"Dropout @ 50 mA\" row (< 300mV, stretch goal < 200mV) against the LDO core-regulation-loop schematic landed by #14 (design/ldo_3v3in_1v8out.sch), using the ratified row's own cited method (\"gf180's ss/125C/Vin~=Vout+dropout convention\"): fix I_LOAD at 50mA (the row's own test point) and sweep Vin down toward Vout to find the Vin-Vout margin at which regulation is lost, rather than sweeping load current at a single ample Vin (that measures load regulation, a different spec row). That row is ratified by issue #1 / DR-006, and the bound below cites it verbatim, not an invented final limit. Methodology fixed by issue #71 (superseding #18's original method): the deck sweeps VIN downward, from a comfortably-regulating value toward a value well below the 1.8V target, at a finer (20mV) resolution than #18's original 50mV; dropout_v is the Vin-Vout margin at the VIN where VOUT first falls (`.meas dc ... fall=1`) through 98% of the 1.8V target as VIN decreases -- the classic \"regulation just lost\" dropout definition -- not a fixed low-VIN endpoint (#18's method reported the pass device's residual V_sd well past dropout, overstating the gap; see #71's PR for the derivation and design/README.md's campaign section for the closed-loop screening that motivated the fix). vout_at_max_vin_v is a light-headroom regulation sanity check at the sweep's top (first-swept) end. INITIAL-CONDITION CONTRACT (#171, converted by #178): the analysis is no longer a `dc VVIN 3.63 1.5 -0.02` sweep. It is ONE cold-start, settled transient ('tran 10u 14m uic') in which VIN is a PWL ramp -- 0V to the sweep's own 3.63V top by 100us, EN stepping high at 100us, the ideal 50mA sink ramped on over 2.5-2.6ms once the loop is up (sim/ic-screen-125c-c's own cold-start convention, verbatim), settled by 5.5ms, then VIN walked DOWN 3.63V->1.5V over 6ms-14ms at 266.3 V/s as a quasi-static line droop -- so there is no operating-point solve in the deck at all: the contract's 'uic' + EN-edge shape, the one PR #170 landed for mc-output-accuracy and #172 for line-/load-regulation. WHY a shape change rather than a seed: ngspice honours neither accepted seed shape for a `dc` analysis. Measured during #178 on this bench (tt/125C/3.30V, the eleven-node `.ic` card copied verbatim from sim/ic-screen-125c-b): the seeded `dc` sweep flails exactly as the unseeded one does -- 'singular matrix' x6, 'Dynamic gmin stepping failed' x16, 'out of range for ^' x13, with iterates at 1e155-1e188 V on the sky130_fd_pr__res_xhigh_po body expressions -- because `.ic` is applied to the operating-point solve preceding a non-'uic' transient, not to a `dc` sweep's solves; and #172 measured the other half, that `.nodeset` (which a bare solve does honour) still printed 'singular matrix' plus 'Dynamic gmin stepping failed' at 3 of 5 corners probed. A seed could in any case only fix the sweep's FIRST point, and the superseded record 20260923-123440-d71f4b3 carries thousands of diagnostics per corner log (45 of 45 corners diagnosed), i.e. the continuation loses the branch repeatedly all the way down the sweep -- which sim/bin/corner-run.py's #171 gate now forces to FAIL outright. QUASI-STATIC, MEASURED not assumed -- a three-point ramp-rate series at tt/27C/3.30V, all three with zero solver diagnostics: 8ms ramp (266.3 V/s) reads dropout_v = 0.397657V, 20ms ramp (106.5 V/s) reads 0.397295V, 60ms ramp (35.5 V/s) reads 0.398492V. The spread over a 7.5x rate range is 1.2mV with no monotone trend -- the answer is rate-INDEPENDENT in this window, not merely 'slow enough' -- and the superseded `dc` record, the zero-rate limit of the same experiment, reads 0.399743V at that corner, 2.1mV above the 8ms ramp (the `dc` sweep's own 20mV grid interpolation). The whole 2.4mV span sits against a 300mV ratified bound; the matrix runs the 8ms ramp because it is inside the rate-independent window and costs 22s per corner where the 60ms ramp cost 471s. The supply axis keeps its pre-#178 meaning exactly: VIN starts at 3.63V for every corner (as the `dc` sweep's own first point did, independently of 'vsup') and 'vsup' still sets EN's rail alone.",
   "provenance": "schematic",
   "provenance_source": "sim/dropout-vs-load/testbench/tb_dropout_vs_load.sch",
   "schematic": "testbench/tb_dropout_vs_load.sch",
   "statistical_convention": "N/A (corner-matrix check, not a distribution claim)",
   "corners": {
-    "process": ["tt", "ss", "ff", "sf", "fs"],
-    "temperature_c": [-40, 27, 125],
-    "supply_v": [2.97, 3.3, 3.63]
+    "process": [
+      "tt",
+      "ss",
+      "ff",
+      "sf",
+      "fs"
+    ],
+    "temperature_c": [
+      -40,
+      27,
+      125
+    ],
+    "supply_v": [
+      2.97,
+      3.3,
+      3.63
+    ]
   },
   "quick_subset": [
-    ["tt", 27, 3.3],
-    ["ss", -40, 2.97],
-    ["ff", 125, 3.63]
+    [
+      "tt",
+      27,
+      3.3
+    ],
+    [
+      "ss",
+      -40,
+      2.97
+    ],
+    [
+      "ff",
+      125,
+      3.63
+    ]
   ],
   "deck": {
-    "options": ["wnflag=1"],
+    "options": [
+      "wnflag=1"
+    ],
     "params": {},
     "analyses": [
       "* ONE cold-start transient, not a `dc VVIN` sweep (issue #178, the #171",
@@ -25,14 +53,14 @@
       "* value with EN low, the testbench's VEN steps high at 100us, VIN rises to",
       "* the sweep's own 3.63V top by 100us, the ideal 50mA sink ramps on over",
       "* 2.5-2.6ms once the loop is up, and the block is settled by 5.5ms. VIN is",
-      "* then ramped DOWN 3.63V -> 1.5V over 6ms-26ms (106.5 V/s, quasi-static:",
+      "* then ramped DOWN 3.63V -> 1.5V over 6ms-14ms (266.3 V/s, quasi-static:",
       "* see the testbench header for the ramp-rate measurement) and the dropout",
       "* crossing is read off that ramp. There is no operating-point solve in the",
       "* deck at all -- the contract's `uic` + EN-edge shape, the one PR #170",
       "* landed for sim/mc-output-accuracy and PR for #172 landed for",
       "* line-/load-regulation. `td=6m` keeps the `fall=1` search off the",
       "* start-up ramp's own rise, so the crossing found is the dropout event.",
-      "tran 10u 26m uic",
+      "tran 10u 14m uic",
       "meas tran dropout_vin_x find v(vin) when v(vout)=1.764 fall=1 td=6m",
       "meas tran vout_at_max_vin_v avg v(vout) from=5.5m to=6m"
     ]
