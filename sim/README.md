@@ -898,9 +898,38 @@ not merely close to the superseded record's, it is **identical**:
 `vout_at_max_vin_v` and nothing else.
 
 Both runs are kept as evidence, per the append-only rule: the shipped record
-supersedes `20260926-100003-0b63ae4`, which supersedes #178's
-`20260926-043132-eba96ae`. The intermediate record is the measurement that
+`20260926-102849-0b63ae4` supersedes `20260926-100003-0b63ae4`, which supersedes
+#178's `20260926-043132-eba96ae`. The intermediate record is the measurement that
 motivated the constant-rate endpoint, not a discarded draft.
+
+#### What the corrected bench measures (record `20260926-102849-0b63ae4`)
+
+**The outlier is gone and nothing else moved.** All 45 corners'
+`vout_at_max_vin_v` now land in **1.79835–1.79913 V**, inside the 0.5–3.7 V
+sanity band — including the whole `*_125c_2.97v` column that was reading
+1.717–1.792 V, and `fs_125c_2.97v` itself, which goes from −7.4521 V to
+1.79839 V. Zero solver diagnostics and zero timeouts on all 45 corners, as in
+the record it supersedes.
+
+**`dropout_v` is reproduced, not merely "in family": the largest change at any
+of the 45 corners is 0.010 mV**, and the 3.63 V column — the one column whose
+stimulus is byte-identical to #178's — agrees to all six digits at every
+process/temperature point. The supply spread is back under 0.104 mV (it was up
+to 20.4 mV in the intermediate run), so the corrected convention costs the
+dropout measurement nothing:
+
+| Corner | 2.97 V | 3.30 V | 3.63 V | supply spread |
+|---|---|---|---|---|
+| `ss_125c` | 0.329970 V | 0.329990 V | 0.330005 V | 0.035 mV |
+| `fs_125c` | 0.432147 V | 0.432207 V | 0.432251 V | 0.104 mV |
+| `ff_125c` | 0.672974 V | 0.673028 V | 0.673069 V | 0.095 mV |
+| `tt_-40c` | 0.472192 V | 0.472188 V | 0.472185 V | 0.007 mV |
+
+**The verdict against the ratified row is unchanged: 0/45 PASS**, matrix spanning
+**0.32997–0.67307 V** against the 300 mV bound. That is the design's standing gap
+(#116/DR-011 owns it), and #187 deliberately did not touch it — the point of this
+re-run is that the Dropout row's evidence no longer contains a corner whose
+sanity measurement is a bench artifact nobody could explain.
 
 **One convention mismatch left standing, deliberately out of scope**:
 `sim/line-regulation` also drives `EN` at `'vsup'` while its `VVIN` is its own
@@ -1313,7 +1342,7 @@ section is a map, not a duplicate of that detail.
   overall `FAIL`. The `vout_at_max_vin_v` sanity measurement lands on a
   non-regulating branch at 6 of 45 corners, the same `ff`/`sf` 125 °C
   cluster.
-  **Current record** (`20260926-043132-eba96ae`, issue #178, supersedes
+  **`20260926-043132-eba96ae`** (issue #178, supersedes
   `20260923-123440-d71f4b3`, first run under the #171 initial-condition
   contract — the `dc VVIN` sweep is gone, replaced by a cold-start `uic`
   transient with a 266 V/s VIN down-ramp): **0/45 PASS, down from 6/45**, with
@@ -1325,9 +1354,18 @@ section is a map, not a duplicate of that detail.
   would need regulation to hold at 2.032 V). The matrix is now a tight
   **0.330–0.673 V**: the five 125 °C corners the superseded record returned as
   1.41–1.83 V garbage now read in family with their siblings, so this bench's
-  125 °C caution is discharged for `dropout_v`. One residual outlier remains,
+  125 °C caution is discharged for `dropout_v`. One residual outlier remained,
   `fs_125c_2.97v`'s `vout_at_max_vin_v` at −7.45 V with no solver diagnostic.
   See "#178: dropout-vs-load and thermal" above for the full accounting.
+  **Current record** (`20260926-102849-0b63ae4`, issue #187, supersedes
+  `20260926-100003-0b63ae4` → `20260926-043132-eba96ae`): that outlier was this
+  bench's own `EN`-below-VIN supply convention, not the design. `'vsup'` now sets
+  VIN *and* `EN`'s rail, with the ramp's endpoint tracking `'vsup'` so the rate
+  stays a constant 266.3 V/s. **Still 0/45 PASS at 0.32997–0.67307 V** — the
+  largest `dropout_v` change at any corner is 0.010 mV, and the 3.63 V column is
+  identical to six digits — but all 45 `vout_at_max_vin_v` readings are now
+  inside the sanity band (1.79835–1.79913 V), `fs_125c_2.97v` included
+  (−7.4521 V → 1.79839 V), with zero solver diagnostics. See "#187" above.
 
 - **`loop-gain/`** (issue #25) — AC loop gain, phase margin and gain margin
   against `spec/target-spec.md`'s ratified "Stability" row (PM ≥ 45°, GM ≥ 10 dB
