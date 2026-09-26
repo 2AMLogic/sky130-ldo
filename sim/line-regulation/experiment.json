@@ -1,60 +1,97 @@
 {
   "slug": "line-regulation",
   "title": "Line regulation over 2.97-3.63V at 1mA and 50mA load",
-  "claim": "Substantiates spec/target-spec.md's ratified \"Line regulation\" row (< 5 mV/V over 2.97-3.63V, at 1mA and 50mA) against the LDO core-regulation-loop schematic landed by #14 (design/ldo_3v3in_1v8out.sch), using the row's own two named load points and the ratified range's own two endpoints. That row is ratified by issue #1 / DR-006, and the bound below cites it verbatim, not an invented final limit. Each corner runs four discrete .op solves (VIN in {2.97V, 3.63V} x I_LOAD in {1mA, 50mA}, via the deck's own 'alter' on VIN and the load current source, mirroring sim/loop-gain's and sim/iq's multi-point convention), NOT a continuous 'dc vvin ...' sweep -- a continuous sweep over this exact range was tried during this testbench's bring-up and repeatedly hit gmin-stepping/singular-matrix non-convergence partway through (design/README.md's dated 2026-08-25 root-cause section, issue #60 mechanism 4, tracked by #71, already documents this DC-solution-multiplicity behavior for VIN sweeps at 50mA load), taking minutes per corner without completing; four independent .op solves at the range's own endpoints complete in well under a second and reproduce design/README.md's own screening line-regulation numbers (its 'DC operating grid' section also uses discrete VIN points, not a sweep). line_reg_<n>ma_mv_per_v = abs(1000*(vout_hi-vout_lo)/(3.63-2.97)), matching that screening convention. Uses the DR-002 proposed nominal C_out/ESR (1uF/10mOhm), not a window sweep -- same convention as load-transient/dropout-vs-load/psrr-dc. Known risk, not a testbench defect: the same design/README.md section (mechanism 1) documents a thermal-shutdown false-trip at the ff/sf process corners at 125C, independent of load current -- tracked by #69. A corner at that condition is expected to report a non-physical number (pass device driven off), the same documented failure mode the four existing testbenches already show there.",
+  "claim": "Substantiates spec/target-spec.md's ratified \"Line regulation\" row (< 5 mV/V over 2.97-3.63V, at 1mA and 50mA) against the LDO core-regulation-loop schematic landed by #14 (design/ldo_3v3in_1v8out.sch), using the row's own two named load points and the ratified range's own two endpoints. That row is ratified by issue #1 / DR-006, and the bound below cites it verbatim, not an invented final limit. Each corner runs four discrete operating points (VIN in {2.97V, 3.63V} x I_LOAD in {1mA, 50mA}, via the deck's own 'alter' on VIN and the load current source, mirroring sim/loop-gain's and sim/iq's multi-point convention), NOT a continuous 'dc vvin ...' sweep -- a continuous sweep over this exact range was tried during this testbench's bring-up and repeatedly hit gmin-stepping/singular-matrix non-convergence partway through (design/README.md's dated 2026-08-25 root-cause section, issue #60 mechanism 4, tracked by #71, already documents this DC-solution-multiplicity behavior for VIN sweeps at 50mA load), taking minutes per corner without completing; four independent solves at the range's own endpoints reproduce design/README.md's own screening line-regulation numbers (its 'DC operating grid' section also uses discrete VIN points, not a sweep). line_reg_<n>ma_mv_per_v = abs(1000*(vout_hi-vout_lo)/(3.63-2.97)), matching that screening convention. Initial-condition contract (#171, converted by #172): each of the four points is a COLD-START, SETTLED transient ('tran 10u 200m uic' with the testbench's VEN stepping high at 101us, v(vout) averaged over the settled 199ms-200ms tail), NOT the bare unconstrained '.op' this bench used through record 20260925-114251-1f54ca6. Every node starts at its natural cold value with the block disabled and powers up through its own soft-start ramp, so there is no operating-point solve in the deck at all -- the contract's 'uic' + EN-edge shape, the one PR #170 landed for sim/mc-output-accuracy. That matters because an unconstrained '.op' is not a physically realizable state of this block (#164 / PR #170: 12 of 200 mc-output-accuracy draws settled with FB above the only node feeding it, up to 1.3e15 V), and because the superseded record is the worst case of the same defect: all 45 of its corners carry a solver diagnostic (44 'singular matrix', 1 'Dynamic gmin stepping failed' plus 'out of range for ^') on the same three sky130_fd_pr__res_xhigh_po instances (xldo.ea_cz, xldo.amp_enn, xldo.n_fbb), which sim/bin/corner-run.py's #171 gate now forces to FAIL outright. Measured during #172 and the reason these are 'uic' transients rather than seeded 'op' cards: a seeded DC solve does not close the gap in ngspice -- '.ic' is honoured only for the operating-point solve preceding a non-'uic' transient and a bare 'op' ignores it, while '.nodeset', which a bare 'op' does honour, still printed 'singular matrix' plus 'Dynamic gmin stepping failed' at 3 of 5 corners probed. Cross-check that the start state is not steering the answer: an '.ic'-seeded non-'uic' settled transient reaches the same tail, agreeing to six digits on all four points at tt/27C/3.30V and to 31.2/43.9 mV/V at tt/125C/2.97V. Uses the DR-002 proposed nominal C_out/ESR (1uF/10mOhm), not a window sweep -- same convention as load-transient/dropout-vs-load/psrr-dc. Known risk, not a testbench defect: the same design/README.md section (mechanism 1) documents a thermal-shutdown false-trip at the ff/sf process corners at 125C, independent of load current -- tracked by #69, which re-sized that shutdown. #172's cold-start re-run is this bench's first 45-corner record against the post-#69 DUT with a physically realizable start state, so its ff/sf 125C numbers are a fresh measurement rather than the pre-#69 false-trip expectation.",
   "provenance": "schematic",
   "provenance_source": "sim/line-regulation/testbench/tb_line_regulation.sch",
   "schematic": "testbench/tb_line_regulation.sch",
   "statistical_convention": "N/A (corner-matrix check, not a distribution claim)",
   "corners": {
-    "process": ["tt", "ss", "ff", "sf", "fs"],
-    "temperature_c": [-40, 27, 125],
-    "supply_v": [2.97, 3.3, 3.63]
+    "process": [
+      "tt",
+      "ss",
+      "ff",
+      "sf",
+      "fs"
+    ],
+    "temperature_c": [
+      -40,
+      27,
+      125
+    ],
+    "supply_v": [
+      2.97,
+      3.3,
+      3.63
+    ]
   },
   "quick_subset": [
-    ["tt", 27, 3.3],
-    ["ss", -40, 2.97],
-    ["ff", 125, 3.63]
+    [
+      "tt",
+      27,
+      3.3
+    ],
+    [
+      "ss",
+      -40,
+      2.97
+    ],
+    [
+      "ff",
+      125,
+      3.63
+    ]
   ],
   "deck": {
-    "options": ["wnflag=1"],
+    "options": [
+      "wnflag=1"
+    ],
     "params": {},
     "analyses": [
+      "* Each point is a COLD-START, SETTLED transient, not a bare",
+      "* unconstrained .op (issue #172, contract #171): `uic` starts every node",
+      "* at its natural cold value with EN low (the testbench's VEN steps high",
+      "* at 101us), so the block powers up through its own soft-start ramp and",
+      "* no operating-point solve happens at all. v(vout) is averaged over the",
+      "* settled 199ms-200ms tail. See the testbench header for why a seeded",
+      "* `op` cannot deliver this, and sim/load-regulation for why the window",
+      "* is this long (that bench's 0mA point needs it; these four do not, but",
+      "* both benches carry one convention).",
       "* --- point 1: VIN=2.97V, I_LOAD=1mA (deck default) ---",
       "alter vvin = 2.97",
-      "op",
-      "let vout_1ma_lo = v(vout)",
+      "tran 10u 200m uic",
+      "meas tran vout_1ma_lo avg v(vout) from=199m to=200m",
       "* --- point 2: VIN=3.63V, I_LOAD=1mA ---",
       "alter vvin = 3.63",
-      "op",
-      "let vout_1ma_hi = v(vout)",
+      "tran 10u 200m uic",
+      "meas tran vout_1ma_hi avg v(vout) from=199m to=200m",
       "* --- point 3: VIN=2.97V, I_LOAD=50mA (altered) ---",
       "alter iload = 50m",
       "alter vvin = 2.97",
-      "op",
-      "let vout_50ma_lo = v(vout)",
+      "tran 10u 200m uic",
+      "meas tran vout_50ma_lo avg v(vout) from=199m to=200m",
       "* --- point 4: VIN=3.63V, I_LOAD=50mA ---",
       "alter vvin = 3.63",
-      "op",
-      "let vout_50ma_hi = v(vout)"
+      "tran 10u 200m uic",
+      "meas tran vout_50ma_hi avg v(vout) from=199m to=200m"
     ]
   },
   "measurements": [
     {
       "name": "line_reg_1ma_mv_per_v",
-      "expr": "abs(1000*(op2.vout_1ma_hi - op1.vout_1ma_lo)/(3.63-2.97))",
+      "expr": "abs(1000*(tran2.vout_1ma_hi - tran1.vout_1ma_lo)/(3.63-2.97))",
       "unit": "mV/V",
       "min": null,
       "max": 5,
-      "note": "Line regulation at the ratified row's light-load point (1mA): abs(1000*(vout@3.63V - vout@2.97V))/0.66V. Ratified bound: spec/target-spec.md \"Line regulation\" row, < 5 mV/V, at 1mA."
+      "note": "Line regulation at the ratified row's light-load point (1mA): abs(1000*(vout@3.63V - vout@2.97V))/0.66V, each endpoint the settled 199ms-200ms tail average of that point's own cold-start `uic` transient (issue #172; the `tranN.` plot prefixes replace the pre-#172 `opN.` ones). Ratified bound: spec/target-spec.md \"Line regulation\" row, < 5 mV/V, at 1mA."
     },
     {
       "name": "line_reg_50ma_mv_per_v",
-      "expr": "abs(1000*(op4.vout_50ma_hi - op3.vout_50ma_lo)/(3.63-2.97))",
+      "expr": "abs(1000*(tran4.vout_50ma_hi - tran3.vout_50ma_lo)/(3.63-2.97))",
       "unit": "mV/V",
       "min": null,
       "max": 5,
-      "note": "Line regulation at the ratified row's full-load point (50mA), same formula as line_reg_1ma_mv_per_v. Ratified bound: spec/target-spec.md \"Line regulation\" row, < 5 mV/V, at 50mA."
+      "note": "Line regulation at the ratified row's full-load point (50mA), same formula and same settled-tail convention as line_reg_1ma_mv_per_v. Ratified bound: spec/target-spec.md \"Line regulation\" row, < 5 mV/V, at 50mA."
     }
   ],
   "spread_checks": []
