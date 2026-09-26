@@ -3539,6 +3539,35 @@ A DC supply-rejection shortfall cannot be a function of a variable the
 measurement does not depend on. Line regulation is not supply-rejection-bound
 here; it is branch-selection-bound.
 
+> **Resolved (2026-09-26, issues #196 / #200).** The clause above that says
+> `corners.supply_v` "changes only how far above threshold a logic-high enable
+> sits" named the whole mechanism without following it: because `EN` was driven
+> at `'vsup'` while the deck `alter`-ed VIN to 3.63 V, that axis reached the
+> measurement **through `EN`** — at the `*_2.97v` corners the high-VIN point ran
+> with `EN` 0.66 V *below* VIN, and this block's shutdown clamps
+> (`M_ENP`/`M_ENP2`/…) are PMOS with their sources at VIN, so their gate drive is
+> `VIN − EN`. That is #187's geometry, measured there at 39 pA → 1.377 µA and
+> 62 pA → 1.639 µA of clamp current against a 1.003 µA amplifier tail. The
+> "branch selection" this section attributes to the DUT was therefore, for this
+> bench, largely the **bench's own conventions** selecting the branch — in two
+> distinct instalments, both of them harness-side. Counting the same
+> (group × measurement) cells that disagree across the negative-control axis by
+> more than 2×: **22 / 30** in the record this section reads
+> (`20260925-114251-1f54ca6`), **15 / 30** after #172 replaced the unconstrained
+> `.op` with the #171 cold-start contract (`20260926-001833-228fbc7`), and
+> **0 / 30** after #196 put `EN` at the instantaneous VIN. With that convention
+> the 45-corner matrix
+> [`20260926-200304-35b7392`](../sim/line-regulation/records/20260926-200304-35b7392.md)
+> is **45/45 PASS** at 0.2167–0.5955 mV/V (1 mA) and 0.2712–0.3682 mV/V (50 mA)
+> against the 5 mV/V bound, and the negative-control axis is now **exactly**
+> negative: all 15 groups agree across their three supply columns to 0.000000
+> mV/V. The bullets above
+> stand as the #118-era reading of the #118-era records and are not rewritten;
+> this note records what they turned out to be measuring. **No design change
+> follows from it** — the DUT is unchanged, and the mismatch/rail-mode findings
+> in item 1 and the genuine `load-regulation` miss in item 3 are untouched.
+> Full evidence: `sim/README.md` → "#196".
+
 **3. `Load regulation`: bimodal, non-monotonic in the one axis that is real —
 and exactly one genuine miss.** Unlike line regulation, this bench's
 `corners.supply_v` does reach VIN (`VVIN VIN 0 'vsup'`), so the axis is
