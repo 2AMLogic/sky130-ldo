@@ -490,6 +490,56 @@ the numerical hazard without moving the physics. (The residual `Eta0 is
 negative` lines are PDK model-card warnings, not one of `corner-run.py`'s
 `SOLVER_DIAGNOSTIC_MARKERS`.)
 
+**The 45-corner re-run: `20260926-013955-6449a98`** (supersedes
+`20260825-081255-4cb27f8`; the superseded record and its logs are untouched,
+per the append-only rule).
+
+- **The hazard is gone: 0 of 45 corner logs carry a solver-diagnostic marker**,
+  against **23 of 45** in the superseded record (`grep -lE 'singular
+  matrix|gmin stepping failed|out of range for \^|source stepping failed'` over
+  each record's `corners/*.log`). No corner was forced to `FAIL` by `#171`'s
+  gate — every `solver_diagnostic` field in the new record's `.json` is empty.
+  (The superseded record's JSON has no `solver_diagnostic` field at all: it was
+  written before `#171` landed, which is exactly why its 23 hazard corners were
+  graded on their measurement bounds alone.)
+- **Verdict: 0/45 PASS, against the superseded record's 25/45.** Twenty-five
+  corners moved `PASS` → `FAIL`; twenty were already `FAIL` and stayed `FAIL`;
+  none moved `FAIL` → `PASS`.
+
+**That verdict change is not caused by the seed, and reading it as such would
+be wrong.** The two records do not measure the same manifest:
+
+| | superseded `…-4cb27f8` (2026-08-25) | new `…-6449a98` |
+|---|---|---|
+| measurements | `undershoot_v`, `overshoot_v` only | + `recovery_rise_us`, `recovery_fall_us` (added by `#119`), + `settle_err_50ma_pct` |
+| `C_out` | 1 µF | 4.7 µF (`#119`) |
+| failing measurements | `undershoot_v` ×20, `overshoot_v` ×4 | `recovery_rise_us` ×45, `recovery_fall_us` ×45 |
+| peak excursion (ratified ≤150 mV) | 0.102–0.393 V — **20 corners over** | 0.063–0.119 V — **every corner inside** |
+
+So the **peak-excursion clause now passes at all 45 corners** (it failed at 20
+before), and every one of the 45 new failures is the **recovery-time clause**
+(`recovery_rise_us` 74.7–132.1 µs and `recovery_fall_us` 425.7–796.1 µs against
+the ratified ≤20 µs) — a clause the superseded record never measured. Both
+movements are the expected, already-documented sign of `#119`'s `C_out`
+1 µF → 4.7 µF change: the peak excursion is charge-limited (`Q = C·dV`, so more
+`C_out` helps it) and the recovery time runs the opposite way against the same
+capacitor. `#119` recorded that tradeoff from a 3-corner subset; **this is the
+first full 45-corner record of the post-`#119` manifest**, so it also completes
+the re-verification `#166` was filed to get. The `.ic` seed's own contribution
+is bounded by the three-corner isolation probe above: ≤0.1 %, which cannot move
+a 74.7 µs measurement across a 20 µs bound.
+
+`0/45 PASS` is therefore an honest design finding against a ratified row, not a
+harness regression — the recovery-time gap is real and was previously
+under-measured. No bound in `spec/target-spec.md` was touched.
+
+Two incidental differences between the two records, neither affecting the
+comparison above: the new record ran on a different host (`ngspice-46` /
+`Darwin 27.0.0` vs the superseded record's `ngspice-47` / `Darwin 25.6.0`), and
+`measurements/characterization.md`'s "Load transient" row moves from `STALE` to
+`fresh` because the new netlist snapshot again matches a live re-netlist of the
+current testbench.
+
 ---
 
 ## Writing a new experiment
