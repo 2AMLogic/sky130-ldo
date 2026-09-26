@@ -328,6 +328,49 @@ unconstrained `.op` solve.** Two shapes satisfy this:
   (see design/README.md "#164" for the multi-variant screen that established
   it as equivalent to `uic` + EN edge for this circuit).
 
+**An EN edge alone does not satisfy the first shape — a non-`uic` `tran`
+still solves an operating point first, and it reads a source's `dc` keyword
+value there (issue #177).** This is the one mechanical detail the contract's
+first shape depends on, and it was stated wrongly here and in #174's audit
+until #177 measured it. Before the first timestep of a `tran` **without**
+`uic`, ngspice computes a transient operating point; for an independent
+source written with *both* a `dc` value and a transient function
+(`dc <X> pwl(…)`, `dc <X> PULSE(…)`), that solve uses the **`dc` value**, not
+the transient function's t = 0 value. ngspice announces it on stderr, once
+per such source, on every run:
+
+```
+Note: <source>: dc value used for op instead of transient time=0 value.
+```
+
+The transient *waveform* afterwards does start from the transient function's
+t = 0 value — so a deck can look correctly cold-started in its own waveforms
+while its operating-point solve was the fully-enabled, loop-closed,
+from-nowhere Newton start this contract exists to forbid. A minimal repro
+settles both halves: `V1 n1 0 dc 3.3 pwl(0 0 100u 0 …)` feeding `R1 n1 n2 1k`
+/ `C1 n2 0 1u` prints `v(n1) = v(n2) = 0` at t = 0 under `tran` (τ = 1 ms, so
+a 3.3 V seed could not have decayed away by then), while ngspice still prints
+the note above for the op it performed.
+
+**The practical rule, therefore: write `uic` on the transient.** `uic` skips
+that operating-point solve outright, which is what makes the EN edge the
+*only* thing establishing the start state. The consequence is per-source, not
+per-bench, and depends entirely on what the `dc` value is:
+
+| `VEN` form | Transient op solves with | Exposed? |
+|---|---|---|
+| `dc 'vsup' pwl(0 0 …)` | `EN = 'vsup'` — **enabled, loop closed** | **Yes** — needs `uic` |
+| `dc 0 pwl(0 0 …)` | `EN = 0` — disabled | No (the carve-out above) |
+| `PULSE(0 'vsup' …)`, no `dc` keyword | `EN = 0` (the pulse's initial value) | No (the carve-out above) |
+| `'vsup'` (a plain DC source) | `EN = 'vsup'` — enabled, loop closed | **Yes** |
+
+`sim/current-limit` is the only bench in `sim/` whose dual-form `VEN` carries
+an *enabled* `dc` value, so it is the only bench this correction moves;
+`sim/enable-shutdown` (`dc 0 pwl(…)`) and `sim/startup` /
+`sim/mc-output-accuracy` / `sim/ic-screen-125c-c` (`PULSE(…)`, no `dc`
+keyword) keep their **Clear** verdicts on their own merits, and the benches
+with a plain `'vsup'` `VEN` were already verdicted **Exposed**.
+
 **Why an unconstrained `.op` is not acceptable for a claim against
 `spec/target-spec.md`:** ngspice's Newton solver on a from-nowhere `.op` is
 not guaranteed to land on the circuit's actual operating point — it can
@@ -416,14 +459,14 @@ conversions):
 
 | Bench | Verdict | Mechanism |
 |---|---|---|
-| `current-limit` | **Exposed** | Leg 1's `op` (`experiment.json:24`) runs with `VEN`'s `dc` value (`'vsup'`, fully enabled) per `testbench/tb_current_limit.sch:145` — an unconstrained, loop-closed solve. (Leg 3's `tran` is *not* exposed: ngspice's non-`uic` transient uses the source's PWL value at t=0, which starts at 0/disabled, per the same line's comment.) Follow-up: #177. |
+| `current-limit` | **Exposed** — on **all** of legs 1 and 3, not just leg 1 (corrected by #177, see below) | Leg 1's `op` (`experiment.json:24`) runs with `VEN`'s `dc` value (`'vsup'`, fully enabled) per `testbench/tb_current_limit.sch:145` — an unconstrained, loop-closed solve. ~~(Leg 3's `tran` is *not* exposed: ngspice's non-`uic` transient uses the source's PWL value at t=0, which starts at 0/disabled, per the same line's comment.)~~ **That parenthesis is wrong**, and #177 measured it wrong: a non-`uic` `tran` performs an operating-point solve first and reads the `dc` keyword value there, so leg 3's `tran` was exposed by the same mechanism as leg 1's `op` — see "An EN edge alone does not satisfy the first shape" above. Run per-leg at `tt_27c_3.30v` with no `uic`, legs 1 and 3 each tripped `Warning: Dynamic gmin stepping failed`; leg 2's `dc` sweep did not. Converted by #177: both transient legs now carry `uic`. |
 | `dropout-vs-load` | **Exposed** | Its only analysis, `dc VVIN 3.63 1.5 -0.02` (`experiment.json:23`), runs with `VEN` held at a constant `'vsup'` (`testbench/tb_dropout_vs_load.sch:108`, no PWL/PULSE at all) — unconstrained, loop-closed. Follow-up: #178. |
 | `loop-gain` | **Exposed** | Its first analysis, `ac dec 30 1e-2 1e9` (`experiment.json:24`), runs with `VEN` held at a constant `'vsup'` (`testbench/tb_loop_gain.sch:102`) — the implicit linearization-point solve ngspice performs before an `ac` analysis is unconstrained. Follow-up: #179. |
 | `load-transient` | **Exposed → CONVERTED (#180)** | Was `tran 200n 3m` with no `uic`, with `VEN` held at a constant `'vsup'` (`testbench/tb_load_transient.sch`) — the same "`tran` with no `uic`" defect `#164` fixed for `mc-output-accuracy`. **#180 converted it** to the `.ic`-seeded shape (variant B): `testbench/tb_load_transient.sch`'s `IC_SEED` card constrains the operating-point solve to the loop's regulating branch at the pre-step 1 mA load and the (still non-`uic`) transient is released from it. See "`load-transient` after #180" below. |
 | `psrr-dc` | **Exposed** | Its first analysis, `ac lin 3 1e3 1e5` (`experiment.json:24`), runs with `VEN` held at a constant `'vsup'` (`testbench/tb_psrr_dc.sch:67`). Follow-up: #179. |
 | `thermal` | **Exposed** | Its first analysis, `dc temp 80 180 2` (`experiment.json:48`), runs with `VEN` held at a constant `'vsup'` (`testbench/tb_thermal_trip.sch:78`). Follow-up: #178. |
 | `startup` | **Clear** | `VEN` is `PULSE(0 'vsup' 100u 1u 1u 100 200)` (`testbench/tb_startup.sch:89`) — no separate `dc` keyword, so its `.op`/`.tran` default DC value is the pulse's own initial level (0 V, disabled). The disabled state has no closed feedback loop to disambiguate, per this contract's own carve-out above. |
-| `enable-shutdown` | **Clear** | `VEN` is `dc 0 pwl(0 0 100u 0 101u 'vsup' 2m 'vsup' 2.001m 0 10 0)` (`testbench/tb_enable_shutdown.sch:117`) — leg 1's `tran` starts from the PWL's t=0 value (0 V, disabled) and reaches regulation through an EN edge (the contract's `uic` + EN-edge shape, informally: no `uic` keyword is present, but the disabled start makes the distinction moot the same way it does for `startup`); legs 2-4's `op`s explicitly carry `dc 0`, landing on the same disabled state. |
+| `enable-shutdown` | **Clear** | `VEN` is `dc 0 pwl(0 0 100u 0 101u 'vsup' 2m 'vsup' 2.001m 0 10 0)` (`testbench/tb_enable_shutdown.sch:117`) — the **`dc 0`** is what earns this verdict (not the PWL's t=0 value: #177 showed a non-`uic` `tran`'s op reads the `dc` keyword, so an enabled `dc` value would have exposed it). Leg 1's `tran` therefore solves its op at `EN = 0`, disabled, and reaches regulation through an EN edge (the contract's `uic` + EN-edge shape, informally: no `uic` keyword is present, but the disabled start makes the distinction moot the same way it does for `startup`); legs 2-4's `op`s carry the same `dc 0`, landing on the same disabled state. |
 
 Every "Exposed" verdict above is corroborated by the bench's own latest
 committed corner logs already carrying a `singular matrix` / `gmin stepping
@@ -431,6 +474,13 @@ failed` / `out of range for ^` / `source stepping failed` diagnostic on a
 majority of corners (see #174/#177/#178/#179/#180 for the exact counts) —
 the same fingerprint `#164`/`#171` used to characterize the hazard, not just
 an inference from the deck/testbench text.
+
+**#177's correction to the two "Clear" rows is a strengthening, not a
+weakening.** Both were graded on the wrong reason (the PWL's t = 0 value) and
+both survive re-grading on the right one (`dc 0`, and no `dc` keyword at
+all) — see the per-source table in "An EN edge alone does not satisfy the
+first shape" above for the full four-way case split. No bench's verdict
+changes except `current-limit`'s, which gains leg 3.
 
 ### `load-transient` after #180
 
@@ -792,17 +842,23 @@ what would have to change if such a record lands.
 
 - **`current-limit/`** — forces `VOUT` through a `VFORCE`/`RFORCE` branch
   (`RFORCE` starts at 1e12 and the deck `alter`s it to 1 mΩ) in three legs:
-  an `op` at a 36 Ω (~50 mA) load with the branch open (leg 1), a DC
-  characteristic from a dead short up to the 1.75 V knee (leg 2), and a
-  `Vout = 0` short applied as a transient event and **held for 2 ms** (leg 3)
-  — a sustained fault of defined duration, not one sampled instant, since
-  "survives" is a claim about holding the fault. Legs 1–2 are `op`/`dc`
-  analyses; leg 3 is a `tran`, and its `EN` is a dual `dc 'vsup'` + rising
-  `pwl` (t = 100 µs) so the fault (t = 1.0 ms, after `startup/`'s measured
-  soft-start ramp) lands on a block that reached regulation through a real
-  enable edge rather than an already-enabled t = 0 DC solve — see the
-  harness-lesson paragraph below for why, and its scope note for which legs
-  of this bench that fix does and does not reach. Bounded: `vout_50ma_v`
+  a settled 50 mA operating point at a 36 Ω load with the branch open
+  (leg 1), a DC characteristic from a dead short up to the 1.75 V knee
+  (leg 2), and a `Vout = 0` short applied as a transient event and **held for
+  2 ms** (leg 3) — a sustained fault of defined duration, not one sampled
+  instant, since "survives" is a claim about holding the fault. Legs 1 and 3
+  are both `tran … uic` riding the same `EN` edge at t = 100 µs (a dual
+  `dc 'vsup'` + rising `pwl` source); leg 2 is the one `dc` analysis, and the
+  one that still solves with `EN` at its `dc` value, which is correct there
+  because the forcing branch pins `VOUT` at every swept point. Leg 1 reads
+  its 50 mA point from t = 0.9–1.0 ms, after the soft-start ramp settles, and
+  leg 3's fault at t = 1.0 ms likewise lands on a block that reached
+  regulation through a real enable edge rather than an already-enabled t = 0
+  DC solve — see the harness-lesson paragraph below, and the
+  initial-condition contract's "An EN edge alone does not satisfy the first
+  shape" for why `uic` (added to both legs by **#177**, which also converted
+  leg 1 from a bare `op`) is load-bearing on top of that edge. Bounded:
+  `vout_50ma_v`
   inside the ratified Output row's ±2% window (the operative form of "never
   engages for I_load ≤ 50 mA") and both limit levels above 50 mA. Reported
   unbounded: the limit window itself, its brickwall-vs-foldback shape, and
@@ -855,6 +911,27 @@ what would have to change if such a record lands.
   bench-observed asymmetry between the two process corners, filed as #93
   (why `sf` is more susceptible than `ff` to mechanism 1 during a ramped
   enable) rather than chased here — out of this issue's scope.
+  **Record note (#177): every record above predates #177's deck change, and
+  no re-run has replaced them.** The latest,
+  `20260825-105322-933dfdd` (45/45 PASS, the authoritative one per "Which
+  record set is authoritative" below), was graded before `corner-run.py`
+  acquired #171's solver-diagnostic FAIL gate, and 16 of its 45 corner logs
+  carry a `gmin stepping failed` / `singular matrix` diagnostic — under the
+  gate as it now stands those 16 corners would be forced to **FAIL**
+  regardless of their measured values. #177 fixed the deck that produced
+  them (legs 1 and 3 to `tran … uic`; see the harness-lesson paragraph
+  below), but **did not re-run the matrix**: `corner-run.py` has no
+  remote/batch execution mode (`klt sim` has one, but this bench's
+  multi-solve-per-corner `alter` chain is not expressible as a `klt sim`
+  request — 2AMLogic/klayout-tools#2482), and the sweep host it would have
+  run on forbids hand-launched local `ngspice` grids. So the committed
+  records are evidence about the **pre-#177 deck only**, and this row's
+  verdict against the current deck is **not established**. Closing that gap
+  needs one `python3 sim/bin/corner-run.py sim/current-limit
+  --supersedes 20260825-105322-933dfdd` on a host allowed to run it; the
+  partial evidence #177 did gather (4 of the 45 corners, plus a per-leg probe
+  at a 5th) is in its PR, not on disk here, precisely because an incomplete
+  matrix must not be minted as a record.
 - **`startup/`** — four independent **cold** enables in one deck (`C_out`
   0.33/4.7 µF × load 0/50 mA, the corners of the two ranges the ratified row
   quantifies over), each starting from `EN = 0` with `C_OUT` discharged and
@@ -928,12 +1005,28 @@ the failure really was the solve, not the shutdown path. Issue #76 found the
 same gap in `current-limit/`'s leg 3 (its `tran`) after this fix had already
 landed in `enable-shutdown/` and `startup/`, and applied the identical fix
 there. **Scope note, since `current-limit/` is not uniformly a transient
-bench**: the enable-edge lesson applies only to leg 3 — the `tran` that
-applies and holds the `Vout = 0` short. Legs 1 and 2 are `op`/`dc` analyses;
-an enable ramp cannot help a DC solve reach a different branch than it
-otherwise would (there is no "before" state for a ramp to start from), so
+bench**: as of #76 the enable-edge lesson applied only to leg 3 — the `tran`
+that applies and holds the `Vout = 0` short. Legs 1 and 2 were `op`/`dc`
+analyses; an enable ramp cannot help a DC solve reach a different branch than
+it otherwise would (there is no "before" state for a ramp to start from), so
 their `ff_125c_3.63v` collapse is the design defect (#69) the record honestly
-reports, not a bench artifact this fix was ever going to touch.
+reports, not a bench artifact that fix was ever going to touch.
+
+**#177 then moved leg 1 across that line, and added the missing half of the
+lesson.** Leg 1 is no longer an `op`: it is a `tran … uic` that reaches the
+50 mA point through the same enable edge leg 3 uses, so the enable-edge
+lesson now covers legs 1 *and* 3, and only leg 2 remains a DC analysis it
+cannot reach. The missing half is that an enable edge is **not sufficient on
+its own** — a non-`uic` `tran` performs an operating-point solve before its
+first timestep and reads a dual-form source's `dc` keyword there, so with
+`VEN = dc 'vsup' pwl(…)` both transient legs were still solving the
+fully-enabled loop from nowhere. Measured per-leg at `tt_27c_3.30v`: legs 1
+and 3 each tripped `Warning: Dynamic gmin stepping failed` without `uic` and
+neither does with it, at bit-identical measured values (leg 1
+`vout_50ma` = 1.79883 V, leg 3 `ish_avg` = −1.53348e−01 A both ways). Whether
+this changes any corner's PASS/FAIL verdict is **not yet established**: the
+45-corner re-run that would settle it has not been performed — see the
+`current-limit/` record note above.
 
 ### Which record set is authoritative (issue #19)
 
