@@ -155,13 +155,25 @@ v {xschem version=3.4.7 file_version=1.2
 * CROSS-CHECK rather than shipped. At fs/125C/2.97V, the worst corner of the
 * superseded record, that bsource deck returns line_reg_1ma = 0.595454 mV/V
 * and line_reg_50ma = 0.353030 mV/V over the same four 200ms points
-* (v(vout) = 1.80087 / 1.80126 / 1.79839 / 1.79862 V); compare the shipped
-* vsource deck's own reading for that corner in the record this bench's #196
-* re-run mints. Two independent expressions of "EN = the instantaneous VIN"
+* (v(vout) = 1.80087 / 1.80126 / 1.79839 / 1.79862 V); the shipped vsource
+* deck's own reading for that corner comes with the 45-corner re-run #196 left
+* open (sim/README.md -> "#196" -> "Why the 45-corner matrix is not re-run
+* here"). Two independent expressions of "EN = the instantaneous VIN"
 * landing on one answer is the property worth having. The plain vsource ships
 * because EN stays a plain `.save i(ven)`-able independent source in the same
 * form sim/enable-shutdown and the #171/#172 contract describe, and because a
 * bsource makes the start-up window markedly more expensive to solve.
+*
+* Evidence state after #196 (read this before citing a record): the newest
+* committed 45-corner record, 20260926-001833-228fbc7, was taken under the OLD
+* EN convention, and #196 did not re-run the matrix -- on the sweep host it ran
+* on, one corner of this deck takes ~579s against 41.7s in that record, i.e.
+* ~7h for 45 corners. So this bench's committed matrix evidence is stale by
+* construction until one `corner-run.py sim/line-regulation --supersedes
+* 20260926-001833-228fbc7` completes; the five-corner confirmation above is
+* deliberately NOT minted as a record, because an incomplete matrix must not
+* be. sim/README.md -> "#196" has the numbers and the same reasoning #177
+* applied to sim/current-limit.
 *
 * VREF is a fixed 1.2V placeholder per design/README.md's "VREF interface
 * caveat" -- matching the 1:2 feedback-divider ratio issue #22 revised the
