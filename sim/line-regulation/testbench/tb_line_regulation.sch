@@ -21,9 +21,10 @@ v {xschem version=3.4.7 file_version=1.2
 * time. Four independent solves at the ratified range's own two endpoints
 * (matching design/README.md's own "DC operating grid" screening
 * convention, which also uses discrete VIN points, not a sweep) reproduce
-* that screening data's line-regulation numbers. VIN and I_LOAD are both
-* 'alter'ed between points (mirrors sim/loop-gain's and sim/iq's
-* multi-point-via-alter convention, #25) --
+* that screening data's line-regulation numbers. VIN, EN's high level and
+* I_LOAD are all 'alter'ed between points (mirrors sim/loop-gain's and
+* sim/iq's multi-point-via-alter convention, #25; EN joined the list in
+* #196, see the "EN convention" section below) --
 * see sim/line-regulation/experiment.json's "deck.analyses" for the exact
 * sequence. line_reg_*_mv_per_v is computed as
 * abs(1000*(vout_hi-vout_lo)/(3.63-2.97)), i.e. mV per V of VIN span over
@@ -81,7 +82,86 @@ v {xschem version=3.4.7 file_version=1.2
 * cross-check variant genuinely needs it to settle).
 *
 * VIN's own component value below (3.3V) is a placeholder the deck's first
-* 'alter' immediately overwrites; it is never simulated as-is.
+* 'alter' immediately overwrites; it is never simulated as-is. VEN's pwl high
+* level carries the same 3.3V placeholder for the same reason (#196).
+*
+* EN convention (issue #196) -- EN TRACKS THE INSTANTANEOUS VIN.
+* ==============================================================
+* Through record 20260926-001833-228fbc7 this bench drove EN's high level at
+* 'vsup', the corner runner's own supply label, while VVIN was this bench's
+* OWN source being 'alter'ed between 2.97V and 3.63V. Those are different
+* quantities here: at the *_2.97v corners the VIN=3.63V point therefore ran
+* with EN 0.66V BELOW the instantaneous VIN. That is the geometry #187
+* root-caused on sim/dropout-vs-load (see sim/README.md -> "#187"): EN gates
+* five PMOS shutdown clamps whose SOURCES ARE VIN, so their gate drive is
+* (VIN - EN), and at 0.66V down two of them out-drive the error amplifier's
+* own tail current, EA_OUT is pulled to VIN and M_PASS turns off. It is a
+* static headroom limit, not a start-up branch, and it leaves NO solver
+* diagnostic -- which is why #171's gate never caught it.
+*
+* Chosen convention: EN's high level = the instantaneous VIN at every measured
+* point. Why this one and not the alternatives #196 put up:
+*   - It is the only one that honours the DOCUMENTED interface everywhere.
+*     design/README.md -> "Enable/shutdown" specifies EN as "active-high,
+*     full-rail (0V / VIN)"; the enable input is VIN-referenced by
+*     construction, so EN = VIN is the contract at 2.97V and at 3.63V alike.
+*     No spec line moves: this is a bench-convention fix, and #196 is
+*     explicitly out of scope to touch design/ or spec/.
+*   - "EN = 3.63V (the higher endpoint) at every corner" would put EN ABOVE
+*     VIN at the 2.97V point. That direction is not the #187 failure (the
+*     VIN-sourced PMOS clamps go HARDER off, not on, when EN rises above VIN),
+*     but it is still not the documented interface, it over-drives the
+*     EN-gated NMOS switches M_ENN/M_ENN2 relative to it, and it would leave
+*     this bench the only one in sim/ whose low-VIN point is driven from a
+*     rail the DUT does not have. Rejected as an unnecessary second departure,
+*     not as a second collapse.
+*   - "Collapse the supply axis for this row" is a manifest change to the
+*     ratified corner matrix's meaning, which CLAUDE.md routes through a
+*     decision record. Not taken here. Instead the full 45-corner matrix is
+*     still run, and the axis's redundancy on THIS bench becomes a measured
+*     result rather than an assumption -- see the next paragraph.
+*
+* Measured confirmation that the five FAILing corners of record
+* 20260926-001833-228fbc7 were this artifact and nothing else (full numbers and
+* method in sim/README.md -> "#196"): re-running all five *_125c_2.97v corners
+* with EN at the instantaneous VIN takes every one of them from 6.7-12890 mV/V
+* to 0.44-0.51 mV/V at 1mA and 0.34-0.37 mV/V at 50mA, i.e. into the same band
+* the other 40 corners of that record already occupied. The VIN=2.97V points
+* are untouched by the convention (EN = 'vsup' = 2.97V = VIN there already) and
+* they reproduce the superseded record's own settled values; the entire change
+* is at the VIN=3.63V points, which stop being driven with EN 0.66V down.
+*
+* What 'vsup' now means on this bench: nothing in the stimulus. It is a pure
+* corner LABEL here. VVIN and VEN are both set from the deck's own per-point
+* literal, so the decks for a corner's 2.97V / 3.30V / 3.63V variants differ
+* only in the runner's '.param vsup=' line, which this bench no longer
+* references. The three supply columns are therefore expected to be
+* IDENTICAL, and that is the useful thing about keeping them: the 45-corner
+* record's own supply axis is now a reproducibility check on the harness
+* rather than a stimulus axis. (The previous convention is what made that axis
+* appear to carry information -- the information it carried was the artifact.)
+*
+* Implementation, and why this shape rather than a behavioural source.
+* VIN is piecewise-CONSTANT across the four measured points (the deck only
+* moves it between transients), so EN's high level can simply be re-pointed
+* alongside it: each point does `set vinpt = <v>` then `alter vvin = $vinpt`
+* AND `alter @ven[pwl] = [ 0 0 100u 0 101u $vinpt 10 $vinpt ]` -- ONE literal
+* per point feeding both sources, so the two can never drift apart in a later
+* edit.
+*
+* The obvious alternative -- a behavioural source multiplying a dimensionless
+* 0->1 enable ramp by v(VIN), `BEN EN 0 V='v(VIN)*v(ENRAMP)'` -- expresses the
+* same intent continuously instead of per-point, and it was built and run as a
+* CROSS-CHECK rather than shipped. At fs/125C/2.97V, the worst corner of the
+* superseded record, that bsource deck returns line_reg_1ma = 0.595454 mV/V
+* and line_reg_50ma = 0.353030 mV/V over the same four 200ms points
+* (v(vout) = 1.80087 / 1.80126 / 1.79839 / 1.79862 V); compare the shipped
+* vsource deck's own reading for that corner in the record this bench's #196
+* re-run mints. Two independent expressions of "EN = the instantaneous VIN"
+* landing on one answer is the property worth having. The plain vsource ships
+* because EN stays a plain `.save i(ven)`-able independent source in the same
+* form sim/enable-shutdown and the #171/#172 contract describe, and because a
+* bsource makes the start-up window markedly more expensive to solve.
 *
 * VREF is a fixed 1.2V placeholder per design/README.md's "VREF interface
 * caveat" -- matching the 1:2 feedback-divider ratio issue #22 revised the
@@ -109,7 +189,8 @@ T {line-regulation testbench -- exercises design/ldo_3v3in_1v8out.sch (#14)
 via its companion subcircuit symbol design/ldo_3v3in_1v8out.sym
 VVIN 'alter'ed between 2.97V/3.63V by the deck (4 discrete cold-start settled
 'uic' transients, not a sweep and not a bare .op -- see header)
-EN: 0V until 101us, then 'vsup' (the contract's EN edge, #171/#172)
+EN: 0V until 101us, then the INSTANTANEOUS VIN -- 'alter'ed alongside VVIN from
+the same per-point literal (#196); the contract's EN edge shape (#171/#172)
 I_LOAD: 'alter'ed between 1mA/50mA by the deck} -700 -650 0 0 0.3 0.3 {}
 
 * ---- VIN: independent of the corner runner's 'vsup'; 'alter'ed by the deck ----
@@ -117,13 +198,18 @@ C {devices/vsource.sym} -600 -300 0 0 {name=VVIN value=3.3 savecurrent=true}
 C {devices/lab_pin.sym} -600 -330 0 0 {name=p1 lab=VIN}
 C {devices/lab_pin.sym} -600 -270 0 0 {name=p2 lab=0}
 
-* ---- EN: 0V (disabled) until 101us, then the corner runner's supply. This is
-*      the initial-condition contract's own EN edge (#171, converted by #172):
-*      with 'tran ... uic' every node starts cold and the block powers up
-*      through its own soft-start ramp, so no measured point is read off an
-*      unconstrained DC solve. Same 'dc 0 pwl(...)' form sim/enable-shutdown
-*      already uses -- the explicit 'dc 0' pins the disabled state. ----
-C {devices/vsource.sym} -400 -300 0 0 {name=VEN value="dc 0 pwl(0 0 100u 0 101u 'vsup' 10 'vsup')" savecurrent=true}
+* ---- EN: 0V (disabled) until 100us, then the INSTANTANEOUS VIN (issue #196).
+*      The high level below (3.3V) is a PLACEHOLDER, exactly like VVIN's own
+*      3.3V above, and exactly like VVIN's it is overwritten by the deck's
+*      first 'alter' and never simulated as-is. The deck's .control block
+*      re-points this pwl's high level at every 'alter vvin', from the SAME
+*      single literal, so EN's high level is the instantaneous VIN at all four
+*      measured points by construction -- see experiment.json's
+*      "deck.analyses" and the header's #196 section. It used to read
+*      'vsup' (the corner runner's own supply label), which on this bench is
+*      NOT VIN: that is what #196 fixed. Edge shape and timing are unchanged
+*      from #172 -- 0V until 100us, 1us linear ramp, then held. ----
+C {devices/vsource.sym} -400 -300 0 0 {name=VEN value="dc 0 pwl(0 0 100u 0 101u 3.3 10 3.3)" savecurrent=true}
 C {devices/lab_pin.sym} -400 -330 0 0 {name=p3 lab=EN}
 C {devices/lab_pin.sym} -400 -270 0 0 {name=p4 lab=0}
 
