@@ -303,7 +303,7 @@ evidence trail. Corrections mint a new record that references the prior one via
 
 **A bench's `.op`/`.tran`/`.ac`/`.dc` analysis chain must start from a
 physically realizable state of the circuit — never from ngspice's own
-unconstrained `.op` solve.** Two shapes satisfy this:
+unconstrained `.op` solve.** Three shapes satisfy this:
 
 - **`uic` + an EN edge** — every node starts at its natural cold-start value
   (0 V unless a source forces otherwise), `EN` starts low (block disabled),
@@ -327,6 +327,58 @@ unconstrained `.op` solve.** Two shapes satisfy this:
   constraining every node the loop needs) is a worked example of this shape
   (see design/README.md "#164" for the multi-variant screen that established
   it as equivalent to `uic` + EN edge for this circuit).
+- **A `.nodeset`-seeded `.ac`/`.op`** — the same constrain-then-release seed
+  as the shape above, written with the card an **`ac`** analysis's own
+  operating-point solve actually honours. `sim/loop-gain` and `sim/psrr-dc`
+  (post-#179) are the worked examples; both carry a
+  `.nodeset v(VOUT)=1.8 v(xldo.FB)=1.2 v(xldo.N_FBB)=0.6` card in the
+  testbench schematic (`devices/code_shown.sym`, exactly as
+  `sim/ic-screen-125c-b` carries its `.ic`), and both record `v(vout)` from
+  an `op` taken at every bias point as evidence the seeded solve landed on
+  the regulating branch.
+
+  **Seed only the branch-defining nodes.** A `.nodeset` card is a *single
+  static card* applied to every operating-point solve in the deck, while
+  both of these benches walk several load points via `alter`. So the card
+  may only constrain nodes whose value says *which branch* the solve is on
+  — here `VOUT` and the two feedback-divider taps `FB`/`N_FBB` — and must
+  leave every node whose value is set by the operating **current**
+  (`EA_OUT`, `EA_CZ`, `EA_TAIL`, `EA_D1/D2`, `BIASP`, `NB`, `SS`) to the
+  solver. Seeding those too is actively harmful, and #179 measured how
+  (see "#179" below): `sim/ic-screen-125c-b`'s eleven-node seed, whose
+  values are its 125 °C/50 mA operating point, drags the *1 mA* point of
+  `ss/−40 °C/3.63 V` onto a non-regulating branch (`VOUT = 3.633 V = VIN`)
+  in both benches. This is the `.ac` counterpart of the `.ic` rule, not a
+  contradiction of it: `sim/ic-screen-125c-b` seeds eleven nodes correctly
+  because it is a *single-operating-point* transient screen.
+
+  **Why `.nodeset` rather than `.ic` for an `ac` deck** (measured during
+  #179, ngspice-46, not inferred from the manual):
+
+  1. **`.ic` is inert in an ac-only deck.** ngspice applies `.ic` to the
+     *transient* operating point only. Adding an eleven-node `.ic` card to
+     `sim/psrr-dc`'s deck changed neither a measurement nor a solver
+     diagnostic; adding it to a deck with a leading `op` instead *introduced*
+     two `Warning: singular matrix: check node xldo.xr_fb_b.t2` lines — i.e.
+     the `.ic` shape is the wrong tool here, and forcing it would have
+     tripped the FAIL gate rather than satisfied the contract.
+  2. **Each `ac` re-solves its operating point from scratch, so a seed
+     carried by a preceding analysis does not survive.** On `sim/loop-gain`'s
+     seven-point deck the baseline logs one Newton continuation per `ac`
+     (seven); prepending a bare `op` produces *eight*, not a reuse of the
+     first. A per-point `.ic`/`op` seed is therefore impossible to chain,
+     which is the specific question #179 raised about the `alter`-reached
+     points — and the reason the seed has to be a card the *analysis itself*
+     honours rather than a preceding analysis.
+  3. **`.nodeset` is applied to every operating-point solve the deck
+     performs**, including the one inside each `ac`, so a single card covers
+     all seven `alter`-reached points. That it is genuinely applied (not
+     silently dropped on hierarchical node names) is visible in the result:
+     on the current DUT it takes `sim/loop-gain` from three corners whose
+     `ac` linearized about `VOUT = VIN` down to none, and `sim/psrr-dc` from
+     one to none, while *releasing* to bit-identical measurements at every
+     corner that was already on the regulating branch — the seed is a basin
+     hint, not a forced result. Per-variant counts: "#179" below.
 
 **An EN edge alone does not satisfy the first shape — a non-`uic` `tran`
 still solves an operating point first, and it reads a source's `dc` keyword
@@ -469,9 +521,9 @@ conversions):
 |---|---|---|
 | `current-limit` | **Exposed** — on **all** of legs 1 and 3, not just leg 1 (corrected by #177, see below) | Leg 1's `op` (`experiment.json:24`) runs with `VEN`'s `dc` value (`'vsup'`, fully enabled) per `testbench/tb_current_limit.sch:145` — an unconstrained, loop-closed solve. ~~(Leg 3's `tran` is *not* exposed: ngspice's non-`uic` transient uses the source's PWL value at t=0, which starts at 0/disabled, per the same line's comment.)~~ **That parenthesis is wrong**, and #177 measured it wrong: a non-`uic` `tran` performs an operating-point solve first and reads the `dc` keyword value there, so leg 3's `tran` was exposed by the same mechanism as leg 1's `op` — see "An EN edge alone does not satisfy the first shape" above. Run per-leg at `tt_27c_3.30v` with no `uic`, legs 1 and 3 each tripped `Warning: Dynamic gmin stepping failed`; leg 2's `dc` sweep did not. Converted by #177: both transient legs now carry `uic`. |
 | `dropout-vs-load` | **Exposed** → **converted (#178)** | Its only analysis, `dc VVIN 3.63 1.5 -0.02` (`experiment.json:23`), ran with `VEN` held at a constant `'vsup'` (`testbench/tb_dropout_vs_load.sch:108`, no PWL/PULSE at all) — unconstrained, loop-closed. **#178 replaced the `dc` sweep with a cold-start `uic` transient whose VIN is a quasi-static down-ramp** — see "#178: dropout-vs-load and thermal" below. |
-| `loop-gain` | **Exposed** | Its first analysis, `ac dec 30 1e-2 1e9` (`experiment.json:24`), runs with `VEN` held at a constant `'vsup'` (`testbench/tb_loop_gain.sch:102`) — the implicit linearization-point solve ngspice performs before an `ac` analysis is unconstrained. Follow-up: #179. |
+| `loop-gain` | **Exposed** → **converted (#179)** | Its first analysis, `ac dec 30 1e-2 1e9` (`experiment.json:24` as audited), ran with `VEN` held at a constant `'vsup'` (`testbench/tb_loop_gain.sch:102`) — the implicit linearization-point solve ngspice performs before an `ac` analysis is unconstrained, and it is redone from scratch for each of the deck's seven `alter`-reached points. **Converted by #179** to the `.nodeset`-seeded `.ac` shape above. |
 | `load-transient` | **Exposed → CONVERTED (#180)** | Was `tran 200n 3m` with no `uic`, with `VEN` held at a constant `'vsup'` (`testbench/tb_load_transient.sch`) — the same "`tran` with no `uic`" defect `#164` fixed for `mc-output-accuracy`. **#180 converted it** to the `.ic`-seeded shape (variant B): `testbench/tb_load_transient.sch`'s `IC_SEED` card constrains the operating-point solve to the loop's regulating branch at the pre-step 1 mA load and the (still non-`uic`) transient is released from it. See "`load-transient` after #180" below. |
-| `psrr-dc` | **Exposed** | Its first analysis, `ac lin 3 1e3 1e5` (`experiment.json:24`), runs with `VEN` held at a constant `'vsup'` (`testbench/tb_psrr_dc.sch:67`). Follow-up: #179. |
+| `psrr-dc` | **Exposed** → **converted (#179)** | Its first analysis, `ac lin 3 1e3 1e5` (`experiment.json:24` as audited), ran with `VEN` held at a constant `'vsup'` (`testbench/tb_psrr_dc.sch:67`), for both its 1 mA and its `alter`-reached 50 mA point. **Converted by #179** to the `.nodeset`-seeded `.ac` shape above. |
 | `thermal` | **Exposed** → **seeded (#178)** | Its first analysis, `dc temp 80 180 2` (`experiment.json:48`), ran with `VEN` held at a constant `'vsup'` (`testbench/tb_thermal_trip.sch:78`). **#178 seeded both `dc temp` sweeps with a `.nodeset` measured from a settled cold-start transient** — the only mechanism available to a temperature sweep, see "#178: dropout-vs-load and thermal" below. |
 | `startup` | **Clear** | `VEN` is `PULSE(0 'vsup' 100u 1u 1u 100 200)` (`testbench/tb_startup.sch:89`) — no separate `dc` keyword, so its `.op`/`.tran` default DC value is the pulse's own initial level (0 V, disabled). The disabled state has no closed feedback loop to disambiguate, per this contract's own carve-out above. |
 | `enable-shutdown` | **Clear** | `VEN` is `dc 0 pwl(0 0 100u 0 101u 'vsup' 2m 'vsup' 2.001m 0 10 0)` (`testbench/tb_enable_shutdown.sch:117`) — the **`dc 0`** is what earns this verdict (not the PWL's t=0 value: #177 showed a non-`uic` `tran`'s op reads the `dc` keyword, so an enabled `dc` value would have exposed it). Leg 1's `tran` therefore solves its op at `EN = 0`, disabled, and reaches regulation through an EN edge (the contract's `uic` + EN-edge shape, informally: no `uic` keyword is present, but the disabled start makes the distinction moot the same way it does for `startup`); legs 2-4's `op`s carry the same `dc 0`, landing on the same disabled state. |
@@ -797,6 +849,122 @@ comparison above: the new record ran on a different host (`ngspice-46` /
 `fresh` because the new netlist snapshot again matches a live re-netlist of the
 current testbench.
 
+### `#179` — converting `sim/loop-gain` and `sim/psrr-dc` (the two `ac` benches)
+
+`#179` converted the two `ac`-analysis benches the table above lists as
+**Exposed**. Both now carry the `.nodeset`-seeded `.ac` shape defined above,
+and both new records supersede their predecessor:
+
+| Bench | New record | Supersedes | Verdict | Corners PASS |
+|---|---|---|---|---|
+| `loop-gain` | [`20260926-040338-4a9ec09`](loop-gain/records/20260926-040338-4a9ec09.md) | `20260825-081257-4cb27f8` | **FAIL** (unchanged) | 7/45 (was 7/45) |
+| `psrr-dc` | [`20260926-033606-4a9ec09`](psrr-dc/records/20260926-033606-4a9ec09.md) | `20260923-125412-d71f4b3` | **FAIL** (unchanged) | 0/45 (was 0/45) |
+
+**Neither row's verdict changed, and neither row's verdict is comparable
+corner-for-corner with its predecessor** — both superseded records were cut
+*before* `#116`/`#139` re-sized the shared DUT's pass device, so their
+netlist snapshots were `STALE` and their numbers are "against the 2500 µm
+pass device". `loop-gain` lands on 7/45 again but on a *different* seven
+corners (`tt_125c_2.97v`, `ss_125c_3.30v` and `ff_125c_2.97v` in, and
+`tt_125c_3.63v`, `ss_125c_3.63v` and `ff_125c_3.63v` out). That movement is
+the pass-device resize, not the seed — see the seeded/unseeded control
+below, in which every measurement that both variants can compute agrees to
+five or six digits.
+
+**Why three seeded nodes and not eleven.** All four variants below were run
+over the full 45-corner matrix on the *same* committed decks (extracted from
+the new records' own corner logs, with only the `.nodeset` card swapped) and
+with `sim/spiceinit` in place, so they are harness-equivalent and directly
+comparable. "non-regulating points" counts `vout_seed_*` measurements that
+did not land within 50 mV of 1.8 V — i.e. `ac` analyses that linearized
+about a state where the pass device is simply full-on (`VOUT = VIN`):
+
+| Seed | `loop-gain` diag. corners | `loop-gain` non-reg. corners / points | `psrr-dc` diag. corners | `psrr-dc` non-reg. corners / points |
+|---|---|---|---|---|
+| none (the pre-`#179` shape) | 13 / 45 | 3 / 6 | 2 / 45 | 1 / 1 |
+| **three nodes (`VOUT`, `FB`, `N_FBB`) — shipped** | **3 / 45** | **0 / 0** | **2 / 45** | **0 / 0** |
+| six nodes (the three + `SS`, `NB`, `BIASP`) | 2 / 45 | 2 / 4 | 1 / 45 | 1 / 1 |
+| eleven nodes (`sim/ic-screen-125c-b`'s seed verbatim) | 9 / 45 | 2 / 4 | 6 / 45 | 1 / 1 |
+
+The three-node seed is the only variant that leaves **no** `ac` analysis
+linearized about a non-circuit state, in either bench. The six-node variant
+shaves one more solver diagnostic but leaves four non-regulating points
+standing, and diagnostic count is not the thing the contract is for —
+landing on the regulating branch is. The eleven-node variant is worse on
+both axes, for the reason the contract section states: its values *are*
+`ic-screen`'s 125 °C/50 mA operating point, and a `.nodeset` card is one
+static card applied to every bias point in the deck.
+
+**What the seed actually bought, in measurements.** Three corners the
+unseeded deck got wrong on the current DUT:
+
+| Bench / corner | Point | Unseeded | Three-node seed |
+|---|---|---|---|
+| `psrr-dc` `ss/−40 °C/3.63 V` | 1 mA | `VOUT` = 3.6333 V → PSRR 0.017 dB @ 1 kHz, 5.20 dB @ 100 kHz | `VOUT` = 1.8004 V → 25.66 dB, 31.88 dB |
+| `loop-gain` `ss/−40 °C/3.63 V` | 1 mA (pts 2, 5) | `VOUT` = 3.6333 V → `pm_c033_1ma_deg` / `pm_c47_1ma_deg` unmeasurable | `VOUT` = 1.8004 V → 74.39° |
+| `loop-gain` `ff/27 °C/3.30 V` | 0 mA (pts 3, 6) | `VOUT` = 3.2870 V → `pm_c033_0ma_deg` / `pm_c47_0ma_deg` unmeasurable | `VOUT` = 1.8025 V → 20.58° / 55.58° |
+| `loop-gain` `ff/−40 °C/3.63 V` | 0 mA (pts 3, 6) | `VOUT` = 3.6402 V → both unmeasurable | `VOUT` = 1.8019 V → 18.54° / 46.87° |
+
+The `psrr-dc` row is the sharpest illustration of why `#171` exists: 5.20 dB
+at 100 kHz is a *number*, it is inside the record, and it is not a PSRR — it
+is the small-signal response of a circuit with no loop closed around it.
+Everywhere else the seeded and unseeded numbers are identical to five or six
+digits, which is the reassuring half of the same result: the unconstrained
+solve was landing on the right branch at 42 of 45 corners, and the contract
+exists because "usually" is not a property you can cite.
+
+**FINDING — the seed does NOT clear `#171`'s solver-diagnostic FAIL gate,
+and that is reported rather than suppressed.** Three `loop-gain` corners
+(`tt_-40c_2.97v`, `tt_-40c_3.63v`, `ss_-40c_3.30v`) and two `psrr-dc`
+corners (`tt_-40c_2.97v`, `tt_-40c_3.63v`) still raise
+`Warning: singular matrix:  check node xldo.ea_cz` and are therefore forced
+to **FAIL** by the gate. Four facts about that residue, all measured:
+
+1. **It is not made worse by the conversion.** Unseeded, the same matrices
+   raise 13 and 2; seeded, 3 and 2. The `loop-gain` count *improved* by a
+   factor of four.
+2. **No corner's verdict turns on it.** Every one of those five corners
+   already fails at least one ratified measurement bound, so removing the
+   gate would not turn any of them into a PASS. The gate is currently
+   reporting, not deciding, on these two benches.
+3. **The node it names is a poly-resistor terminal inside the
+   compensation network (`EA_CZ`), not a node the feedback loop
+   disambiguates** — the same `sky130_fd_pr__res_*` family whose
+   voltage-coefficient extrapolation `#164` identified as the mechanism. A
+   node-voltage seed cannot reach it; `.nodeset` only constrains node
+   voltages, and this is a device-model-domain problem.
+4. **It is not reproducible from the committed deck alone.** Re-running a
+   corner's embedded deck by hand in a directory *without* `.spiceinit`
+   emits no warning and produces bit-identical measurements; the same deck
+   run with `sim/spiceinit` present (i.e. with `option klu`) emits it. Any
+   attempt to reproduce one of these diagnostics must copy `sim/spiceinit`
+   to `.spiceinit` first, exactly as `sim/bin/corner-run.py` does.
+
+Fact 3 is why `#179` does not attempt to fix it: the residue belongs to the
+resistor-model mechanism `#164` characterized, not to the initial-condition
+contract, and closing it is a separate piece of work.
+
+**Reproducing the control (no PDK-side setup beyond the usual pin).** Every
+number in the two tables above comes from the committed corner logs, which
+embed the exact deck ngspice was given:
+
+```bash
+# extract one corner's deck, strip (or swap) its .nodeset card, re-run it
+python3 - <<'EOF'
+txt = open("sim/loop-gain/corners/20260926-040338-4a9ec09/ff_27c_3.30v.log").read()
+i = txt.index("# ==== deck (exact input given to ngspice) ====")
+deck = []
+for line in txt[i:].split("\n")[1:]:
+    if not line.startswith("| "):
+        break
+    deck.append(line[2:])
+deck = [l for l in deck if not l.startswith(".nodeset")]   # <- the "none" variant
+open("/tmp/ab/ff_27c_3.30v.spice", "w").write("\n".join(deck) + "\n")
+EOF
+cp sim/spiceinit /tmp/ab/.spiceinit     # REQUIRED -- see fact 4 above
+cd /tmp/ab && ngspice -b ff_27c_3.30v.spice < /dev/null | grep -E "^meas_|singular"
+```
+
 ---
 
 ## Writing a new experiment
@@ -942,6 +1110,12 @@ section is a map, not a duplicate of that detail.
   100 kHz/50 mA half is supply-feedthrough-bound; both diagnoses, the
   measured `C_COMP` PSRR-vs-phase-margin frontier, and three screened-and-
   rejected circuit candidates are written up in `design/README.md` §"#117".
+  **Superseded by `#179`** (`20260926-033606-4a9ec09`): the paragraph above
+  is kept as written because its analysis is what that record actually says,
+  but it is no longer the current record — `#179` seeded the deck's `ac`
+  linearization points per the initial-condition contract and re-ran the
+  matrix against the post-`#116`/`#139` DUT. Still **0/45 PASS**; current
+  per-sub-metric numbers and the seeded/unseeded control are in "#179" above.
 - **`dropout-vs-load/`** — DC VIN sweep at a fixed 50 mA load (the ratified
   spec row's own gf180-mirrored "sweep Vin toward Vout" method); measures the
   Vin–Vout margin against the ratified "Dropout @ 50 mA" row (<300 mV). Latest
@@ -1003,6 +1177,11 @@ section is a map, not a duplicate of that detail.
   loaded points are healthy nearly everywhere (`pm_c033_50ma_deg` 45.9–78.9°
   with 17.0–21.7 dB of gain margin, failing only at the six degenerate
   corners) — overall `FAIL`.
+  **Superseded by `#179`** (`20260926-040338-4a9ec09`): kept as written for
+  the same reason as the `psrr-dc` paragraph above. Still **7/45 PASS**, but
+  on a different seven corners — `#179` was this bench's first run against
+  the post-`#116`/`#139` pass device, and it seeded all seven `ac` points per
+  the initial-condition contract. See "#179" above.
 
 - **`thermal/`** (issue #66) — trip/reset temperature and hysteresis for the
   thermal-shutdown circuit (#29/DR-005) against the spec's ratified "Thermal"

@@ -144,12 +144,18 @@ Notes — these are part of the ratified spec, not commentary:
    FAIL** — 25/45 PVT corners pass. Tracked design gap, no superseding
    record proposed.
 4. **PSRR and Stability** are disclosed FAIL — PSRR 0/45 PVT corners, now
-   measured at **both** ratified load points (#117): the 1 kHz sub-metric
-   fails at 1 mA and at 50 mA alike (20.25–25.70 dB against the 50 dB floor),
-   and the 100 kHz sub-metric passes 45/45 at 1 mA (31.53–34.77 dB) but fails
-   0/45 at 50 mA (13.80–16.06 dB against the 20 dB floor); Stability 7/45 PVT corners,
+   measured at **both** ratified load points (#117) and, since #179, with the
+   `ac` linearization point seeded per `sim/README.md`'s initial-condition
+   contract: the 1 kHz sub-metric fails at 1 mA and at 50 mA alike
+   (20.30–25.66 dB against the 50 dB floor), and the 100 kHz sub-metric
+   passes 45/45 at 1 mA (31.88–35.56 dB) but fails 0/45 at 50 mA
+   (10.49–12.57 dB against the 20 dB floor); Stability 7/45 PVT corners,
    confirmed stable at every load ≥ 1 mA within the window (DR-002 append),
-   with the 0 mA end the binding, unresolved gap. Unlike the other FAIL rows,
+   with the 0 mA end the binding, unresolved gap. Both rows' numbers moved
+   with #179's re-run, which is the **#116/#139 pass-device resize** reaching
+   these two benches for the first time (their predecessors were `STALE`
+   against it), not the seeding: seeded and unseeded decks agree to five or
+   six digits at 42 of 45 corners — see `sim/README.md`'s "#179". Unlike the other FAIL rows,
    both have a topology-level root cause and a named superseding proposal:
    [`DR-007`](spec/decision-records/DR-007-psrr-stability-vs-iq.md)
    (`proposed`) recommends PSRR ≥ 18 dB @ 1 kHz / ≥ 28 dB @ 100 kHz and a
