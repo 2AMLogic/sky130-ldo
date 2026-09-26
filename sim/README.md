@@ -556,12 +556,12 @@ So the two benches took different routes, for a reason that is about ngspice's
 capabilities, not about taste:
 
 - **`dropout-vs-load` stopped being a `dc` sweep.** VIN is now a PWL ramp
-  inside one cold-start `uic` transient (`tran 10u 26m uic`): 0 → 3.63 V by
+  inside one cold-start `uic` transient (`tran 10u 14m uic`): 0 → 3.63 V by
   100 µs with `VEN` stepping high at 100 µs, the ideal 50 mA sink ramped on
   over 2.5–2.6 ms once the loop is up (`sim/ic-screen-125c-c`'s own cold-start
   convention, verbatim — an ideal sink on a disabled, discharged output is not
   a realizable state), settled by 5.5 ms, then VIN walked down 3.63 → 1.5 V
-  over 6–26 ms at 106.5 V/s. There is no operating-point solve in the deck at
+  over 6–14 ms at 266.3 V/s. There is no operating-point solve in the deck at
   all: the contract's `uic` + EN-edge shape, the same one #170 and #172 landed.
   **Quasi-static, measured not assumed** (tt/27 °C/3.30 V): the 20 ms ramp
   reads `dropout_v` = 0.397295 V, a 3× slower 60 ms ramp reads 0.398492 V, and
