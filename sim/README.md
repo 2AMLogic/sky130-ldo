@@ -183,6 +183,9 @@ Prerequisites, all machine-level (not vendored here): `ngspice`, `xschem`,
 source sim/bin/pdk-env.sh      # exports PDK_ROOT, PDK, SKY130_MODEL_LIB, XSCHEM_RCFILE
 xschem --rcfile "$XSCHEM_RCFILE" sim/pdk-smoke/testbench/tb_pdk_smoke.sch
 cp sim/spiceinit ./.spiceinit  # ngspice needs these settings to read PDK libs
+                               # -- and to pick the same linear solver the
+                               # records were produced with (see "Reproducing
+                               # a corner by hand" below)
 ```
 
 `sim/bin/pdk-env.sh` is a thin wrapper around `corner-run.py --print-env`, so
@@ -217,11 +220,45 @@ each measurement expression into a `meas_<name>` vector and prints it. The
 testbench schematic therefore contains no corner, no temperature, no numeric
 supply and no analysis block.
 
-**Per-corner artifacts**: each corner's `.log` embeds the exact deck that was
-fed to ngspice (prefixed with `|`) plus raw stdout/stderr, so a record is
+**Per-corner artifacts**: each corner's `.log` embeds **both** inputs ngspice
+was given (each prefixed with `|`) — the deck, and the `.spiceinit` that was in
+the run directory, with its `sha256` — plus raw stdout/stderr, so a record is
 auditable without regenerating anything. Scratch decks and xschem output live
 in the gitignored `sim/build/`; only the netlist snapshot, the per-corner logs
 and the record are committed.
+
+### Reproducing a corner by hand (issue #190)
+
+**The deck is only half the input. `.spiceinit` is the other half, and it is
+not optional.** ngspice reads `.spiceinit` from its working directory at
+startup; `sim/spiceinit` sets `option klu` (the KLU direct linear solver)
+alongside the `ngbehavior=hsa` settings needed to read the PDK libraries. A
+different linear solver can reach a different judgement about matrix
+singularity on the same circuit — so a deck re-run **without** `.spiceinit` can
+produce bit-identical measurements and yet emit none of the solver diagnostics
+that the `#171` gate turned into the corner's recorded `FAIL` (measured; see
+the `#179` section below). Reproducing a corner without it is therefore not
+reproducing the corner.
+
+The general recipe, for any corner of any record:
+
+```bash
+mkdir -p /tmp/repro && cd /tmp/repro
+# 1. extract the `|`-prefixed deck from the corner log into <corner>.spice
+#    (the log's own header block spells this out, including the ngspice line)
+# 2. put the ngspice init settings in place -- REQUIRED, not a convenience:
+cp "$REPO/sim/spiceinit" ./.spiceinit    # or the `|`-prefixed .spiceinit
+                                         # block embedded in the same log
+source "$REPO/sim/bin/pdk-env.sh"        # PDK_ROOT etc., same as the runner
+ngspice -b <corner>.spice < /dev/null
+```
+
+Prefer the `.spiceinit` **embedded in that corner's log** over today's
+`sim/spiceinit` when reproducing an older record: the log holds the settings
+that record actually ran under, and the record's own `ngspice init settings`
+field carries their `sha256` so you can tell whether the tree has moved since.
+Logs written before `#190` embed only the deck — for those, `sim/spiceinit`
+at the record's `Repo state` sha is the right source.
 
 ---
 
@@ -282,6 +319,7 @@ number, limit and verdict, for tooling):
 | Netlist provenance | `schematic` (`design/…`, `sim/…/testbench/…`) or `extracted` (post-layout) — required so post-layout re-runs are distinguishable |
 | PDK | variant + open_pdks commit actually used, whether it matches `sim/pdk.json`, and the model library path |
 | Tools | ngspice / xschem / OS / python versions used |
+| ngspice init settings | `sim/spiceinit` and its `sha256` — the second input ngspice was given (copied into the run directory as `.spiceinit`); it selects the linear solver, so reproducing a corner by hand requires it (issue #190). Absent from records minted before `#190`. |
 | Repo state | short sha, branch, and whether the working tree was dirty at run time |
 | Corner matrix run | the (process, temperature, supply) points actually executed; must be the full PVT matrix unless a subset reason is recorded |
 | Statistical convention | N samples and sigma level for distribution claims; `N/A` for corner-matrix claims |
@@ -938,7 +976,11 @@ to **FAIL** by the gate. Four facts about that residue, all measured:
    emits no warning and produces bit-identical measurements; the same deck
    run with `sim/spiceinit` present (i.e. with `option klu`) emits it. Any
    attempt to reproduce one of these diagnostics must copy `sim/spiceinit`
-   to `.spiceinit` first, exactly as `sim/bin/corner-run.py` does.
+   to `.spiceinit` first, exactly as `sim/bin/corner-run.py` does. `#190`
+   generalized this fact from a footnote of this section into the evidence
+   itself: corner logs now embed the `.spiceinit` they ran under next to the
+   deck, and the summary record carries its `sha256` — see "Reproducing a
+   corner by hand" above.
 
 Fact 3 is why `#179` does not attempt to fix it: the residue belongs to the
 resistor-model mechanism `#164` characterized, not to the initial-condition
@@ -946,13 +988,17 @@ contract, and closing it is a separate piece of work.
 
 **Reproducing the control (no PDK-side setup beyond the usual pin).** Every
 number in the two tables above comes from the committed corner logs, which
-embed the exact deck ngspice was given:
+embed the deck ngspice was given (these logs predate `#190`, so they do not
+also embed the `.spiceinit` — hence the explicit `cp` below):
 
 ```bash
 # extract one corner's deck, strip (or swap) its .nodeset card, re-run it
 python3 - <<'EOF'
+import re
 txt = open("sim/loop-gain/corners/20260926-040338-4a9ec09/ff_27c_3.30v.log").read()
-i = txt.index("# ==== deck (exact input given to ngspice) ====")
+# these logs predate #190, so their deck header reads "(exact input given to
+# ngspice)"; logs written after it read "(1st input: ...)". Match either.
+i = re.search(r"^# ==== deck \(", txt, re.M).start()
 deck = []
 for line in txt[i:].split("\n")[1:]:
     if not line.startswith("| "):
