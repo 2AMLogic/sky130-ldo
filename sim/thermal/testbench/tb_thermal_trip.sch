@@ -71,8 +71,22 @@ v {xschem version=3.4.7 file_version=1.2
 * range for ^ x13). `.nodeset`, which a bare solve does honour, is therefore
 * the only mechanism this bench can use -- the weaker of the two (a first-
 * iteration constraint that is then released, not a held initial state), so
-* it is the measured absence of diagnostics in the post-#178 record, not the
-* mechanism's pedigree, that is the evidence this bench conforms.
+* it is the measured absence of diagnostics in the record, not the
+* mechanism's pedigree, that is the evidence this bench conforms. #178's own
+* record (20260926-052517-eba96ae) did NOT reach that absence: it cut the
+* diagnostic count from 14 of 15 corner logs to 2 of 15, and #189 closed the
+* remaining two by correcting one seed value's supply classification (see
+* below).
+* THE CARD IS IN PLAY AT EVERY SWEEP POINT, NOT JUST THE FIRST -- measured
+* during #189 and worth stating, because it is the opposite of what "a seed
+* only fixes a sweep's first point" would predict. With the #178 card the
+* ascending sweep at ss/2.97V needs gmin stepping at essentially every one of
+* its 51 points; with one value corrected it needs it at 3. A card that only
+* seeded 80C could not change how 82C..180C solve, since those points start
+* from their predecessor's solution -- so ngspice is re-applying the nodeset
+* as the first-iteration guess at each `dc temp` point. Consequence for this
+* bench: a wrong value does not merely cost one point, it biases the whole
+* continuation.
 * WHERE THE VALUES COME FROM (not invented): a settled cold-start `uic`
 * transient of THIS testbench, unmodified, at tt/80C/vsup=3.30V -- the
 * ascending sweep's own starting temperature. `uic` starts every node at 0
@@ -84,6 +98,34 @@ v {xschem version=3.4.7 file_version=1.2
 * settled 2.5ms-3ms tail). VIN-tracking nodes are written relative to 'vsup'
 * so the seed stays realizable at every supply on the corner axis;
 * ground-referenced nodes are absolute.
+* EA_TAIL's CLASSIFICATION CORRECTED BY #189 (2026-09-26), measured not
+* argued. #178 wrote EA_TAIL VIN-relative ('{vsup-0.836}'), which is wrong:
+* EA_TAIL is the SOURCE node of the error amplifier's PMOS input pair
+* (M_IN1/M_IN2/M_IN2S), so it sits one |Vgs| ABOVE the pair's
+* ground-referenced gate voltages (FB/VREF ~ 1.2V), not one drop below VIN.
+* Three cold-start `uic` settles of this same testbench at ss/80C, one per
+* supply on the corner axis (each with zero solver diagnostics), measure the
+* node's actual supply slope:
+*   vsup       2.97V     3.30V     3.63V    slope (V/V)
+*   EA_OUT    2.09175   2.42993   2.76773      1.02   <- VIN-tracking
+*   SS        2.96992   3.29992   3.62992      1.00   <- VIN-tracking
+*   BIASP     1.96056   2.28001   2.60046      0.97   <- VIN-tracking
+*   TS_CMP    2.96975   3.29967   3.62955      1.00   <- VIN-tracking
+*   EA_TAIL   2.42179   2.50138   2.57694      0.24   <- NOT VIN-tracking
+*   TS_SNS    1.48843   1.50963   1.52813      0.06
+*   TS_REF    1.16139   1.19974   1.23646      0.11
+*   NB        0.831276  0.841784  0.851316     0.03
+*   VOUT      1.80059   1.80070   1.80085      0.00
+* Imposing slope 1.0 on a 0.24-slope node put the card 288mV BELOW the real
+* EA_TAIL at vsup = 2.97V (2.134V seeded vs 2.42179V measured) and 217mV
+* above it at 3.63V. That single misclassified value is what made
+* `ss_27c_2.97v` and `sf_27c_2.97v` the two corners that still tripped the
+* #171 gate in record 20260926-052517-eba96ae -- see sim/README.md's "#189"
+* section for the located failures and the before/after probes. The value
+* below is therefore the SAME measured number #178 already had (2.4637 V at
+* tt/80C/3.30V), with only its supply classification fixed: absolute, not
+* 'vsup'-relative. No new number is invented, and no per-supply seed
+* mechanism is needed -- the residual was never a per-supply-derivation gap.
 * KNOWN LIMIT OF ONE CARD, stated rather than papered over: `.nodeset` is a
 * netlist card, so both `dc temp` commands in the deck share it. It is the
 * right state for the ascending sweep's 80C start; at the DESCENDING sweep's
@@ -161,8 +203,11 @@ T {R_LOAD: 1.8kOhm, ~1mA class at VOUT~1.8V -- same load point
 design/README.md's thermal-shutdown OP check and psrr-dc use} 940 -300 0 0 0.2 0.2 {}
 
 * ---- the ascending sweep's own starting state (issue #178, contract #171) ----
-C {devices/code_shown.sym} -700 -100 0 0 {name=IC_SEED only_toplevel=false value=".nodeset v(VOUT)=1.8008 v(xldo.FB)=1.2007 v(xldo.N_FBB)=0.6004 v(xldo.EA_OUT)=\{vsup-0.813\} v(xldo.EA_CZ)=\{vsup-0.813\} v(xldo.SS)=\{vsup-0.0002\} v(xldo.BIASP)=\{vsup-0.973\} v(xldo.NB)=0.8039 v(xldo.EA_TAIL)=\{vsup-0.836\} v(xldo.TS_CMP)=\{vsup-0.0003\} v(xldo.TS_SNS)=1.4628 v(xldo.TS_REF)=1.1359 v(xldo.AMP_ENN)=0.0025"}
+C {devices/code_shown.sym} -700 -100 0 0 {name=IC_SEED only_toplevel=false value=".nodeset v(VOUT)=1.8008 v(xldo.FB)=1.2007 v(xldo.N_FBB)=0.6004 v(xldo.EA_OUT)=\{vsup-0.813\} v(xldo.EA_CZ)=\{vsup-0.813\} v(xldo.SS)=\{vsup-0.0002\} v(xldo.BIASP)=\{vsup-0.973\} v(xldo.NB)=0.8039 v(xldo.EA_TAIL)=2.4637 v(xldo.TS_CMP)=\{vsup-0.0003\} v(xldo.TS_SNS)=1.4628 v(xldo.TS_REF)=1.1359 v(xldo.AMP_ENN)=0.0025"}
 T {IC_SEED: the untripped, regulating state of THIS testbench at
 tt/80C/vsup=3.30V -- the ascending sweep's own starting point -- measured
 from a settled cold-start uic transient (issue #178; see the header for the
-node set, for why .nodeset and not .ic, and for the one-card limitation)} -700 -140 0 0 0.2 0.2 {}
+node set, for why .nodeset and not .ic, and for the one-card limitation).
+EA_TAIL is absolute, not 'vsup'-relative: it is the PMOS input pair's source
+node, set by the ground-referenced gate voltages, and measures a 0.24 V/V
+supply slope (issue #189 -- see the header's per-supply table)} -700 -140 0 0 0.2 0.2 {}
