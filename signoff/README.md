@@ -316,9 +316,9 @@ hand-edited, byte-reproducible against an unchanged tree, and carries its own
 
 Item 8 asks for that aggregation artifact to exist and be current. It does
 **not** ask for every row in it to pass, and this `met` verdict must not be
-read as if it did: the report currently reads **FAIL on 7 of the 12 rows that
-carry a graded verdict** — Dropout, Line regulation, Load regulation, Load
-transient, PSRR, Iq and Stability — and PASS on five (Output, Current
+read as if it did: the report currently reads **FAIL on 6 of the 12 rows that
+carry a graded verdict** — Dropout, Load regulation, Load transient, PSRR, Iq
+and Stability — and PASS on six (Output, Line regulation, Current
 limit, Startup/soft-start, Enable/shutdown, Thermal). Those FAILs are item 5's
 subject matter, and item 5 is `unmet` above. Three `met` T1 rows out of eleven is
 not a claim about this block's performance.
@@ -332,6 +332,18 @@ hundreds of volts *above* the `VOUT` node that is the only thing feeding it
 through a passive divider — and that with any physically realizable initial
 condition all 200 draws regulate inside the ratified ±2 % window. See
 `design/README.md` → "#164".
+
+`Line regulation` moved FAIL → PASS with issue #196, on the same footing and
+for a closely related reason: no ratified bound was touched and
+`design/ldo_3v3in_1v8out.sch` is unchanged. That bench drove `EN` at the corner
+runner's `'vsup'` label while its own `VVIN` was `alter`-ed 2.97–3.63 V *inside*
+every corner, so the VIN = 3.63 V point of every `*_2.97v` corner ran with `EN`
+0.66 V **below** VIN — the enable-headroom geometry #187 root-caused on
+`sim/dropout-vs-load`, against shutdown clamps whose sources are VIN. With `EN`
+at the instantaneous VIN the full 45-corner matrix is 45/45 PASS (worst
+0.595 mV/V at 1 mA, 0.368 mV/V at 50 mA against the ratified 5 mV/V), and the
+superseded record's five FAILs were exactly the `*_125c_2.97v` column. See
+`sim/README.md` → "#196".
 
 Item 8 is also the only T1 item a `generic` envelope may satisfy. Every other
 item rejects `"kind": "generic"` outright, so this hand-rolled wrapper cannot
