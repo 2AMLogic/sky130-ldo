@@ -27,6 +27,7 @@ the record id it would mint already exists on disk.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import platform
@@ -165,6 +166,56 @@ def tool_versions() -> dict:
         "platform": f"{platform.system()} {platform.release()} {platform.machine()}",
         "python": platform.python_version(),
     }
+
+
+# --------------------------------------------------------------------------
+# ngspice init settings (the deck is only half the input -- issue #190)
+# --------------------------------------------------------------------------
+
+
+def spiceinit_digest(text: str) -> str:
+    """sha256 of a set of ngspice init settings."""
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def spiceinit_provenance() -> dict:
+    """Identify the `.spiceinit` this run puts in front of ngspice.
+
+    ngspice reads `.spiceinit` from its working directory at startup, so the
+    deck is not the whole input: `sim/spiceinit` sets `option klu` (the KLU
+    direct linear solver) among other settings, and a corner's solver
+    diagnostics do not necessarily reproduce without it (issue #190). The
+    hash lets a reader tell whether the settings a record was produced under
+    are still the ones in the tree.
+    """
+    return {
+        "spiceinit_file": str(SPICEINIT_FILE.relative_to(REPO_ROOT)),
+        "spiceinit_sha256": spiceinit_digest(SPICEINIT_FILE.read_text()),
+    }
+
+
+def spiceinit_log_section(run_dir: Path) -> list[str]:
+    """The corner log's `.spiceinit` block: the second input, verbatim.
+
+    Embeds the file that was actually in the run directory (not the one in
+    the tree), so the log stays self-contained and honest even if
+    `sim/spiceinit` changes later or never got copied.
+    """
+    header = "# ==== .spiceinit (2nd input: ngspice reads it from the run directory) ===="
+    path = run_dir / ".spiceinit"
+    if not path.is_file():
+        return [
+            header,
+            "# NOT PRESENT in the run directory for this run — ngspice fell back to",
+            "# whatever it found elsewhere (e.g. ~/.spiceinit) or to its built-in",
+            "# defaults, so this corner's solver settings are NOT pinned by this log.",
+        ]
+    text = path.read_text()
+    return [
+        header,
+        f"# sha256: {spiceinit_digest(text)}",
+        *[f"| {ln}" for ln in text.splitlines()],
+    ]
 
 
 TOOL_VERSION_FLAGS = {
@@ -573,8 +624,18 @@ def run_corner(
                 else []
             ),
             "",
-            "# ==== deck (exact input given to ngspice) ====",
+            "# ngspice was given TWO inputs: the deck below and the .spiceinit below",
+            "# it. To reproduce this corner by hand, write the `|`-prefixed deck to",
+            f"# {corner.id}.spice, write the `|`-prefixed .spiceinit block to",
+            "# `.spiceinit` in the SAME directory, then run",
+            f"#     ngspice -b {corner.id}.spice",
+            "# Both are required: .spiceinit selects the linear solver, so a run",
+            "# without it can differ in its solver diagnostics (issue #190).",
+            "",
+            "# ==== deck (1st input: the .spice file given to ngspice) ====",
             *[f"| {ln}" for ln in deck_text.splitlines()],
+            "",
+            *spiceinit_log_section(run_dir),
             "",
             "# ==== ngspice stdout ====",
             stdout.rstrip(),
@@ -657,6 +718,19 @@ def render_record(record: dict) -> str:
     tools = r["tools"]
     tools_line = f"{tools['ngspice']}; {tools['xschem']}; {tools['platform']}"
     lines = render_record_header(r, tools_line)
+
+    # issue #190: the deck is not the whole ngspice input. Name the
+    # `.spiceinit` that was in force, so the record says which solver
+    # configuration produced these numbers. `.get()` because records minted
+    # before #190 have no such field.
+    if tools.get("spiceinit_sha256"):
+        lines.append(
+            f"- **ngspice init settings**: `{tools.get('spiceinit_file', 'sim/spiceinit')}` "
+            f"(sha256 `{tools['spiceinit_sha256']}`), copied into the run directory as "
+            "`.spiceinit` and read by ngspice alongside each deck; it selects the linear "
+            "solver, so reproducing a corner by hand requires it (each corner log embeds "
+            "its own copy)"
+        )
 
     matrix = r["matrix"]
     lines.append("- **Corner matrix run**:")
@@ -916,7 +990,10 @@ def main(argv: list[str]) -> int:
             "matches_pin": pdk.matches_pin,
             "lib_file": str(pdk.lib_file),
         },
-        "tools": tool_versions(),
+        # The ngspice init settings are part of the input, not just the
+        # toolchain — record their hash so the record says which solver
+        # configuration produced it (issue #190).
+        "tools": {**tool_versions(), **spiceinit_provenance()},
         "git": git_info,
         "matrix": {
             "process": unique_in_order(c.process for c in matrix),
