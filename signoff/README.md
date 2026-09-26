@@ -141,13 +141,24 @@ doing the next time the layout is recomposed.
 0.30.12, layout vs. `reference.spice` (mechanically translated from the
 schematic's own xschem netlist by `layout/bin/gen-ldo-reference-netlist.py`,
 so both sides descend from the one schematic). Cited record:
-[`20260924-181216-50554fe`](../layout/ldo-core/reports/20260924-181216-50554fe/record.md)
+[`20260924-221912-a947aa8`](../layout/ldo-core/reports/20260924-221912-a947aa8/record.md)
 — re-pointed here by issue #127 from the original `klt` 0.2.0 record
 (`20260825-123628-3b4e121`), which wrote `provenance.input: null` and so could
 never be pinned by the manifest itself; this one carries a real
 `provenance.input.content_hash`, so `signoff/block-manifest.json` now pins
 item 4 directly instead of relying only on `signoff/artifact-pins.json`'s
-repo-side re-hash. The GDS this record compares is **not** the same revision
+repo-side re-hash. It is also the record
+`layout/ldo-core/reports/LATEST-LVS` names — the **current** LVS run, not
+merely the first klt-0.6.0 one. The intermediate klt-0.6.0 record
+`20260924-181216-50554fe` (PR #155) satisfies the provenance requirement
+identically, but it was minted before commit `0c65db2` (issue #163, VIN/VOUT
+sized as spec-derived power rails) redrew the layout; `a947aa8` is the run
+against that updated GDS, and citing `50554fe` would pin item 4 to a layout
+revision `main` has already superseded. The two envelopes' `lvs.json` files
+are byte-identical apart from the layout hash — same `status: match`, same
+three warning-severity mismatches, same `power_connectivity` /
+`body_verification` blocks — so this currency fix changes no verdict and no
+disclosure below. The GDS this record compares is **not** the same revision
 item 3's DRC was run on — re-running item 3 was not in #127's scope — so the
 two items' composed-GDS hashes now legitimately differ; see
 `signoff/artifact-pins.json`'s item-4 notes. Item 4 requires warnings-only
@@ -346,8 +357,8 @@ the one the manifest still cannot reach:
 | Item | Artifact re-hashed by CI | Hash claim cross-checked against |
 |---|---|---|
 | 3 | `…/20260825-123551-3b4e121/ldo_core.gds` | envelope `provenance.input.content_hash` + manifest pin |
-| 4 | `…/20260924-181216-50554fe/ldo_core.gds` | envelope `environment.layout_sha256` + manifest pin |
-| 4 | `…/20260924-181216-50554fe/reference.spice` | envelope `environment.reference_sha256` |
+| 4 | `…/20260924-221912-a947aa8/ldo_core.gds` | envelope `environment.layout_sha256` + manifest pin |
+| 4 | `…/20260924-221912-a947aa8/reference.spice` | envelope `environment.reference_sha256` |
 | 6 | `sim/mc-output-accuracy/netlist-snapshots/20260825-083111-4cb27f8.spice` | on-disk hash only — the envelope carries no hash of it |
 | 7 | `…/20260825-123551-3b4e121/ldo_core.gds` | envelope `provenance.input.content_hash` + manifest pin |
 | 7 | `sim/pex-post-layout/netlist-snapshots/20260825-125102-3b4e121.pex.extract.spice` | envelope `extraction.netlist_sha256` |
