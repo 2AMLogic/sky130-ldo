@@ -173,7 +173,7 @@ v {xschem version=3.4.7 file_version=1.2
 * 20260926-001833-228fbc7` completes; the five-corner confirmation above is
 * deliberately NOT minted as a record, because an incomplete matrix must not
 * be. sim/README.md -> "#196" has the numbers and the same reasoning #177
-* applied to sim/current-limit.
+* applied to sim/current-limit; the re-run itself is tracked by #200.
 *
 * VREF is a fixed 1.2V placeholder per design/README.md's "VREF interface
 * caveat" -- matching the 1:2 feedback-divider ratio issue #22 revised the

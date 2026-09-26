@@ -1202,7 +1202,7 @@ in the `ac` analysis the 1 V supply perturbation appears on VIN while `EN` is a
 small-signal *ground*. At DC the geometry is clean (`EN` = VIN, which is all
 #196 asked about), but per the documented full-rail interface a real supply
 ripple would appear on `EN` too, which is a different question about a
-different analysis type — filed separately rather than decided here.
+different analysis type — **filed as #201** rather than decided here.
 
 #### Why the 45-corner matrix is not re-run here
 
@@ -1245,7 +1245,9 @@ minted as a record, **precisely because an incomplete matrix must not be minted
 as a record** (the same rule `#177` followed). Closing the gap needs one
 `python3 sim/bin/corner-run.py sim/line-regulation --supersedes
 20260926-001833-228fbc7` on a host that can hold that run; the convention under
-test is already committed, so it needs no further deck work.
+test is already committed, so it needs no further deck work. **Tracked as
+#200**, with the measured runtimes above and the acceptance criteria the re-run
+owes (including the identical-supply-columns prediction).
 
 ### `load-transient` after #180
 
@@ -2320,7 +2322,7 @@ use discrete points, not a sweep, for exactly this reason).
   host, measured), so this record's numbers are evidence about the **pre-#196
   deck only**, and the row's verdict against the current deck is not
   established. Closing that gap is one `corner-run.py --supersedes
-  20260926-001833-228fbc7` on a host that can hold the run.
+  20260926-001833-228fbc7` on a host that can hold the run — **#200**.
 - **`load-regulation/`** — `I_LOAD` ∈ {0 mA, 50 mA} at each corner's own VIN
   (`'vsup'`), two `.op` solves; `load_reg_v` = `abs(vout@50mA - vout@0mA)`.
   First record (`--quick`, `20260825-040748-6fac47d`): **PASS** at
