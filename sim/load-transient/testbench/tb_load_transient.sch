@@ -49,6 +49,49 @@ v {xschem version=3.4.7 file_version=1.2
 * product" -- a testbench that surfaces a real immaturity is doing its
 * job.
 *
+* Initial-condition contract (issue #171, applied by issue #180). This
+* schematic carries an eleven-node `.ic` card (IC_SEED below) and
+* experiment.json's transient is deliberately NOT `uic`: the operating-point
+* solve that seeds the transient is constrained to the loop's intended
+* regulating branch and then released from it. That is #164's variant-B
+* shape (PR #170), the second of the two shapes sim/README.md's
+* "Initial-condition contract (issue #171)" section accepts, and the same
+* shape sim/ic-screen-125c-b uses. Before #180 this bench ran `tran 200n 3m`
+* with no seed at all, so ngspice solved an unconstrained, loop-closed `.op`
+* first: 23 of the 45 corner logs in the superseded
+* 20260825-081255-4cb27f8 record carry a `singular matrix` /
+* `gmin stepping failed` diagnostic from exactly that solve.
+*
+* Why variant B rather than `uic` + an EN edge here: this bench measures a
+* LOAD step at an already-regulating condition (the PULSE is on I_LOAD, not
+* on EN), and both its clauses are referred to the pre-step steady state.
+* An EN-edge preamble would shift the deck's whole time axis (and with it
+* every meas timestamp) and would leave C_OUT's pre-step charge state
+* dependent on the soft-start ramp -- which #119's charge-limited
+* peak-excursion finding (Q=C*dV, see experiment.json's claim) makes a
+* variable this bench must hold fixed, not perturb. The `.ic` seed leaves
+* the 1 mA pre-step operating point, the 1.000 ms / 2.001 ms step edges and
+* the 3 ms span exactly where they were.
+*
+* Where the .ic values come from (not invented): a local probe of THIS
+* circuit cold-started through its own EN edge (VEN as a PULSE, `tran 200n
+* 1m uic`), sampled at t = 0.9 ms -- i.e. settled at the pre-step 1 mA load
+* and before the 1.000 ms step -- at tt / 27 C / VIN = 3.30 V:
+*   VOUT 1.80086, FB 1.20076, N_FBB 0.600477, EA_OUT 2.39066, EA_CZ 2.38961,
+*   SS 3.27301, BIASP 2.23628, NB 0.864081, EA_TAIL 2.53164, EA_D1 0.887207,
+*   EA_D2 0.887896 V
+* rounded below. That state is realizable by the passive divider's own
+* algebra (FB = VOUT/1.5, N_FBB = FB/2), which is the check #164 showed the
+* unconstrained solve can violate. Nodes whose regulating value tracks VIN
+* (the pass gate EA_OUT/EA_CZ, the PMOS bias rail BIASP, the amplifier tail
+* EA_TAIL, the soft-start node SS) are written relative to 'vsup' so the
+* seed stays realizable at every supply on the axis rather than sitting
+* above VIN at 2.97 V; the ground-referenced ones (VOUT, the divider taps,
+* NB, EA_D1/EA_D2) are absolute. EA_CZ is seeded at EA_OUT's value because
+* XR_CZ ties them with no DC current through C_COMP -- they are the same
+* node at DC, and the 1 mV the probe shows between them is transient
+* residue.
+*
 * Deliberately NOT in this schematic (the corner runner injects them, so
 * one schematic serves the whole PVT matrix): the .lib model corner
 * include, .temp, and the .control analysis/measurement block. VIN's
@@ -104,3 +147,13 @@ C {devices/lab_pin.sym} 900 -330 0 0 {name=p15 lab=VOUT}
 C {devices/lab_pin.sym} 900 -270 0 0 {name=p16 lab=0}
 T {I_LOAD: PULSE(1m 50m 1m 1u 1u 1m 4m) -- 1mA<->50mA step, 1us edges,
 per spec/target-spec.md ratified "Load transient" row} 940 -300 0 0 0.2 0.2 {}
+
+* ---- initial-condition seed (issue #171's contract, applied by #180):
+* the eleven-node intended-branch `.ic` that constrains the transient's
+* operating-point solve to the loop's regulating branch at the pre-step
+* 1 mA load. See this file's header for where each value came from and why
+* the supply-referred nodes are written relative to 'vsup'. ----
+C {devices/code_shown.sym} -700 -100 0 0 {name=IC_SEED only_toplevel=false value=".ic v(VOUT)=1.8 v(xldo.FB)=1.2 v(xldo.N_FBB)=0.6 v(xldo.EA_OUT)=\{vsup-0.909\} v(xldo.EA_CZ)=\{vsup-0.909\} v(xldo.SS)=\{vsup-0.027\} v(xldo.BIASP)=\{vsup-1.064\} v(xldo.NB)=0.864 v(xldo.EA_TAIL)=\{vsup-0.768\} v(xldo.EA_D1)=0.887 v(xldo.EA_D2)=0.888"}
+T {IC_SEED: #164's variant-B contract -- `.ic` constrains the operating-point
+solve to the intended regulating branch, and the transient (no `uic`) is
+released from it. sim/README.md "Initial-condition contract (issue #171)"} -640 -100 0 0 0.2 0.2 {}

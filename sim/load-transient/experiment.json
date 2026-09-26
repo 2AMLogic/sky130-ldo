@@ -1,7 +1,7 @@
 {
   "slug": "load-transient",
   "title": "Load transient: 1mA <-> 50mA step response",
-  "claim": "Substantiates spec/target-spec.md's ratified \"Load transient\" row (1<->50 mA step, ~1us edges: peak excursion <=150mV, recover to +-1% in <=20us, over the ratified C_out/ESR window) against the LDO core-regulation-loop schematic landed by #14 (design/ldo_3v3in_1v8out.sch). Both the spec row and the C_out/ESR window (spec/decision-records/DR-002) are ratified by issue #1 / DR-006, and the bounds below cite those numbers verbatim, not an invented final limit. This testbench's undershoot/overshoot measurements are computed as the deviation from the pre-step (light-load) steady-state value, not an absolute vout bound. The row has TWO independent clauses and, until #119, this manifest measured only the first: undershoot_v/overshoot_v cover \"peak excursion <=150mV\", and recovery_rise_us/recovery_fall_us (added in #119) cover \"recover to +-1% in <=20us\" on the rising and falling load edges respectively. Both clause bounds are quoted verbatim from the same ratified row. Issue #119 also moved C_out from the superseded record's 1uF (DR-002's recommended nominal) to 4.7uF (DR-002's ratified window's own ceiling, still 0-500mOhm ESR -- not a value outside the ratified window) to address the peak-excursion clause, which #119 root-caused as charge-limited (Q=C*dV against the loop's finite large-signal response time, not phase-margin-limited -- see design/README.md's #115 anti-correlation finding). C_out/ESR remain a single representative point inside the ratified window, not a sweep of the window -- walking the window inside one deck the way sim/loop-gain does is still follow-on scope (e.g. #19). See spec/decision-records/DR-002's append and design/README.md's \"#119\" section for the full per-corner evidence, including the recovery-time clause's own, opposite-direction relationship to C_out (this record's own #119 writeup) that this C_out choice does not close. Known-immature-design caveat (design/README.md \"Known gaps\"): C_COMP/C_CL remain unsized placeholders and the error amplifier still has a light-load/high-VIN output-swing ceiling (design/README.md's \"Known open item\") even though issue #22 already added the current-limit and soft-start protection circuitry, so a FAIL here -- especially at the high-VIN corner -- is an honest, expected finding at this design stage (per CLAUDE.md's \"Verification is the product\"), not a harness defect.",
+  "claim": "Substantiates spec/target-spec.md's ratified \"Load transient\" row (1<->50 mA step, ~1us edges: peak excursion <=150mV, recover to +-1% in <=20us, over the ratified C_out/ESR window) against the LDO core-regulation-loop schematic landed by #14 (design/ldo_3v3in_1v8out.sch). Both the spec row and the C_out/ESR window (spec/decision-records/DR-002) are ratified by issue #1 / DR-006, and the bounds below cite those numbers verbatim, not an invented final limit. This testbench's undershoot/overshoot measurements are computed as the deviation from the pre-step (light-load) steady-state value, not an absolute vout bound. Issue #180 brought this bench into conformance with sim/README.md's \"Initial-condition contract (issue #171)\": the transient is released from an eleven-node `.ic`-constrained operating point (#164's variant-B shape, PR #170 -- see testbench/tb_load_transient.sch's header and this manifest's deck.analyses comments) instead of from ngspice's own unconstrained loop-closed `.op`, which 23 of the 45 corner logs in the superseded 20260825-081255-4cb27f8 record show hitting a singular-matrix / gmin-stepping diagnostic. The stimulus, the step timestamps, the C_out/ESR point and every measurement bound are unchanged by that conversion; the pre-step reference moved from v(vout)[0] to a 0.800-0.999ms average and the peak searches were windowed to the stepped region, because under an `.ic` seed t=0 is the seed itself rather than the corner's own settled 1mA point. The row has TWO independent clauses and, until #119, this manifest measured only the first: undershoot_v/overshoot_v cover \"peak excursion <=150mV\", and recovery_rise_us/recovery_fall_us (added in #119) cover \"recover to +-1% in <=20us\" on the rising and falling load edges respectively. Both clause bounds are quoted verbatim from the same ratified row. Issue #119 also moved C_out from the superseded record's 1uF (DR-002's recommended nominal) to 4.7uF (DR-002's ratified window's own ceiling, still 0-500mOhm ESR -- not a value outside the ratified window) to address the peak-excursion clause, which #119 root-caused as charge-limited (Q=C*dV against the loop's finite large-signal response time, not phase-margin-limited -- see design/README.md's #115 anti-correlation finding). C_out/ESR remain a single representative point inside the ratified window, not a sweep of the window -- walking the window inside one deck the way sim/loop-gain does is still follow-on scope (e.g. #19). See spec/decision-records/DR-002's append and design/README.md's \"#119\" section for the full per-corner evidence, including the recovery-time clause's own, opposite-direction relationship to C_out (this record's own #119 writeup) that this C_out choice does not close. Known-immature-design caveat (design/README.md \"Known gaps\"): C_COMP/C_CL remain unsized placeholders and the error amplifier still has a light-load/high-VIN output-swing ceiling (design/README.md's \"Known open item\") even though issue #22 already added the current-limit and soft-start protection circuitry, so a FAIL here -- especially at the high-VIN corner -- is an honest, expected finding at this design stage (per CLAUDE.md's \"Verification is the product\"), not a harness defect.",
   "provenance": "schematic",
   "provenance_source": "sim/load-transient/testbench/tb_load_transient.sch",
   "schematic": "testbench/tb_load_transient.sch",
@@ -20,7 +20,33 @@
     "options": ["wnflag=1"],
     "params": {},
     "analyses": [
+      "* --- initial-condition contract (issue #171), applied by issue #180 ---",
+      "* This `tran` deliberately carries NO `uic`: the transient is released from",
+      "* an operating-point solve that testbench/tb_load_transient.sch's IC_SEED",
+      "* `.ic` card constrains to the loop's intended regulating branch at the",
+      "* pre-step 1 mA load. That is #164's variant-B shape (PR #170), the second of",
+      "* the two shapes sim/README.md's \"Initial-condition contract (issue #171)\"",
+      "* accepts, and the shape sim/ic-screen-125c-b uses. It was chosen over `uic`",
+      "* + an EN-edge preamble because this bench steps the LOAD at an already-",
+      "* regulating condition: an EN preamble would shift every timestamp below AND",
+      "* make C_OUT's pre-step charge state depend on the soft-start ramp, which",
+      "* #119's charge-limited peak-excursion finding (see this manifest's claim)",
+      "* requires be held fixed. The step edges (1.000ms / 2.001ms) and the 3ms span",
+      "* are therefore unchanged from the superseded 20260825-081255-4cb27f8 record.",
       "tran 200n 3m",
+      "* --- reference levels ---",
+      "* The pre-step steady state is sampled as an average over the last 200us",
+      "* BEFORE the rising load edge rather than as v(vout)[0]. Under the `.ic` seed",
+      "* t=0 is the seed itself (VOUT clamped to 1.8 exactly), not this corner's own",
+      "* settled 1mA operating point, so v(vout)[0] is no longer the right reference;",
+      "* 0.800m-0.999m is long after the seed has relaxed and entirely before the step.",
+      "* v_post_min / v_post_max are likewise windowed to the stepped region (from",
+      "* the rising edge on) so the seed's own relaxation transient cannot be read as",
+      "* a load-step excursion. Both windows end at 2.999m, matching w_fall below.",
+      "meas tran v_pre AVG v(vout) FROM=0.800m TO=0.999m",
+      "meas tran v_post_min MIN v(vout) FROM=1.000m TO=2.999m",
+      "meas tran v_post_max MAX v(vout) FROM=1.000m TO=2.999m",
+      "meas tran v_50ma FIND v(vout) AT=2.000m",
       "* --- helper vectors for the row's SECOND clause: recover to +-1% in <=20us ---",
       "* The load step is PULSE(1m 50m 1m 1u 1u 1m 4m): the rising edge starts at",
       "* TD = 1.000ms and the falling edge at TD+TR+PW = 2.001ms. Recovery time is",
@@ -31,31 +57,30 @@
       "* (0.5*(1+x/|x|)) rather than with the comparison operators: ngspice's",
       "* .control parser reads a bare '<' or '>' as an I/O redirection, so",
       "* '(time > 1.0m)' does not survive into the deck.",
-      "let vpre = v(vout)[0]",
+      "let vpre = v_pre",
       "let dev = abs(v(vout) - vpre)",
       "let band = 0.01 * vpre",
       "let outband = 0.5*(1 + (dev-band)/(abs(dev-band)+1e-18))",
       "let w_rise = 0.5*(1 + (time-1.0m)/(abs(time-1.0m)+1e-18)) * 0.5*(1 + (2.0m-time)/(abs(2.0m-time)+1e-18))",
-      "let w_fall = 0.5*(1 + (time-2.001m)/(abs(time-2.001m)+1e-18)) * 0.5*(1 + (2.999m-time)/(abs(2.999m-time)+1e-18))",
-      "meas tran v_50ma FIND v(vout) AT=2.000m"
+      "let w_fall = 0.5*(1 + (time-2.001m)/(abs(time-2.001m)+1e-18)) * 0.5*(1 + (2.999m-time)/(abs(2.999m-time)+1e-18))"
     ]
   },
   "measurements": [
     {
       "name": "undershoot_v",
-      "expr": "v(vout)[0] - vecmin(v(vout))",
+      "expr": "v_pre - v_post_min",
       "unit": "V",
       "min": null,
       "max": 0.15,
-      "note": "Worst-case dip below the pre-step (light-load, ~1mA) steady-state value, across the whole transient. Ratified bound: spec/target-spec.md \"Load transient\" row, peak excursion <=150mV (ratified by issue #1 / DR-006)."
+      "note": "Worst-case dip below the pre-step (light-load, ~1mA) steady-state value, across the stepped region of the transient (t=1.000m..2.999m, i.e. from the rising load edge to the end of the run). Ratified bound: spec/target-spec.md \"Load transient\" row, peak excursion <=150mV (ratified by issue #1 / DR-006). Issue #180 re-expressed this from `v(vout)[0] - vecmin(v(vout))` when the deck adopted #171's initial-condition contract: under the `.ic` seed t=0 is the seed value, not this corner's settled 1mA point, and the seed's own relaxation before the step is not a load-step excursion. Neither the quantity nor the bound changed -- only the reference sample and the search window."
     },
     {
       "name": "overshoot_v",
-      "expr": "vecmax(v(vout)) - v(vout)[0]",
+      "expr": "v_post_max - v_pre",
       "unit": "V",
       "min": null,
       "max": 0.15,
-      "note": "Worst-case rise above the pre-step steady-state value (captures ringing on the 50mA->1mA recovery edge). Same ratified 150mV bound as undershoot_v."
+      "note": "Worst-case rise above the pre-step steady-state value (captures ringing on the 50mA->1mA recovery edge), over the same t=1.000m..2.999m stepped window as undershoot_v. Same ratified 150mV bound as undershoot_v, and re-expressed by #180 for the same reason (see undershoot_v's note)."
     },
     {
       "name": "recovery_rise_us",
@@ -75,11 +100,11 @@
     },
     {
       "name": "settle_err_50ma_pct",
-      "expr": "100*(v_50ma - v(vout)[0])/v(vout)[0]",
+      "expr": "100*(v_50ma - v_pre)/v_pre",
       "unit": "%",
       "min": null,
       "max": null,
-      "note": "DIAGNOSTIC, no bound -- not a spec claim. Steady-state output error at 50mA (sampled 1ms after the rising edge, just before the falling edge) relative to the pre-step 1mA value, in percent. Present so recovery_rise_us can be read unambiguously: a corner whose 50mA steady state is already outside the +-1% band can never clear recovery_rise_us no matter how fast the loop settles, and that is a DC load-regulation shortfall (sim/load-regulation, #118) surfacing here rather than a transient one."
+      "note": "DIAGNOSTIC, no bound -- not a spec claim. Steady-state output error at 50mA (sampled 1ms after the rising edge, just before the falling edge) relative to the pre-step 1mA value (v_pre, the 0.800m-0.999m average), in percent. Present so recovery_rise_us can be read unambiguously: a corner whose 50mA steady state is already outside the +-1% band can never clear recovery_rise_us no matter how fast the loop settles, and that is a DC load-regulation shortfall (sim/load-regulation, #118) surfacing here rather than a transient one."
     }
   ],
   "spread_checks": []

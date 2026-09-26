@@ -419,7 +419,7 @@ conversions):
 | `current-limit` | **Exposed** | Leg 1's `op` (`experiment.json:24`) runs with `VEN`'s `dc` value (`'vsup'`, fully enabled) per `testbench/tb_current_limit.sch:145` — an unconstrained, loop-closed solve. (Leg 3's `tran` is *not* exposed: ngspice's non-`uic` transient uses the source's PWL value at t=0, which starts at 0/disabled, per the same line's comment.) Follow-up: #177. |
 | `dropout-vs-load` | **Exposed** | Its only analysis, `dc VVIN 3.63 1.5 -0.02` (`experiment.json:23`), runs with `VEN` held at a constant `'vsup'` (`testbench/tb_dropout_vs_load.sch:108`, no PWL/PULSE at all) — unconstrained, loop-closed. Follow-up: #178. |
 | `loop-gain` | **Exposed** | Its first analysis, `ac dec 30 1e-2 1e9` (`experiment.json:24`), runs with `VEN` held at a constant `'vsup'` (`testbench/tb_loop_gain.sch:102`) — the implicit linearization-point solve ngspice performs before an `ac` analysis is unconstrained. Follow-up: #179. |
-| `load-transient` | **Exposed** | `tran 200n 3m` (`experiment.json:23`), no `uic`, with `VEN` held at a constant `'vsup'` (`testbench/tb_load_transient.sch:74`) — the same "`tran` with no `uic`" defect `#164` fixed for `mc-output-accuracy`. Follow-up: #180. |
+| `load-transient` | **Exposed → CONVERTED (#180)** | Was `tran 200n 3m` with no `uic`, with `VEN` held at a constant `'vsup'` (`testbench/tb_load_transient.sch`) — the same "`tran` with no `uic`" defect `#164` fixed for `mc-output-accuracy`. **#180 converted it** to the `.ic`-seeded shape (variant B): `testbench/tb_load_transient.sch`'s `IC_SEED` card constrains the operating-point solve to the loop's regulating branch at the pre-step 1 mA load and the (still non-`uic`) transient is released from it. See "`load-transient` after #180" below. |
 | `psrr-dc` | **Exposed** | Its first analysis, `ac lin 3 1e3 1e5` (`experiment.json:24`), runs with `VEN` held at a constant `'vsup'` (`testbench/tb_psrr_dc.sch:67`). Follow-up: #179. |
 | `thermal` | **Exposed** | Its first analysis, `dc temp 80 180 2` (`experiment.json:48`), runs with `VEN` held at a constant `'vsup'` (`testbench/tb_thermal_trip.sch:78`). Follow-up: #178. |
 | `startup` | **Clear** | `VEN` is `PULSE(0 'vsup' 100u 1u 1u 100 200)` (`testbench/tb_startup.sch:89`) — no separate `dc` keyword, so its `.op`/`.tran` default DC value is the pulse's own initial level (0 V, disabled). The disabled state has no closed feedback loop to disambiguate, per this contract's own carve-out above. |
@@ -431,6 +431,114 @@ failed` / `out of range for ^` / `source stepping failed` diagnostic on a
 majority of corners (see #174/#177/#178/#179/#180 for the exact counts) —
 the same fingerprint `#164`/`#171` used to characterize the hazard, not just
 an inference from the deck/testbench text.
+
+### `load-transient` after #180
+
+**Shape chosen: variant B (`.ic`-constrained `.op`, released into a non-`uic`
+transient)**, not `uic` + an EN-edge preamble. Both shapes satisfy this
+contract; this bench picks the `.ic` one for two reasons specific to what it
+measures:
+
+- It steps the **load**, not `EN` (`PULSE(1m 50m 1m 1u 1u 1m 4m)` on
+  `I_LOAD`), at an already-regulating condition, and both clauses of the
+  ratified row are referred to the *pre-step* steady state. An EN-edge
+  preamble would shift the deck's whole time axis and with it every `meas`
+  timestamp.
+- More importantly, an EN preamble makes `C_OUT`'s pre-step charge state a
+  function of the soft-start ramp. `#119` root-caused this bench's
+  peak-excursion clause as **charge-limited** (`Q = C·dV` against the loop's
+  finite large-signal response time, not phase-margin-limited), so the
+  pre-step charge state is precisely the variable the bench must hold fixed.
+  The `.ic` seed leaves the 1 mA pre-step operating point, the 1.000 ms /
+  2.001 ms step edges and the 3 ms span exactly where they were — **no
+  `meas`/`let` timestamp moved.**
+
+The seed itself is the eleven-node `IC_SEED` card in
+`sim/load-transient/testbench/tb_load_transient.sch` (same eleven nodes and
+the same `vsup`-relative convention as `sim/ic-screen-125c-b`). Its values are
+not invented: they come from a local probe of *this* circuit cold-started
+through its own EN edge (`VEN` as a `PULSE`, `tran 200n 1m uic`) sampled at
+t = 0.9 ms — settled at the pre-step 1 mA load, before the step — at
+tt / 27 °C / 3.30 V. The schematic's header records the raw numbers and the
+rounding. The seeded state satisfies the passive divider's own algebra
+(`FB = VOUT/1.5`, `N_FBB = FB/2`), which is the realizability check `#164`
+showed an unconstrained solve can violate.
+
+**Two measurement expressions were re-expressed, and it is a consequence of
+the seed, not a bound change.** Under an `.ic` seed, `v(vout)[0]` is the seed
+value (`VOUT` clamped to 1.8 exactly), not the corner's own settled 1 mA
+point, and the seed's relaxation toward that point during 0–1 ms is not a
+load-step excursion. So the pre-step reference became a 0.800–0.999 ms average
+(`v_pre`) and the peak searches became windowed (`v_post_min` / `v_post_max`
+over 1.000–2.999 ms, matching `w_fall`'s own end). `undershoot_v` and
+`overshoot_v` measure the same physical quantity against the same ratified
+150 mV bound; only the reference sample and the search window changed. No
+bound, stimulus, `C_out`/ESR point or measured quantity was touched.
+
+**Isolation probe (local, three corners, same DUT and manifest, control deck
+identical but with the `.ic` line deleted):**
+
+| corner | unseeded control (under / over / rise / fall) | seeded | unseeded diagnostics |
+|---|---|---|---|
+| tt/27 °C/3.30 V | 0.084470 V / 0.065478 V / 99.5 µs / 606.1 µs | 0.084470 / 0.065478 / 99.5 / 606.1 | `singular matrix: xldo.xr_fb_b.t2` |
+| ss/−40 °C/2.97 V | 0.076325 / 0.059782 / 91.3 / 546.1 | 0.076322 / 0.059784 / 91.3 / 546.1 | none |
+| ff/125 °C/3.63 V | 0.098869 / 0.074635 / 113.7 / 651.5 | 0.098793 / 0.074678 / 113.5 / 651.3 | `singular matrix: xldo.xr_cz.t1` ×2, `Dynamic gmin stepping failed` |
+
+Every measurement agrees with the unseeded control to ≤0.1 %, and both corners
+that emitted a solver diagnostic unseeded emit none seeded — the seed removes
+the numerical hazard without moving the physics. (The residual `Eta0 is
+negative` lines are PDK model-card warnings, not one of `corner-run.py`'s
+`SOLVER_DIAGNOSTIC_MARKERS`.)
+
+**The 45-corner re-run: `20260926-013955-6449a98`** (supersedes
+`20260825-081255-4cb27f8`; the superseded record and its logs are untouched,
+per the append-only rule).
+
+- **The hazard is gone: 0 of 45 corner logs carry a solver-diagnostic marker**,
+  against **23 of 45** in the superseded record (`grep -lE 'singular
+  matrix|gmin stepping failed|out of range for \^|source stepping failed'` over
+  each record's `corners/*.log`). No corner was forced to `FAIL` by `#171`'s
+  gate — every `solver_diagnostic` field in the new record's `.json` is empty.
+  (The superseded record's JSON has no `solver_diagnostic` field at all: it was
+  written before `#171` landed, which is exactly why its 23 hazard corners were
+  graded on their measurement bounds alone.)
+- **Verdict: 0/45 PASS, against the superseded record's 25/45.** Twenty-five
+  corners moved `PASS` → `FAIL`; twenty were already `FAIL` and stayed `FAIL`;
+  none moved `FAIL` → `PASS`.
+
+**That verdict change is not caused by the seed, and reading it as such would
+be wrong.** The two records do not measure the same manifest:
+
+| | superseded `…-4cb27f8` (2026-08-25) | new `…-6449a98` |
+|---|---|---|
+| measurements | `undershoot_v`, `overshoot_v` only | + `recovery_rise_us`, `recovery_fall_us` (added by `#119`), + `settle_err_50ma_pct` |
+| `C_out` | 1 µF | 4.7 µF (`#119`) |
+| failing measurements | `undershoot_v` ×20, `overshoot_v` ×4 | `recovery_rise_us` ×45, `recovery_fall_us` ×45 |
+| peak excursion (ratified ≤150 mV) | 0.102–0.393 V — **20 corners over** | 0.063–0.119 V — **every corner inside** |
+
+So the **peak-excursion clause now passes at all 45 corners** (it failed at 20
+before), and every one of the 45 new failures is the **recovery-time clause**
+(`recovery_rise_us` 74.7–132.1 µs and `recovery_fall_us` 425.7–796.1 µs against
+the ratified ≤20 µs) — a clause the superseded record never measured. Both
+movements are the expected, already-documented sign of `#119`'s `C_out`
+1 µF → 4.7 µF change: the peak excursion is charge-limited (`Q = C·dV`, so more
+`C_out` helps it) and the recovery time runs the opposite way against the same
+capacitor. `#119` recorded that tradeoff from a 3-corner subset; **this is the
+first full 45-corner record of the post-`#119` manifest**, so it also completes
+the re-verification `#166` was filed to get. The `.ic` seed's own contribution
+is bounded by the three-corner isolation probe above: ≤0.1 %, which cannot move
+a 74.7 µs measurement across a 20 µs bound.
+
+`0/45 PASS` is therefore an honest design finding against a ratified row, not a
+harness regression — the recovery-time gap is real and was previously
+under-measured. No bound in `spec/target-spec.md` was touched.
+
+Two incidental differences between the two records, neither affecting the
+comparison above: the new record ran on a different host (`ngspice-46` /
+`Darwin 27.0.0` vs the superseded record's `ngspice-47` / `Darwin 25.6.0`), and
+`measurements/characterization.md`'s "Load transient" row moves from `STALE` to
+`fresh` because the new netlist snapshot again matches a live re-netlist of the
+current testbench.
 
 ---
 
