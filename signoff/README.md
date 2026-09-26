@@ -94,7 +94,7 @@ of the claimant rather than of the tool.
 | 3 | **`met`** | `klt drc` on that GDS, `status: clean`, `violation_count: 0`, pinned to the GDS's own sha256. **Read the coverage disclosure below before treating this as "DRC clean".** |
 | 4 | **`met`** | `klt lvs`, `status: match`, layout vs. the schematic-derived reference netlist. **Three disclosed warnings below.** Re-pointed by issue #127 at a klt 0.6.0 re-run whose `provenance.input.content_hash` is non-null, so the manifest now pins this citation directly instead of relying only on `signoff/artifact-pins.json`. |
 | 5 | `unmet` / `no_evidence` | The largest real gap, and not a presentation choice. `spec/target-spec.md` *is* ratified (issue #1, DR-006) and a full 45-point PVT campaign exists under `sim/*/`— but it reports **FAIL on 7 of the 12 graded rows** (9 before issue #164 fixed the `mc-output-accuracy` bench's initial-condition contract, which moved `Output` to PASS, and 8 before issue #189 corrected one value's supply classification in the `thermal` bench's `.nodeset` seed, which moved `Thermal` to PASS — neither touched the DUT or any ratified bound; see `design/README.md` → "#164" and `sim/README.md` → "#189"), and the records are this repo's own Markdown/JSON format rather than `klt sim` envelopes, so there is nothing here that could render `met` even if the rows passed. Tracked as issues #114–#121. |
-| 6 | `unmet` / `check_failed` | Cites the real Monte Carlo campaign (`sim/mc-output-accuracy/klt-responses/20260825-083111-4cb27f8.json`, a `klt sim` envelope, n=200): `status: fail`, 177/200 samples inside the ±2 % Output window. A `check_failed` row, not a `no_evidence` one — the check ran and did not pass. There is no `klt yield` report (the kind the checklist names) for this campaign. **Deliberately not re-pointed by issue #127** — see "Item 6's freshness pin is deferred, not closed" below. |
+| 6 | `unmet` / `wrong_kind` | Cites the real Monte Carlo campaign (`sim/mc-output-accuracy/klt-responses/20260925-131502-808cece.json`, a `klt sim` envelope, n=200): `status: pass`, 200/200 samples inside the ±2 % Output window. `wrong_kind`, not `check_failed`: the cited check does not fail on its own terms — what is missing is a `klt yield` report, the kind the checklist names. Re-pointed by issue #127 from the twice-superseded klt 0.2.0 record (`20260825-083111-4cb27f8`, 177/200), which is why this row's *reason* moved while its `unmet` verdict did not. **Read "Item 6 cites the current campaign, and its reason changed with it" below before reading anything into either token.** |
 | 7 | `unmet` / `check_failed` | Cites the real `klt pex` run (`sim/pex-post-layout/klt-responses/20260825-125102-3b4e121.pex.json`), pinned to the same layout GDS items 3 and 4 were run on: `status: error`, **135 of 135 delta rows errored, 0 passed**. Item 7 accepts no other evidence kind, so nothing weaker could stand in. A newer `klt pex` record now exists that does *not* error — **and is deliberately still not cited**; see "Item 7 has a passing record that this manifest declines to cite" below. Tracked as issues #122 and #142. |
 | 8 | **`met`** | Cites `evidence/characterization.generic.json`, a generic envelope wrapping `measurements/characterization.md`. **This says the rollup exists and is current — not that its rows pass.** See below. |
 | 9 | `unmet` / `no_evidence` | Every claimed measurement's testbench *is* committed (`sim/*/testbench/`), with a documented cold-start invocation (`sim/README.md`, `docs/environment-setup.md`) and a pinned PDK revision (`sim/pdk.json`). Uncited on purpose, see below. |
@@ -195,42 +195,55 @@ repo's pinned commit has no capacitor generator (klayout-tools#1117), so they
 are neither drawn nor referenced. A match over a netlist that excludes the
 compensation and bypass capacitors is a match over the rest of the circuit.
 
-### Item 6's freshness pin is deferred, not closed
+### Item 6 cites the current campaign, and its reason changed with it
 
 Issue #127 set out to re-point item 6 at a fresh, non-`provenance.input: null`
-Monte Carlo envelope the same way it re-pointed item 4, but found the campaign
-itself had moved, not just its provenance metadata — and stopped rather than
-pick a citation that changes what item 6's `unmet` reason says:
+Monte Carlo envelope the same way it re-pointed item 4, and found the campaign
+itself had moved, not just its provenance metadata. The record this manifest
+cited until now, `20260825-083111-4cb27f8` (`status: fail`, 177/200), is
+**twice superseded** — `20260925-110312-8280915` supersedes it and
+`20260925-131502-808cece` supersedes that, each by its own record's
+`Supersedes` field — so it had stopped being this block's campaign of record
+before this change, and `measurements/characterization.md`'s Output row
+already cited `808cece`. The three candidates:
 
+- **`20260825-083111-4cb27f8`** (klt 0.2.0, `status: fail`, 177/200) — the
+  outgoing citation. Unpinnable by the manifest (`provenance.input: null`),
+  and measured by the bench issue #164 later showed was handing 11–12 of its
+  200 mismatch draws a start state that is not a circuit state. Its 177/200
+  is a bench artefact, not this block's statistical result.
 - **`20260925-110312-8280915`** — an intermediate klt 0.6.0 re-run: `klt sim`
-  itself grades it `status: error` (185 pass / 12 fail / 3 error of 200).
-  Citing it keeps `klt signoff`'s graded reason at `check_failed`, same as
-  today's citation — but it is a **superseded** record
-  (`sim/mc-output-accuracy/records/20260925-110312-8280915.md` names its own
-  successor), and this repo's append-only evidence discipline
-  (`sim/README.md`) is about not silently overwriting a record, not about
-  citing a stale one on purpose once a fresher one exists.
-- **`20260925-131502-808cece`** — the run that supersedes it, fixed by issue
-  #164's initial-condition correction to the same bench: `status: pass`,
-  200/200. This is the campaign `measurements/characterization.md`'s Output
-  row already cites as current. Citing it for item 6 too is the evidentially
-  honest choice — but `klt signoff` then grades item 6 `unmet`/`wrong_kind`,
-  not `unmet`/`check_failed`: per `docs/cli/signoff.md`, `wrong_kind` means
-  "the cited check did not fail on its own terms" (item 6 still needs a `klt
-  yield` report, which does not exist for this campaign), where
-  `check_failed` means the cited check ran and failed. The underlying campaign
-  now passing is real news this repo has not absorbed anywhere in `signoff/`
-  yet, and #127's own acceptance criteria treats a change like this — neither
-  item 4 nor item 6 was supposed to change `met`/`unmet`/`check_failed` as a
-  side effect — as something to stop and report, not fold in silently.
+  grades it `status: error` (185 pass / 12 fail / 3 error of 200). Citing it
+  would have held `klt signoff`'s graded reason at `check_failed` — but only
+  by pointing signoff at a record its own successor replaces. Citing a
+  superseded record to keep a reason token steady is the opposite of a
+  freshness pin, and `sim/README.md`'s append-only discipline exists so the
+  *current* record is always identifiable, not so an old one stays quotable.
+- **`20260925-131502-808cece`** — the current record, and the one now cited:
+  `status: pass`, 200/200, `vout_ss` mean 1.80157 V inside the ratified
+  1.764–1.836 V window, 3σ window [1.776, 1.82714]. Its
+  `provenance.input.content_hash` is real, so the manifest pins it directly.
 
-So item 6 in `signoff/block-manifest.json` and `signoff/artifact-pins.json`
-still cites the original `20260825-083111-4cb27f8` (klt 0.2.0) record,
-unchanged by this issue. Closing item 6's freshness gap needs a decision this
-issue did not have standing to make on its own: which record to cite, and
-whether `wrong_kind` (if the current one is chosen) is a reason this section's
-prose needs to learn to state, given the underlying campaign's own result has
-changed. Tracked as a follow-up to issue #127.
+**What changed and what did not.** Item 6 was `unmet` before and is `unmet`
+now; `t1_met_count` is still 3 and `tier` is still `null`. The one field that
+moved in `records/t1-tier-report.json` is item 6's `reason`:
+`check_failed` → `wrong_kind`. Per `docs/cli/signoff.md`, `check_failed`
+means the cited check ran and failed; `wrong_kind` means the cited check did
+not fail on its own terms but is not the kind this item asks for. Both
+sentences are true of the respective records, and the new one is the more
+informative statement of where this block actually stands: **the statistical
+evidence is now a passing n=200 campaign with no yield report over it**, where
+before it was a failing campaign measured on a bench with a known,
+since-fixed defect. Read `wrong_kind` here as "the gap is the missing `klt
+yield` report", not as "the wrong file got cited".
+
+That reason change is the reason this section exists rather than the change
+being folded in silently: issue #127's own acceptance criteria asked for item
+6's verdict to be unaffected by the re-pointing, and it is — but its reason
+token is not, and no citation of a *current* record could have left it
+unchanged. What item 6 still needs is unchanged too: a `klt yield` report
+over this campaign — tracked as issue #203, and see "What would move the
+needle" below.
 
 ### Item 7 has a passing record that this manifest declines to cite
 
@@ -339,36 +352,37 @@ left `unmet`/`no_evidence`, because that is the accurate machine-readable
 statement: *no check backs this claim*. `klt signoff`'s own documentation names
 this as the safest default and the shipped `examples/signoff/` follows it.
 
-### Freshness the manifest cannot pin, and where it lives instead
+### Freshness, and the two independent places it is pinned
 
-One of the five citations still cannot carry a manifest `content_hash` at
-all: item 6's Monte Carlo envelope was produced by `klt` 0.2.0, which wrote
-`provenance.input: null`, and a manifest pin against an envelope that claims
-no input hash renders the item `unmet`/`stale_evidence` — a false negative,
-not a stronger claim. (Item 4 was in the same position until issue #127
-re-pointed it at a klt 0.6.0 record whose `provenance.input.content_hash` is
-real; see "Item 4 is `met`" above. Item 6's re-pointing is deliberately
-deferred — see "Item 6's freshness pin is deferred, not closed" above — so it
-still needs this workaround.) So the manifest pins items 3, 4, 7 and 8, and
-**all seven artifacts behind all five citations are pinned in
-`signoff/artifact-pins.json` and re-hashed on disk by `check.sh`**, including
-the one the manifest still cannot reach:
+**Every one of the five citations now carries a manifest `content_hash`.**
+Items 4 and 6 were the two that could not: both were produced by `klt` 0.2.0,
+which wrote `provenance.input: null`, and a manifest pin against an envelope
+that claims no input hash renders the item `unmet`/`stale_evidence` — a false
+negative, not a stronger claim. Issue #127 re-pointed both at klt 0.6.0
+records whose `provenance.input.content_hash` is real (see "Item 4 is `met`"
+and "Item 6 cites the current campaign" above), so the manifest now pins
+items 3, 4, 6, 7 and 8 — all of them.
+
+That is the weaker of the two checks, though, and it did not replace the
+stronger one. `klt signoff` grades a manifest pin against the *cited
+envelope's own* claim about its input and never opens the artifact, so
+**all seven artifacts behind all five citations are also pinned in
+`signoff/artifact-pins.json` and re-hashed on disk by `check.sh`**:
 
 | Item | Artifact re-hashed by CI | Hash claim cross-checked against |
 |---|---|---|
 | 3 | `…/20260825-123551-3b4e121/ldo_core.gds` | envelope `provenance.input.content_hash` + manifest pin |
 | 4 | `…/20260924-221912-a947aa8/ldo_core.gds` | envelope `environment.layout_sha256` + manifest pin |
 | 4 | `…/20260924-221912-a947aa8/reference.spice` | envelope `environment.reference_sha256` |
-| 6 | `sim/mc-output-accuracy/netlist-snapshots/20260825-083111-4cb27f8.spice` | on-disk hash only — the envelope carries no hash of it |
+| 6 | `sim/mc-output-accuracy/netlist-snapshots/20260925-131502-808cece.spice` | envelope `provenance.input.content_hash` (== `environment.netlist_sha256`) + manifest pin |
 | 7 | `…/20260825-123551-3b4e121/ldo_core.gds` | envelope `provenance.input.content_hash` + manifest pin |
 | 7 | `sim/pex-post-layout/netlist-snapshots/20260825-125102-3b4e121.pex.extract.spice` | envelope `extraction.netlist_sha256` |
 | 8 | `measurements/characterization.md` | envelope `provenance.input.content_hash` + manifest pin |
 
-Re-running the Monte Carlo campaign's citation on a current `klt` (see the
-item-6 section above) would put its input hash in the envelope itself and let
-the manifest pin it directly, the way item 4's now is. It needs the PDK to
-re-run, but — per issue #127's own finding — usable fresh envelopes already
-exist; what is outstanding is a citation decision, not a PDK-gated re-run.
+Neither half is redundant: the manifest pin is what the *grader* (and the
+fleet roll-up that consumes this manifest) can verify without this repo's
+cooperation, and the on-disk re-hash is what keeps two hand-written files
+from merely agreeing with each other.
 
 ### Disclosures the claimant owes, not the grader
 
@@ -412,10 +426,14 @@ In dependency order, not effort order:
    this flow has can change. Tracked as #162. See "Item 7 has a passing record
    that this manifest declines to cite" above.
 3. **Item 11** needs a `klt erc` supply spec and report (issue #112).
-4. **Item 6** needs a `klt yield` report over the existing Monte Carlo
-   campaign. An Output row that passes already exists (issue #164's bench fix,
-   `20260925-131502-808cece`, 200/200) — see "Item 6's freshness pin is
-   deferred, not closed" above for why this section does not yet cite it.
+4. **Item 6** needs a `klt yield` report over the Monte Carlo campaign this
+   manifest now cites (`20260925-131502-808cece`, 200/200, issue #164's bench
+   fix). That is the *whole* remaining gap for this item: the campaign itself
+   passes, which is why the row reads `wrong_kind` rather than `check_failed`
+   — see "Item 6 cites the current campaign, and its reason changed with it"
+   above. A yield estimate with its confidence interval, sample-size verdict
+   and Cpk/sigma-to-spec is a `klt yield` run over the existing samples, not a
+   new PDK campaign. Tracked as issue #203.
 5. **Items 1, 2, 9 and 10** need nothing built. They stay `unmet` by choice,
    not by gap.
 
