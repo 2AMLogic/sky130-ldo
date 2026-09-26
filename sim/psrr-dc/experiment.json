@@ -1,7 +1,7 @@
 {
   "slug": "psrr-dc",
   "title": "PSRR at 1kHz and 100kHz, at 1mA and 50mA (small-signal AC around the DC operating point)",
-  "claim": "Substantiates spec/target-spec.md's ratified \"PSRR\" row (>50dB @ 1kHz and >20dB @ 100kHz, at 1mA (light-load, binding) and at 50mA) against the LDO core-regulation-loop schematic (design/ldo_3v3in_1v8out.sch). The row is ratified by issue #1 / DR-006, and the four bounds below cite it verbatim. As of #117 this deck measures all FOUR conditions the row names -- both frequencies at BOTH load points. The v1 deck measured only the ~1mA point because the pre-#25 five-transistor amplifier had no valid regulating DC operating point at 50mA to linearize around; #25's current-mirror-OTA rebuild removed that ceiling, and the 50mA point now regulates (VOUT = 1.798V at tt/27C/3.30V), so the row's 50mA half is no longer un-testbenched. Both load points are swept inside one deck (the 1.8kOhm schematic load, then 'alter rload = 36'), the same single-deck/multi-point pattern sim/loop-gain uses.",
+  "claim": "Substantiates spec/target-spec.md's ratified \"PSRR\" row (>50dB @ 1kHz and >20dB @ 100kHz, at 1mA (light-load, binding) and at 50mA) against the LDO core-regulation-loop schematic (design/ldo_3v3in_1v8out.sch). The row is ratified by issue #1 / DR-006, and the four bounds below cite it verbatim. As of #117 this deck measures all FOUR conditions the row names -- both frequencies at BOTH load points. The v1 deck measured only the ~1mA point because the pre-#25 five-transistor amplifier had no valid regulating DC operating point at 50mA to linearize around; #25's current-mirror-OTA rebuild removed that ceiling, and the 50mA point now regulates (VOUT = 1.798V at tt/27C/3.30V), so the row's 50mA half is no longer un-testbenched. Both load points are swept inside one deck (the 1.8kOhm schematic load, then 'alter rload = 36'), the same single-deck/multi-point pattern sim/loop-gain uses. As of #179 both points are seeded per sim/README.md's initial-condition contract (#171): the testbench carries a .nodeset card seeding the three branch-defining nodes (VOUT=1.8, FB=1.2, N_FBB=0.6), which ngspice applies to EVERY operating-point solve in the deck -- including the one each `ac` performs for itself -- so neither the 1mA point nor the `alter`-reached 50mA point linearizes around an unconstrained Newton solve. `.ic` would not have done this: ngspice honours `.ic` only for the transient operating point, so it is inert in an ac-only deck. Only the branch-defining nodes are seeded: a .nodeset card is a single static card applied to both load points, and the eleven-node seed from sim/ic-screen-125c-b (its 125C/50mA values) was measured to drag ss/-40C/3.63V's 1mA point onto a non-regulating branch (VOUT=3.633V=VIN), reporting 0.017dB of PSRR there instead of 25.7dB -- see sim/README.md's \"#179\". The seed does NOT clear #171's solver-diagnostic FAIL gate; the residue is recorded as a finding there, not suppressed.",
   "provenance": "schematic",
   "provenance_source": "sim/psrr-dc/testbench/tb_psrr_dc.sch",
   "schematic": "testbench/tb_psrr_dc.sch",
@@ -20,12 +20,28 @@
     "options": ["wnflag=1"],
     "params": {},
     "analyses": [
+      "* Initial-condition contract (sim/README.md, issue #171; converted by #179):",
+      "* the testbench carries a .nodeset card seeding the three branch-defining nodes",
+      "* (VOUT=1.8, FB=1.2, N_FBB=0.6), so EVERY operating-point solve this deck",
+      "* performs -- including the one each `ac` command performs for itself before",
+      "* linearizing -- is released from that seed instead of from ngspice's",
+      "* unconstrained Newton start. `.ic` would be inert here: ngspice honours it only",
+      "* for the TRANSIENT operating point. Only the branch-defining nodes are seeded:",
+      "* one static card cannot be right at both 1mA and 50mA, and the eleven-node",
+      "* variant was measured to push ss/-40C/3.63V's 1mA point onto a non-regulating",
+      "* branch. The `op` before each `ac` is the same solve the `ac` then repeats",
+      "* (same circuit state, same seed, same solver), recorded so the record itself",
+      "* evidences which branch each load point linearized around.",
       "* --- point 1: 1mA (the schematic's own 1.8kOhm load), the row's light-load point ---",
+      "op",
+      "let vseed = v(vout)",
       "ac lin 3 1e3 1e5",
       "let p1k = -vdb(vout)[0]",
       "let p100k = -vdb(vout)[2]",
       "* --- point 2: 50mA (36Ohm), the row's full-load point ---",
       "alter rload = 36",
+      "op",
+      "let vseed = v(vout)",
       "ac lin 3 1e3 1e5",
       "let p1k = -vdb(vout)[0]",
       "let p100k = -vdb(vout)[2]"
@@ -63,6 +79,22 @@
       "min": 20,
       "max": null,
       "note": "PSRR at 100kHz, 50mA load (index 2 of the second sweep). Ratified bound: spec/target-spec.md \"PSRR\" row, >20dB @ 100kHz at 50mA. This is the condition #117 found the v1 one-load-point deck was not measuring at all -- it is the second failing sub-metric of the row, and it fails for a different reason than the 1kHz half (see design/README.md \"#117\")."
+    },
+    {
+      "name": "vout_seed_1ma_v",
+      "expr": "op1.vseed",
+      "unit": "V",
+      "min": null,
+      "max": null,
+      "note": "Initial-condition evidence (#179), not a spec bound: v(vout) of the seeded operating-point solve at the 1mA point -- the same solve the following `ac` linearizes around. Reported, not bounded: the ratified Output row is sim/line-regulation's / sim/mc-output-accuracy's claim, not this bench's; this number exists so the record shows which branch the AC was taken about. A value near 1.8V means the seeded solve landed on the regulating branch."
+    },
+    {
+      "name": "vout_seed_50ma_v",
+      "expr": "op2.vseed",
+      "unit": "V",
+      "min": null,
+      "max": null,
+      "note": "Initial-condition evidence (#179), not a spec bound: v(vout) of the seeded operating-point solve at the 50mA point, after `alter rload = 36`. Same role as vout_seed_1ma_v -- it shows the `alter`-reached point is also seeded onto the regulating branch, which is the specific thing #179 asked to be confirmed for every point rather than only the first."
     }
   ],
   "spread_checks": []
