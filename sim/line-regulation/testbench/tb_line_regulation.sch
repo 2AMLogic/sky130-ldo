@@ -74,8 +74,11 @@ v {xschem version=3.4.7 file_version=1.2
 * average to six digits at tt/27C/3.30V. The long transient is carried here
 * anyway, for one convention across both regulation benches: the sibling
 * sim/load-regulation bench's NO-LOAD point genuinely needs it (see that
-* file's header -- at 0mA the only discharge path is the feedback divider,
-* and 1ms is 57mV away from the settled value).
+* file's header -- at 0mA the feedback divider is the only discharge path.
+* Corrected by issue #184: the sibling's own 'uic' deck is only ~11mV away
+* from the settled value at 1ms there, not the ~57mV once documented; the
+* long window is still carried because that bench's seeded, non-'uic'
+* cross-check variant genuinely needs it to settle).
 *
 * VIN's own component value below (3.3V) is a placeholder the deck's first
 * 'alter' immediately overwrites; it is never simulated as-is.

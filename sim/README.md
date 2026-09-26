@@ -1920,17 +1920,36 @@ does work and was run as a cross-check — see "not steering the answer" below.
 rather than a round one.** At the ratified load-regulation row's **0 mA**
 endpoint the feedback divider is the only discharge path out of the 1 µF
 `C_OUT`, so any start state above the no-load operating point bleeds down
-through a high-impedance path. Measured at `tt/27C/3.30V`, `v(vout)` reads
-**1.85985 V** averaged over 0.8–1 ms and only reaches its settled
-**1.80239 V** after ~100 ms (1.83245 V at 50 ms, 1.80332 V at 100 ms, then
-flat to six digits through 200/300/400 ms). A 1 ms window there reports a
-**57 mV** load regulation that is pure unsettled-transient artifact — 3× the
-ratified 18 mV bound, and it would have failed all 45 corners for a reason
-that is not the circuit. The 50 mA endpoint, by contrast, settles inside 1 ms
-at every corner probed. `line-regulation`'s four points all carry a real load
-current (1 mA or 50 mA) and likewise settle inside 1 ms — its 0.8–1 ms and
-199–200 ms tail averages agree to six digits at `tt/27C/3.30V` — but it
-carries the same 200 ms window anyway, so both benches share one convention.
+through a high-impedance path. **Corrected by issue #184** (surfaced during
+review of PR #182; the original numbers below do not reproduce on the deck
+that shipped): the `uic` cold-start deck that actually ships here measures,
+at `tt/27C/3.30V`, `v(vout)` = **1.81337 V** averaged over 0.8–1 ms, already
+settled to **1.80239 V** by ~50 ms (flat to six digits from there through
+200/300/400 ms) — an **11.0 mV** 1 ms-window artifact against the 18 mV
+bound, i.e. a PASS, not a FAIL. The **1.85985 V / 1.83245 V / 1.80332 V**
+trajectory and the "57 mV, 3× the bound, would fail all 45 corners"
+conclusion this section originally stated were measured on the
+`.ic`/`op`-seeded, non-`uic` cross-check variant tried first (see the table
+below), not on this deck. 200 ms is nonetheless still the right window: that
+seeded cross-check variant genuinely needs the long window to settle, and
+every corner probed keeps margin under 200 ms even at the shipped deck's own
+largest observed 1 ms-window artifact (1.75 mV at `fs_125c_3.63v`). The
+50 mA endpoint, by contrast, settles inside 1 ms at every corner probed.
+`line-regulation`'s four points all carry a real load current (1 mA or
+50 mA) and likewise settle inside 1 ms — its 0.8–1 ms and 199–200 ms tail
+averages agree to six digits at `tt/27C/3.30V` — but it carries the same
+200 ms window anyway, so both benches share one convention.
+
+**Errata (issue #184).** The `20260926-010432-228fbc7` (`load-regulation`)
+and `20260926-001833-228fbc7` (`line-regulation`) records below, and this
+section's prose as originally landed by #172, carried the uncorrected
+1.85985 V / 1.83245 V / 1.80332 V / "57 mV, 3× the bound" trajectory above,
+plus a "≤0.1 mV" figure for the three hottest corners' 99–100 ms vs.
+199–200 ms tail-average agreement that is actually **0.13 mV** (worst case,
+`fs_125c_3.63v`: 1.81869 V vs. 1.81856 V). Both records are append-only and
+are not re-cut for a prose correction — no measurement, corner verdict, or
+row verdict in either record is affected; see issue #184 for the full
+before/after and how the corrected numbers were reproduced.
 
 **Measured evidence the start state is not steering the answer** (the
 property the contract is actually after — two independent start states

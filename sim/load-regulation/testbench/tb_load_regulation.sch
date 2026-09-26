@@ -67,23 +67,32 @@ v {xschem version=3.4.7 file_version=1.2
 * otherwise identical deck. At the ratified row's 0mA endpoint the ONLY
 * discharge path out of the 1uF C_OUT is the feedback divider, so any start
 * state above the no-load operating point bleeds down through a
-* high-impedance path: measured at tt/27C/3.30V, v(vout) reads 1.85985V
-* averaged over 0.8ms-1ms and only reaches its settled 1.80239V after ~100ms
-* (1.83245V at 50ms, 1.80332V at 100ms, then flat to six digits through
-* 200ms, 300ms and 400ms). A 1ms transient here reports a 57mV load
-* regulation that is pure unsettled-transient artifact, 3x the ratified
-* 18mV bound. The 50mA endpoint, by contrast, settles inside 1ms at every
-* corner probed (it has 50mA with which to discharge), and the 199ms-200ms
-* tail average equals the 0.8ms-1ms one to six digits there.
+* high-impedance path. CORRECTED by issue #184 (surfaced reviewing PR #182;
+* does not reproduce on this deck): this 'uic' cold-start deck itself, at
+* tt/27C/3.30V, reads v(vout) = 1.81337V averaged over 0.8ms-1ms and is
+* already settled to 1.80239V by ~50ms (flat to six digits from there
+* through 100ms, 200ms, 300ms and 400ms) -- an 11.0mV 1ms-window artifact
+* against the 18mV bound, i.e. a PASS, not a FAIL. The 1.85985V/1.83245V/
+* 1.80332V trajectory and the "57mV, 3x the bound, would fail all 45
+* corners" conclusion once documented here were measured on the
+* '.ic'/'op'-seeded, non-'uic' cross-check variant tried first (see below),
+* not on this deck. 200ms is nonetheless still the right window: that
+* seeded cross-check variant genuinely needs the long window to settle, and
+* every corner probed keeps margin under 200ms even at this deck's own
+* largest observed 1ms-window artifact (1.75mV at fs/125C/3.63V). The 50mA
+* endpoint, by contrast, settles inside 1ms at every corner probed (it has
+* 50mA with which to discharge), and the 199ms-200ms tail average equals
+* the 0.8ms-1ms one to six digits there.
 *
 * 199ms-200ms is therefore a measured settled window, not an assumed one:
 * at the three hottest/slowest corners probed (tt/125C/3.63V, ff/125C/3.63V,
 * fs/125C/3.63V) the 99ms-100ms and 199ms-200ms tail averages agree to
-* <=0.1mV, and an independently seeded ('.ic', non-'uic') 400ms transient
-* lands on the same tail at all three (1.81042V vs 1.81042V at
-* ff/125C/3.63V; 1.81860V vs 1.81856V at fs/125C/3.63V) -- two different
-* start states converging on one answer, which is the property this contract
-* is really after.
+* <=0.13mV (corrected by issue #184 from a previously documented <=0.1mV),
+* and an independently seeded ('.ic', non-'uic') 400ms transient lands on
+* the same tail at all three (1.81042V vs 1.81042V at ff/125C/3.63V;
+* 1.81860V vs 1.81856V at fs/125C/3.63V) -- two different start states
+* converging on one answer, which is the property this contract is really
+* after.
 *
 * Known-risk note (not a testbench defect): design/README.md's dated
 * 2026-08-25 "full 45-point PVT + Monte Carlo campaign" section (issue #60,
