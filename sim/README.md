@@ -561,8 +561,74 @@ cold/slow corners a faster ramp does inflate the number. 266 V/s is inside the
 validated window at both corners checked; a bench-wide per-corner rate sweep
 was not run.
 
+#### What `thermal`'s re-run found (record `20260926-052517-eba96ae`)
+
+**Not zero diagnostics — 2 of 15 corners still trip the `#171` gate, and that is
+reported rather than suppressed.** The count falls from **14 of 15** corner logs
+(132 marker hits) in the superseded `20260825-104426-933dfdd` to **2 of 15**
+(18 hits): `ss_27c_2.97v` and `sf_27c_2.97v`, both on
+`Dynamic gmin stepping failed` → `True gmin stepping failed` →
+`source stepping failed`, each time recovered by ngspice's own "Transient op"
+fallback. `corner-run.py` forces both to `FAIL` with
+`solver diagnostic: Warning: Dynamic gmin stepping failed`, which is the gate
+working as designed.
+
+**The residual is not the one-card seeding limitation.** Re-running the
+**ascending** sweep *alone* at `ss_27c_2.97v` — the sweep whose own 80 °C start
+point the `.nodeset` describes exactly — still prints 6 `gmin stepping failed`
+plus 3 `source stepping failed`, and returns `trip_temp_c` = 150.6582 °C, the
+same value to four decimals as the full two-sweep run. So the descending sweep's
+deliberately-wrong 180 °C seed is *not* what produces them: a correctly seeded
+ascending sweep flails too, somewhere along its own path rather than at its
+start. Two candidate mechanisms, neither isolated here:
+
+1. **The trip transition itself.** A `dc` continuation has no continuous branch
+   to follow across a comparator threshold with positive feedback around it —
+   VOUT collapses and the comparator latches over, so the solver has to jump. A
+   *start* seed cannot help with a difficulty located at the crossing. This
+   would make the residual a methodology limit of `dc temp` continuation, of the
+   same family as (though distinct from) the `trip == reset` degeneracy #77
+   found and #91 carries.
+2. **The seed being derived at one supply.** Both surviving corners are
+   `*_2.97v`, and the `.nodeset`'s VIN-relative values were measured at
+   `vsup` = 3.30 V. A per-supply seed would settle this; 3.63 V is equally far
+   from 3.30 V and is clean, which argues against it, but not decisively.
+
+**Verdict: 12/15 → 13/15 PASS**, with three corners changing in each direction's
+favour: `tt_27c_3.63v` and `ff_27c_3.63v` go FAIL → PASS (their −2.00 °C and
+−8.00 °C hysteresis readings are now 0.00 °C), and `sf_27c_2.97v` goes
+PASS → FAIL (0.00 °C → −12.00 °C, alongside its diagnostic). `ss_27c_2.97v`
+stays FAIL with its negative hysteresis deepening from −2.37 °C to −12.34 °C.
+
+**Every trip temperature moved up, substantially and consistently**: +13 to
++16 °C at eleven of the fifteen corners (e.g. `ss_27c_3.63v` 138.914 → 155.001,
+`sf_27c_3.63v` 138.769 → 155.001, `tt_27c_3.30v` 150.587 → 165.001), while the
+two corners that still carry a diagnostic barely moved (`ss_27c_2.97v` 150.632 →
+150.658, `sf_27c_2.97v` 149.000 → 149.000). The whole matrix now trips between
+**149.0 °C and 171.0 °C**, i.e. every corner above the 125 °C `min` bound and
+closer to DR-005's 150 °C nominal target than the superseded record's
+138.8–163.0 °C suggested.
+
+**That shift must NOT be attributed to the seeding.** This record is also this
+bench's **first run against the current DUT**: `thermal` was one of the four
+benches deliberately left out of #69's re-run generation (see the 2026-08-25
+record-generation note above) and was not part of #116's either, so its
+superseded record was reported `STALE` in `measurements/characterization.md`
+precisely because its netlist snapshot no longer matched the schematic — and #69
+**re-sized the thermal-shutdown circuit this bench measures**, while #116
+re-sized the pass device. The Thermal row's freshness goes `STALE` → `fresh`
+with this record. Seeding and two DUT re-sizes changed together here; the two
+effects are not separable from these two records, and this section does not
+claim they are. (`dropout-vs-load` has no such confound: its superseded record
+*was* #116's own re-run, i.e. the same DUT.)
+
+**The `trip == reset` degeneracy is untouched, as #178 said it would be**:
+hysteresis reads exactly 0.00 °C at thirteen corners and negative at the two
+diagnosed ones. That is #77's finding, carried by #91, and a seed at the
+sweep's start was never going to address it.
+
 **Both benches' bullets under "The LDO's own testbenches" carry the same
-numbers**; `thermal`'s own re-run is described in its bullet.
+numbers.**
 
 Every "Exposed" verdict above is corroborated by the bench's own latest
 committed corner logs already carrying a `singular matrix` / `gmin stepping
@@ -797,6 +863,19 @@ section is a map, not a duplicate of that detail.
   operating ceiling at every supply corner (confirming and quantifying
   issue #69), and measured hysteresis is non-positive at every one of the
   15 corners (a new finding, filed as issue #77).
+  **Current record** (`20260926-052517-eba96ae`, issue #178, supersedes
+  `20260825-104426-933dfdd`, first run with both `dc temp` sweeps seeded from a
+  measured untripped state): **13/15 PASS, up from 12/15**, and solver
+  diagnostics down from **14 of 15** corner logs (132 hits) to **2 of 15**
+  (18 hits) — `ss_27c_2.97v` and `sf_27c_2.97v`, which the #171 gate correctly
+  forces to FAIL and which an ascending-sweep-only probe shows are *not* the
+  shared-`.nodeset` limitation. Every trip temperature moved up 13–16 °C at the
+  eleven undiagnosed corners (matrix now 149.0–171.0 °C, all above the 125 °C
+  bound) — but this is *also* this bench's first run against the post-#69/#116
+  DUT (its Thermal row goes `STALE` → `fresh`), and #69 re-sized the very
+  thermal-shutdown circuit measured here, so that shift is not attributable to
+  the seeding alone. The `trip == reset` degeneracy (#77/#91) is unchanged, as
+  expected. See "#178: dropout-vs-load and thermal" above.
 
 None of the four fully meets its spec bound yet. This is an honest,
 expected finding, not a harness bug — and the reason has moved. The #18
