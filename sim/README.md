@@ -220,6 +220,26 @@ resolves the PDK directory symlink back to its volare version hash and
 **refuses to run against a version other than the pin** unless
 `--allow-pdk-mismatch` is passed — in which case the record says so.
 
+> **The root the runner resolves is also the root `klt` reads** — which took a
+> fix to be true (issue #211). A `klt sim` request names `models.lib` by a
+> *relative* path, so `klt` resolves the PDK root itself if nothing says
+> otherwise, and `mc-run.py` used to pass it no `PDK_ROOT`. On a host carrying
+> two sky130A installs (e.g. a `volare` root and a `ciel` one, an ordinary state
+> after following the tooling's own migration) that meant `mc-run.py` could
+> verify one root against the pin and record `matches_pin: true` while `klt sim`
+> read the *other* — a different open_pdks build whose
+> `libs.tech/combined/continuous/models_fet.spice`, the FET cards a mismatch
+> campaign draws from, is not byte-identical. A record naming a commit the
+> simulation never read is a false provenance claim, and it is silent: the
+> numbers look fine. `mc-run.py` now passes `PDK_ROOT` explicitly **and**
+> asserts after the run that `klt`'s own `provenance.pdk.version` names the
+> pinned commit (`--allow-pdk-mismatch` downgrades that to a warning, the same
+> escape hatch the pre-run check offers), so this fails loudly instead. Any
+> local `mc-output-accuracy*` record minted before #211 should be read with
+> that in mind — check its response's `provenance.pdk` rather than only the
+> record's `pdk` block. Filed generically upstream as
+> [klayout-tools#2564](https://github.com/2AMLogic/klayout-tools/issues/2564).
+
 **What the runner injects** (so one testbench serves the whole matrix): the
 `.lib <models> <corner>` include, `.temp`, `.param vsup=<supply>`, `.option`s
 from the manifest, and the `.control` block that runs the analyses, evaluates
@@ -2988,6 +3008,19 @@ statistics plus a per-device-family "was mismatch actually active" report.
   to these three (same as `pdk-smoke`), so they are inert to that pipeline.
   Full write-up, record ids and re-derivation recipes: `design/README.md` →
   "#164".
+- **`mc-output-accuracy-negctl/`, `mc-output-accuracy-engine-check/`** (issue
+  #211) — two MC slugs that exist only to give `mc-output-accuracy`'s `klt yield`
+  report a **negative control**, and neither of which claims anything about the
+  LDO. `-negctl/` is the seeded, known-bad variant (feedback divider mis-ratioed
+  +10 % via a declared `netlist_patch`); its `FAIL` is the intended result.
+  `-engine-check/` is the *undegraded* bench re-run on the host that ran the
+  control, to measure the executor difference between the two rather than assume
+  it small. **Why separate slugs**, same reason as the `mc-ic-screen-*` group
+  above: nothing in `measurements/build_characterization_report.py` maps a spec
+  row to them, so a later-timestamped deliberately-broken record can never
+  become the `Output` row's evidence. Full write-up: "`--negative-control`"
+  under "`klt yield` records" below, and `signoff/README.md` → "The negative
+  control, and what it found".
 - **`ic-screen-125c-v/`, `-f/`, `-b/`, `-c/`, `-h/`** (issue #169) — five
   **diagnostic** `corner-run.py` slugs, not spec claims, filed apart from
   `dropout-vs-load/` for the same `EVIDENCE_MAP` reason as the `mc-ic-screen-*`
@@ -3084,10 +3117,94 @@ First record: `mc-output-accuracy/records/20260927-030409-1a14401.md`, over the
 `20260925-131502-808cece` campaign (n=200, seed `20260817`) — empirical yield
 *at least* 98.1725 % at 95 % confidence (100 % of 200 samples in window, so the
 interval is bounded only from below), Cpk 1.34664, sigma-to-spec 4.03992σ,
-sample size `sufficient`. It is what T1 signoff item 6 now cites; see
-`signoff/README.md` → "Item 6 is `met` — what it says, and the two things it
-does not", including the negative control this campaign still does not have
-(issue #211).
+sample size `sufficient`.
+
+**Current record: `20260927-093538-227be3e`** (supersedes the above; issue
+#211), which adds the one thing a yield estimate cannot supply about itself.
+
+#### `--negative-control` — and the one case where this record kind *does* need a simulation (issue #211)
+
+A yield statistic that has never been shown to reject a bad design is an
+assumption, not evidence. `klt yield` takes a **seeded, known-bad variant's own
+samples** as a `negative_control` on a measurement and checks that the
+deliberate defect shows up as a *statistically distinguishable* drop in yield —
+non-overlapping Clopper-Pearson intervals, not merely a lower point estimate
+(`docs/cli/yield.md#negative-control`). T1 signoff item 6's checklist text asks
+for exactly that.
+
+Supplying it needs a second, deliberately degraded **campaign**, so this is the
+one leg of the `klt yield` story that is a real ngspice run. Two experiments
+under `sim/` exist only to serve it, and neither makes any claim about the LDO:
+
+- **`mc-output-accuracy-negctl/`** — the known-bad variant. `mc-output-accuracy`'s
+  bench verbatim (same testbench schematic, *referenced* not copied; same
+  `tt_mm`/27 °C/3.3 V mismatch point; same `uic` + 100 µs EN edge
+  initial-condition contract; same `vout_ss` measurement against the same
+  **unrelaxed** ratified window; same seed) with exactly one declared defect:
+  the feedback divider's top leg `XR_FB_A` lengthened 180 µm → 198 µm (+10 %),
+  moving the ideal regulation point 1.8 V → 1.86 V. Its aggregate status is
+  `FAIL` **by design** — a control exists to be rejected. Result: mean
+  1.860065 V, **0 of 40 draws in window**, so the nominal's `≥ 98.1725 %` and
+  the control's `≤ 8.8097 %` intervals do not overlap → `detected`.
+- **`mc-output-accuracy-engine-check/`** — the executor cross-check. The
+  campaign of record ran on the EC2 batch fleet; the control could not (no
+  resolvable batch submit credential on the host that ran it), so it ran on
+  local ngspice. That executor difference sits underneath any control-vs-nominal
+  comparison, so it is *measured* rather than asserted small: the nominal bench
+  **undegraded** (deck byte-identical to the campaign of record's snapshot),
+  same point, same seed, on the host and engine that produced the control.
+  Result: the executor moves the mean by −1.50 mV where the seeded defect moves
+  it by +59.99 mV — 40× — and the two σ agree to 0.6 %. It also measured that
+  the **seed contract does not survive an engine change** (per-sample values
+  differ by ±6–12 mV on byte-identical decks), so the two sample sets are
+  independent draws from the same distribution, not a paired series.
+
+`experiment.json` gained a **`netlist_patch`** block for this: an exact-string
+substitution list with an **asserted occurrence count**, applied by `mc-run.py`
+to the netlisted deck between xschem and `klt sim`. That keeps `design/` the
+single source of truth (no frozen duplicate of the design schematic to rot
+alongside it, the drift the `mc-ic-screen-*` FROZEN COPY headers have to warn
+about in prose), and the count assertion means a design change makes the
+campaign **refuse to run** rather than quietly sample an undegraded circuit and
+report it as a negative control. The patched deck is what the record's netlist
+snapshot contains, so the committed evidence is the deck that ran.
+
+```bash
+# 1. run the degraded variant as its own append-only campaign
+sim/bin/mc-run.py sim/mc-output-accuracy-negctl --seed 20260817
+
+# 2. mint a yield record over the NOMINAL campaign, carrying that control
+sim/bin/yield-run.py \
+  sim/mc-output-accuracy/klt-responses/20260925-131502-808cece.json \
+  --negative-control sim/mc-output-accuracy-negctl/klt-responses/<record-id>.json
+```
+
+Two consequences of step 2 worth knowing, both of which follow from a tool gap
+rather than a choice made here:
+
+- **It mints a fourth artifact: `klt-responses/<record-id>.samples.json`.**
+  `klt yield` reads a `negative_control` from either input shape it accepts, but
+  `klt sim` has no request-side field for one and never emits one on its
+  response rollup — so a `klt sim` response can carry a negative control only if
+  a committed response is hand-edited, which this directory's append-only
+  discipline forbids outright. So `yield-run.py` mints a **sample-set document**
+  instead, carrying both campaigns' own per-sample values, and runs `klt yield`
+  against that. Nothing in it is a new number: every value is copied out of a
+  committed `klt sim` response by the same rule `klt yield` applies to a sim
+  report itself. Filed generically upstream as
+  [klayout-tools#2563](https://github.com/2AMLogic/klayout-tools/issues/2563).
+- **That copy is cross-checked, not trusted.** `yield-run.py` re-runs
+  `klt yield` a second time directly over the nominal response alone (the
+  pre-#211 input shape) and requires the nominal `distribution`, `capability`,
+  `sample_size` and `yield.empirical` blocks to be **byte-equal**, aborting
+  rather than recording on any difference. The record reports the verdict
+  (`IDENTICAL`), so the assertion is auditable after the fact. It also shifts
+  what `klt signoff` hashes for an item-6 citation, since a yield citation is
+  hashed by the artifact its `samples` field names — see `signoff/README.md`.
+
+See `signoff/README.md` → "Item 6 is `met` — what it says, and the one thing it
+does not" → "The negative control, and what it found" for the full reading,
+including what the `detected` verdict does *not* establish.
 
 ## `sim/selftest.sh` — the harness acceptance test
 
