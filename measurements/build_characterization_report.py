@@ -86,6 +86,16 @@ record ids, corner tallies, failing-measurement lists, `(PVT subset)` markers,
 spec-row text, the prose, and the whole layout (DRC/LVS/PEX) section including
 *its* Freshness column, which is derived from git history and `LATEST*`
 pointers and therefore needs no toolchain at all.
+
+The gate is documented in `.github/workflows/ci.yml` and `package.json` rather
+than inside the report it checks, deliberately: `measurements/characterization.md`
+is sha256-pinned for T1 item 8 in `signoff/artifact-pins.json` (and, transitively,
+in `signoff/block-manifest.json`, `signoff/evidence/characterization.generic.json`
+and `signoff/records/t1-tier-report.json`), so **any** change to the text this
+function emits -- prose included -- makes `signoff/check.sh` fail until all four
+are re-pinned with a note saying why the artifact moved. Editing the emitted
+prose is therefore a signoff-evidence change, not a docs change; keep
+tooling/CI notes out of the report unless the pin move is the point.
 """
 
 from __future__ import annotations
@@ -704,15 +714,6 @@ def generate_report(skip_netlist_freshness: bool = False) -> str:
     )
     lines.append("# or verify the committed file is not stale:")
     lines.append("python3 measurements/build_characterization_report.py --check")
-    lines.append(
-        "# ...or, without the sky130 PDK toolchain (what CI runs on every "
-        "push/PR), compare"
-    )
-    lines.append("# everything except the PDK-dependent per-`sim/` Freshness column:")
-    lines.append(
-        "python3 measurements/build_characterization_report.py "
-        "--check --ignore-sim-freshness"
-    )
     lines.append("```")
     lines.append("")
     lines.append(
@@ -730,20 +731,6 @@ def generate_report(skip_netlist_freshness: bool = False) -> str:
         "compares the schematic/layout commit each record itself cites "
         "against the current git history / `LATEST*` pointers — no "
         "toolchain required."
-    )
-    lines.append("")
-    lines.append(
-        "**This file is gated, not merely regenerable (issue #220).** Every "
-        "push/PR runs `--check --ignore-sim-freshness` in the headless CI job "
-        "(via `npm run check:ci`): that compares this file against a fresh run "
-        "in full — verdicts, record ids, corner tallies, failing measurements, "
-        "`(PVT subset)` markers, spec-row text, and the layout section's own "
-        "git-derived Freshness column — and normalises only the per-`sim/` "
-        "Freshness verdicts above, which a machine without the PDK toolchain "
-        "cannot evaluate. The PDK-gated `pdk-smoke` job (nightly / on demand / "
-        "the `run-pdk-smoke` PR label) then runs the byte-exact `--check`, "
-        "which does compare those freshness verdicts. So a drifted rollup "
-        "fails a check rather than waiting for a human to notice."
     )
     lines.append("")
     lines.append(
