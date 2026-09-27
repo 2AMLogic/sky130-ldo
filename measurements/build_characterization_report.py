@@ -191,14 +191,36 @@ def parse_spec_rows(text: str) -> list[dict]:
 
 
 def latest_sim_record(slug: str) -> tuple[dict, Path] | None:
+    """The latest *campaign* record under `sim/<slug>/records/`.
+
+    A campaign record (minted by `mc-run.py` / `corner-run.py`) stamps no
+    `evidence_kind` key at all. A *derived* record kind -- e.g. `sim/bin/
+    yield-run.py`'s `klt yield` records (issue #203) -- always stamps an
+    explicit non-`None` `evidence_kind` and measures nothing of its own (no
+    netlist, no ngspice run), so it must never be selected here even if its
+    filename sorts after every campaign record's (issue #215: the newest
+    file under a slug's `records/` is not necessarily a campaign record
+    once a second record kind shares that directory).
+
+    Selecting on "no `evidence_kind` key" rather than an allow-list of one
+    derived-kind string keeps the *next* new derived record kind from
+    silently resurrecting this same bug.
+    """
     records_dir = SIM_DIR / slug / "records"
     if not records_dir.is_dir():
         return None
     json_files = sorted(records_dir.glob("*.json"))
-    if not json_files:
+    campaign: list[tuple[dict, Path]] = []
+    for f in json_files:
+        try:
+            data = json.loads(f.read_text())
+        except (OSError, json.JSONDecodeError):
+            continue
+        if isinstance(data, dict) and data.get("evidence_kind") is None:
+            campaign.append((data, f))
+    if not campaign:
         return None
-    latest = json_files[-1]
-    data = json.loads(latest.read_text())
+    data, latest = campaign[-1]
     return data, latest.with_suffix(".md")
 
 
@@ -275,8 +297,21 @@ def sim_mc_sample_tally(record: dict) -> str | None:
 
 
 def check_netlist_freshness(module, pdk, slug: str, record: dict) -> str:
-    provenance_source = record["experiment"]["provenance_source"]
-    snapshot_rel = record["links"]["netlist_snapshot"]
+    # Defense in depth alongside `latest_sim_record`'s own campaign-only
+    # selection (issue #215): this function's whole job is to report
+    # evidence state, so an unexpected record shape (e.g. a future derived
+    # record kind that also lacks `links.netlist_snapshot`) must produce a
+    # diagnosed error naming the offending record -- never a raw KeyError
+    # traceback that takes the whole report generator down with it.
+    record_id = record.get("record_id", "?")
+    try:
+        provenance_source = record["experiment"]["provenance_source"]
+        snapshot_rel = record["links"]["netlist_snapshot"]
+    except (KeyError, TypeError) as exc:
+        return (
+            f"ERROR: record `{record_id}` under sim/{slug} has no {exc} -- "
+            "not a campaign record this checker recognizes"
+        )
     schematic = REPO_ROOT / provenance_source
     snapshot_path = REPO_ROOT / snapshot_rel
     if not schematic.is_file():
@@ -473,7 +508,9 @@ def build_spec_row_table(
             freshness = f"unverified: PDK/toolchain unavailable ({_pdk_error})"
 
         freshness_short = "fresh" if freshness.startswith("fresh") else (
-            "STALE" if freshness.startswith("STALE") else "unverified"
+            "STALE" if freshness.startswith("STALE") else (
+                "ERROR" if freshness.startswith("ERROR") else "unverified"
+            )
         )
 
         subset_reason = sim_subset_reason(record)
