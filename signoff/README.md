@@ -94,7 +94,7 @@ of the claimant rather than of the tool.
 | 3 | **`met`** | `klt drc` on that GDS, `status: clean`, `violation_count: 0`, pinned to the GDS's own sha256. **Read the coverage disclosure below before treating this as "DRC clean".** |
 | 4 | **`met`** | `klt lvs`, `status: match`, layout vs. the schematic-derived reference netlist. **Three disclosed warnings below.** Re-pointed by issue #127 at a klt 0.6.0 re-run whose `provenance.input.content_hash` is non-null, so the manifest now pins this citation directly instead of relying only on `signoff/artifact-pins.json`. |
 | 5 | `unmet` / `no_evidence` | The largest real gap, and not a presentation choice. `spec/target-spec.md` *is* ratified (issue #1, DR-006) and a full 45-point PVT campaign exists under `sim/*/`— but it reports **FAIL on 6 of the 12 graded rows** (9 before issue #164 fixed the `mc-output-accuracy` bench's initial-condition contract, which moved `Output` to PASS, 8 before issue #189 corrected one value's supply classification in the `thermal` bench's `.nodeset` seed, which moved `Thermal` to PASS, and 7 before issue #196 / PR #205 fixed the `line-regulation` bench's EN convention, which moved `Line regulation` to PASS on record `20260926-200304-35b7392` — none of the three touched the DUT (`design/ldo_3v3in_1v8out.sch` is unchanged) or any ratified bound; see `design/README.md` → "#164", `sim/README.md` → "#189", and `sim/README.md` → "#196"), and the records are this repo's own Markdown/JSON format rather than `klt sim` envelopes, so there is nothing here that could render `met` even if the rows passed. Tracked as issues #114–#121. |
-| 6 | **`met`** | Cites a real `klt yield` report (`sim/mc-output-accuracy/klt-responses/20260927-030409-1a14401.yield.json`) over the n=200 Monte Carlo campaign: empirical yield **at least 98.1725 % at 95 % confidence** (100 % of 200 samples inside the ratified ±2 % Output window, so the interval is bounded only from below), Cpk 1.34664, sigma-to-spec 4.04σ, sample size `sufficient`. Issue #203 minted it; it is the evidence *kind* the checklist names, which this repo had none of until then. **The payload status is `reported`, not `pass`, and the campaign declares no negative control — read "Item 6 is `met` — what it says, and the two things it does not" below before reading anything into this row.** |
+| 6 | **`met`** | Cites a real `klt yield` report (`sim/mc-output-accuracy/klt-responses/20260927-093538-227be3e.yield.json`) over the n=200 Monte Carlo campaign: empirical yield **at least 98.1725 % at 95 % confidence** (100 % of 200 samples inside the ratified ±2 % Output window, so the interval is bounded only from below), Cpk 1.34664, sigma-to-spec 4.04σ, sample size `sufficient`, and a deterministic **negative control graded `detected`** — a seeded known-bad variant (feedback divider mis-ratioed +10 %) whose 0/40 in-window draws the same statistics reject with non-overlapping intervals. Issue #203 minted the report (the evidence *kind* the checklist names, which this repo had none of until then); issue #211 added the negative control the item's text also asks for. **The payload status is `reported`, not `pass` — read "Item 6 is `met` — what it says, and the one thing it does not" below before reading anything into this row.** |
 | 7 | `unmet` / `check_failed` | Cites the real `klt pex` run (`sim/pex-post-layout/klt-responses/20260825-125102-3b4e121.pex.json`), pinned to the same layout GDS items 3 and 4 were run on: `status: error`, **135 of 135 delta rows errored, 0 passed**. Item 7 accepts no other evidence kind, so nothing weaker could stand in. A newer `klt pex` record now exists that does *not* error — **and is deliberately still not cited**; see "Item 7 has a passing record that this manifest declines to cite" below. Tracked as issues #122 and #142. |
 | 8 | **`met`** | Cites `evidence/characterization.generic.json`, a generic envelope wrapping `measurements/characterization.md`. **This says the rollup exists and is current — not that its rows pass.** See below. |
 | 9 | `unmet` / `no_evidence` | Every claimed measurement's testbench *is* committed (`sim/*/testbench/`), with a documented cold-start invocation (`sim/README.md`, `docs/environment-setup.md`) and a pinned PDK revision (`sim/pdk.json`). Uncited on purpose, see below. |
@@ -195,13 +195,19 @@ repo's pinned commit has no capacitor generator (klayout-tools#1117), so they
 are neither drawn nor referenced. A match over a netlist that excludes the
 compensation and bypass capacitors is a match over the rest of the circuit.
 
-### Item 6 is `met` — what it says, and the two things it does not
+### Item 6 is `met` — what it says, and the one thing it does not
 
-Issue #203 minted this repo's first `klt yield` report and item 6 now cites it:
-[`sim/mc-output-accuracy/klt-responses/20260927-030409-1a14401.yield.json`](../sim/mc-output-accuracy/klt-responses/20260927-030409-1a14401.yield.json),
+Issue #203 minted this repo's first `klt yield` report and moved item 6
+`unmet`/`wrong_kind` → **`met`** (`t1_met_count` 3 → 4 of 11). Issue #211 then
+added the **deterministic negative control** the item's own text also asks for,
+and item 6 now cites the report carrying it:
+[`sim/mc-output-accuracy/klt-responses/20260927-093538-227be3e.yield.json`](../sim/mc-output-accuracy/klt-responses/20260927-093538-227be3e.yield.json),
 summarised in
-[`records/20260927-030409-1a14401.md`](../sim/mc-output-accuracy/records/20260927-030409-1a14401.md).
-The row moves `unmet`/`wrong_kind` → **`met`**, and `t1_met_count` 3 → 4 of 11.
+[`records/20260927-093538-227be3e.md`](../sim/mc-output-accuracy/records/20260927-093538-227be3e.md)
+(it supersedes `20260927-030409-1a14401`, #203's report, which remains
+committed). The verdict does not move — it was `met` before #211 and is `met`
+now — but one of the two disclosures below closed, so this section is about
+**one** remaining gap rather than two.
 
 **What the report actually says**, over the same n=200 sample set the campaign
 already committed (`20260925-131502-808cece`, seed `20260817`), against the
@@ -215,6 +221,7 @@ ratified 1.764–1.836 V Output window:
 | Capability | Cp 1.40797, **Cpk 1.34664** (CI 1.20651–1.48677) |
 | Sigma-to-spec | **4.03992σ** (CI 3.61952–4.46032), limiting side `upper` |
 | Sample size | **`sufficient`** — observed CI half-width 0.00913767 against the 0.01 target; `required_n` 183 |
+| Negative control (#211) | **`detected`** — the seeded known-bad variant's own empirical yield is 0 % of 40 draws (CP CI 0 %–8.8097 %), an interval that does not overlap the nominal's 98.1725 %–100 % |
 
 The "100 %" is deliberately not the headline. The tool refuses to print a bare
 point estimate and says so in its own warning: with zero observed failures the
@@ -224,12 +231,15 @@ confidence, N = 200"* is the honest statement. The distribution-free
 normality verdict says the latter's assumption is not violated — which is the
 useful part, since the two fail in opposite directions.
 
-No new simulation was run and no PDK was touched: `klt yield` re-reads the
-per-sample values already committed in the campaign's response. What was
-missing for this item was never a measurement, only an analysis of the right
-*kind* — see "How item 6 got here" below.
+The nominal statistics involve no new simulation and no PDK access: `klt yield`
+re-reads the per-sample values already committed in the campaign's response, and
+what was missing for this item through #203 was never a measurement, only an
+analysis of the right *kind* — see "How item 6 got here" below. The **negative
+control** is the exception, and had to be: it is a second, deliberately degraded
+campaign, and producing it meant really running ngspice against the pinned PDK.
+See "The negative control, and what it found" below.
 
-**Thing one that `met` does not say: no yield claim was checked.** The payload
+**The one thing `met` does not say: no yield claim was checked.** The payload
 status is `reported`, not `pass`, and the report says why: *"no measurement
 declared a `target_yield`, so no yield claim was checked — the estimates below
 are reported, never failed"*. `klt signoff` accepts `reported` as passing on
@@ -244,24 +254,10 @@ inventing the standard and then grading against it. So read item 6's `met` as
 pinned"* — not as *"the block met a yield target"*. Ratifying such a target is
 a `spec/` decision record, not a manifest edit.
 
-**Thing two that `met` does not say: there is still no negative control.** Item
-6's own text asks for "a recorded seed, sample count, **a deterministic
-negative control**, and results combined with (not instead of) process
-corners". The seed and sample count are recorded (`20260817`, N=200) and the
-mismatch campaign sits alongside — not instead of — the PVT matrix under
-`sim/*/`. The negative control does not exist, and the report raises it as a
-run-level warning: *"this campaign has no seeded, known-bad variant
-demonstrating that the statistics above can actually detect a degraded
-design"*. `klt signoff` grades item 6 on the payload status alone, so `met` is
-**not** evidence that this clause is satisfied — the same claimant-enforced
-structure as item 3's DRC coverage gaps. Building one needs a real simulation
-run (a degraded variant, sampled), not another re-analysis. Tracked as issue
-**#211**.
-
-Both disclosures are also recorded in `signoff/artifact-pins.json`'s item-6
-note, so they travel with the pin rather than only with this prose. And neither
-is a reading unique to this repo: the gap between what `klt signoff` grades on
-a yield citation (the payload `status`) and what item 6's text actually asks
+The remaining disclosure is also recorded in `signoff/artifact-pins.json`'s
+item-6 note, so it travels with the pin rather than only with this prose. And it
+is not a reading unique to this repo: the gap between what `klt signoff` grades
+on a yield citation (the payload `status`) and what item 6's text actually asks
 for is filed upstream as
 [klayout-tools#2467](https://github.com/2AMLogic/klayout-tools/issues/2467) —
 "`klt signoff` grades a yield citation on status alone, so an
@@ -274,12 +270,147 @@ inferred from a `met` token.
 carries no `provenance` block, so `klt signoff` hashes the *samples document*
 the report names (`report["samples"]`) and uses that both for the citation and
 for the staleness pin. `sim/bin/yield-run.py` therefore invokes `klt yield`
-from inside `klt-responses/`, so the report records `samples` as the bare
-`20260925-131502-808cece.json` — the path the grader resolves report-relative.
-The manifest pin for item 6 is consequently the sha256 of the campaign
-response (`sha256:21bb4817…`), not of the netlist snapshot; that snapshot is
-still re-hashed on disk by `check.sh`, now as the second, unpinned claim. See
+from inside `klt-responses/`, so the `samples` field is a bare filename the
+grader resolves report-relative. Since #211 that document is not the campaign
+response itself but the **derived sample-set document**
+`20260927-093538-227be3e.samples.json` (see below), so the manifest pin for
+item 6 is that document's sha256 (`sha256:82988e25…`). Both campaign responses
+underneath it, and both netlist snapshots, are re-hashed on disk by `check.sh`
+as unpinned second claims — and the two responses are additionally cross-checked
+against the derived document's own `provenance` block, so the pin cannot be
+re-pointed at a different pair of runs than the report analysed. See
 "Freshness, and the two independent places it is pinned" below.
+
+#### The negative control, and what it found
+
+Item 6's text asks for "a recorded seed, sample count, **a deterministic
+negative control**, and results combined with (not instead of) process
+corners". The seed and sample count were always recorded (`20260817`, N=200),
+and the mismatch campaign has always sat alongside — not instead of — the PVT
+matrix under `sim/*/`. Through #203 the negative control did not exist, and the
+report said so in a run-level warning: *"this campaign has no seeded, known-bad
+variant demonstrating that the statistics above can actually detect a degraded
+design"*. Issue #211 built one. **That warning is gone from the cited report**,
+and the only run-level warning left is the `target_yield` one above.
+
+**What was deliberately broken, and why that.** The control is
+[`sim/mc-output-accuracy-negctl`](../sim/mc-output-accuracy-negctl/experiment.json):
+the nominal bench *verbatim* — same testbench schematic (referenced, not
+copied), same tt_mm/27 °C/V<sub>IN</sub>=3.3 V mismatch point, same #164 `uic`
+initial-condition contract, same `vout_ss` measurement, same **unrelaxed**
+ratified 1.764–1.836 V window, same seed — with exactly one declared defect: the
+feedback divider's top leg `XR_FB_A` lengthened 180 µm → 198 µm (+10 %).
+
+That choice is the point of the exercise, so the reasoning is on the record
+rather than implied. A divider ratio error is *the* canonical accuracy defect
+for an LDO and is precisely what a ratified ±2 % Output row exists to catch, so
+a control that this window failed to reject would be indicting the window. The
+divider is three nominally identical `res_xhigh_po` legs tapping FB at 2/3 of
+V<sub>OUT</sub>, so +10 % on the top leg moves the ideal regulation point
+1.2 V·3/2 = 1.8 V → 1.2 V·558/360 = **1.86 V**: +3.33 %, i.e. 1.67× the ratified
+window. The magnitude is deliberate in *both* directions — large enough that a
+statistic with any detection power must reject it, small enough that the loop
+still regulates so every draw stays measurable and the control tests *detection*
+rather than producing an avalanche of `errored` samples. It degrades the design
+(the on-chip divider), not the testbench stimulus. And it does not depend on
+resistor-family mismatch being sampled — `klt sim` reports resistor mismatch as
+`unconfirmed` for sky130 — so the defect is deterministic and the only
+stochastic ingredient is the same MOS mismatch the nominal campaign draws.
+
+**How it is expressed.** As a `netlist_patch` block in the control's own
+manifest: an exact-string substitution with an **asserted occurrence count**,
+applied by `sim/bin/mc-run.py` to the netlisted deck between xschem and
+`klt sim`. `design/ldo_3v3in_1v8out.sch` is untouched — it stays the single
+source of truth for the design under test — and no frozen duplicate of it is
+introduced to rot alongside. If the divider in the real design ever changes, the
+count stops matching and **the campaign refuses to run** rather than quietly
+sampling an undegraded circuit and reporting it as a negative control.
+
+**What it found.** `detected`.
+
+| | Nominal (campaign of record) | Negative control |
+|---|---|---|
+| N | 200 | 40 |
+| Mean `vout_ss` | 1.801568 V | **1.860065 V** |
+| Std dev | 8.5229 mV | 8.8530 mV |
+| In the ratified window | 200 / 200 | **0 / 40** |
+| Empirical yield (Clopper-Pearson, 95 %) | ≥ 98.1725 % | ≤ 8.8097 % |
+
+The two exact intervals do not overlap, which is what `detected` means — a gap
+too large to be sampling noise, not merely a lower point estimate
+(`docs/cli/yield.md#negative-control`). The control's mean sits 24.07 mV, or
+2.72 σ of its own spread, above the window's upper edge, and its σ is within
+4 % of the nominal's: the defect moved the distribution without deforming it,
+which is the behaviour a divider ratio error should produce and a sign the
+control is testing what it claims to.
+
+**So: these statistics can reject a degraded design of this block.** That is
+now a measurement, not an assumption — which was the entire point of the
+clause. It bounds the claim narrowly and honestly, though: it shows the
+`vout_ss` window catches a **mean shift** of this size. It says nothing about
+sensitivity to a defect that widens the *spread* without moving the mean, and
+nothing about how small a mean shift this statistic could still resolve. A
+`not_detected` result would have been an equally reportable finding; this one
+simply is not that.
+
+**One confound, measured rather than waved away.** The campaign of record ran on
+the EC2 batch fleet (`engine_version` 42, Linux x86_64). The control could not:
+`klt sim --backend batch` has no resolvable submit credential on this host
+(`aws sts get-caller-identity --profile batch-runner-submit` → `NoCredentials`),
+so it ran locally on ngspice 47 / Darwin arm64. An executor difference sits
+underneath any control-vs-nominal comparison, so it gets its own committed
+campaign:
+[`sim/mc-output-accuracy-engine-check`](../sim/mc-output-accuracy-engine-check/experiment.json)
+runs the nominal bench **undegraded** — a netlisted deck byte-identical to the
+campaign of record's committed snapshot — at the same point, same seed, on the
+host and engine that produced the control. Result: mean 1.800071 V (σ 8.4753 mV,
+40/40 in window) against the campaign of record's 1.801568 V (σ 8.5229 mV). The
+executor's own contribution to the mean is **−1.50 mV**; the seeded defect's is
+**+59.99 mV**, **40×** larger. The σ agree to within 0.6 %.
+
+Two smaller findings fell out of that cross-check and are worth recording:
+
+- **The seed contract does not survive an engine change.** On byte-identical
+  decks with the same seed, per-sample values differ by ±6–12 mV (mc0: 1.797838
+  vs 1.807250 V; mc1: 1.798959 vs 1.790570 V). The two engines do not reproduce
+  each other's per-instance AGAUSS draws, so the sample sets are **independent
+  draws from the same distribution**, not a paired series — which is exactly why
+  the comparison above is made distribution-to-distribution.
+- **A PDK-provenance bug in this repo's own harness, now fixed.** `klt sim`'s
+  request names `models.lib` by a relative path, so `klt` resolved the PDK root
+  itself, and `mc-run.py` passed it no `PDK_ROOT`. On this host that meant
+  `mc-run.py` verified `~/.volare/sky130A` against `sim/pdk.json`'s pin and
+  recorded `matches_pin: true` while `klt sim` actually read `~/.ciel/sky130A` —
+  a different open_pdks build whose `models_fet.spice` is not byte-identical to
+  the pinned root's. A record naming a commit the simulation never read is a
+  false provenance claim, and for a negative control it would have meant the
+  control and the nominal differing by model build as well as by the declared
+  defect. `mc-run.py` now passes `PDK_ROOT` explicitly **and** asserts after the
+  run that `klt`'s own `provenance.pdk.version` names the pinned commit, so this
+  fails loudly instead of silently. All three campaigns above record
+  `open_pdks c6d73a35…`, the pin. (Measured aside: re-running against the pinned
+  root reproduced the other build's values exactly, so the divergence was
+  immaterial *to this measurement* — the provenance claim was wrong, the numbers
+  were not. That is luck, not a reason to leave it unfixed.) Filed generically
+  upstream as
+  [klayout-tools#2564](https://github.com/2AMLogic/klayout-tools/issues/2564).
+
+**Why the analysed artifact is a derived document.** `klt yield` reads a
+`negative_control` from either input shape it accepts, but `klt sim` has no
+request-side field for one and never emits one on its response rollup — so a
+`klt sim` response can carry a negative control only if a committed response is
+hand-edited, which this repo's append-only `sim/` discipline forbids outright.
+`sim/bin/yield-run.py --negative-control` therefore mints a **sample-set
+document** carrying both campaigns' own per-sample values, and `klt yield`
+analyses that. Nothing in it is a new number: every value is copied out of a
+committed `klt sim` response by the same rule `klt yield` applies to a sim
+report itself. That copy is not taken on trust either — the runner re-runs
+`klt yield` directly over the nominal response alone and requires the nominal
+`distribution`, `capability`, `sample_size` and `yield.empirical` blocks to be
+**byte-equal**, aborting rather than recording on any difference. The cited
+record reports that check as `IDENTICAL`. The tool gap behind the whole
+arrangement is filed generically upstream as
+[klayout-tools#2563](https://github.com/2AMLogic/klayout-tools/issues/2563).
 
 #### How item 6 got here
 
@@ -467,17 +598,19 @@ items 3, 4, 6, 7 and 8 — all of them.
 Item 6 is pinned by a different mechanism since issue #203 re-pointed it at a
 `klt yield` report: a yield report carries no `provenance` block, so
 `klt signoff` hashes the *samples document the report names* and uses that for
-the citation and the pin alike (`docs/cli/signoff.md`). The pinned hash for
-item 6 is therefore the campaign response's own sha256, and it is the one
-citation here whose `content_hash` the grader computes by reading a file rather
-than by quoting an envelope's claim — so for this item the two checks below
-agree by construction (`input_verified: true`), and the independent on-disk
-claim is the netlist-snapshot row instead.
+the citation and the pin alike (`docs/cli/signoff.md`). It is the one citation
+here whose `content_hash` the grader computes by reading a file rather than by
+quoting an envelope's claim — so for this item the two checks below agree by
+construction (`input_verified: true`), and the independent on-disk claims are the
+other item-6 rows instead. Since issue #211 the hashed document is the *derived
+sample-set document* rather than the campaign response, because a
+`negative_control` cannot be carried on a `klt sim` response at all — see "The
+negative control, and what it found" above.
 
 The manifest pin is the weaker of the two checks, though, and it did not
 replace the stronger one. `klt signoff` grades a manifest pin against the
 *cited envelope's own* claim about its input and never opens the artifact
-(item 6 excepted, above), so **all eight artifacts behind all five citations
+(item 6 excepted, above), so **all eleven artifacts behind all five citations
 are also pinned in `signoff/artifact-pins.json` and re-hashed on disk by
 `check.sh`**:
 
@@ -486,8 +619,11 @@ are also pinned in `signoff/artifact-pins.json` and re-hashed on disk by
 | 3 | `…/20260825-123551-3b4e121/ldo_core.gds` | envelope `provenance.input.content_hash` + manifest pin |
 | 4 | `…/20260924-221912-a947aa8/ldo_core.gds` | envelope `environment.layout_sha256` + manifest pin |
 | 4 | `…/20260924-221912-a947aa8/reference.spice` | envelope `environment.reference_sha256` |
-| 6 | `sim/mc-output-accuracy/klt-responses/20260925-131502-808cece.json` | the samples document the cited `klt yield` report names + manifest pin (no envelope claim to cross-check — a yield report makes none) |
+| 6 | `…/klt-responses/20260927-093538-227be3e.samples.json` | the samples document the cited `klt yield` report names + manifest pin (no envelope claim to cross-check — a yield report makes none) |
+| 6 | `sim/mc-output-accuracy/klt-responses/20260925-131502-808cece.json` | derived sample-set document `provenance.nominal.sha256` |
 | 6 | `sim/mc-output-accuracy/netlist-snapshots/20260925-131502-808cece.spice` | campaign envelope `provenance.input.content_hash` (== `environment.netlist_sha256`) |
+| 6 | `sim/mc-output-accuracy-negctl/klt-responses/20260927-092313-227be3e.json` | derived sample-set document `provenance.negative_control.sha256` |
+| 6 | `sim/mc-output-accuracy-negctl/netlist-snapshots/20260927-092313-227be3e.spice` | negative-control envelope `provenance.input.content_hash` — the DEGRADED deck |
 | 7 | `…/20260825-123551-3b4e121/ldo_core.gds` | envelope `provenance.input.content_hash` + manifest pin |
 | 7 | `sim/pex-post-layout/netlist-snapshots/20260825-125102-3b4e121.pex.extract.spice` | envelope `extraction.netlist_sha256` |
 | 8 | `measurements/characterization.md` | envelope `provenance.input.content_hash` + manifest pin |
@@ -539,18 +675,18 @@ In dependency order, not effort order:
    this flow has can change. Tracked as #162. See "Item 7 has a passing record
    that this manifest declines to cite" above.
 3. **Item 11** needs a `klt erc` supply spec and report (issue #112).
-4. **Item 6** is `met` as of issue #203 — the `klt yield` report this list
-   previously asked for now exists and is cited. What remains is *not* needed
-   for the grader and is listed here because the item's own text asks for it
-   and `klt signoff` cannot check it: **a deterministic negative control** (a
-   seeded, known-bad variant showing these statistics can reject a degraded
-   design). Unlike #203, that leg needs a real simulation run, not a
-   re-analysis of committed samples. Tracked as issue #211. The second
-   disclosure on that row — that the report's status is `reported` rather than
-   `pass`, because this block's spec ratifies no yield target — moves only
-   through a `spec/` decision record, and a number invented to make the row
-   read `pass` would be worse than the honest `reported`. See "Item 6 is
-   `met` — what it says, and the two things it does not" above.
+4. **Item 6** is `met` as of issue #203, and as of issue #211 the
+   **deterministic negative control** this list previously asked for exists,
+   ran, and is cited: `detected`, on a seeded +10 % divider mis-ratio the
+   ratified window rejects 40/40 (see "The negative control, and what it found"
+   above). Nothing about that was needed for the grader — it is what the item's
+   own text asks for and `klt signoff` cannot check — which is exactly why it
+   was worth building. One disclosure remains on that row, and it is **not** a
+   build task: the report's status is `reported` rather than `pass` because this
+   block's spec ratifies no yield target. That moves only through a `spec/`
+   decision record, and a number invented to make the row read `pass` would be
+   worse than the honest `reported`. See "Item 6 is `met` — what it says, and
+   the one thing it does not" above.
 5. **Items 1, 2, 9 and 10** need nothing built. They stay `unmet` by choice,
    not by gap.
 

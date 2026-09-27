@@ -1,0 +1,43 @@
+{
+  "analysis": {
+    "args": "10u 3m uic",
+    "kind": "tran",
+    "note": "Identical to sim/mc-output-accuracy/experiment.json's mc_analysis (the #164 initial-condition contract: every node at 0, EN low, powering up through the block's own soft-start ramp at the bench's 100 us EN edge)."
+  },
+  "corners": {
+    "process": [
+      "tt_mm"
+    ],
+    "temperature_c": [
+      27
+    ]
+  },
+  "engine": "ngspice",
+  "measurements": [
+    {
+      "limits": {
+        "max": 1.836,
+        "min": 1.764
+      },
+      "name": "vout_ss",
+      "note": "Identical to sim/mc-output-accuracy/experiment.json's measurement, including the ratified 1.764-1.836 V bound (spec/target-spec.md \"Output\" row, ratified by issue #1 / DR-006). Note that with a small N the k_sigma=3 window `klt sim` grades on is estimated from few samples, so this campaign's aggregate PASS/FAIL is not a statement about the design -- read the distribution, which is what it was run for.",
+      "spice": ".meas tran vout_ss avg v(vout) from=2.5m to=3m",
+      "unit": "V"
+    }
+  ],
+  "models": {
+    "lib": "libs.tech/combined/sky130.lib.spice",
+    "pdk": "sky130A"
+  },
+  "monte_carlo": {
+    "k_sigma": 3,
+    "n": 40,
+    "seed": 20260817,
+    "vary": "mismatch"
+  },
+  "netlist": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-211/sim/mc-output-accuracy-engine-check/netlist-snapshots/20260927-092851-227be3e.spice",
+  "options": {
+    "keep_artifacts": false,
+    "timeout_s": 300
+  }
+}

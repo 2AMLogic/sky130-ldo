@@ -37,7 +37,9 @@ run.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
+import os
 import shutil
 import statistics
 import subprocess
@@ -75,9 +77,149 @@ def load_mc_experiment(path: Path) -> dict:
     schematic = (exp_dir / raw["schematic"]).resolve()
     if not schematic.is_file():
         raise HarnessError(f"{manifest}: schematic not found: {schematic}")
+    validate_netlist_patch(raw.get("netlist_patch"), manifest)
     raw["_dir"] = exp_dir
     raw["_schematic"] = schematic
     return raw
+
+
+def assert_klt_read_the_pinned_pdk(
+    response: dict, pdk, pin: dict, allow_mismatch: bool
+) -> None:
+    """Check `klt sim`'s OWN provenance names the PDK this harness pinned.
+
+    The pre-run `resolve_pdk()`/`matches_pin` check (issue #2) verifies the
+    install *this harness* resolved. It says nothing about the one `klt`
+    resolved, and before issue #211 nothing did: `run_klt_sim` passed no
+    `PDK_ROOT`, the request's `models.lib` is relative, and on a host with two
+    sky130A installs `klt` read the other one -- so a record could name the
+    pinned open_pdks commit while the simulation behind it read a different
+    build's FET cards. Passing `PDK_ROOT` fixes the cause; this asserts the
+    effect, because a provenance claim nothing checks is the kind that rots
+    silently. `--allow-pdk-mismatch` downgrades it to a warning, the same
+    escape hatch the pre-run check offers.
+    """
+    claimed = ((response.get("provenance") or {}).get("pdk") or {}).get("version") or ""
+    if pin["open_pdks_commit"] in claimed:
+        return
+    message = (
+        f"klt sim's own provenance.pdk.version is {claimed!r}, which does not name "
+        f"sim/pdk.json's pinned open_pdks commit {pin['open_pdks_commit']}\n"
+        f"  this harness resolved: {pdk.dir}\n"
+        "  klt resolved something else -- the record's `pdk` block would name the "
+        "pin while the simulation read a different model build. Set PDK_ROOT "
+        "explicitly, or remove the competing install"
+    )
+    if not allow_mismatch:
+        raise HarnessError(message)
+    print(f"WARNING: {message}", file=sys.stderr)
+
+
+# --------------------------------------------------------------------------
+# deliberate netlist degradation (`netlist_patch`, issue #211)
+# --------------------------------------------------------------------------
+
+
+def validate_netlist_patch(patch, manifest: Path) -> None:
+    """Shape-check an optional `netlist_patch` block before anything runs.
+
+    A patch is only ever *declared* by an experiment manifest, never passed on
+    the command line, so the defect a record was produced with is committed
+    alongside the record instead of living in someone's shell history.
+    """
+    if patch is None:
+        return
+    if not isinstance(patch, dict):
+        raise HarnessError(f"{manifest}: netlist_patch must be an object")
+    for key in ("purpose", "rationale", "substitutions"):
+        if not patch.get(key):
+            raise HarnessError(f"{manifest}: netlist_patch is missing {key!r}")
+    subs = patch["substitutions"]
+    if not isinstance(subs, list):
+        raise HarnessError(f"{manifest}: netlist_patch.substitutions must be an array")
+    for i, sub in enumerate(subs):
+        if not isinstance(sub, dict):
+            raise HarnessError(f"{manifest}: netlist_patch.substitutions[{i}] must be an object")
+        for key in ("match", "replace"):
+            if not isinstance(sub.get(key), str) or not sub[key]:
+                raise HarnessError(
+                    f"{manifest}: netlist_patch.substitutions[{i}].{key} must be a "
+                    "non-empty string"
+                )
+        if sub["match"] == sub["replace"]:
+            raise HarnessError(
+                f"{manifest}: netlist_patch.substitutions[{i}] is a no-op "
+                "(match == replace) -- a declared defect that changes nothing is "
+                "worse than no defect at all"
+            )
+        if not isinstance(sub.get("count"), int) or sub["count"] < 1:
+            raise HarnessError(
+                f"{manifest}: netlist_patch.substitutions[{i}].count must be a "
+                "positive integer -- the number of occurrences the patch asserts it "
+                "will replace, so the patch fails loudly instead of silently "
+                "becoming a no-op when the netlist it targets changes"
+            )
+
+
+def apply_netlist_patch(text: str, patch: dict | None) -> tuple[str, dict | None]:
+    """Apply an experiment's declared `netlist_patch` to the netlisted deck.
+
+    Why this exists (issue #211): a `klt yield` negative control needs a
+    *seeded, known-bad variant* of a campaign -- a design deliberately broken
+    in one stated way, whose yield the same statistics must then reject. The
+    two obvious ways to build one both make the evidence worse:
+
+    * editing `design/` breaks the single source of truth for the design under
+      test, and
+    * freezing a whole degraded copy of the design schematic under the control
+      experiment leaves a 60-device duplicate that silently rots away from the
+      real design (the exact drift `sim/mc-ic-screen-*`'s FROZEN COPY headers
+      have to warn about in prose).
+
+    So the defect is declared instead, as an exact-string substitution with an
+    asserted occurrence count, applied to the netlisted deck after xschem and
+    before `klt sim`. The count assertion is the whole point: if the design
+    moves under the patch, the substitution no longer matches its stated
+    number of occurrences and the run *refuses to start* rather than quietly
+    sampling an undegraded circuit and reporting it as a negative control.
+    The patched deck is what gets committed as this record's netlist snapshot,
+    so the evidence is the deck that actually ran.
+
+    Returns `(patched_text, applied_report)`; `applied_report` is `None` when
+    the experiment declares no patch.
+    """
+    if patch is None:
+        return text, None
+    before_sha = hashlib.sha256(text.encode()).hexdigest()
+    applied = []
+    for i, sub in enumerate(patch["substitutions"]):
+        found = text.count(sub["match"])
+        if found != sub["count"]:
+            raise HarnessError(
+                f"netlist_patch.substitutions[{i}] asserts {sub['count']} "
+                f"occurrence(s) of its `match` string but the netlisted deck has "
+                f"{found}\n"
+                f"  match: {sub['match']!r}\n"
+                "  the design this patch degrades has changed -- re-derive the "
+                "patch against the current netlist (and re-check that the defect "
+                "still means what the manifest's rationale says it means) rather "
+                "than loosening the count"
+            )
+        text = text.replace(sub["match"], sub["replace"])
+        applied.append({"match": sub["match"], "replace": sub["replace"], "count": found})
+    after_sha = hashlib.sha256(text.encode()).hexdigest()
+    if after_sha == before_sha:
+        raise HarnessError(
+            "netlist_patch applied but the deck is byte-identical afterwards -- "
+            "refusing to record an undegraded deck as a patched one"
+        )
+    return text, {
+        "purpose": patch["purpose"],
+        "rationale": patch["rationale"],
+        "substitutions": applied,
+        "netlist_sha256_before": f"sha256:{before_sha}",
+        "netlist_sha256_after": f"sha256:{after_sha}",
+    }
 
 
 def klt_binary() -> str:
@@ -142,7 +284,24 @@ def run_klt_sim(
     outdir: Path,
     backend: str,
     max_workers: int,
+    pdk_root: Path | None = None,
 ) -> dict:
+    """Invoke `klt sim`, pinning the PDK root this harness resolved.
+
+    `PDK_ROOT` is passed explicitly (issue #211) because the request's
+    `models.lib` is a *relative* path (`libs.tech/combined/sky130.lib.spice`),
+    so `klt` resolves the root itself if nothing says otherwise -- and its own
+    search order is not this harness's. Measured on a host with two installs:
+    `resolve_pdk()` verified `~/.volare` against sim/pdk.json's pin and the
+    record said `matches_pin: true`, while `klt sim` silently read
+    `~/.ciel` (a different open_pdks build whose
+    `libs.tech/combined/continuous/models_fet.spice` -- the FET cards the
+    mismatch draws come from -- is NOT byte-identical to the pinned root's).
+    A record that names the pinned commit while the simulation read a
+    different one is a false provenance claim, and for a negative control it
+    is worse than that: the control's samples and the nominal's would differ
+    by the model build as well as by the declared defect.
+    """
     cmd = [
         klt_binary(),
         "sim",
@@ -156,7 +315,11 @@ def run_klt_sim(
     ]
     if backend == "local-parallel":
         cmd += ["--max-workers", str(max_workers)]
-    proc = subprocess.run(cmd, capture_output=True, text=True, timeout=None)
+    env = None
+    if pdk_root is not None:
+        env = dict(os.environ)
+        env["PDK_ROOT"] = str(pdk_root)
+    proc = subprocess.run(cmd, capture_output=True, text=True, timeout=None, env=env)
     if not proc.stdout.strip():
         raise HarnessError(
             "klt sim produced no stdout\n"
@@ -348,6 +511,25 @@ def render_record(record: dict) -> str:
         "variation at one representative process/temperature/supply point per run, "
         "orthogonal to the PVT axis corner-run.py sweeps; see `sim/README.md`."
     )
+    patch = r.get("netlist_patch")
+    if patch:
+        lines.append(
+            f"- **Deliberate netlist degradation** (`netlist_patch`, purpose "
+            f"`{patch['purpose']}`): **this record's deck is intentionally broken.** "
+            "It is not a claim about the design as designed; it exists so a "
+            "statistic can be shown to reject a known-bad variant."
+        )
+        lines.append(f"  - Rationale: {patch['rationale']}")
+        for sub in patch["substitutions"]:
+            lines.append(
+                f"  - Substitution ({sub['count']} occurrence(s), asserted): "
+                f"`{sub['match']}` → `{sub['replace']}`"
+            )
+        lines.append(
+            f"  - Netlisted deck sha256 before the patch: "
+            f"`{patch['netlist_sha256_before']}`; after (what ran, and what the "
+            f"netlist snapshot below contains): `{patch['netlist_sha256_after']}`"
+        )
     mc = r["monte_carlo_request"]
     lines.append(
         f"- **Statistical convention**: N={mc['n']} Monte Carlo samples, "
@@ -549,6 +731,9 @@ def main(argv: list[str]) -> int:
     netlist = corner_run.netlist_with_xschem(exp["_schematic"], run_dir, pdk)
     body = build_klt_netlist(exp, netlist)
     prepped_netlist_text = "\n".join(body) + "\n"
+    prepped_netlist_text, patch_report = apply_netlist_patch(
+        prepped_netlist_text, exp.get("netlist_patch")
+    )
 
     print(f"experiment      : {exp['slug']}")
     print(f"record id       : {record_id}")
@@ -556,6 +741,15 @@ def main(argv: list[str]) -> int:
     print(f"testbench       : {exp['_schematic'].relative_to(REPO_ROOT)}")
     print(f"MC samples      : {n} (vary={vary}, seed={args.seed}, k_sigma={k_sigma})")
     print(f"backend         : {args.backend}")
+    if patch_report:
+        print(
+            f"netlist patch   : {patch_report['purpose']} — "
+            f"{len(patch_report['substitutions'])} substitution(s) applied "
+            "(DELIBERATELY DEGRADED DECK)"
+        )
+        for sub in patch_report["substitutions"]:
+            print(f"  - {sub['match']}")
+            print(f"  + {sub['replace']}")
 
     if args.dry_run:
         scratch_netlist = run_dir / "mc_body.spice"
@@ -578,7 +772,11 @@ def main(argv: list[str]) -> int:
     request_file.write_text(json.dumps(request, indent=2, sort_keys=True) + "\n")
 
     klt_outdir = run_dir / "klt-out"
-    response = run_klt_sim(request_file, klt_outdir, args.backend, args.max_workers)
+    response = run_klt_sim(
+        request_file, klt_outdir, args.backend, args.max_workers, pdk_root=pdk.root
+    )
+
+    assert_klt_read_the_pinned_pdk(response, pdk, pin, args.allow_pdk_mismatch)
 
     responses_dir.mkdir(parents=True, exist_ok=True)
     response_file.write_text(json.dumps(response, indent=2, sort_keys=True) + "\n")
@@ -612,6 +810,7 @@ def main(argv: list[str]) -> int:
         "backend": args.backend,
         "git": git_info,
         "mc_corner": exp["mc_corner"],
+        "netlist_patch": patch_report,
         "monte_carlo_request": request["monte_carlo"],
         "klt_request": request,
         "klt_response": response,

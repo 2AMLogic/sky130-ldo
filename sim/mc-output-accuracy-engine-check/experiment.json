@@ -1,0 +1,36 @@
+{
+  "slug": "mc-output-accuracy-engine-check",
+  "title": "Executor cross-check for the mc-output-accuracy negative control: the SAME bench, undegraded, on the host that runs the control",
+  "claim": "MEASURES THE EXECUTOR, NOT THE DESIGN. This campaign exists only to bound one confound in issue #211's negative control, and it makes no independent claim about the LDO. The problem it measures: `sim/mc-output-accuracy`'s campaign of record (`20260925-131502-808cece`, N=200) was executed on the EC2 batch fleet, where `klt sim` reports `environment.engine_version: 42`, while the negative-control campaign `sim/mc-output-accuracy-negctl` had to be executed on this host's own ngspice (`aws sts get-caller-identity --profile batch-runner-submit` returns NoCredentials, so `klt sim --backend batch` errors before dispatch), at whatever `engine_version` this host reports -- a different one, recorded in this campaign's own record rather than predicted here. WHAT THE EXECUTOR DIFFERENCE IS, AND WHAT IT IS NOT: the ngspice build and the host platform differ (batch: Linux x86_64; here: Darwin arm64). The PDK does NOT -- and that took a harness fix to be true rather than merely hoped for. `klt sim`'s request names `models.lib` by a relative path, so before issue #211 `klt` resolved the PDK root itself and, on this host, picked a DIFFERENT sky130A install from the one sim/pdk.json pins and `mc-run.py` verified (a build whose `libs.tech/combined/continuous/models_fet.spice` -- the FET cards the mismatch draws come from -- is not byte-identical to the pinned root's), while the record still said `matches_pin: true`. `mc-run.py` now passes `PDK_ROOT` explicitly and asserts, after the run, that `klt`'s own `provenance.pdk.version` names the pinned open_pdks commit, so this campaign and the campaign of record read the same model build by construction and the remaining difference really is the executor. A negative control compares the control's sample set against the nominal's, so an executor difference between the two sits underneath the comparison as a confound. Two things about that confound are open questions this campaign's per-sample values answer, rather than assertions it starts from: whether the seed contract removes it (i.e. whether the same seed on a byte-identical deck reproduces the same per-instance AGAUSS draws across engine versions, making the two sample sets a paired series rather than independent draws), and how large the executor's contribution to the vout_ss DISTRIBUTION is next to the mean shift the seeded defect deliberately introduces. This campaign therefore runs the nominal bench UNCHANGED -- same testbench schematic (referenced, not copied), no `netlist_patch`, so its netlisted deck is byte-identical to the campaign of record's committed snapshot (sha256 e760a7c355bf0959db8333130b8bb5253a7bfad0e63d07b68ccf6dbfa2ca9b47) -- at the same mismatch point, with the same seed, on the same host and ngspice build that produce the negative control's samples. Comparing its vout_ss distribution against the campaign of record's is what turns 'the executor difference is small relative to the seeded defect' from an assertion into a measurement (this repo's CLAUDE.md: no claim without a testbench). What it is not: it is not a supersede of, or a competitor to, the campaign of record -- it carries a deliberately smaller N chosen for the cross-check, and `sim/mc-output-accuracy` remains this block's statistical campaign of record.",
+  "provenance": "schematic",
+  "provenance_source": "sim/mc-output-accuracy/testbench/tb_mc_output_accuracy.sch",
+  "schematic": "../mc-output-accuracy/testbench/tb_mc_output_accuracy.sch",
+  "mc_corner": {
+    "process": "tt_mm",
+    "temperature_c": 27,
+    "vsup": 3.3,
+    "note": "Identical to sim/mc-output-accuracy/experiment.json's mc_corner. Nothing here may differ from the nominal campaign -- the executor is the only variable this cross-check is allowed to change."
+  },
+  "mc_analysis": {
+    "kind": "tran",
+    "args": "10u 3m uic",
+    "note": "Identical to sim/mc-output-accuracy/experiment.json's mc_analysis (the #164 initial-condition contract: every node at 0, EN low, powering up through the block's own soft-start ramp at the bench's 100 us EN edge)."
+  },
+  "mc_measurements": [
+    {
+      "name": "vout_ss",
+      "spice": ".meas tran vout_ss avg v(vout) from=2.5m to=3m",
+      "unit": "V",
+      "limits": {
+        "min": 1.764,
+        "max": 1.836
+      },
+      "note": "Identical to sim/mc-output-accuracy/experiment.json's measurement, including the ratified 1.764-1.836 V bound (spec/target-spec.md \"Output\" row, ratified by issue #1 / DR-006). Note that with a small N the k_sigma=3 window `klt sim` grades on is estimated from few samples, so this campaign's aggregate PASS/FAIL is not a statement about the design -- read the distribution, which is what it was run for."
+    }
+  ],
+  "monte_carlo_defaults": {
+    "n": 40,
+    "vary": "mismatch",
+    "k_sigma": 3
+  }
+}

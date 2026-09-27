@@ -1,0 +1,43 @@
+{
+  "analysis": {
+    "args": "10u 3m uic",
+    "kind": "tran",
+    "note": "Identical to sim/mc-output-accuracy/experiment.json's mc_analysis: the #164 initial-condition contract (every node at 0, EN low, powering up through the block's own soft-start ramp when the bench's 100us EN edge arrives) rather than an unconstrained ngspice `.op`. Held identical on purpose -- a control that also changed the bench's initial conditions would confound the defect with the bench."
+  },
+  "corners": {
+    "process": [
+      "tt_mm"
+    ],
+    "temperature_c": [
+      27
+    ]
+  },
+  "engine": "ngspice",
+  "measurements": [
+    {
+      "limits": {
+        "max": 1.836,
+        "min": 1.764
+      },
+      "name": "vout_ss",
+      "note": "Same measurement and same ratified bound as the nominal campaign (spec/target-spec.md \"Output\" row, 1.8V +-2%, ratified by issue #1 / DR-006). The window is NOT relaxed for the control -- the whole point is that the same window rejects this deck. Expect `klt sim` to grade this experiment FAIL; that is the intended outcome, not a defect in the harness.",
+      "spice": ".meas tran vout_ss avg v(vout) from=2.5m to=3m",
+      "unit": "V"
+    }
+  ],
+  "models": {
+    "lib": "libs.tech/combined/sky130.lib.spice",
+    "pdk": "sky130A"
+  },
+  "monte_carlo": {
+    "k_sigma": 3,
+    "n": 40,
+    "seed": 20260817,
+    "vary": "mismatch"
+  },
+  "netlist": "/Users/rwalters/GitHub/sky130-ldo/.loom/worktrees/issue-211/sim/mc-output-accuracy-negctl/netlist-snapshots/20260927-092313-227be3e.spice",
+  "options": {
+    "keep_artifacts": false,
+    "timeout_s": 300
+  }
+}
