@@ -171,7 +171,15 @@ C {devices/vsource.sym} -600 -300 0 0 {name=VVIN value='vsup' savecurrent=true}
 C {devices/lab_pin.sym} -600 -330 0 0 {name=p1 lab=VIN}
 C {devices/lab_pin.sym} -600 -270 0 0 {name=p2 lab=0}
 
-* ---- EN (DC only, tied to the corner runner's supply) ----
+* ---- EN (DC only, tied to the corner runner's supply. #201 asked whether an
+*      AC-grounded EN mis-measures the VIN-source-referenced shutdown clamps,
+*      whose gate drive is (VIN - EN); on THIS bench the question does not
+*      arise, because VVIN above carries no AC either. VIN and EN are both
+*      small-signal grounds, (VIN - EN) has no AC component at all, and the
+*      clamps see exactly the constant gate drive the full-rail interface
+*      specifies. Confirmed rather than assumed -- sim/README.md -> "#201". The
+*      bench where it DID need measuring is sim/psrr-dc, whose supply is the
+*      injection point; the answer there was <=0.0017dB, i.e. immaterial.) ----
 C {devices/vsource.sym} -400 -300 0 0 {name=VEN value='vsup' savecurrent=true}
 C {devices/lab_pin.sym} -400 -330 0 0 {name=p3 lab=EN}
 C {devices/lab_pin.sym} -400 -270 0 0 {name=p4 lab=0}

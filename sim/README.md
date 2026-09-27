@@ -1216,6 +1216,10 @@ small-signal *ground*. At DC the geometry is clean (`EN` = VIN, which is all
 #196 asked about), but per the documented full-rail interface a real supply
 ripple would appear on `EN` too, which is a different question about a
 different analysis type — **filed as #201** rather than decided here.
+**Answered, and the answer is "immaterial": see "#201" below.** Both
+conventions were run over the full 45-corner matrix; the largest movement in
+any graded PSRR measurement at any corner is **0.0017 dB**, so the bench keeps
+its AC-grounded `EN` and now says in its header why.
 
 #### The 45-corner matrix, re-run under this convention (#196 second increment / #200)
 
@@ -1295,6 +1299,172 @@ re-evaluations instead of one fixed `EN` rail), and the remaining ~10× was the
 sweep host. `corner-run.py` still has no batch backend and this bench's
 four-solve `alter` chain still is not expressible as a `klt sim` request
 (2AMLogic/klayout-tools#2482), so the matrix still runs one `ngspice` at a time.
+
+### #201: `psrr-dc`'s `EN` is an AC ground — checked over the full matrix, and immaterial
+
+This is the nuance the #196 bench sweep above found and deferred, now settled by
+measurement. **Outcome: the bench does not change.** `sim/psrr-dc` keeps
+`VEN value='vsup'` (no `AC` component), and the testbench header now carries an
+"EN stimulus convention (issue #201)" section saying so deliberately, with these
+numbers behind it.
+
+#### The question
+
+`psrr-dc` drives `VVIN` as `DC 'vsup' AC 1` and `VEN` as a plain DC `'vsup'`, so
+inside the `ac` analysis `EN` is a **small-signal ground** while VIN carries the
+1 V perturbation. `design/README.md` → "Enable/shutdown" specifies `EN` as
+"active-high, full-rail (0 V / VIN)", and **#187** established that the five
+shutdown clamps `M_ENP`/`M_ENP2`/`M_ENP3`/`M_ENP4`/`M_ENP5` are PMOS **with
+their sources at VIN**, so their gate drive is `VIN − EN`. An `EN` driven off
+the VIN rail itself would hold `VIN − EN` constant under supply ripple; this
+bench ripples it at the full 1 V amplitude. The two EN-gated NMOS switches
+`M_ENN`/`M_ENN2` (sources at 0) see the mirror image — quiet here, rippling
+under the other convention. Whether any of that reached the reported PSRR was
+unmeasured.
+
+Note the scope difference from #196/#187, because the family resemblance is
+misleading: those were **DC / large-signal** faults — `EN` sitting 0.66 V *below*
+the instantaneous VIN at a simulated operating point, turning the clamps on and
+breaking regulation. `psrr-dc`'s DC geometry was never in question (`EN` = VIN =
+`'vsup'` at every corner, clamps at `Vgs` = 0). Only the small-signal partition
+of the perturbation between the two sources was.
+
+#### How it was measured
+
+The **full 45-corner matrix, twice on one host**, one run per convention, with
+`--no-write` so neither arm mints an evidence record — neither is a new claim
+about the DUT, and an off-convention variant record would pollute this bench's
+append-only record set with a deck that is not the shipped one. (Same disposition
+#179 used for its seeded/unseeded comparison: per-corner numbers plus a recipe
+here, no alternate record.)
+
+- **Arm A** — the shipped stimulus, exactly as committed.
+- **Arm B** — the one-line change `VEN value="DC 'vsup' AC 1"`, so `EN` carries
+  the identical perturbation and `VIN − EN` is quiet at small signal.
+
+Serial on one x86_64 Linux sweep host (shared, load average 7–9 during arm A):
+**≈1420 s** for arm A and **≈890 s** for arm B. As in #196, `corner-run.py` has
+no batch backend and this deck's `alter`-chained two-point `ac` shape is not
+expressible as a `klt sim` request (2AMLogic/klayout-tools#2482), so both arms
+ran one `ngspice` at a time.
+
+#### Arm A first: the committed record reproduces, across a host change
+
+Before comparing anything, arm A was checked against the record the issue names.
+**Record `20260926-033606-4a9ec09` reproduces at all 270 measurement cells** (45
+corners × 6 measurements) to the six significant digits `corner-run.py` prints —
+and it does so across a platform change, that record having been taken on arm64
+Darwin and this run on x86_64 Linux. That is the control that makes the arm-A /
+arm-B delta below attributable to the stimulus and to nothing else.
+
+#### The comparison, per corner
+
+The corners #201 named, all four graded measurements, arm A → arm B in dB:
+
+| Corner | `psrr_1khz_1ma_db` | `psrr_100khz_1ma_db` | `psrr_1khz_50ma_db` | `psrr_100khz_50ma_db` |
+|---|---|---|---|---|
+| `tt_27c_3.30v` | 23.2333 → 23.2334 (+0.0001) | 33.5185 → 33.5191 (+0.0006) | 23.3297 → 23.3298 (+0.0001) | 11.3201 → 11.3207 (+0.0006) |
+| `ff_125c_2.97v` | 20.5327 → 20.5321 (−0.0006) | 35.5209 → 35.5209 (0.0000) | 20.6837 → 20.6828 (−0.0009) | 11.9587 → 11.9585 (−0.0002) |
+| `ff_125c_3.30v` | 21.5483 → 21.5477 (−0.0006) | 35.5061 → 35.5061 (0.0000) | 21.7400 → 21.7391 (−0.0009) | 11.7621 → 11.7618 (−0.0003) |
+| `ff_125c_3.63v` | 22.4002 → 22.3996 (−0.0006) | 35.4940 → 35.4940 (0.0000) | 22.6159 → 22.6150 (−0.0009) | 11.7135 → 11.7133 (−0.0002) |
+| `fs_125c_2.97v` | 20.2970 → 20.2959 (−0.0011) | 35.5237 → 35.5231 (−0.0006) | 20.4618 → 20.4601 (−0.0017) | 12.1666 → 12.1656 (−0.0010) |
+| `fs_125c_3.30v` | 21.3564 → 21.3553 (−0.0011) | 35.5170 → 35.5164 (−0.0006) | 21.5612 → 21.5596 (−0.0016) | 11.9448 → 11.9437 (−0.0011) |
+| `fs_125c_3.63v` | 22.2429 → 22.2417 (−0.0012) | 35.5135 → 35.5130 (−0.0005) | 22.4704 → 22.4687 (−0.0017) | 11.8705 → 11.8694 (−0.0011) |
+
+And the whole matrix, not just those seven:
+
+| Quantity | Result over all 45 corners |
+|---|---|
+| Largest \|Δ\| in any graded PSRR cell (180 cells) | **0.0017 dB** — `psrr_1khz_50ma_db` at `fs_125c_3.63v`, 22.4704 → 22.4687 dB, **0.0076 % of the reading** |
+| Per-measurement worst \|Δ\| | `psrr_1khz_1ma_db` 0.0012 · `psrr_100khz_1ma_db` 0.0006 · `psrr_1khz_50ma_db` 0.0017 · `psrr_100khz_50ma_db` 0.0011 |
+| `vout_seed_1ma_v` / `vout_seed_50ma_v` | **identical at all 45 corners** — the DC operating point each `ac` linearizes around does not move at all, which is the direct confirmation that this is a small-signal-only question |
+| Verdicts | **none change.** 0/45 corners PASS under both arms; `psrr_100khz_1ma_db` passes 45/45 under both; the other three fail 45/45 under both |
+
+For scale: the row's standing FAIL is a ~27 dB shortfall at 1 kHz and ~8 dB at
+100 kHz / 50 mA. **0.0017 dB is four orders of magnitude below the thing in
+question**, and no plausible tightening of the bound would make it visible.
+
+#### The residue behaves the way the mechanism predicts
+
+Worth one paragraph, because "the numbers barely moved" is only convincing if
+the little that *did* move moved where it should. At `EN` = VIN the five clamps
+sit at `Vgs` = 0, so the only route from `VIN − EN` into the loop is their
+subthreshold `gm` plus overlap capacitance — a path that strengthens with
+temperature and with fast PMOS. Accordingly **all 30 negative-going cells of the
+180 lie in the 125 °C plane**, and within it the ordering is `fs_125c` (all four
+measurements move) → `ff_125c` (three) → `tt_125c` (two) → `ss_125c` (one) →
+`sf_125c` (none). Those are the same corners where #187 measured these clamps
+carrying 1.377 µA / 1.639 µA once they were genuinely biased on. Everywhere else
+the difference is a uniform +0.0001 / +0.0006 dB, i.e. the print floor.
+
+#### The convention, and where it is written down
+
+**Chosen: keep the AC-grounded `EN`.** Written into
+`sim/psrr-dc/testbench/tb_psrr_dc.sch`'s header ("EN stimulus convention (issue
+#201)") and into `sim/psrr-dc/experiment.json`'s `claim`, so the record minted by
+any future run carries it. The reasons, in the order that decided it:
+
+1. **It is measured to be immaterial**, not argued to be — the table above.
+2. **It is the one-stimulus supply-rejection measurement.** Exactly one
+   small-signal source is live (the supply); `EN` and `VREF` are held quiet, so
+   `-vdb(vout)` is the VIN → VOUT path and nothing else. Arm B measures the
+   supply path *in parallel with* an enable-path term — a different quantity
+   from the one the ratified row names, even though here the two agree to
+   0.002 dB.
+3. **The DC contract is already satisfied**, which is what #196 was actually
+   about, and the identical `vout_seed_*` readings prove it directly.
+
+Because the deck does not change, **no superseding record is minted**: the PSRR
+row of `measurements/characterization.md` still cites `20260926-033606-4a9ec09`
+and stays `fresh` (the header edits are xschem metadata and do not netlist —
+`build_characterization_report.py --check` passes unchanged), and no signoff pin
+moves. This is a documentation-of-a-measurement change, and deliberately nothing
+more.
+
+**Re-check this if the DUT changes.** It is a measurement about the present
+`M_PASS` / `M_ENP*` sizing, not a theorem. A material resize of the pass device
+or the clamps should re-run the recipe below before the conclusion is recited.
+
+#### `sim/loop-gain` — confirmed unaffected, not assumed
+
+`psrr-dc` and `loop-gain` are the only two `ac` benches in `sim/` (checked
+mechanically: every other `experiment.json` has zero `ac` commands in its
+`analyses`, and `pex-post-layout` has no `ac` deck at all). `loop-gain`'s
+netlisted sources are:
+
+```
+VVIN VIN 0 'vsup'
+VEN  EN  0 'vsup'
+VVREF VREF 0 DC 1.2 AC 1
+```
+
+The supply is **not** perturbed — the injection is at `VREF`. So VIN and `EN`
+are *both* AC grounds, `VIN − EN` has zero AC component, and the clamps see
+exactly the constant gate drive the full-rail interface specifies. #201's
+question cannot arise there, under either convention.
+
+#### Reproducing this
+
+```bash
+# arm A -- the shipped stimulus, as committed
+python3 sim/bin/corner-run.py sim/psrr-dc --no-write \
+  --subset-reason "issue #201 EN-stimulus A/B, arm A (shipped)"
+
+# arm B -- EN carries the same perturbation as VIN
+#   in sim/psrr-dc/testbench/tb_psrr_dc.sch, change the VEN line from
+#     {name=VEN value='vsup' savecurrent=true}
+#   to
+#     {name=VEN value="DC 'vsup' AC 1" savecurrent=true}
+python3 sim/bin/corner-run.py sim/psrr-dc --no-write \
+  --subset-reason "issue #201 EN-stimulus A/B, arm B (EN tracks VIN)"
+
+# then restore the shipped stimulus
+git checkout -- sim/psrr-dc/testbench/tb_psrr_dc.sch
+```
+
+`--no-write` is the important flag: both arms run every corner for real but
+neither writes into `sim/psrr-dc/`, so the A/B leaves the append-only record set
+untouched. Compare the `[ n/45]` summary lines of the two runs.
 
 ### `load-transient` after #180
 
