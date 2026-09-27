@@ -540,8 +540,12 @@ this contract; their 45-corner records up to and including
 were graded before it existed. **Issue #172 converted both** — see
 "Line regulation and load regulation re-run under the #171 contract
 (issue #172)" below for the conversion, the settling measurement behind it,
-and the verdict changes. `sim/iq` (#173) is still unconverted, and the
-remaining benches' audit is #174 (verdict table below). `sim/ic-screen-125c-*`
+and the verdict changes. **Issue #173 converted `sim/iq`** and folded in
+`#133`'s regulation gate — see "sim/iq re-run under the #171 contract, with
+#133's regulation gate (issue #173)" below for the deck conversion; its
+45-corner re-run is deferred to `#213` (host-contention wall, same shape as
+`#196`/`#200` below). The remaining benches' audit is #174 (verdict table
+below). `sim/ic-screen-125c-*`
 (`uic` or `.ic`-seeded, per above) and `sim/startup` (disabled-state seed,
 per above) already meet this contract: re-running them under the new check
 should report no diagnostic and leave their verdict unchanged.
@@ -2798,6 +2802,84 @@ direction `#118` predicted:
 measurement expression, no `design/ldo_3v3in_1v8out.sch`, and no superseded
 record file. `sim/iq`'s conversion is `#173`; the remaining benches' audit is
 `#174` (verdict table in the contract section above).
+
+### sim/iq re-run under the #171 contract, with #133's regulation gate (issue #173)
+
+`sim/iq`'s two-`.op` chain (0 mA then 50 mA, via the same `alter iload`
+convention as `line-regulation`/`load-regulation`) was the same unconstrained-
+`.op` defect `#164` characterized and `#172` converted for its two siblings:
+no transient, no `uic`, no `.ic`. All 45 corners of its latest record,
+`20260910-034648-6c0436d`, carry a solver diagnostic (`singular matrix` or
+`out of range for ^`), which `#171`'s gate now forces to FAIL outright. `#173`
+converts the deck and, in the same PR, folds in `#133`'s regulation gate.
+
+**Which contract shape, and why (same as `#172`, reused directly rather than
+re-derived).** `sim/iq` now uses the contract's **`uic` + EN edge** shape:
+`tran 10u 200m uic` per point, the testbench's `VEN` changed from a constant
+`'vsup'` to `dc 0 pwl(0 0 100u 0 101u 'vsup' 10 'vsup')`, both `v(vout)` and
+`i(vvin)` averaged over the settled 199-200 ms tail via `meas tran ... avg
+... from=199m to=200m`. `sim/iq` shares `load-regulation`'s exact output
+network (1 uF `C_OUT` / 10 mOhm `R_ESR`) and `iload` `alter` shape, so this
+bench reuses `#172`'s own measured 199-200 ms settling window rather than
+re-deriving it — the settling time is a property of the shared network, and a
+hand-run cross-check (below) confirms the reuse. The `opN.`/`let` plot
+prefixes become `tranN.`/`meas tran`; the `alter` chain, the two named load
+points and the Iq sign convention (`-i(vvin)`, minus the deck's own known
+50 mA constant at full load) are otherwise unchanged.
+
+**`#133`'s regulation gate, folded into the same conversion.** Per `#133`'s
+own curated scope, two changes land in `sim/iq/experiment.json` alongside the
+seeding fix, both cited from `#133`: `iq_no_load_ua`/`iq_full_load_ua` gain a
+`min: 0` floor (a genuinely regulating corner cannot draw negative VIN supply
+current, so a negative reading is itself proof of a non-physical operating
+point), and `vout_no_load_v`/`vout_full_load_v` — previously reported
+unbounded — are now bounded to the ratified Output row's 1.764-1.836 V window,
+mirroring `sim/enable-shutdown/experiment.json`'s existing `vout_pre_disable_v`
+pattern rather than inventing a new mechanism. `#133`'s own scope item 4 (check
+whether `sim/enable-shutdown`'s two shutdown-Iq measurements have the same
+blind spot) was checked and found clear: `iq_shutdown_after_edge_ua` is
+already gated in effect by `vout_pre_disable_v`'s existing regulating-window
+bound on the leg it shares a transient with, and `iq_shutdown_static_ua`
+(the static, EN=0 `op1` leg) has no negative or otherwise non-physical value
+in its own latest record (`20260825-111526-933dfdd`, all 45 corners positive
+and well inside the 3 uA bound) — the concrete failure mode `#133` reports
+(a non-regulating corner reading a plausible-looking negative Iq) has no
+analogue in a leg where the block is intentionally disabled rather than
+attempting to regulate, so `sim/enable-shutdown/experiment.json` is left
+unchanged; see `#133`'s closing comment for the full reasoning.
+
+**Correctness confirmed by hand, formal 45-corner re-run deferred to `#213`.**
+This session's sweep host carried a load average that swung between ~5 and
+~20 on its 8 vCPUs while this issue was being built (many concurrent
+`loom:sweep` processes sharing it), and per-corner wall time tracked that
+swing directly — the identical `tt_27c_3.30v` corner completed a full
+two-transient run in 25.1 s in isolation under light load, and had not
+finished after several minutes moments later via `corner-run.py` once several
+sibling sweeps were active. This is the same class of wall `#196` hit for the
+sibling `line-regulation` bench (measured there: 578.9 s vs 41.7 s for one
+corner on this same host class) — not a defect in this bench's deck: a
+hand-extracted copy of the exact deck `corner-run.py --dry-run` generates for
+`tt_27c_3.30v`, run directly via `ngspice -b` outside the harness under light
+load, converged cleanly with **no solver diagnostic** at three transient
+durations (5 ms, 50 ms, 200 ms), and the 50 ms and 200 ms results agree to
+5-6 significant figures (`iq_no_load_ua` 13.733 vs 13.73304 uA;
+`vout_no_load_v` 1.802386 vs 1.802385 V; `iq_full_load_ua`/`vout_full_load_v`
+identical at both windows) — confirming both that the deck and its
+measurement wiring (`tranN.` prefixes, the `min`/window gates) are correct,
+and that `#172`'s 199-200 ms window is comfortably settled for this bench
+too, not just reused by assumption. `corner-run.py` has no batch backend and
+this bench's two-transient-per-corner `alter` chain is not expressible as a
+`klt sim` request (2AMLogic/klayout-tools#2482, the same tracked gap `#196`/
+`#200` cite) — so, as with those two issues, the full matrix is not re-run
+here. **`20260910-034648-6c0436d` remains the record `measurements/
+characterization.md`'s Iq row cites; its freshness reads `STALE`** (a live
+`xschem` re-netlist of the corrected testbench no longer matches that
+record's committed snapshot), same as `sim/current-limit` has carried since
+`#177` and `line-regulation` carried between `#196` and `#200`. **`#213`**
+tracks minting the superseding 45-corner record (and, per `#133`'s own test
+plan, confirming whether its two named corners — `ss_-40c_3.30v` no-load,
+`ff_-40c_2.97v` full-load — are still non-regulating once IC-seeded, since
+seeding can change which corners regulate) on a host that can hold the run.
 
 ## Monte Carlo / mismatch experiments
 
