@@ -301,9 +301,12 @@ sim/
   bin/
     corner-run.py                    # PVT corner runner (+ --check-env / --print-env)
     mc-run.py                        # Monte Carlo (mismatch) runner, via `klt sim`
+    yield-run.py                     # yield/capability analysis of a committed MC response, via `klt yield`
     pdk-env.sh                       # `source` for interactive use
   tests/
     test_corner_run.py               # PDK-free unit tests for corner-run.py's helpers
+    test_mc_run.py                   # PDK-free unit tests for mc-run.py's helpers
+    test_yield_run.py                # PDK-free unit tests for yield-run.py's helpers
   build/                             # gitignored scratch (decks, xschem netlists)
   <experiment-slug>/                 # e.g. pdk-smoke (PVT), mc-output-accuracy (Monte Carlo)
     experiment.json                  # manifest: claim, corners, measurements, limits
