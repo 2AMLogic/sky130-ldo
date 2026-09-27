@@ -14,11 +14,11 @@ way a hand-maintained checkbox list does. Issue #114 — this repo's gap-to-T1
 tracker — cites it as the item-level verdict and no longer keeps a parallel
 checklist of its own.
 
-**Today: `tier: null`, T1 3/11 items met** (items 3, 4 and 8). That is the
+**Today: `tier: null`, T1 4/11 items met** (items 3, 4, 6 and 8). That is the
 honest state of the block, not a placeholder. Read the per-item notes below
-before reading anything into either the three `met` rows or the eight `unmet`
+before reading anything into either the four `met` rows or the seven `unmet`
 ones — several of the `unmet` rows cover artifacts that *do* exist here, and
-none of the three `met` rows means what it might look like it means.
+none of the four `met` rows means what it might look like it means.
 
 ## What is here
 
@@ -94,7 +94,7 @@ of the claimant rather than of the tool.
 | 3 | **`met`** | `klt drc` on that GDS, `status: clean`, `violation_count: 0`, pinned to the GDS's own sha256. **Read the coverage disclosure below before treating this as "DRC clean".** |
 | 4 | **`met`** | `klt lvs`, `status: match`, layout vs. the schematic-derived reference netlist. **Three disclosed warnings below.** Re-pointed by issue #127 at a klt 0.6.0 re-run whose `provenance.input.content_hash` is non-null, so the manifest now pins this citation directly instead of relying only on `signoff/artifact-pins.json`. |
 | 5 | `unmet` / `no_evidence` | The largest real gap, and not a presentation choice. `spec/target-spec.md` *is* ratified (issue #1, DR-006) and a full 45-point PVT campaign exists under `sim/*/`— but it reports **FAIL on 6 of the 12 graded rows** (9 before issue #164 fixed the `mc-output-accuracy` bench's initial-condition contract, which moved `Output` to PASS, 8 before issue #189 corrected one value's supply classification in the `thermal` bench's `.nodeset` seed, which moved `Thermal` to PASS, and 7 before issue #196 / PR #205 fixed the `line-regulation` bench's EN convention, which moved `Line regulation` to PASS on record `20260926-200304-35b7392` — none of the three touched the DUT (`design/ldo_3v3in_1v8out.sch` is unchanged) or any ratified bound; see `design/README.md` → "#164", `sim/README.md` → "#189", and `sim/README.md` → "#196"), and the records are this repo's own Markdown/JSON format rather than `klt sim` envelopes, so there is nothing here that could render `met` even if the rows passed. Tracked as issues #114–#121. |
-| 6 | `unmet` / `wrong_kind` | Cites the real Monte Carlo campaign (`sim/mc-output-accuracy/klt-responses/20260925-131502-808cece.json`, a `klt sim` envelope, n=200): `status: pass`, 200/200 samples inside the ±2 % Output window. `wrong_kind`, not `check_failed`: the cited check does not fail on its own terms — what is missing is a `klt yield` report, the kind the checklist names. Re-pointed by issue #127 from the twice-superseded klt 0.2.0 record (`20260825-083111-4cb27f8`, 177/200), which is why this row's *reason* moved while its `unmet` verdict did not. **Read "Item 6 cites the current campaign, and its reason changed with it" below before reading anything into either token.** |
+| 6 | **`met`** | Cites a real `klt yield` report (`sim/mc-output-accuracy/klt-responses/20260927-030409-1a14401.yield.json`) over the n=200 Monte Carlo campaign: empirical yield **at least 98.1725 % at 95 % confidence** (100 % of 200 samples inside the ratified ±2 % Output window, so the interval is bounded only from below), Cpk 1.34664, sigma-to-spec 4.04σ, sample size `sufficient`. Issue #203 minted it; it is the evidence *kind* the checklist names, which this repo had none of until then. **The payload status is `reported`, not `pass`, and the campaign declares no negative control — read "Item 6 is `met` — what it says, and the two things it does not" below before reading anything into this row.** |
 | 7 | `unmet` / `check_failed` | Cites the real `klt pex` run (`sim/pex-post-layout/klt-responses/20260825-125102-3b4e121.pex.json`), pinned to the same layout GDS items 3 and 4 were run on: `status: error`, **135 of 135 delta rows errored, 0 passed**. Item 7 accepts no other evidence kind, so nothing weaker could stand in. A newer `klt pex` record now exists that does *not* error — **and is deliberately still not cited**; see "Item 7 has a passing record that this manifest declines to cite" below. Tracked as issues #122 and #142. |
 | 8 | **`met`** | Cites `evidence/characterization.generic.json`, a generic envelope wrapping `measurements/characterization.md`. **This says the rollup exists and is current — not that its rows pass.** See below. |
 | 9 | `unmet` / `no_evidence` | Every claimed measurement's testbench *is* committed (`sim/*/testbench/`), with a documented cold-start invocation (`sim/README.md`, `docs/environment-setup.md`) and a pinned PDK revision (`sim/pdk.json`). Uncited on purpose, see below. |
@@ -195,7 +195,93 @@ repo's pinned commit has no capacitor generator (klayout-tools#1117), so they
 are neither drawn nor referenced. A match over a netlist that excludes the
 compensation and bypass capacitors is a match over the rest of the circuit.
 
-### Item 6 cites the current campaign, and its reason changed with it
+### Item 6 is `met` — what it says, and the two things it does not
+
+Issue #203 minted this repo's first `klt yield` report and item 6 now cites it:
+[`sim/mc-output-accuracy/klt-responses/20260927-030409-1a14401.yield.json`](../sim/mc-output-accuracy/klt-responses/20260927-030409-1a14401.yield.json),
+summarised in
+[`records/20260927-030409-1a14401.md`](../sim/mc-output-accuracy/records/20260927-030409-1a14401.md).
+The row moves `unmet`/`wrong_kind` → **`met`**, and `t1_met_count` 3 → 4 of 11.
+
+**What the report actually says**, over the same n=200 sample set the campaign
+already committed (`20260925-131502-808cece`, seed `20260817`), against the
+ratified 1.764–1.836 V Output window:
+
+| | Reported |
+|---|---|
+| Empirical yield (Clopper-Pearson) | 100 % of 200 samples in window → **at least 98.1725 % at 95 % confidence** |
+| Normal-fit yield (delta method) | 99.9968 % (CI 99.9911 %–100 %) |
+| Normality (Anderson-Darling, 5 %) | `consistent` (A2\* 0.344 vs critical 0.787) |
+| Capability | Cp 1.40797, **Cpk 1.34664** (CI 1.20651–1.48677) |
+| Sigma-to-spec | **4.03992σ** (CI 3.61952–4.46032), limiting side `upper` |
+| Sample size | **`sufficient`** — observed CI half-width 0.00913767 against the 0.01 target; `required_n` 183 |
+
+The "100 %" is deliberately not the headline. The tool refuses to print a bare
+point estimate and says so in its own warning: with zero observed failures the
+interval is bounded only from below, so *"at least 98.1725 % at 95 %
+confidence, N = 200"* is the honest statement. The distribution-free
+(empirical) and distribution-assuming (normal-fit) estimates agree, and the
+normality verdict says the latter's assumption is not violated — which is the
+useful part, since the two fail in opposite directions.
+
+No new simulation was run and no PDK was touched: `klt yield` re-reads the
+per-sample values already committed in the campaign's response. What was
+missing for this item was never a measurement, only an analysis of the right
+*kind* — see "How item 6 got here" below.
+
+**Thing one that `met` does not say: no yield claim was checked.** The payload
+status is `reported`, not `pass`, and the report says why: *"no measurement
+declared a `target_yield`, so no yield claim was checked — the estimates below
+are reported, never failed"*. `klt signoff` accepts `reported` as passing on
+exactly that ground (`docs/cli/signoff.md`: "no measurement declared a
+`target_yield`, so nothing could fail"). **No `target_yield` is declared here
+because `spec/target-spec.md` ratifies none** — this block's spec has no yield,
+sigma or Cpk row, and a ratified table that deliberately carries no number is
+left open rather than filled in by an agent (`CLAUDE.md`, "The spec is a
+gate"). Picking, say, 99 % to make the row read `pass` would have been
+inventing the standard and then grading against it. So read item 6's `met` as
+*"statistical evidence of the required kind now exists, is sound, and is
+pinned"* — not as *"the block met a yield target"*. Ratifying such a target is
+a `spec/` decision record, not a manifest edit.
+
+**Thing two that `met` does not say: there is still no negative control.** Item
+6's own text asks for "a recorded seed, sample count, **a deterministic
+negative control**, and results combined with (not instead of) process
+corners". The seed and sample count are recorded (`20260817`, N=200) and the
+mismatch campaign sits alongside — not instead of — the PVT matrix under
+`sim/*/`. The negative control does not exist, and the report raises it as a
+run-level warning: *"this campaign has no seeded, known-bad variant
+demonstrating that the statistics above can actually detect a degraded
+design"*. `klt signoff` grades item 6 on the payload status alone, so `met` is
+**not** evidence that this clause is satisfied — the same claimant-enforced
+structure as item 3's DRC coverage gaps. Building one needs a real simulation
+run (a degraded variant, sampled), not another re-analysis. Tracked as issue
+**#211**.
+
+Both disclosures are also recorded in `signoff/artifact-pins.json`'s item-6
+note, so they travel with the pin rather than only with this prose. And neither
+is a reading unique to this repo: the gap between what `klt signoff` grades on
+a yield citation (the payload `status`) and what item 6's text actually asks
+for is filed upstream as
+[klayout-tools#2467](https://github.com/2AMLogic/klayout-tools/issues/2467) —
+"`klt signoff` grades a yield citation on status alone, so an
+admittedly-undersized campaign with no negative control renders T1 item 6
+`met`". Whichever way that is resolved upstream, the honest statement about
+*this* block is the one above, and it is written here rather than left to be
+inferred from a `met` token.
+
+**What CI now re-hashes for this item changed too.** A `klt yield` report
+carries no `provenance` block, so `klt signoff` hashes the *samples document*
+the report names (`report["samples"]`) and uses that both for the citation and
+for the staleness pin. `sim/bin/yield-run.py` therefore invokes `klt yield`
+from inside `klt-responses/`, so the report records `samples` as the bare
+`20260925-131502-808cece.json` — the path the grader resolves report-relative.
+The manifest pin for item 6 is consequently the sha256 of the campaign
+response (`sha256:21bb4817…`), not of the netlist snapshot; that snapshot is
+still re-hashed on disk by `check.sh`, now as the second, unpinned claim. See
+"Freshness, and the two independent places it is pinned" below.
+
+#### How item 6 got here
 
 Issue #127 set out to re-point item 6 at a fresh, non-`provenance.input: null`
 Monte Carlo envelope the same way it re-pointed item 4, and found the campaign
@@ -224,26 +310,29 @@ already cited `808cece`. The three candidates:
   1.764–1.836 V window, 3σ window [1.776, 1.82714]. Its
   `provenance.input.content_hash` is real, so the manifest pins it directly.
 
-**What changed and what did not.** Item 6 was `unmet` before and is `unmet`
-now; `t1_met_count` is still 3 and `tier` is still `null`. The one field that
-moved in `records/t1-tier-report.json` is item 6's `reason`:
+**What changed and what did not, at that point.** Item 6 was `unmet` before
+#127 and was still `unmet` after it; `t1_met_count` stayed 3 and `tier` stayed
+`null`. The one field that moved in `records/t1-tier-report.json` was item 6's
+`reason`:
 `check_failed` → `wrong_kind`. Per `docs/cli/signoff.md`, `check_failed`
 means the cited check ran and failed; `wrong_kind` means the cited check did
 not fail on its own terms but is not the kind this item asks for. Both
 sentences are true of the respective records, and the new one is the more
-informative statement of where this block actually stands: **the statistical
-evidence is now a passing n=200 campaign with no yield report over it**, where
-before it was a failing campaign measured on a bench with a known,
-since-fixed defect. Read `wrong_kind` here as "the gap is the missing `klt
-yield` report", not as "the wrong file got cited".
+informative statement of where this block stood at that point: **a passing
+n=200 campaign with no yield report over it**, where before it was a failing
+campaign measured on a bench with a known, since-fixed defect. `wrong_kind`
+there meant "the gap is the missing `klt yield` report", not "the wrong file
+got cited" — and that reading is what issue #203 then acted on.
 
-That reason change is the reason this section exists rather than the change
-being folded in silently: issue #127's own acceptance criteria asked for item
-6's verdict to be unaffected by the re-pointing, and it is — but its reason
-token is not, and no citation of a *current* record could have left it
-unchanged. What item 6 still needs is unchanged too: a `klt yield` report
-over this campaign — tracked as issue #203, and see "What would move the
-needle" below.
+That interval is worth keeping on the record rather than folding away: issue
+#127's own acceptance criteria asked for item 6's verdict to be unaffected by
+the re-pointing, and it was — but its reason token was not, and no citation of
+a *current* record could have left it unchanged. Naming the gap precisely is
+what made it closable: the missing piece was an analysis of the committed
+samples, not a new campaign, and #203 closed it without running a single new
+simulation. The campaign response `20260925-131502-808cece` is still the
+evidence underneath item 6; it is now cited *through* the yield report rather
+than directly, and still pinned on disk by `check.sh`.
 
 ### Item 7 has a passing record that this manifest declines to cite
 
@@ -372,21 +461,33 @@ which wrote `provenance.input: null`, and a manifest pin against an envelope
 that claims no input hash renders the item `unmet`/`stale_evidence` — a false
 negative, not a stronger claim. Issue #127 re-pointed both at klt 0.6.0
 records whose `provenance.input.content_hash` is real (see "Item 4 is `met`"
-and "Item 6 cites the current campaign" above), so the manifest now pins
+and "Item 6 is `met`" above), so the manifest now pins
 items 3, 4, 6, 7 and 8 — all of them.
 
-That is the weaker of the two checks, though, and it did not replace the
-stronger one. `klt signoff` grades a manifest pin against the *cited
-envelope's own* claim about its input and never opens the artifact, so
-**all seven artifacts behind all five citations are also pinned in
-`signoff/artifact-pins.json` and re-hashed on disk by `check.sh`**:
+Item 6 is pinned by a different mechanism since issue #203 re-pointed it at a
+`klt yield` report: a yield report carries no `provenance` block, so
+`klt signoff` hashes the *samples document the report names* and uses that for
+the citation and the pin alike (`docs/cli/signoff.md`). The pinned hash for
+item 6 is therefore the campaign response's own sha256, and it is the one
+citation here whose `content_hash` the grader computes by reading a file rather
+than by quoting an envelope's claim — so for this item the two checks below
+agree by construction (`input_verified: true`), and the independent on-disk
+claim is the netlist-snapshot row instead.
+
+The manifest pin is the weaker of the two checks, though, and it did not
+replace the stronger one. `klt signoff` grades a manifest pin against the
+*cited envelope's own* claim about its input and never opens the artifact
+(item 6 excepted, above), so **all eight artifacts behind all five citations
+are also pinned in `signoff/artifact-pins.json` and re-hashed on disk by
+`check.sh`**:
 
 | Item | Artifact re-hashed by CI | Hash claim cross-checked against |
 |---|---|---|
 | 3 | `…/20260825-123551-3b4e121/ldo_core.gds` | envelope `provenance.input.content_hash` + manifest pin |
 | 4 | `…/20260924-221912-a947aa8/ldo_core.gds` | envelope `environment.layout_sha256` + manifest pin |
 | 4 | `…/20260924-221912-a947aa8/reference.spice` | envelope `environment.reference_sha256` |
-| 6 | `sim/mc-output-accuracy/netlist-snapshots/20260925-131502-808cece.spice` | envelope `provenance.input.content_hash` (== `environment.netlist_sha256`) + manifest pin |
+| 6 | `sim/mc-output-accuracy/klt-responses/20260925-131502-808cece.json` | the samples document the cited `klt yield` report names + manifest pin (no envelope claim to cross-check — a yield report makes none) |
+| 6 | `sim/mc-output-accuracy/netlist-snapshots/20260925-131502-808cece.spice` | campaign envelope `provenance.input.content_hash` (== `environment.netlist_sha256`) |
 | 7 | `…/20260825-123551-3b4e121/ldo_core.gds` | envelope `provenance.input.content_hash` + manifest pin |
 | 7 | `sim/pex-post-layout/netlist-snapshots/20260825-125102-3b4e121.pex.extract.spice` | envelope `extraction.netlist_sha256` |
 | 8 | `measurements/characterization.md` | envelope `provenance.input.content_hash` + manifest pin |
@@ -438,14 +539,18 @@ In dependency order, not effort order:
    this flow has can change. Tracked as #162. See "Item 7 has a passing record
    that this manifest declines to cite" above.
 3. **Item 11** needs a `klt erc` supply spec and report (issue #112).
-4. **Item 6** needs a `klt yield` report over the Monte Carlo campaign this
-   manifest now cites (`20260925-131502-808cece`, 200/200, issue #164's bench
-   fix). That is the *whole* remaining gap for this item: the campaign itself
-   passes, which is why the row reads `wrong_kind` rather than `check_failed`
-   — see "Item 6 cites the current campaign, and its reason changed with it"
-   above. A yield estimate with its confidence interval, sample-size verdict
-   and Cpk/sigma-to-spec is a `klt yield` run over the existing samples, not a
-   new PDK campaign. Tracked as issue #203.
+4. **Item 6** is `met` as of issue #203 — the `klt yield` report this list
+   previously asked for now exists and is cited. What remains is *not* needed
+   for the grader and is listed here because the item's own text asks for it
+   and `klt signoff` cannot check it: **a deterministic negative control** (a
+   seeded, known-bad variant showing these statistics can reject a degraded
+   design). Unlike #203, that leg needs a real simulation run, not a
+   re-analysis of committed samples. Tracked as issue #211. The second
+   disclosure on that row — that the report's status is `reported` rather than
+   `pass`, because this block's spec ratifies no yield target — moves only
+   through a `spec/` decision record, and a number invented to make the row
+   read `pass` would be worse than the honest `reported`. See "Item 6 is
+   `met` — what it says, and the two things it does not" above.
 5. **Items 1, 2, 9 and 10** need nothing built. They stay `unmet` by choice,
    not by gap.
 

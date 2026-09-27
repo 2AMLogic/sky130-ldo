@@ -295,8 +295,10 @@ sim/
         <corner-id>.log              # deck + raw ngspice output per PVT point
     klt-requests/                    # Monte Carlo experiments only
       <record-id>.json               # the `klt sim` request actually submitted
+      <record-id>.yield-limits.json  # `klt yield` runs only (issue #203)
     klt-responses/                   # Monte Carlo experiments only
       <record-id>.json               # `klt sim`'s full per-sample response (the raw evidence)
+      <record-id>.yield.json         # `klt yield` runs only — a *derived* report (issue #203)
     records/
       <record-id>.md                 # append-only summary record (human)
       <record-id>.json               # same record, machine-readable
@@ -306,7 +308,10 @@ sim/
   directory per distinct claim, not per run.
 - **`<record-id>`** — `<YYYYMMDD>-<HHMMSS>-<short-git-sha>` in UTC. The same id
   ties together the netlist snapshot, the per-corner logs and both record
-  files for one run. Re-runs mint a new id.
+  files for one run. Re-runs mint a new id. A **derived** record (a `klt yield`
+  analysis of an already-committed sample set — see "`klt yield` records"
+  below) mints its *own* id and names the source campaign's id in its
+  `Source campaign` block, rather than reusing it.
 - **`<corner-id>`** — `<process>_<temp>c_<supply>v`, e.g. `ss_-40c_1.62v`,
   `tt_27c_1.80v`, `ff_125c_1.98v`.
 - **`testbench/`** is not versioned per record. If a testbench change could
@@ -2917,6 +2922,90 @@ statistics plus a per-device-family "was mismatch actually active" report.
   state all along (#118's blockquote above, which calls the #60/#71/#81 family a
   "second-stable-equilibrium" family, predates both #164 and #169). Write-up:
   `design/README.md` → "#169".
+
+### `klt yield` records — a *derived* record kind (issue #203)
+
+`sim/bin/yield-run.py` mints the first record kind in this directory that
+measures nothing. It takes an **already-committed** `klt sim` Monte Carlo
+response as its input, re-reads the per-sample values in it, and asks
+`klt yield` (`docs/cli/yield.md` in `2AMLogic/klayout-tools`, epic #710) for a
+yield estimate with its confidence interval, a distribution/normality fit,
+Cpk/sigma-to-spec and a sample-size verdict. It runs no `ngspice`, resolves no
+PDK, and cannot change a measured number — which is why it is safe to run
+anywhere, including on a machine with no PDK install, and why it can never be
+the thing that supersedes a campaign.
+
+```
+mc-output-accuracy/
+  klt-requests/
+    <record-id>.yield-limits.json    the spec-limits document klt yield was given
+  klt-responses/
+    <record-id>.yield.json           the klt yield report (the raw evidence)
+  records/
+    <record-id>.{json,md}            summary record, same fields as any other
+```
+
+The `.yield.json` / `.yield-limits.json` suffixes follow
+`sim/pex-post-layout/`'s precedent for a derived `klt` report
+(`<record-id>.pex.json` beside the `<record-id>.sim-schematic.json` it was
+derived from) rather than inventing a second evidence directory. The record id
+is minted the usual way (`<YYYYMMDD>-<HHMMSS>-<short-sha>`) and is **its own**
+id, not the source campaign's — a derived analysis of a frozen sample set is a
+new record, and re-running it later against the same samples mints another one
+rather than overwriting this one.
+
+Three conventions worth knowing before reading such a record:
+
+- **Two provenance blocks, on purpose.** The record's `Tools`/`Repo state`
+  lines describe the `klt`/`klt_yield_native`/host that did the *arithmetic*;
+  the `Source campaign` block quotes the ngspice/PDK/host that produced the
+  *samples* from that campaign's own record. Conflating them would claim a PDK
+  this run never touched.
+- **The spec-limits document is derived, not retyped.** `klt yield` needs
+  min/max for every measurement it grades, and the document it is given wins
+  over whatever the samples carry. `yield-run.py` builds it from the
+  experiment's own `experiment.json` (`mc_measurements[].limits`) so there is
+  exactly one place in the repo stating a ratified bound, then commits the
+  document it actually used under `klt-requests/`.
+- **No `target_yield` is ever synthesised.** `spec/target-spec.md` ratifies no
+  yield, sigma or Cpk target for this block, so none is declared, and
+  `klt yield` reports `status: "reported"` — *"no measurement declared a
+  target_yield, so no yield claim was checked"* — rather than `pass`/`fail`.
+  That is the honest shape: the estimates are evidence, and the standard they
+  would be graded against does not exist yet. Ratifying one is a `spec/`
+  decision record, not a runner flag.
+
+**Reproducing one** (no PDK, no ngspice — but see the caveat):
+
+```bash
+sim/bin/yield-run.py \
+  sim/mc-output-accuracy/klt-responses/20260925-131502-808cece.json \
+  --author "you@example.com"
+```
+
+The caveat is `klt`'s: the statistics run in `klt_yield_native`, a Rust
+extension that is **not published as a wheel**, so it is unreachable from
+`pip install klayout-tools` / `uv tool install klayout-tools` (including the
+git-pinned form) and `klt yield` exits 1 with a message saying so. Getting it
+needs a `klayout-tools` repo checkout plus a Rust toolchain —
+`maturin develop --release` inside `native/yield/`, or `uv sync --extra dev
+--group yield`; to add it to an *existing* `klt` install rather than a checkout
+venv, `maturin build --release --interpreter <that klt's python>` and install
+the resulting wheel into it. Filed upstream, per this repo's friction protocol,
+as [klayout-tools#2531](https://github.com/2AMLogic/klayout-tools/issues/2531)
+(and previously #1061 / #2466) — so this is a known tool-distribution gap, not
+a step this repo can remove. It is also why `signoff/check.sh`, which runs on
+every PR, does **not** re-run `klt yield`: the committed report is the evidence,
+and CI grades it with `klt signoff` (which needs no Rust).
+
+First record: `mc-output-accuracy/records/20260927-030409-1a14401.md`, over the
+`20260925-131502-808cece` campaign (n=200, seed `20260817`) — empirical yield
+*at least* 98.1725 % at 95 % confidence (100 % of 200 samples in window, so the
+interval is bounded only from below), Cpk 1.34664, sigma-to-spec 4.03992σ,
+sample size `sufficient`. It is what T1 signoff item 6 now cites; see
+`signoff/README.md` → "Item 6 is `met` — what it says, and the two things it
+does not", including the negative control this campaign still does not have
+(issue #211).
 
 ## `sim/selftest.sh` — the harness acceptance test
 
