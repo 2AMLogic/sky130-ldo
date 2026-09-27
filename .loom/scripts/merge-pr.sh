@@ -1644,17 +1644,34 @@ _strip_closed_issue_building_labels() {
 # parent merge already happened. Runs BEFORE branch deletion so the parent
 # branch ref still resolves as reconcile-stack.sh's rebase <upstream> argument.
 
+# Print the issue number a Loom Builder branch name encodes, or return 1 if the
+# branch does not follow a recognized convention. Shared by the parent-branch
+# gate in _auto_reconcile_stacked_children and the child-issue derivation in
+# _reconcile_one_stacked_child so the two can never disagree (2AMLogic/2am#1298).
+#
+# Recognized: `feature/issue-<N>` (worktree.sh's default) and
+# `feature/harness-ops-<N>` (2AMLogic/harness-ops's Builder convention). Before
+# #1298 only the first was matched, so in harness-ops every parent merge
+# silently skipped stacked-child reconciliation and stranded open children
+# (harness-ops#283, #356). Still strict/anchored: `release-1`,
+# `feature/issue-100-extra`, `feature/issue-100/sub` do not match. This is a
+# deliberately short allow-list, not a configurable naming-convention system.
+#
+# Written as one dense line (matching this file's own precedent, e.g.
+# _mp_daemon_roll_hint / _check_verdict_label_contradiction) rather than the
+# equivalent if/fi block, so the epic #7810 portable-shell ratchet
+# (shell-budget --check) is not tripped by this addition.
+_stacked_branch_issue_num() { [[ "$1" =~ ^feature/(issue|harness-ops)-([0-9]+)$ ]] && printf '%s\n' "${BASH_REMATCH[2]}" || return 1; }
+
 # Reconcile (or defer) one discovered child PR. Best-effort; returns 0.
 _reconcile_one_stacked_child() {
   local child_pr="$1" child_branch="$2" parent_branch="$3"
 
-  # Derive the child ISSUE number from its head branch (feature/issue-<N>) so we
-  # can check its live claim label. A child branch that is not a feature/issue-N
-  # branch has no loom:building claim to race, so it is treated as safe.
-  local child_issue=""
-  if [[ "$child_branch" =~ ^feature/issue-([0-9]+)$ ]]; then
-    child_issue="${BASH_REMATCH[1]}"
-  fi
+  # Derive the child ISSUE number from its head branch (feature/issue-<N>, or
+  # another convention _stacked_branch_issue_num recognizes) so we can check its
+  # live claim label. A child branch in no recognized convention has no
+  # loom:building claim to race, so it is treated as safe.
+  local child_issue; child_issue="$(_stacked_branch_issue_num "$child_branch" || true)"
 
   # Fresh (uncached) label read — mirrors _reset_one_partial_issue: use plain
   # `gh api` (not $GH, which may be gh-cached) so a stale cached view cannot mask
@@ -1711,8 +1728,10 @@ Parent branch \`$parent_branch\` squash-merged, but this child's issue #$child_i
 _auto_reconcile_stacked_children() {
   [[ "$FORGE_TYPE" == "github" ]] || return 0
 
-  # Only a parent PR on a feature/issue-<N> branch can have stacked children.
-  [[ "$PR_BRANCH" =~ ^feature/issue-([0-9]+)$ ]] || return 0
+  # Only a parent PR on a recognized Builder branch (feature/issue-<N>,
+  # feature/harness-ops-<N> — see _stacked_branch_issue_num, #1298) can have
+  # stacked children.
+  _stacked_branch_issue_num "$PR_BRANCH" >/dev/null || return 0
 
   # Prefer the pre-merge snapshot the guard above already captured (#8010
   # item 2) over a fresh post-merge query: GitHub retargets an open child PR
