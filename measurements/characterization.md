@@ -10,9 +10,14 @@ This file is a **generated rollup**, not itself append-only evidence in the `sim
 python3 measurements/build_characterization_report.py --out measurements/characterization.md
 # or verify the committed file is not stale:
 python3 measurements/build_characterization_report.py --check
+# ...or, without the sky130 PDK toolchain (what CI runs on every push/PR), compare
+# everything except the PDK-dependent per-`sim/` Freshness column:
+python3 measurements/build_characterization_report.py --check --ignore-sim-freshness
 ```
 
 Re-running this generator against an unchanged tree with the same pinned toolchain (`sim/pdk.json`) reproduces this file byte-for-byte — no wall-clock timestamps and no generating-commit identity are embedded, so `--check` passes both before and after the commit that lands a regenerated report. The per-`sim/` **Freshness** column below is a live check (a fresh `xschem` re-netlist of the current testbench schematic, compared verbatim against the committed netlist snapshot); on a machine without the PDK toolchain it degrades to `unverified` rather than a false claim of freshness (`--no-netlist-freshness` forces this explicitly). The layout (DRC/LVS/PEX) **Freshness** column instead compares the schematic/layout commit each record itself cites against the current git history / `LATEST*` pointers — no toolchain required.
+
+**This file is gated, not merely regenerable (issue #220).** Every push/PR runs `--check --ignore-sim-freshness` in the headless CI job (via `npm run check:ci`): that compares this file against a fresh run in full — verdicts, record ids, corner tallies, failing measurements, `(PVT subset)` markers, spec-row text, and the layout section's own git-derived Freshness column — and normalises only the per-`sim/` Freshness verdicts above, which a machine without the PDK toolchain cannot evaluate. The PDK-gated `pdk-smoke` job (nightly / on demand / the `run-pdk-smoke` PR label) then runs the byte-exact `--check`, which does compare those freshness verdicts. So a drifted rollup fails a check rather than waiting for a human to notice.
 
 No generating-commit SHA is stamped into this file, deliberately: a commit that regenerates this report cannot contain its own resulting hash, so such a line would make `--check` fail by construction on the very commit that ships the regenerated file. Provenance instead comes from the record ids cited per row (each of which is itself an append-only, commit-pinned record) plus this file's own git history.
 
