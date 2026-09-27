@@ -4,23 +4,30 @@ PDK-free by design (no ngspice/xschem/volare required) so this runs on every
 `npm run check:ci` invocation, including in CI where the sky130 PDK is not
 installed -- same convention as `sim/tests/test_corner_run.py`.
 
-Two things are covered here:
+Three things are covered here:
 
 1. the pure parsing/extraction/freshness helpers (the parts that decide what
    verdict text ends up in the report), exercised against fixture strings
    rather than the live tree, so a record landing under `sim/` never silently
-   changes what these assertions mean; and
+   changes what these assertions mean;
 2. the **no self-referential provenance** invariant (PR #49 review): the
    generated report must not embed the identity of the commit that generates
    it, because a commit cannot contain its own resulting sha -- a report that
    did would make `--check` fail by construction on the very commit that
-   ships it.
+   ships it; and
+3. the **PDK-free structural check** `--check --ignore-sim-freshness` (#220),
+   which is what gates the committed rollup on every push/PR. The risk there
+   is not that it fails -- it is that it normalises too much and passes
+   vacuously, so most of that coverage asserts what it must still *catch*.
 """
 
 from __future__ import annotations
 
+import contextlib
 import importlib.util
+import io
 import json
+import re
 import sys
 import tempfile
 import unittest
@@ -391,6 +398,233 @@ class TestNoSelfReferentialProvenance(unittest.TestCase):
         self.assertEqual(
             bcr.generate_report(skip_netlist_freshness=True),
             bcr.generate_report(skip_netlist_freshness=True),
+        )
+
+
+def _report_fixture(
+    *,
+    sim_freshness: str = "fresh",
+    sim_freshness_prose: str = "fresh (a live xschem re-netlist of the current testbench "
+    "schematic matches the committed netlist snapshot verbatim)",
+    record_id: str = "20260101-000000-aaaaaaa",
+    verdict: str = "**PASS**",
+    tally: str = "45/45 corner(s) PASS",
+    layout_freshness: str = "fresh",
+) -> str:
+    """A miniature report with the same shape the generator emits, so the
+    normaliser is exercised against structure rather than against whatever
+    happens to be committed today."""
+    return f"""# LDO characterization report (against the ratified spec)
+
+Prose that mentions `--check` and the Freshness column in passing.
+
+## Per-spec-row characterization
+
+| Parameter | Ratified target | Verdict (vs ratified target) | Evidence | Freshness |
+|---|---|---|---|---|
+| Input | 3.3 V ±10% | N/A | — | — |
+| Dropout @ 50 mA | < 300 mV | {verdict} | [`{record_id}`](../sim/dropout-vs-load/records/{record_id}.md) | {sim_freshness} |
+| Iq (excl. load current) | < 30 µA | **FAIL** (PVT subset) | [`20260102-000000-bbbbbbb`](../sim/iq/records/20260102-000000-bbbbbbb.md) | STALE |
+| Thermal | Tj ≤ 125 °C | **PASS** | [`20260103-000000-ccccccc`](../sim/thermal/records/20260103-000000-ccccccc.md) | unverified |
+
+### Evidence detail
+
+- **Input**: N/A — exercised as a stimulus condition inside every PVT testbench below.
+- **Dropout @ 50 mA**: {verdict} (vs the ratified spec row) — `sim/dropout-vs-load` record [`{record_id}`](../sim/dropout-vs-load/records/{record_id}.md), {tally}. Freshness: {sim_freshness_prose}.
+- **Iq (excl. load current)**: **FAIL** (vs the ratified spec row) — `sim/iq` record [`20260102-000000-bbbbbbb`](../sim/iq/records/20260102-000000-bbbbbbb.md), 36/45 corner(s) PASS. Freshness: STALE (a live xschem re-netlist of the current testbench schematic no longer matches the committed netlist snapshot). Failing measurement(s), per the record: `iq_full_load_ua` at 9 corner(s). **PVT subset, not the full matrix this experiment declares** — the record's own stated reason: 3-point bring-up subset
+- **Thermal**: **PASS** (vs the ratified spec row) — `sim/thermal` record [`20260103-000000-ccccccc`](../sim/thermal/records/20260103-000000-ccccccc.md), 15/15 corner(s) PASS. Freshness: unverified: PDK/toolchain unavailable (no PDK at /nope/sky130A. install it with: volare fetch).
+
+{bcr.LAYOUT_SECTION_HEADING}
+
+| Check | Verdict (record's own) | Record | Freshness |
+|---|---|---|---|
+| DRC (issue #16) | **PASS** (status=clean, violation_count=0) | [`20260104-000000-ddddddd`](../layout/ldo-core/reports/20260104-000000-ddddddd/record.md) | {layout_freshness} |
+
+## Limitations
+
+- Prose.
+"""
+
+
+class TestNormalizeSimFreshness(unittest.TestCase):
+    """Issue #220. The per-`sim/` Freshness column is produced by a live xschem
+    re-netlist, so it is the one part of this report a PDK-less runner cannot
+    reproduce. `--check --ignore-sim-freshness` normalises exactly that much --
+    and the assertions below are mostly about what it must still catch, since
+    a normaliser that ate too much would pass vacuously and reinstate the #215
+    blind spot this gate exists to close."""
+
+    def test_normalizes_every_sim_freshness_token_in_the_table(self):
+        out = bcr.normalize_sim_freshness(_report_fixture())
+        header, _, body = out.partition(bcr.LAYOUT_SECTION_HEADING)
+        for token in ("| fresh |", "| STALE |", "| unverified |"):
+            self.assertNotIn(token, header, f"{token} survived normalisation")
+        self.assertEqual(header.count(f"| {bcr.FRESHNESS_PLACEHOLDER} |"), 3)
+
+    def test_leaves_na_rows_em_dash_alone(self):
+        """A row losing its evidence is drift, not a freshness change."""
+        out = bcr.normalize_sim_freshness(_report_fixture())
+        self.assertIn("| Input | 3.3 V ±10% | N/A | — | — |", out)
+
+    def test_normalizes_the_freshness_clause_of_every_detail_bullet(self):
+        out = bcr.normalize_sim_freshness(_report_fixture())
+        self.assertNotIn("Freshness: fresh", out)
+        self.assertNotIn("Freshness: STALE", out)
+        self.assertNotIn("Freshness: unverified", out)
+        self.assertEqual(out.count(f"Freshness: {bcr.FRESHNESS_PLACEHOLDER}."), 3)
+
+    def test_detail_bullet_text_after_the_freshness_clause_survives(self):
+        """The clause ends at its own sentence -- the failing-measurement list
+        and the `(PVT subset)` reason after it are real evidence and must stay
+        compared."""
+        out = bcr.normalize_sim_freshness(_report_fixture())
+        self.assertIn(
+            "Failing measurement(s), per the record: `iq_full_load_ua` at 9 corner(s).", out
+        )
+        self.assertIn("the record's own stated reason: 3-point bring-up subset", out)
+
+    def test_a_period_inside_the_freshness_prose_does_not_truncate_the_match(self):
+        """The `unverified: PDK/toolchain unavailable (...)` text can embed a
+        period; stopping there would leave environment-specific residue in the
+        'normalised' text and fail on a healthy tree."""
+        out = bcr.normalize_sim_freshness(_report_fixture())
+        self.assertNotIn("/nope/sky130A", out)
+        self.assertNotIn("volare fetch", out)
+
+    def test_error_freshness_is_normalized_too(self):
+        """`ERROR` (#215/#218) is reachable only on the PDK path -- the same
+        record reads `unverified` without the toolchain."""
+        out = bcr.normalize_sim_freshness(
+            _report_fixture(
+                sim_freshness="ERROR",
+                sim_freshness_prose="ERROR: record `x` under sim/y has no 'links'",
+            )
+        )
+        self.assertNotIn("| ERROR |", out)
+        self.assertNotIn("Freshness: ERROR", out)
+
+    def test_layout_section_freshness_is_left_verbatim(self):
+        """The layout Freshness column compares git history and `LATEST*`
+        pointers -- no toolchain -- so it stays gated on every push/PR."""
+        out = bcr.normalize_sim_freshness(_report_fixture(layout_freshness="STALE"))
+        _, _, layout = out.partition(bcr.LAYOUT_SECTION_HEADING)
+        self.assertIn("| STALE |", layout)
+        self.assertNotIn(bcr.FRESHNESS_PLACEHOLDER, layout)
+
+    def test_is_idempotent(self):
+        once = bcr.normalize_sim_freshness(_report_fixture())
+        self.assertEqual(bcr.normalize_sim_freshness(once), once)
+
+    def test_reports_differing_only_in_sim_freshness_compare_equal(self):
+        pdk_side = _report_fixture()
+        headless_side = _report_fixture(
+            sim_freshness="unverified",
+            sim_freshness_prose="unverified: --no-netlist-freshness passed",
+        )
+        self.assertNotEqual(pdk_side, headless_side)
+        self.assertEqual(
+            bcr.normalize_sim_freshness(pdk_side),
+            bcr.normalize_sim_freshness(headless_side),
+        )
+
+    def test_does_not_mask_a_drifted_record_id(self):
+        self.assertNotEqual(
+            bcr.normalize_sim_freshness(_report_fixture()),
+            bcr.normalize_sim_freshness(_report_fixture(record_id="20260909-000000-deadbee")),
+        )
+
+    def test_does_not_mask_a_drifted_verdict(self):
+        self.assertNotEqual(
+            bcr.normalize_sim_freshness(_report_fixture()),
+            bcr.normalize_sim_freshness(_report_fixture(verdict="**FAIL**")),
+        )
+
+    def test_does_not_mask_a_drifted_corner_tally(self):
+        self.assertNotEqual(
+            bcr.normalize_sim_freshness(_report_fixture()),
+            bcr.normalize_sim_freshness(_report_fixture(tally="44/45 corner(s) PASS")),
+        )
+
+    def test_does_not_mask_drifted_layout_freshness(self):
+        self.assertNotEqual(
+            bcr.normalize_sim_freshness(_report_fixture()),
+            bcr.normalize_sim_freshness(_report_fixture(layout_freshness="STALE")),
+        )
+
+    def test_raises_when_the_section_boundary_is_missing(self):
+        """Without the boundary the function cannot tell PDK-dependent
+        freshness from git-derived freshness, and normalising the whole
+        document would silently stop checking the layout column."""
+        with self.assertRaises(RuntimeError):
+            bcr.normalize_sim_freshness("# report\n\nno layout heading here\n")
+
+    def test_live_report_is_actually_normalized_somewhere(self):
+        """Anti-vacuity: if the report's shape ever changes such that the
+        substitutions stop matching, the gate must not quietly become a
+        no-op comparison of two un-normalised documents."""
+        report = bcr.generate_report(skip_netlist_freshness=True)
+        normalized = bcr.normalize_sim_freshness(report)
+        self.assertNotEqual(normalized, report)
+        self.assertIn(bcr.FRESHNESS_PLACEHOLDER, normalized)
+
+
+class TestCheckCli(unittest.TestCase):
+    """Issue #220: the gate itself, exercised end to end PDK-free -- this is
+    what `npm run check:ci` invokes on every push/PR."""
+
+    def setUp(self):
+        self._tmpdir = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tmpdir.cleanup)
+        self.report_path = Path(self._tmpdir.name) / "characterization.md"
+        self.report = bcr.generate_report(skip_netlist_freshness=True)
+
+    def _run(self, *argv: str) -> int:
+        out, err = io.StringIO(), io.StringIO()
+        with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+            return bcr.main(list(argv))
+
+    def test_ignore_sim_freshness_requires_check(self):
+        """Writing a report whose freshness column is a placeholder would
+        commit a rollup that states nothing about freshness."""
+        with contextlib.redirect_stderr(io.StringIO()):
+            with self.assertRaises(SystemExit):
+                bcr.parse_args(["--ignore-sim-freshness"])
+
+    def test_passes_on_a_current_report(self):
+        self.report_path.write_text(self.report)
+        self.assertEqual(
+            self._run("--check", "--ignore-sim-freshness", "--out", str(self.report_path)), 0
+        )
+
+    def test_passes_when_only_the_sim_freshness_column_differs(self):
+        """The committed file is generated WITH the PDK, so its cells say
+        fresh/STALE where a headless run says unverified. That difference is
+        the whole reason this mode exists -- it must not fail."""
+        pdk_flavoured = self.report.replace(
+            "| unverified |", "| fresh |"
+        ).replace(
+            "Freshness: unverified: --no-netlist-freshness passed",
+            "Freshness: fresh (a live xschem re-netlist of the current testbench "
+            "schematic matches the committed netlist snapshot verbatim)",
+        )
+        self.assertNotEqual(pdk_flavoured, self.report)
+        self.report_path.write_text(pdk_flavoured)
+        self.assertEqual(
+            self._run("--check", "--ignore-sim-freshness", "--out", str(self.report_path)), 0
+        )
+
+    def test_fails_on_a_drifted_record_id(self):
+        """The drift class that went unnoticed for two days in #215."""
+        drifted = re.sub(r"\[`(\d{8}-\d{6})-([0-9a-f]{7})`\]", r"[`\1-deadbee`]", self.report, count=1)
+        self.assertNotEqual(drifted, self.report)
+        self.report_path.write_text(drifted)
+        self.assertEqual(
+            self._run("--check", "--ignore-sim-freshness", "--out", str(self.report_path)), 1
+        )
+
+    def test_fails_on_a_missing_report(self):
+        self.assertEqual(
+            self._run("--check", "--ignore-sim-freshness", "--out", str(self.report_path)), 1
         )
 
 

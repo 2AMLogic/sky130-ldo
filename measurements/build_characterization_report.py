@@ -61,6 +61,41 @@ Usage
         --no-netlist-freshness   # skip the xschem-based sim/ freshness re-check
                                   # (reports "unverified" instead) -- for
                                   # machines without the PDK toolchain
+    python3 measurements/build_characterization_report.py \\
+        --check --ignore-sim-freshness   # PDK-free structural check: compare
+                                  # everything EXCEPT the per-`sim/` Freshness
+                                  # column, which only a machine with the PDK
+                                  # toolchain can evaluate (issue #220)
+
+Why `--check` has two modes (issue #220)
+----------------------------------------
+Plain `--check` is byte-exact, and the per-`sim/` **Freshness** column it
+compares is produced by a *live* xschem re-netlist -- so it can only be run
+where the pinned sky130 PDK toolchain is installed. On a PDK-less machine the
+generator honestly degrades every such cell to `unverified`, which means a bare
+`--check` there FAILs on a perfectly healthy tree. That is why nothing gated
+this generator for its first months: neither mode of the tool fit the headless
+CI job, so no job ran it, and a `KeyError` that crashed *every* invocation went
+unnoticed for two days (#215, fixed by #218) while CI stayed green.
+
+`--ignore-sim-freshness` closes that gap without weakening the committed file:
+it normalises **only** the per-`sim/`-row freshness verdict (the table cell and
+the `Freshness: ...` clause of the matching Evidence-detail bullet) on *both*
+sides before diffing. Everything else is still compared verbatim -- verdicts,
+record ids, corner tallies, failing-measurement lists, `(PVT subset)` markers,
+spec-row text, the prose, and the whole layout (DRC/LVS/PEX) section including
+*its* Freshness column, which is derived from git history and `LATEST*`
+pointers and therefore needs no toolchain at all.
+
+The gate is documented in `.github/workflows/ci.yml` and `package.json` rather
+than inside the report it checks, deliberately: `measurements/characterization.md`
+is sha256-pinned for T1 item 8 in `signoff/artifact-pins.json` (and, transitively,
+in `signoff/block-manifest.json`, `signoff/evidence/characterization.generic.json`
+and `signoff/records/t1-tier-report.json`), so **any** change to the text this
+function emits -- prose included -- makes `signoff/check.sh` fail until all four
+are re-pinned with a note saying why the artifact moved. Editing the emitted
+prose is therefore a signoff-evidence change, not a docs change; keep
+tooling/CI notes out of the report unless the pin move is the point.
 """
 
 from __future__ import annotations
@@ -87,6 +122,12 @@ from _record_common import git, load_corner_run_module  # shared helpers (issues
 
 SCHEMATIC_FILE = "design/ldo_3v3in_1v8out.sch"
 DEFAULT_OUT = MEASUREMENTS_DIR / "characterization.md"
+
+# Heading that ends the per-spec-row (PDK-dependent freshness) section and
+# starts the layout section, whose freshness is git-derived and needs no
+# toolchain. `--ignore-sim-freshness` normalises text ABOVE this line only, so
+# the two places that spell it must never drift apart -- hence the constant.
+LAYOUT_SECTION_HEADING = "## Layout verification (not itself a spec row)"
 
 # --------------------------------------------------------------------------
 # spec row -> evidence mapping
@@ -711,7 +752,7 @@ def generate_report(skip_netlist_freshness: bool = False) -> str:
     lines.extend(detail)
     lines.append("")
 
-    lines.append("## Layout verification (not itself a spec row)")
+    lines.append(LAYOUT_SECTION_HEADING)
     lines.append("")
     lines.append(
         "DRC/LVS/post-layout PEX substantiate that the routed layout matches "
@@ -767,6 +808,67 @@ def generate_report(skip_netlist_freshness: bool = False) -> str:
 
 
 # --------------------------------------------------------------------------
+# PDK-free structural comparison (issue #220)
+# --------------------------------------------------------------------------
+
+# What a normalised per-`sim/`-row freshness verdict is replaced with. Chosen
+# to be obviously not a verdict, so it cannot be mistaken for one if it ever
+# leaks into a diff a human reads.
+FRESHNESS_PLACEHOLDER = "<freshness not compared>"
+
+# The freshness verdicts the generator can emit for a `sim/` row. Anchoring the
+# substitutions on this closed set matters: a freshness cell holding anything
+# else is NOT normalised, so a malformed/hand-edited committed report surfaces
+# as drift instead of being silently accepted.
+#
+# `ERROR` (an unrecognized record shape, #215/#218) belongs here too: it is
+# only ever reachable on the PDK path -- the same record reads `unverified` on
+# a machine without the toolchain -- so leaving it out would make the headless
+# check fail on a tree whose committed report is perfectly current.
+_FRESHNESS_TOKENS = r"(?:fresh|STALE|unverified|ERROR)"
+
+# `| ... | <verdict> |` -- the last cell of a per-spec-row table line. N/A rows
+# carry an em dash there and are deliberately left alone (a row losing its
+# evidence is drift, not a freshness change).
+_TABLE_FRESHNESS_RE = re.compile(rf"^(\|[^\n]*\| ){_FRESHNESS_TOKENS}( \|)$", re.MULTILINE)
+
+# `Freshness: <prose>.` inside an Evidence-detail bullet. The bullet may
+# continue after that sentence ("Failing measurement(s)...", "**PVT subset..."),
+# so the match ends at the first period that is followed by end-of-line or one
+# of those continuations -- never at a period *inside* the freshness prose
+# (a PDK error string can contain one).
+_DETAIL_FRESHNESS_RE = re.compile(
+    rf"(Freshness: ){_FRESHNESS_TOKENS}.*?\.(?=$| Failing measurement\(s\)| \*\*PVT subset)",
+    re.MULTILINE,
+)
+
+
+def normalize_sim_freshness(text: str) -> str:
+    """Replace every per-`sim/`-row freshness verdict with a fixed placeholder.
+
+    Only the region *above* `LAYOUT_SECTION_HEADING` is touched: that is where
+    the PDK-dependent verdicts live. The layout (DRC/LVS/PEX) section's own
+    Freshness column is derived from git history and the `LATEST*` pointers --
+    no toolchain required, identical on every machine -- so it stays compared
+    verbatim and keeps protecting against layout-evidence drift.
+
+    Raises if the boundary heading is absent: without it this function cannot
+    tell the two kinds of freshness apart, and normalising the whole document
+    would silently stop checking the layout column too.
+    """
+    idx = text.find(LAYOUT_SECTION_HEADING)
+    if idx == -1:
+        raise RuntimeError(
+            f"cannot scope the freshness normalisation: heading "
+            f"{LAYOUT_SECTION_HEADING!r} not found in the report text"
+        )
+    head, tail = text[:idx], text[idx:]
+    head = _TABLE_FRESHNESS_RE.sub(rf"\g<1>{FRESHNESS_PLACEHOLDER}\g<2>", head)
+    head = _DETAIL_FRESHNESS_RE.sub(rf"\g<1>{FRESHNESS_PLACEHOLDER}.", head)
+    return head + tail
+
+
+# --------------------------------------------------------------------------
 # CLI
 # --------------------------------------------------------------------------
 
@@ -791,25 +893,47 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         "instead) -- for machines without the PDK toolchain",
     )
     parser.add_argument(
+        "--ignore-sim-freshness",
+        action="store_true",
+        help="with --check: compare everything EXCEPT the per-sim/ Freshness column "
+        "(which only a PDK-equipped machine can evaluate). Implies "
+        "--no-netlist-freshness. This is the mode CI runs on every push/PR.",
+    )
+    parser.add_argument(
         "--stdout",
         action="store_true",
         help="print the generated report to stdout instead of writing --out",
     )
-    return parser.parse_args(argv)
+    args = parser.parse_args(argv)
+    if args.ignore_sim_freshness and not args.check:
+        # Writing a report whose freshness column is a placeholder would commit
+        # a rollup that states nothing about freshness -- exactly the false
+        # artifact this mode exists to avoid. It is a comparison mode only.
+        parser.error("--ignore-sim-freshness is only meaningful together with --check")
+    return args
 
 
 def main(argv: list[str]) -> int:
     args = parse_args(argv)
-    report = generate_report(skip_netlist_freshness=args.no_netlist_freshness)
+    skip_netlist_freshness = args.no_netlist_freshness or args.ignore_sim_freshness
+    report = generate_report(skip_netlist_freshness=skip_netlist_freshness)
 
     if args.check:
         if not args.out.is_file():
             print(f"FAIL: {args.out} does not exist -- run without --check to generate it.", file=sys.stderr)
             return 1
         committed = args.out.read_text()
-        if committed != report:
+        expected, actual = committed, report
+        if args.ignore_sim_freshness:
+            expected, actual = normalize_sim_freshness(expected), normalize_sim_freshness(actual)
+        if expected != actual:
+            scope = (
+                " (per-`sim/` Freshness column not compared: --ignore-sim-freshness)"
+                if args.ignore_sim_freshness
+                else ""
+            )
             print(
-                f"FAIL: {args.out} is stale relative to a fresh run of this generator.",
+                f"FAIL: {args.out} is stale relative to a fresh run of this generator{scope}.",
                 file=sys.stderr,
             )
             print("Regenerate with:", file=sys.stderr)
@@ -817,15 +941,27 @@ def main(argv: list[str]) -> int:
                 f"  python3 {Path(__file__).relative_to(REPO_ROOT)} --out {args.out}",
                 file=sys.stderr,
             )
+            if args.ignore_sim_freshness:
+                print(
+                    "  (run that on a machine with the pinned sky130 PDK toolchain, so the "
+                    "Freshness column is evaluated rather than degraded to 'unverified')",
+                    file=sys.stderr,
+                )
             diff = difflib.unified_diff(
-                committed.splitlines(keepends=True),
-                report.splitlines(keepends=True),
+                expected.splitlines(keepends=True),
+                actual.splitlines(keepends=True),
                 fromfile=str(args.out),
                 tofile="freshly generated",
             )
             sys.stderr.writelines(list(diff)[:200])
             return 1
-        print(f"OK: {args.out} matches a fresh run.")
+        if args.ignore_sim_freshness:
+            print(
+                f"OK: {args.out} matches a fresh run, except the per-`sim/` Freshness "
+                "column, which was not compared (--ignore-sim-freshness)."
+            )
+        else:
+            print(f"OK: {args.out} matches a fresh run.")
         return 0
 
     if args.stdout:

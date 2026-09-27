@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "worktree:return": "./.loom/scripts/worktree-return.sh",
-    "check:ci": "npm run lint && npm run test && ./.loom/scripts/check-xschem-embedded-quotes.sh && ./.loom/scripts/check-xschem-duplicate-instance-names.sh && ./.loom/scripts/check-dr-numbering.sh --self-test && ./.loom/scripts/check-dr-numbering.sh",
+    "check:ci": "npm run lint && npm run test && ./.loom/scripts/check-xschem-embedded-quotes.sh && ./.loom/scripts/check-xschem-duplicate-instance-names.sh && ./.loom/scripts/check-dr-numbering.sh --self-test && ./.loom/scripts/check-dr-numbering.sh && npm run check:characterization",
+    "check:characterization": "python3 measurements/build_characterization_report.py --check --ignore-sim-freshness",
     "check:all": "npm run check:ci",
     "test": "npm run test:compile && npm run test:unit",
     "test:compile": "find sim layout measurements -name '*.py' -not -path 'layout/.venv/*' -print0 | xargs -0 -n1 python3 -m py_compile",

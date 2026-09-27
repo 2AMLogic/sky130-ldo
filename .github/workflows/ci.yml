@@ -15,9 +15,22 @@ name: CI
 #     `M_ENP4` instances, without needing xschem/ngspice/the PDK at all --
 #     and a uniqueness lint over tracked `spec/decision-records/DR-NNN-*.md`
 #     filenames (#140), which catches two parallel branches independently
-#     claiming the same DR number, as four open PRs each did with `DR-008`)
+#     claiming the same DR number, as four open PRs each did with `DR-008`,
+#     and -- via `check:characterization` -- a structural re-check of the
+#     committed measurements/characterization.md rollup against a fresh run
+#     of its own generator, #220)
 #     -> `checks` job below, every push/PR. Headless, no PDK, no `klt`
-#     install needed.
+#     install needed, but it DOES need full git history (see the job's
+#     fetch-depth below).
+#   - `measurements/build_characterization_report.py --check` (byte-exact:
+#     also compares the per-`sim/` Freshness column, which is a live xschem
+#     re-netlist of each testbench schematic) -> `pdk-smoke` job below. The
+#     headless job above runs the same check with `--ignore-sim-freshness`,
+#     which normalises only those PDK-dependent freshness verdicts; this one
+#     is what keeps the committed verdicts themselves honest. Both directions
+#     matter: before #220 NOTHING ran this generator, and a KeyError that
+#     crashed every invocation went unnoticed for two days (#215/#218) while
+#     CI stayed green.
 #   - `signoff/check.sh` (re-grades this block's T1 state from
 #     signoff/block-manifest.json via `klt signoff --manifest`, and fails if a
 #     pinned content_hash no longer matches the artifact it covers or if the
@@ -76,6 +89,17 @@ jobs:
     runs-on: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && fromJSON('["self-hosted","heavy"]') || 'ubuntu-latest' }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Load-bearing, not a nicety (#220). `check:characterization` (inside
+          # `check:ci`) re-generates measurements/characterization.md in
+          # memory to compare against the committed file, and that report's
+          # layout Freshness column resolves the schematic's last-touching
+          # commit with `git log -1 -- design/ldo_3v3in_1v8out.sch`. On the
+          # default depth-1 checkout the grafted tip commit has no parents, so
+          # git reports IT as the last-touching commit of every file -- the
+          # report comes out `STALE` and the check fails on a healthy tree.
+          # Verified by running the check inside a `git clone --depth 1`.
+          fetch-depth: 0
 
       - uses: actions/setup-python@v5
         with:
@@ -126,6 +150,10 @@ jobs:
        contains(github.event.pull_request.labels.*.name, 'run-pdk-smoke'))
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Same reason as the `checks` job above (#220): the byte-exact
+          # characterization check below reads the schematic's git history.
+          fetch-depth: 0
 
       - uses: actions/setup-python@v5
         with:
@@ -150,3 +178,15 @@ jobs:
         run: |
           export PATH="$HOME/.local/bin:$PATH"
           sim/selftest.sh --quick --require-pdk
+
+      - name: Byte-exact characterization check (includes the live Freshness column)
+        run: |
+          export PATH="$HOME/.local/bin:$PATH"
+          python3 measurements/build_characterization_report.py --check
+        # The only check that evaluates measurements/characterization.md's
+        # per-`sim/` Freshness verdicts, because only this job has the pinned
+        # PDK + xschem needed to re-netlist each testbench schematic (#220).
+        # A failure here is real news in one of two flavours, and the diff it
+        # prints says which: a Freshness-only diff means the committed rollup's
+        # freshness verdicts have gone stale (regenerate it on a PDK machine);
+        # any other diff would already have failed the headless `checks` job.
