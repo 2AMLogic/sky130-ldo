@@ -334,45 +334,6 @@ _auto_reconcile_stacked_children
 assert_contains "$(read_recon)" "reconcile-stack.sh 501 feature/issue-100" \
   "No pre-merge snapshot -> falls back to the live post-merge query (unchanged behavior)"
 
-# T10 (#1298): a feature/harness-ops-<N> parent (2AMLogic/harness-ops's Builder
-# convention) is a stackable parent too. Before #1298 the gate matched only
-# feature/issue-<N>, so this merge silently skipped reconciliation and the open
-# child was stranded when the parent branch was deleted (harness-ops#283, #356).
-reset_logs
-PR_BRANCH="feature/harness-ops-350"
-write_prlist "feature/harness-ops-350" '[{"number":601,"headRefName":"feature/harness-ops-201"}]'
-_auto_reconcile_stacked_children
-assert_contains "$(read_recon)" "reconcile-stack.sh 601 feature/harness-ops-350" \
-  "feature/harness-ops-N parent with an open child -> reconcile-stack.sh invoked (#1298)"
-assert_eq "" "$(read_gh_log)" "harness-ops safe child (issue #201 not building) -> no deferred comment"
-
-# T11 (#1298): a feature/harness-ops-<N> CHILD whose issue is loom:building is
-# recognized as claimed and deferred, not rebased out from under a live Builder.
-reset_logs
-PR_BRANCH="feature/harness-ops-350"
-write_prlist "feature/harness-ops-350" '[{"number":602,"headRefName":"feature/harness-ops-202"}]'
-_auto_reconcile_stacked_children
-assert_eq "" "$(read_recon)" "harness-ops child #602 (issue #202 building) -> reconcile-stack.sh NOT invoked"
-assert_contains "$(read_gh_log)" "issue comment 602 --repo owner/repo" \
-  "harness-ops building child -> deferred-reconciliation comment posted on PR #602"
-
-# T12 (#1298): the generalized match stays strict/anchored.
-reset_logs
-for b in "feature/harness-ops-" "feature/harness-ops-350-extra" "feature/harness-ops-350/sub" \
-         "feature/issue-100-extra" "feature/other-350"; do
-  write_prlist "$b" '[{"number":603,"headRefName":"feature/issue-201"}]'
-  PR_BRANCH="$b"
-  _auto_reconcile_stacked_children
-done
-assert_eq "" "$(read_recon)" "Non-matching near-miss parent branches -> reconcile skipped"
-
-echo ""
-echo "Testing _stacked_branch_issue_num..."
-assert_eq "100" "$(_stacked_branch_issue_num feature/issue-100)" "feature/issue-100 -> 100"
-assert_eq "356" "$(_stacked_branch_issue_num feature/harness-ops-356)" "feature/harness-ops-356 -> 356"
-rc=0; _stacked_branch_issue_num release-1 >/dev/null || rc=$?
-assert_eq "1" "$rc" "release-1 -> not a recognized Builder branch (exit 1)"
-
 # --- Source-contains guards (fail if a refactor drops the key behavior) ---
 echo ""
 echo "Testing merge-pr.sh source guards..."

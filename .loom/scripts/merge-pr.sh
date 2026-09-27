@@ -1550,33 +1550,28 @@ _reset_partial_increment_labels() {
 # present. Idempotent: a no-op when the issue isn't actually closed (a
 # transient PR-close-target false positive, or #4569 reopened it above),
 # already lacks the label, or is actually a PR.
+#
+# The decision — which of those cases this is — is `loom-daemon merge-pr
+# closed-building` (Rust, loom-daemon/src/merge_pr/closed_building.rs — #8191
+# slice), fed the fresh issue body on stdin. It prints exactly one line:
+# `STRIP`, or `SKIP<TAB><reason>` which this pass deliberately discards (the
+# retired function's skips were silent and stdout stays byte-identical). Only
+# the mutation stays here. The fresh read uses plain `gh api` (uncached; not
+# $GH, which may be gh-cached) so a stale cached view cannot mask a fresh
+# re-claim — the same freshness discipline _reset_one_partial_issue keeps.
+# Best-effort like the rest of this pass: a daemon that cannot decide, or that
+# answers with anything but the two known lines, is a warning naming the manual
+# removal, never a guessed mutation. Silence is NOT read as `SKIP`.
 _strip_one_closed_issue_building_label() {
-  local issue_num="$1"
-  local issue_json issue_state issue_labels
+  local issue_num="$1" issue_json out rc=0
 
-  # Fresh (uncached) read, mirroring _reset_one_partial_issue's freshness
-  # discipline: we need the label/state AS OF right now, not as of PR
-  # creation or the GraphQL closingIssuesReferences snapshot.
   issue_json="$(gh api "repos/$REPO_NWO/issues/$issue_num" 2>/dev/null || echo '{}')"
-
-  # A PR is also an "issue" on this endpoint (has a .pull_request member).
-  if [[ "$(echo "$issue_json" | jq -r 'has("pull_request")')" == "true" ]]; then
+  out="$(printf '%s\n' "$issue_json" | "${LOOM_DAEMON_BIN:-loom-daemon}" merge-pr closed-building 2>/dev/null)" || rc=$?
+  if [[ $rc -ne 0 || ( "$out" != "STRIP" && "$out" != "SKIP"$'\t'* ) ]]; then
+    warning "Closed-issue loom:building cleanup for issue #$issue_num did not run — '${LOOM_DAEMON_BIN:-loom-daemon} merge-pr closed-building' exited $rc and printed '${out//$'\n'/ }' rather than STRIP or SKIP (a loom-daemon predating #8191's slice has no such verb). Advisory only — the merge already happened and #$issue_num was left untouched; if it is closed and still loom:building, drop the stale claim by hand: gh issue edit $issue_num --repo $REPO_NWO --remove-label loom:building $(! declare -F _mp_daemon_roll_hint >/dev/null || _mp_daemon_roll_hint merge-pr "$(command -v "${LOOM_DAEMON_BIN:-loom-daemon}" 2>/dev/null || true)")"
     return 0
   fi
-
-  issue_state="$(echo "$issue_json" | jq -r '.state // ""')"
-  if [[ "$issue_state" != "closed" ]]; then
-    # Not (or no longer) closed — either a #4569 revert just reopened it, the
-    # forge's close hadn't landed yet when we read it, or it was never
-    # actually closed. Leave the label; a later merge or the standalone
-    # cleanup script will catch it once it genuinely closes.
-    return 0
-  fi
-
-  issue_labels="$(echo "$issue_json" | jq -r '.labels[]?.name' 2>/dev/null || true)"
-  if ! printf '%s\n' "$issue_labels" | grep -qx 'loom:building'; then
-    return 0
-  fi
+  [[ "$out" == "STRIP" ]] || return 0
 
   if forge_gh_remove_label_rl_safe "$REPO_NWO" "$issue_num" "loom:building" 2>/dev/null; then
     success "Issue #$issue_num: removed stale loom:building label (closed by this merge, #6199)"
@@ -1644,34 +1639,17 @@ _strip_closed_issue_building_labels() {
 # parent merge already happened. Runs BEFORE branch deletion so the parent
 # branch ref still resolves as reconcile-stack.sh's rebase <upstream> argument.
 
-# Print the issue number a Loom Builder branch name encodes, or return 1 if the
-# branch does not follow a recognized convention. Shared by the parent-branch
-# gate in _auto_reconcile_stacked_children and the child-issue derivation in
-# _reconcile_one_stacked_child so the two can never disagree (2AMLogic/2am#1298).
-#
-# Recognized: `feature/issue-<N>` (worktree.sh's default) and
-# `feature/harness-ops-<N>` (2AMLogic/harness-ops's Builder convention). Before
-# #1298 only the first was matched, so in harness-ops every parent merge
-# silently skipped stacked-child reconciliation and stranded open children
-# (harness-ops#283, #356). Still strict/anchored: `release-1`,
-# `feature/issue-100-extra`, `feature/issue-100/sub` do not match. This is a
-# deliberately short allow-list, not a configurable naming-convention system.
-#
-# Written as one dense line (matching this file's own precedent, e.g.
-# _mp_daemon_roll_hint / _check_verdict_label_contradiction) rather than the
-# equivalent if/fi block, so the epic #7810 portable-shell ratchet
-# (shell-budget --check) is not tripped by this addition.
-_stacked_branch_issue_num() { [[ "$1" =~ ^feature/(issue|harness-ops)-([0-9]+)$ ]] && printf '%s\n' "${BASH_REMATCH[2]}" || return 1; }
-
 # Reconcile (or defer) one discovered child PR. Best-effort; returns 0.
 _reconcile_one_stacked_child() {
   local child_pr="$1" child_branch="$2" parent_branch="$3"
 
-  # Derive the child ISSUE number from its head branch (feature/issue-<N>, or
-  # another convention _stacked_branch_issue_num recognizes) so we can check its
-  # live claim label. A child branch in no recognized convention has no
-  # loom:building claim to race, so it is treated as safe.
-  local child_issue; child_issue="$(_stacked_branch_issue_num "$child_branch" || true)"
+  # Derive the child ISSUE number from its head branch (feature/issue-<N>) so we
+  # can check its live claim label. A child branch that is not a feature/issue-N
+  # branch has no loom:building claim to race, so it is treated as safe.
+  local child_issue=""
+  if [[ "$child_branch" =~ ^feature/issue-([0-9]+)$ ]]; then
+    child_issue="${BASH_REMATCH[1]}"
+  fi
 
   # Fresh (uncached) label read — mirrors _reset_one_partial_issue: use plain
   # `gh api` (not $GH, which may be gh-cached) so a stale cached view cannot mask
@@ -1728,10 +1706,8 @@ Parent branch \`$parent_branch\` squash-merged, but this child's issue #$child_i
 _auto_reconcile_stacked_children() {
   [[ "$FORGE_TYPE" == "github" ]] || return 0
 
-  # Only a parent PR on a recognized Builder branch (feature/issue-<N>,
-  # feature/harness-ops-<N> — see _stacked_branch_issue_num, #1298) can have
-  # stacked children.
-  _stacked_branch_issue_num "$PR_BRANCH" >/dev/null || return 0
+  # Only a parent PR on a feature/issue-<N> branch can have stacked children.
+  [[ "$PR_BRANCH" =~ ^feature/issue-([0-9]+)$ ]] || return 0
 
   # Prefer the pre-merge snapshot the guard above already captured (#8010
   # item 2) over a fresh post-merge query: GitHub retargets an open child PR
