@@ -1,0 +1,222 @@
+{
+  "author": "loom-builder (agent) for issue #203",
+  "command": [
+    "klt",
+    "yield",
+    "20260925-131502-808cece.json",
+    "--limits",
+    "../klt-requests/20260927-030409-1a14401.yield-limits.json",
+    "--format",
+    "json"
+  ],
+  "command_cwd": "sim/mc-output-accuracy/klt-responses",
+  "evidence_kind": "yield",
+  "evidence_kind_note": "a derived analysis of an already-committed klt sim Monte Carlo response; no simulation, no PDK access, no new samples",
+  "exit_code": 0,
+  "experiment": {
+    "claim": "Substantiates spec/target-spec.md's ratified \"Output\" row (1.8V +-2%, i.e. 1.764V-1.836V) against the LDO core-regulation-loop schematic landed by #14 and revised by #22 (current limit / soft start) and #25/#36 (current-mirror-OTA rail-to-rail output stage plus sized Miller compensation) (design/ldo_3v3in_1v8out.sch) under per-instance device mismatch, at a single representative operating point (nominal VIN=3.3V/27C/tt process corner, I_LOAD=1mA light load -- the same light-load convention sim/psrr-dc/ already uses). That row is ratified by issue #1 / DR-006, and the bound cited below is the ratified row's own window, not an invented final limit. This is a mismatch-only statistical check (klt sim's monte_carlo.vary=\"mismatch\"): it re-runs this one PVT point N times with a fresh per-instance AGAUSS mismatch draw each time (sky130A's tt_mm .lib section -- see sim/README.md and docs/cli/sim.md in 2AMLogic/klayout-tools), NOT a re-run across the full PVT corner matrix (that is corner-run.py's separate job, e.g. sim/dropout-vs-load). Initial-condition contract (#164): the transient starts from the block's disabled state (all nodes 0, EN low) and powers up through its own soft-start ramp, the same enable-edge convention sim/startup uses -- it does NOT start from an unconstrained ngspice `.op`. That `.op` is not a physically realizable state of this block: on this very sample sequence it warned on 43/200 draws, and on a nearly disjoint set of 12 (only one draw, mc142, is in both -- the other 11 converged with no complaint at all, which is exactly why the resulting settled transient looked like an equilibrium) it handed the transient a start state with FB at 668-1984 V (up to 1.3e15 V) while VOUT sat at VIN -- FB above the only node feeding it through a passive resistor string, which the sky130 poly-resistor model's non-monotone voltage-coefficient term admits as a numerical solution and a transient then holds flat. See design/README.md \"#164\" for the measurement and the four-variant screen. Known-remaining-gaps caveat (design/README.md \"Known gaps / follow-on scope\"): the #25/#36 revision closed the unsized-compensation and error-amplifier output-swing-ceiling gaps that dominated the #18-era records, but the pass device's own light-load pole and the absent Iq budget remain open, so a FAIL here is an honest finding about the current design state, not a harness defect.",
+    "provenance": "schematic",
+    "provenance_source": "sim/mc-output-accuracy/testbench/tb_mc_output_accuracy.sch",
+    "slug": "mc-output-accuracy",
+    "title": "Output accuracy under device mismatch (Monte Carlo, sky130A tt_mm)"
+  },
+  "git": {
+    "branch": "feature/issue-203",
+    "dirty": true,
+    "sha": "1a14401"
+  },
+  "klt_version": "0.6.0",
+  "klt_yield_native_version": "0.1.0",
+  "klt_yield_report": {
+    "confidence": 0.95,
+    "limits": "../klt-requests/20260927-030409-1a14401.yield-limits.json",
+    "measurement_count": 1,
+    "measurements": [
+      {
+        "analytic_cross_check": null,
+        "capability": {
+          "cp": 1.4079689388414813,
+          "cpk": 1.3466413317878663,
+          "cpk_confidence_interval": {
+            "high": 1.4867745720617864,
+            "low": 1.2065080915139461
+          },
+          "limiting_side": "upper",
+          "sigma_to_spec": 4.039923995363599,
+          "sigma_to_spec_confidence_interval": {
+            "high": 4.460323716185359,
+            "low": 3.6195242745418383
+          }
+        },
+        "distribution": {
+          "excess_kurtosis": 0.14713935208533746,
+          "max": 1.824987,
+          "mean": 1.8015680700000007,
+          "median": 1.801267,
+          "min": 1.779421,
+          "model": "normal",
+          "normality": {
+            "critical_value": 0.787,
+            "significance": 0.05,
+            "statistic": 0.34448892288002353,
+            "test": "anderson-darling",
+            "verdict": "consistent"
+          },
+          "skewness": -0.01239800143106025,
+          "stddev": 0.008522915292345843
+        },
+        "errored": 0,
+        "failed_unmeasurable": 0,
+        "limits": {
+          "max": 1.836,
+          "min": 1.764
+        },
+        "n": 200,
+        "name": "vout_ss",
+        "negative_control": null,
+        "sample_size": {
+          "method": "clopper-pearson-zero-failures",
+          "n": 200,
+          "observed_ci_halfwidth": 0.009137670177568169,
+          "required_n": 183,
+          "required_n_for_target": null,
+          "target_ci_halfwidth": 0.01,
+          "variance_reduced": null,
+          "verdict": "sufficient"
+        },
+        "sampling": {
+          "effective_sample_size": null,
+          "replicates": null,
+          "strategy": "plain_random"
+        },
+        "source_corners": [
+          "tt_mm/novdd/27C"
+        ],
+        "status": "reported",
+        "unit": "V",
+        "warnings": [
+          "measurement 'vout_ss': no sample fell outside the limits, so the empirical yield is bounded only from below -- \"at least 98.1725% at 95% confidence, N = 200\" is the honest statement, not \"100% yield\""
+        ],
+        "yield": {
+          "empirical": {
+            "confidence": 0.95,
+            "confidence_interval": {
+              "high": 1.0,
+              "low": 0.9817246596448637
+            },
+            "estimate": 1.0,
+            "method": "clopper-pearson",
+            "n": 200
+          },
+          "normal": {
+            "confidence": 0.95,
+            "confidence_interval": {
+              "high": 1.0,
+              "low": 0.9999111320850561
+            },
+            "estimate": 0.9999680466017915,
+            "method": "normal-delta",
+            "n": 200
+          },
+          "variance_reduced": null
+        }
+      }
+    ],
+    "min_samples": 2,
+    "samples": "20260925-131502-808cece.json",
+    "schema_version": 1,
+    "source": {
+      "kind": "sim-report",
+      "monte_carlo": {
+        "family_mismatch": [
+          {
+            "active": null,
+            "family": "other",
+            "note": "mismatch activity for the 'other' family is not independently verified for PDK family 'sky130'; treat any sampled spread for it as unconfirmed."
+          },
+          {
+            "active": null,
+            "family": "capacitor",
+            "note": "mismatch activity for the 'capacitor' family is not independently verified for PDK family 'sky130'; treat any sampled spread for it as unconfirmed."
+          },
+          {
+            "active": null,
+            "family": "resistor",
+            "note": "mismatch activity for the 'resistor' family is not independently verified for PDK family 'sky130'; treat any sampled spread for it as unconfirmed."
+          },
+          {
+            "active": true,
+            "family": "mosfet",
+            "note": "MOS per-instance mismatch is active in any _mm-suffixed process-corner section (e.g. tt_mm) -- select that section via corners.process to sample it (see docs/cli/sim.md's 'Known-good mismatch mechanisms')."
+          }
+        ],
+        "k_sigma": 3.0,
+        "n": 200,
+        "seed": 20260817,
+        "vary": "mismatch"
+      },
+      "netlist": "sim/mc-output-accuracy/netlist-snapshots/20260925-131502-808cece.spice",
+      "sample_count": 200
+    },
+    "status": "reported",
+    "target_ci_halfwidth": 0.01,
+    "warnings": [
+      "no measurement declared a target_yield, so no yield claim was checked -- the estimates below are reported, never failed",
+      "no measurement declared a negative_control -- this campaign has no seeded, known-bad variant demonstrating that the statistics above can actually detect a degraded design; see docs/cli/yield.md#negative-control"
+    ]
+  },
+  "limits": {
+    "document": {
+      "comment": [
+        "Spec-limits document for `klt yield`, derived by sim/bin/yield-run.py",
+        "from this experiment's own experiment.json (mc_measurements[].limits) --",
+        "the same ratified window the klt sim campaign was requested against.",
+        "",
+        "No `target_yield` is declared: spec/target-spec.md ratifies no yield or",
+        "sigma target for this block, and a ratified row that carries no number",
+        "is left open rather than invented (CLAUDE.md, 'The spec is a gate').",
+        "`klt yield` therefore reports rather than grades the estimates -- see",
+        "the record this file was minted alongside."
+      ],
+      "measurements": {
+        "vout_ss": {
+          "max": 1.836,
+          "min": 1.764
+        }
+      }
+    },
+    "file": "sim/mc-output-accuracy/klt-requests/20260927-030409-1a14401.yield-limits.json",
+    "note": "The spec-limits document wins over whatever limits the samples document carried (docs/cli/yield.md), so it is the explicit statement of what this analysis holds the design to. No target_yield is declared -- spec/target-spec.md ratifies none for this block -- so klt yield reports the estimates rather than grading them.",
+    "origin": "derived from experiment.json's mc_measurements[].limits"
+  },
+  "links": {
+    "experiment manifest": "sim/mc-output-accuracy/experiment.json",
+    "klt yield report (raw)": "sim/mc-output-accuracy/klt-responses/20260927-030409-1a14401.yield.json",
+    "klt yield spec-limits": "sim/mc-output-accuracy/klt-requests/20260927-030409-1a14401.yield-limits.json",
+    "machine-readable record": "sim/mc-output-accuracy/records/20260927-030409-1a14401.json",
+    "source campaign record": "sim/mc-output-accuracy/records/20260925-131502-808cece.md",
+    "source klt sim response (samples)": "sim/mc-output-accuracy/klt-responses/20260925-131502-808cece.json"
+  },
+  "overall_status": "reported",
+  "record_id": "20260927-030409-1a14401",
+  "source_campaign": {
+    "netlist_snapshot": "sim/mc-output-accuracy/netlist-snapshots/20260925-131502-808cece.spice",
+    "pdk": "sky130A @ open_pdks `c6d73a35f524070e85faff4a6a9eef49553ebc2b`",
+    "record": "sim/mc-output-accuracy/records/20260925-131502-808cece.md",
+    "record_id": "20260925-131502-808cece",
+    "response": "sim/mc-output-accuracy/klt-responses/20260925-131502-808cece.json",
+    "response_sha256": "sha256:21bb4817ec91922d0de9a6cb1a16ed70d3fe02b59674e66a60e69408706f3865",
+    "statistical_convention": "N=200 Monte Carlo samples, vary=`mismatch`, seed=`20260817`, k_sigma=3",
+    "status": "pass",
+    "tools": "ngspice=ngspice-46 : Circuit level simulation program; platform=Linux 7.0.0-1010-aws x86_64; python=3.12.3; xschem=XSCHEM V3.4.7"
+  },
+  "supersedes": "",
+  "timestamp": "2026-09-27T03:04:09Z",
+  "tools": {
+    "klt": "0.6.0",
+    "klt_yield_native": "0.1.0",
+    "platform": "Darwin 27.0.0 arm64",
+    "python": "3.14.7"
+  },
+  "tools_line": "klt 0.6.0; klt_yield_native 0.1.0; Darwin 27.0.0 arm64; python 3.14.7"
+}
