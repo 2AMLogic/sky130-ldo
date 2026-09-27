@@ -20,7 +20,9 @@ Two things are covered here:
 from __future__ import annotations
 
 import importlib.util
+import json
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -81,6 +83,87 @@ class TestParseSpecRows(unittest.TestCase):
         rows = bcr.parse_spec_rows(bcr.SPEC_FILE.read_text())
         missing = [r["parameter"] for r in rows if r["parameter"] not in bcr.EVIDENCE_MAP]
         self.assertEqual(missing, [], f"spec rows absent from EVIDENCE_MAP: {missing}")
+
+
+class TestLatestSimRecord(unittest.TestCase):
+    """Issue #215: `latest_sim_record` must select the latest *campaign*
+    record under a slug's `records/` directory, never a derived record kind
+    (e.g. a `klt yield` record, issue #203) sharing that same directory --
+    even when the derived record's filename sorts after every campaign
+    record's, which is exactly the original bug's trigger condition."""
+
+    def setUp(self):
+        self._tmpdir = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tmpdir.cleanup)
+        self._orig_sim_dir = bcr.SIM_DIR
+        bcr.SIM_DIR = Path(self._tmpdir.name)
+
+    def tearDown(self):
+        bcr.SIM_DIR = self._orig_sim_dir
+
+    def _write_record(self, slug: str, record_id: str, data: dict) -> None:
+        records_dir = bcr.SIM_DIR / slug / "records"
+        records_dir.mkdir(parents=True, exist_ok=True)
+        (records_dir / f"{record_id}.json").write_text(json.dumps(data))
+        (records_dir / f"{record_id}.md").write_text(f"# {record_id}\n")
+
+    def test_skips_a_later_yield_record_and_selects_the_campaign_record(self):
+        self._write_record(
+            "mixed-slug",
+            "20260101-000000-campaign",
+            {"record_id": "20260101-000000-campaign", "overall_pass": True},
+        )
+        # Filename sorts *after* the campaign record above -- the exact
+        # condition that made the lexicographically-newest-file heuristic
+        # pick a yield record instead (issue #215).
+        self._write_record(
+            "mixed-slug",
+            "20260202-000000-yieldrec",
+            {"record_id": "20260202-000000-yieldrec", "evidence_kind": "yield"},
+        )
+        found = bcr.latest_sim_record("mixed-slug")
+        self.assertIsNotNone(found)
+        data, _md_path = found
+        self.assertEqual(data["record_id"], "20260101-000000-campaign")
+
+    def test_returns_none_when_only_non_campaign_records_exist(self):
+        self._write_record(
+            "yield-only-slug",
+            "20260101-000000-yieldrec",
+            {"record_id": "20260101-000000-yieldrec", "evidence_kind": "yield"},
+        )
+        self.assertIsNone(bcr.latest_sim_record("yield-only-slug"))
+
+    def test_still_picks_the_newest_among_multiple_campaign_records(self):
+        self._write_record(
+            "campaign-only-slug",
+            "20260101-000000-first",
+            {"record_id": "20260101-000000-first", "overall_pass": False},
+        )
+        self._write_record(
+            "campaign-only-slug",
+            "20260202-000000-second",
+            {"record_id": "20260202-000000-second", "overall_pass": True},
+        )
+        data, _md_path = bcr.latest_sim_record("campaign-only-slug")
+        self.assertEqual(data["record_id"], "20260202-000000-second")
+
+    def test_missing_records_dir_returns_none(self):
+        self.assertIsNone(bcr.latest_sim_record("no-such-slug"))
+
+
+class TestCheckNetlistFreshnessTolerance(unittest.TestCase):
+    """Issue #215 (option 3): a record shape this checker doesn't recognize
+    (e.g. missing `links.netlist_snapshot`) must produce a diagnosed error
+    string naming the offending record, not a raw KeyError traceback --
+    this script's whole job is to report evidence state."""
+
+    def test_missing_links_key_is_diagnosed_not_raised(self):
+        record = {"record_id": "some-record", "experiment": {"provenance_source": "x"}}
+        out = bcr.check_netlist_freshness(None, None, "some-slug", record)
+        self.assertTrue(out.startswith("ERROR"), out)
+        self.assertIn("some-record", out)
+        self.assertIn("some-slug", out)
 
 
 class TestSimTallies(unittest.TestCase):
