@@ -2975,6 +2975,29 @@ Three conventions worth knowing before reading such a record:
   would be graded against does not exist yet. Ratifying one is a `spec/`
   decision record, not a runner flag.
 
+**Reproducing one** (no PDK, no ngspice — but see the caveat):
+
+```bash
+sim/bin/yield-run.py \
+  sim/mc-output-accuracy/klt-responses/20260925-131502-808cece.json \
+  --author "you@example.com"
+```
+
+The caveat is `klt`'s: the statistics run in `klt_yield_native`, a Rust
+extension that is **not published as a wheel**, so it is unreachable from
+`pip install klayout-tools` / `uv tool install klayout-tools` (including the
+git-pinned form) and `klt yield` exits 1 with a message saying so. Getting it
+needs a `klayout-tools` repo checkout plus a Rust toolchain —
+`maturin develop --release` inside `native/yield/`, or `uv sync --extra dev
+--group yield`; to add it to an *existing* `klt` install rather than a checkout
+venv, `maturin build --release --interpreter <that klt's python>` and install
+the resulting wheel into it. Filed upstream, per this repo's friction protocol,
+as [klayout-tools#2531](https://github.com/2AMLogic/klayout-tools/issues/2531)
+(and previously #1061 / #2466) — so this is a known tool-distribution gap, not
+a step this repo can remove. It is also why `signoff/check.sh`, which runs on
+every PR, does **not** re-run `klt yield`: the committed report is the evidence,
+and CI grades it with `klt signoff` (which needs no Rust).
+
 First record: `mc-output-accuracy/records/20260927-030409-1a14401.md`, over the
 `20260925-131502-808cece` campaign (n=200, seed `20260817`) — empirical yield
 *at least* 98.1725 % at 95 % confidence (100 % of 200 samples in window, so the

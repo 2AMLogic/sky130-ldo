@@ -259,7 +259,16 @@ run (a degraded variant, sampled), not another re-analysis. Tracked as issue
 **#211**.
 
 Both disclosures are also recorded in `signoff/artifact-pins.json`'s item-6
-note, so they travel with the pin rather than only with this prose.
+note, so they travel with the pin rather than only with this prose. And neither
+is a reading unique to this repo: the gap between what `klt signoff` grades on
+a yield citation (the payload `status`) and what item 6's text actually asks
+for is filed upstream as
+[klayout-tools#2467](https://github.com/2AMLogic/klayout-tools/issues/2467) —
+"`klt signoff` grades a yield citation on status alone, so an
+admittedly-undersized campaign with no negative control renders T1 item 6
+`met`". Whichever way that is resolved upstream, the honest statement about
+*this* block is the one above, and it is written here rather than left to be
+inferred from a `met` token.
 
 **What CI now re-hashes for this item changed too.** A `klt yield` report
 carries no `provenance` block, so `klt signoff` hashes the *samples document*
