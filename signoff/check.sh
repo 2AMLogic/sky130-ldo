@@ -20,6 +20,16 @@
 #    measurements/characterization.md without re-pinning, and this fails --
 #    which is the whole point: a citation that cannot rot is a citation that
 #    proves nothing.
+#
+#    Each side of that cross-check is matched to the other *by the file it
+#    names* (manifest `file` vs. pin `cited_envelope`), never by "this hash
+#    turns up somewhere under this item" (issue #222). Item 11's compound
+#    citation has two halves whose content_hash is legitimately identical --
+#    both read the same GDS -- so a pooled hash set let either half's pin
+#    satisfy the other half's check, and deleting one of the two pins outright
+#    still passed. Per-file correlation is what makes each half stand on its
+#    own. Implemented in signoff/verify-pins.py, with the mutation coverage
+#    that proves it in signoff/tests/test_verify_pins.py.
 # 2. **`klt signoff --manifest` runs clean.** Exit 0 (T1 reached) and exit 3
 #    (ran fine, not yet T1) are both clean runs of the grader; 1 and 2 mean a
 #    broken manifest or a tier doc this klt cannot parse.
@@ -68,144 +78,14 @@ fi
 
 # ---------------------------------------------------------------------------
 # 1. Pinned hashes vs. the artifacts they claim to cover.
+#
+# The verification itself lives in signoff/verify-pins.py rather than in a
+# heredoc here, so signoff/tests/test_verify_pins.py can run the real stage
+# against a mutated pin file (issue #222). It needs nothing but python3 -- no
+# klt, no PDK, no network -- which is also why `npm run check:ci` can run its
+# unit coverage on every push while this script's later stages cannot.
 # ---------------------------------------------------------------------------
-python3 - "$MANIFEST" "$PINS" <<'PY'
-import hashlib
-import json
-import pathlib
-import sys
-
-manifest_path, pins_path = (pathlib.Path(a) for a in sys.argv[1:3])
-root = pathlib.Path.cwd()
-manifest = json.loads(manifest_path.read_text())
-pins = json.loads(pins_path.read_text())["pins"]
-
-failures: list[str] = []
-
-
-def norm(value):
-    """Both hash spellings this repo's envelopes use, reduced to bare hex."""
-    if not isinstance(value, str):
-        return None
-    return value[len("sha256:"):] if value.startswith("sha256:") else value
-
-
-def manifest_hashes(entry):
-    """Every content_hash a manifest evidence entry pins, as bare hex.
-
-    An entry is normally one object; T1 item 11 ("Power delivery
-    (structural)") is graded from a compound entry -- a LIST of ordinary
-    entries (the `klt erc` run plus the LVS report) -- so both shapes are
-    read the same way here.
-    """
-    parts = entry if isinstance(entry, list) else [entry]
-    return [
-        h for h in (norm(p.get("content_hash")) for p in parts if isinstance(p, dict))
-        if h is not None
-    ]
-
-
-def dotted(doc, path):
-    cur = doc
-    for part in path.split("."):
-        if not isinstance(cur, dict) or part not in cur:
-            return None
-        cur = cur[part]
-    return cur
-
-
-# Every item the manifest cites must appear in the pin file, so a new citation
-# cannot be added without also declaring what artifact it is really about.
-cited_items = set(manifest.get("evidence") or {})
-pinned_items = {str(p["item"]) for p in pins}
-for item in sorted(cited_items - pinned_items):
-    failures.append(
-        f"manifest item {item}: cited, but signoff/artifact-pins.json declares "
-        f"no artifact for it -- a citation with no re-hashable artifact behind "
-        f"it cannot be freshness-checked by CI"
-    )
-for item in sorted(pinned_items - cited_items):
-    failures.append(
-        f"artifact-pins.json item {item}: pinned, but the manifest cites no "
-        f"evidence for that item -- a stale pin for a dropped citation"
-    )
-
-for pin in pins:
-    item = str(pin["item"])
-    artifact = root / pin["artifact"]
-    expected = norm(pin["sha256"])
-
-    if not artifact.is_file():
-        failures.append(f"item {item}: artifact {pin['artifact']!r} does not exist")
-        continue
-    actual = hashlib.sha256(artifact.read_bytes()).hexdigest()
-    if actual != expected:
-        failures.append(
-            f"item {item}: {pin['artifact']!r} hashes to sha256:{actual} today, "
-            f"but signoff/artifact-pins.json pins {pin['sha256']} -- the cited "
-            f"evidence moved and the citation was not re-pinned"
-        )
-        continue
-
-    envelope_path = root / pin["cited_envelope"]
-    if not envelope_path.is_file():
-        failures.append(
-            f"item {item}: cited envelope {pin['cited_envelope']!r} does not exist"
-        )
-        continue
-    envelope = json.loads(envelope_path.read_text())
-
-    field = pin.get("envelope_field")
-    if field:
-        claimed = norm(dotted(envelope, field))
-        if claimed != expected:
-            failures.append(
-                f"item {item}: {pin['cited_envelope']!r} claims {field}="
-                f"{dotted(envelope, field)!r}, but {pin['artifact']!r} is "
-                f"sha256:{expected} -- the envelope is about a different "
-                f"revision than the artifact committed here"
-            )
-
-    # A manifest pin is graded by `klt signoff` against the envelope's own
-    # claim; re-pinning only one of the two files must not pass silently.
-    entry = (manifest.get("evidence") or {}).get(item)
-    hashes = manifest_hashes(entry)
-    if pin.get("manifest_pinned"):
-        if not hashes:
-            failures.append(
-                f"item {item}: artifact-pins.json says manifest_pinned, but the "
-                f"manifest pins no content_hash for it"
-            )
-        elif expected not in hashes:
-            failures.append(
-                f"item {item}: manifest pins "
-                + ", ".join(f"sha256:{h}" for h in hashes)
-                + f"; artifact-pins.json pins sha256:{expected}"
-            )
-
-# Conversely: a manifest pin must be backed by a pin declared `manifest_pinned`
-# for the same item, so the manifest cannot pin a hash nothing on disk covers.
-for item, entry in sorted((manifest.get("evidence") or {}).items()):
-    for manifest_hash in manifest_hashes(entry):
-        backing = [
-            p for p in pins
-            if str(p["item"]) == item and p.get("manifest_pinned")
-            and norm(p["sha256"]) == manifest_hash
-        ]
-        if not backing:
-            failures.append(
-                f"manifest item {item}: pins sha256:{manifest_hash}, which no "
-                f"manifest_pinned entry in signoff/artifact-pins.json covers"
-            )
-
-if failures:
-    print("signoff/check.sh: pinned-hash verification FAILED", file=sys.stderr)
-    for line in failures:
-        print(f"  - {line}", file=sys.stderr)
-    sys.exit(1)
-
-print(f"signoff/check.sh: {len(pins)} pinned artifact(s) match their citations")
-PY
+python3 signoff/verify-pins.py "$MANIFEST" "$PINS"
 
 # ---------------------------------------------------------------------------
 # 2 + 3. Re-grade, and compare against the committed verdict of record.
