@@ -106,9 +106,22 @@ cp "$SPEC" "$OUT_DIR/erc-supply-spec.json"
 # not item 11's subject (klayout-tools#1994) and the record renderer reads
 # the JSON's own erc_status for the item-11 answer, so the exit code is
 # captured rather than fatal.
+#
+# klt erc echoes its input paths into the envelope's `file` and `spec`
+# fields, and `klt signoff` (signoff/check.sh, which grades T1 item 11 from
+# this envelope) reads both back. It re-hashes the GDS `file` names, trying
+# the grader's cwd and then the envelope's own directory. It also reads the
+# spec document `spec` names, resolving that against its cwd ONLY. If that
+# read fails, item 11 grades `supply_spec_incomplete`. signoff/check.sh runs
+# from the repo root, so both paths are recorded repo-relative, by running
+# klt erc from the repo root. The spec path is this record's own byte copy.
+# An absolute path would name one machine's checkout: it would grade `met`
+# there and `supply_spec_incomplete` in CI.
+GDS_REL="${GDS#"$REPO_ROOT"/}"
+SPEC_REL="${OUT_DIR#"$REPO_ROOT"/}/erc-supply-spec.json"
 set +e
-"$KLT" erc "$GDS" "$SPEC" --pdk "$PDK" --top "$CELL" --format json \
-  > "$OUT_DIR/erc_supply.json"
+(cd "$REPO_ROOT" && "$KLT" erc "$GDS_REL" "$SPEC_REL" \
+  --pdk "$PDK" --top "$CELL" --format json) > "$OUT_DIR/erc_supply.json"
 ERC_RC=$?
 set -e
 if [[ ! -s "$OUT_DIR/erc_supply.json" ]]; then
@@ -157,8 +170,8 @@ PY
 
 for CONTROL in C1 C2 C3 C4; do
   set +e
-  "$KLT" erc "$GDS" "$CONTROL_DIR/$CONTROL.json" --pdk "$PDK" --top "$CELL" \
-    --format json > "$OUT_DIR/erc_control_$CONTROL.json"
+  (cd "$REPO_ROOT" && "$KLT" erc "$GDS_REL" "$CONTROL_DIR/$CONTROL.json" \
+    --pdk "$PDK" --top "$CELL" --format json) > "$OUT_DIR/erc_control_$CONTROL.json"
   set -e
   echo "run-ldo-erc-flow.sh: control $CONTROL recorded"
 done
