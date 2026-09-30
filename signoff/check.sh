@@ -90,6 +90,21 @@ def norm(value):
     return value[len("sha256:"):] if value.startswith("sha256:") else value
 
 
+def manifest_hashes(entry):
+    """Every content_hash a manifest evidence entry pins, as bare hex.
+
+    An entry is normally one object; T1 item 11 ("Power delivery
+    (structural)") is graded from a compound entry -- a LIST of ordinary
+    entries (the `klt erc` run plus the LVS report) -- so both shapes are
+    read the same way here.
+    """
+    parts = entry if isinstance(entry, list) else [entry]
+    return [
+        h for h in (norm(p.get("content_hash")) for p in parts if isinstance(p, dict))
+        if h is not None
+    ]
+
+
 def dotted(doc, path):
     cur = doc
     for part in path.split("."):
@@ -154,35 +169,34 @@ for pin in pins:
     # A manifest pin is graded by `klt signoff` against the envelope's own
     # claim; re-pinning only one of the two files must not pass silently.
     entry = (manifest.get("evidence") or {}).get(item)
-    manifest_hash = norm(entry.get("content_hash")) if isinstance(entry, dict) else None
+    hashes = manifest_hashes(entry)
     if pin.get("manifest_pinned"):
-        if manifest_hash is None:
+        if not hashes:
             failures.append(
                 f"item {item}: artifact-pins.json says manifest_pinned, but the "
                 f"manifest pins no content_hash for it"
             )
-        elif manifest_hash != expected:
+        elif expected not in hashes:
             failures.append(
-                f"item {item}: manifest pins sha256:{manifest_hash}, "
-                f"artifact-pins.json pins sha256:{expected}"
+                f"item {item}: manifest pins "
+                + ", ".join(f"sha256:{h}" for h in hashes)
+                + f"; artifact-pins.json pins sha256:{expected}"
             )
 
 # Conversely: a manifest pin must be backed by a pin declared `manifest_pinned`
 # for the same item, so the manifest cannot pin a hash nothing on disk covers.
 for item, entry in sorted((manifest.get("evidence") or {}).items()):
-    manifest_hash = norm(entry.get("content_hash")) if isinstance(entry, dict) else None
-    if manifest_hash is None:
-        continue
-    backing = [
-        p for p in pins
-        if str(p["item"]) == item and p.get("manifest_pinned")
-        and norm(p["sha256"]) == manifest_hash
-    ]
-    if not backing:
-        failures.append(
-            f"manifest item {item}: pins sha256:{manifest_hash}, which no "
-            f"manifest_pinned entry in signoff/artifact-pins.json covers"
-        )
+    for manifest_hash in manifest_hashes(entry):
+        backing = [
+            p for p in pins
+            if str(p["item"]) == item and p.get("manifest_pinned")
+            and norm(p["sha256"]) == manifest_hash
+        ]
+        if not backing:
+            failures.append(
+                f"manifest item {item}: pins sha256:{manifest_hash}, which no "
+                f"manifest_pinned entry in signoff/artifact-pins.json covers"
+            )
 
 if failures:
     print("signoff/check.sh: pinned-hash verification FAILED", file=sys.stderr)
