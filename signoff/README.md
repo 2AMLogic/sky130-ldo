@@ -14,11 +14,11 @@ way a hand-maintained checkbox list does. Issue #114 — this repo's gap-to-T1
 tracker — cites it as the item-level verdict and no longer keeps a parallel
 checklist of its own.
 
-**Today: `tier: null`, T1 4/11 items met** (items 3, 4, 6 and 8). That is the
-honest state of the block, not a placeholder. Read the per-item notes below
-before reading anything into either the four `met` rows or the seven `unmet`
+**Today: `tier: null`, T1 5/11 items met** (items 3, 4, 6, 8 and 11). That is
+the honest state of the block, not a placeholder. Read the per-item notes below
+before reading anything into either the five `met` rows or the six `unmet`
 ones — several of the `unmet` rows cover artifacts that *do* exist here, and
-none of the four `met` rows means what it might look like it means.
+none of the five `met` rows means what it might look like it means.
 
 ## What is here
 
@@ -99,7 +99,7 @@ of the claimant rather than of the tool.
 | 8 | **`met`** | Cites `evidence/characterization.generic.json`, a generic envelope wrapping `measurements/characterization.md`. **This says the rollup exists and is current — not that its rows pass.** See below. |
 | 9 | `unmet` / `no_evidence` | Every claimed measurement's testbench *is* committed (`sim/*/testbench/`), with a documented cold-start invocation (`sim/README.md`, `docs/environment-setup.md`) and a pinned PDK revision (`sim/pdk.json`). Uncited on purpose, see below. |
 | 10 | `unmet` / `no_evidence` | README with the spec table and reproduction instructions, an Apache-2.0 licence, and CI that keeps the harness and evidence formats valid, all exist. Uncited on purpose, see below. |
-| 11 | `unmet` / `no_evidence` | Power delivery (structural). There is no `klt erc` supply spec and no ERC report in this repo, and item 4's LVS — even the current, klt-0.6.0 record issue #127 re-pointed it to — reports `power_connectivity.status: "unchecked"`, not "verified". Tracked as issue #112, which also records the upstream blocker (klayout-tools#2169) on declaring `ties[]`. The item has a row here, `unmet`, rather than being silently absent — it was added to the checklist on 2026-09-17 (klayout-tools#2025) and invalidated every hand-read that predates it. |
+| 11 | **`met`** | Power delivery (structural). A compound citation, as `klt signoff` requires for this item. The first part is the `klt erc` supply-spec run `layout/ldo-core/reports/20260930-193715-dc2823f/erc_supply.json`, on the layout record `LATEST` names: both supplies are one island each, both ties are checked, and four falsification controls fired. The second part is item 4's own LVS report, on the byte-identical GDS. **Read "Item 11 is `met` — what it says, and what it does not" below; one of its two ties rests on an asserted substrate region, and the antenna half is `clean_partial`.** Issue #112. |
 
 ### Item 3 is `met`, and the coverage its "clean" was measured inside
 
@@ -569,6 +569,53 @@ Item 8 is also the only T1 item a `generic` envelope may satisfy. Every other
 item rejects `"kind": "generic"` outright, so this hand-rolled wrapper cannot
 be pointed at items 3–7 to make their rows go green.
 
+### Item 11 is `met` — what it says, and what it does not
+
+Item 11 went `unmet`/`no_evidence` → **`met`** (`t1_met_count` 4 → 5 of 11)
+when issue #112's `klt erc` supply spec landed. The manifest entry is a
+**list** of two citations, the compound shape `klt signoff` grades this item
+from:
+
+1. `layout/ldo-core/reports/20260930-193715-dc2823f/erc_supply.json`. This is
+   the `klt erc` run of `layout/ldo-core/erc-supply-spec.json` against layout
+   record `20260924-221821-a947aa8`. `erc_status` is `clean` with 0 findings.
+   `VIN` and `0` are both declared `kind: supply` and each resolves to exactly
+   one electrical island. Both `ties[]` are checked, none skipped as
+   degenerate. The record's four falsification controls each fire the rule
+   the clean verdict claims the absence of (`record.md` there).
+2. `layout/ldo-core/reports/20260924-221912-a947aa8/lvs.json`, item 4's own
+   report, `status: match`, with `VIN` and `0` both paired in
+   `net_correspondence` against the schematic-derived reference.
+
+Both parts are pinned to one GDS hash (`sha256:3e7f504b…`): the ERC run and
+the LVS compare are provably about the same layout revision.
+`input_verified: true` — the grader re-hashed that GDS itself, which works
+from any checkout because `run-ldo-erc-flow.sh` records repo-relative paths.
+
+What it does **not** say:
+
+- **One tie rests on an assertion.** sky130 NMOS sit in the native
+  p-substrate and this stream draws no pwell, so `substrate_tie` declares the
+  region as `well_boxes` (klayout-tools#2255). The grader reports it
+  separately (`ties_checked_by_well_assertion: erc.missing_tie:["substrate_tie"]`).
+  The box is re-derived from the GDS before every run, and control C1 moves it
+  off its tap and gets `erc.missing_tie`. It is still the caller's word about
+  where the substrate is.
+- **Connectivity, not robustness.** The block draws exactly one substrate tap
+  and one n-well tap across ~2.4 mm. Item 11 asks whether each region's tap
+  reaches its net. It asks nothing about tap density or latch-up.
+- **The antenna half is `clean_partial`**, not `clean`. Declaring met3 (which
+  #154's VIN rail is drawn on) adds 18 gate × met3 pairs that `klt` has no
+  sky130 limit for, so they are skipped as `missing_antenna_limit`. Item 11
+  does not grade antenna (klayout-tools#1994). The grader carries the
+  skip list in the citation's `coverage_qualification` rather than hiding it.
+- **Not IR-drop or EM.** `klt power` stays outside this item by design; see
+  the current-density note in `layout/README.md`.
+- **`power_connectivity` in the LVS part is still `"unchecked"`** (see item 4
+  above). `unchecked` would fail item 11 for a digital block that cites a
+  PDN. With no PDN cited, the grader instead requires every declared supply
+  to be paired in the LVS `net_correspondence`, and `VIN` and `0` both are.
+
 ### Items 1, 2, 9 and 10 are uncited on purpose
 
 `klt signoff` grades these four on "some passing envelope was cited at all",
@@ -586,14 +633,15 @@ this as the safest default and the shipped `examples/signoff/` follows it.
 
 ### Freshness, and the two independent places it is pinned
 
-**Every one of the five citations now carries a manifest `content_hash`.**
+**Every one of the six citations now carries a manifest `content_hash`**
+(item 11's compound entry pins both of its parts).
 Items 4 and 6 were the two that could not: both were produced by `klt` 0.2.0,
 which wrote `provenance.input: null`, and a manifest pin against an envelope
 that claims no input hash renders the item `unmet`/`stale_evidence` — a false
 negative, not a stronger claim. Issue #127 re-pointed both at klt 0.6.0
 records whose `provenance.input.content_hash` is real (see "Item 4 is `met`"
 and "Item 6 is `met`" above), so the manifest now pins
-items 3, 4, 6, 7 and 8 — all of them.
+items 3, 4, 6, 7, 8 and 11 — all of them.
 
 Item 6 is pinned by a different mechanism since issue #203 re-pointed it at a
 `klt yield` report: a yield report carries no `provenance` block, so
@@ -610,9 +658,9 @@ negative control, and what it found" above.
 The manifest pin is the weaker of the two checks, though, and it did not
 replace the stronger one. `klt signoff` grades a manifest pin against the
 *cited envelope's own* claim about its input and never opens the artifact
-(item 6 excepted, above), so **all eleven artifacts behind all five citations
-are also pinned in `signoff/artifact-pins.json` and re-hashed on disk by
-`check.sh`**:
+(items 6 and 11 excepted, which the grader re-hashes itself), so **all
+thirteen artifacts behind all six citations are also pinned in
+`signoff/artifact-pins.json` and re-hashed on disk by `check.sh`**:
 
 | Item | Artifact re-hashed by CI | Hash claim cross-checked against |
 |---|---|---|
@@ -627,6 +675,8 @@ are also pinned in `signoff/artifact-pins.json` and re-hashed on disk by
 | 7 | `…/20260825-123551-3b4e121/ldo_core.gds` | envelope `provenance.input.content_hash` + manifest pin |
 | 7 | `sim/pex-post-layout/netlist-snapshots/20260825-125102-3b4e121.pex.extract.spice` | envelope `extraction.netlist_sha256` |
 | 8 | `measurements/characterization.md` | envelope `provenance.input.content_hash` + manifest pin |
+| 11 | `…/20260924-221821-a947aa8/ldo_core.gds` | ERC envelope `provenance.input.content_hash` + manifest pin (part 1) |
+| 11 | `…/20260924-221912-a947aa8/ldo_core.gds` | LVS envelope `environment.layout_sha256` + manifest pin (part 2) |
 
 Neither half is redundant: the manifest pin is what the *grader* (and the
 fleet roll-up that consumes this manifest) can verify without this repo's
