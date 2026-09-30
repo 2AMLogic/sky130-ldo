@@ -29,6 +29,8 @@ signoff/
   evidence/characterization.generic.json  item 8's generic evidence envelope
   records/t1-tier-report.json             the verdict of record (generated)
   check.sh                                re-grade + freshness gate (CI runs this)
+  verify-pins.py                          check.sh stage 1: re-hash every pinned artifact
+  tests/test_verify_pins.py               mutation coverage for that stage (runs in check:ci)
 ```
 
 - `block` is `"sky130-ldo"`. It is required: it is how this block's row is
@@ -73,6 +75,21 @@ It fails on three separable conditions, so a red build says which one:
    `measurements/characterization.md`, or recompose the layout GDS, without
    re-pinning, and this fails — which is the point: a citation that cannot rot
    is a citation that proves nothing.
+
+   Both directions of that cross-check — pin → manifest and manifest → pin —
+   are correlated **by the file each side names** (a manifest citation's
+   `file` against a pin's `cited_envelope`), not by whether the hash turns up
+   anywhere under the same item (issue #222). This matters for item 11, whose
+   compound citation has two halves with *legitimately identical*
+   `content_hash` values because both read the same GDS: pooling the item's
+   hashes let either half's pin satisfy the other half's check, so deleting
+   one of the two pins outright still passed. Nothing was actually unchecked
+   at the time — item 4's own pin independently covers the same LVS envelope
+   — but the check now stands on its own. The stage lives in
+   `verify-pins.py`, and `tests/test_verify_pins.py` performs that exact
+   deletion and asserts it fails; because that stage needs only `python3`
+   (no `klt`, no PDK, no network), its coverage runs in `npm run check:ci` on
+   every push rather than only in the `klt`-gated job below.
 2. **`klt signoff --manifest` could not run.** Exit 0 (T1 reached) and exit 3
    (ran fine, not yet T1) are both clean runs; 1 and 2 mean a broken manifest
    or a tier doc this `klt` cannot parse.

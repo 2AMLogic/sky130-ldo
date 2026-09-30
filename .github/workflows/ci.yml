@@ -6,9 +6,13 @@ name: CI
 #   - `package.json` `check:ci` (JSON syntax of every root-level *.json plus
 #     every sim/**/experiment.json, sim/**/records/*.json and
 #     signoff/**/*.json, shell/python syntax of the harness scripts,
-#     py_compile over every tracked sim/ + layout/ Python file,
+#     py_compile over every tracked sim/ + layout/ + signoff/ Python file,
 #     `sim/tests/`'s PDK-free unit coverage for the corner runner's own pure
-#     helper functions, a regex lint over tracked `.sch`/`.sym` files for
+#     helper functions, `signoff/tests/`'s mutation coverage for
+#     `signoff/verify-pins.py` -- stage 1 of `signoff/check.sh`, which needs
+#     no `klt`, so unlike the rest of that script it CAN run here; it proves
+#     each half of item 11's compound ERC+LVS citation rests on its own pin
+#     rather than on the other half's, #222 -- a regex lint over tracked `.sch`/`.sym` files for
 #     xschem's embedded-quoted-attribute truncation hazard (#59), a regex
 #     lint over tracked `design/*.sch` files for duplicate component
 #     `name=` values (#38) -- catches an unusable merged netlist, e.g. two
