@@ -267,8 +267,12 @@ device-body carve-outs
 ([#2183](https://github.com/2AMLogic/klayout-tools/issues/2183)), and the
 native-substrate tie
 ([#2255](https://github.com/2AMLogic/klayout-tools/issues/2255)). That is
-what `erc-requirements.txt`'s second pin buys, and why it is a second pin
-rather than a bump of the first.
+what `erc-requirements.txt`'s second pin buys. It was a second pin rather
+than a bump of the first because, when it was written, the DRC/LVS pin was
+`acb0ae6c`, which predates all of them. Since #142 the DRC/LVS pin is
+`040f3406`, which descends from the ERC pin `cb79a84f`, so one pin could now
+serve both flows. Collapsing them is a deliberate follow-up; see
+`erc-requirements.txt`.
 
 ## Extending to the LDO core (issues #15/#33)
 

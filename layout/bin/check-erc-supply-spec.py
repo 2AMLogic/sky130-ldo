@@ -6,12 +6,16 @@ against the GDS it is about to be run on (issue #112).
 claims *about the layout* that `klt erc` cannot re-derive for itself, so
 nothing in its report would notice them going stale after a re-route:
 
-  1. **The stackup omits met3/met4/met5.** That is correct only while the
-     block draws nothing on them (see the spec's own `stackup` comment for
-     why declaring them anyway is not free). If a later routing pass puts a
-     rail on met3+, an undeclared level reads as extra electrical islands --
-     which `klt erc` does report, loudly, as `erc.unconnected_net`, but
-     naming the actual cause here is cheaper than root-causing that finding.
+  1. **The stackup omits the sky130 levels the block does not draw.** It
+     declares li1..met3 and omits met4/met5, which is correct only while
+     the block draws nothing on them (see the spec's own `stackup` comment
+     for why declaring an undrawn level is not free). If a later routing
+     pass puts a rail on an undeclared level, that level reads as extra
+     electrical islands. `klt erc` does report that, loudly, as
+     `erc.unconnected_net`, but naming the actual cause here is cheaper
+     than root-causing that finding. This check fired for real once: #154
+     put VIN on met3, and it refused the met1..met2 spec until met3 and
+     via2 were declared.
 
   2. **`ties[].well_boxes` asserts where the substrate is.** sky130 NMOS sit
      in the native p-substrate with no drawn pwell shape, so the substrate

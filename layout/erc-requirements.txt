@@ -36,6 +36,17 @@
 #
 # So the honest arrangement is two pins, each naming the build its own
 # evidence was produced on, rather than one pin that is wrong for one flow.
+#
+# UPDATE (2026-09-30, after #142): the paragraph above describes the
+# DRC/LVS pin as it was when this file was written (`acb0ae6c`). #142 moved
+# that pin to `040f3406`, and `040f3406` DESCENDS from the `cb79a84f` below:
+# it carries every capability listed here. So "cannot use that pin" is no
+# longer true, and the two flows could share one pin. That is not done
+# here. The second ERC record (re-run against #154's layout record
+# 20260924-221821-a947aa8) deliberately stays on `cb79a84f`. That way the
+# only differences from the first ERC record are the GDS and the spec
+# (met3/via2 declared, substrate box re-derived), not the tool build.
+# Collapsing to one pin needs its own deliberate bump plus a fresh record.
 # Cross-check any committed report against the `provenance.klt_version` it
 # carries; for this pin that string is `0.6.0+gcb79a84fe3e4`.
 #

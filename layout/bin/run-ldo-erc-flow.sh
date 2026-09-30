@@ -9,7 +9,7 @@
 #   layout/bin/run-ldo-erc-flow.sh --layout-record 20260825-123551-3b4e121
 #
 # Requires layout/.venv-erc (its own pin -- see layout/erc-requirements.txt
-# for why the ERC flow cannot share the DRC/LVS pin) and a landed ldo-core
+# for why the ERC flow has a separate pin from DRC/LVS) and a landed ldo-core
 # layout record (layout/ldo-core/reports/LATEST). No PDK install is needed:
 # `klt erc --pdk sky130` reads its antenna-limit table from klt's own
 # built-in transcription of SkyWater's published rule tables, not from a
@@ -78,7 +78,7 @@ fi
 
 # --- 1. Pre-flight: does the spec still describe this layout? --------------
 # Two of the spec's declarations are claims ABOUT the layout that klt erc
-# cannot re-derive (the omitted met3+ levels, and the asserted substrate
+# cannot re-derive (the omitted met4+ levels, and the asserted substrate
 # region). Runs BEFORE the record directory exists, on purpose: a refusal
 # here must leave no half-written record behind for a later reader to
 # mistake for evidence.
