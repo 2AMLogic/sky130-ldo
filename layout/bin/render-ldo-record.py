@@ -19,6 +19,16 @@ from pathlib import Path
 
 from _record_common import _load, provenance
 
+#: `klt gen`'s `voltage_flavor` name -> the sky130 marker layer it draws, for
+#: rendering only (issue #142). Transcribed from the curated sky130 deck's own
+#: `MOSFlavour(marker=(75, 20), flavour="hvi", ...)`; the flow never reads this
+#: to decide anything -- `gen-ldo-blocks.py` asserts against `klt gen`'s
+#: `drc_hints.voltage_flavor_mark_present` instead, and the DRC verdict below
+#: is measured, so a stale entry here can only mislabel a table cell.
+VOLTAGE_FLAVOR_MARK_LAYERS = {
+    "hvi": "75/20",
+}
+
 
 def main() -> int:
     ap = argparse.ArgumentParser()
@@ -151,6 +161,46 @@ def main() -> int:
         )
     else:
         a("(none)")
+    a("")
+    a("### Voltage-domain marking")
+    a("")
+    flavor_counts = floorplan.get("mos_voltage_flavor_counts") or {}
+    if flavor_counts:
+        a(
+            "Every MOS block is drawn inside the sky130 voltage-domain marker "
+            "its own schematic model implies (issue #142), so `klt extract "
+            "--pdk` binds the model the schematic actually instantiates "
+            "instead of defaulting to the 1.8V core flavour:"
+        )
+        a("")
+        a("| `voltage_flavor` | Marker layer | MOS blocks |")
+        a("| --- | --- | --- |")
+        for flavor, count in sorted(flavor_counts.items()):
+            layer = VOLTAGE_FLAVOR_MARK_LAYERS.get(flavor, "(unknown)")
+            a(f"| `{flavor}` | {layer} | {count} |")
+        a("")
+        marker_layers = {
+            VOLTAGE_FLAVOR_MARK_LAYERS[f]
+            for f in flavor_counts
+            if f in VOLTAGE_FLAVOR_MARK_LAYERS
+        }
+        in_stream = set(
+            drc.get("coverage", {}).get("layers_in_stream_without_rules", []) or []
+        )
+        checked = set(drc.get("coverage", {}).get("layers_checked", []) or [])
+        present = marker_layers & (in_stream | checked)
+        a(
+            "DRC neutrality is measured here, not assumed: the marker "
+            f"layer(s) {sorted(present) or '(none found)'} appear in this "
+            "record's own `drc.json` coverage under "
+            "`layers_in_stream_without_rules` -- i.e. the geometry is really "
+            "in the stream, and no rule in the curated sky130 deck reads it, "
+            "so every rule kept applying its general-case threshold. The "
+            f"verdict above (`{drc.get('status')}`, "
+            f"violation_count={drc.get('violation_count')}) is the authority."
+        )
+    else:
+        a("(none -- no MOS block carries a voltage-domain marker)")
     a("")
     a("## Results")
     a("")

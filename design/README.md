@@ -18,7 +18,9 @@ per `CLAUDE.md`'s clean-room mandate.
 ## What this is, and isn't
 
 - **Is**: a real, netlist-clean xschem schematic implementing the LDO block
-  described in `spec/target-spec.md`'s DRAFT table, built on the framing
+  described in `spec/target-spec.md`'s table (ratified by issue #1 / DR-006,
+  except the Iq row, which is set separately by DR-009 and is still
+  `proposed`), built on the framing
   ratified in `spec/decision-records/DR-001-pass-device-supply-framing.md`,
   with the pass device sized per
   `spec/decision-records/DR-003-sky130-device-characterization.md`'s
@@ -293,6 +295,44 @@ confirms the fix: in the #14 record `EN=0` measured **`ipass` ≈ 46pA**
 (leakage-floor, screening-model only) versus the ~440µA–1.2mA shoot-through
 of the earlier drafts.
 
+**"Full-rail" is a hard interface requirement, and #187 measured what it costs
+to violate it.** The clamps above are PMOS with their *sources at VIN*, so their
+gate drive is `VIN - EN`: an `EN` high level below VIN leaves them partly
+conducting, and there is no level-shifter or threshold-referenced receiver on
+this pin. Measured at fs/125 °C, VIN = 3.63 V (`sim/README.md` → "#187", from a
+scratch flattened netlist with series ammeters — no schematic change):
+
+| `EN` high level | I(`M_ENP`) → `EA_OUT` | I(`M_ENP2`) → `BIASP` | I(`M_TAIL`) | settled V(VOUT) |
+|---|---|---|---|---|
+| 3.63 V (at the rail) | 39 pA | 62 pA | 3.476 µA | 1.79862 V |
+| 3.30 V | — | — | — | 1.79793 V |
+| 3.10 V | — | — | — | 1.78256 V |
+| 3.00 V | — | — | — | 1.68637 V |
+| 2.97 V | 1.377 µA | 1.639 µA | 1.003 µA | **collapsed** |
+
+The compounding is the point: `M_ENP2`'s residual current lifts `BIASP` by
+90.6 mV, which starves every BIASP-gated PMOS current source (the amplifier's
+tail current falls to 1.003 µA), while `M_ENP`'s residual current into `EA_OUT`
+*rises* to 1.377 µA — so the clamp out-drives the whole amplifier, `EA_OUT` is
+pulled to VIN and `M_PASS` turns off. It is a static limit, not a start-up
+branch: dropping `EN` to 2.97 V at 1 ms while the loop is already regulating
+collapses it. 125 °C maximizes the clamps' subthreshold conduction and `fs`
+(slow PMOS) minimizes the currents that must overcome it, so fs/125 °C is the
+worst case of the corner matrix, but the whole 125 °C/`EN` = VIN − 0.66 V column
+reads low (1.717–1.792 V).
+
+**This is a documented-interface fact, not a known gap**: nothing about it needs
+a circuit change, and no bench that honours the `0 V / VIN` contract sees it.
+`sim/enable-shutdown` — the row's own bench, which exercises the `EN` edges
+themselves — drives `EN` at `'vsup'` *with* VIN at `'vsup'`, as does every other
+bench in `sim/`. `sim/dropout-vs-load` was the single exception (VIN pinned at
+3.63 V while `'vsup'` drove `EN` alone), which is what produced the −7.4521 V
+`vout_at_max_vin_v` outlier in record `20260926-043132-eba96ae`; #187 corrected
+that bench's convention rather than this circuit. If a *system* ever needs a
+logic-level (e.g. 1.8 V) enable against a 3.3 V VIN, that is a new
+level-shifter/receiver requirement for the spec to state, not a defect in this
+implementation of a full-rail pin.
+
 Issue #22's additions were designed to slot into that discipline rather than
 work around it: the current-limit comparator's two NMOS branches
 (`M_CLN1`/`M_CLN2`) return through the same `AMP_ENN` switch, the soft-start
@@ -382,7 +422,7 @@ assumed, via a quick op screening deck against the pinned PDK
 
 Total divider resistance ≈3.12MΩ, so at `VOUT=1.8V` the divider itself draws
 ≈0.58µA — a small, deliberate contribution to the Iq budget, consistent with
-the DRAFT spec's "0mA = no external load; feedback divider is the only
+the ratified spec's "0mA = no external load; feedback divider is the only
 inherent preload" note. **These are screening numbers** (single corner,
 single bias point, not a `sim/` evidentiary record) — real values need
 re-confirming across the full PVT matrix once a testbench exists (#18/#19),
@@ -600,12 +640,12 @@ Miller pole splitting stops working at the 50 mA/0.33 µF corner DR-002 flags
 as the risky one. `M_TAIL`'s `W` was raised `20 → 40` in the same pass, for
 `Gm`: the no-load corner has to cross over *above* a low-frequency pole/zero
 doublet, which needs bandwidth. It stops at 2× rather than the 6× that
-screening showed keeps improving that corner, because the DRAFT `Iq < 30 µA`
-row is the binding constraint — 6× measured 33.6 µA at 50 mA, over the row;
-2× measures 24.9 µA (table below), inside it.
+screening showed keeps improving that corner, because the `Iq < 30 µA` row
+(set by DR-009, `proposed`) is the binding constraint — 6× measured 33.6 µA
+at 50 mA, over the row; 2× measures 24.9 µA (table below), inside it.
 
 **Measured result** (`sim/loop-gain` record `20260818-014128-01b7905`, the
-`--quick` 3-corner subset; DRAFT bound is `spec/target-spec.md`'s Stability
+`--quick` 3-corner subset; ratified bound is `spec/target-spec.md`'s Stability
 row, PM ≥ 45° and GM ≥ 10 dB worst corner):
 
 | Window point | `tt`/27°C/3.30V | `ss`/−40°C/2.97V | `ff`/125°C/3.63V |
@@ -658,7 +698,7 @@ operation and takes over `EA_OUT` when the pass current exceeds a threshold:
    alone would have halved the sense signal and silently doubled the trip
    threshold.) A sense FET rather than a
    series sense resistor because nothing may be inserted in the main current
-   path: a 1Ω sense resistor would spend 50mV of the 300mV DRAFT dropout
+   path: a 1Ω sense resistor would spend 50mV of the 300mV ratified dropout
    budget at 50mA.
 2. **Attenuate and compare.** The sense current lands in the diode-connected
    `M_CLN1` and is mirrored down 20:1.6 (≈12.5:1) by `M_CLN2` into the
@@ -690,7 +730,8 @@ this kind of limit is a window, not a number; establishing that window is
 
 **Iq interaction, stated rather than hidden.** The sense branch carries
 `I_load / 5952`, so it adds ~8µA at the 50mA load point — about a quarter of
-the DRAFT `Iq < 30µA at no load and full load` row, and the dominant term in
+the `Iq < 30µA at no load and full load` row (set by DR-009, `proposed`), and
+the dominant term in
 the measured full-load Iq below. It is ~0 at no load. Whether that is an
 acceptable use of the Iq budget is a question for the (still nonexistent) Iq
 budget decision record; the alternative levers are a narrower sense device
@@ -713,7 +754,7 @@ The implementation is a **current-starved ramp feeding a min-select input**:
   nA) charging `C_SS = 10p`. Charging from a *current source* rather than
   through a resistor is what makes `SS` a straight line; an RC ramp of the
   same duration would need a ~10MΩ/100pF combination, which is not affordable
-  against the 0.1mm² DRAFT area row. `M_SSCHG`'s gate is `BIASP`, so the ramp
+  against the 0.1mm² ratified area row. `M_SSCHG`'s gate is `BIASP`, so the ramp
   cannot start before the bias generator is alive and stops for free at
   `EN=0`.
 - `M_IN2S` is a replica of `M_IN2` (same `L`, `W`, `nf`) wired in parallel
@@ -985,7 +1026,7 @@ and the new mirror branches can, and did):
 | 3.30V | 1.8022V (+0.12%) | 1.8004V (+0.02%) | 1.7980V (−0.11%) |
 | 3.63V | 1.8025V (+0.14%) | 1.8005V (+0.03%) | 1.7981V (−0.11%) |
 
-**Every point is inside the DRAFT ±2% Output row**, including the 0mA and 1mA
+**Every point is inside the ratified ±2% Output row**, including the 0mA and 1mA
 high-`VIN` points the #22 schematic missed by +24.7% and +13.6%. For direct
 comparison, the same grid on the #22 (five-transistor OTA) schematic — the
 "known open item" this issue closes:
@@ -1005,13 +1046,13 @@ stalling at the old ≈2.5V `EA_TAIL` ceiling:
 | 3.30V | 2.734V | 2.347V | 1.708V |
 | 3.63V | **3.072V** | 2.685V | 2.057V |
 
-Against the other DRAFT rows, honestly scored:
+Against the other ratified rows, honestly scored:
 
 - **Load regulation** over the row's full 0→50mA range is 4.3mV at
-  `VIN=2.97V` (**0.24%**), inside the DRAFT `<1%` row — where the #22
+  `VIN=2.97V` (**0.24%**), inside the ratified `<1%` row — where the #22
   schematic was 55mV (3.0%) and missed it.
 - **Line regulation** at 50mA is (1.7981−1.7978)/0.66V ≈ **0.45mV/V**, inside
-  the DRAFT `<5mV/V` row — where the #22 schematic was ≈11mV/V and missed it.
+  the ratified `<5mV/V` row — where the #22 schematic was ≈11mV/V and missed it.
   At 0mA it is 0.61mV/V.
 
 These are still **screening** numbers (single process corner, single
@@ -1028,9 +1069,10 @@ the re-run `load-transient` / `dropout-vs-load` / `psrr-dc` records.
 | 3.30V | 11.28µA | 11.87µA | 23.49µA | — |
 | 3.63V | 12.88µA | 13.44µA | 24.91µA | **0.165nA** |
 
-Iq = total `VIN` current minus load current. All points are inside the DRAFT
-`Iq < 30µA at no load and full load` row, and the disabled state is four
-orders of magnitude inside the DRAFT `< 3µA` row. The 0mA→50mA Iq growth is
+Iq = total `VIN` current minus load current. All points are inside the Iq
+`< 30µA at no load and full load` row (set by DR-009, `proposed`), and the
+disabled state is four orders of magnitude inside the ratified `< 3µA` row.
+The 0mA→50mA Iq growth is
 almost entirely the current-limit sense branch (`I_load / 5952` ≈ 8µA at
 50mA) — see "Iq interaction" above.
 
@@ -1038,11 +1080,12 @@ almost entirely the current-limit sense branch (`I_load / 5952` ≈ 8µA at
 The #22 numbers were 5.55–7.38µA at 0mA and 18.0–19.3µA at 50mA; the increase
 here is the two added mirror branches plus the 2× `M_TAIL` widening. Pushing
 `M_TAIL` to 6× — which screening showed keeps improving the no-load phase
-margin, up to ~40° — measured **33.6µA at 50mA**, i.e. *over* the DRAFT row,
-so it was not taken. That trade is recorded rather than hidden, because it is
-the reason the no-load corner in "Compensation (sized in #25)" is left short
-of 45° instead of bought out with bias current: relaxing one DRAFT row to
-make another DRAFT row pass is exactly what `CLAUDE.md` forbids.
+margin, up to ~40° — measured **33.6µA at 50mA**, i.e. *over* the Iq row (set
+by DR-009, `proposed`), so it was not taken. That trade is recorded rather
+than hidden, because it is the reason the no-load corner in "Compensation
+(sized in #25)" is left short of 45° instead of bought out with bias current:
+relaxing one row to make another ratified row pass is exactly what
+`CLAUDE.md` forbids.
 
 **The disabled state is unchanged at the leakage floor.** `EN=0` measures
 133pA at `VIN=2.97V` and 165pA at `VIN=3.63V` — the same ~150pA as the #22
@@ -1228,7 +1271,7 @@ through the existing `AMP_ENN`/`BIASP`/`M_ENP4` gating described above.
 
 ### Closed in #25: light-load regulation (diagnosis and cure)
 
-**Status: closed.** The DC grid above now sits inside the DRAFT ±2% row at
+**Status: closed.** The DC grid above now sits inside the ratified ±2% row at
 all nine `VIN` × load points. What follows is the history, kept because the
 diagnosis is the reason the fix is a topology change and not a sizing tweak,
 and because the *rejected* candidate is worth not repeating.
@@ -1328,7 +1371,7 @@ Still deliberately **not** in this schematic:
 
 These are real, trackable gaps, not silently dropped requirements.
 
-### The full 45-point PVT + Monte Carlo campaign has run, and it fails every DRAFT row it substantiates (#19/#37/#40 ran it; #60 root-caused the results, 2026-08-25)
+### The full 45-point PVT + Monte Carlo campaign has run, and it fails every ratified row it substantiates (#19/#37/#40 ran it; #60 root-caused the results, 2026-08-25)
 
 **Status update, superseding every "#19's job" / "3-corner `--quick` subset"
 line elsewhere in this file.** Issues #19/#37/#40 closed having actually run
@@ -1404,13 +1447,14 @@ previously-undesigned-for gap (PSRR):**
    pervasive rather than confined to the 3-corner subset.** `sim/loop-gain`'s
    full 45-point run passes only 3/45 corners (versus the 3-corner quick
    subset's already-known 0mA shortfall at 2 of 3 corners). The `pm_c033_0ma`
-   column is below the 45° DRAFT Stability row at nearly every corner outside
-   125°C (typically 15–24° at −40/27°C, improving toward 30–90° as
+   column is below the 45° ratified Stability row at nearly every corner
+   outside 125°C (typically 15–24° at −40/27°C, improving toward 30–90° as
    temperature rises), confirming the mechanism this file already named under
    "Compensation (sized in #25)" — the pass stage's own
    `gm_pass/(2π·C_out)` pole falling with load current, unclosable without
-   spending amplifier bias current the DRAFT `Iq < 30µA` row does not have
-   room for — generalizes across the full corner grid rather than being a
+   spending amplifier bias current the `Iq < 30µA` row (set by DR-009,
+   `proposed`) does not have room for — generalizes across the full corner
+   grid rather than being a
    quirk of the 3 quick-subset corners. The same marginal-margin/doublet-dip
    condition is the most likely driver of `mc-output-accuracy`'s 19/200 tail
    outliers (see below) and of the *non-pathological* (i.e. not
@@ -1432,7 +1476,7 @@ previously-undesigned-for gap (PSRR):**
    screening forced full gate drive externally, while the closed loop's own
    amplifier — whose bias/tail chain also loses headroom as `Vin` approaches
    `Vout` — cannot quite reach full drive at this margin. 400–450mV is still
-   above the DRAFT 300mV target, a real (if smaller than the raw 530mV–1.79V
+   above the ratified 300mV target, a real (if smaller than the raw 530mV–1.79V
    the record reports) gap. **Superseded by #71's fix** — see "#71 resolved"
    below for the confirmed, `sim/`-evidentiary number (0.310V–0.554V at
    −40°C/27°C across all five process corners) that replaces this screening
@@ -1459,7 +1503,7 @@ previously-undesigned-for gap (PSRR):**
    at 125°C, root-caused but not yet fixed (deferred to #79).
 5. **PSRR: a real, systematic, previously-undesigned-for shortfall, not a
    symptom of (1)/(2)/(4).** `sim/psrr-dc` fails 39/45 corners at 1kHz by a
-   wide, consistent margin (measured 20.3–25.7dB against the 50dB DRAFT
+   wide, consistent margin (measured 20.3–25.7dB against the 50dB ratified
    target — a real, non-pathological small-signal result, not a
    non-physical one); the 6 corners that pass (`ff`/`sf` at 125°C) are
    exactly the corners mechanism (1) shows are thermal-shutdown-tripped, so
@@ -1491,13 +1535,14 @@ previously-undesigned-for gap (PSRR):**
    likely to close most or all of this row without any change to the
    mismatch model itself.
 
-**What this means for the DRAFT spec rows.** None of Output, Dropout,
+**What this means for the ratified spec rows.** None of Output, Dropout,
 Load-transient, PSRR or Stability can be marked closed. None of the five
 findings above is closable by a small, low-risk sizing tweak validated
 against a single corner — each requires a design change (bias-generator
 redesign for PSRR/supply-independence, a re-tuned/re-verified thermal-
 shutdown sizing for the false-trip, and a compensation/bias-current rework
-for the light-load margin that fits inside the DRAFT `Iq` budget) followed by
+for the light-load margin that fits inside the `Iq` budget (set by DR-009,
+`proposed`)) followed by
 a full, expensive 45-point-per-testbench re-verification pass to confirm it
 without regressing a different row — exactly the risk this issue's own
 Curator enhancement flagged ("a wrong root cause or a fix that regresses a
@@ -1510,7 +1555,7 @@ pass:
   shortfall (mechanism 2), bundled together since both plausibly share a
   bias-generator-redesign fix and both compete for the same `Iq` budget.
   **Resolved (spec recommendation) 2026-09-14** — see "DR-007 recommends
-  superseding the DRAFT PSRR/Stability rows" below; both candidate routes
+  superseding the ratified PSRR/Stability rows" below; both candidate routes
   within the single-stage topology proved verified-negative (via #79), and
   a topology-class fix is spun off into **#107**.
 - **#71** — the `dropout-vs-load` testbench's `dropout_v` measurement
@@ -1523,7 +1568,18 @@ pass:
   loop's own dynamics prefer at 125°C/50mA), not a solver-tuning problem.
   **Resolved (diagnosis) 2026-08-25** — see "#71/#81 resolved" below; the
   actual fix is deferred to **#79** (same bias-generator/compensation
-  headroom bucket as mechanism 2).
+  headroom bucket as mechanism 2). **Caveated by #164 (2026-09-25)**: #81's
+  *item 1* (an unconverged `.op` producing `FB` hundreds of volts off a
+  passive divider) is now measured and fully explained at 27 °C/1 mA — see
+  "#164" below — and #81's *item 2* used a `tran … uic` whose `.ic`
+  constrained only `v(vout)`, leaving every other node to the same
+  unconstrained solve. Item 2 is therefore **unverified rather than
+  refuted**, and should be repeated with the full node set constrained
+  before its design-change conclusion is relied on. **Withdrawn by #169
+  (2026-09-25)**: repeated that way (and cold, and with #81's own method on
+  #81's own circuit), every start regulates at 125 °C/50 mA; item 2's
+  reported values are the regulating state's `EA_OUT`/`TS_SNS`/`TS_REF` — see
+  "#169" below. The deferral to #79 no longer applies.
 
 `mc-output-accuracy`'s tail-outlier FAIL (mechanism 6) has no issue of its
 own — it is expected to close mostly or entirely as a side effect of #70.
@@ -1540,7 +1596,7 @@ classic "regulation just lost" definition — rather than the old fixed
 45-point record (`20260825-055423-c000414`, supersedes
 `20260818-032811-81dc232`) confirms the screening estimate: at −40°C/27°C,
 across all five process corners, `dropout_v` ranges **0.310V–0.554V**
-(worst: `ff`/27°C; best: `ss`/−40°C) — still above the DRAFT 300mV target (a
+(worst: `ff`/27°C; best: `ss`/−40°C) — still above the ratified 300mV target (a
 real gap, not a testbench artifact) but well below the raw 530mV–1.79V the
 old fixed-endpoint measurement reported. 125°C corners are excluded from
 this range for the reason below.
@@ -1591,6 +1647,26 @@ dropout results. The −40°C/27°C corners are trustworthy under the new
 methodology.
 
 #### #81 resolved: mechanism 4's 125°C severity root-caused — a genuine circuit robustness gap, not a solver-tuning problem (2026-08-25)
+
+> **Corrected by #169 (2026-09-25) — item 2 below is withdrawn; read "#169"
+> near the end of this file before relying on it.** Re-run as committed
+> `sim/` experiments at `tt`/`ss`/`ff`/`sf`/`fs` × 125 °C × {3.30, 3.60,
+> 3.63} V / 50 mA, #81's own method (`.ic v(vout)=1.8` only, `uic`), a full
+> eleven-node seed with and without `uic`, and a cold EN-edged start all
+> regulate at 1.7985–1.7987 V on all 60 points, agree with each other to
+> ≤ 6 µV on every dumped node, and emit no solver diagnostics. #81's method on
+> a frozen copy of #81's own circuit also regulates at `tt`/`ss`/`fs`, and its
+> settled `EA_OUT`/`TS_SNS`/`TS_REF` are exactly the "`Vout`/`FB`/`N_FBB`"
+> item 2 reports below (e.g. `tt`: 2.09267 / 1.11360 / 1.04796 V against
+> "2.093 / 1.114 / 1.048 V"). There is no second equilibrium; item 2's numbers
+> are other nodes of the regulating state, and its `FB`:`N_FBB` anomaly is
+> `TS_SNS`:`TS_REF`. **Item 1 is unaffected** (#164 explains it). So the
+> conclusion below that "no harness-level fix … can make `dropout-vs-load`'s
+> 125°C corners produce trustworthy regulating-branch numbers" and that this
+> is "a genuine circuit robustness gap requiring a design change" no longer
+> has a basis: the remaining 125 °C problem is item 1, a bench problem
+> (#168/#138). The section is kept as written because it is what #81
+> recorded.
 
 **Isolated to two distinct, compounding phenomena, both worse at 125°C than
 −40/27°C (screening, reproduced from the committed schematic's own netlist,
@@ -1699,7 +1775,7 @@ above. The existing record
 (`sim/load-transient/records/20260818-032755-81dc232.md`) confirms this
 in practice: at 125°C, `tt`/`ss`/`fs` all report plausible, physically
 sane `undershoot_v`/`overshoot_v` values (0.157V–0.284V — real spec
-misses against the 0.15V DRAFT target, not solver artifacts), while only
+misses against the 0.15V ratified target, not solver artifacts), while only
 `ff`/`sf` show the extreme non-physical values (`undershoot_v` up to
 22.29V) mechanism 1's thermal-shutdown false-trip already explains. No
 re-run needed — the existing record already answers this issue's
@@ -1746,8 +1822,9 @@ loop's degenerate `I=0` solution. This was fully implemented in place of
   `sim/README.md`) settles into a genuine, stable-but-wrong high-current
   branch at every load point tried (`tt`/27°C, `VIN=3.3V`, 0/1/50 mA):
   `NB` pulled to ≈3.297 V (≈`VIN`), `BIASP` pulled to ≈0.673 V, and total
-  supply current ≈1 mA at 0 mA external load — over 30× the DRAFT
-  `Iq < 30 µA` row, with `VOUT` collapsed to a few hundred µV to a few mV.
+  supply current ≈1 mA at 0 mA external load — over 30× the Iq
+  `< 30 µA` row (set by DR-009, `proposed`), with `VOUT` collapsed to a few
+  hundred µV to a few mV.
   This reproduces from a *settled* transient (500 µs, values steady well
   before the end of the run), not a one-shot `.op` artifact, and is
   independent of `.nodeset` hints biasing the solver toward the intended
@@ -1843,15 +1920,16 @@ shortfall.
   here.
 - Independent of that ambiguity, the `Iq` headroom for any preload is
   tight regardless: "Quiescent and shutdown current" above measures
-  24.9 µA at 50 mA against the DRAFT `Iq < 30 µA` row, leaving only ≈5 µA
+  24.9 µA at 50 mA against the `Iq < 30 µA` row (set by DR-009, `proposed`),
+  leaving only ≈5 µA
   of room for a preload that adds current at *every* load point (not just
   at 0 mA) before that row itself would be missed.
 
-**Net effect on the DRAFT spec rows.** PSRR and Stability remain **open**,
+**Net effect on the ratified spec rows.** PSRR and Stability remain **open**,
 exactly as mechanisms 2 and 5 in the campaign section above describe —
 this investigation did not close either. Per `CLAUDE.md`'s "a row that
 proves unmeetable is superseded by a new decision record, never silently
-loosened" discipline, no DRAFT row was touched: both the 50 dB PSRR row
+loosened" discipline, no ratified row was touched: both the 50 dB PSRR row
 and the 45° Stability row stand as written, and the two screened-but-
 rejected candidates above are recorded as real, if negative, findings
 rather than folded into a claim of progress. **#79** carries the
@@ -1870,7 +1948,7 @@ reaches (its own finding: measured on a branch "not confirmed to be the
 same branch the documented 15-24° PM shortfall lives on"). This issue
 resolves both questions — (1) with a genuine fix, (2) with a real
 negative result — and neither, once resolved, closes the PSRR or
-Stability DRAFT rows.
+Stability ratified rows.
 
 #### 1. Self-biased reference: root-caused #70's regenerative-loop defect and fixed it
 
@@ -1969,7 +2047,8 @@ cost of the fix is the second leg's own current, `I2≈m*I1≈3.2-3.4µA`
 (measured via total `VIN` current minus `I1`), which the pre-#79 topology
 did not have to pay (a single-leg resistor reference has no second leg).
 Against "Quiescent and shutdown current" above (24.91µA measured at
-50mA/3.63V against the DRAFT `Iq<30µA` row, ~5µA headroom), this ~3.3µA
+50mA/3.63V against the `Iq<30µA` row (set by DR-009, `proposed`), ~5µA
+headroom), this ~3.3µA
 addition is real but survivable in isolation.
 
 **Does not move PSRR or 0mA phase margin — the reference-loop-stability
@@ -2072,27 +2151,31 @@ the DR-002 window's *other* corner (`pm_c47_0ma_deg`) — which #70's
 screening never covered — shows why: a preload is a one-parameter knob
 being asked to fix a two-corner problem.
 
-**Net effect on the DRAFT spec rows.** PSRR and Stability remain **open**,
+**Net effect on the ratified spec rows.** PSRR and Stability remain **open**,
 same as after #70. Both avenues #70 identified as promising have now been
 carried to a definitive, verified conclusion (one fixed a real defect but
 does not move the metric; one is confirmed real on the correct branch but
 does not net a clean win) rather than left as an open question for a
-future issue to re-litigate. Per `CLAUDE.md`'s discipline, no DRAFT row
+future issue to re-litigate. Per `CLAUDE.md`'s discipline, no ratified row
 is touched. **What remains unexplored**, based on this and #70's combined
 findings: closing `pm_c033_0ma_deg`/PSRR appears to require spending
 additional amplifier-side (not bias-generator- or preload-side) `Iq` —
 directly raising `M_TAIL`'s own tail current, which issue #25's own
 "Quiescent and shutdown current" section already measured as effective
 ("keeps improving the no-load phase margin, up to ~40°" at 6x `M_TAIL`)
-but rejected for exceeding the DRAFT `Iq` row (33.6µA vs. 30µA) — meaning
+but rejected for exceeding the `Iq` row (33.6µA vs. 30µA, set by DR-009,
+`proposed`) — meaning
 a durable fix plausibly needs either a compensation/amplifier topology
-change that does not cost `Iq` linearly, or a revisit of the DRAFT
-`Iq<30µA` row itself once issue #1 ratifies the spec (a decision this
-repo's `CLAUDE.md` reserves for a spec decision record, not a Builder
-default). Filing a further follow-on issue for that specific, narrower
-question is left to Curator/human triage rather than decided here.
+change that does not cost `Iq` linearly, or a revisit of the
+`Iq<30µA` row itself — the row `DR-009` sets (`proposed`; it ratifies on
+its own PR merge) — through a new decision record superseding DR-009 (a
+decision this repo's `CLAUDE.md` reserves for a spec decision record, not
+a Builder default; issue #1, the original ratification gate, closed
+`completed` 2026-09-18 and cannot set it). Filing a further follow-on
+issue for that specific, narrower question is left to Curator/human triage
+rather than decided here.
 
-### DR-007 recommends superseding the DRAFT PSRR/Stability rows; no circuit change (#70, PR #106, 2026-09-14)
+### DR-007 recommends superseding the ratified PSRR/Stability rows; no circuit change (#70, PR #106, 2026-09-14)
 
 **Status: `proposed`, pending #1's two-key market-comparison mechanism. No
 schematic change ships with this record — `design/ldo_3v3in_1v8out.sch`
@@ -2101,16 +2184,17 @@ candidates (PR #82) and #79's follow-on candidates (PR #88) carried to
 definitive, verified-negative conclusions (see the two sections above), the
 operator's 2026-09-14 scoping comment on #70 directed the next increment:
 draft a decision record recommending one of the two paths #70's original
-framing posed — spend further amplifier `Iq` chasing the DRAFT targets, or
-treat the two negative results as evidence the DRAFT PSRR/Stability rows are
+framing posed — spend further amplifier `Iq` chasing the ratified targets, or
+treat the two negative results as evidence the ratified PSRR/Stability rows are
 unmeetable by the shipped topology and need revision — rather than parking
 the issue indefinitely as `loom:operator-only`/`loom:operator-decision`.
 
 `spec/decision-records/DR-007-psrr-stability-vs-iq.md` recommends the
-latter. It argues the DRAFT 50dB-@-1kHz PSRR row and 45°-PM-@-0mA
+latter. It argues the ratified 50dB-@-1kHz PSRR row and 45°-PM-@-0mA
 (worst-corner) Stability row are structurally unmeetable by the current
 single-stage current-mirror OTA plus its shared, un-cascoded bias generator
-within the DRAFT `Iq < 30µA` row — not an unexhausted design space a further
+within the `Iq < 30µA` row (set by DR-009, `proposed`) — not an unexhausted
+design space a further
 Iq-spend attempt is likely to close, since the one lever that ever moved
 0mA phase margin at all (issue #25's 6x `M_TAIL` screen) already exceeds the
 Iq budget by 12% and still misses the 45° floor by 5°, with no PSRR data
@@ -2121,7 +2205,8 @@ and PM ≥45°/GM ≥10dB for `I_load ≥ 1mA` with no floor stated at the liter
 0mA point — against two public comparables (onsemi NCP170, Microchip
 MCP1801) that both clear the original 50dB target at or below this design's
 own Iq budget, so the market-comparison mechanism has real, cited numbers to
-rule on rather than an unsubstantiated ask. The DRAFT `Iq < 30µA` row itself
+rule on rather than an unsubstantiated ask. The `Iq < 30µA` row itself (set
+by DR-009, `proposed`)
 is left untouched — neither verified-negative attempt showed it to be the
 binding constraint.
 
@@ -2200,7 +2285,7 @@ remains the freshest evidence and needed no re-run this pass:
 fix-or-defer decision per row, and track each slice to either a landed fix
 or a documented rationale — is complete. It has no further independent
 code-level increment to contribute: the remaining path to flipping Dropout,
-Load transient, Output accuracy, PSRR or Stability to PASS on the DRAFT
+Load transient, Output accuracy, PSRR or Stability to PASS on the ratified
 table runs entirely through **#107** (open, separately tracked), not through
 a new #60 increment that would just restate this same conclusion. Closing
 #60 on that basis, per this repo's "issues are suggestions" convention —
@@ -2210,7 +2295,7 @@ carrying it forward.
 
 ### Thermal-shutdown trip/hysteresis testbench ships (issue #66, 2026-08-25)
 
-The Thermal DRAFT spec row's evidence gap — no dedicated `sim/` testbench for
+The Thermal ratified spec row's evidence gap — no dedicated `sim/` testbench for
 the thermal-shutdown circuit's (#29/DR-005) actual trip/reset behavior — is
 now closed by `sim/thermal/`. Two things had to happen first, per this
 issue's own acceptance criteria:
@@ -2378,7 +2463,7 @@ solver's exact numerical path happens to land on.
 
 **Net effect.** Per `CLAUDE.md`'s "a row that proves unmeetable is
 superseded by a new decision record, never silently loosened" discipline, no
-DRAFT row or DR-005 Decision text is touched — DR-005's own `2026-08-25`
+ratified row or DR-005 Decision text is touched — DR-005's own `2026-08-25`
 addendum (second one) records the same finding formally. This needs a
 genuine large-signal loop-gain redesign of the trip-comparator/hysteresis
 cluster (most plausibly a real regenerative latch/Schmitt-style element,
@@ -2439,7 +2524,7 @@ celebrating.**
   ("on the evidence available, PSRR does not actually pass anywhere"). With
   the trip gone those corners return honest numbers and the whole 1 kHz
   column collapses to **20.31–25.68 dB** (was 20.31–76.79 dB) against the
-  50 dB DRAFT bound. #60's inference is now a measurement. Mechanism 5
+  50 dB ratified bound. #60's inference is now a measurement. Mechanism 5
   (#70) is untouched and unchanged by this fix.
 - **`load-transient` gained four corners and lost two.** The two that
   regressed (`ff_27c_3.30v`, `ff_27c_3.63v`) did not get a worse transient
@@ -2470,7 +2555,7 @@ what moves two `load-transient` corners in the table above. Mechanism 3 is
 no longer open: #71/#83 fixed `dropout-vs-load`'s `dropout_v` methodology
 while this branch was in flight (see the "#71/#81 resolved" section above),
 though the row is still `FAIL` — 0/45 before and after, on either method.
-**The one DRAFT row #69 does move all the way is Current limit**, whose
+**The one ratified row #69 does move all the way is Current limit**, whose
 only failing corner was this nuisance trip read through a resistive load.
 
 Two further gaps #69 opens rather than closes, both named and neither
@@ -2720,7 +2805,7 @@ full-matrix screening, even though that candidate does not ship for the
 reasons above.
 
 **Net effect.** Same disposition #70 and #77 already established for this
-repo's two hardest open loop-gain problems: no DRAFT row or DR-005 Decision
+repo's two hardest open loop-gain problems: no ratified row or DR-005 Decision
 text is touched (DR-005 gains an append recording this, not an edit).
 `ldo_3v3in_1v8out.sch` is unchanged. **No new `sim/thermal` record was
 minted** — the committed schematic did not change, so a fresh 15-point run
@@ -2748,10 +2833,13 @@ still-unsolved problem.
 
 ### Cascoded NMOS mirror screened, does not close PSRR/Stability either — verified-negative (#107, 2026-09-15)
 
-**Status: investigated, not shipped.** `spec/target-spec.md` is still DRAFT
-(issue #1 has not ratified it, and DR-007's proposed replacement PSRR/
-Stability rows are still `proposed`, not ratified), so this investigation
-screened against the same DRAFT `Iq < 30µA` row DR-007 and #70/#79 used.
+**Status: investigated, not shipped.** At the time of this investigation
+`spec/target-spec.md` was still DRAFT — issue #1 had not yet ratified it;
+it did on 2026-09-18, per DR-006 — and DR-007's proposed replacement
+PSRR/Stability rows are still `proposed`, not ratified. So this
+investigation screened against the same `Iq < 30µA` row DR-007 and #70/#79
+used, then DRAFT; ratification (DR-006, Option A: ratify unchanged) carried
+that number forward, and it is now set by `DR-009` (`proposed`).
 `design/ldo_3v3in_1v8out.sch` is **unchanged** by this issue — the one
 candidate built and screened here did not clear the screening bar, so per
 this repo's "verification is the product, no partial fix" convention
@@ -2760,7 +2848,7 @@ shipped.
 
 **What this issue picked up.** DR-007's Consequences section named a
 higher-DC-gain amplifier architecture — "two-stage or cascoded gain stage"
-— as the most plausible remaining fix for the DRAFT PSRR/Stability rows,
+— as the most plausible remaining fix for the ratified PSRR/Stability rows,
 and explicitly scoped that investigation to a new issue rather than a
 further decomposition of #70/#79's lineage. This issue is that
 investigation. Two candidate classes exist; only one was rebuilt and
@@ -2807,7 +2895,7 @@ cheaply... before committing to a full corner run."
 - **DC operating grid unaffected.** A `.op` sweep at the same nine `VIN` x
   load points "Screening checks" §1 uses (2.97/3.30/3.63V x 0/1/50mA)
   regulates at every point, `VOUT` 1.786–1.790V (vs. baseline 1.798–1.802V,
-  a consistent ≈−0.6% shift, still inside the DRAFT ±2% row) and `EA_OUT`
+  a consistent ≈−0.6% shift, still inside the ratified ±2% row) and `EA_OUT`
   essentially unchanged from baseline at every point, including the
   light-load/high-`VIN` ceiling case (`VIN=3.63V`/0mA: `EA_OUT`=3.0726V
   candidate vs. 3.0726V baseline) — confirming the PMOS-side swing ceiling
@@ -2887,8 +2975,9 @@ issue with its own screening, not a same-session rebuild grafted onto this
 one's already-answered verdict.
 
 **Verified-negative conclusion.** Per DR-007's own diagnosis and this
-issue's data, closing the DRAFT PSRR/Stability rows within the DRAFT
-`Iq < 30µA` row needs either raising the OTA's `Gm` (input-pair
+issue's data, closing the ratified PSRR/Stability rows within the Iq
+`< 30µA` row (set by DR-009, `proposed`) needs either raising the OTA's
+`Gm` (input-pair
 transconductance, i.e. more tail current — already screened by issue #25's
 6x `M_TAIL` candidate, which DR-007 cites as exceeding the Iq budget by 12%
 while still missing the 45° floor by 5°) or a compensation architecture
@@ -2896,7 +2985,7 @@ that raises crossover alongside any added gain (nested Miller, feedforward,
 or similar) — not a plain cascode (screened here, no effect) and not a
 second gain stage retried on the same compensation architecture #22 already
 showed oscillates. No lever tested across #25, #70, #79, and this issue has
-closed the PSRR gap; DR-007's recommendation to supersede the DRAFT
+closed the PSRR gap; DR-007's recommendation to supersede the ratified
 PSRR/Stability rows via #1's ratification mechanism stands unchanged by
 this issue. No new decision record is filed — DR-007's Consequences section
 already anticipates exactly this outcome ("Hands to design, unresolved":
@@ -3306,13 +3395,914 @@ with its own evidence and the interaction goes to a named follow-up, instead of
 an unmeasured compensation re-design riding along inside a sizing fix. The
 125 °C dc-sweep volatility noted above (5 of 15 points get numerically worse)
 is likewise handed to a follow-up (#138) rather than root-caused here, since
-it is the same loop-dynamics question #81/#79 already own. Every other `sim/` bench
+it is the same loop-dynamics question #81/#79 already own. *(#169, 2026-09-25:
+there is no such loop-dynamics question — #81's second equilibrium does not
+exist, see "#169" below — so #138 is a `dc`-sweep initial-condition question
+in `#168`'s family, not one waiting on a design change.)* Every other `sim/` bench
 instantiates this DUT, so their committed netlist snapshots are stale against
 it and `measurements/characterization.md` reports them `STALE` — the same
 correct-by-design outcome #69's re-run produced, and a follow-up owns
 re-running the campaign against the re-sized DUT. `layout/ldo-core`'s DRC/LVS
 records characterize the 2500 µm device and are likewise stale by
 construction.
+
+### #118: the three DC-accuracy rows do share one mechanism — but it is not matching, loop gain or supply rejection (measured, no circuit change, 2026-09-25)
+
+**Status: investigated and re-measured; `design/ldo_3v3in_1v8out.sch` is
+unchanged, and deliberately so.** Issue #118 grouped three rows — `Output`
+(Monte Carlo), `Line regulation` and `Load regulation` — on the reasoning that
+"three DC-accuracy rows fail together, which is usually one mechanism rather
+than three," and proposed three candidate mechanisms: device **mismatch** for
+`Output`, DC **supply rejection** for `Line regulation`, and **loop gain** for
+`Load regulation` ("loop-gain-bound almost by definition"). The premise is
+right and all three candidates are wrong. Each row's own evidence, read
+sample-by-sample and corner-by-corner instead of as an aggregate pass count,
+shows the same thing: **wherever the circuit is on its intended regulating
+branch, all three rows sit comfortably *inside* their ratified bounds; every
+failure is a point that is not on that branch at all.** The binding mechanism
+is the mechanism-4 DC-solution-multiplicity / second-stable-equilibrium family
+`#60`/`#71`/`#81` already root-caused above, not an accuracy shortfall.
+
+All three rows were re-run in full against the current (post-#116) DUT, since
+the records #118 was filed against all predate that re-size and
+`measurements/characterization.md` reported all three `STALE`. Each new record
+supersedes the one the issue cites, and all three rows now read `fresh`:
+
+| Row | Record #118 cites | New record | Then → now |
+|---|---|---|---|
+| Output | `20260825-083111-4cb27f8` | [`20260925-110312-8280915`](../sim/mc-output-accuracy/records/20260925-110312-8280915.md) | 177/200 → **185/200** |
+| Line regulation | `20260910-030557-6c0436d` | [`20260925-114251-1f54ca6`](../sim/line-regulation/records/20260925-114251-1f54ca6.md) | 18/45 → **24/45** |
+| Load regulation | `20260910-032854-6c0436d` | [`20260925-111601-7701e7e`](../sim/load-regulation/records/20260925-111601-7701e7e.md) | 34/45 → **37/45** |
+
+Every row improved and every row still reports `FAIL`. The improvement is
+#116's pass-device re-size, not anything this issue shipped — and the
+decomposition below is why the *remaining* failures will not move for any
+amount of accuracy work.
+
+Because no candidate mechanism this issue was asked to size against turned out
+to be binding, **no sizing change was made** — per this file's standing
+"verification is the product, no speculative fix" convention (`#70`, `#77`,
+`#91`, `#107`, `#115`). Widening the divider's unit-resistor string or the
+error-amp input pair for matching, which #118's Scope asked for conditionally
+("*if* nominal is centred and 23/200 samples fall outside"), is specifically
+**contra-indicated** by the decomposition below and was not done.
+
+**1. `Output` (Monte Carlo): not a spread failure, and never has been.**
+`sim/bin/mc-run.py` now computes a nominal-vs-spread decomposition into every
+MC record (see that function's docstring for the reading rule), so this is
+stated in the evidence rather than only here. New record
+[`20260925-110312-8280915`](../sim/mc-output-accuracy/records/20260925-110312-8280915.md)
+supersedes [`20260825-083111-4cb27f8`](../sim/mc-output-accuracy/records/20260825-083111-4cb27f8.md)
+(N=200, `tt_mm`, 27 °C, VIN=3.3 V, 1 mA, seed `20260817` — same seed contract,
+so the sample sequence is the prior record's, re-run against the post-#116
+DUT):
+
+| Population | n | Reading |
+|---|---|---|
+| In the ratified ±2 % window | **185** | mean **1.80168 V**, stddev **8.33 mV**, full range 1.77941–1.82498 V |
+| Out of window, valued | **12** | **11 of them at 3.284–3.308 V** (VOUT pinned at/just above VIN), **1 at −18.09 V** |
+| Errored (no measurement) | 3 | `mc36`, `mc70`, `mc122` |
+
+- **Nominal is centred.** The in-window mean is **+1.68 mV** from the window
+  centre — **+0.093 %** of the 1.8 V target, against a ±2 % (±36 mV) window.
+  There is nothing to re-centre.
+- **Spread is not the constraint either.** That population's own 3σ is
+  **±25.0 mV** inside a ±36 mV window; the nearer window edge is **4.12σ** from
+  its mean (the far edge 4.52σ). A normal population with exactly these
+  moments puts **≈22 ppm** outside the window — a **99.998 %** yield. The
+  observed failure rate is **6.1 %**, four orders of magnitude larger. No
+  plausible matching improvement closes a gap that matching is not opening.
+- **The failures are a separate mode with an empty gap in between.** Not one
+  sample of 197 lands between 1.825 V and 3.284 V. The nearest out-of-window
+  sample is **174σ** past the window edge. Eleven of the twelve are VOUT sitting
+  at the input rail: the pass device fully on, the loop not regulating.
+- **This is a settled-transient result, not a `.op` artifact.** The bench runs
+  `tran 10u 3m` and averages 2.5–3 ms, i.e. the one true state variable
+  (`C_OUT`) is carried there by the circuit's own dynamics over 3 ms. That is
+  exactly the strong test `#81` item 2 used to distinguish a real second stable
+  equilibrium from a solver-seeding artifact — so these are real equilibria,
+  now shown to be reachable at **nominal 27 °C and 1 mA** under mismatch alone,
+  not only at `#81`'s 125 °C/50 mA.
+- **It has been this mode in every generation, and #116 halved it.** Re-reading
+  all four committed MC responses on the same axis:
+
+  | Record | in-window n | mean | σ | out-of-window population |
+  |---|---|---|---|---|
+  | `20260817-235656-e500d71` | 194 | 1.8165 V | 7.33 mV | 5 at 3.28–3.31 V, **1 genuine tail miss at 1.840 V** |
+  | `20260818-032827-81dc232` | 181 | 1.80039 V | 8.71 mV | 17 at 3.28–3.31 V, 2 at ≈−19 V |
+  | `20260825-083111-4cb27f8` | 177 | 1.80065 V | 9.13 mV | 22 at 3.28–3.31 V, 1 at −18.8 V |
+  | **`20260925-110312-8280915`** | **185** | **1.80168 V** | **8.33 mV** | **11 at 3.28–3.31 V, 1 at −18.1 V** |
+
+  Across four generations and 800 samples, **exactly one** sample has ever
+  missed the window by a genuine distribution tail (1.840 V, in the pre-#25/#36
+  record). Every other miss is the rail mode. σ has never exceeded 9.2 mV, so
+  the regulating population has always fit the window with >3.9σ to spare.
+  #116's pass-device re-size cut the rail-mode rate from 22/200 to 11/200 —
+  real, measured progress, and corroboration that the mode is about the pass
+  stage's operating point rather than about matching.
+
+**2. `Line regulation`: its own corner matrix contains a negative control, and
+the measurement fails it.** `sim/line-regulation`'s testbench wires VIN to a
+**fixed literal** (`VVIN VIN 0 3.3`) and only the enable pin to the corner
+runner's supply (`VEN EN 0 'vsup'`); the deck then `alter vvin`s to 2.97 V and
+3.63 V at every one of its four measured points. So `corners.supply_v` cannot
+reach the measured quantity at all — it changes only how far above threshold a
+logic-high enable sits, and it sets the DC starting point the first `.op` solve
+begins from. **The three supply points inside one (process, temperature) group
+must therefore return the same number.** New full-matrix record
+[`20260925-114251-1f54ca6`](../sim/line-regulation/records/20260925-114251-1f54ca6.md)
+(supersedes [`20260910-030557-6c0436d`](../sim/line-regulation/records/20260910-030557-6c0436d.md);
+**24/45 PASS**, up from 18/45 against the pre-#116 pass device), joined on that
+axis:
+
+- **22 of 30** (group × measurement) cells vary by more than **2×** across it,
+  and **21** of those by more than **10×** — e.g. `ff_125c` at 1 mA:
+  **85.16 / 0.1828 / 0.5613 mV/V**; `ss_-40c` at 50 mA:
+  **1519 / 2557 / 0.2817 mV/V**.
+- Exactly **one** group (`ff_-40c`) is self-consistent to within 1.1× on both
+  measurements, and it agrees to **four significant figures**
+  (1 mA: 0.2412 / 0.2416 / 0.2417 mV/V; 50 mA: 0.2714 / 0.2793 / 0.2793 mV/V).
+  That is what a well-posed measurement on a variable it does not depend on
+  looks like — so the spread in the other 14 is not numerical noise, it is
+  branch selection.
+- **On the regulating branch the row passes with room to spare**: every
+  in-bound reading is **0.017–1.62 mV/V** at 1 mA (n=34) and
+  **0.093–3.14 mV/V** at 50 mA (n=29), against a **5 mV/V** ratified bound.
+- The five readings that are neither clearly on-branch nor grossly off it
+  (**6.7, 18.3, 31.2, 43.9, 85.2 mV/V**) all occur at **`*_125c_2.97v`** — one
+  single point on the negative-control axis, at the temperature `#81` already
+  identified as the fragile one. They cannot be read as a partially-degraded
+  physical line-regulation number either, for the same reason the gross ones
+  cannot.
+
+A DC supply-rejection shortfall cannot be a function of a variable the
+measurement does not depend on. Line regulation is not supply-rejection-bound
+here; it is branch-selection-bound.
+
+> **Resolved (2026-09-26, issues #196 / #200).** The clause above that says
+> `corners.supply_v` "changes only how far above threshold a logic-high enable
+> sits" named the whole mechanism without following it: because `EN` was driven
+> at `'vsup'` while the deck `alter`-ed VIN to 3.63 V, that axis reached the
+> measurement **through `EN`** — at the `*_2.97v` corners the high-VIN point ran
+> with `EN` 0.66 V *below* VIN, and this block's shutdown clamps
+> (`M_ENP`/`M_ENP2`/…) are PMOS with their sources at VIN, so their gate drive is
+> `VIN − EN`. That is #187's geometry, measured there at 39 pA → 1.377 µA and
+> 62 pA → 1.639 µA of clamp current against a 1.003 µA amplifier tail. The
+> "branch selection" this section attributes to the DUT was therefore, for this
+> bench, largely the **bench's own conventions** selecting the branch — in two
+> distinct instalments, both of them harness-side. Counting the same
+> (group × measurement) cells that disagree across the negative-control axis by
+> more than 2×: **22 / 30** in the record this section reads
+> (`20260925-114251-1f54ca6`), **15 / 30** after #172 replaced the unconstrained
+> `.op` with the #171 cold-start contract (`20260926-001833-228fbc7`), and
+> **0 / 30** after #196 put `EN` at the instantaneous VIN. With that convention
+> the 45-corner matrix
+> [`20260926-200304-35b7392`](../sim/line-regulation/records/20260926-200304-35b7392.md)
+> is **45/45 PASS** at 0.2167–0.5955 mV/V (1 mA) and 0.2712–0.3682 mV/V (50 mA)
+> against the 5 mV/V bound, and the negative-control axis is now **exactly**
+> negative: all 15 groups agree across their three supply columns to 0.000000
+> mV/V. The bullets above
+> stand as the #118-era reading of the #118-era records and are not rewritten;
+> this note records what they turned out to be measuring. **No design change
+> follows from it** — the DUT is unchanged, and the mismatch/rail-mode findings
+> in item 1 and the genuine `load-regulation` miss in item 3 are untouched.
+> Full evidence: `sim/README.md` → "#196".
+
+**3. `Load regulation`: bimodal, non-monotonic in the one axis that is real —
+and exactly one genuine miss.** Unlike line regulation, this bench's
+`corners.supply_v` does reach VIN (`VVIN VIN 0 'vsup'`), so the axis is
+physical. New full-matrix record
+[`20260925-111601-7701e7e`](../sim/load-regulation/records/20260925-111601-7701e7e.md)
+(supersedes [`20260910-032854-6c0436d`](../sim/load-regulation/records/20260910-032854-6c0436d.md);
+**37/45 PASS**, up from 34/45):
+
+- **37 corners read 2.62–14.50 mV** against the **18 mV** ratified bound (1.2×
+  to 6.9× inside it). **7 corners read 881 mV – 1.62 V.** Nothing lands between
+  19.93 mV and 881 mV — a **44×** empty band. A loop-gain-limited DC error is a
+  continuum; it does not produce an empty band a decade and a half wide.
+- **The 45th corner is the interesting one.** `fs_125c_3.63v` reads
+  **19.93 mV (1.107 %)** — an 11 % overshoot of the bound, and the only reading
+  in the entire matrix that is a *marginal* miss rather than either clean or
+  catastrophic. Its own group is monotone and physically coherent
+  (`fs_125c`: **10.99 / 14.50 / 19.93 mV** rising with VIN). **This is the one
+  place in all three rows where a real, loop-limited DC accuracy shortfall is
+  visible**, and it is 2 mV over the bound at the single hottest, fastest-NMOS
+  corner — an ordinary design-margin problem, nothing like the 8-corner failure
+  count the aggregate verdict reports.
+- **4 of the 5 groups that contain a gross failure are non-monotonic in VIN**:
+  `ff_-40c` and `fs_-40c` fail only at the *middle* supply while both
+  neighbours pass; `sf_27c` fails only at the *highest*; `tt_125c` fails at
+  both ends and passes in the middle. More headroom cannot make a
+  loop-gain-bound DC error worse, and no physical mechanism is non-monotonic in
+  three samples. The verdict pattern is not a function of the physical axis
+  either.
+
+**Conclusion, and what it means for the three rows.** One mechanism, as #118
+suspected — the non-regulating-branch family of `#60` mechanism 4 as root-caused
+by `#71`/`#81`, now shown to bind all three DC-accuracy rows and, via the MC
+evidence above, to be reachable under mismatch alone at nominal temperature and
+light load rather than only at 125 °C/50 mA. The practical consequences:
+
+- **Matching sizing is contra-indicated** for the `Output` row and was not
+  done. Upsizing the divider string or the input pair would buy margin on the
+  one axis that already has 4.1σ of it, and would move the rail-mode rate not
+  at all.
+- **Neither regulation row's pass count should be read as an accuracy result.**
+  Both are a mixture of two populations, so the count measures how often the
+  intended branch was found, not how well the loop regulates when it is. On the
+  branch, `Line regulation` clears its 5 mV/V bound at **every** point measured
+  (worst 3.14 mV/V), and `Load regulation` clears its 18 mV bound at every point
+  but one (`fs_125c_3.63v`, 19.93 mV). **That single corner is the only real
+  DC-accuracy gap in all three rows**, and it is the honest remaining target —
+  a 2 mV margin problem at one hot corner, not a 34-corner failure.
+- **This is consistent with, and independent of, `#115`'s coupling finding.**
+  `#115` tested whether these rows move with `Stability` and could not confirm
+  it (Load regulation 6/7, Line regulation 4/7 at the 7 Stability-PASS corners,
+  `n=7`). This section explains *why* that join was uninformative: the rows'
+  verdicts are set by branch selection, which is not what the `Stability` row
+  measures. Sequencing them behind a compensation fix remains the wrong call,
+  for a now-positively-identified reason rather than only a null result.
+- **No ratified bound is touched**, per `CLAUDE.md`'s "spec is a gate". The
+  ±2 % / <5 mV/V / <1 % rows stand exactly as ratified; this section changes
+  what the failures are attributed to, not what is required.
+
+**What this leaves open, handed to a follow-up rather than absorbed here.**
+`#81` closed with the second stable equilibrium characterized at 125 °C/50 mA
+and explicitly *not* fixed ("a genuine circuit robustness gap requiring a
+design change"). The MC evidence above extends its reach — same failure shape,
+at 27 °C, at 1 mA, triggered by mismatch alone, at a ≈6 % rate — and that
+extension is invisible to `sim/startup`, which reports 45/45 PASS because it
+runs nominal devices only. Closing it is a design campaign (the amplifier's
+start-up/anti-latch behaviour under mismatch), not a measurement change, and is
+filed as **#164** rather than attempted inside a DC-accuracy issue. #164 also
+carries the harness corollary: #133 already reports `sim/iq` grading
+non-physical numbers at non-regulating corners, and this decomposition shows
+that is general — no bench in `sim/` currently gates its measurement on
+"was the DUT regulating at this point?", so a point that is off-branch is
+scored as an accuracy result in whichever direction its bound happens to face.
+
+> **Corrected by #164 (2026-09-25) — read the next section before relying on the
+> `Output` half of this one.** #164 dumped the settled node set of the twelve
+> out-of-window samples and they are not circuit states: `FB` sits at ±668 V to
+> 1.3e15 V *above* the `VOUT` node that is the only thing feeding it through a
+> passive divider. The "settled transient, therefore a real equilibrium"
+> argument above does not hold, because the `tran` inherits the suspect `.op`
+> as its initial condition — 43 of those 200 draws carry `singular matrix`
+> warnings at the `res_xhigh_po` instances. Given any physically realizable
+> start, all 200 draws regulate. This is `#81` **item 1** (unconverged `.op`)
+> reaching 27 °C/1 mA, not item 2. This section is kept as written because its
+> *analysis* is what the record it cites actually says — the same convention the
+> #69 record-generation note uses — but its "real equilibria at nominal 27 °C
+> and 1 mA" reading is superseded. Its matching-is-contra-indicated conclusion
+> and its two regulation-row decompositions are **not** affected.
+
+**Harness note: why these two matrices still ran locally.** `sim/bin/mc-run.py`
+gained a `--backend batch` passthrough for this issue, and the `Output` re-run
+above executed on the remote fleet (the record names the job id and the remote
+engine version). `sim/bin/corner-run.py` has no equivalent, and cannot easily
+get one: both regulation benches define their figure **across several `.op`
+solves within one corner**, with `alter` cards between them, and a `klt sim`
+request declares exactly one `analysis` per corner with `.meas`-card
+measurements scoped to it. There is no way to express either deck as a request,
+so neither grid can reach any `klt sim` backend. Filed generically as
+2AMLogic/klayout-tools#2482 per `CLAUDE.md`'s friction protocol; until it
+closes, these two matrices run serially through `corner-run.py` (one `ngspice`
+at a time, `nice -n 19`), which is what produced the records cited below.
+
+### #164: the 27 °C/1 mA "rail mode" is the bench's operating-point seed, not a second equilibrium — `design/ldo_3v3in_1v8out.sch` is unchanged (measured, 2026-09-25)
+
+**Status: characterized and closed with a testbench change, not a circuit
+change.** Issue #164 was filed off the section above to own what #118 would not
+attempt: the ≈6 % of `mc-output-accuracy` mismatch draws that settled with VOUT
+at the input rail at the block's most benign operating point (27 °C, VIN 3.3 V,
+1 mA), read as `#81` item 2's *second stable equilibrium* reaching a nominal
+corner. Its Scope asked for an anti-latch / start-up-assist / input-stage
+re-bias. **None was designed, because the characterization it asked for first
+shows the mode is not an equilibrium of this circuit at all.** It is `#81`
+item 1 — the solver's own unconverged operating point — reaching 27 °C/1 mA,
+mistaken for item 2 because the bench's `tran` inherits that `.op` as its
+initial condition, which makes "it is a settled transient" *not* the
+independent evidence #118 took it for.
+
+**1. The settled node set is not a circuit state (Scope item 1).** The MC
+record `#118` cites reports only `vout_ss`, so the campaign was re-run on the
+batch fleet against the *same* netlist snapshot, seed (`20260817`) and N (200),
+with fourteen extra hierarchical `.meas` cards added purely to dump the settled
+node set. It reproduced the record exactly — 185 pass / 12 fail / 3 error — and
+the twelve are this (record
+[`20260925-145526-5168438`](../sim/mc-ic-screen-a/records/20260925-145526-5168438.md),
+whose `klt-responses/` twin carries all 15 measurements on all 200 samples):
+
+| Node | The 185 regulating draws | The 12 "rail mode" draws |
+|---|---|---|
+| `VOUT` | 1.779–1.825 V | 3.284–3.308 V (`mc17` at −18.09 V) |
+| `FB` | 1.19–1.21 V | **±668 V to ±1984 V**, and **1.34e15 V** (`mc152`) |
+| `N_FBB` | 0.59–0.60 V | **±651 V to ±1974 V**, and **1.33e15 V** (`mc27`) |
+| `EA_CZ` | = `EA_OUT` | ±7.6e14 V on `mc17`/`mc97` |
+| `EA_OUT` | 2.37–2.39 V | 1.38–1.68 V (mid-rail) on 11 of 12; `mc17` 4.35 V |
+| `SS` | 3.30 V | 3.30 V — soft-start fully released |
+| `TS_CMP` | 3.30 V | 3.30 V — thermal shutdown **not** tripped |
+| `CL_CMP` | 3.298 V | 0.95–2.40 V on 11 of 12 (`mc17` 3.30 V) — current limit **not** the holder |
+| `AMP_ENN` | ≈2 mV | 1.7–254 mV — enable path **not** holding the amp off |
+
+`mc17` is called out separately in three rows above because it is the one draw
+whose `VOUT` went *negative* (−18.09 V) rather than to the rail: its `EA_CZ`
+blew up to −7.58e14 V and its `EA_OUT`/`CL_CMP` sit at the top rail instead of
+mid-rail. It is the same defect wearing a different sign — `EA_CZ` is a
+`res_xhigh_po` terminal too — but it is not a "rail mode" draw, and the ranges
+quoted for the mode itself are the other eleven.
+
+Scope item 1 asked which of soft-start, the enable path, the current-limit
+comparator or the amplifier's input-stage inversion holds `EA_OUT` low enough
+to keep the pass device fully on. **The answer is none of them, and `EA_OUT` is
+not low** — it sits mid-rail at 1.4–1.7 V, with `SS` released, `TS_CMP`
+untripped, `CL_CMP` off its rail and `AMP_ENN` at ground. The input stage *is*
+inverted on some draws (`mc97`: `EA_D1`/`EA_D2` = 0.21/0.94 V against 0.875/0.875 V
+regulating), but that is *driven by* `FB`, not a cause of it.
+
+**And `FB` is above `VOUT`.** `FB` is the tap of a passive three-leg
+`sky130_fd_pr__res_xhigh_po` string whose only source is `VOUT`, so any
+realizable state has `0 ≤ V(N_FBB) ≤ V(FB) ≤ V(VOUT) ≤ VIN`. A draw with
+`VOUT = 3.285 V` and `FB = +1984 V` violates the divider's own algebra by three
+orders of magnitude — the identical argument `#81` item 1 already made about its
+`FB = −985.6 V` points ("a passive resistor divider cannot produce a node
+voltage 400× its input"), and the reason it classified *those* as the solver's
+last iterate rather than a second solution.
+
+**2. What admits it: the poly resistor's voltco term, measured.**
+`sky130_fd_pr__res_xhigh_po`'s body element is
+`rbody0 · (1 − bp2 + bp2·sqrt(1 + (bq2·|v(t1,t2)|·Efac)²))` with
+`bp2 = −0.1228`, `bq2 = 1.304` — a multiplier that is *non-monotone* in the
+voltage across the element and crosses zero. Measured on one W=0.42 unit by DC
+sweep (`ngspice-46`, `tt`, 27 °C, local single-point probe):
+
+| V across the element | 1 V | 400 V | 1200 V | 1300 V | 1400 V | 1800 V |
+|---|---|---|---|---|---|---|
+| Chord resistance, L=180 µm | 1.041 MΩ | 793 kΩ | 105 kΩ | 24.9 kΩ | 3.46 kΩ | 800 Ω |
+
+A 1300× collapse, asymptoting onto the two 107 Ω head resistors. The fitted
+multiplier's zero crossing is at `|v|·Efac = 6.97`, i.e. **≈1.32 kV for the
+L=180 µm divider legs** and **≈440 V for the L=52 µm `R_CZ`** — both ~400×
+outside anything the model was fitted over. Probing the divider's internal body
+nodes in the pathological state puts `XR_FB_A`'s body at
+`t1 = 2.904 V → t2 = 1984.0 V`, i.e. **1981 V across it, 1.5× its zero
+crossing, with 3.56 mA flowing from the low side to the high side** — an
+effective `rbody` of **−556 kΩ** against its nominal +360 kΩ. The leg is acting
+as a ~2 kV source pumping the `FB` node up. That is the whole mechanism.
+
+**3. It needs no mismatch, and it is locally reproducible.** With **nominal**
+devices (`tt`, no `_mm`) and a deliberately hostile
+`.nodeset v(xldo.fb)=1984 v(xldo.n_fbb)=996 v(vout)=3.29 v(xldo.ea_out)=1.55`,
+a plain `.op` converges to `VOUT = 3.2849 V`, `FB = 1983.6 V`,
+`N_FBB = 997.5 V`, `EA_OUT = 1.591 V` — the campaign's failing draws to three
+decimals — and a subsequent `tran 10u 3m` holds it flat for the full 3 ms.
+**Mismatch is therefore not the trigger**; it only perturbs which branch an
+unseeded Newton finds. The issue's framing ("triggered by per-instance
+mismatch alone") and #118's rate arithmetic ("6 % of mismatch draws") both
+describe the solver's hit rate, not a device-variation sensitivity — which is
+also why #116's pass-device re-size "halved" it (22/200 → 11/200) without
+touching anything causal.
+
+**4. Neither a start-up failure nor a latch (Scope item 2).** The pair `#81`
+item 2 used, run as two full 200-sample campaigns on the batch fleet plus two
+more to decompose the fix — the four-variant screen. **All four have committed
+record quadruplets** (`records/` + `klt-requests/` + `klt-responses/` +
+`netlist-snapshots/`); every number in this table is re-derivable from them with
+`jq`, and the three diagnostic variants live in their own experiment slugs for
+the reason given under "Where the screen's evidence lives" below:
+
+| # | Initial condition | Record | Verdict | `vout_ss` mean / σ | Solver diagnostics | Max abs internal node |
+|---|---|---|---|---|---|---|
+| A | as-committed: unconstrained `.op`, EN DC-high | [`20260925-145526-5168438`](../sim/mc-ic-screen-a/records/20260925-145526-5168438.md) | **185 / 12 fail / 3 error** | 1.78397 V / 1.4639 V | **61 warnings over 43 samples**, 3 with no measurement | **1.34e15 V** (`mc152`, `FB`) |
+| B | `.op` seeded **at** regulation (`.ic v(vout)=1.8 …`) | [`20260925-145937-5168438`](../sim/mc-ic-screen-b/records/20260925-145937-5168438.md) | **200 / 0 / 0** | 1.80156 V / 8.5228 mV | none | 3.3 V |
+| D | `uic` cold start, EN DC-high | [`20260925-150129-5168438`](../sim/mc-ic-screen-d/records/20260925-150129-5168438.md) | **200 / 0 / 0** | 1.80156 V / 8.5228 mV | none | 3.3 V |
+| C | `uic` cold start + EN edge at 100 µs (**shipped**) | [`20260925-131502-808cece`](../sim/mc-output-accuracy/records/20260925-131502-808cece.md) | **200 / 0 / 0** | 1.80157 V / 8.5229 mV | none | 3.3 V |
+
+The A/B/D rows' "max abs internal node" is measured, not asserted: A, B and D
+each carry the same 14 hierarchical `.meas` node-dump cards on top of `vout_ss`,
+so B's and D's 3.3 V is the largest magnitude *any* of the 15 measured nodes
+reaches on *any* of the 200 samples (it is `TS_CMP` on `mc30`, i.e. the supply
+rail — nothing internal exceeds VIN), against A's 1.34e15 V.
+
+- **Not a latch.** B starts the loop *at* 1.8 V and all 200 draws stay there —
+  including all 12 that failed in A. The loop never falls out of regulation.
+- **Not a start-up failure.** D starts every node at 0 V and all 200 draws
+  arrive at 1.8 V. The loop always starts.
+- **There is exactly one equilibrium.** B and D are **bit-identical on all 200
+  samples**; C differs from them by at most **17 µV (9.4 ppm)** on 198 of 200,
+  the residual of starting 100 µs later. Three unrelated physically-realizable
+  initial conditions — cold, cold-with-enable-sequencing, and seeded at the
+  answer — land on the same point to 10 ppm on every draw.
+- **A and B agree bit-for-bit on the 185 samples that regulated in A**, so the
+  seeding changes nothing where the solve already found the branch; it only
+  rescues the 15 that did not.
+- **The 43 warned-about samples matter too, but they are a nearly *disjoint*
+  set from the 12 — corrected 2026-09-25 against the artifacts.** A's
+  `singular matrix` warnings name `xldo.fb` (5), `xldo.xr_fb_b.t2` (7) and
+  `xldo.xr_cz.t1` (13) — three of the four `res_xhigh_po` instances — and with
+  38 `dynamic gmin stepping` non-convergence warnings make 61 diagnostics over
+  43 of 200 draws. An earlier draft of this section said "31 of which *passed*
+  anyway", which was `43 − 12` arithmetic on the assumption that the 12
+  out-of-window draws are a subset of the 43 warned ones. **They are not**:
+  **42 of the 43 passed**, and the warned set intersects the 12 in exactly one
+  draw (`mc142`). The already-committed
+  [`20260925-110312-8280915`](../sim/mc-output-accuracy/records/20260925-110312-8280915.md)
+  says the same thing — it always did — and variant A's record reproduces it
+  sample-for-sample. So the honest reading is *stronger*, not weaker, than the
+  original: the eleven rail-mode draws and the −18 V draw are states ngspice
+  converged to **without complaint**, which is precisely why a settled
+  transient looked like evidence of an equilibrium. B/C/D report **zero**
+  diagnostics on all 200. The mode's visible 6 % sits alongside a 21.5 %
+  rate of draws where the `.op` warned and still landed on the right branch —
+  both symptoms of the same unconstrained solve, not one inside the other.
+
+**Where the screen's evidence lives, and why not under
+`sim/mc-output-accuracy/`.** Variants A, B and D each got their own experiment
+slug — `sim/mc-ic-screen-a/`, `-b/`, `-d/` — rather than being appended to the
+shipped bench's `records/`. This is not filing by preference: the `Output` row's
+evidence is resolved by `measurements/build_characterization_report.py`'s
+`EVIDENCE_MAP`, and `latest_sim_record()` picks the **lexicographically last**
+`records/*.json` under the mapped slug. A screen variant dropped into
+`sim/mc-output-accuracy/records/` would sort *after* the shipped record
+`20260925-131502-808cece` (later timestamp, same-day id) and silently become the
+row's evidence — regenerating `measurements/characterization.md`'s `Output` row
+from variant A's deliberately-broken bench (185/12/3, `FAIL`) and breaking the
+`signoff/` content-hash pin that covers it. Nothing maps a spec row to these
+three slugs, the same way `sim/pdk-smoke` is harness-only rather than a spec
+claim, so they are inert to that pipeline while still being ordinary, re-runnable
+`mc-run.py` experiments with full provenance. Each one's `experiment.json` says
+in its own `claim` that it substantiates no spec row.
+
+Provenance of the three, checkable in one command each:
+
+- Variant A's netlist snapshot differs from the **committed** pre-#164 snapshot
+  `sim/mc-output-accuracy/netlist-snapshots/20260925-110312-8280915.spice` in
+  exactly one line, the `** sch_path:` comment — so variant A demonstrably is
+  the as-committed bench, not a re-drawing of it.
+- Variants A and D share one testbench *file* (D's manifest points at A's), so
+  their netlist snapshots are **byte-identical** (`sha256`
+  `c08789a9dc87…`) and the only difference between the two records is the
+  analysis card: `tran 10u 3m` vs `tran 10u 3m uic`. That is what makes "`uic`
+  alone is what closes it" a measurement rather than an inference.
+- Variant B's snapshot is variant A's plus the single `.ic` card (and the
+  `sch_path` comment), nothing else.
+
+**5. What shipped, and what deliberately did not.** Only the bench's
+initial-condition contract: `tran 10u 3m` → `tran 10u 3m uic` in
+`sim/mc-output-accuracy/experiment.json`, and `VEN` from a DC level to
+`PULSE(0 'vsup' 100u 1u 1u 100 200)` in
+`sim/mc-output-accuracy/testbench/tb_mc_output_accuracy.sch`. Variant D shows
+**`uic` alone is what closes it** — the EN edge is house-convention alignment
+with `sim/startup`, not the load-bearing half, and it is kept because "EN high
+with every node at 0 V" is not itself a state of this block while "EN low with
+every node at 0 V" is. `design/ldo_3v3in_1v8out.sch` is **untouched**, per this
+file's standing "verification is the product, no speculative fix" convention
+(`#70`, `#77`, `#91`, `#107`, `#115`, `#118`): there is no anti-latch to add to
+a loop with one equilibrium, and a start-up assist would be sized against a
+failure the circuit does not have. **No ratified bound was touched** — the
+±2 % `Output` row stands exactly as ratified (issue #1 / DR-006); what changed
+is what the bench starts from.
+
+**6. The `Output` row's verdict flips FAIL → PASS, and that is the honest
+read.** Record [`20260925-131502-808cece`](../sim/mc-output-accuracy/records/20260925-131502-808cece.md)
+supersedes [`20260925-110312-8280915`](../sim/mc-output-accuracy/records/20260925-110312-8280915.md)
+(same seed, same N, same DUT): **200/200 PASS**, mean 1.80157 V (+0.087 % of
+the 1.8 V window centre), σ 8.52 mV, range 1.77942–1.82499 V, 3σ window
+[1.7760, 1.8271] V inside [1.764, 1.836] V with **+8.86 mV** of margin. This is
+the same population #118 measured and called a 99.998 %-yield distribution; it
+now has no second population sitting next to it. Read with its scope intact:
+**one** mismatch-enabled point (`tt_mm`, 27 °C, VIN 3.3 V, 1 mA), not a PVT
+sweep, and the other eight `FAIL` rows in
+`measurements/characterization.md` are untouched by this issue.
+
+**7. What this does *not* close, and what it puts back in doubt.**
+
+- **`#81`'s 125 °C/50 mA finding is now unverified, not refuted.** Its item 2
+  reported a second equilibrium with *physical* node voltages
+  (`tt` → `VOUT = 2.093 V`, `FB = 1.114 V`, `N_FBB = 1.048 V`) — a different
+  shape from anything above, and its `FB`:`N_FBB` ≈ 0.94:1 against a passive
+  2:1 still wants an explanation. But it was reached by a `tran … uic` whose
+  `.ic` set only `v(vout)` and left every other node to the same unconstrained
+  solve this section has now shown to be unreliable at a far gentler corner.
+  That check should be repeated with the full node set constrained before its
+  "genuine circuit robustness gap requiring a design change" conclusion is
+  relied on — filed as **#169**, **not** claimed closed here. `#138` (the same
+  mechanism's 125 °C severity in `dropout-vs-load`) inherits the same caveat.
+  **Resolved by #169**: item 2 does not reproduce under any initial condition
+  and its numbers are other nodes of the regulating state (see "#169" below),
+  so `#138` is a bench question in `#168`'s family, not a design one.
+- **Every other bench in `sim/` has the same exposure, and it is measurable
+  today.** `line-regulation` and `load-regulation` define their figure as a
+  chain of four `.op` solves with `alter` cards between them (see
+  `sim/line-regulation/experiment.json` → `deck.analyses`) — no transient, no
+  initial condition, pure unconstrained Newton, and the *worst* case of the
+  defect rather than a milder one. All 45 committed corner logs of
+  [`20260925-114251-1f54ca6`](../sim/line-regulation/records/20260925-114251-1f54ca6.md)
+  carry solver warnings: 73 `singular matrix` at `xldo.ea_cz`, 28 at
+  `xldo.n_fbb`, 47 at `xldo.amp_enn` — the same fingerprint, on the same
+  resistor instances, at every corner. Converting those decks is a harness
+  campaign, not this issue, and is filed as **#168**, which also absorbs
+  `#133`'s regulation gate (`#118` already showed #133's finding is general: no
+  bench in `sim/` asks "was the DUT regulating?" before grading).
+- **`sim/startup` is unaffected and was not re-run.** It runs nominal devices
+  through its own EN edge and reports 45/45; neither the DUT nor that bench
+  changed here, so a re-run would reproduce it identically. Its 45/45 was never
+  wrong — it simply cannot see a defect that lives in a *different* bench's
+  `.op`.
+- **The regulation matrices were not re-run either**, for the same reason: this
+  issue changes one testbench's analysis card and nothing in the DUT, so a
+  fresh 45-point grid against an unchanged deck and PDK pin would reproduce the
+  committed numbers exactly. Per this file's standing "no purely-redundant
+  append-only record" convention (`#81`, `#77`, `#107`).
+
+**8. Reproducing any of it.** The local probes are single operating points and
+run in seconds; the four campaigns are 200-sample Monte Carlo grids and go to
+the batch fleet (`KLT_SIM_BACKEND=batch`) per the host rules.
+
+```bash
+source sim/bin/pdk-env.sh
+# (a) the resistor's own voltco collapse -- 1 V to 1800 V across one unit
+cat > /tmp/probe.spice <<'EOF'
+.lib $SKY130_LIB tt
+VA A 0 1
+XRA A 0 0 sky130_fd_pr__res_xhigh_po W=0.42 L=180 mult=1
+.control
+dc VA 1200 1800 20
+print v(a) v(a)/(-i(va))
+quit
+.endc
+.end
+EOF
+# (b) the non-physical branch, nominal devices, no mismatch: prepend
+#     .nodeset v(xldo.fb)=1984 v(xldo.n_fbb)=996 v(vout)=3.29 v(xldo.ea_out)=1.55
+#     to sim/mc-output-accuracy/netlist-snapshots/20260925-110312-8280915.spice,
+#     then `op` (lands on it) vs `tran 10u 3m uic` (ignores it, gives 1.8006 V).
+
+# (c) any of the three screen variants, end to end, from committed files
+#     (200-sample grids -- these go to the fleet, never hand-launched locally):
+python3 sim/bin/mc-run.py sim/mc-ic-screen-a --seed 20260817 --backend batch
+python3 sim/bin/mc-run.py sim/mc-ic-screen-b --seed 20260817 --backend batch
+python3 sim/bin/mc-run.py sim/mc-ic-screen-d --seed 20260817 --backend batch
+```
+
+Or re-derive this section's numbers from the committed responses without
+simulating anything — e.g. variant A's twelve out-of-window draws and their `FB`:
+
+```bash
+jq -r '.corners[]
+       | {s: (.corner_id|split("/")|last),
+          v: (.measurements[]|select(.name=="vout_ss").value),
+          fb: (.measurements[]|select(.name=="fb_ss").value)}
+       | select(.v != null and (.v < 1.764 or .v > 1.836))
+       | [.s, .v, .fb] | @tsv' \
+  sim/mc-ic-screen-a/klt-responses/20260925-145526-5168438.json
+
+# B and D bit-identical on all 200 (prints nothing if they are):
+for v in b d; do jq -S '[.corners[] | {s:(.corner_id|split("/")|last),
+    v:(.measurements[]|select(.name=="vout_ss").value)}]' \
+    sim/mc-ic-screen-$v/klt-responses/*.json > /tmp/$v.json; done
+diff /tmp/b.json /tmp/d.json
+```
+
+**One note for whoever re-runs a Monte Carlo campaign.** A given
+`monte_carlo.seed` does **not** reproduce the same per-instance draws across
+`ngspice` versions: `mc0` of this exact sequence measures 1.797831 V under the
+fleet's `ngspice 42` and 1.795 V under a local `ngspice-46`, a 2.5 mV
+difference against a 7 µV batch-to-batch delta. The seed contract is
+reproducible *given the engine*, which every record already pins in its
+**Tools** and **Execution backend** lines — but draw-for-draw comparison
+between a local probe and a fleet record is not valid, which is why every
+campaign above ran on the fleet. Filed generically as
+2AMLogic/klayout-tools#2490 per `CLAUDE.md`'s friction protocol, alongside
+2AMLogic/klayout-tools#2489 for the grading half: `klt sim` scored all twelve
+of variant A's non-circuit states as ordinary accuracy misses, and the 31
+warned-about samples that passed as ordinary passes, because a solve's
+convergence diagnostics do not reach `corners[].status`.
+
+### #119: Load transient's recovery-time clause (added to the harness here) fails universally — the peak-excursion clause closes with a C_out fix, screened across 21 of 45 corners; a full re-verification is blocked by host instability, not by the design (2026-09-25)
+
+**Status: a real, in-scope fix ships (testbench `C_out` only —
+`design/ldo_3v3in_1v8out.sch` itself is untouched); the AC's "new full-45-corner
+record superseding `20260825-081255-4cb27f8`" deliverable does not — three
+independent attempts at a clean 45-point re-run were blocked by severe,
+non-deterministic per-corner ngspice cost (90 s–25 min, occasionally hitting
+the runner's own timeout) and, once, by an unexplained termination of the
+harness process mid-run at corner 22/45, on this shared dispatch host. What
+follows is real, unfabricated `sim/bin/corner-run.py` output — 21 of the 45
+corners, cross-checked against the superseded record's own 8 re-verified
+FAILs — presented as **screening data**, the same convention this file's own
+"#115" and "R_CZ/C_FF" sections already use for a result that does not clear
+the bar for a full append-only record. **#166** tracks the remaining
+full-matrix re-run.**
+
+**1. What the superseded record's 20 FAILs were actually bound by — read
+directly, not inferred.** `20260825-081255-4cb27f8`'s own measurement list
+is `undershoot_v`/`overshoot_v` only; `spec/target-spec.md`'s Load transient
+row's *second* clause ("recover to ±1% in ≤20 µs") was never instrumented.
+By construction, every one of that record's 20 FAILs is therefore bound by
+`undershoot_v` (peak excursion) — `undershoot_v` fails at all 20, `overshoot_v`
+co-fails at 4 of those 20 but is never the larger of the two, so it is never
+independently binding. There is no ambiguity to resolve about which clause
+bound the historical FAILs; the ambiguity this issue actually had to resolve
+was whether a *second*, never-measured clause would also bind once
+instrumented (it does — see finding 3).
+
+**2. `C_out`/`overshoot_v` root cause: charge-limited, and addressable inside
+DR-002.** `spec/decision-records/DR-002`'s ratified window is 0.33–4.7 µF /
+0–500 mΩ; the superseded record's testbench sat at 1 µF (DR-002's own
+recommended nominal), the low-current end of that window. Peak excursion
+during the 1→50 mA step is, to first order, `ΔQ / C_out` — the charge C_out
+must supply before the loop's own response brings the pass device's current
+up to match the new load — so a larger in-window `C_out` reduces it
+proportionally, independent of loop bandwidth. This is a testbench/board
+parameter, not a core-loop change: `design/ldo_3v3in_1v8out.sch` is
+byte-identical before and after this issue.
+
+**3. The never-before-measured recovery clause — added to the harness here,
+per this issue's own scope — fails universally, for two different and
+*opposite* reasons, neither of which `C_out` sizing can fix.**
+`sim/load-transient/experiment.json` gained three measurements: `recovery_rise_us`
+(µs from the 1→50 mA edge until `v(vout)` re-enters and stays inside the ±1 %
+band — implemented as `vecmax` of an arithmetic 0/1 window-and-band indicator,
+not ngspice's own `<`/`>` operators, which its `.control` parser reads as I/O
+redirection), `recovery_fall_us` (same, for the 50→1 mA edge), and
+`settle_err_50ma_pct` (a no-bound diagnostic: steady-state 50 mA error, so a
+corner that never enters the band is legible as "the DC point is outside the
+window", not conflated with a slow transient). Screening 21 of the 45 corners
+(`tt`/`ss`/`ff` × all 3 temperatures × all 3 supplies, `C_out` = 4.7 µF, run
+via the unmodified `sim/bin/corner-run.py` pipeline, corner-run scratch
+directory `20260925-115609-8280915`, superseded before completion — see
+finding 5):
+
+| Measurement | Result across the 21 screened corners | Mechanism |
+|---|---|---|
+| `undershoot_v` | **20/21 PASS** (0.063–0.117 V), **1/21 FAIL** (`tt_-40c_3.63v`, 0.155 V, marginal) | `C_out`-addressable (finding 2) |
+| `overshoot_v` | **21/21 PASS** (0.049–0.090 V, or ≈0 V on the one anomalous-branch corner) | `C_out`-addressable |
+| `recovery_rise_us` | **0/21 PASS** — 75–130 µs against the 20 µs bound (3.8×–6.5× over), rising with temperature, flat across process | **Bandwidth-bound, not `C_out`-bound** |
+| `recovery_fall_us` | **0/21 PASS** — 430–796 µs (21×–40× over) | **`C_out`-bound, in the OPPOSITE direction from `undershoot_v`** |
+| `settle_err_50ma_pct` (diagnostic) | −0.079 % to −0.138 %, comfortably inside ±1 % everywhere | confirms recovery FAILs are transient-speed, not DC load-regulation (sim/load-regulation, #118), failures |
+
+**`recovery_rise_us` is bandwidth-bound, and this file's own existing
+loop-gain data already explains why `C_out` cannot move it.** Under Miller
+compensation the loop's own crossover is `Gm/(2π·C_COMP)` — this file's
+"Compensation (sized in #25)" section already measures that crossover at
+≈900 Hz at the 1 mA/4.7 µF point, giving a settling time constant on the
+same order as the 76–130 µs this screen measures, and *independent of
+`C_out`* by construction (my own two-`C_out`-point comparison, 1 µF vs.
+4.7 µF, at two spot corners moved `recovery_rise_us` by under 2 %: 128.9 µs
+→ 129.7 µs at one corner, 92.5 µs unchanged-within-noise at another — the
+undershoot/overshoot at those same two points moved 30–40 % over the same
+`C_out` range). This is the same "#115" anti-correlation finding restated in
+the transient domain: the corners where this repo's own Stability row does
+best (125 °C) are exactly the ones with the *largest* `recovery_rise_us`
+here (113–130 µs, vs. 75–93 µs at −40 °C) because the mechanism is
+temperature-dependent bandwidth, not the small-signal margin Stability
+measures. Closing this gap needs more loop bandwidth, which DR-007/#115's
+already-exhausted campaign (§"#25", §"#70", §"#107", §"#115" above) ties
+directly to the `Iq < 30 µA` budget — out of a C_out-sizing issue's scope,
+and not re-attempted here.
+
+**`recovery_fall_us` is `C_out`-bound, but in the direction that makes
+`undershoot_v`'s fix actively worse for it — a genuine, two-sided,
+in-window tradeoff.** `M_PASS` is a single PMOS pass device (`design/
+ldo_3v3in_1v8out.sch`'s header) — it can source current into `VOUT` but
+cannot sink it. Once the 50→1 mA edge leaves `VOUT` overshot, the error
+amplifier drives the pass gate toward off, and the *only* path that removes
+the excess charge is the 1 mA light load itself: `t_fall ≈ C_out ·
+(overshoot_v − 0.01·V_out) / I_light`, a floor set by `C_out` and the
+ratified 1 mA light-load stimulus, independent of loop bandwidth. Direct
+measurement confirms both the direction and the order of magnitude: moving
+the same two spot corners from `C_out` = 1 µF to 4.7 µF raised
+`recovery_fall_us` 207 µs → 766 µs and 217 µs → 789 µs (≈3.5×, close to the
+4.7× capacitance ratio, exactly as the floor formula predicts) while
+`undershoot_v` fell by the same ratio in the *other* direction. This is the
+same two-sided-optimum shape this file's own `R_CZ` and `C_FF` compensation
+tables already show for unrelated knobs (§"Compensation", §"#115" ¶2) — the
+window is wide enough (`Q = 20 µs` bound; the ratified `Iq`/50 mA row) that
+no point in it clears both `undershoot_v` and `recovery_fall_us` at once: at
+1 µF `recovery_fall_us` is "only" 10–14× over budget but `undershoot_v`
+itself already fails at most mid/high-temperature corners (the superseded
+record's own 20 FAILs); at 4.7 µF `undershoot_v` clears almost everywhere
+but `recovery_fall_us` is 20–40× over. Since `undershoot_v` was this issue's
+literal scope (finding 1) and `recovery_fall_us` fails at *every* `C_out`
+this repo has measured — including the pre-existing 1 µF point, which was
+never a PASS on this clause either — moving to the window ceiling is a
+strict improvement on the addressable clause and not a regression on the
+unaddressable one (both ends of the window fail `recovery_fall_us`; only
+the specific FAIL margin changes).
+
+**4. The fix shipped: `C_out` 1 µF → 4.7 µF (DR-002's own ratified ceiling,
+not a new number) in `sim/load-transient/testbench/tb_load_transient.sch`
+only.** Of the 8 corners in the 21-corner screen that are also named FAILs
+in the superseded record (`tt_27c_2.97v`, `tt_125c_{2.97,3.30,3.63}v`,
+`ss_27c_2.97v`, `ss_125c_{2.97,3.30,3.63}v`), **all 8 now clear
+`undershoot_v`** — e.g. `tt_27c_2.97v`: 0.268 V → 0.093 V; `ss_125c_2.97v`:
+0.191 V → 0.117 V. **One corner not in the original 20 — `tt_-40c_3.63v` —
+newly lands on the marginal side** (0.104 V → 0.155 V, 3 mV over the 150 mV
+bound): its `overshoot_v` collapses to ≈0 and `settle_err_50ma_pct` reads
+−4.3 %, the same "anomalous branch" signature (a different DC/transient
+solution than its neighbors) this file's mechanism-4 discussion already
+documents at other corners — a corner-specific side effect of the larger
+`C_out` shifting which solution the solver lands on, not a general
+regression (the other 20 screened corners all improve or are unaffected).
+This is disclosed, not smoothed over: a full 45-corner run is the only way
+to know whether `sf`/`fs` process corners (0 of 45 screened here) show more
+of this branch-shift behavior at 4.7 µF than they did at 1 µF.
+
+**5. Full 45-corner re-verification: attempted three times, not completed —
+documented as an operational finding, not folded into a fabricated
+record.** `sim/bin/corner-run.py sim/load-transient --supersedes
+20260825-081255-4cb27f8` was run unmodified (same tool every other record in
+this repo uses) three times against the schematic/testbench state this issue
+ships:
+- **Attempt 1** reached 21/45 corners with clean, consistent results (the
+  table above) before the harness process itself terminated with no
+  traceback, no `sim/` write (the tool only persists a record after *every*
+  corner completes), and no `journalctl`/OOM-killer evidence naming the
+  process — an unexplained loss on a shared host, not a bug in the deck (the
+  21 corners that did complete are internally consistent to 3 significant
+  figures across process/temperature).
+- **Attempts 2 and 3** each hit the harness's own 1500 s per-corner timeout
+  on `tt_-40c_2.97v` (`Attempt 3` additionally timed out on
+  `tt_-40c_3.30v`, a corner that completed in under 2 minutes in Attempt 1)
+  — the same corner ran anywhere from 90 s to 25 min across the three
+  attempts with an unchanged deck, which is solver non-determinism (this
+  file's own "mechanism 4" dc-solution-multiplicity discussion already
+  documents exactly this kind of corner-specific fragility, previously only
+  in `dc` sweeps; this issue is the first evidence it also reaches transient
+  analyses) compounded by this host's own shared, variable load (`uptime`
+  load average 10–37 observed across the attempts on an 8-vCPU box).
+This is stated as a fact about this run, on this host, at this time — not a
+claim that the design cannot be verified, or that a future run on a quieter
+host would not complete cleanly. A background instance of Attempt 3 was
+still in flight, past corner 2/45, when this issue's PR was opened; if it
+completes, its record supersedes this section's screening numbers exactly
+as `sim/README.md` prescribes. **#166** tracks bringing that formal record
+home.
+
+**6. What this issue does and does not close.** `spec/target-spec.md`'s
+Load transient row is **not** touched (peak excursion and recovery bounds
+are both still 150 mV / 20 µs, exactly as ratified). `DR-002`'s window is
+**not** touched (`0.33–4.7 µF` unchanged; this issue's fix sits at the
+ceiling the window already had). `measurements/characterization.md` is
+**not** regenerated by this issue, because no new `sim/` record exists to
+regenerate it from — the superseded record `20260825-081255-4cb27f8`
+remains, byte-for-byte, the file's own citation, and it is still accurate
+to what it claims (25/45 PASS against the two clauses it measured; it does
+not claim anything about `recovery_rise_us`/`recovery_fall_us`, which did
+not exist as measurements when it was written). The addressable half of the
+row (peak excursion) has a real, screened, in-window fix ready to be
+confirmed by a clean 45-point run; the unaddressable half
+(`recovery_rise_us`, bandwidth; `recovery_fall_us`, PMOS-only-pass-device
+architecture) is now — for the first time — actually measured, and both of
+its failure mechanisms are root-caused to gaps this repo's own DR-007/#115
+lineage already tracks, not new ones this issue discovered independently.
+
+### #169: `#81` item 2's 125 °C/50 mA "second equilibrium" does not exist — its reported numbers are the regulating state's `EA_OUT`/`TS_SNS`/`TS_REF` (measured, 2026-09-25)
+
+**Status: item 2 withdrawn; `design/ldo_3v3in_1v8out.sch` is unchanged.**
+#164 left `#81` item 2 "unverified, not refuted" (§7 above) because the check it
+rested on — a `tran … uic` whose `.ic` set only `v(vout)` — leaves every other
+node to the solve #164 showed unreliable at 27 °C/1 mA. #169 re-ran it at its
+own corner under four initial-condition contracts, plus #81's exact method on
+#81's exact circuit as a historical control. **Neither outcome #169 anticipated
+occurred.** Item 2 is not a real second equilibrium (every contract regulates),
+and it is not #164's solver artifact either (every contract regulates *without
+a single solver diagnostic*, #81's own included). It is a reporting error: the
+three numbers #81 recorded as `VOUT`/`FB`/`N_FBB` at `tt`/`ss`/`fs` are, to
+every digit #81 reported, `EA_OUT`/`TS_SNS`/`TS_REF` of the ordinary
+regulating state.
+
+**1. The screen.** One circuit per variant — `sim/dropout-vs-load`'s DUT,
+`C_OUT` = 1 µF / 10 mΩ, ideal 50 mA sink, `VREF` = 1.2 V, `VIN` held at the
+corner supply — varying **only** the initial condition. Each variant is its
+own `corner-run.py` experiment slug, for the same reason #164's screen was
+(`EVIDENCE_MAP` resolves a row's evidence from the lexicographically last
+record under its slug; nothing maps to these, so none can become
+`dropout-vs-load`'s `Dropout` evidence). Every variant dumps the same 14
+hierarchical nodes and grades the four realizability slacks of
+`0 ≤ V(N_FBB) ≤ V(FB) ≤ V(VOUT) ≤ VIN` (#169 Scope item 3) as `min = 0`
+measurements, so a violation is a recorded `FAIL`, not a reading.
+
+| Variant | Initial condition | Record | Points | Regulating | Min realizability slack | Solver diagnostics |
+|---|---|---|---|---|---|---|
+| V | #81's own: `.ic v(vout)=1.8` only, `uic`, EN DC-high | [`20260925-172756-6989d23`](../sim/ic-screen-125c-v/records/20260925-172756-6989d23.md) | 15 | **15/15** | +0.5993 V | none |
+| F | the same `uic`, all **eleven** nodes #169 names seeded | [`20260925-172757-6989d23`](../sim/ic-screen-125c-f/records/20260925-172757-6989d23.md) | 15 | **15/15** | +0.5993 V | none |
+| B | #164's variant B: the same full `.ic`, **no** `uic` (constrained `.op`, then released) | [`20260925-172757-6989d23`](../sim/ic-screen-125c-b/records/20260925-172757-6989d23.md) | 15 | **15/15** | +0.5993 V | none |
+| C | cold: all-zero `uic`, EN edge at 100 µs, 50 mA ramped on at 2.5 ms | [`20260925-172757-6989d23`](../sim/ic-screen-125c-c/records/20260925-172757-6989d23.md) | 15 | **15/15** | +0.5993 V | none |
+| H | V's deck exactly, on a **frozen copy of #81's DUT** (`64c17cb`) at #81's `VIN` = 3.60 V | [`20260925-173928-a30ee60`](../sim/ic-screen-125c-h/records/20260925-173928-a30ee60.md) | 5 | **4/5** (`sf` — see 4) | +0.5990 V on the four | none |
+
+V/F/B/C's matrix is all five process corners × 125 °C × {3.30, 3.60, 3.63} V
+(3.60 V is #81 item 2's own `VIN`; 2.97 V is deliberately excluded — see each
+manifest's `corners_note`). The eleven-node seed for F/B is not invented: it is
+variant C's own settled node set at `tt`/3.60 V from a local probe, with the
+`VIN`-tracking nodes written relative to `vsup` so the seed is realizable at
+every supply (`sim/ic-screen-125c-b/testbench/tb_ic_screen_125c_seeded.sch`
+header). "Solver diagnostics" is the `# ==== ngspice stderr ====` section of
+every committed corner log, which is where the harness captures `Warning:
+singular matrix` / `gmin stepping` messages (the committed `line-regulation`
+logs #164 cites carry them there): it is empty on all 65. B is the variant for
+which that is load-bearing, since it is the only one that runs a full `.op`.
+
+**2. Warm-constrained and cold agree — to the microvolt.** This is the
+comparison #169's Scope item 2 named as the discriminator (#164's B and D were
+bit-identical at 27 °C/1 mA). Across all 15 points and all 14 dumped nodes, the
+largest difference between **any** two of V, F, B and C is **6 µV** (B against
+the others, `VOUT` at `tt_125c_3.30v`); V vs C is ≤ 0.6 µV and F vs C ≤ 1 µV.
+`vout_ss` spans **1.79848–1.79870 V** over all 60 runs, the settled window's
+peak-to-peak is ≤ 1 µV everywhere, `FB`/`N_FBB` sit at 1.1992–1.1993 V /
+0.5997–0.5998 V (the passive 2:1 exactly), and the largest magnitude any dumped
+node reaches is 3.63 V — the supply. A cold start with the enable edge, a start
+seeded at the answer, a start seeded at the answer and re-solved, and #81's own
+start all arrive at the same point. **There is one equilibrium at
+125 °C/50 mA, and #81's own method finds it.**
+
+**3. Why #81 recorded something else: the numbers are other nodes.** The
+current DUT differs from #81's (#90 re-sized the thermal shutdown, #116/DR-011
+the pass device), so a negative result on it could in principle mean those
+changes cured item 2. Variant H closes that door by running #81's method on
+#81's circuit (the frozen copy at
+`sim/ic-screen-125c-h/dut/ldo_3v3in_1v8out_at81.sch` differs from
+`git show 64c17cb:design/ldo_3v3in_1v8out.sch` only by its header comment). It
+too regulates at `tt`/`ss`/`fs` (`VOUT` 1.79749–1.79758 V, flat from 800 µs —
+#81's own time point — to 3 ms). And its node dump contains #81's numbers:
+
+| Corner | #81 reported "`VOUT` / `FB` / `N_FBB`" | H's settled `EA_OUT` / `TS_SNS` / `TS_REF` | H's actual `VOUT` / `FB` / `N_FBB` |
+|---|---|---|---|
+| `tt` | 2.093 / 1.114 / 1.048 V | 2.09267 / 1.11360 / 1.04796 V | 1.79758 / 1.19858 / 0.59938 V |
+| `ss` | 2.014 / 1.191 / 1.073 V | 2.01422 / 1.19072 / 1.07259 V | 1.79749 / 1.19851 / 0.59935 V |
+| `fs` | 2.199 / 1.286 / 1.100 V | 2.19873 / 1.28578 / 1.09960 V | 1.79755 / 1.19856 / 0.59937 V |
+
+Nine of nine values agree to all four significant figures #81 quoted. #81's
+deck was a local probe that was never committed, so *how* the labels were
+transposed cannot be recovered from it — but #81's own text says it also read
+`EA_OUT` ("mid-rail") and the `TS_SNS`/`TS_REF` ordering from the same run, so
+all three quantities were in the output it was reading. The reading also
+dissolves the one detail #81 could not explain: the "`FB`:`N_FBB` ≈ 0.94:1
+against a passive 2:1" is `TS_SNS`:`TS_REF`, two thermal-sensor nodes with no
+reason to be in any ratio. There was no divider distortion, and the
+body-junction-leakage hypothesis #81 offered for it has nothing left to explain.
+
+**4. The one violating point is mechanism 1, not item 1.** H's `sf` point is
+the only one of 65 that fails the invariant: `VOUT` = −28.97 V, `FB` =
+−19.29 V, `N_FBB` = −9.62 V. It is **not** #81 item 1 / #164's kilovolt
+artifact, although #169's Scope rule ("any violation is item 1") would file it
+there: the divider algebra *holds* (`FB`/`VOUT` = 0.666, `N_FBB`/`VOUT` =
+0.332 — the passive 2/3 and 1/3), no diagnostic was emitted, and `TS_SNS`
+(0.936 V) < `TS_REF` (1.050 V) with `TS_CMP` at 0.30 V and `EA_OUT` at the
+rail. The pre-#90 thermal shutdown has tripped inside the rated range
+(mechanism 1, `#69`, fixed by #90 — V/F/B/C's `sf` rows regulate with `TS_CMP`
+at `VIN`), the pass device is off, and the testbench's *ideal* 50 mA sink pulls
+the undriven output negative. The invariant's `0 ≤` link presumes a load that
+cannot pull a node below ground, which an ideal current sink can. #81 checked
+only `tt`/`ss`/`fs` and excluded `sf` for exactly this reason, so the point
+bears on nothing #81 claimed; it is why H's record reads `Overall: FAIL`.
+
+**5. What this changes.**
+
+- **`#81`'s "genuine circuit robustness gap requiring a design change" is
+  withdrawn.** Its item 1 (unconverged `.op`, `FB` hundreds of volts off the
+  divider) stands as #164 explained it; its item 2 was never a circuit state.
+  The "#81 resolved" section above is kept as written with a correction note,
+  per this file's convention for superseded analyses (`#118`'s section).
+- **`dropout-vs-load`'s 125 °C-wide exclusion is a bench problem, not a
+  circuit one.** What remains of it is item 1 alone: the `dc` sweep's
+  unconstrained, continuation-seeded `.op` at 125 °C — the exposure #164 §7
+  found in every `.op`-chain bench and filed as **#168**. Nothing in this
+  screen says the 125 °C `dropout_v` numbers are right; it says the reason they
+  are unreadable is the harness, not the loop.
+- **Sequencing re-pointed.** `#79` (closed `COMPLETED` 2026-08-25 — a
+  bias-generator fix for PSRR/Stability that never ran the item-2 check #81
+  recommended to it) and `#107` (closed `COMPLETED`) were not held up by item 2
+  in practice, so nothing re-opens there, and #81's "Recommendation for #79" is
+  moot. **`#138`** is the one open item sequenced behind it: its Ask is to
+  re-check a future #79-style design fix against "the existing mechanism-4
+  recipe" at 125 °C. With no second equilibrium to fix, #138 is now a
+  **bench** question — does `dropout-vs-load`'s 125 °C volatility after #116's
+  re-size survive a realizable initial condition? — in #168's family, and
+  **not** gated on any design change. This issue does not take that up.
+- **No design change, no spec change.** `design/ldo_3v3in_1v8out.sch` is
+  untouched; no ratified row is touched. `DR-009` and `DR-011` mention #81
+  item 2 in rationale text as a known 125 °C gap; decision records are
+  superseded by new records rather than edited, and neither DR's *decision*
+  rests on it, so neither is amended here.
+
+**6. Scope, stated plainly.** Nominal devices only (no mismatch) and 125 °C
+only — #81 item 2 was reported at 125 °C/50 mA with nominal devices, and #164
+already covered 27 °C under mismatch. 2.97 V is not in the matrix. The load is
+the ideal sink `dropout-vs-load` uses. Item 1's own 125 °C `.op` failures were
+not re-run; they are #164's mechanism and #168's harness campaign.
+
+**7. Reproducing it.** From committed files (≈2–5 min per point on a loaded
+host):
+
+```bash
+for v in v f b c h; do python3 sim/bin/corner-run.py sim/ic-screen-125c-$v; done
+# or, without simulating: #81's numbers inside H's own record
+jq -r '.corners[] | [.corner_id] + [.measurements[]
+       | select(.name|test("^(vout|ea_out|ts_sns|ts_ref)_ss$")) | "\(.name)=\(.value)"]
+       | @tsv' sim/ic-screen-125c-h/records/20260925-173928-a30ee60.json
+```
 
 ## Validating this schematic
 

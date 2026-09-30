@@ -1,0 +1,864 @@
+{
+  "author": "ci@loom.test",
+  "corners": [
+    {
+      "corner_id": "tt_27c_2.97v",
+      "elapsed_s": 327.434,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/thermal/corners/20260926-052517-eba96ae/tt_27c_2.97v.log",
+      "measurements": [
+        {
+          "expr": "dc1.trip_temp_c",
+          "max": null,
+          "min": 125,
+          "name": "trip_temp_c",
+          "pass": true,
+          "reason": "",
+          "unit": "C",
+          "value": 169.0005
+        },
+        {
+          "expr": "reset_temp_c",
+          "max": null,
+          "min": null,
+          "name": "reset_temp_c",
+          "pass": true,
+          "reason": "",
+          "unit": "C",
+          "value": 169.0005
+        },
+        {
+          "expr": "hysteresis_c",
+          "max": null,
+          "min": 0,
+          "name": "hysteresis_c",
+          "pass": true,
+          "reason": "",
+          "unit": "C",
+          "value": 0.0
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "tt",
+      "solver_diagnostic": null,
+      "supply_v": 2.97,
+      "temperature_c": 27.0,
+      "timed_out": false,
+      "timeout_s": 1800
+    },
+    {
+      "corner_id": "tt_27c_3.30v",
+      "elapsed_s": 95.805,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/thermal/corners/20260926-052517-eba96ae/tt_27c_3.30v.log",
+      "measurements": [
+        {
+          "expr": "dc1.trip_temp_c",
+          "max": null,
+          "min": 125,
+          "name": "trip_temp_c",
+          "pass": true,
+          "reason": "",
+          "unit": "C",
+          "value": 165.0008
+        },
+        {
+          "expr": "reset_temp_c",
+          "max": null,
+          "min": null,
+          "name": "reset_temp_c",
+          "pass": true,
+          "reason": "",
+          "unit": "C",
+          "value": 165.0008
+        },
+        {
+          "expr": "hysteresis_c",
+          "max": null,
+          "min": 0,
+          "name": "hysteresis_c",
+          "pass": true,
+          "reason": "",
+          "unit": "C",
+          "value": 0.0
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "tt",
+      "solver_diagnostic": null,
+      "supply_v": 3.3,
+      "temperature_c": 27.0,
+      "timed_out": false,
+      "timeout_s": 1800
+    },
+    {
+      "corner_id": "tt_27c_3.63v",
+      "elapsed_s": 69.916,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/thermal/corners/20260926-052517-eba96ae/tt_27c_3.63v.log",
+      "measurements": [
+        {
+          "expr": "dc1.trip_temp_c",
+          "max": null,
+          "min": 125,
+          "name": "trip_temp_c",
+          "pass": true,
+          "reason": "",
+          "unit": "C",
+          "value": 161.0009
+        },
+        {
+          "expr": "reset_temp_c",
+          "max": null,
+          "min": null,
+          "name": "reset_temp_c",
+          "pass": true,
+          "reason": "",
+          "unit": "C",
+          "value": 161.0009
+        },
+        {
+          "expr": "hysteresis_c",
+          "max": null,
+          "min": 0,
+          "name": "hysteresis_c",
+          "pass": true,
+          "reason": "",
+          "unit": "C",
+          "value": 0.0
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "tt",
+      "solver_diagnostic": null,
+      "supply_v": 3.63,
+      "temperature_c": 27.0,
+      "timed_out": false,
+      "timeout_s": 1800
+    },
+    {
+      "corner_id": "ss_27c_2.97v",
+      "elapsed_s": 456.981,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/thermal/corners/20260926-052517-eba96ae/ss_27c_2.97v.log",
+      "measurements": [
+        {
+          "expr": "dc1.trip_temp_c",
+          "max": null,
+          "min": 125,
+          "name": "trip_temp_c",
+          "pass": true,
+          "reason": "",
+          "unit": "C",
+          "value": 150.6582
+        },
+        {
+          "expr": "reset_temp_c",
+          "max": null,
+          "min": null,
+          "name": "reset_temp_c",
+          "pass": true,
+          "reason": "",
+          "unit": "C",
+          "value": 163.0005
+        },
+        {
+          "expr": "hysteresis_c",
+          "max": null,
+          "min": 0,
+          "name": "hysteresis_c",
+          "pass": false,
+          "reason": "below min 0",
+          "unit": "C",
+          "value": -12.3423
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": false,
+      "process": "ss",
+      "solver_diagnostic": "Warning: Dynamic gmin stepping failed",
+      "supply_v": 2.97,
+      "temperature_c": 27.0,
+      "timed_out": false,
+      "timeout_s": 1800
+    },
+    {
+      "corner_id": "ss_27c_3.30v",
+      "elapsed_s": 48.298,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/thermal/corners/20260926-052517-eba96ae/ss_27c_3.30v.log",
+      "measurements": [
+        {
+          "expr": "dc1.trip_temp_c",
+          "max": null,
+          "min": 125,
+          "name": "trip_temp_c",
+          "pass": true,
+          "reason": "",
+          "unit": "C",
+          "value": 159.0006
+        },
+        {
+          "expr": "reset_temp_c",
+          "max": null,
+          "min": null,
+          "name": "reset_temp_c",
+          "pass": true,
+          "reason": "",
+          "unit": "C",
+          "value": 159.0006
+        },
+        {
+          "expr": "hysteresis_c",
+          "max": null,
+          "min": 0,
+          "name": "hysteresis_c",
+          "pass": true,
+          "reason": "",
+          "unit": "C",
+          "value": 0.0
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "ss",
+      "solver_diagnostic": null,
+      "supply_v": 3.3,
+      "temperature_c": 27.0,
+      "timed_out": false,
+      "timeout_s": 1800
+    },
+    {
+      "corner_id": "ss_27c_3.63v",
+      "elapsed_s": 30.494,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/thermal/corners/20260926-052517-eba96ae/ss_27c_3.63v.log",
+      "measurements": [
+        {
+          "expr": "dc1.trip_temp_c",
+          "max": null,
+          "min": 125,
+          "name": "trip_temp_c",
+          "pass": true,
+          "reason": "",
+          "unit": "C",
+          "value": 155.0007
+        },
+        {
+          "expr": "reset_temp_c",
+          "max": null,
+          "min": null,
+          "name": "reset_temp_c",
+          "pass": true,
+          "reason": "",
+          "unit": "C",
+          "value": 155.0007
+        },
+        {
+          "expr": "hysteresis_c",
+          "max": null,
+          "min": 0,
+          "name": "hysteresis_c",
+          "pass": true,
+          "reason": "",
+          "unit": "C",
+          "value": 0.0
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "ss",
+      "solver_diagnostic": null,
+      "supply_v": 3.63,
+      "temperature_c": 27.0,
+      "timed_out": false,
+      "timeout_s": 1800
+    },
+    {
+      "corner_id": "ff_27c_2.97v",
+      "elapsed_s": 62.801,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/thermal/corners/20260926-052517-eba96ae/ff_27c_2.97v.log",
+      "measurements": [
+        {
+          "expr": "dc1.trip_temp_c",
+          "max": null,
+          "min": 125,
+          "name": "trip_temp_c",
+          "pass": true,
+          "reason": "",
+          "unit": "C",
+          "value": 171.0011
+        },
+        {
+          "expr": "reset_temp_c",
+          "max": null,
+          "min": null,
+          "name": "reset_temp_c",
+          "pass": true,
+          "reason": "",
+          "unit": "C",
+          "value": 171.0011
+        },
+        {
+          "expr": "hysteresis_c",
+          "max": null,
+          "min": 0,
+          "name": "hysteresis_c",
+          "pass": true,
+          "reason": "",
+          "unit": "C",
+          "value": 0.0
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "ff",
+      "solver_diagnostic": null,
+      "supply_v": 2.97,
+      "temperature_c": 27.0,
+      "timed_out": false,
+      "timeout_s": 1800
+    },
+    {
+      "corner_id": "ff_27c_3.30v",
+      "elapsed_s": 30.096,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/thermal/corners/20260926-052517-eba96ae/ff_27c_3.30v.log",
+      "measurements": [
+        {
+          "expr": "dc1.trip_temp_c",
+          "max": null,
+          "min": 125,
+          "name": "trip_temp_c",
+          "pass": true,
+          "reason": "",
+          "unit": "C",
+          "value": 169.0013
+        },
+        {
+          "expr": "reset_temp_c",
+          "max": null,
+          "min": null,
+          "name": "reset_temp_c",
+          "pass": true,
+          "reason": "",
+          "unit": "C",
+          "value": 169.0013
+        },
+        {
+          "expr": "hysteresis_c",
+          "max": null,
+          "min": 0,
+          "name": "hysteresis_c",
+          "pass": true,
+          "reason": "",
+          "unit": "C",
+          "value": 0.0
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "ff",
+      "solver_diagnostic": null,
+      "supply_v": 3.3,
+      "temperature_c": 27.0,
+      "timed_out": false,
+      "timeout_s": 1800
+    },
+    {
+      "corner_id": "ff_27c_3.63v",
+      "elapsed_s": 29.605,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/thermal/corners/20260926-052517-eba96ae/ff_27c_3.63v.log",
+      "measurements": [
+        {
+          "expr": "dc1.trip_temp_c",
+          "max": null,
+          "min": 125,
+          "name": "trip_temp_c",
+          "pass": true,
+          "reason": "",
+          "unit": "C",
+          "value": 165.0016
+        },
+        {
+          "expr": "reset_temp_c",
+          "max": null,
+          "min": null,
+          "name": "reset_temp_c",
+          "pass": true,
+          "reason": "",
+          "unit": "C",
+          "value": 165.0016
+        },
+        {
+          "expr": "hysteresis_c",
+          "max": null,
+          "min": 0,
+          "name": "hysteresis_c",
+          "pass": true,
+          "reason": "",
+          "unit": "C",
+          "value": 0.0
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "ff",
+      "solver_diagnostic": null,
+      "supply_v": 3.63,
+      "temperature_c": 27.0,
+      "timed_out": false,
+      "timeout_s": 1800
+    },
+    {
+      "corner_id": "sf_27c_2.97v",
+      "elapsed_s": 222.803,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/thermal/corners/20260926-052517-eba96ae/sf_27c_2.97v.log",
+      "measurements": [
+        {
+          "expr": "dc1.trip_temp_c",
+          "max": null,
+          "min": 125,
+          "name": "trip_temp_c",
+          "pass": true,
+          "reason": "",
+          "unit": "C",
+          "value": 149.0005
+        },
+        {
+          "expr": "reset_temp_c",
+          "max": null,
+          "min": null,
+          "name": "reset_temp_c",
+          "pass": true,
+          "reason": "",
+          "unit": "C",
+          "value": 161.0005
+        },
+        {
+          "expr": "hysteresis_c",
+          "max": null,
+          "min": 0,
+          "name": "hysteresis_c",
+          "pass": false,
+          "reason": "below min 0",
+          "unit": "C",
+          "value": -12.0
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": false,
+      "process": "sf",
+      "solver_diagnostic": "Warning: Dynamic gmin stepping failed",
+      "supply_v": 2.97,
+      "temperature_c": 27.0,
+      "timed_out": false,
+      "timeout_s": 1800
+    },
+    {
+      "corner_id": "sf_27c_3.30v",
+      "elapsed_s": 58.904,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/thermal/corners/20260926-052517-eba96ae/sf_27c_3.30v.log",
+      "measurements": [
+        {
+          "expr": "dc1.trip_temp_c",
+          "max": null,
+          "min": 125,
+          "name": "trip_temp_c",
+          "pass": true,
+          "reason": "",
+          "unit": "C",
+          "value": 159.0006
+        },
+        {
+          "expr": "reset_temp_c",
+          "max": null,
+          "min": null,
+          "name": "reset_temp_c",
+          "pass": true,
+          "reason": "",
+          "unit": "C",
+          "value": 159.0006
+        },
+        {
+          "expr": "hysteresis_c",
+          "max": null,
+          "min": 0,
+          "name": "hysteresis_c",
+          "pass": true,
+          "reason": "",
+          "unit": "C",
+          "value": 0.0
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "sf",
+      "solver_diagnostic": null,
+      "supply_v": 3.3,
+      "temperature_c": 27.0,
+      "timed_out": false,
+      "timeout_s": 1800
+    },
+    {
+      "corner_id": "sf_27c_3.63v",
+      "elapsed_s": 36.896,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/thermal/corners/20260926-052517-eba96ae/sf_27c_3.63v.log",
+      "measurements": [
+        {
+          "expr": "dc1.trip_temp_c",
+          "max": null,
+          "min": 125,
+          "name": "trip_temp_c",
+          "pass": true,
+          "reason": "",
+          "unit": "C",
+          "value": 155.0007
+        },
+        {
+          "expr": "reset_temp_c",
+          "max": null,
+          "min": null,
+          "name": "reset_temp_c",
+          "pass": true,
+          "reason": "",
+          "unit": "C",
+          "value": 155.0007
+        },
+        {
+          "expr": "hysteresis_c",
+          "max": null,
+          "min": 0,
+          "name": "hysteresis_c",
+          "pass": true,
+          "reason": "",
+          "unit": "C",
+          "value": 0.0
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "sf",
+      "solver_diagnostic": null,
+      "supply_v": 3.63,
+      "temperature_c": 27.0,
+      "timed_out": false,
+      "timeout_s": 1800
+    },
+    {
+      "corner_id": "fs_27c_2.97v",
+      "elapsed_s": 74.515,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/thermal/corners/20260926-052517-eba96ae/fs_27c_2.97v.log",
+      "measurements": [
+        {
+          "expr": "dc1.trip_temp_c",
+          "max": null,
+          "min": 125,
+          "name": "trip_temp_c",
+          "pass": true,
+          "reason": "",
+          "unit": "C",
+          "value": 167.0013
+        },
+        {
+          "expr": "reset_temp_c",
+          "max": null,
+          "min": null,
+          "name": "reset_temp_c",
+          "pass": true,
+          "reason": "",
+          "unit": "C",
+          "value": 167.0013
+        },
+        {
+          "expr": "hysteresis_c",
+          "max": null,
+          "min": 0,
+          "name": "hysteresis_c",
+          "pass": true,
+          "reason": "",
+          "unit": "C",
+          "value": 0.0
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "fs",
+      "solver_diagnostic": null,
+      "supply_v": 2.97,
+      "temperature_c": 27.0,
+      "timed_out": false,
+      "timeout_s": 1800
+    },
+    {
+      "corner_id": "fs_27c_3.30v",
+      "elapsed_s": 47.286,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/thermal/corners/20260926-052517-eba96ae/fs_27c_3.30v.log",
+      "measurements": [
+        {
+          "expr": "dc1.trip_temp_c",
+          "max": null,
+          "min": 125,
+          "name": "trip_temp_c",
+          "pass": true,
+          "reason": "",
+          "unit": "C",
+          "value": 165.0015
+        },
+        {
+          "expr": "reset_temp_c",
+          "max": null,
+          "min": null,
+          "name": "reset_temp_c",
+          "pass": true,
+          "reason": "",
+          "unit": "C",
+          "value": 165.0015
+        },
+        {
+          "expr": "hysteresis_c",
+          "max": null,
+          "min": 0,
+          "name": "hysteresis_c",
+          "pass": true,
+          "reason": "",
+          "unit": "C",
+          "value": 0.0
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "fs",
+      "solver_diagnostic": null,
+      "supply_v": 3.3,
+      "temperature_c": 27.0,
+      "timed_out": false,
+      "timeout_s": 1800
+    },
+    {
+      "corner_id": "fs_27c_3.63v",
+      "elapsed_s": 28.593,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/thermal/corners/20260926-052517-eba96ae/fs_27c_3.63v.log",
+      "measurements": [
+        {
+          "expr": "dc1.trip_temp_c",
+          "max": null,
+          "min": 125,
+          "name": "trip_temp_c",
+          "pass": true,
+          "reason": "",
+          "unit": "C",
+          "value": 167.0018
+        },
+        {
+          "expr": "reset_temp_c",
+          "max": null,
+          "min": null,
+          "name": "reset_temp_c",
+          "pass": true,
+          "reason": "",
+          "unit": "C",
+          "value": 167.0018
+        },
+        {
+          "expr": "hysteresis_c",
+          "max": null,
+          "min": 0,
+          "name": "hysteresis_c",
+          "pass": true,
+          "reason": "",
+          "unit": "C",
+          "value": 0.0
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": true,
+      "process": "fs",
+      "solver_diagnostic": null,
+      "supply_v": 3.63,
+      "temperature_c": 27.0,
+      "timed_out": false,
+      "timeout_s": 1800
+    }
+  ],
+  "experiment": {
+    "claim": "Substantiates spec/target-spec.md's ratified \"Thermal\" row (Tj <= 125C operating ceiling; theta_JA delegated to package/integration) via spec/decision-records/DR-005-thermal-shutdown-trip.md's ratified thermal-shutdown target (Tj_trip = 150C nominal untrimmed, hysteresis 15C nominal / Tj_reset ~135C, auto-restart/non-latching) against the CTAT-sense + comparator + hysteresis circuit #29 added to design/ldo_3v3in_1v8out.sch. DR-005 is ratified by issue #1 / DR-006 -- the bounds below cite it verbatim, not an invented final number. Method: a continuous ngspice DC '.dc temp' sweep, ascending then descending in one session (DC continuation captures the comparator's hysteresis the same way a Schmitt-trigger characterization does), watching V(VOUT) collapse (trip, M_TSHUT engages and turns M_PASS off) and recover (reset, auto-restart) -- see the testbench schematic's header for the full derivation. 125C-vs-150C corner-coverage decision (required before this testbench could even be written, per this issue's own acceptance criteria): DR-004 pins this repo's PVT-corner verification temperature axis at {-40, 27, 125}C, but DR-005's 150C nominal trip sits above that pin. This testbench extends temperature coverage past 125C specifically for this one thermal-shutdown testbench (option (a) of DR-005's Consequences section, formalized in this issue's addendum to DR-005 and design/README.md's Known-gaps section, both dated 2026-08-25) rather than accepting the gap (option (b)) -- chosen because an empirical check (ngspice + the pinned sky130 BSIM models on a diode-connected core device, 2026-08-25) confirmed the models solve without numerical failure (no NaN/divergence/error) continuously from -40C to 200C, so extending is mechanically possible; the tradeoff accepted explicitly is that points above 125C are running those models in extrapolation beyond DR-004's characterized range, not confirmed against silicon, so the measured trip/reset numbers carry lower confidence than a PVT-corner point inside the pinned axis. This does not change DR-004's binding for the other four testbenches (load-transient/psrr-dc/dropout-vs-load/loop-gain) or for spec verification generally -- it is a scoped extension for this testbench only. INITIAL-CONDITION CONTRACT (#171, seeded by #178): both '.dc temp' sweeps used to release from ngspice's own unconstrained Newton solve with EN already at a constant enabled level -- the defect class #164/#171 characterize -- and the superseded record 20260825-104426-933dfdd carries a solver diagnostic on 14 of its 15 corner logs, which sim/bin/corner-run.py's #171 gate now forces to FAIL outright. The testbench now carries a '.nodeset' card seeding the ascending sweep's own starting point (TEMP = 80C, block regulating and untripped) with the node set of a settled cold-start 'uic' transient of this same testbench at tt/80C/vsup=3.30V (V(VOUT) 1.80076, FB 1.20070, N_FBB 0.600445, EA_OUT = EA_CZ 2.48682, SS 3.29980, BIASP 2.32652, NB 0.803915, EA_TAIL 2.46374, TS_CMP 3.29974, TS_SNS 1.46284, TS_REF 1.13593, AMP_ENN 0.00253779 V, settled 2.5ms-3ms tail, zero solver diagnostics) -- i.e. a measured physically realizable state of this circuit, not a guess. WHY '.nodeset' RATHER THAN THE CONTRACT'S TWO NAMED SHAPES, measured not assumed: a temperature sweep cannot be a transient (ngspice has no time-varying TEMP), so the 'uic' + EN-edge shape #170/#172/#178 used for mc-output-accuracy, line-/load-regulation and dropout-vs-load is unavailable here; and '.ic' does not reach a 'dc' analysis at all -- ngspice applies it to the operating-point solve preceding a non-'uic' transient, which #178 measured directly on the sibling dropout-vs-load bench (tt/125C/3.30V: an eleven-node '.ic' copied verbatim from sim/ic-screen-125c-b leaves the flail intact, singular matrix x6, dynamic gmin stepping failed x16, out of range for ^ x13). '.nodeset' is the weaker mechanism (a first-iteration constraint that is then released rather than a held state), so the evidence that this bench now conforms is the measured absence of solver diagnostics in the post-#178 record, not the mechanism's pedigree. TWO LIMITS STATED RATHER THAN PAPERED OVER: (1) '.nodeset' is a netlist card, so both 'dc temp' commands share it -- it is the right state at the ascending sweep's 80C start and a deliberately wrong (but harmless, first-guess-only) one at the descending sweep's 180C start, where the block is expected to be tripped; ngspice offers no per-analysis nodeset. (2) This bench's trip == reset degeneracy (hysteresis_c == 0 at most corners) is NOT the seeding question -- it is the pre-existing DC-continuation limitation #77 found and #91 carries forward, and #178 neither fixes nor worsens it.",
+    "provenance": "schematic",
+    "provenance_source": "sim/thermal/testbench/tb_thermal_trip.sch",
+    "slug": "thermal",
+    "statistical_convention": "N/A (corner-matrix check, not a distribution claim)",
+    "title": "Thermal-shutdown trip/reset temperature and hysteresis (auto-restart)"
+  },
+  "git": {
+    "branch": "feature/issue-178",
+    "dirty": true,
+    "sha": "eba96ae"
+  },
+  "links": {
+    "corners_dir": "sim/thermal/corners/20260926-052517-eba96ae/",
+    "json": "sim/thermal/records/20260926-052517-eba96ae.json",
+    "manifest": "sim/thermal/experiment.json",
+    "netlist_snapshot": "sim/thermal/netlist-snapshots/20260926-052517-eba96ae.spice",
+    "record": "sim/thermal/records/20260926-052517-eba96ae.md",
+    "testbench": "sim/thermal/testbench/tb_thermal_trip.sch"
+  },
+  "matrix": {
+    "is_subset": false,
+    "n_points": 15,
+    "point_ids": [
+      "tt_27c_2.97v",
+      "tt_27c_3.30v",
+      "tt_27c_3.63v",
+      "ss_27c_2.97v",
+      "ss_27c_3.30v",
+      "ss_27c_3.63v",
+      "ff_27c_2.97v",
+      "ff_27c_3.30v",
+      "ff_27c_3.63v",
+      "sf_27c_2.97v",
+      "sf_27c_3.30v",
+      "sf_27c_3.63v",
+      "fs_27c_2.97v",
+      "fs_27c_3.30v",
+      "fs_27c_3.63v"
+    ],
+    "points": [
+      [
+        "tt",
+        27.0,
+        2.97
+      ],
+      [
+        "tt",
+        27.0,
+        3.3
+      ],
+      [
+        "tt",
+        27.0,
+        3.63
+      ],
+      [
+        "ss",
+        27.0,
+        2.97
+      ],
+      [
+        "ss",
+        27.0,
+        3.3
+      ],
+      [
+        "ss",
+        27.0,
+        3.63
+      ],
+      [
+        "ff",
+        27.0,
+        2.97
+      ],
+      [
+        "ff",
+        27.0,
+        3.3
+      ],
+      [
+        "ff",
+        27.0,
+        3.63
+      ],
+      [
+        "sf",
+        27.0,
+        2.97
+      ],
+      [
+        "sf",
+        27.0,
+        3.3
+      ],
+      [
+        "sf",
+        27.0,
+        3.63
+      ],
+      [
+        "fs",
+        27.0,
+        2.97
+      ],
+      [
+        "fs",
+        27.0,
+        3.3
+      ],
+      [
+        "fs",
+        27.0,
+        3.63
+      ]
+    ],
+    "process": [
+      "tt",
+      "ss",
+      "ff",
+      "sf",
+      "fs"
+    ],
+    "subset_reason": "",
+    "supply_v": [
+      2.97,
+      3.3,
+      3.63
+    ],
+    "temperature_c": [
+      27.0
+    ]
+  },
+  "overall_pass": false,
+  "pdk": {
+    "installed_commit": "c6d73a35f524070e85faff4a6a9eef49553ebc2b",
+    "lib_file": "/home/ubuntu/.volare/sky130A/libs.tech/combined/sky130.lib.spice",
+    "matches_pin": true,
+    "pinned_commit": "c6d73a35f524070e85faff4a6a9eef49553ebc2b",
+    "root": "/home/ubuntu/.volare",
+    "variant": "sky130A"
+  },
+  "record_id": "20260926-052517-eba96ae",
+  "spread_checks": [],
+  "supersedes": "20260825-104426-933dfdd",
+  "timestamp": "2026-09-26T05:25:17Z",
+  "tools": {
+    "ngspice": "ngspice-46 : Circuit level simulation program",
+    "platform": "Linux 7.0.0-1012-aws x86_64",
+    "python": "3.12.3",
+    "xschem": "XSCHEM V3.4.7"
+  }
+}

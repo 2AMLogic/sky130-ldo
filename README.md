@@ -144,12 +144,18 @@ Notes — these are part of the ratified spec, not commentary:
    FAIL** — 25/45 PVT corners pass. Tracked design gap, no superseding
    record proposed.
 4. **PSRR and Stability** are disclosed FAIL — PSRR 0/45 PVT corners, now
-   measured at **both** ratified load points (#117): the 1 kHz sub-metric
-   fails at 1 mA and at 50 mA alike (20.25–25.70 dB against the 50 dB floor),
-   and the 100 kHz sub-metric passes 45/45 at 1 mA (31.53–34.77 dB) but fails
-   0/45 at 50 mA (13.80–16.06 dB against the 20 dB floor); Stability 7/45 PVT corners,
+   measured at **both** ratified load points (#117) and, since #179, with the
+   `ac` linearization point seeded per `sim/README.md`'s initial-condition
+   contract: the 1 kHz sub-metric fails at 1 mA and at 50 mA alike
+   (20.30–25.66 dB against the 50 dB floor), and the 100 kHz sub-metric
+   passes 45/45 at 1 mA (31.88–35.56 dB) but fails 0/45 at 50 mA
+   (10.49–12.57 dB against the 20 dB floor); Stability 7/45 PVT corners,
    confirmed stable at every load ≥ 1 mA within the window (DR-002 append),
-   with the 0 mA end the binding, unresolved gap. Unlike the other FAIL rows,
+   with the 0 mA end the binding, unresolved gap. Both rows' numbers moved
+   with #179's re-run, which is the **#116/#139 pass-device resize** reaching
+   these two benches for the first time (their predecessors were `STALE`
+   against it), not the seeding: seeded and unseeded decks agree to five or
+   six digits at 42 of 45 corners — see `sim/README.md`'s "#179". Unlike the other FAIL rows,
    both have a topology-level root cause and a named superseding proposal:
    [`DR-007`](spec/decision-records/DR-007-psrr-stability-vs-iq.md)
    (`proposed`) recommends PSRR ≥ 18 dB @ 1 kHz / ≥ 28 dB @ 100 kHz and a
@@ -188,6 +194,24 @@ shuttle seat → measured silicon over temperature. **Current position:
 spec-ratified** — simulation and layout work are underway (see the scoreboard
 above) but do not yet clear most ratified rows.
 
+### Where this block sits on the evidence ladder: **T1 4/11, `tier: null`**
+
+That number is not prose — it is
+[`signoff/records/t1-tier-report.json`](signoff/records/t1-tier-report.json),
+the output of `klt signoff --manifest` against
+[`signoff/block-manifest.json`](signoff/block-manifest.json), re-run by CI on
+every push so it fails rather than goes stale when either this block's
+evidence or the klayout-tools T1 checklist moves. Items 3 (DRC clean), 4 (LVS
+match), 6 (a `klt yield` report over the Monte Carlo campaign) and 8
+(characterization report) are `met`; the other seven are `unmet`, each with a
+machine-readable reason.
+[`signoff/README.md`](signoff/README.md) carries the per-item reading and the
+coverage disclosures the grader structurally cannot check — read it before
+drawing any conclusion from either the four `met` rows or the seven `unmet`
+ones. Item 6 in particular: its yield report's status is `reported`, not
+`pass`, because this block's spec ratifies no yield target, and the campaign
+declares no negative control.
+
 ## Repository layout
 
 ```
@@ -196,6 +220,7 @@ design/        schematics / netlists (xschem)
 sim/           testbenches + PVT corner results (ngspice)
 layout/        GDS + DRC/LVS reports (klayout-tools driven)
 measurements/  generated characterization report (see characterization.md)
+signoff/       klt signoff block manifest + the T1 verdict of record
 ```
 
 ## Environment setup

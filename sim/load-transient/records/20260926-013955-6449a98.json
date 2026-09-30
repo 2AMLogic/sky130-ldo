@@ -1,0 +1,3356 @@
+{
+  "author": "robb@2amlogic.com",
+  "corners": [
+    {
+      "corner_id": "tt_-40c_2.97v",
+      "elapsed_s": 105.123,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/load-transient/corners/20260926-013955-6449a98/tt_-40c_2.97v.log",
+      "measurements": [
+        {
+          "expr": "v_pre - v_post_min",
+          "max": 0.15,
+          "min": null,
+          "name": "undershoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.077202
+        },
+        {
+          "expr": "v_post_max - v_pre",
+          "max": 0.15,
+          "min": null,
+          "name": "overshoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.060238
+        },
+        {
+          "expr": "vecmax(outband*w_rise*(time-1.0m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_rise_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 92.5
+        },
+        {
+          "expr": "vecmax(outband*w_fall*(time-2.001m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_fall_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 552.1
+        },
+        {
+          "expr": "100*(v_50ma - v_pre)/v_pre",
+          "max": null,
+          "min": null,
+          "name": "settle_err_50ma_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -0.0811512
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": false,
+      "process": "tt",
+      "solver_diagnostic": null,
+      "supply_v": 2.97,
+      "temperature_c": -40.0,
+      "timed_out": false,
+      "timeout_s": 900
+    },
+    {
+      "corner_id": "tt_-40c_3.30v",
+      "elapsed_s": 84.127,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/load-transient/corners/20260926-013955-6449a98/tt_-40c_3.30v.log",
+      "measurements": [
+        {
+          "expr": "v_pre - v_post_min",
+          "max": 0.15,
+          "min": null,
+          "name": "undershoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.069857
+        },
+        {
+          "expr": "v_post_max - v_pre",
+          "max": 0.15,
+          "min": null,
+          "name": "overshoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.054164
+        },
+        {
+          "expr": "vecmax(outband*w_rise*(time-1.0m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_rise_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 83.5
+        },
+        {
+          "expr": "vecmax(outband*w_fall*(time-2.001m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_fall_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 487.7
+        },
+        {
+          "expr": "100*(v_50ma - v_pre)/v_pre",
+          "max": null,
+          "min": null,
+          "name": "settle_err_50ma_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -0.0793151
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": false,
+      "process": "tt",
+      "solver_diagnostic": null,
+      "supply_v": 3.3,
+      "temperature_c": -40.0,
+      "timed_out": false,
+      "timeout_s": 900
+    },
+    {
+      "corner_id": "tt_-40c_3.63v",
+      "elapsed_s": 94.952,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/load-transient/corners/20260926-013955-6449a98/tt_-40c_3.63v.log",
+      "measurements": [
+        {
+          "expr": "v_pre - v_post_min",
+          "max": 0.15,
+          "min": null,
+          "name": "undershoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.064359
+        },
+        {
+          "expr": "v_post_max - v_pre",
+          "max": 0.15,
+          "min": null,
+          "name": "overshoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.049574
+        },
+        {
+          "expr": "vecmax(outband*w_rise*(time-1.0m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_rise_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 76.5
+        },
+        {
+          "expr": "vecmax(outband*w_fall*(time-2.001m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_fall_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 437.1
+        },
+        {
+          "expr": "100*(v_50ma - v_pre)/v_pre",
+          "max": null,
+          "min": null,
+          "name": "settle_err_50ma_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -0.0794226
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": false,
+      "process": "tt",
+      "solver_diagnostic": null,
+      "supply_v": 3.63,
+      "temperature_c": -40.0,
+      "timed_out": false,
+      "timeout_s": 900
+    },
+    {
+      "corner_id": "tt_27c_2.97v",
+      "elapsed_s": 121.924,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/load-transient/corners/20260926-013955-6449a98/tt_27c_2.97v.log",
+      "measurements": [
+        {
+          "expr": "v_pre - v_post_min",
+          "max": 0.15,
+          "min": null,
+          "name": "undershoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.092695
+        },
+        {
+          "expr": "v_post_max - v_pre",
+          "max": 0.15,
+          "min": null,
+          "name": "overshoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.072219
+        },
+        {
+          "expr": "vecmax(outband*w_rise*(time-1.0m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_rise_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 108.3
+        },
+        {
+          "expr": "vecmax(outband*w_fall*(time-2.001m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_fall_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 674.9
+        },
+        {
+          "expr": "100*(v_50ma - v_pre)/v_pre",
+          "max": null,
+          "min": null,
+          "name": "settle_err_50ma_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -0.0990279
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": false,
+      "process": "tt",
+      "solver_diagnostic": null,
+      "supply_v": 2.97,
+      "temperature_c": 27.0,
+      "timed_out": false,
+      "timeout_s": 900
+    },
+    {
+      "corner_id": "tt_27c_3.30v",
+      "elapsed_s": 80.159,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/load-transient/corners/20260926-013955-6449a98/tt_27c_3.30v.log",
+      "measurements": [
+        {
+          "expr": "v_pre - v_post_min",
+          "max": 0.15,
+          "min": null,
+          "name": "undershoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.08447
+        },
+        {
+          "expr": "v_post_max - v_pre",
+          "max": 0.15,
+          "min": null,
+          "name": "overshoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.065478
+        },
+        {
+          "expr": "vecmax(outband*w_rise*(time-1.0m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_rise_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 99.5
+        },
+        {
+          "expr": "vecmax(outband*w_fall*(time-2.001m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_fall_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 606.1
+        },
+        {
+          "expr": "100*(v_50ma - v_pre)/v_pre",
+          "max": null,
+          "min": null,
+          "name": "settle_err_50ma_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -0.0979676
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": false,
+      "process": "tt",
+      "solver_diagnostic": null,
+      "supply_v": 3.3,
+      "temperature_c": 27.0,
+      "timed_out": false,
+      "timeout_s": 900
+    },
+    {
+      "corner_id": "tt_27c_3.63v",
+      "elapsed_s": 120.358,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/load-transient/corners/20260926-013955-6449a98/tt_27c_3.63v.log",
+      "measurements": [
+        {
+          "expr": "v_pre - v_post_min",
+          "max": 0.15,
+          "min": null,
+          "name": "undershoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.078224
+        },
+        {
+          "expr": "v_post_max - v_pre",
+          "max": 0.15,
+          "min": null,
+          "name": "overshoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.060309
+        },
+        {
+          "expr": "vecmax(outband*w_rise*(time-1.0m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_rise_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 92.7
+        },
+        {
+          "expr": "vecmax(outband*w_fall*(time-2.001m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_fall_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 551.9
+        },
+        {
+          "expr": "100*(v_50ma - v_pre)/v_pre",
+          "max": null,
+          "min": null,
+          "name": "settle_err_50ma_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -0.0996828
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": false,
+      "process": "tt",
+      "solver_diagnostic": null,
+      "supply_v": 3.63,
+      "temperature_c": 27.0,
+      "timed_out": false,
+      "timeout_s": 900
+    },
+    {
+      "corner_id": "tt_125c_2.97v",
+      "elapsed_s": 79.455,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/load-transient/corners/20260926-013955-6449a98/tt_125c_2.97v.log",
+      "measurements": [
+        {
+          "expr": "v_pre - v_post_min",
+          "max": 0.15,
+          "min": null,
+          "name": "undershoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.116788
+        },
+        {
+          "expr": "v_post_max - v_pre",
+          "max": 0.15,
+          "min": null,
+          "name": "overshoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.08975
+        },
+        {
+          "expr": "vecmax(outband*w_rise*(time-1.0m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_rise_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 129.5
+        },
+        {
+          "expr": "vecmax(outband*w_fall*(time-2.001m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_fall_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 788.1
+        },
+        {
+          "expr": "100*(v_50ma - v_pre)/v_pre",
+          "max": null,
+          "min": null,
+          "name": "settle_err_50ma_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -0.129391
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": false,
+      "process": "tt",
+      "solver_diagnostic": null,
+      "supply_v": 2.97,
+      "temperature_c": 125.0,
+      "timed_out": false,
+      "timeout_s": 900
+    },
+    {
+      "corner_id": "tt_125c_3.30v",
+      "elapsed_s": 121.42,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/load-transient/corners/20260926-013955-6449a98/tt_125c_3.30v.log",
+      "measurements": [
+        {
+          "expr": "v_pre - v_post_min",
+          "max": 0.15,
+          "min": null,
+          "name": "undershoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.106867
+        },
+        {
+          "expr": "v_post_max - v_pre",
+          "max": 0.15,
+          "min": null,
+          "name": "overshoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.081649
+        },
+        {
+          "expr": "vecmax(outband*w_rise*(time-1.0m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_rise_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 120.5
+        },
+        {
+          "expr": "vecmax(outband*w_fall*(time-2.001m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_fall_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 719.9
+        },
+        {
+          "expr": "100*(v_50ma - v_pre)/v_pre",
+          "max": null,
+          "min": null,
+          "name": "settle_err_50ma_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -0.131655
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": false,
+      "process": "tt",
+      "solver_diagnostic": null,
+      "supply_v": 3.3,
+      "temperature_c": 125.0,
+      "timed_out": false,
+      "timeout_s": 900
+    },
+    {
+      "corner_id": "tt_125c_3.63v",
+      "elapsed_s": 158.764,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/load-transient/corners/20260926-013955-6449a98/tt_125c_3.63v.log",
+      "measurements": [
+        {
+          "expr": "v_pre - v_post_min",
+          "max": 0.15,
+          "min": null,
+          "name": "undershoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.099291
+        },
+        {
+          "expr": "v_post_max - v_pre",
+          "max": 0.15,
+          "min": null,
+          "name": "overshoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.075408
+        },
+        {
+          "expr": "vecmax(outband*w_rise*(time-1.0m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_rise_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 113.5
+        },
+        {
+          "expr": "vecmax(outband*w_fall*(time-2.001m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_fall_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 665.1
+        },
+        {
+          "expr": "100*(v_50ma - v_pre)/v_pre",
+          "max": null,
+          "min": null,
+          "name": "settle_err_50ma_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -0.137969
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": false,
+      "process": "tt",
+      "solver_diagnostic": null,
+      "supply_v": 3.63,
+      "temperature_c": 125.0,
+      "timed_out": false,
+      "timeout_s": 900
+    },
+    {
+      "corner_id": "ss_-40c_2.97v",
+      "elapsed_s": 173.832,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/load-transient/corners/20260926-013955-6449a98/ss_-40c_2.97v.log",
+      "measurements": [
+        {
+          "expr": "v_pre - v_post_min",
+          "max": 0.15,
+          "min": null,
+          "name": "undershoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.076322
+        },
+        {
+          "expr": "v_post_max - v_pre",
+          "max": 0.15,
+          "min": null,
+          "name": "overshoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.059784
+        },
+        {
+          "expr": "vecmax(outband*w_rise*(time-1.0m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_rise_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 91.3
+        },
+        {
+          "expr": "vecmax(outband*w_fall*(time-2.001m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_fall_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 546.1
+        },
+        {
+          "expr": "100*(v_50ma - v_pre)/v_pre",
+          "max": null,
+          "min": null,
+          "name": "settle_err_50ma_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -0.0822085
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": false,
+      "process": "ss",
+      "solver_diagnostic": null,
+      "supply_v": 2.97,
+      "temperature_c": -40.0,
+      "timed_out": false,
+      "timeout_s": 900
+    },
+    {
+      "corner_id": "ss_-40c_3.30v",
+      "elapsed_s": 114.464,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/load-transient/corners/20260926-013955-6449a98/ss_-40c_3.30v.log",
+      "measurements": [
+        {
+          "expr": "v_pre - v_post_min",
+          "max": 0.15,
+          "min": null,
+          "name": "undershoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.068957
+        },
+        {
+          "expr": "v_post_max - v_pre",
+          "max": 0.15,
+          "min": null,
+          "name": "overshoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.053666
+        },
+        {
+          "expr": "vecmax(outband*w_rise*(time-1.0m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_rise_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 82.3
+        },
+        {
+          "expr": "vecmax(outband*w_fall*(time-2.001m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_fall_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 481.1
+        },
+        {
+          "expr": "100*(v_50ma - v_pre)/v_pre",
+          "max": null,
+          "min": null,
+          "name": "settle_err_50ma_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -0.0802057
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": false,
+      "process": "ss",
+      "solver_diagnostic": null,
+      "supply_v": 3.3,
+      "temperature_c": -40.0,
+      "timed_out": false,
+      "timeout_s": 900
+    },
+    {
+      "corner_id": "ss_-40c_3.63v",
+      "elapsed_s": 106.939,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/load-transient/corners/20260926-013955-6449a98/ss_-40c_3.63v.log",
+      "measurements": [
+        {
+          "expr": "v_pre - v_post_min",
+          "max": 0.15,
+          "min": null,
+          "name": "undershoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.063412
+        },
+        {
+          "expr": "v_post_max - v_pre",
+          "max": 0.15,
+          "min": null,
+          "name": "overshoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.049029
+        },
+        {
+          "expr": "vecmax(outband*w_rise*(time-1.0m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_rise_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 75.3
+        },
+        {
+          "expr": "vecmax(outband*w_fall*(time-2.001m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_fall_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 430.1
+        },
+        {
+          "expr": "100*(v_50ma - v_pre)/v_pre",
+          "max": null,
+          "min": null,
+          "name": "settle_err_50ma_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -0.0800911
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": false,
+      "process": "ss",
+      "solver_diagnostic": null,
+      "supply_v": 3.63,
+      "temperature_c": -40.0,
+      "timed_out": false,
+      "timeout_s": 900
+    },
+    {
+      "corner_id": "ss_27c_2.97v",
+      "elapsed_s": 85.087,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/load-transient/corners/20260926-013955-6449a98/ss_27c_2.97v.log",
+      "measurements": [
+        {
+          "expr": "v_pre - v_post_min",
+          "max": 0.15,
+          "min": null,
+          "name": "undershoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.092122
+        },
+        {
+          "expr": "v_post_max - v_pre",
+          "max": 0.15,
+          "min": null,
+          "name": "overshoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.072049
+        },
+        {
+          "expr": "vecmax(outband*w_rise*(time-1.0m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_rise_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 107.3
+        },
+        {
+          "expr": "vecmax(outband*w_fall*(time-2.001m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_fall_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 672.5
+        },
+        {
+          "expr": "100*(v_50ma - v_pre)/v_pre",
+          "max": null,
+          "min": null,
+          "name": "settle_err_50ma_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -0.100086
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": false,
+      "process": "ss",
+      "solver_diagnostic": null,
+      "supply_v": 2.97,
+      "temperature_c": 27.0,
+      "timed_out": false,
+      "timeout_s": 900
+    },
+    {
+      "corner_id": "ss_27c_3.30v",
+      "elapsed_s": 90.964,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/load-transient/corners/20260926-013955-6449a98/ss_27c_3.30v.log",
+      "measurements": [
+        {
+          "expr": "v_pre - v_post_min",
+          "max": 0.15,
+          "min": null,
+          "name": "undershoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.083827
+        },
+        {
+          "expr": "v_post_max - v_pre",
+          "max": 0.15,
+          "min": null,
+          "name": "overshoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.065225
+        },
+        {
+          "expr": "vecmax(outband*w_rise*(time-1.0m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_rise_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 98.5
+        },
+        {
+          "expr": "vecmax(outband*w_fall*(time-2.001m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_fall_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 602.7
+        },
+        {
+          "expr": "100*(v_50ma - v_pre)/v_pre",
+          "max": null,
+          "min": null,
+          "name": "settle_err_50ma_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -0.0988035
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": false,
+      "process": "ss",
+      "solver_diagnostic": null,
+      "supply_v": 3.3,
+      "temperature_c": 27.0,
+      "timed_out": false,
+      "timeout_s": 900
+    },
+    {
+      "corner_id": "ss_27c_3.63v",
+      "elapsed_s": 122.694,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/load-transient/corners/20260926-013955-6449a98/ss_27c_3.63v.log",
+      "measurements": [
+        {
+          "expr": "v_pre - v_post_min",
+          "max": 0.15,
+          "min": null,
+          "name": "undershoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.077476
+        },
+        {
+          "expr": "v_post_max - v_pre",
+          "max": 0.15,
+          "min": null,
+          "name": "overshoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.059965
+        },
+        {
+          "expr": "vecmax(outband*w_rise*(time-1.0m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_rise_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 91.7
+        },
+        {
+          "expr": "vecmax(outband*w_fall*(time-2.001m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_fall_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 547.5
+        },
+        {
+          "expr": "100*(v_50ma - v_pre)/v_pre",
+          "max": null,
+          "min": null,
+          "name": "settle_err_50ma_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -0.10013
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": false,
+      "process": "ss",
+      "solver_diagnostic": null,
+      "supply_v": 3.63,
+      "temperature_c": 27.0,
+      "timed_out": false,
+      "timeout_s": 900
+    },
+    {
+      "corner_id": "ss_125c_2.97v",
+      "elapsed_s": 119.445,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/load-transient/corners/20260926-013955-6449a98/ss_125c_2.97v.log",
+      "measurements": [
+        {
+          "expr": "v_pre - v_post_min",
+          "max": 0.15,
+          "min": null,
+          "name": "undershoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.116728
+        },
+        {
+          "expr": "v_post_max - v_pre",
+          "max": 0.15,
+          "min": null,
+          "name": "overshoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.089888
+        },
+        {
+          "expr": "vecmax(outband*w_rise*(time-1.0m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_rise_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 128.9
+        },
+        {
+          "expr": "vecmax(outband*w_fall*(time-2.001m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_fall_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 796.1
+        },
+        {
+          "expr": "100*(v_50ma - v_pre)/v_pre",
+          "max": null,
+          "min": null,
+          "name": "settle_err_50ma_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -0.133832
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": false,
+      "process": "ss",
+      "solver_diagnostic": null,
+      "supply_v": 2.97,
+      "temperature_c": 125.0,
+      "timed_out": false,
+      "timeout_s": 900
+    },
+    {
+      "corner_id": "ss_125c_3.30v",
+      "elapsed_s": 117.916,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/load-transient/corners/20260926-013955-6449a98/ss_125c_3.30v.log",
+      "measurements": [
+        {
+          "expr": "v_pre - v_post_min",
+          "max": 0.15,
+          "min": null,
+          "name": "undershoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.106609
+        },
+        {
+          "expr": "v_post_max - v_pre",
+          "max": 0.15,
+          "min": null,
+          "name": "overshoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.08168
+        },
+        {
+          "expr": "vecmax(outband*w_rise*(time-1.0m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_rise_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 119.7
+        },
+        {
+          "expr": "vecmax(outband*w_fall*(time-2.001m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_fall_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 726.5
+        },
+        {
+          "expr": "100*(v_50ma - v_pre)/v_pre",
+          "max": null,
+          "min": null,
+          "name": "settle_err_50ma_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -0.133878
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": false,
+      "process": "ss",
+      "solver_diagnostic": null,
+      "supply_v": 3.3,
+      "temperature_c": 125.0,
+      "timed_out": false,
+      "timeout_s": 900
+    },
+    {
+      "corner_id": "ss_125c_3.63v",
+      "elapsed_s": 103.807,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/load-transient/corners/20260926-013955-6449a98/ss_125c_3.63v.log",
+      "measurements": [
+        {
+          "expr": "v_pre - v_post_min",
+          "max": 0.15,
+          "min": null,
+          "name": "undershoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.098799
+        },
+        {
+          "expr": "v_post_max - v_pre",
+          "max": 0.15,
+          "min": null,
+          "name": "overshoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.075303
+        },
+        {
+          "expr": "vecmax(outband*w_rise*(time-1.0m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_rise_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 112.7
+        },
+        {
+          "expr": "vecmax(outband*w_fall*(time-2.001m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_fall_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 670.1
+        },
+        {
+          "expr": "100*(v_50ma - v_pre)/v_pre",
+          "max": null,
+          "min": null,
+          "name": "settle_err_50ma_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -0.138307
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": false,
+      "process": "ss",
+      "solver_diagnostic": null,
+      "supply_v": 3.63,
+      "temperature_c": 125.0,
+      "timed_out": false,
+      "timeout_s": 900
+    },
+    {
+      "corner_id": "ff_-40c_2.97v",
+      "elapsed_s": 109.061,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/load-transient/corners/20260926-013955-6449a98/ff_-40c_2.97v.log",
+      "measurements": [
+        {
+          "expr": "v_pre - v_post_min",
+          "max": 0.15,
+          "min": null,
+          "name": "undershoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.077381
+        },
+        {
+          "expr": "v_post_max - v_pre",
+          "max": 0.15,
+          "min": null,
+          "name": "overshoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.060066
+        },
+        {
+          "expr": "vecmax(outband*w_rise*(time-1.0m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_rise_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 92.9
+        },
+        {
+          "expr": "vecmax(outband*w_fall*(time-2.001m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_fall_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 551.7
+        },
+        {
+          "expr": "100*(v_50ma - v_pre)/v_pre",
+          "max": null,
+          "min": null,
+          "name": "settle_err_50ma_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -0.0802047
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": false,
+      "process": "ff",
+      "solver_diagnostic": null,
+      "supply_v": 2.97,
+      "temperature_c": -40.0,
+      "timed_out": false,
+      "timeout_s": 900
+    },
+    {
+      "corner_id": "ff_-40c_3.30v",
+      "elapsed_s": 137.992,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/load-transient/corners/20260926-013955-6449a98/ff_-40c_3.30v.log",
+      "measurements": [
+        {
+          "expr": "v_pre - v_post_min",
+          "max": 0.15,
+          "min": null,
+          "name": "undershoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.070018
+        },
+        {
+          "expr": "v_post_max - v_pre",
+          "max": 0.15,
+          "min": null,
+          "name": "overshoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.054006
+        },
+        {
+          "expr": "vecmax(outband*w_rise*(time-1.0m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_rise_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 83.7
+        },
+        {
+          "expr": "vecmax(outband*w_fall*(time-2.001m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_fall_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 487.1
+        },
+        {
+          "expr": "100*(v_50ma - v_pre)/v_pre",
+          "max": null,
+          "min": null,
+          "name": "settle_err_50ma_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -0.0784797
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": false,
+      "process": "ff",
+      "solver_diagnostic": null,
+      "supply_v": 3.3,
+      "temperature_c": -40.0,
+      "timed_out": false,
+      "timeout_s": 900
+    },
+    {
+      "corner_id": "ff_-40c_3.63v",
+      "elapsed_s": 114.554,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/load-transient/corners/20260926-013955-6449a98/ff_-40c_3.63v.log",
+      "measurements": [
+        {
+          "expr": "v_pre - v_post_min",
+          "max": 0.15,
+          "min": null,
+          "name": "undershoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.064479
+        },
+        {
+          "expr": "v_post_max - v_pre",
+          "max": 0.15,
+          "min": null,
+          "name": "overshoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.049404
+        },
+        {
+          "expr": "vecmax(outband*w_rise*(time-1.0m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_rise_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 76.7
+        },
+        {
+          "expr": "vecmax(outband*w_fall*(time-2.001m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_fall_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 436.3
+        },
+        {
+          "expr": "100*(v_50ma - v_pre)/v_pre",
+          "max": null,
+          "min": null,
+          "name": "settle_err_50ma_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -0.0788646
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": false,
+      "process": "ff",
+      "solver_diagnostic": null,
+      "supply_v": 3.63,
+      "temperature_c": -40.0,
+      "timed_out": false,
+      "timeout_s": 900
+    },
+    {
+      "corner_id": "ff_27c_2.97v",
+      "elapsed_s": 106.681,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/load-transient/corners/20260926-013955-6449a98/ff_27c_2.97v.log",
+      "measurements": [
+        {
+          "expr": "v_pre - v_post_min",
+          "max": 0.15,
+          "min": null,
+          "name": "undershoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.092572
+        },
+        {
+          "expr": "v_post_max - v_pre",
+          "max": 0.15,
+          "min": null,
+          "name": "overshoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.071754
+        },
+        {
+          "expr": "vecmax(outband*w_rise*(time-1.0m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_rise_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 108.5
+        },
+        {
+          "expr": "vecmax(outband*w_fall*(time-2.001m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_fall_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 670.7
+        },
+        {
+          "expr": "100*(v_50ma - v_pre)/v_pre",
+          "max": null,
+          "min": null,
+          "name": "settle_err_50ma_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -0.0983025
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": false,
+      "process": "ff",
+      "solver_diagnostic": null,
+      "supply_v": 2.97,
+      "temperature_c": 27.0,
+      "timed_out": false,
+      "timeout_s": 900
+    },
+    {
+      "corner_id": "ff_27c_3.30v",
+      "elapsed_s": 101.79,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/load-transient/corners/20260926-013955-6449a98/ff_27c_3.30v.log",
+      "measurements": [
+        {
+          "expr": "v_pre - v_post_min",
+          "max": 0.15,
+          "min": null,
+          "name": "undershoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.084358
+        },
+        {
+          "expr": "v_post_max - v_pre",
+          "max": 0.15,
+          "min": null,
+          "name": "overshoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.065049
+        },
+        {
+          "expr": "vecmax(outband*w_rise*(time-1.0m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_rise_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 99.5
+        },
+        {
+          "expr": "vecmax(outband*w_fall*(time-2.001m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_fall_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 602.5
+        },
+        {
+          "expr": "100*(v_50ma - v_pre)/v_pre",
+          "max": null,
+          "min": null,
+          "name": "settle_err_50ma_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -0.0976861
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": false,
+      "process": "ff",
+      "solver_diagnostic": null,
+      "supply_v": 3.3,
+      "temperature_c": 27.0,
+      "timed_out": false,
+      "timeout_s": 900
+    },
+    {
+      "corner_id": "ff_27c_3.63v",
+      "elapsed_s": 91.122,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/load-transient/corners/20260926-013955-6449a98/ff_27c_3.63v.log",
+      "measurements": [
+        {
+          "expr": "v_pre - v_post_min",
+          "max": 0.15,
+          "min": null,
+          "name": "undershoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.078091
+        },
+        {
+          "expr": "v_post_max - v_pre",
+          "max": 0.15,
+          "min": null,
+          "name": "overshoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.059888
+        },
+        {
+          "expr": "vecmax(outband*w_rise*(time-1.0m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_rise_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 92.7
+        },
+        {
+          "expr": "vecmax(outband*w_fall*(time-2.001m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_fall_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 547.9
+        },
+        {
+          "expr": "100*(v_50ma - v_pre)/v_pre",
+          "max": null,
+          "min": null,
+          "name": "settle_err_50ma_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -0.0997896
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": false,
+      "process": "ff",
+      "solver_diagnostic": null,
+      "supply_v": 3.63,
+      "temperature_c": 27.0,
+      "timed_out": false,
+      "timeout_s": 900
+    },
+    {
+      "corner_id": "ff_125c_2.97v",
+      "elapsed_s": 82.38,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/load-transient/corners/20260926-013955-6449a98/ff_125c_2.97v.log",
+      "measurements": [
+        {
+          "expr": "v_pre - v_post_min",
+          "max": 0.15,
+          "min": null,
+          "name": "undershoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.11612
+        },
+        {
+          "expr": "v_post_max - v_pre",
+          "max": 0.15,
+          "min": null,
+          "name": "overshoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.088997
+        },
+        {
+          "expr": "vecmax(outband*w_rise*(time-1.0m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_rise_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 129.3
+        },
+        {
+          "expr": "vecmax(outband*w_fall*(time-2.001m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_fall_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 773.5
+        },
+        {
+          "expr": "100*(v_50ma - v_pre)/v_pre",
+          "max": null,
+          "min": null,
+          "name": "settle_err_50ma_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -0.124951
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": false,
+      "process": "ff",
+      "solver_diagnostic": null,
+      "supply_v": 2.97,
+      "temperature_c": 125.0,
+      "timed_out": false,
+      "timeout_s": 900
+    },
+    {
+      "corner_id": "ff_125c_3.30v",
+      "elapsed_s": 74.219,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/load-transient/corners/20260926-013955-6449a98/ff_125c_3.30v.log",
+      "measurements": [
+        {
+          "expr": "v_pre - v_post_min",
+          "max": 0.15,
+          "min": null,
+          "name": "undershoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.106304
+        },
+        {
+          "expr": "v_post_max - v_pre",
+          "max": 0.15,
+          "min": null,
+          "name": "overshoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.080931
+        },
+        {
+          "expr": "vecmax(outband*w_rise*(time-1.0m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_rise_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 120.3
+        },
+        {
+          "expr": "vecmax(outband*w_fall*(time-2.001m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_fall_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 705.9
+        },
+        {
+          "expr": "100*(v_50ma - v_pre)/v_pre",
+          "max": null,
+          "min": null,
+          "name": "settle_err_50ma_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -0.129932
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": false,
+      "process": "ff",
+      "solver_diagnostic": null,
+      "supply_v": 3.3,
+      "temperature_c": 125.0,
+      "timed_out": false,
+      "timeout_s": 900
+    },
+    {
+      "corner_id": "ff_125c_3.63v",
+      "elapsed_s": 76.851,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/load-transient/corners/20260926-013955-6449a98/ff_125c_3.63v.log",
+      "measurements": [
+        {
+          "expr": "v_pre - v_post_min",
+          "max": 0.15,
+          "min": null,
+          "name": "undershoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.098793
+        },
+        {
+          "expr": "v_post_max - v_pre",
+          "max": 0.15,
+          "min": null,
+          "name": "overshoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.074678
+        },
+        {
+          "expr": "vecmax(outband*w_rise*(time-1.0m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_rise_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 113.5
+        },
+        {
+          "expr": "vecmax(outband*w_fall*(time-2.001m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_fall_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 651.3
+        },
+        {
+          "expr": "100*(v_50ma - v_pre)/v_pre",
+          "max": null,
+          "min": null,
+          "name": "settle_err_50ma_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -0.139073
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": false,
+      "process": "ff",
+      "solver_diagnostic": null,
+      "supply_v": 3.63,
+      "temperature_c": 125.0,
+      "timed_out": false,
+      "timeout_s": 900
+    },
+    {
+      "corner_id": "sf_-40c_2.97v",
+      "elapsed_s": 81.511,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/load-transient/corners/20260926-013955-6449a98/sf_-40c_2.97v.log",
+      "measurements": [
+        {
+          "expr": "v_pre - v_post_min",
+          "max": 0.15,
+          "min": null,
+          "name": "undershoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.075031
+        },
+        {
+          "expr": "v_post_max - v_pre",
+          "max": 0.15,
+          "min": null,
+          "name": "overshoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.058591
+        },
+        {
+          "expr": "vecmax(outband*w_rise*(time-1.0m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_rise_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 89.7
+        },
+        {
+          "expr": "vecmax(outband*w_fall*(time-2.001m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_fall_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 534.3
+        },
+        {
+          "expr": "100*(v_50ma - v_pre)/v_pre",
+          "max": null,
+          "min": null,
+          "name": "settle_err_50ma_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -0.0815416
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": false,
+      "process": "sf",
+      "solver_diagnostic": null,
+      "supply_v": 2.97,
+      "temperature_c": -40.0,
+      "timed_out": false,
+      "timeout_s": 900
+    },
+    {
+      "corner_id": "sf_-40c_3.30v",
+      "elapsed_s": 86.232,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/load-transient/corners/20260926-013955-6449a98/sf_-40c_3.30v.log",
+      "measurements": [
+        {
+          "expr": "v_pre - v_post_min",
+          "max": 0.15,
+          "min": null,
+          "name": "undershoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.068179
+        },
+        {
+          "expr": "v_post_max - v_pre",
+          "max": 0.15,
+          "min": null,
+          "name": "overshoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.052884
+        },
+        {
+          "expr": "vecmax(outband*w_rise*(time-1.0m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_rise_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 81.3
+        },
+        {
+          "expr": "vecmax(outband*w_fall*(time-2.001m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_fall_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 473.5
+        },
+        {
+          "expr": "100*(v_50ma - v_pre)/v_pre",
+          "max": null,
+          "min": null,
+          "name": "settle_err_50ma_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -0.0794278
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": false,
+      "process": "sf",
+      "solver_diagnostic": null,
+      "supply_v": 3.3,
+      "temperature_c": -40.0,
+      "timed_out": false,
+      "timeout_s": 900
+    },
+    {
+      "corner_id": "sf_-40c_3.63v",
+      "elapsed_s": 88.754,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/load-transient/corners/20260926-013955-6449a98/sf_-40c_3.63v.log",
+      "measurements": [
+        {
+          "expr": "v_pre - v_post_min",
+          "max": 0.15,
+          "min": null,
+          "name": "undershoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.063031
+        },
+        {
+          "expr": "v_post_max - v_pre",
+          "max": 0.15,
+          "min": null,
+          "name": "overshoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.048571
+        },
+        {
+          "expr": "vecmax(outband*w_rise*(time-1.0m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_rise_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 74.7
+        },
+        {
+          "expr": "vecmax(outband*w_fall*(time-2.001m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_fall_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 425.7
+        },
+        {
+          "expr": "100*(v_50ma - v_pre)/v_pre",
+          "max": null,
+          "min": null,
+          "name": "settle_err_50ma_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -0.0790912
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": false,
+      "process": "sf",
+      "solver_diagnostic": null,
+      "supply_v": 3.63,
+      "temperature_c": -40.0,
+      "timed_out": false,
+      "timeout_s": 900
+    },
+    {
+      "corner_id": "sf_27c_2.97v",
+      "elapsed_s": 99.82,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/load-transient/corners/20260926-013955-6449a98/sf_27c_2.97v.log",
+      "measurements": [
+        {
+          "expr": "v_pre - v_post_min",
+          "max": 0.15,
+          "min": null,
+          "name": "undershoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.090464
+        },
+        {
+          "expr": "v_post_max - v_pre",
+          "max": 0.15,
+          "min": null,
+          "name": "overshoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.070596
+        },
+        {
+          "expr": "vecmax(outband*w_rise*(time-1.0m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_rise_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 105.7
+        },
+        {
+          "expr": "vecmax(outband*w_fall*(time-2.001m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_fall_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 659.1
+        },
+        {
+          "expr": "100*(v_50ma - v_pre)/v_pre",
+          "max": null,
+          "min": null,
+          "name": "settle_err_50ma_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -0.0989191
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": false,
+      "process": "sf",
+      "solver_diagnostic": null,
+      "supply_v": 2.97,
+      "temperature_c": 27.0,
+      "timed_out": false,
+      "timeout_s": 900
+    },
+    {
+      "corner_id": "sf_27c_3.30v",
+      "elapsed_s": 63.248,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/load-transient/corners/20260926-013955-6449a98/sf_27c_3.30v.log",
+      "measurements": [
+        {
+          "expr": "v_pre - v_post_min",
+          "max": 0.15,
+          "min": null,
+          "name": "undershoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.082741
+        },
+        {
+          "expr": "v_post_max - v_pre",
+          "max": 0.15,
+          "min": null,
+          "name": "overshoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.064232
+        },
+        {
+          "expr": "vecmax(outband*w_rise*(time-1.0m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_rise_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 97.3
+        },
+        {
+          "expr": "vecmax(outband*w_fall*(time-2.001m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_fall_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 593.9
+        },
+        {
+          "expr": "100*(v_50ma - v_pre)/v_pre",
+          "max": null,
+          "min": null,
+          "name": "settle_err_50ma_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -0.0973593
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": false,
+      "process": "sf",
+      "solver_diagnostic": null,
+      "supply_v": 3.3,
+      "temperature_c": 27.0,
+      "timed_out": false,
+      "timeout_s": 900
+    },
+    {
+      "corner_id": "sf_27c_3.63v",
+      "elapsed_s": 72.993,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/load-transient/corners/20260926-013955-6449a98/sf_27c_3.63v.log",
+      "measurements": [
+        {
+          "expr": "v_pre - v_post_min",
+          "max": 0.15,
+          "min": null,
+          "name": "undershoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.076856
+        },
+        {
+          "expr": "v_post_max - v_pre",
+          "max": 0.15,
+          "min": null,
+          "name": "overshoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.059348
+        },
+        {
+          "expr": "vecmax(outband*w_rise*(time-1.0m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_rise_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 90.9
+        },
+        {
+          "expr": "vecmax(outband*w_fall*(time-2.001m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_fall_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 542.3
+        },
+        {
+          "expr": "100*(v_50ma - v_pre)/v_pre",
+          "max": null,
+          "min": null,
+          "name": "settle_err_50ma_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -0.0982422
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": false,
+      "process": "sf",
+      "solver_diagnostic": null,
+      "supply_v": 3.63,
+      "temperature_c": 27.0,
+      "timed_out": false,
+      "timeout_s": 900
+    },
+    {
+      "corner_id": "sf_125c_2.97v",
+      "elapsed_s": 78.511,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/load-transient/corners/20260926-013955-6449a98/sf_125c_2.97v.log",
+      "measurements": [
+        {
+          "expr": "v_pre - v_post_min",
+          "max": 0.15,
+          "min": null,
+          "name": "undershoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.114384
+        },
+        {
+          "expr": "v_post_max - v_pre",
+          "max": 0.15,
+          "min": null,
+          "name": "overshoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.087951
+        },
+        {
+          "expr": "vecmax(outband*w_rise*(time-1.0m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_rise_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 126.9
+        },
+        {
+          "expr": "vecmax(outband*w_fall*(time-2.001m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_fall_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 791.3
+        },
+        {
+          "expr": "100*(v_50ma - v_pre)/v_pre",
+          "max": null,
+          "min": null,
+          "name": "settle_err_50ma_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -0.13161
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": false,
+      "process": "sf",
+      "solver_diagnostic": null,
+      "supply_v": 2.97,
+      "temperature_c": 125.0,
+      "timed_out": false,
+      "timeout_s": 900
+    },
+    {
+      "corner_id": "sf_125c_3.30v",
+      "elapsed_s": 82.256,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/load-transient/corners/20260926-013955-6449a98/sf_125c_3.30v.log",
+      "measurements": [
+        {
+          "expr": "v_pre - v_post_min",
+          "max": 0.15,
+          "min": null,
+          "name": "undershoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.104945
+        },
+        {
+          "expr": "v_post_max - v_pre",
+          "max": 0.15,
+          "min": null,
+          "name": "overshoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.080299
+        },
+        {
+          "expr": "vecmax(outband*w_rise*(time-1.0m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_rise_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 118.3
+        },
+        {
+          "expr": "vecmax(outband*w_fall*(time-2.001m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_fall_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 725.3
+        },
+        {
+          "expr": "100*(v_50ma - v_pre)/v_pre",
+          "max": null,
+          "min": null,
+          "name": "settle_err_50ma_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -0.130658
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": false,
+      "process": "sf",
+      "solver_diagnostic": null,
+      "supply_v": 3.3,
+      "temperature_c": 125.0,
+      "timed_out": false,
+      "timeout_s": 900
+    },
+    {
+      "corner_id": "sf_125c_3.63v",
+      "elapsed_s": 78.142,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/load-transient/corners/20260926-013955-6449a98/sf_125c_3.63v.log",
+      "measurements": [
+        {
+          "expr": "v_pre - v_post_min",
+          "max": 0.15,
+          "min": null,
+          "name": "undershoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.097725
+        },
+        {
+          "expr": "v_post_max - v_pre",
+          "max": 0.15,
+          "min": null,
+          "name": "overshoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.0744
+        },
+        {
+          "expr": "vecmax(outband*w_rise*(time-1.0m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_rise_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 111.7
+        },
+        {
+          "expr": "vecmax(outband*w_fall*(time-2.001m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_fall_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 671.9
+        },
+        {
+          "expr": "100*(v_50ma - v_pre)/v_pre",
+          "max": null,
+          "min": null,
+          "name": "settle_err_50ma_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -0.134034
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": false,
+      "process": "sf",
+      "solver_diagnostic": null,
+      "supply_v": 3.63,
+      "temperature_c": 125.0,
+      "timed_out": false,
+      "timeout_s": 900
+    },
+    {
+      "corner_id": "fs_-40c_2.97v",
+      "elapsed_s": 101.355,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/load-transient/corners/20260926-013955-6449a98/fs_-40c_2.97v.log",
+      "measurements": [
+        {
+          "expr": "v_pre - v_post_min",
+          "max": 0.15,
+          "min": null,
+          "name": "undershoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.079634
+        },
+        {
+          "expr": "v_post_max - v_pre",
+          "max": 0.15,
+          "min": null,
+          "name": "overshoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.062068
+        },
+        {
+          "expr": "vecmax(outband*w_rise*(time-1.0m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_rise_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 95.5
+        },
+        {
+          "expr": "vecmax(outband*w_fall*(time-2.001m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_fall_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 571.7
+        },
+        {
+          "expr": "100*(v_50ma - v_pre)/v_pre",
+          "max": null,
+          "min": null,
+          "name": "settle_err_50ma_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -0.0812606
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": false,
+      "process": "fs",
+      "solver_diagnostic": null,
+      "supply_v": 2.97,
+      "temperature_c": -40.0,
+      "timed_out": false,
+      "timeout_s": 900
+    },
+    {
+      "corner_id": "fs_-40c_3.30v",
+      "elapsed_s": 81.399,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/load-transient/corners/20260926-013955-6449a98/fs_-40c_3.30v.log",
+      "measurements": [
+        {
+          "expr": "v_pre - v_post_min",
+          "max": 0.15,
+          "min": null,
+          "name": "undershoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.071727
+        },
+        {
+          "expr": "v_post_max - v_pre",
+          "max": 0.15,
+          "min": null,
+          "name": "overshoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.055576
+        },
+        {
+          "expr": "vecmax(outband*w_rise*(time-1.0m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_rise_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 86.1
+        },
+        {
+          "expr": "vecmax(outband*w_fall*(time-2.001m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_fall_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 503.1
+        },
+        {
+          "expr": "100*(v_50ma - v_pre)/v_pre",
+          "max": null,
+          "min": null,
+          "name": "settle_err_50ma_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -0.0796466
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": false,
+      "process": "fs",
+      "solver_diagnostic": null,
+      "supply_v": 3.3,
+      "temperature_c": -40.0,
+      "timed_out": false,
+      "timeout_s": 900
+    },
+    {
+      "corner_id": "fs_-40c_3.63v",
+      "elapsed_s": 77.413,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/load-transient/corners/20260926-013955-6449a98/fs_-40c_3.63v.log",
+      "measurements": [
+        {
+          "expr": "v_pre - v_post_min",
+          "max": 0.15,
+          "min": null,
+          "name": "undershoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.065825
+        },
+        {
+          "expr": "v_post_max - v_pre",
+          "max": 0.15,
+          "min": null,
+          "name": "overshoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.050674
+        },
+        {
+          "expr": "vecmax(outband*w_rise*(time-1.0m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_rise_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 78.5
+        },
+        {
+          "expr": "vecmax(outband*w_fall*(time-2.001m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_fall_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 449.3
+        },
+        {
+          "expr": "100*(v_50ma - v_pre)/v_pre",
+          "max": null,
+          "min": null,
+          "name": "settle_err_50ma_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -0.0803091
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": false,
+      "process": "fs",
+      "solver_diagnostic": null,
+      "supply_v": 3.63,
+      "temperature_c": -40.0,
+      "timed_out": false,
+      "timeout_s": 900
+    },
+    {
+      "corner_id": "fs_27c_2.97v",
+      "elapsed_s": 76.356,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/load-transient/corners/20260926-013955-6449a98/fs_27c_2.97v.log",
+      "measurements": [
+        {
+          "expr": "v_pre - v_post_min",
+          "max": 0.15,
+          "min": null,
+          "name": "undershoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.095141
+        },
+        {
+          "expr": "v_post_max - v_pre",
+          "max": 0.15,
+          "min": null,
+          "name": "overshoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.073989
+        },
+        {
+          "expr": "vecmax(outband*w_rise*(time-1.0m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_rise_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 111.1
+        },
+        {
+          "expr": "vecmax(outband*w_fall*(time-2.001m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_fall_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 689.9
+        },
+        {
+          "expr": "100*(v_50ma - v_pre)/v_pre",
+          "max": null,
+          "min": null,
+          "name": "settle_err_50ma_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -0.0996362
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": false,
+      "process": "fs",
+      "solver_diagnostic": null,
+      "supply_v": 2.97,
+      "temperature_c": 27.0,
+      "timed_out": false,
+      "timeout_s": 900
+    },
+    {
+      "corner_id": "fs_27c_3.30v",
+      "elapsed_s": 90.265,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/load-transient/corners/20260926-013955-6449a98/fs_27c_3.30v.log",
+      "measurements": [
+        {
+          "expr": "v_pre - v_post_min",
+          "max": 0.15,
+          "min": null,
+          "name": "undershoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.086368
+        },
+        {
+          "expr": "v_post_max - v_pre",
+          "max": 0.15,
+          "min": null,
+          "name": "overshoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.06682
+        },
+        {
+          "expr": "vecmax(outband*w_rise*(time-1.0m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_rise_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 101.9
+        },
+        {
+          "expr": "vecmax(outband*w_fall*(time-2.001m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_fall_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 618.3
+        },
+        {
+          "expr": "100*(v_50ma - v_pre)/v_pre",
+          "max": null,
+          "min": null,
+          "name": "settle_err_50ma_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -0.0995747
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": false,
+      "process": "fs",
+      "solver_diagnostic": null,
+      "supply_v": 3.3,
+      "temperature_c": 27.0,
+      "timed_out": false,
+      "timeout_s": 900
+    },
+    {
+      "corner_id": "fs_27c_3.63v",
+      "elapsed_s": 85.03,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/load-transient/corners/20260926-013955-6449a98/fs_27c_3.63v.log",
+      "measurements": [
+        {
+          "expr": "v_pre - v_post_min",
+          "max": 0.15,
+          "min": null,
+          "name": "undershoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.079714
+        },
+        {
+          "expr": "v_post_max - v_pre",
+          "max": 0.15,
+          "min": null,
+          "name": "overshoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.061337
+        },
+        {
+          "expr": "vecmax(outband*w_rise*(time-1.0m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_rise_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 94.7
+        },
+        {
+          "expr": "vecmax(outband*w_fall*(time-2.001m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_fall_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 561.1
+        },
+        {
+          "expr": "100*(v_50ma - v_pre)/v_pre",
+          "max": null,
+          "min": null,
+          "name": "settle_err_50ma_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -0.102178
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": false,
+      "process": "fs",
+      "solver_diagnostic": null,
+      "supply_v": 3.63,
+      "temperature_c": 27.0,
+      "timed_out": false,
+      "timeout_s": 900
+    },
+    {
+      "corner_id": "fs_125c_2.97v",
+      "elapsed_s": 82.036,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/load-transient/corners/20260926-013955-6449a98/fs_125c_2.97v.log",
+      "measurements": [
+        {
+          "expr": "v_pre - v_post_min",
+          "max": 0.15,
+          "min": null,
+          "name": "undershoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.119265
+        },
+        {
+          "expr": "v_post_max - v_pre",
+          "max": 0.15,
+          "min": null,
+          "name": "overshoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.091696
+        },
+        {
+          "expr": "vecmax(outband*w_rise*(time-1.0m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_rise_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 132.1
+        },
+        {
+          "expr": "vecmax(outband*w_fall*(time-2.001m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_fall_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 782.3
+        },
+        {
+          "expr": "100*(v_50ma - v_pre)/v_pre",
+          "max": null,
+          "min": null,
+          "name": "settle_err_50ma_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -0.125344
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": false,
+      "process": "fs",
+      "solver_diagnostic": null,
+      "supply_v": 2.97,
+      "temperature_c": 125.0,
+      "timed_out": false,
+      "timeout_s": 900
+    },
+    {
+      "corner_id": "fs_125c_3.30v",
+      "elapsed_s": 109.902,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/load-transient/corners/20260926-013955-6449a98/fs_125c_3.30v.log",
+      "measurements": [
+        {
+          "expr": "v_pre - v_post_min",
+          "max": 0.15,
+          "min": null,
+          "name": "undershoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.108819
+        },
+        {
+          "expr": "v_post_max - v_pre",
+          "max": 0.15,
+          "min": null,
+          "name": "overshoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.083094
+        },
+        {
+          "expr": "vecmax(outband*w_rise*(time-1.0m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_rise_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 122.7
+        },
+        {
+          "expr": "vecmax(outband*w_fall*(time-2.001m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_fall_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 711.5
+        },
+        {
+          "expr": "100*(v_50ma - v_pre)/v_pre",
+          "max": null,
+          "min": null,
+          "name": "settle_err_50ma_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -0.131878
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": false,
+      "process": "fs",
+      "solver_diagnostic": null,
+      "supply_v": 3.3,
+      "temperature_c": 125.0,
+      "timed_out": false,
+      "timeout_s": 900
+    },
+    {
+      "corner_id": "fs_125c_3.63v",
+      "elapsed_s": 89.102,
+      "killed_by_signal": null,
+      "killed_by_signal_name": null,
+      "log": "sim/load-transient/corners/20260926-013955-6449a98/fs_125c_3.63v.log",
+      "measurements": [
+        {
+          "expr": "v_pre - v_post_min",
+          "max": 0.15,
+          "min": null,
+          "name": "undershoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.100899
+        },
+        {
+          "expr": "v_post_max - v_pre",
+          "max": 0.15,
+          "min": null,
+          "name": "overshoot_v",
+          "pass": true,
+          "reason": "",
+          "unit": "V",
+          "value": 0.076454
+        },
+        {
+          "expr": "vecmax(outband*w_rise*(time-1.0m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_rise_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 115.7
+        },
+        {
+          "expr": "vecmax(outband*w_fall*(time-2.001m))*1e6",
+          "max": 20,
+          "min": null,
+          "name": "recovery_fall_us",
+          "pass": false,
+          "reason": "above max 20",
+          "unit": "us",
+          "value": 654.7
+        },
+        {
+          "expr": "100*(v_50ma - v_pre)/v_pre",
+          "max": null,
+          "min": null,
+          "name": "settle_err_50ma_pct",
+          "pass": true,
+          "reason": "",
+          "unit": "%",
+          "value": -0.143071
+        }
+      ],
+      "ngspice_exit": 0,
+      "pass": false,
+      "process": "fs",
+      "solver_diagnostic": null,
+      "supply_v": 3.63,
+      "temperature_c": 125.0,
+      "timed_out": false,
+      "timeout_s": 900
+    }
+  ],
+  "experiment": {
+    "claim": "Substantiates spec/target-spec.md's ratified \"Load transient\" row (1<->50 mA step, ~1us edges: peak excursion <=150mV, recover to +-1% in <=20us, over the ratified C_out/ESR window) against the LDO core-regulation-loop schematic landed by #14 (design/ldo_3v3in_1v8out.sch). Both the spec row and the C_out/ESR window (spec/decision-records/DR-002) are ratified by issue #1 / DR-006, and the bounds below cite those numbers verbatim, not an invented final limit. This testbench's undershoot/overshoot measurements are computed as the deviation from the pre-step (light-load) steady-state value, not an absolute vout bound. Issue #180 brought this bench into conformance with sim/README.md's \"Initial-condition contract (issue #171)\": the transient is released from an eleven-node `.ic`-constrained operating point (#164's variant-B shape, PR #170 -- see testbench/tb_load_transient.sch's header and this manifest's deck.analyses comments) instead of from ngspice's own unconstrained loop-closed `.op`, which 23 of the 45 corner logs in the superseded 20260825-081255-4cb27f8 record show hitting a singular-matrix / gmin-stepping diagnostic. The stimulus, the step timestamps, the C_out/ESR point and every measurement bound are unchanged by that conversion; the pre-step reference moved from v(vout)[0] to a 0.800-0.999ms average and the peak searches were windowed to the stepped region, because under an `.ic` seed t=0 is the seed itself rather than the corner's own settled 1mA point. The row has TWO independent clauses and, until #119, this manifest measured only the first: undershoot_v/overshoot_v cover \"peak excursion <=150mV\", and recovery_rise_us/recovery_fall_us (added in #119) cover \"recover to +-1% in <=20us\" on the rising and falling load edges respectively. Both clause bounds are quoted verbatim from the same ratified row. Issue #119 also moved C_out from the superseded record's 1uF (DR-002's recommended nominal) to 4.7uF (DR-002's ratified window's own ceiling, still 0-500mOhm ESR -- not a value outside the ratified window) to address the peak-excursion clause, which #119 root-caused as charge-limited (Q=C*dV against the loop's finite large-signal response time, not phase-margin-limited -- see design/README.md's #115 anti-correlation finding). C_out/ESR remain a single representative point inside the ratified window, not a sweep of the window -- walking the window inside one deck the way sim/loop-gain does is still follow-on scope (e.g. #19). See spec/decision-records/DR-002's append and design/README.md's \"#119\" section for the full per-corner evidence, including the recovery-time clause's own, opposite-direction relationship to C_out (this record's own #119 writeup) that this C_out choice does not close. Known-immature-design caveat (design/README.md \"Known gaps\"): C_COMP/C_CL remain unsized placeholders and the error amplifier still has a light-load/high-VIN output-swing ceiling (design/README.md's \"Known open item\") even though issue #22 already added the current-limit and soft-start protection circuitry, so a FAIL here -- especially at the high-VIN corner -- is an honest, expected finding at this design stage (per CLAUDE.md's \"Verification is the product\"), not a harness defect.",
+    "provenance": "schematic",
+    "provenance_source": "sim/load-transient/testbench/tb_load_transient.sch",
+    "slug": "load-transient",
+    "statistical_convention": "N/A (corner-matrix check, not a distribution claim)",
+    "title": "Load transient: 1mA <-> 50mA step response"
+  },
+  "git": {
+    "branch": "feature/issue-180",
+    "dirty": false,
+    "sha": "6449a98"
+  },
+  "links": {
+    "corners_dir": "sim/load-transient/corners/20260926-013955-6449a98/",
+    "json": "sim/load-transient/records/20260926-013955-6449a98.json",
+    "manifest": "sim/load-transient/experiment.json",
+    "netlist_snapshot": "sim/load-transient/netlist-snapshots/20260926-013955-6449a98.spice",
+    "record": "sim/load-transient/records/20260926-013955-6449a98.md",
+    "testbench": "sim/load-transient/testbench/tb_load_transient.sch"
+  },
+  "matrix": {
+    "is_subset": false,
+    "n_points": 45,
+    "point_ids": [
+      "tt_-40c_2.97v",
+      "tt_-40c_3.30v",
+      "tt_-40c_3.63v",
+      "tt_27c_2.97v",
+      "tt_27c_3.30v",
+      "tt_27c_3.63v",
+      "tt_125c_2.97v",
+      "tt_125c_3.30v",
+      "tt_125c_3.63v",
+      "ss_-40c_2.97v",
+      "ss_-40c_3.30v",
+      "ss_-40c_3.63v",
+      "ss_27c_2.97v",
+      "ss_27c_3.30v",
+      "ss_27c_3.63v",
+      "ss_125c_2.97v",
+      "ss_125c_3.30v",
+      "ss_125c_3.63v",
+      "ff_-40c_2.97v",
+      "ff_-40c_3.30v",
+      "ff_-40c_3.63v",
+      "ff_27c_2.97v",
+      "ff_27c_3.30v",
+      "ff_27c_3.63v",
+      "ff_125c_2.97v",
+      "ff_125c_3.30v",
+      "ff_125c_3.63v",
+      "sf_-40c_2.97v",
+      "sf_-40c_3.30v",
+      "sf_-40c_3.63v",
+      "sf_27c_2.97v",
+      "sf_27c_3.30v",
+      "sf_27c_3.63v",
+      "sf_125c_2.97v",
+      "sf_125c_3.30v",
+      "sf_125c_3.63v",
+      "fs_-40c_2.97v",
+      "fs_-40c_3.30v",
+      "fs_-40c_3.63v",
+      "fs_27c_2.97v",
+      "fs_27c_3.30v",
+      "fs_27c_3.63v",
+      "fs_125c_2.97v",
+      "fs_125c_3.30v",
+      "fs_125c_3.63v"
+    ],
+    "points": [
+      [
+        "tt",
+        -40.0,
+        2.97
+      ],
+      [
+        "tt",
+        -40.0,
+        3.3
+      ],
+      [
+        "tt",
+        -40.0,
+        3.63
+      ],
+      [
+        "tt",
+        27.0,
+        2.97
+      ],
+      [
+        "tt",
+        27.0,
+        3.3
+      ],
+      [
+        "tt",
+        27.0,
+        3.63
+      ],
+      [
+        "tt",
+        125.0,
+        2.97
+      ],
+      [
+        "tt",
+        125.0,
+        3.3
+      ],
+      [
+        "tt",
+        125.0,
+        3.63
+      ],
+      [
+        "ss",
+        -40.0,
+        2.97
+      ],
+      [
+        "ss",
+        -40.0,
+        3.3
+      ],
+      [
+        "ss",
+        -40.0,
+        3.63
+      ],
+      [
+        "ss",
+        27.0,
+        2.97
+      ],
+      [
+        "ss",
+        27.0,
+        3.3
+      ],
+      [
+        "ss",
+        27.0,
+        3.63
+      ],
+      [
+        "ss",
+        125.0,
+        2.97
+      ],
+      [
+        "ss",
+        125.0,
+        3.3
+      ],
+      [
+        "ss",
+        125.0,
+        3.63
+      ],
+      [
+        "ff",
+        -40.0,
+        2.97
+      ],
+      [
+        "ff",
+        -40.0,
+        3.3
+      ],
+      [
+        "ff",
+        -40.0,
+        3.63
+      ],
+      [
+        "ff",
+        27.0,
+        2.97
+      ],
+      [
+        "ff",
+        27.0,
+        3.3
+      ],
+      [
+        "ff",
+        27.0,
+        3.63
+      ],
+      [
+        "ff",
+        125.0,
+        2.97
+      ],
+      [
+        "ff",
+        125.0,
+        3.3
+      ],
+      [
+        "ff",
+        125.0,
+        3.63
+      ],
+      [
+        "sf",
+        -40.0,
+        2.97
+      ],
+      [
+        "sf",
+        -40.0,
+        3.3
+      ],
+      [
+        "sf",
+        -40.0,
+        3.63
+      ],
+      [
+        "sf",
+        27.0,
+        2.97
+      ],
+      [
+        "sf",
+        27.0,
+        3.3
+      ],
+      [
+        "sf",
+        27.0,
+        3.63
+      ],
+      [
+        "sf",
+        125.0,
+        2.97
+      ],
+      [
+        "sf",
+        125.0,
+        3.3
+      ],
+      [
+        "sf",
+        125.0,
+        3.63
+      ],
+      [
+        "fs",
+        -40.0,
+        2.97
+      ],
+      [
+        "fs",
+        -40.0,
+        3.3
+      ],
+      [
+        "fs",
+        -40.0,
+        3.63
+      ],
+      [
+        "fs",
+        27.0,
+        2.97
+      ],
+      [
+        "fs",
+        27.0,
+        3.3
+      ],
+      [
+        "fs",
+        27.0,
+        3.63
+      ],
+      [
+        "fs",
+        125.0,
+        2.97
+      ],
+      [
+        "fs",
+        125.0,
+        3.3
+      ],
+      [
+        "fs",
+        125.0,
+        3.63
+      ]
+    ],
+    "process": [
+      "tt",
+      "ss",
+      "ff",
+      "sf",
+      "fs"
+    ],
+    "subset_reason": "",
+    "supply_v": [
+      2.97,
+      3.3,
+      3.63
+    ],
+    "temperature_c": [
+      -40.0,
+      27.0,
+      125.0
+    ]
+  },
+  "overall_pass": false,
+  "pdk": {
+    "installed_commit": "c6d73a35f524070e85faff4a6a9eef49553ebc2b",
+    "lib_file": "/Users/rwalters/.volare/sky130A/libs.tech/combined/sky130.lib.spice",
+    "matches_pin": true,
+    "pinned_commit": "c6d73a35f524070e85faff4a6a9eef49553ebc2b",
+    "root": "/Users/rwalters/.volare",
+    "variant": "sky130A"
+  },
+  "record_id": "20260926-013955-6449a98",
+  "spread_checks": [],
+  "supersedes": "20260825-081255-4cb27f8",
+  "timestamp": "2026-09-26T01:39:55Z",
+  "tools": {
+    "ngspice": "ngspice-46 : Circuit level simulation program",
+    "platform": "Darwin 27.0.0 arm64",
+    "python": "3.14.7",
+    "xschem": "XSCHEM V3.4.7"
+  }
+}

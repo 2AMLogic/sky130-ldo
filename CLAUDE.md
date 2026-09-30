@@ -9,8 +9,10 @@ of verified open-PDK analog blocks.
 - **PDK**: sky130 (open PDK). Open-source flow: xschem + ngspice for design/sim,
   klayout-tools (`klt`) for layout work. sky130 has no native 3.3 V flavor — the
   1.8 V core devices are `pfet_01v8`/`nfet_01v8` and the high-voltage devices are
-  `pfet_g5v0d10v5`/`nfet_g5v0d10v5`; the pass-device flavor for a 3.3 V input is a
-  ratification question, not an assumption (see `spec/target-spec.md`).
+  `pfet_g5v0d10v5`/`nfet_g5v0d10v5`; the pass-device flavor for a 3.3 V input is
+  **ratified** as `pfet_g5v0d10v5` (framing A, per DR-001 / issue #1 — see
+  `spec/target-spec.md`'s "Open items — all resolved"), so cite it as a settled
+  spec decision rather than an assumption of your own.
 - **Clean room (no reverse engineering)**: this block is designed from its spec
   and device physics. Do not introduce, cite, or reconstruct any other party's
   implementation — measured, delayered, netlisted, or otherwise. If a task seems
@@ -29,9 +31,13 @@ of verified open-PDK analog blocks.
 - **The spec is a gate**: spec changes go through `spec/` with a decision record;
   agents do not relax a spec line to make a result pass. A row that proves
   unmeetable is superseded by a new decision record, never silently loosened.
-  Until issue #1 ratifies it, the whole table in `spec/target-spec.md` is DRAFT —
-  do not treat any value as final, and do not invent settled numbers to replace
-  the drafts.
+  The table in `spec/target-spec.md` is RATIFIED (issue #1 / DR-006; the Iq row
+  is set by `DR-009`, which is `proposed` and ratifies on its own PR merge).
+  Treat its values as settled targets and change them only through a new
+  decision record — and where a ratified row deliberately carries no number
+  (e.g. a window still marked TBD over PVT), leave it open rather than inventing
+  one. Ratification fixes the targets; it is not a claim that the current
+  implementation meets them.
 - **Private, for now**: this repo is private while the spec is drafted and the
   harness stood up. Going public is an operator decision that inherits the
   workspace firewall/disclosure rules — not an agent decision. Write commits,

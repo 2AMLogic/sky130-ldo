@@ -227,6 +227,15 @@ Bumping the pin to pick those up is a deliberate act (see
 re-verified against the new build — worth doing on its own issue, not as a
 side effect of a layout change.
 
+Issue #142 was that issue: the pin moved `acb0ae6c` → `040f3406` to pick up
+sky130 voltage-flavor support, and the whole ldo-core flow (layout + DRC,
+extract + LVS, then `sim/pex-post-layout`) was re-run against the new build
+and re-landed as fresh records. Neither of the two gaps above changed how
+this flow is generated — `gen-ldo-blocks.py` still draws its own channel
+route and still uses `fingers=1` — so picking them up is available future
+work, not something the bump did on its own. `requirements.txt`'s "Pin
+history" section is the authority on what each pin does and does not carry.
+
 ### What the ERC supply spec hit (issue #112)
 
 One new gap, filed at
@@ -344,10 +353,101 @@ re-transcribing the table.
   capacitor generator (klayout-tools#1117), so they are drawn on neither
   side. The compensation network is exactly what the loop's stability
   depends on most, so this is a real coverage gap, not a formality.
-- It **does not** distinguish device voltage flavor (see "Known klt-deck
-  limitations" below), and it says nothing about parasitics (issue #20) or
-  about whether the signal-grade routing this flow draws is adequate for the
-  load current `VIN`/`VOUT` actually carry.
+- It **does not** distinguish device voltage flavor: `klt lvs` compares
+  `klt extract`'s generic `nfet`/`pfet` classes, which the drawn `hvi`
+  (75/20) marker does not split (re-measured at the current pin — see
+  "Known klt-deck limitations" below). The marker *is* drawn on every MOS
+  block and *is* load-bearing, but for `klt extract --pdk`'s model binding
+  (`sim/pex-post-layout`), not for this compare.
+- It says nothing about parasitics (issue #20). It also said nothing about
+  whether the routing this flow draws is adequate for the load current
+  `VIN`/`VOUT` actually carry — see "Power routing for the load-current nets"
+  below, which replaces that caveat with a drawn, sized conductor and a
+  measured statement about what can and cannot be verified about it here.
+
+## Power routing for the load-current nets (issue #154)
+
+Until issue #154 this flow drew **every** net as the same 0.30 µm met1
+channel trunk, `VIN` and `VOUT` included — a signal-grade wire on the two
+nets that carry every milliamp the block delivers. That is no longer true:
+`gen-ldo-blocks.py` identifies the load-current nets mechanically (the widest
+drawn MOS's own drain and source, so the layout cannot name a different pair
+than the schematic does) and draws each of them as a strapped two-level rail
+above the device row instead of a trunk below it.
+
+**The width is computed, not chosen.** `layout/bin/_spec_constants.py` reads
+the ratified `Load` and `Dropout @ 50 mA` rows out of `spec/target-spec.md`
+itself — the same discipline `MOS_MODELS`/`MOS_VOLTAGE_FLAVORS` follow, and
+the same reason issue #33 stopped transcribing the device table — and the
+sheet resistances come from `klt`'s own parasitics deck, the deck the landed
+layout is measured against. Each rail is then exactly as wide as it must be
+for the ratified load current to drop no more than its share (5%, split
+evenly across the two rails) of the ratified dropout budget across the span
+over which it actually carries that current. The required width, the drawn
+width, the resulting resistance and the resulting IR drop are all reported in
+the layout record's own `floorplan.json`, and a clamp against the floorplan
+cap would be reported rather than silent.
+
+Each load-current terminal's li1 source/drain pad is also strapped over its
+full height by met1 with an mcon every 2 µm, instead of being contacted at
+one point mid-pad — without that, a 100 µm-tall unit device's share of the
+load current runs up to half a device height along ~12.8 Ω/□ local
+interconnect before it reaches metal.
+
+### What this is verified against, and what it is not
+
+- **DRC stays clean** on the resized geometry (`violation_count=0`, all
+  layers checked) and **LVS still matches** — both in this directory's own
+  newest records. The wider rails and the extra met3 level introduced no new
+  width/spacing violation.
+- **The drawn conductor's resistance is a computed claim, not a measured
+  one.** It follows from the deck's own sheet resistances and the drawn
+  geometry, and the arithmetic is unit-tested in `layout/tests/`, but no tool
+  in this flow re-measures it from the stream.
+- **`klt extract --parasitics` cannot confirm it at this pin**, and this is
+  measured rather than assumed. Its lumped per-net R model reduces a net's
+  geometry on each conductor level to one equivalent rectangle and then
+  **sums the levels in series**, so (a) N parallel fingers read as one
+  N-times-longer series wire and (b) strapping a rail onto a second level
+  *raises* the reported resistance. Extracting the pre-#154 and post-#154
+  GDS with `--parasitics` and comparing the per-level breakdown:
+
+  | Net | role | pre-#154 | post-#154 |
+  | --- | --- | --- | --- |
+  | `VOUT` | `metal0` (li1, 12.8 Ω/□) | 165 467 Ω | 153 677 Ω |
+  | `VOUT` | met1 + met2 | 386 Ω | 813 Ω |
+  | `VIN` | `metal0` (li1) | 171 621 Ω | 160 404 Ω |
+  | `VIN` | met1 + met2 + met3 | 1 012 Ω | 2 530 Ω |
+
+  The routing levels this issue actually controls are **under 1%** of the
+  reported total in both records; 98–99% of it is the li1 term, which is the
+  device generator's own source/drain pads and is invariant under every knob
+  this flow has (the modelled square count works out to `W_total / w_pad`
+  however the width is folded). So the extracted netlist's full-load rows
+  stayed non-physical after this fix — see `sim/pex-post-layout/README.md`
+  for the record and the numbers.
+
+  Filed generically per the friction protocol as
+  [`klayout-tools#2458`](https://github.com/2AMLogic/klayout-tools/issues/2458)
+  (per-level series summation), and cross-confirmed on the already-tracked
+  [`klayout-tools#2391`](https://github.com/2AMLogic/klayout-tools/issues/2391)
+  (parallel fragments summed in series) rather than re-filed.
+
+**The honest summary**: the load-current nets are now drawn as power
+conductors sized from the ratified spec, and that is a real change in the
+layout; but this repo cannot yet *measure* the improvement, because the only
+instrument it has for post-layout resistance is blind to conductor width on
+exactly this geometry. Do not read a post-layout full-load number as a
+statement about this routing until that instrument can distinguish the two
+GDS files above. That is tracked as issue #162, blocked on the two upstream
+issues.
+
+One acceptance criterion a power conductor needs is also **not** checked here:
+current density / electromigration. The curated sky130 deck `klt drc` runs
+against declares no current-density rule, so "no new DRC violation" is not
+"this rail carries the ratified load current indefinitely". The drawn widths
+are far above any plausible EM minimum at this current, but that is an
+argument, not a check.
 
 ## ERC supply spec — T1 item 11, power delivery (structural) (issue #112)
 
@@ -435,14 +535,35 @@ trivial-cell proof:
   it. `ldo-core/` draws one of each, so its NMOS bodies extract as the
   schematic's own `0` rail and that warning does not appear on its LVS
   record.
-- **No voltage-flavor distinction on MOS devices.** `klt extract`'s `nfet`/
-  `pfet` classes are flavor-agnostic — a 5 V-flavor (thick-oxide) device and
-  a core-voltage device both extract as the same generic class, with no
-  `L`/`W`/oxide-thickness-based disambiguation. This matters directly once
-  issue #1 ratifies the pass-device flavor (`pfet_g5v0d10v5` vs. the 1.8 V
-  core devices): a future LVS reference netlist will need `hints`/manual
-  review to confirm the *intended* flavor correspondence, since `klt lvs`
-  cannot check it structurally.
+- **No voltage-flavor distinction on MOS devices — on the LVS path.** `klt
+  extract`'s `nfet`/`pfet` classes are flavor-agnostic — a 5 V-flavor
+  (thick-oxide) device and a core-voltage device both extract as the same
+  generic class, with no `L`/`W`/oxide-thickness-based disambiguation. This
+  matters directly because the pass-device flavor is already ratified as
+  `pfet_g5v0d10v5` (framing A, per DR-001 / issue #1) rather than the 1.8 V
+  core devices: a future LVS reference netlist will need `hints`/manual review
+  to confirm the *intended* flavor correspondence, since `klt lvs` cannot check
+  it structurally.
+
+  **Still true at the `040f3406` pin, and re-measured rather than assumed**
+  (2026-09-24, issue #142): the newest LVS record's own `extract.json`
+  reports `device_classes: ['nfet', 'pfet', 'pnp', …]` and
+  `device_counts: {'nfet': 18, 'pfet': 74, …}` — generic classes, with the
+  drawn `hvi` marker making no difference to them. `gen-ldo-reference-
+  netlist.py` therefore still collapses both `g5v0d10v5` model names onto
+  `nfet`/`pfet` and needs no flavor distinction of its own; adding one would
+  only create a mismatch against a layout side that cannot express it.
+
+  **The `--pdk` binding path is a different story, and is where the marker
+  pays off.** `klt extract --pdk sky130A` binds each extracted gate to a real
+  PDK subcircuit, and *that* table is marker-scoped: a gate overlapping `hvi`
+  (75/20) binds `sky130_fd_pr__{n,p}fet_g5v0d10v5`, and an unmarked one binds
+  the 1.8 V core flavor. `gen-ldo-blocks.py` draws that marker on every MOS
+  block (see its `MOS_VOLTAGE_FLAVORS`, keyed on the same schematic model
+  token as `MOS_MODELS`), which is what makes `sim/pex-post-layout`'s
+  extracted-side leg re-simulate the design's own devices. So the flavor is
+  expressed in the layout and checked by the `--pdk` bind — just not by
+  `klt lvs`.
 - The deck does recognize `pnp` (vertical bipolar) and poly-resistor
   sheet-rho flavors as distinct device classes (see `klt extract`'s own
   `device_classes` field) — the primitive families this repo's LDO will

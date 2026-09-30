@@ -1,7 +1,7 @@
 {
   "slug": "iq",
   "title": "Quiescent current (excl. load current) at no load and full load",
-  "claim": "Substantiates spec/target-spec.md's DRAFT \"Iq (excl. load current)\" row (< 30uA at no load and full load) against the LDO core-regulation-loop schematic landed by #14 (design/ldo_3v3in_1v8out.sch), using the row's own two named load points. That row is DRAFT (issue #1 not yet ratified) -- the bound below cites it directly, not an invented final limit, and needs re-verification once #1 rules. Each corner runs two .op solves (0mA then 50mA, via the deck's own 'alter' on the load current source, mirroring sim/loop-gain's multi-point convention from #25): Iq is defined, per design/README.md's own \"Iq = total VIN current minus load current\" convention, as -i(vvin) at no load (no subtraction needed) and as -i(vvin) minus the deck's own known 50mA load constant at full load. Known risk, not a testbench defect -- and confirmed during this testbench's own bring-up, not just cited from elsewhere: design/README.md's dated 2026-08-25 root-cause section (issue #60, mechanism 1; tracked by #69) documents a thermal-shutdown false-trip at the ff/sf process corners at 125C, independent of load current; a direct check at ff/125C/3.63V (screening, not part of this record) confirms TS_CMP=0.39V (tripped; untripped is approximately VIN) and vout collapsed to -19.2V at full load (0.14V at no load) at that exact corner, yet -i(vvin) itself still reads a plausible-looking, in-budget microamp figure there rather than an obviously non-physical one -- unlike line-regulation/load-regulation, where the same false-trip produces an unmistakably out-of-range number. vout_no_load_v/vout_full_load_v are reported (unbounded) alongside the Iq figures specifically so a reader can see when the underlying operating point is not really regulating (roughly 1.8V) before trusting an in-budget Iq PASS at that corner, per the same PSRR caution design/README.md's mechanism 5 already states (\"PASS\" at a falsely-tripped corner is not evidence of a genuine pass).",
+  "claim": "Substantiates spec/target-spec.md's \"Iq (excl. load current)\" row (< 30uA at no load and full load) against the LDO core-regulation-loop schematic landed by #14 (design/ldo_3v3in_1v8out.sch), using the row's own two named load points. That row is the one row DR-006 left open when issue #1 ratified the rest of the table: its number is set by spec/decision-records/DR-009-iq-budget.md, whose status is 'proposed' -- DR-009 does not ratify itself, and ratifies only when the pull request it ships in merges (the same path DR-006 took). The bound below cites DR-009's number verbatim, not an invented final limit, and needs re-verification if that record changes before it merges. Each corner runs two cold-start, settled transients (0mA then 50mA, via the deck's own 'alter' on the load current source, mirroring sim/loop-gain's multi-point convention from #25): Iq is defined, per design/README.md's own \"Iq = total VIN current minus load current\" convention, as -i(vvin) at no load (no subtraction needed) and as -i(vvin) minus the deck's own known 50mA load constant at full load, each averaged over its point's settled 199ms-200ms tail. Initial-condition contract (issue #171, converted by #173): each point is 'tran 10u 200m uic' with the testbench's VEN stepping high at 101us -- NOT the bare unconstrained two-'.op' chain this bench used through record 20260910-034648-6c0436d, the worst case of the unconstrained-'.op' defect #164 characterized: all 45 of that record's corners carried a solver diagnostic ('singular matrix' or 'out of range for ^'), which sim/bin/corner-run.py's #171 gate now forces to FAIL outright. This bench reuses load-regulation's own measured 199ms-200ms settling window (#172) rather than re-deriving it, because both benches share the same 1uF COUT / 10mOhm RESR output network and the same iload 'alter' shape -- the settling time is a property of that shared network. Known risk, not a testbench defect -- and confirmed during this testbench's own bring-up, not just cited from elsewhere: design/README.md's dated 2026-08-25 root-cause section (issue #60, mechanism 1; tracked by #69) documents a thermal-shutdown false-trip at the ff/sf process corners at 125C, independent of load current; a direct check at ff/125C/3.63V (screening, not part of this record) confirms TS_CMP=0.39V (tripped; untripped is approximately VIN) and vout collapsed to -19.2V at full load (0.14V at no load) at that exact corner, yet -i(vvin) itself still reads a plausible-looking, in-budget microamp figure there rather than an obviously non-physical one -- unlike line-regulation/load-regulation, where the same false-trip produces an unmistakably out-of-range number. Regulation gate (issue #133, folded into #173): vout_no_load_v/vout_full_load_v are now bounded to the ratified Output row's 1.764-1.836V window, and iq_no_load_ua/iq_full_load_ua now carry a 'min: 0' floor, rather than being reported unbounded -- a corner whose operating point is not really regulating (e.g. the thermal-shutdown false-trip above, or a non-physical negative supply current) now fails outright instead of relying on a reader to notice a plausible-looking, in-budget Iq figure next to an out-of-window vout. This mirrors sim/enable-shutdown/experiment.json's existing vout_pre_disable_v regulation-gate pattern (bounded to the same 1.764-1.836V window) rather than inventing a new mechanism. #133's own two named non-physical corners (ss_-40c_3.30v no-load; ff_-40c_2.97v full-load) were measured against the pre-#173 unconstrained-'.op' chain; this record re-measures both under the seeded chain, since seeding can change which corners are non-regulating.",
   "provenance": "schematic",
   "provenance_source": "sim/iq/testbench/tb_iq.sch",
   "schematic": "testbench/tb_iq.sch",
@@ -20,49 +20,59 @@
     "options": ["wnflag=1"],
     "params": {},
     "analyses": [
+      "* Each point is a COLD-START, SETTLED transient, not a bare",
+      "* unconstrained .op (issue #173, contract #171): `uic` starts every node",
+      "* at its natural cold value with EN low (the testbench's VEN steps high",
+      "* at 101us), so the block powers up through its own soft-start ramp and",
+      "* no operating-point solve happens at all. Both the vout reading and the",
+      "* VIN supply current are averaged over the settled 199ms-200ms tail --",
+      "* Iq needs the same settled window vout does, since any residual COUT",
+      "* charging current at an earlier window would show up as extra -i(vvin).",
+      "* 200ms is load-regulation's own measured requirement (#172), reused",
+      "* here because both benches share the same COUT/RESR output network.",
       "* --- point 1: I_LOAD = 0 (no load, deck default) ---",
-      "op",
-      "let iq_no_load_a = -i(vvin)",
-      "let vout_no_load = v(vout)",
+      "tran 10u 200m uic",
+      "meas tran vout_no_load avg v(vout) from=199m to=200m",
+      "meas tran iq_no_load_raw avg i(vvin) from=199m to=200m",
       "* --- point 2: I_LOAD = 50mA (altered, full load) ---",
       "alter iload = 50m",
-      "op",
-      "let iq_full_load_a = -i(vvin) - 50m",
-      "let vout_full_load = v(vout)"
+      "tran 10u 200m uic",
+      "meas tran vout_full_load avg v(vout) from=199m to=200m",
+      "meas tran iq_full_load_raw avg i(vvin) from=199m to=200m"
     ]
   },
   "measurements": [
     {
       "name": "iq_no_load_ua",
-      "expr": "1e6*op1.iq_no_load_a",
+      "expr": "-1e6*tran1.iq_no_load_raw",
       "unit": "uA",
-      "min": null,
+      "min": 0,
       "max": 30,
-      "note": "Total VIN supply current (I_LOAD=0, so no subtraction needed). DRAFT bound: spec/target-spec.md \"Iq (excl. load current)\" row, < 30uA at no load."
+      "note": "Total VIN supply current (I_LOAD=0, so no subtraction needed), averaged over the no-load point's settled 199ms-200ms tail (issue #173; the `tranN.` plot prefixes replace the pre-#173 `opN.` ones). Bound set by DR-009 ('proposed', not yet ratified): spec/target-spec.md \"Iq (excl. load current)\" row, < 30uA at no load. `min: 0` (issue #133, folded into #173): a genuinely regulating corner cannot draw negative supply current, so a negative reading is itself proof of a non-physical operating point and must fail rather than pass a max-only bound vacuously -- this bench's prior record scored exactly that at ss_-40c_3.30v (-3348.61uA)."
     },
     {
       "name": "iq_full_load_ua",
-      "expr": "1e6*op2.iq_full_load_a",
+      "expr": "1e6*(-tran2.iq_full_load_raw - 0.05)",
       "unit": "uA",
-      "min": null,
+      "min": 0,
       "max": 30,
-      "note": "Total VIN supply current minus the deck's own known 50mA load constant. DRAFT bound: spec/target-spec.md \"Iq (excl. load current)\" row, < 30uA at full load."
+      "note": "Total VIN supply current minus the deck's own known 50mA load constant, averaged over the full-load point's settled 199ms-200ms tail (issue #173; the `tranN.` plot prefixes replace the pre-#173 `opN.` ones). Bound set by DR-009 ('proposed', not yet ratified): spec/target-spec.md \"Iq (excl. load current)\" row, < 30uA at full load. `min: 0` (issue #133, folded into #173): same non-physical-negative-current floor as iq_no_load_ua -- this bench's prior record scored exactly that at ff_-40c_2.97v (-3357.86uA)."
     },
     {
       "name": "vout_no_load_v",
-      "expr": "op1.vout_no_load",
+      "expr": "tran1.vout_no_load",
       "unit": "V",
-      "min": null,
-      "max": null,
-      "note": "Reported, not bounded: a sanity check that this corner's no-load .op is actually regulating (near the 1.8V DRAFT Output target) before trusting iq_no_load_ua as a genuine Iq figure -- see this experiment's own claim for why a falsely thermal-shutdown-tripped corner can still report a plausible-looking, in-budget Iq number."
+      "min": 1.764,
+      "max": 1.836,
+      "note": "Regulation gate (issue #133, folded into #173): bounded to the ratified Output row's +-2% window (1.764-1.836V, spec/target-spec.md), mirroring sim/enable-shutdown/experiment.json's vout_pre_disable_v pattern, so a corner that is not really regulating (e.g. the thermal-shutdown false-trip design/README.md documents) fails outright instead of merely being reported for a reader to notice next to a plausible-looking, in-budget Iq figure -- see this experiment's own claim. Previously reported unbounded (min/max both null)."
     },
     {
       "name": "vout_full_load_v",
-      "expr": "op2.vout_full_load",
+      "expr": "tran2.vout_full_load",
       "unit": "V",
-      "min": null,
-      "max": null,
-      "note": "Same sanity check as vout_no_load_v, at the full-load (50mA) .op point."
+      "min": 1.764,
+      "max": 1.836,
+      "note": "Same regulation gate as vout_no_load_v (issue #133, folded into #173), at the full-load (50mA) point. Previously reported unbounded (min/max both null)."
     }
   ],
   "spread_checks": []

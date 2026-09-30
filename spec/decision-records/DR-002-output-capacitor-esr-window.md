@@ -313,3 +313,94 @@ above guessed:
    "spend more bias current" is unarbitrable.
 3. **A minimum ESR**, ranked *below* the two above by this measurement rather
    than above them as Alternatives assumed.
+
+## Append (2026-09-25, issue #119): `C_out` sizing closes Load transient's
+peak-excursion clause, and finds a second, `C_out`-orthogonal FAIL
+
+**This is an append, not an edit.** Nothing above has changed. The
+**window's numeric boundaries stay 0.33–4.7 µF / 0–500 mΩ, no minimum
+ESR** — this append picks a representative point at the window's own
+ceiling, already inside the ratified numbers, not a new value.
+
+### What was measured
+
+Issue #119 re-verified `spec/target-spec.md`'s Load transient row (screened
+across 21 of 45 PVT corners — `tt`/`ss`/`ff` × all temperatures/supplies;
+full detail and the operational reason the remaining 24 corners are not yet
+in an official `sim/` record is in `design/README.md`'s "#119" section)
+after `DR-011`/#116 resized the pass device (2.5 → 5 mm), which the
+superseded `sim/load-transient` record predates. Two things came out of
+re-instrumenting the row's previously-unmeasured second clause ("recover to
+±1 % in ≤ 20 µs"):
+
+1. **Peak excursion (`undershoot_v`/`overshoot_v`) is charge-limited and
+   `C_out`-addressable.** Moving the testbench's representative point from
+   1 µF (this record's own recommended nominal) to 4.7 µF (this record's
+   own ratified ceiling) cut peak excursion by roughly the capacitance
+   ratio at every screened corner, closing 8/8 directly re-verified FAILs
+   from the superseded record.
+2. **Recovery time (`recovery_rise_us`/`recovery_fall_us`, newly measured)
+   fails at every screened corner, in two mechanisms that pull `C_out` in
+   *opposite* directions from each other and from peak excursion:**
+   - `recovery_rise_us` (rising-edge settling) is set by the loop's own
+     light-load crossover (`Gm/(2π·C_COMP)`, ≈900 Hz per this file's
+     Consequences section and `design/README.md`'s Compensation section) —
+     **independent of `C_out`** to within measurement noise (a 4.7×
+     `C_out` change moved it under 2 % at two spot corners).
+   - `recovery_fall_us` (falling-edge settling) is set by a hard physical
+     floor: the pass device is PMOS-only (sources, cannot sink), so the
+     *only* discharge path after an overshoot is the light 1 mA load
+     itself — `t_fall ≈ C_out·(overshoot_v − 0.01·V_out)/I_light`. This
+     **gets worse, not better, with a larger `C_out`** (measured ≈3.5×
+     worse across the same 1 µF → 4.7 µF move that helped peak excursion).
+
+### What this settles, and what it does not
+
+**Settles that the window's numeric bounds are not the blocker for the
+clause this issue was scoped to fix.** Peak excursion clears at the
+window's own ceiling, with no new number invented — the fix is a
+representative-point choice inside DR-002, not a DR-002 change.
+
+**Does not settle, and actively complicates, the recovery-time clause.**
+Unlike the 0 mA phase-margin gap this record's 2026-08-17 append already
+flagged as a *load-axis* shortfall unrelated to `C_out`, this is a genuine
+**`C_out`-axis** two-sided bind: `recovery_fall_us` fails at both ends of
+the ratified window (worse at the ceiling than at the floor, but never
+inside 20 µs at either), so no point in this window — proposed or
+ratified — closes it. The window is wide enough on the `undershoot_v` axis
+(closes at 4.7 µF) but has no point that also closes `recovery_fall_us`;
+that clause needs an architectural lever this record's window cannot
+supply (a discharge path other than the light load itself — e.g. a
+capless/active-pull-down fork, out of this primary ceramic-stable design's
+scope per this record's own Decision table).
+
+**`recovery_rise_us`'s bandwidth-bound FAIL is not a `C_out`/ESR-window
+question at all** — it is the same `Iq`-budget-constrained compensation
+gap `DR-007` and `design/README.md`'s "#115" section already own, restated
+here because this is the first evidence it also binds a transient-domain
+measurement, not just the small-signal Stability row.
+
+### What this append does NOT do
+
+- It does **not** change the window's numeric boundaries (`0.33–4.7 µF`,
+  `0–500 mΩ`) or the "no minimum ESR" posture.
+- It does **not** claim the `C_out` = 4.7 µF representative point is now
+  "the" recommended component in place of this record's own 1 µF nominal —
+  that nominal is unchanged; #119's testbench uses the window's ceiling as
+  a *representative screening point* for one row's evidence, the same way
+  `sim/loop-gain` and `sim/startup` already test multiple named points
+  inside this window rather than picking one "true" value.
+- It does **not** open a new decision record for the `recovery_fall_us`
+  architectural gap — that is a design-topology question (capless fork,
+  active discharge), not a window-boundary question, and belongs to a
+  follow-up issue once/if the primary ceramic-stable design's own scope is
+  revisited.
+
+### Status notes
+
+Ratified status and numeric window are unchanged by this append. The
+`sim/load-transient` full 45-corner re-verification this append's own
+21-corner screen stands in for is tracked by #166 (see
+`design/README.md`'s "#119" section); a superseding `sim/` record, once
+that run completes cleanly, is the authoritative source for this row's
+final corner counts, not this append.

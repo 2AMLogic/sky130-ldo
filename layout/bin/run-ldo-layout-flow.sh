@@ -77,6 +77,7 @@ fi
 "$LAYOUT_DIR/.venv/bin/python" "$LAYOUT_DIR/bin/gen-ldo-blocks.py" \
   --klt "$KLT" --pdk-variant "$PDK_VARIANT" --out-dir "$OUT_DIR" --cell-name "$CELL" \
   --netlist "$SCHEM_NETLIST" --pins "$PINS" \
+  --spec "$REPO_ROOT/spec/target-spec.md" --deck sky130 \
   > "$OUT_DIR/gen-ldo-blocks.log"
 
 # --- 3. DRC the routed layout against the sky130 deck ----------------------

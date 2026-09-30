@@ -1,0 +1,47 @@
+{
+  "slug": "mc-output-accuracy-negctl",
+  "title": "Negative control for mc-output-accuracy: deliberately mis-ratioed feedback divider (Monte Carlo, sky130A tt_mm)",
+  "claim": "DELIBERATELY BROKEN BY DESIGN -- this experiment makes no claim about the LDO as designed, and its FAIL is the intended result. It is the seeded, known-bad variant that `sim/mc-output-accuracy`'s `klt yield` analysis needs in order to carry a `negative_control` block (klt yield's own mechanism, docs/cli/yield.md#negative-control; requested by T1 signoff item 6's checklist text and tracked as issue #211): a yield statistic that has never been shown to reject a degraded design is an assumption, not evidence. The variant is `sim/mc-output-accuracy`'s bench, verbatim -- same testbench schematic (referenced, not copied), same mismatch corner point (tt_mm/27C/VIN=3.3V, I_LOAD=1mA), same initial-condition contract (`uic` plus the 100us EN edge, #164), same measurement (`vout_ss`), same ratified 1.764-1.836V window, same seed -- with exactly one declared defect applied to the netlisted deck: the feedback divider's top leg XR_FB_A is lengthened 180um -> 198um (+10%). WHAT WAS DEGRADED AND WHY THAT: the divider is three nominally identical sky130_fd_pr__res_xhigh_po legs (W=0.42, L=180um each) tapping FB at 2/3 of VOUT, so the ideal regulation point is VREF*(R_A+R_B+R_C)/(R_B+R_C) = 1.2V*3/2 = 1.8V. A ratio error in that divider is the canonical accuracy defect for an LDO and is precisely what a ratified +-2% Output row exists to catch; +10% on the top leg moves the ideal point to 1.2V*558/360 = 1.86V, i.e. +3.33%, which is 1.67x the ratified window and sits ~2.8 sigma beyond the window's upper edge in the nominal campaign's OWN measured mismatch sigma (8.52mV, klt yield record sim/mc-output-accuracy/records/20260927-030409-1a14401.md). That magnitude is a deliberate choice in both directions: large enough that a statistic with any detection power must reject it, and small enough that the loop still regulates, so the draws stay measurable and the control tests yield DETECTION rather than producing an avalanche of errored samples. It also degrades the design (the on-chip divider), not the testbench stimulus, and it does not depend on resistor-family mismatch being sampled -- `klt sim` reports resistor mismatch activity as `unconfirmed` for sky130 -- so the defect is deterministic and the only stochastic ingredient is the same MOS mismatch the nominal campaign samples. HOW THE DEFECT IS EXPRESSED: as this manifest's `netlist_patch` block, an exact-string substitution with an asserted occurrence count, applied by sim/bin/mc-run.py to the netlisted deck between xschem and `klt sim`. `design/ldo_3v3in_1v8out.sch` is untouched (it stays the single source of truth for the design under test), and no frozen 60-device copy of it is introduced that could silently drift; if the divider in the real design ever changes, the asserted count stops matching and this campaign refuses to run rather than quietly sampling an undegraded circuit and reporting it as a negative control. WHY N=40 AND NOT THE NOMINAL'S 200: the control's job is to demonstrate detection power, and the sample count that job needs follows from the interval arithmetic `klt yield` actually applies. The nominal's 200-of-200 in-window draws support an exact (Clopper-Pearson) empirical yield of 'at least 98.1725% at 95% confidence'; a `detected` verdict requires the control's own exact interval not to overlap that, and a control that fails every draw reaches a CP upper bound of 1-0.025^(1/40) = 8.8% at N=40 -- an order of magnitude clear of the nominal's lower bound, with headroom for a control that does NOT fail every draw. N=200 would buy a tighter estimate of a number that is not the point, at 5x the compute on a machine this campaign has to share; N=40 is chosen against the criterion, not against the nominal. WHERE IT RAN: on this host's own ngspice, via `--backend local-parallel`. The exact engine and tool versions are recorded in this campaign's record and `klt sim` response rather than asserted here, because a manifest that states its own run environment can only ever be a prediction of it. It did NOT run on the executor the nominal campaign of record used (`--backend batch`, the 2am EDA batch fleet, whose committed response reports `environment.engine_version` 42): that backend has no resolvable submit credential on this host -- `aws sts get-caller-identity --profile batch-runner-submit` returns NoCredentials, so the submit path errors before dispatch. That executor difference is a real confound underneath the control-vs-nominal comparison, and it is bounded by its own committed campaign rather than waved away: see `sim/mc-output-accuracy-engine-check`, which runs this same bench UNDEGRADED on this same host and engine build, so the executor's own contribution to the distribution is measured instead of assumed small. The PDK is NOT part of that difference: `mc-run.py` now passes `PDK_ROOT` explicitly to `klt sim` and asserts afterwards that `klt`'s own `provenance.pdk.version` names sim/pdk.json's pinned open_pdks commit, so this control and the campaign of record read the same model build -- which before issue #211 was not guaranteed on a host carrying more than one sky130A install.",
+  "provenance": "schematic",
+  "provenance_source": "sim/mc-output-accuracy/testbench/tb_mc_output_accuracy.sch (+ this manifest's netlist_patch)",
+  "schematic": "../mc-output-accuracy/testbench/tb_mc_output_accuracy.sch",
+  "netlist_patch": {
+    "purpose": "negative_control",
+    "rationale": "Mis-ratio the feedback divider's top leg by +10% (XR_FB_A L=180um -> 198um), moving the ideal regulation point 1.8V -> 1.86V: +3.33%, i.e. 1.67x the ratified +-2% Output window and ~2.8 sigma past its upper edge in the nominal campaign's own measured mismatch sigma of 8.52mV. Chosen as the canonical accuracy defect for this block (a divider ratio error is exactly what a +-2% output-accuracy row is there to catch), deliberately sized to be decisively out of window while still leaving the loop regulating so the samples stay measurable. Applied to the netlisted deck rather than to design/ldo_3v3in_1v8out.sch so the design keeps one source of truth; the asserted occurrence count makes the patch fail loudly if the divider it targets ever changes.",
+    "substitutions": [
+      {
+        "match": "XR_FB_A VOUT FB 0 sky130_fd_pr__res_xhigh_po W=0.42 L=180 mult=1 m=1",
+        "replace": "XR_FB_A VOUT FB 0 sky130_fd_pr__res_xhigh_po W=0.42 L=198 mult=1 m=1",
+        "count": 1
+      }
+    ]
+  },
+  "mc_corner": {
+    "process": "tt_mm",
+    "temperature_c": 27,
+    "vsup": 3.3,
+    "note": "Identical to sim/mc-output-accuracy/experiment.json's mc_corner -- a negative control is only interpretable against a nominal drawn at the same operating point, so nothing here may differ from the nominal campaign except the declared netlist_patch."
+  },
+  "mc_analysis": {
+    "kind": "tran",
+    "args": "10u 3m uic",
+    "note": "Identical to sim/mc-output-accuracy/experiment.json's mc_analysis: the #164 initial-condition contract (every node at 0, EN low, powering up through the block's own soft-start ramp when the bench's 100us EN edge arrives) rather than an unconstrained ngspice `.op`. Held identical on purpose -- a control that also changed the bench's initial conditions would confound the defect with the bench."
+  },
+  "mc_measurements": [
+    {
+      "name": "vout_ss",
+      "spice": ".meas tran vout_ss avg v(vout) from=2.5m to=3m",
+      "unit": "V",
+      "limits": {
+        "min": 1.764,
+        "max": 1.836
+      },
+      "note": "Same measurement and same ratified bound as the nominal campaign (spec/target-spec.md \"Output\" row, 1.8V +-2%, ratified by issue #1 / DR-006). The window is NOT relaxed for the control -- the whole point is that the same window rejects this deck. Expect `klt sim` to grade this experiment FAIL; that is the intended outcome, not a defect in the harness."
+    }
+  ],
+  "monte_carlo_defaults": {
+    "n": 40,
+    "vary": "mismatch",
+    "k_sigma": 3
+  }
+}

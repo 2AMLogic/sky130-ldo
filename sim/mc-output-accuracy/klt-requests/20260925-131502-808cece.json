@@ -1,0 +1,43 @@
+{
+  "analysis": {
+    "args": "10u 3m uic",
+    "kind": "tran",
+    "note": "`uic` (added by #164) makes the transient start from a physically realizable initial condition -- every node at 0, EN low, the block disabled -- and power up through its own soft-start ramp when this testbench's EN edge arrives at 100us, rather than from an unconstrained ngspice operating-point solve. Without it (and with the pre-#164 DC-high EN), the `.op` that seeds the transient has no initial condition at all, and 11 of these same 200 mismatch draws settled on a spurious branch of `sky130_fd_pr__res_xhigh_po`'s voltage-coefficient expression -- whose modelled resistance goes NEGATIVE above ~1.35kV (L=180um, the divider legs) and ~475V (L=52um, R_CZ), measured -- leaving VOUT pinned at VIN for the whole 3ms with FB/N_FBB/EA_CZ at 650V-1e15V. See design/README.md \"#164\" for the characterization and the four-variant screen that selected this initial condition; the 185 samples that already regulated are bit-identical before and after."
+  },
+  "corners": {
+    "process": [
+      "tt_mm"
+    ],
+    "temperature_c": [
+      27
+    ]
+  },
+  "engine": "ngspice",
+  "measurements": [
+    {
+      "limits": {
+        "max": 1.836,
+        "min": 1.764
+      },
+      "name": "vout_ss",
+      "note": "Steady-state VOUT, averaged over the settled tail (2.5ms-3ms of a 3ms transient) of a fixed-1mA-load, VIN=3.3V/27C/tt_mm operating point, reached by powering the block up from its disabled state (EN edge at 100us, `uic`; see mc_analysis.note and #164) rather than from an unconstrained operating-point solve. Ratified bound: spec/target-spec.md \"Output\" row, 1.8V +-2% (ratified by issue #1 / DR-006).",
+      "spice": ".meas tran vout_ss avg v(vout) from=2.5m to=3m",
+      "unit": "V"
+    }
+  ],
+  "models": {
+    "lib": "libs.tech/combined/sky130.lib.spice",
+    "pdk": "sky130A"
+  },
+  "monte_carlo": {
+    "k_sigma": 3,
+    "n": 200,
+    "seed": 20260817,
+    "vary": "mismatch"
+  },
+  "netlist": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-164/sim/mc-output-accuracy/netlist-snapshots/20260925-131502-808cece.spice",
+  "options": {
+    "keep_artifacts": false,
+    "timeout_s": 180
+  }
+}

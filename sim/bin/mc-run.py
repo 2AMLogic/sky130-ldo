@@ -37,8 +37,11 @@ run.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
+import os
 import shutil
+import statistics
 import subprocess
 import sys
 from datetime import datetime, timezone
@@ -74,9 +77,149 @@ def load_mc_experiment(path: Path) -> dict:
     schematic = (exp_dir / raw["schematic"]).resolve()
     if not schematic.is_file():
         raise HarnessError(f"{manifest}: schematic not found: {schematic}")
+    validate_netlist_patch(raw.get("netlist_patch"), manifest)
     raw["_dir"] = exp_dir
     raw["_schematic"] = schematic
     return raw
+
+
+def assert_klt_read_the_pinned_pdk(
+    response: dict, pdk, pin: dict, allow_mismatch: bool
+) -> None:
+    """Check `klt sim`'s OWN provenance names the PDK this harness pinned.
+
+    The pre-run `resolve_pdk()`/`matches_pin` check (issue #2) verifies the
+    install *this harness* resolved. It says nothing about the one `klt`
+    resolved, and before issue #211 nothing did: `run_klt_sim` passed no
+    `PDK_ROOT`, the request's `models.lib` is relative, and on a host with two
+    sky130A installs `klt` read the other one -- so a record could name the
+    pinned open_pdks commit while the simulation behind it read a different
+    build's FET cards. Passing `PDK_ROOT` fixes the cause; this asserts the
+    effect, because a provenance claim nothing checks is the kind that rots
+    silently. `--allow-pdk-mismatch` downgrades it to a warning, the same
+    escape hatch the pre-run check offers.
+    """
+    claimed = ((response.get("provenance") or {}).get("pdk") or {}).get("version") or ""
+    if pin["open_pdks_commit"] in claimed:
+        return
+    message = (
+        f"klt sim's own provenance.pdk.version is {claimed!r}, which does not name "
+        f"sim/pdk.json's pinned open_pdks commit {pin['open_pdks_commit']}\n"
+        f"  this harness resolved: {pdk.dir}\n"
+        "  klt resolved something else -- the record's `pdk` block would name the "
+        "pin while the simulation read a different model build. Set PDK_ROOT "
+        "explicitly, or remove the competing install"
+    )
+    if not allow_mismatch:
+        raise HarnessError(message)
+    print(f"WARNING: {message}", file=sys.stderr)
+
+
+# --------------------------------------------------------------------------
+# deliberate netlist degradation (`netlist_patch`, issue #211)
+# --------------------------------------------------------------------------
+
+
+def validate_netlist_patch(patch, manifest: Path) -> None:
+    """Shape-check an optional `netlist_patch` block before anything runs.
+
+    A patch is only ever *declared* by an experiment manifest, never passed on
+    the command line, so the defect a record was produced with is committed
+    alongside the record instead of living in someone's shell history.
+    """
+    if patch is None:
+        return
+    if not isinstance(patch, dict):
+        raise HarnessError(f"{manifest}: netlist_patch must be an object")
+    for key in ("purpose", "rationale", "substitutions"):
+        if not patch.get(key):
+            raise HarnessError(f"{manifest}: netlist_patch is missing {key!r}")
+    subs = patch["substitutions"]
+    if not isinstance(subs, list):
+        raise HarnessError(f"{manifest}: netlist_patch.substitutions must be an array")
+    for i, sub in enumerate(subs):
+        if not isinstance(sub, dict):
+            raise HarnessError(f"{manifest}: netlist_patch.substitutions[{i}] must be an object")
+        for key in ("match", "replace"):
+            if not isinstance(sub.get(key), str) or not sub[key]:
+                raise HarnessError(
+                    f"{manifest}: netlist_patch.substitutions[{i}].{key} must be a "
+                    "non-empty string"
+                )
+        if sub["match"] == sub["replace"]:
+            raise HarnessError(
+                f"{manifest}: netlist_patch.substitutions[{i}] is a no-op "
+                "(match == replace) -- a declared defect that changes nothing is "
+                "worse than no defect at all"
+            )
+        if not isinstance(sub.get("count"), int) or sub["count"] < 1:
+            raise HarnessError(
+                f"{manifest}: netlist_patch.substitutions[{i}].count must be a "
+                "positive integer -- the number of occurrences the patch asserts it "
+                "will replace, so the patch fails loudly instead of silently "
+                "becoming a no-op when the netlist it targets changes"
+            )
+
+
+def apply_netlist_patch(text: str, patch: dict | None) -> tuple[str, dict | None]:
+    """Apply an experiment's declared `netlist_patch` to the netlisted deck.
+
+    Why this exists (issue #211): a `klt yield` negative control needs a
+    *seeded, known-bad variant* of a campaign -- a design deliberately broken
+    in one stated way, whose yield the same statistics must then reject. The
+    two obvious ways to build one both make the evidence worse:
+
+    * editing `design/` breaks the single source of truth for the design under
+      test, and
+    * freezing a whole degraded copy of the design schematic under the control
+      experiment leaves a 60-device duplicate that silently rots away from the
+      real design (the exact drift `sim/mc-ic-screen-*`'s FROZEN COPY headers
+      have to warn about in prose).
+
+    So the defect is declared instead, as an exact-string substitution with an
+    asserted occurrence count, applied to the netlisted deck after xschem and
+    before `klt sim`. The count assertion is the whole point: if the design
+    moves under the patch, the substitution no longer matches its stated
+    number of occurrences and the run *refuses to start* rather than quietly
+    sampling an undegraded circuit and reporting it as a negative control.
+    The patched deck is what gets committed as this record's netlist snapshot,
+    so the evidence is the deck that actually ran.
+
+    Returns `(patched_text, applied_report)`; `applied_report` is `None` when
+    the experiment declares no patch.
+    """
+    if patch is None:
+        return text, None
+    before_sha = hashlib.sha256(text.encode()).hexdigest()
+    applied = []
+    for i, sub in enumerate(patch["substitutions"]):
+        found = text.count(sub["match"])
+        if found != sub["count"]:
+            raise HarnessError(
+                f"netlist_patch.substitutions[{i}] asserts {sub['count']} "
+                f"occurrence(s) of its `match` string but the netlisted deck has "
+                f"{found}\n"
+                f"  match: {sub['match']!r}\n"
+                "  the design this patch degrades has changed -- re-derive the "
+                "patch against the current netlist (and re-check that the defect "
+                "still means what the manifest's rationale says it means) rather "
+                "than loosening the count"
+            )
+        text = text.replace(sub["match"], sub["replace"])
+        applied.append({"match": sub["match"], "replace": sub["replace"], "count": found})
+    after_sha = hashlib.sha256(text.encode()).hexdigest()
+    if after_sha == before_sha:
+        raise HarnessError(
+            "netlist_patch applied but the deck is byte-identical afterwards -- "
+            "refusing to record an undegraded deck as a patched one"
+        )
+    return text, {
+        "purpose": patch["purpose"],
+        "rationale": patch["rationale"],
+        "substitutions": applied,
+        "netlist_sha256_before": f"sha256:{before_sha}",
+        "netlist_sha256_after": f"sha256:{after_sha}",
+    }
 
 
 def klt_binary() -> str:
@@ -141,7 +284,24 @@ def run_klt_sim(
     outdir: Path,
     backend: str,
     max_workers: int,
+    pdk_root: Path | None = None,
 ) -> dict:
+    """Invoke `klt sim`, pinning the PDK root this harness resolved.
+
+    `PDK_ROOT` is passed explicitly (issue #211) because the request's
+    `models.lib` is a *relative* path (`libs.tech/combined/sky130.lib.spice`),
+    so `klt` resolves the root itself if nothing says otherwise -- and its own
+    search order is not this harness's. Measured on a host with two installs:
+    `resolve_pdk()` verified `~/.volare` against sim/pdk.json's pin and the
+    record said `matches_pin: true`, while `klt sim` silently read
+    `~/.ciel` (a different open_pdks build whose
+    `libs.tech/combined/continuous/models_fet.spice` -- the FET cards the
+    mismatch draws come from -- is NOT byte-identical to the pinned root's).
+    A record that names the pinned commit while the simulation read a
+    different one is a false provenance claim, and for a negative control it
+    is worse than that: the control's samples and the nominal's would differ
+    by the model build as well as by the declared defect.
+    """
     cmd = [
         klt_binary(),
         "sim",
@@ -155,7 +315,11 @@ def run_klt_sim(
     ]
     if backend == "local-parallel":
         cmd += ["--max-workers", str(max_workers)]
-    proc = subprocess.run(cmd, capture_output=True, text=True, timeout=None)
+    env = None
+    if pdk_root is not None:
+        env = dict(os.environ)
+        env["PDK_ROOT"] = str(pdk_root)
+    proc = subprocess.run(cmd, capture_output=True, text=True, timeout=None, env=env)
     if not proc.stdout.strip():
         raise HarnessError(
             "klt sim produced no stdout\n"
@@ -176,12 +340,164 @@ def run_klt_sim(
 # --------------------------------------------------------------------------
 
 
+def nominal_vs_spread(values: list, limits: dict) -> dict | None:
+    """Split one measurement's per-sample values into the in-window
+    subpopulation and everything else, so a record can say *why* it failed.
+
+    A statistical (Monte Carlo) row can miss its window two very different
+    ways, and the aggregate `k pass / m fail` count cannot tell them apart:
+
+    * **Spread** — the population is one distribution, centred where it
+      should be (or not), whose tails simply reach past the window. Then the
+      out-of-window samples sit *contiguous* with the in-window tail, a
+      fraction of a sigma beyond the edge, and sizing devices for matching
+      (or re-centring the nominal point) is the lever that moves them.
+    * **A second mode** — most samples regulate and a minority land somewhere
+      else entirely, many sigma away with an empty gap in between. Matching
+      is then the wrong lever: no plausible sizing change closes a gap that
+      is orders of magnitude wider than the distribution's own width.
+
+    Returns `None` when the split is not computable (no two-sided window, or
+    fewer than two in-window samples to take a stddev from).
+    """
+    lo, hi = limits.get("min"), limits.get("max")
+    if lo is None or hi is None:
+        return None
+    vals = [v for v in values if v is not None]
+    inside = [v for v in vals if lo <= v <= hi]
+    outside = [v for v in vals if not (lo <= v <= hi)]
+    if len(inside) < 2:
+        return None
+    mean = statistics.fmean(inside)
+    sd = statistics.stdev(inside)
+    centre = (lo + hi) / 2.0
+    out = {
+        "n_valued": len(vals),
+        "n_inside": len(inside),
+        "n_outside": len(outside),
+        "inside_mean": mean,
+        "inside_stddev": sd,
+        "window_centre": centre,
+        "centre_offset": mean - centre,
+        "centre_offset_frac": (mean - centre) / centre if centre else None,
+        # How far the *window* edge is from the in-window subpopulation, in
+        # that subpopulation's own sigma: the yield this distribution alone
+        # would give if nothing else were going on.
+        "edge_sigma": (min(mean - lo, hi - mean) / sd) if sd > 0 else None,
+        # How far the nearest out-of-window sample is *past* the window edge,
+        # in the same sigma. Small (order 1) => contiguous tail => spread.
+        # Large => a separate mode => a different mechanism.
+        "gap_sigma": None,
+        "outside_min": min(outside) if outside else None,
+        "outside_max": max(outside) if outside else None,
+    }
+    if outside and sd > 0:
+        out["gap_sigma"] = min((lo - v) if v < lo else (v - hi) for v in outside) / sd
+    return out
+
+
+def render_nominal_vs_spread(nvs: dict) -> list[str]:
+    """The `- Nominal-vs-spread decomposition` bullets for one measurement."""
+    pct = (
+        f"{nvs['centre_offset_frac'] * 100:+.3f} %"
+        if nvs["centre_offset_frac"] is not None
+        else "n/a"
+    )
+    lines = [
+        "    - Nominal-vs-spread decomposition (computed by `mc-run.py` from the "
+        "per-sample values in the klt response — see that function's docstring for "
+        "how to read it):"
+    ]
+    lines.append(
+        f"      - in-window subpopulation: n={nvs['n_inside']} of {nvs['n_valued']} "
+        f"valued samples, mean={nvs['inside_mean']:.6g}, stddev={nvs['inside_stddev']:.6g}"
+    )
+    lines.append(
+        f"      - nominal (centring) error: mean is {nvs['centre_offset']:+.6g} from the "
+        f"window centre {nvs['window_centre']:.6g} ({pct} of centre)"
+    )
+    if nvs["edge_sigma"] is not None:
+        lines.append(
+            f"      - spread vs the window: the nearer window edge is "
+            f"{nvs['edge_sigma']:.3g}σ from that subpopulation's mean"
+        )
+    if nvs["n_outside"]:
+        gap = (
+            f"{nvs['gap_sigma']:.4g}σ past the window edge"
+            if nvs["gap_sigma"] is not None
+            else "n/a"
+        )
+        verdict = (
+            "contiguous with the in-window tail — reads as **spread** (matching/centring)"
+            if nvs["gap_sigma"] is not None and nvs["gap_sigma"] <= 3
+            else "**not** contiguous with the in-window tail — reads as a **separate mode**, "
+            "i.e. a different mechanism than matching spread"
+        )
+        lines.append(
+            f"      - out-of-window samples: n={nvs['n_outside']}, "
+            f"min={nvs['outside_min']:.6g}, max={nvs['outside_max']:.6g}; "
+            f"nearest is {gap} — {verdict}"
+        )
+    else:
+        lines.append("      - out-of-window samples: none")
+    return lines
+
+
+def render_execution_backend(record: dict) -> list[str]:
+    """`- **Execution backend**: ...` — where the samples actually ran.
+
+    The `- **Tools**:` line above reports *this* machine's toolchain, which is
+    the toolchain that ran the samples only for the `local`/`local-parallel`
+    backends. On `remote`/`batch` the samples run on someone else's host with
+    its own ngspice build, so the record must say so verbatim (and name the
+    engine version klt reports from there) rather than letting the local
+    version stand as the provenance of a number it did not produce.
+    """
+    r = record
+    backend = r.get("backend", "local-parallel")
+    env = (r.get("klt_response") or {}).get("environment") or {}
+    engine = env.get("engine", "?")
+    engine_version = env.get("engine_version", "?")
+    lines = [
+        f"- **Execution backend**: `{backend}` — samples executed by "
+        f"{engine} {engine_version} as reported by `klt sim`"
+        + (
+            " (this machine)"
+            if backend in ("local", "local-parallel")
+            else " **on the remote executor, not this machine**"
+        )
+    ]
+    remote = env.get("remote") or {}
+    if remote:
+        detail = ", ".join(
+            f"{k}=`{remote[k]}`"
+            for k in ("provider", "job_id", "instance_type", "lifecycle", "region", "elapsed_seconds")
+            if remote.get(k) is not None
+        )
+        lines.append(f"  - Remote job: {detail}")
+        lines.append(
+            "  - The remote executor resolves its own PDK copy; `klt sim`'s own "
+            f"provenance block records it as `{(r.get('klt_response') or {}).get('provenance', {}).get('pdk', {}).get('version', 'unknown')}` "
+            "— compare that against the **PDK** line above, which is this machine's install."
+        )
+    return lines
+
+
+def fmt_or_na(value, label: str) -> str:
+    """`label=<6sig>` for a real number, `label=n/a` for a missing one."""
+    return f"{label}=n/a" if value is None else f"{label}={value:.6g}"
+
+
 def render_record(record: dict) -> str:
     r = record
     resp = r["klt_response"]
     tools = r["tools"]
-    tools_line = f"{tools['ngspice']}; {tools['xschem']}; klt {r['klt_version']}; {tools['platform']}"
+    tools_line = (
+        f"{tools['ngspice']}; {tools['xschem']}; klt {r['klt_version']}; {tools['platform']}"
+        f"; klt sim backend `{r.get('backend', 'local-parallel')}`"
+    )
     lines = render_record_header(r, tools_line)
+    lines.extend(render_execution_backend(r))
 
     corner = r["mc_corner"]
     lines.append("- **Corner matrix run**:")
@@ -195,6 +511,25 @@ def render_record(record: dict) -> str:
         "variation at one representative process/temperature/supply point per run, "
         "orthogonal to the PVT axis corner-run.py sweeps; see `sim/README.md`."
     )
+    patch = r.get("netlist_patch")
+    if patch:
+        lines.append(
+            f"- **Deliberate netlist degradation** (`netlist_patch`, purpose "
+            f"`{patch['purpose']}`): **this record's deck is intentionally broken.** "
+            "It is not a claim about the design as designed; it exists so a "
+            "statistic can be shown to reject a known-bad variant."
+        )
+        lines.append(f"  - Rationale: {patch['rationale']}")
+        for sub in patch["substitutions"]:
+            lines.append(
+                f"  - Substitution ({sub['count']} occurrence(s), asserted): "
+                f"`{sub['match']}` → `{sub['replace']}`"
+            )
+        lines.append(
+            f"  - Netlisted deck sha256 before the patch: "
+            f"`{patch['netlist_sha256_before']}`; after (what ran, and what the "
+            f"netlist snapshot below contains): `{patch['netlist_sha256_after']}`"
+        )
     mc = r["monte_carlo_request"]
     lines.append(
         f"- **Statistical convention**: N={mc['n']} Monte Carlo samples, "
@@ -218,27 +553,67 @@ def render_record(record: dict) -> str:
             f"**{meas['status'].upper()}**"
         )
         if mcstat:
+            # Every statistic here can legitimately be absent, and a missing one
+            # must not cost the whole record (the raw klt response is already on
+            # disk by the time this renders, but the .md/.json record is not):
+            # `stddev` is `null` for a single-sample run, and `sigma_window`'s
+            # `margin` is `null` for an **unbounded** measurement -- a `.meas`
+            # card declared with no `limits`, i.e. a diagnostic node dump that
+            # klt still computes a distribution for but has no window to take a
+            # margin against (added by sim/mc-ic-screen-*'s node dumps, #164).
+            # Same convention as the `worst_case` line below.
             lines.append(
                 f"    - n={mcstat['n']} (errored={mcstat['errored']}), "
-                f"mean={mcstat['mean']:.6g}, stddev={mcstat['stddev']:.6g}, "
-                f"min={mcstat['min']:.6g}, max={mcstat['max']:.6g}"
+                + ", ".join(
+                    fmt_or_na(mcstat.get(k), k) for k in ("mean", "stddev", "min", "max")
+                )
             )
             q = mcstat.get("quantiles") or {}
             if q:
                 lines.append(
-                    "    - quantiles: " + ", ".join(f"{k}={v:.6g}" for k, v in q.items())
+                    "    - quantiles: " + ", ".join(fmt_or_na(v, k) for k, v in q.items())
                 )
             sw = mcstat.get("sigma_window")
             if sw:
-                lines.append(
-                    f"    - sigma_window (k={sw['k']:g}): [{sw['low']:.6g}, {sw['high']:.6g}] "
-                    f"— **{sw['status'].upper()}** (margin {sw['margin']:.6g})"
+                margin = (
+                    "margin n/a — measurement declared with no limits, so there is no "
+                    "window to take a margin against"
+                    if sw.get("margin") is None
+                    else f"margin {sw['margin']:.6g}"
                 )
+                edge = ", ".join(
+                    "n/a" if sw.get(k) is None else f"{sw[k]:.6g}" for k in ("low", "high")
+                )
+                lines.append(
+                    f"    - sigma_window (k={sw['k']:g}): [{edge}] "
+                    f"— **{str(sw.get('status')).upper()}** ({margin})"
+                )
+        per_sample = [
+            m["value"]
+            for c in resp.get("corners", [])
+            for m in c.get("measurements", [])
+            if m.get("name") == meas["name"]
+        ]
+        nvs = nominal_vs_spread(per_sample, limits)
+        if nvs:
+            lines.extend(render_nominal_vs_spread(nvs))
         wc = meas.get("worst_case") or {}
         if wc:
+            # An errored sample has no value/margin at all -- klt reports it as the
+            # worst case with `null` fields. Render that honestly instead of
+            # crashing the record writer (a crash loses the whole record even
+            # though the raw klt response has already been written to disk).
             lines.append(
-                f"    - worst single sample: `{wc['corner_id']}` value={wc['value']:.6g} "
-                f"margin={wc['margin']:.6g}"
+                f"    - worst single sample: `{wc['corner_id']}` "
+                + fmt_or_na(wc.get("value"), "value")
+                + " "
+                + fmt_or_na(wc.get("margin"), "margin")
+                + (
+                    " — this sample **errored** (no measurement produced); see the raw "
+                    "klt response for its diagnostics"
+                    if wc.get("value") is None
+                    else ""
+                )
             )
 
     fam = (resp.get("environment", {}).get("monte_carlo") or {}).get("family_mismatch") or []
@@ -276,7 +651,18 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     p.add_argument("--seed", type=int, required=True, help="base seed (recorded verbatim; required)")
     p.add_argument("--vary", default="", help="default: manifest monte_carlo_defaults.vary")
     p.add_argument("--k-sigma", type=float, default=None, help="default: manifest monte_carlo_defaults.k_sigma")
-    p.add_argument("--backend", default="local-parallel", choices=["local", "local-parallel"])
+    p.add_argument(
+        "--backend",
+        default="local-parallel",
+        choices=["local", "local-parallel", "remote", "batch"],
+        help=(
+            "klt sim execution backend. `local`/`local-parallel` run ngspice on this "
+            "machine; `remote`/`batch` hand the expanded sample grid to klt's own "
+            "remote/EC2-batch backends (see docs/cli/sim.md in 2AMLogic/klayout-tools). "
+            "A shared dispatch host that forbids hand-launched local ngspice grids "
+            "needs `--backend batch` here — the local-parallel default is a local grid."
+        ),
+    )
     p.add_argument("--max-workers", type=int, default=8)
     p.add_argument("--timeout", type=int, default=180, help="per-sample ngspice timeout (s)")
     p.add_argument("--keep-logs", action="store_true", help="keep klt's per-sample logs (options.keep_artifacts)")
@@ -345,6 +731,9 @@ def main(argv: list[str]) -> int:
     netlist = corner_run.netlist_with_xschem(exp["_schematic"], run_dir, pdk)
     body = build_klt_netlist(exp, netlist)
     prepped_netlist_text = "\n".join(body) + "\n"
+    prepped_netlist_text, patch_report = apply_netlist_patch(
+        prepped_netlist_text, exp.get("netlist_patch")
+    )
 
     print(f"experiment      : {exp['slug']}")
     print(f"record id       : {record_id}")
@@ -352,6 +741,15 @@ def main(argv: list[str]) -> int:
     print(f"testbench       : {exp['_schematic'].relative_to(REPO_ROOT)}")
     print(f"MC samples      : {n} (vary={vary}, seed={args.seed}, k_sigma={k_sigma})")
     print(f"backend         : {args.backend}")
+    if patch_report:
+        print(
+            f"netlist patch   : {patch_report['purpose']} — "
+            f"{len(patch_report['substitutions'])} substitution(s) applied "
+            "(DELIBERATELY DEGRADED DECK)"
+        )
+        for sub in patch_report["substitutions"]:
+            print(f"  - {sub['match']}")
+            print(f"  + {sub['replace']}")
 
     if args.dry_run:
         scratch_netlist = run_dir / "mc_body.spice"
@@ -374,7 +772,11 @@ def main(argv: list[str]) -> int:
     request_file.write_text(json.dumps(request, indent=2, sort_keys=True) + "\n")
 
     klt_outdir = run_dir / "klt-out"
-    response = run_klt_sim(request_file, klt_outdir, args.backend, args.max_workers)
+    response = run_klt_sim(
+        request_file, klt_outdir, args.backend, args.max_workers, pdk_root=pdk.root
+    )
+
+    assert_klt_read_the_pinned_pdk(response, pdk, pin, args.allow_pdk_mismatch)
 
     responses_dir.mkdir(parents=True, exist_ok=True)
     response_file.write_text(json.dumps(response, indent=2, sort_keys=True) + "\n")
@@ -405,8 +807,10 @@ def main(argv: list[str]) -> int:
         },
         "tools": corner_run.tool_versions(),
         "klt_version": response.get("provenance", {}).get("klt_version", "unknown"),
+        "backend": args.backend,
         "git": git_info,
         "mc_corner": exp["mc_corner"],
+        "netlist_patch": patch_report,
         "monte_carlo_request": request["monte_carlo"],
         "klt_request": request,
         "klt_response": response,

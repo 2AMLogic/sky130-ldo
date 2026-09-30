@@ -116,11 +116,14 @@ than re-filed -- see `layout/README.md`'s "What routing the LDO core hit"
 section, which also records that `klayout-tools` has since added bundle
 routing on a commit *newer* than this repo's pin.
 
-The topology is deliberately uniform, so that no two nets can share drawn
-metal by construction rather than by inspection:
+There are two topologies, because the block has two kinds of net (issue
+#154). Within each, the topology is deliberately uniform, so that no two nets
+can share drawn metal by construction rather than by inspection.
 
-- **One met1 trunk per net**, in a routing channel below the device row, on a
-  0.8um track pitch. Each trunk owns a unique y.
+### Signal nets
+
+- **One met1 trunk per signal net**, in a routing channel below the device
+  row, on a 0.8um track pitch. Each trunk owns a unique y.
 - **Source/drain terminals drop straight down** from their own li1 pad (the
   pads already run the full device height) onto their net's trunk, through an
   mcon. Each drop owns a unique x -- ports within a block are >=0.46um apart
@@ -143,13 +146,56 @@ mcon/via1 at the deck's own contact size with >=0.055um enclosure), chosen
 with enough margin that the first routed run came back DRC-clean rather than
 needing a violation-driven iteration loop.
 
+### Load-current nets (issue #154)
+
+The two nets that carry the block's full load current are **not** drawn as
+channel trunks at all. A 0.30um trunk is a signal conductor, and applying it
+to the pass device's own drain and source was the defect issue #154 was filed
+for. They are identified mechanically -- the widest drawn MOS's drain and
+source, with an error rather than a guess if that device is not decisively
+the widest -- and drawn as rails above the device row:
+
+- **Two strapped metal levels per rail**, stitched by a via array on a 1um
+  pitch along the rail's whole length, each rail in its own y band above the
+  gate risers. The lower band is met1+met2 and the upper met2+met3, offset by
+  one level so the upper band's risers can cross the lower band on a level it
+  does not occupy.
+- **The width is computed from the ratified spec, not chosen**:
+  `W = rho_sheet * L / R_budget`, with `R_budget` the rail's share of the
+  ratified `Dropout @ 50 mA` budget at the ratified full-load current, both
+  parsed out of `spec/target-spec.md` by `layout/bin/_spec_constants.py`, and
+  `rho_sheet` the parallel combination of the two levels' sheet resistances
+  as declared by `klt`'s own parasitics deck. The resulting widths, the
+  required-vs-drawn comparison and the implied IR drop are recorded in each
+  layout record's `floorplan.json` under `routing.power_rails`.
+- **Wide only where the current flows.** The rail is drawn at its computed
+  width across the span of the pass device's own terminals, and drops to
+  minimum width over the tail that reaches the feedback divider -- a sense
+  tap drawing microamps. Drawing the tail as wide as the rail would state a
+  current it never carries.
+- **Each load-current terminal's li1 pad is strapped over its full height**
+  by met1 with an mcon every 2um, then rises to its rail. Contacting a
+  100um-tall pad at a single point would leave that unit's whole share of the
+  load current running up to half a device height along ~12.8 ohm/square
+  local interconnect.
+- **Each rail is labelled on its own lower level** (met1.pin for the lower
+  band, met2.pin for the upper), on the wide segment -- i.e. physically at
+  the pass device, where the block's power pin is, not out at the sense tap.
+
+`layout/README.md`'s "Power routing for the load-current nets" section states
+what this is and is not verified against; in particular `klt extract
+--parasitics` at this repo's pin cannot measure the difference between this
+and the 0.30um trunks it replaced.
+
 ### Body ties
 
 Both body nets are drawn and extracted, not left on the deck's synthesized
 fallback:
 
 - an **n-well tie** (`tap.drawing` inside the shared n-well, licon + li1)
-  drops onto the `VIN` trunk, so every PMOS body terminal extracts as `VIN`;
+  rises to the `VIN` rail the same way a source terminal does (it dropped
+  onto the `VIN` trunk before issue #154 replaced that trunk with a rail), so
+  every PMOS body terminal extracts as `VIN`;
 - a **substrate tie** (`tap.drawing` outside every well) drops onto the `0`
   trunk, so every NMOS body -- and every poly resistor's `bulk_to_substrate`
   bulk terminal -- extracts as the schematic's own `0` rail rather than the
@@ -183,10 +229,21 @@ on most.
   A DRC-clean, LVS-matched layout certifies topology and geometry rules; it
   says nothing about the li1 trunk resistance this deliberately simple
   channel route puts in series with, e.g., the pass device's source.
-- **Real power routing.** Every net here is drawn at the same signal-grade
-  width, including `VIN`/`VOUT`, which in the real block carry the full load
-  current. Sizing those as power straps is a separate design task with its
-  own electromigration/IR-drop acceptance criteria.
+- **Electromigration.** Issue #154 sized the `VIN`/`VOUT` rails from an
+  IR-drop budget (above), which is one of the two acceptance criteria a power
+  conductor needs. The other -- a current-density/electromigration limit --
+  is not checked: the curated sky130 deck this flow runs `klt drc` against
+  declares no current-density rule to check it with, so "no new DRC
+  violation" is not the same statement as "the rail carries 50 mA
+  indefinitely". The drawn widths are far above any plausible EM minimum at
+  this current, but that is an argument, not a check.
+- **A measurement of the drawn rails.** `klt extract --parasitics` at this
+  repo's pin cannot distinguish these rails from the 0.30um trunks they
+  replaced -- see `layout/README.md`'s "Power routing for the load-current
+  nets" and the two `klayout-tools` issues it cites. So the IR-drop claim
+  above is computed from the deck's constants and the drawn geometry, and is
+  unit-tested as arithmetic, but is not re-measured from the stream by
+  anything in this repo.
 - **Matching-aware placement.** Blocks are packed in schematic order within
   their function group; the differential pairs and current mirrors are not
   common-centroid placed or interdigitated, and `klt gen`'s own

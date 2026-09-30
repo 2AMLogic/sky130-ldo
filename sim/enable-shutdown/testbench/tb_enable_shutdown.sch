@@ -7,13 +7,13 @@ v {xschem version=3.4.7 file_version=1.2
 * family M_ENP / M_ENP2 / M_ENP3 / M_ENP4 / M_ENP5 and the M_ENN / M_ENN2
 * pseudo-ground switches described in design/README.md's
 * "Enable/shutdown (also revised after simulation)" -- against
-* spec/target-spec.md's DRAFT "Enable / shutdown" row:
+* spec/target-spec.md's ratified "Enable / shutdown" row:
 *
 *   "shutdown Iq < 3 uA worst corner; disabled output = pass device fully
 *    off, no active discharge; Vin->Vout leakage <= 1 uA"
 *
-* That row is DRAFT (issue #1 not yet ratified); the bounds in
-* experiment.json cite its own two numbers (3 uA, 1 uA) directly rather
+* That row is ratified by issue #1 / DR-006; the bounds in
+* experiment.json cite its own two numbers (3 uA, 1 uA) verbatim rather
 * than inventing a final limit.
 *
 * ---------------------------------------------------------------------
@@ -41,7 +41,7 @@ v {xschem version=3.4.7 file_version=1.2
 *    R_div x C_OUT time constant is seconds, so the output should barely
 *    move. An active pull-down would collapse it in microseconds. That
 *    makes the clause checkable against a number the spec already states
-*    (the DRAFT Output row's +-2% window) instead of an invented
+*    (the ratified Output row's +-2% window) instead of an invented
 *    discharge-current threshold. The static counterpart -- how much
 *    current the disabled block draws from an output held at 1.8 V -- is
 *    also measured, and reported rather than bounded, because separating
@@ -106,7 +106,7 @@ T {enable / shutdown testbench -- exercises design/ldo_3v3in_1v8out.sch (#14/#22
 via its companion subcircuit symbol design/ldo_3v3in_1v8out.sym
 VIN = 'vsup'; EN = dc 0 for the `op` legs, PWL 0 -> 'vsup' at 100us -> 0 at 2ms for the tran leg
 VFORCE + RFORCE force VOUT to 0V (leakage) and to 1.8V (disabled-state load)
-DRAFT "Enable / shutdown" row: shutdown Iq < 3uA, Vin->Vout leakage <= 1uA, no active discharge} -700 -750 0 0 0.3 0.3 {}
+ratified "Enable / shutdown" row: shutdown Iq < 3uA, Vin->Vout leakage <= 1uA, no active discharge} -700 -750 0 0 0.3 0.3 {}
 
 * ---- VIN (tied to the corner runner's supply) ----
 C {devices/vsource.sym} -600 -300 0 0 {name=VVIN value='vsup' savecurrent=true}
