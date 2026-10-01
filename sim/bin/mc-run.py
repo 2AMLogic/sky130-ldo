@@ -40,7 +40,6 @@ import argparse
 import hashlib
 import json
 import os
-import shutil
 import statistics
 import subprocess
 import sys
@@ -49,7 +48,12 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from _record_common import load_corner_run_module, render_record_footer, render_record_header
+from _record_common import (
+    klt_binary as _shared_klt_binary,
+    load_corner_run_module,
+    render_record_footer,
+    render_record_header,
+)
 
 corner_run = load_corner_run_module(Path(__file__).resolve().parent)
 
@@ -223,13 +227,7 @@ def apply_netlist_patch(text: str, patch: dict | None) -> tuple[str, dict | None
 
 
 def klt_binary() -> str:
-    exe = shutil.which("klt")
-    if not exe:
-        raise HarnessError(
-            "klt not found on PATH; install klayout-tools "
-            "(https://github.com/2AMLogic/klayout-tools) to run Monte Carlo experiments"
-        )
-    return exe
+    return _shared_klt_binary("run Monte Carlo experiments", error_cls=HarnessError)
 
 
 def build_klt_netlist(exp: dict, netlist: Path) -> list[str]:
