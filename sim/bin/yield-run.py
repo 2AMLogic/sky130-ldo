@@ -120,7 +120,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from _record_common import git, render_record_footer  # noqa: E402
+from _record_common import git, klt_binary as _shared_klt_binary, render_record_footer  # noqa: E402
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
@@ -135,13 +135,7 @@ class HarnessError(RuntimeError):
 
 
 def klt_binary() -> str:
-    exe = shutil.which("klt")
-    if not exe:
-        raise HarnessError(
-            "klt not found on PATH; install klayout-tools "
-            "(https://github.com/2AMLogic/klayout-tools) to run a yield analysis"
-        )
-    return exe
+    return _shared_klt_binary("run a yield analysis", error_cls=HarnessError)
 
 
 def klt_version(exe: str) -> str:

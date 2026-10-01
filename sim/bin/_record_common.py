@@ -19,11 +19,17 @@ loader for `corner-run.py` (its filename has a hyphen, so it can't be
 `import`ed directly) -- `sim/bin/mc-run.py` and
 `measurements/build_characterization_report.py` previously carried
 byte-identical copies of this same importlib dance.
+
+Also home to `klt_binary()` (issue #224), the `shutil.which("klt")`
+fail-fast check -- `sim/bin/mc-run.py` and `sim/bin/yield-run.py` previously
+carried byte-identical copies of this function, differing only in the
+trailing usage phrase of their error message.
 """
 
 from __future__ import annotations
 
 import importlib.util
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -67,6 +73,26 @@ def load_corner_run_module(bin_dir: Path):
     sys.modules["corner_run"] = module
     spec.loader.exec_module(module)  # type: ignore[union-attr]
     return module
+
+
+def klt_binary(usage_context: str, error_cls: type[Exception] = RuntimeError) -> str:
+    """Return the path to the `klt` binary on `PATH`, or raise `error_cls`
+    with an install hint if it is missing.
+
+    `usage_context` is the trailing phrase describing what the caller needs
+    `klt` for (e.g. `"run Monte Carlo experiments"`), since that's the one
+    part of the error message that differs between callers. `error_cls`
+    lets each caller preserve its own exception type for an existing
+    `except HarnessError` handler (`mc-run.py` uses `corner_run.HarnessError`;
+    `yield-run.py` defines its own `HarnessError`).
+    """
+    exe = shutil.which("klt")
+    if not exe:
+        raise error_cls(
+            "klt not found on PATH; install klayout-tools "
+            f"(https://github.com/2AMLogic/klayout-tools) to {usage_context}"
+        )
+    return exe
 
 
 def render_record_header(record: dict, tools_line: str) -> list[str]:
