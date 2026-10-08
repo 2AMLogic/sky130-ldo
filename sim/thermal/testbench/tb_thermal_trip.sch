@@ -138,6 +138,16 @@ v {xschem version=3.4.7 file_version=1.2
 * seeding question -- it is the pre-existing DC-continuation limitation #77
 * found and #91 carries forward, and #178 neither fixes nor worsens it.
 *
+* #230 (integrated regenerative comparator): a DC continuation alone cannot
+* establish the window (sim/README.md #189), so this schematic ALSO serves a
+* transient staircase of independent runs (sim/thermal/run_hysteresis.py):
+* EN is `dc 'vsup' PWL(...)` -- the DC value is what every `dc temp` /
+* corner-deck analysis sees (unchanged behaviour), the PWL is what a `tran ..
+* uic` run sees (EN rise at 2-3us for the cold start, optional dip 101-115us via
+* .param en_dip) -- and IX is a removable disturbance current at TS_SNS that
+* physically seeds the tripped (ix_amp>0) or untripped (ix_amp<0) state. Both
+* default to inert (ix_amp=0, en_dip=vsup via experiment.json deck.params).
+*
 * VIN and EN are DC-only (no AC/transient stimulus needed for a DC
 * temperature sweep -- and a PULSE/PWL EN edge is not an option here: a `dc`
 * analysis evaluates a time-dependent source at t=0, which would hold EN at
@@ -168,9 +178,15 @@ C {devices/lab_pin.sym} -600 -330 0 0 {name=p1 lab=VIN}
 C {devices/lab_pin.sym} -600 -270 0 0 {name=p2 lab=0}
 
 * ---- EN (DC only, tied to the corner runner's supply -- always enabled) ----
-C {devices/vsource.sym} -400 -300 0 0 {name=VEN value='vsup' savecurrent=true}
+C {devices/vsource.sym} -400 -300 0 0 {name=VEN value="dc 'vsup' PWL(0 0 2u 0 3u 'vsup' 100u 'vsup' 101u 'en_dip' 115u 'en_dip' 116u 'vsup')" savecurrent=true}
 C {devices/lab_pin.sym} -400 -330 0 0 {name=p3 lab=EN}
 C {devices/lab_pin.sym} -400 -270 0 0 {name=p4 lab=0}
+
+* ---- #230: transient-staircase disturbance on the sense node (zero in DC) ----
+C {devices/isource.sym} -50 -150 0 0 {name=IX value="PWL(0 0 20u 0 21u 'ix_amp' 40u 'ix_amp' 41u 0)"}
+C {devices/lab_pin.sym} -50 -180 0 0 {name=p_ix_p lab=xldo.TS_SNS}
+C {devices/lab_pin.sym} -50 -120 0 0 {name=p_ix_n lab=0}
+T {IX: removable physical disturbance current at the sense node TS_SNS (flat hierarchical name xldo.TS_SNS), 20..40us, then GONE. ix_amp > 0 sinks current (sense looks HOTTER: seeds the TRIPPED state); ix_amp < 0 injects (looks COLDER: seeds the UNTRIPPED state); 0 = none (default; the DC corner deck, whose PWL evaluates to 0 at t=0, is unaffected). Observations after 41us are the circuit HOLDING the driven state at that temperature (issue #230, sim/thermal/run_hysteresis.py).} -50 -100 0 0 0.2 0.2 {}
 
 * ---- VREF (fixed placeholder, see design/README.md interface caveat) ----
 C {devices/vsource.sym} -200 -300 0 0 {name=VVREF value=1.2 savecurrent=true}
