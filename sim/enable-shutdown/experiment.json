@@ -43,7 +43,7 @@
       "unit": "uA",
       "min": null,
       "max": 3.0,
-      "note": "Total VIN supply current with EN held at 0 and the output free-floating (static disabled state). Ratified bound: spec/target-spec.md's \"Enable / shutdown\" row, shutdown Iq < 3 uA worst corner -- ratified by issue #1 / DR-006, cited verbatim. Sign: i(vvin) is negative when the source delivers current, so the supply current is its negation."
+      "note": "Total VIN supply current with EN held at 0 and the output free-floating (static disabled state). Ratified bound: spec/target-spec.md's \"Enable / shutdown\" row, shutdown Iq < 3 uA worst corner -- ratified by issue #1 / DR-006, cited verbatim. Sign: i(vvin) is negative when the source delivers current, so the supply current is its negation. Bound shape: max-only (min null) DELIBERATELY (issue #145, operator decision 2026-10-08): the correct answer is ~0, observed 1e-4..1e-1 uA (100 pA scale), and this deck sets only 'wnflag=1' in deck.options, so ngspice's default abstol (1 pA) applies -- a min: 0 floor would grade solver noise at that scale, not the design. A pathological negative operating point is not a vacuous-pass risk here because the AND-of-measurements verdict includes vout_pre_disable_v in [1.764, 1.836] V, which no corner can satisfy unless the block genuinely regulated before the disable edge."
     },
     {
       "name": "iq_shutdown_after_edge_ua",
@@ -51,7 +51,7 @@
       "unit": "uA",
       "min": null,
       "max": 3.0,
-      "note": "Worst (largest) VIN supply current between 1.5 ms and 2.5 ms AFTER the falling EN edge at t = 2 ms, in a transient that enabled the block at t = 100 us and let it start up and regulate first. Same ratified 3 uA bound as iq_shutdown_static_ua, but this is the version that can fail for a block which has a clean disabled operating point yet does not settle into it from an enabled one -- a static op check never visits the enabled state, so it cannot see that failure mode at all. The worst sample in the window is used rather than the mean, because the row says \"worst corner\"."
+      "note": "Worst (largest) VIN supply current between 1.5 ms and 2.5 ms AFTER the falling EN edge at t = 2 ms, in a transient that enabled the block at t = 100 us and let it start up and regulate first. Same ratified 3 uA bound as iq_shutdown_static_ua, but this is the version that can fail for a block which has a clean disabled operating point yet does not settle into it from an enabled one -- a static op check never visits the enabled state, so it cannot see that failure mode at all. The worst sample in the window is used rather than the mean, because the row says \"worst corner\". Bound shape: max-only (min null) DELIBERATELY (issue #145, operator decision 2026-10-08): the correct answer is ~0, observed 1e-4..1e-1 uA (100 pA scale), and this deck sets only 'wnflag=1' in deck.options, so ngspice's default abstol (1 pA) applies -- a min: 0 floor would grade solver noise at that scale, not the design. A pathological negative operating point is not a vacuous-pass risk here because the AND-of-measurements verdict includes vout_pre_disable_v in [1.764, 1.836] V, which no corner can satisfy unless the block genuinely regulated before the disable edge."
     },
     {
       "name": "iq_shutdown_after_edge_mean_ua",
@@ -67,7 +67,7 @@
       "unit": "uA",
       "min": null,
       "max": 1.0,
-      "note": "Current the block delivers into its own output with EN = 0 and VOUT forced to 0 V. Ratified bound: the row's \"Vin->Vout leakage <= 1 uA\", cited verbatim. Forcing VOUT to ground is what isolates the VIN->VOUT path: the block's ~3.1 MOhm feedback divider carries no current at 0 V, so what the forcing source collects is the (off) pass device and its junctions. The spec row's note already flags that its leakage figure is \"pending sky130 device data\", so a comfortable pass here is a statement about the ratified number as much as about the design."
+      "note": "Current the block delivers into its own output with EN = 0 and VOUT forced to 0 V. Ratified bound: the row's \"Vin->Vout leakage <= 1 uA\", cited verbatim. Forcing VOUT to ground is what isolates the VIN->VOUT path: the block's ~3.1 MOhm feedback divider carries no current at 0 V, so what the forcing source collects is the (off) pass device and its junctions. The spec row's note already flags that its leakage figure is \"pending sky130 device data\", so a comfortable pass here is a statement about the ratified number as much as about the design. Bound shape: max-only (min null) DELIBERATELY (issue #145, operator decision 2026-10-08): the correct answer is ~0, observed 1e-4..1e-1 uA (100 pA scale), and this deck sets only 'wnflag=1' in deck.options, so ngspice's default abstol (1 pA) applies -- a min: 0 floor would grade solver noise at that scale, not the design. A pathological negative operating point is not a vacuous-pass risk here because the AND-of-measurements verdict includes vout_pre_disable_v in [1.764, 1.836] V, which no corner can satisfy unless the block genuinely regulated before the disable edge."
     },
     {
       "name": "vout_pre_disable_v",
