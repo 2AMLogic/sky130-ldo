@@ -108,6 +108,7 @@ from __future__ import annotations
 
 import argparse
 import difflib
+import hashlib
 import json
 import os
 import re
@@ -164,6 +165,8 @@ EVIDENCE_MAP: dict[str, str | None] = {
     "Enable / shutdown": "enable-shutdown",
     "Thermal": "thermal",
     "Output noise": None,
+    # "Area" is deliberately absent from the sim/ map: its evidence is a layout
+    # record (issue #236), read by the AREA_ROW branch of build_spec_row_table.
     "Area": None,
     "Stability": "loop-gain",
 }
@@ -183,11 +186,6 @@ NA_REASONS: dict[str, str] = {
     "Output noise": (
         'waived by the spec row itself ("not specified — waived unless a '
         'consumer states a requirement").'
-    ),
-    "Area": (
-        "no dedicated area-extraction check exists yet; the routed layout's "
-        "own geometry is not re-derived into a verdict here, per this "
-        "report's own no-re-derivation rule."
     ),
 }
 GENERIC_NA_REASON = "no independent testbench under `sim/` substantiates this row yet."
@@ -545,6 +543,67 @@ def layout_record(pointer_name: str) -> tuple[str, Path] | None:
     return record_id, d
 
 
+AREA_ROW = "Area"
+
+
+def latest_area_record() -> tuple[dict, Path] | None:
+    """The record `layout/ldo-core/reports/LATEST-AREA` names (issue #236),
+    as `(area.json contents, record.md path)`."""
+    found = layout_record("LATEST-AREA")
+    if found is None:
+        return None
+    _record_id, d = found
+    path = d / "area.json"
+    if not path.is_file():
+        return None
+    try:
+        return json.loads(path.read_text()), d / "record.md"
+    except ValueError:
+        return None
+
+
+def _sha256_of(path: Path) -> str:
+    h = hashlib.sha256()
+    with path.open("rb") as f:
+        for chunk in iter(lambda: f.read(1 << 20), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def check_area_freshness(record: dict) -> str:
+    """Is the area record about the routed GDS that exists now?
+
+    Two content checks, no toolchain: (1) the artifact the record cites still
+    hashes to the sha256 it recorded, and (2) the CURRENT routed GDS -- the
+    `ldo_core.gds` in the `layout/ldo-core/reports/LATEST` record -- hashes to
+    the same value. A re-routed layout fails (2) and is reported STALE until a
+    new area record is minted; the verdict itself is never recomputed here.
+    """
+    gds = record.get("gds") or {}
+    recorded = gds.get("sha256")
+    cited = gds.get("path")
+    if not recorded or not cited:
+        return "unverified: area record carries no GDS path/sha256"
+    cited_path = REPO_ROOT / cited
+    if not cited_path.is_file():
+        return f"STALE (cited GDS `{cited}` no longer exists)"
+    if _sha256_of(cited_path) != recorded:
+        return f"STALE (cited GDS `{cited}` no longer hashes to the recorded sha256)"
+    latest = layout_record("LATEST")
+    if latest is None:
+        return "unverified: layout/ldo-core/reports/LATEST pointer is missing"
+    latest_id, latest_dir = latest
+    current = latest_dir / f"{record.get('cell', 'ldo_core')}.gds"
+    if not current.is_file():
+        return f"unverified: no routed GDS in the current `LATEST` record `{latest_id}`"
+    if _sha256_of(current) == recorded:
+        return f"fresh (the routed GDS in the current `LATEST` record `{latest_id}` has the recorded sha256)"
+    return (
+        f"STALE (the routed GDS in the current `LATEST` record `{latest_id}` differs from "
+        f"the measured one; mint a new area record)"
+    )
+
+
 def check_pex_layout_freshness(record_text: str) -> str:
     m = LAYOUT_RECORD_RE.search(record_text)
     if not m:
@@ -625,6 +684,44 @@ def build_spec_row_table(
 
     for row in spec_rows:
         param = row["parameter"]
+        if param == AREA_ROW:
+            area = latest_area_record()
+            if area is None:
+                table.append(
+                    f"| {param} | {row['draft_target']} | **ERROR** | no record under "
+                    f"`layout/ldo-core/reports/LATEST-AREA` | — | — |"
+                )
+                detail.append(
+                    f"- **{param}**: ERROR — no area record is pointed to by "
+                    f"`layout/ldo-core/reports/LATEST-AREA`. Mint one with "
+                    f"`layout/bin/render-ldo-area-record.py`."
+                )
+                continue
+            arec, amd = area
+            verdict = arec.get("verdict", "?")
+            rid = arec.get("record_id", "?")
+            freshness = check_area_freshness(arec)
+            fshort = _short_verdict(freshness)
+            # The Freshness cell is "<token> (GDS sha256)", not a bare token:
+            # this verdict is headless (a content hash, no PDK), so it must
+            # stay verbatim-compared under `--ignore-sim-freshness`, whose
+            # normaliser only rewrites bare-token cells.
+            table.append(
+                f"| {param} | {row['draft_target']} | **{verdict}** | "
+                f"[`{rid}`]({rel(amd)}) | — | {fshort} (GDS sha256) |"
+            )
+            detail.append(
+                f"- **{param}**: **{verdict}** (vs the ratified row; verdict read from the "
+                f"record) — layout record [`{rid}`]({rel(amd)}): `{arec.get('cell')}` measures "
+                f"{arec.get('width_um')} um x {arec.get('height_um')} um = "
+                f"{arec.get('area_mm2')} mm² against the unchanged < {arec.get('limit_mm2')} mm² "
+                f"limit (strict). Convention: {arec.get('convention')} "
+                f"GDS `{(arec.get('gds') or {}).get('path')}` "
+                f"(sha256 `{(arec.get('gds') or {}).get('sha256')}`). "
+                f"GDS freshness: {freshness}."
+            )
+            continue
+
         slug = EVIDENCE_MAP.get(param)
         if slug is None:
             reason = NA_REASONS.get(param, GENERIC_NA_REASON)
