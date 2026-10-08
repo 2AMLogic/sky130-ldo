@@ -4,6 +4,8 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 
 ### 2026-10-08
 
+- **Issue #230** (closed): Thermal hysteresis: integrate the demonstrated regenerative comparator into the LDO
+- **PR #242**: feat(thermal): integrate regenerative trip comparator into the LDO; tt/3.30V hysteresis 13.1 C (#230)
 - **Issue #236** (closed): Measure routed core area against the ratified 0.1 mm² limit
 - **PR #240**: Measure routed core area against the ratified 0.1 mm² limit
 - **Issue #229** (closed): Thermal hysteresis: develop and demonstrate a standalone regenerative comparator
