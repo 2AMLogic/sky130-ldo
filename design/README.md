@@ -1001,6 +1001,55 @@ movement, which is one reason the worst corner is left at 155°C rather than
 trimmed down to exactly 150°C. A Monte Carlo run of the trip point itself
 does not exist yet and is named as a gap, not claimed.
 
+## Regenerative thermal comparator (#229, standalone development cell)
+
+`thermal_cmp_regen.sch`/`.sym` is a **standalone** replacement candidate for the
+#29 trip comparator (`M_TCN1`/`M_TCN2`/`M_TCP1`/`M_TCP2` + the linear
+`M_TSHYS`/`M_TSHYSB` current injection). It is **not wired into
+`ldo_3v3in_1v8out.sch`** (that is the integration child of #131). #77/#91 showed
+the linear injection has loop gain ~1 and cannot hold a window; here positive
+feedback is a large-signal property of the load.
+
+**Topology.** NMOS differential pair (`M_RCN1` gate `TS_SNS`, `M_RCN2` gate
+`TS_REF`, `nfet_g5v0d10v5` L=2 W=10 nf=2, as `M_TCN1`) on a tail `M_RCTAIL`
+(gate `NB`, source `AMP_ENN`, L=1 W=1 — the same bias-generator mirror copy as
+`M_TCTAIL`). The load on each drain (`RC_A`, `RC_B`) is a diode-connected PMOS
+(`M_RCD1/2`, `pfet_g5v0d10v5` L=2 W=10 nf=2) **in parallel with a cross-coupled
+PMOS** (`M_RCC1/2`, L=2 W=17 nf=2). With cross-coupled/diode width ratio 1.7 > 1
+the differential load conductance is negative, so the cell is bistable; the
+width ratio (not an absolute current) is the single window knob. Output:
+`M_RCOP` (pull-up, gate `RC_A`) with `M_RCOS` (NB-mirror pull-down, W=0.5 L=2)
+drives `TS_CMP`, same polarity as #29 (`~VIN` = not tripped, falling = engaged),
+so the real `M_TSHUT` and its EN clamp are unchanged. `M_RCEA/B/EO` (EN=0 pulls
+`RC_A`, `RC_B`, `TS_CMP` to `VIN`) reset the latch symmetrically while disabled.
+
+**Reference and DR-005 behaviour.** Inputs are the existing #29 CTAT sense and
+reference, both derived from the block's own bias generator (no `VREF`, no
+bandgap). Nothing is latched across a temperature excursion: both flip points are
+crossed by the input difference alone, and an EN cycle returns the state the
+input demands. Auto-restart (non-latching) is preserved.
+
+**Interface** (symbol `thermal_cmp_regen.sym`): in `VIN`, `EN`, `NB`
+(bias-generator NMOS mirror gate), `AMP_ENN` (shared EN-gated pseudo-ground),
+`TS_SNS`, `TS_REF`; out `TS_CMP` (drives `M_TSHUT` gate, `W=20 L=0.5 nf=4`).
+Loading assumed in the bench: `M_TSHUT` into a 100 kohm / 2.4 V stub for
+`EA_OUT`. Input pair and load add gate load on the sense/reference nodes
+comparable to the #29 pair (same input-device geometry).
+
+**Result (development evidence, tt/3.30 V only):** record
+`sim/thermal-regen-cmp/records/20261008-130329-19114c8-dev1`: `T_reset`
+158.906 °C, `T_trip` 172.031 °C, **hysteresis 13.1 °C** (+-0.3 °C bisection
+uncertainty; the existing grid is 2 °C), 0 of 50 runs with solver diagnostics,
+EN disable/re-enable not latching. Method, limits and uncertainty:
+`sim/thermal-regen-cmp/README.md`. Caveats that carry to integration: the
+single-corner result does **not** prove DR-005's `>= 150 °C` worst-corner trip
+floor (it must be re-established over PVT; the ~172 °C rising trip here is the
+unchanged #29 sense/reference at tt/3.30 V, not re-centred); a cold start that
+lands inside the window resolves to the tripped (safe) state; hysteresis in °C
+scales with the sense/reference tempco (~4 mV/°C here) and the width ratio.
+Full PVT, mismatch and integration into the LDO remain with the sibling
+children of #131.
+
 ## Screening checks (screening only — not `sim/` evidence)
 
 Everything below was run against the pinned PDK (`sky130A`, open_pdks
