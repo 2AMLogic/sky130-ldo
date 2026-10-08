@@ -755,7 +755,9 @@ off and the amplifier is exactly the issue #14 5T OTA again.} 2240 -1600 0 0 0.2
 * ============ issue #29: thermal shutdown (DR-005) ============
 * Two CTAT branches at different current densities (DR-005's "internally
 * generated, bias-generator-derived" reference -- not VREF, not a bandgap),
-* compared by a 5T OTA whose output drives an EA_OUT clamp. TS_CMP ~ VIN =
+* compared by a REGENERATIVE comparator (#230; originally a 5T OTA with
+* current-injection hysteresis, replaced -- see the M_RC* block below) whose
+* output drives an EA_OUT clamp. TS_CMP ~ VIN =
 * not tripped, falls when the die is hot -- the same polarity convention as
 * the current limit's CL_CMP node.
 C {sky130_fd_pr/pfet_g5v0d10v5.sym} 2700 -100 0 0 {name=M_TSPS
@@ -884,84 +886,6 @@ makes k large enough to match twice the sense device's. The trip
 temperature itself is placed by the two branch currents (M_TSPS/M_TSPR)
 instead. See design/README.md "Thermal shutdown (#29)".} 2740 -1300 0 0 0.2 0.2 {}
 
-C {sky130_fd_pr/nfet_g5v0d10v5.sym} 3200 -100 0 0 {name=M_TCTAIL
-L=1
-W=1
-nf=1
-mult=1
-model=nfet_g5v0d10v5
-spiceprefix=X}
-C {devices/lab_pin.sym} 3220 -130 0 0 {name=p_mtctail_d lab=TC_TAIL}
-C {devices/lab_pin.sym} 3180 -100 0 0 {name=p_mtctail_g lab=NB}
-C {devices/lab_pin.sym} 3220 -70 0 0 {name=p_mtctail_s lab=AMP_ENN}
-C {devices/lab_pin.sym} 3220 -100 0 0 {name=p_mtctail_b lab=0}
-T {M_TCTAIL: tail sink for the trip comparator -- a 1/4-width copy of the
-M_BIASN1 NMOS bias unit (W=1 against 4, same L), gate = NB. Its source
-returns through M_ENN2 (AMP_ENN), so at EN=0 the comparator has no ground
-return at all and cannot draw static current no matter what its inputs do.} 3240 -100 0 0 0.2 0.2 {}
-
-C {sky130_fd_pr/nfet_g5v0d10v5.sym} 3200 -400 0 0 {name=M_TCN1
-L=2
-W=10
-nf=2
-mult=1
-model=nfet_g5v0d10v5
-spiceprefix=X}
-C {devices/lab_pin.sym} 3220 -430 0 0 {name=p_mtcn1_d lab=TC_D1}
-C {devices/lab_pin.sym} 3180 -400 0 0 {name=p_mtcn1_g lab=TS_SNS}
-C {devices/lab_pin.sym} 3220 -370 0 0 {name=p_mtcn1_s lab=TC_TAIL}
-C {devices/lab_pin.sym} 3220 -400 0 0 {name=p_mtcn1_b lab=0}
-T {M_TCN1: trip-comparator input on the mirror-diode side, gate = TS_SNS.
-NMOS input pair (not PMOS like the error amp) because the input common
-mode here is 1.3-2.1V, comfortably above an NMOS pair's own Vgs + Vdsat and
-too close to VIN for a PMOS pair's tail to stay saturated at VIN_min.} 3240 -400 0 0 0.2 0.2 {}
-
-C {sky130_fd_pr/nfet_g5v0d10v5.sym} 3200 -700 0 0 {name=M_TCN2
-L=2
-W=10
-nf=2
-mult=1
-model=nfet_g5v0d10v5
-spiceprefix=X}
-C {devices/lab_pin.sym} 3220 -730 0 0 {name=p_mtcn2_d lab=TS_CMP}
-C {devices/lab_pin.sym} 3180 -700 0 0 {name=p_mtcn2_g lab=TS_REF}
-C {devices/lab_pin.sym} 3220 -670 0 0 {name=p_mtcn2_s lab=TC_TAIL}
-C {devices/lab_pin.sym} 3220 -700 0 0 {name=p_mtcn2_b lab=0}
-T {M_TCN2: trip-comparator input on the output side, gate = TS_REF. This
-assignment is the load-bearing polarity choice: the mirror copies the
-TS_SNS-side current into TS_CMP where the TS_REF side sinks it, so
-TS_CMP is pulled UP while TS_SNS > TS_REF (cold) and falls when the sense
-stack drops below the reference (hot). "Falling = engaged" matches the
-current limit's CL_CMP convention, which is what lets a plain PMOS clamp
-(M_TSHUT) do the shutdown with no inverter in between.} 3240 -700 0 0 0.2 0.2 {}
-
-C {sky130_fd_pr/pfet_g5v0d10v5.sym} 3200 -1000 0 0 {name=M_TCP1
-L=2
-W=10
-nf=2
-mult=1
-model=pfet_g5v0d10v5
-spiceprefix=X}
-C {devices/lab_pin.sym} 3220 -970 0 0 {name=p_mtcp1_d lab=TC_D1}
-C {devices/lab_pin.sym} 3180 -1000 0 0 {name=p_mtcp1_g lab=TC_D1}
-C {devices/lab_pin.sym} 3220 -1030 0 0 {name=p_mtcp1_s lab=VIN}
-C {devices/lab_pin.sym} 3220 -1000 0 0 {name=p_mtcp1_b lab=VIN}
-T {M_TCP1: diode-connected PMOS mirror reference of the comparator load.} 3240 -1000 0 0 0.2 0.2 {}
-
-C {sky130_fd_pr/pfet_g5v0d10v5.sym} 3200 -1300 0 0 {name=M_TCP2
-L=2
-W=10
-nf=2
-mult=1
-model=pfet_g5v0d10v5
-spiceprefix=X}
-C {devices/lab_pin.sym} 3220 -1270 0 0 {name=p_mtcp2_d lab=TS_CMP}
-C {devices/lab_pin.sym} 3180 -1300 0 0 {name=p_mtcp2_g lab=TC_D1}
-C {devices/lab_pin.sym} 3220 -1330 0 0 {name=p_mtcp2_s lab=VIN}
-C {devices/lab_pin.sym} 3220 -1300 0 0 {name=p_mtcp2_b lab=VIN}
-T {M_TCP2: mirror output of the comparator load, driving the high-impedance
-trip node TS_CMP.} 3240 -1300 0 0 0.2 0.2 {}
-
 C {sky130_fd_pr/pfet_g5v0d10v5.sym} 3200 -1600 0 0 {name=M_TSHUT
 L=0.5
 W=20
@@ -985,52 +909,6 @@ the reference branch and this comparator must stay biased while tripped or
 the circuit could not detect the reset threshold. The pass device is the
 dissipating element, so turning it off is what actually removes the heat.} 3240 -1600 0 0 0.2 0.2 {}
 
-C {sky130_fd_pr/pfet_g5v0d10v5.sym} 3200 -1900 0 0 {name=M_TSHYSB
-L=2
-W=4.5
-nf=1
-mult=1
-model=pfet_g5v0d10v5
-spiceprefix=X}
-C {devices/lab_pin.sym} 3220 -1870 0 0 {name=p_mtshysb_d lab=TS_HYS}
-C {devices/lab_pin.sym} 3180 -1900 0 0 {name=p_mtshysb_g lab=BIASP}
-C {devices/lab_pin.sym} 3220 -1930 0 0 {name=p_mtshysb_s lab=VIN}
-C {devices/lab_pin.sym} 3220 -1900 0 0 {name=p_mtshysb_b lab=VIN}
-T {M_TSHYSB: the hysteresis current, set by a scaled-down copy of the
-M_BIASP1 bias unit (W/L = 4.5/2 against 10/1) rather than by the switch
-M_TSHYS's own drive. Sizing the *current* rather than the switch is what
-keeps the hysteresis a device ratio instead of a strong function of VIN --
-a bare switch PMOS with Vsg = VIN would inject a supply-dependent tens of
-uA and swamp the reference branch.
-RE-SIZED IN #69 (was W=1.5): the hysteresis in DEGREES is the injected
-reference lift divided by the sense-vs-reference gap slope, and #69's
-re-sizing both steepened that slope (3.7 -> ~4.1mV/C) and stiffened the
-reference branch (7x the current, so a given injected current moves TS_REF
-less). W=4.5 restores DR-005's 15C nominal: measured 13.6-21.7C over the
-5 process corners x 3 supplies. Costs nothing when untripped -- M_TSHYS is
-off, so this branch carries no quiescent current in normal operation.} 3240 -1900 0 0 0.2 0.2 {}
-
-C {sky130_fd_pr/pfet_g5v0d10v5.sym} 3200 -2200 0 0 {name=M_TSHYS
-L=0.5
-W=2
-nf=1
-mult=1
-model=pfet_g5v0d10v5
-spiceprefix=X}
-C {devices/lab_pin.sym} 3220 -2170 0 0 {name=p_mtshys_d lab=TS_REF}
-C {devices/lab_pin.sym} 3180 -2200 0 0 {name=p_mtshys_g lab=TS_CMP}
-C {devices/lab_pin.sym} 3220 -2230 0 0 {name=p_mtshys_s lab=TS_HYS}
-C {devices/lab_pin.sym} 3220 -2200 0 0 {name=p_mtshys_b lab=VIN}
-T {M_TSHYS: the hysteresis switch. While TS_CMP ~ VIN (not tripped) its
-Vsg is ~0 and it is off, so hysteresis costs no quiescent current in
-normal operation. Once TS_CMP falls (tripped) it steers M_TSHYSB's current
-into TS_REF, raising the reference by tens of mV -- i.e. making the
-comparison look hotter than it is, so the die must cool below the trip
-point before the block restarts. That is positive feedback around the
-comparator: it also snaps the transition, so the trip is a clean edge
-rather than a slow slide through the comparator's linear range.
-DR-005 fixes the target at 15C nominal; the ratio here is the knob.} 3240 -2200 0 0 0.2 0.2 {}
-
 C {sky130_fd_pr/pfet_g5v0d10v5.sym} 3200 -2500 0 0 {name=M_ENP4
 L=0.5
 W=2
@@ -1045,7 +923,7 @@ C {devices/lab_pin.sym} 3220 -2500 0 0 {name=p_menp4_b lab=VIN}
 T {M_ENP4: EN=0 forces TS_CMP -> VIN, i.e. "not tripped" -- the fourth
 member of the M_ENP/M_ENP2/M_ENP3 family and the same argument as M_ENP3:
 in shutdown every device that drives TS_CMP is off, so without this clamp
-the node floats and M_TSHUT's and M_TSHYS's gates are undefined. Forcing it
+the node floats and M_TSHUT's gate is undefined (the #29 hysteresis switch M_TSHYS this note once named was removed by #230). Forcing it
 to VIN also guarantees the thermal clamp cannot hold EA_OUT while the block
 is disabled, and gives the DC solve a well-posed shutdown state.} 3240 -2500 0 0 0.2 0.2 {}
 
@@ -1054,9 +932,167 @@ C {devices/lab_pin.sym} 3200 -2770 0 0 {name=p_cts_m lab=TS_CMP}
 C {devices/lab_pin.sym} 3200 -2830 0 0 {name=p_cts_p lab=VIN}
 T {C_TS: dominant-pole cap on the trip node, referenced to VIN so it does
 not inject supply noise into TS_CMP -- same construction and same status as
-C_CL on the current-limit comparator. It sets the time constant of the
-hysteretic trip/reset cycle together with the ~0.4uA available at TS_CMP.
+C_CL on the current-limit comparator. It loads TS_CMP (driven by M_RCOP / M_RCOS since #230, no longer the #29 mirror).
 Value is a PLACEHOLDER: the thermal loop's real time constant is the die's,
 which is orders of magnitude slower than anything this cap sets, so its job
 is only to keep the electrical comparator from chattering. Not sized
 against a transient simulation.} 3240 -2800 0 0 0.2 0.2 {}
+
+* ---- issue #230: regenerative trip comparator (the #229 cell, integrated) ----
+* Replaces the #29 5T-OTA-plus-current-injection comparator
+* (M_TCTAIL/M_TCN1/M_TCN2/M_TCP1/M_TCP2 + M_TSHYS/M_TSHYSB, removed). Same
+* TS_SNS/TS_REF inputs (bias-generator-derived CTAT, DR-005), same TS_CMP
+* output polarity and drive (~VIN = not tripped, falling = engaged), same
+* M_TSHUT/M_ENP4 clamp and EN gating. Sizing and rationale: design/README.md
+* "Regenerative comparator integrated (#230)"; standalone cell design/thermal_cmp_regen.sch.
+* ---- tail + input pair ----
+C {sky130_fd_pr/nfet_g5v0d10v5.sym} 3900 -400 0 0 {name=M_RCTAIL
+L=1
+W=1
+nf=1
+mult=1
+model=nfet_g5v0d10v5
+spiceprefix=X}
+C {devices/lab_pin.sym} 3920 -430 0 0 {name=p_M_RCTAIL_d lab=RC_TAIL}
+C {devices/lab_pin.sym} 3880 -400 0 0 {name=p_M_RCTAIL_g lab=NB}
+C {devices/lab_pin.sym} 3920 -370 0 0 {name=p_M_RCTAIL_s lab=AMP_ENN}
+C {devices/lab_pin.sym} 3920 -400 0 0 {name=p_M_RCTAIL_b lab=0}
+T {M_RCTAIL: tail sink, the same 1/4-width NB copy as the #29 comparator's M_TCTAIL (gate NB, source on the EN-gated AMP_ENN). Sets the comparator branch current; the regeneration ratio below is independent of it.} 3960 -420 0 0 0.2 0.2 {}
+C {sky130_fd_pr/nfet_g5v0d10v5.sym} 4200 -400 0 0 {name=M_RCN1
+L=2
+W=10
+nf=2
+mult=1
+model=nfet_g5v0d10v5
+spiceprefix=X}
+C {devices/lab_pin.sym} 4220 -430 0 0 {name=p_M_RCN1_d lab=RC_A}
+C {devices/lab_pin.sym} 4180 -400 0 0 {name=p_M_RCN1_g lab=TS_SNS}
+C {devices/lab_pin.sym} 4220 -370 0 0 {name=p_M_RCN1_s lab=RC_TAIL}
+C {devices/lab_pin.sym} 4220 -400 0 0 {name=p_M_RCN1_b lab=0}
+T {M_RCN1: input device, gate = TS_SNS (cold: TS_SNS > TS_REF, so RC_A is pulled low). Drain RC_A. L=2 W=10 nf=2 as M_TCN1.} 4260 -420 0 0 0.2 0.2 {}
+C {sky130_fd_pr/nfet_g5v0d10v5.sym} 4500 -400 0 0 {name=M_RCN2
+L=2
+W=10
+nf=2
+mult=1
+model=nfet_g5v0d10v5
+spiceprefix=X}
+C {devices/lab_pin.sym} 4520 -430 0 0 {name=p_M_RCN2_d lab=RC_B}
+C {devices/lab_pin.sym} 4480 -400 0 0 {name=p_M_RCN2_g lab=TS_REF}
+C {devices/lab_pin.sym} 4520 -370 0 0 {name=p_M_RCN2_s lab=RC_TAIL}
+C {devices/lab_pin.sym} 4520 -400 0 0 {name=p_M_RCN2_b lab=0}
+T {M_RCN2: input device, gate = TS_REF. Drain RC_B. Matched to M_RCN1.} 4560 -420 0 0 0.2 0.2 {}
+
+* ---- regenerative load: diode pair + cross-coupled pair ----
+C {sky130_fd_pr/pfet_g5v0d10v5.sym} 3900 -800 0 0 {name=M_RCD1
+L=2
+W=10
+nf=2
+mult=1
+model=pfet_g5v0d10v5
+spiceprefix=X}
+C {devices/lab_pin.sym} 3920 -770 0 0 {name=p_M_RCD1_d lab=RC_A}
+C {devices/lab_pin.sym} 3880 -800 0 0 {name=p_M_RCD1_g lab=RC_A}
+C {devices/lab_pin.sym} 3920 -830 0 0 {name=p_M_RCD1_s lab=VIN}
+C {devices/lab_pin.sym} 3920 -800 0 0 {name=p_M_RCD1_b lab=VIN}
+T {M_RCD1: diode-connected load on RC_A (L=2 W=10 nf=2, the #29 M_TCP1 geometry). Sets the linear-region load conductance gmd.} 3960 -820 0 0 0.2 0.2 {}
+C {sky130_fd_pr/pfet_g5v0d10v5.sym} 4200 -800 0 0 {name=M_RCD2
+L=2
+W=10
+nf=2
+mult=1
+model=pfet_g5v0d10v5
+spiceprefix=X}
+C {devices/lab_pin.sym} 4220 -770 0 0 {name=p_M_RCD2_d lab=RC_B}
+C {devices/lab_pin.sym} 4180 -800 0 0 {name=p_M_RCD2_g lab=RC_B}
+C {devices/lab_pin.sym} 4220 -830 0 0 {name=p_M_RCD2_s lab=VIN}
+C {devices/lab_pin.sym} 4220 -800 0 0 {name=p_M_RCD2_b lab=VIN}
+T {M_RCD2: diode-connected load on RC_B, matched to M_RCD1.} 4260 -820 0 0 0.2 0.2 {}
+C {sky130_fd_pr/pfet_g5v0d10v5.sym} 4500 -800 0 0 {name=M_RCC1
+L=2
+W=17
+nf=2
+mult=1
+model=pfet_g5v0d10v5
+spiceprefix=X}
+C {devices/lab_pin.sym} 4520 -770 0 0 {name=p_M_RCC1_d lab=RC_A}
+C {devices/lab_pin.sym} 4480 -800 0 0 {name=p_M_RCC1_g lab=RC_B}
+C {devices/lab_pin.sym} 4520 -830 0 0 {name=p_M_RCC1_s lab=VIN}
+C {devices/lab_pin.sym} 4520 -800 0 0 {name=p_M_RCC1_b lab=VIN}
+T {M_RCC1: cross-coupled load, gate = RC_B, drain = RC_A. W=17 against the diode's 10 gives a loop ratio gmc/gmd ~ 1.7 > 1: the differential load conductance is negative, the load is bistable, and the input window between the two flip points is the hysteresis. W=17 is the single sizing knob (the width ratio, not an absolute current, sets the window).} 4560 -820 0 0 0.2 0.2 {}
+C {sky130_fd_pr/pfet_g5v0d10v5.sym} 4800 -800 0 0 {name=M_RCC2
+L=2
+W=17
+nf=2
+mult=1
+model=pfet_g5v0d10v5
+spiceprefix=X}
+C {devices/lab_pin.sym} 4820 -770 0 0 {name=p_M_RCC2_d lab=RC_B}
+C {devices/lab_pin.sym} 4780 -800 0 0 {name=p_M_RCC2_g lab=RC_A}
+C {devices/lab_pin.sym} 4820 -830 0 0 {name=p_M_RCC2_s lab=VIN}
+C {devices/lab_pin.sym} 4820 -800 0 0 {name=p_M_RCC2_b lab=VIN}
+T {M_RCC2: cross-coupled load, gate = RC_A, drain = RC_B; matched to M_RCC1.} 4860 -820 0 0 0.2 0.2 {}
+
+* ---- EN reset of the latch ----
+C {sky130_fd_pr/pfet_g5v0d10v5.sym} 3900 -1200 0 0 {name=M_RCEA
+L=0.5
+W=2
+nf=1
+mult=1
+model=pfet_g5v0d10v5
+spiceprefix=X}
+C {devices/lab_pin.sym} 3920 -1170 0 0 {name=p_M_RCEA_d lab=RC_A}
+C {devices/lab_pin.sym} 3880 -1200 0 0 {name=p_M_RCEA_g lab=EN}
+C {devices/lab_pin.sym} 3920 -1230 0 0 {name=p_M_RCEA_s lab=VIN}
+C {devices/lab_pin.sym} 3920 -1200 0 0 {name=p_M_RCEA_b lab=VIN}
+T {M_RCEA: EN=0 pulls RC_A to VIN (gate = EN, same family as M_ENP4). Both latch nodes are forced to the SAME potential while disabled, so an EN rising edge starts the regeneration from a symmetric state and the input sign (not a leftover latch state) decides the outcome.} 3960 -1220 0 0 0.2 0.2 {}
+C {sky130_fd_pr/pfet_g5v0d10v5.sym} 4200 -1200 0 0 {name=M_RCEB
+L=0.5
+W=2
+nf=1
+mult=1
+model=pfet_g5v0d10v5
+spiceprefix=X}
+C {devices/lab_pin.sym} 4220 -1170 0 0 {name=p_M_RCEB_d lab=RC_B}
+C {devices/lab_pin.sym} 4180 -1200 0 0 {name=p_M_RCEB_g lab=EN}
+C {devices/lab_pin.sym} 4220 -1230 0 0 {name=p_M_RCEB_s lab=VIN}
+C {devices/lab_pin.sym} 4220 -1200 0 0 {name=p_M_RCEB_b lab=VIN}
+T {M_RCEB: EN=0 pulls RC_B to VIN; matched to M_RCEA.} 4260 -1220 0 0 0.2 0.2 {}
+
+* ---- single-ended output stage ----
+C {sky130_fd_pr/pfet_g5v0d10v5.sym} 3900 -1600 0 0 {name=M_RCOP
+L=1
+W=2
+nf=1
+mult=1
+model=pfet_g5v0d10v5
+spiceprefix=X}
+C {devices/lab_pin.sym} 3920 -1570 0 0 {name=p_M_RCOP_d lab=TS_CMP}
+C {devices/lab_pin.sym} 3880 -1600 0 0 {name=p_M_RCOP_g lab=RC_A}
+C {devices/lab_pin.sym} 3920 -1630 0 0 {name=p_M_RCOP_s lab=VIN}
+C {devices/lab_pin.sym} 3920 -1600 0 0 {name=p_M_RCOP_b lab=VIN}
+T {M_RCOP: output pull-up, gate = RC_A. Cold (untripped) RC_A sits ~0.8V below VIN so M_RCOP conducts and TS_CMP ~ VIN; hot (tripped) RC_A latches to ~VIN, M_RCOP cuts off and M_RCOS pulls TS_CMP to ~0. Same polarity as #29: TS_CMP ~ VIN = not tripped, falling = engaged.} 3960 -1620 0 0 0.2 0.2 {}
+C {sky130_fd_pr/nfet_g5v0d10v5.sym} 4200 -1600 0 0 {name=M_RCOS
+L=2
+W=0.5
+nf=1
+mult=1
+model=nfet_g5v0d10v5
+spiceprefix=X}
+C {devices/lab_pin.sym} 4220 -1630 0 0 {name=p_M_RCOS_d lab=TS_CMP}
+C {devices/lab_pin.sym} 4180 -1600 0 0 {name=p_M_RCOS_g lab=NB}
+C {devices/lab_pin.sym} 4220 -1570 0 0 {name=p_M_RCOS_s lab=AMP_ENN}
+C {devices/lab_pin.sym} 4220 -1600 0 0 {name=p_M_RCOS_b lab=0}
+T {M_RCOS: output pull-down (NB-mirror bias current source, a few tens of nA), gate = NB, source = AMP_ENN. EN-gated like every other branch.} 4260 -1620 0 0 0.2 0.2 {}
+C {sky130_fd_pr/pfet_g5v0d10v5.sym} 4500 -1600 0 0 {name=M_RCEO
+L=0.5
+W=2
+nf=1
+mult=1
+model=pfet_g5v0d10v5
+spiceprefix=X}
+C {devices/lab_pin.sym} 4520 -1570 0 0 {name=p_M_RCEO_d lab=TS_CMP}
+C {devices/lab_pin.sym} 4480 -1600 0 0 {name=p_M_RCEO_g lab=EN}
+C {devices/lab_pin.sym} 4520 -1630 0 0 {name=p_M_RCEO_s lab=VIN}
+C {devices/lab_pin.sym} 4520 -1600 0 0 {name=p_M_RCEO_b lab=VIN}
+T {M_RCEO: EN=0 forces TS_CMP to VIN (not tripped), the M_ENP4 role.} 4560 -1620 0 0 0.2 0.2 {}
