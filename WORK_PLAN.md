@@ -19,7 +19,7 @@ _None._
 
 Human-approved issues ready for implementation (`loom:issue`).
 
-- **#236**: Measure routed core area against the ratified 0.1 mm² limit
+_None._
 
 ## In Progress
 
@@ -61,7 +61,7 @@ _None._
 |------|-------|
 | Operator merge-risk holds | 0 |
 | Operator priority | 0 |
-| Ready (`loom:issue`) | 1 |
+| Ready (`loom:issue`) | 0 |
 | In Progress (`loom:building`) | 0 |
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 0 |
