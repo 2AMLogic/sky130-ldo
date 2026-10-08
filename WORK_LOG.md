@@ -2,6 +2,11 @@
 
 Chronological record of merged pull requests and closed issues. Maintained by the Loom Guide role.
 
+### 2026-10-08
+
+- **Issue #145** (closed): sim/enable-shutdown: decide whether the near-zero max-only shutdown-current bounds need a noise-safe physicality floor
+- **PR #232**: docs(sim/enable-shutdown): shutdown-current bounds stay max-only, deliberately (#145)
+
 ### 2026-10-07
 
 - **PR #227**: ci: run on GitHub-hosted runners; the shared self-hosted runner is retired
@@ -166,4 +171,3 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 
 - **Issue #104** (closed): LDO: run the full 45-point PVT matrix for the line-regulation, load-regulation and Iq testbenches (issue #64's three benches, mirroring #74)
 - **PR #105**: sim: run the full 45-point PVT matrix for line-regulation, load-regulation and Iq (#104)
-

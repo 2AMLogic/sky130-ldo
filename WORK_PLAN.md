@@ -25,7 +25,7 @@ _None._
 
 Issues currently being built (`loom:building`).
 
-_None._
+- **#229**: Thermal hysteresis: develop and demonstrate a standalone regenerative comparator
 
 ## PRs Awaiting Review
 
@@ -43,10 +43,10 @@ _None._
 
 Issues carrying `loom:curated`.
 
-- **#131**: Thermal shutdown: redesign the auto-restart hysteresis as a regenerative (Schmitt/latch) comparator — hysteresis_c FAILs 3/15 *(curated)*
-- **#145**: sim/enable-shutdown: decide whether the near-zero max-only shutdown-current bounds need a noise-safe physicality floor *(curated)*
+- **#131**: Thermal shutdown: track regenerative auto-restart hysteresis design, integration, and qualification *(curated)*
 - **#177**: Seed sim/current-limit's leg-1 operating point to conform to the initial-condition contract *(curated)*
 - **#213**: sim(iq): mint the 45-corner record under #173's seeded deck + #133's regulation gate — deck fixed, matrix not re-run (host contention) *(curated)*
+- **#229**: Thermal hysteresis: develop and demonstrate a standalone regenerative comparator *(curated)*
 
 ## Proposed (Architect / Hermit)
 
@@ -54,7 +54,7 @@ _None._
 
 ## Epics
 
-_None._
+- **#131**: Thermal shutdown: track regenerative auto-restart hysteresis design, integration, and qualification
 
 ## Backlog Balance
 
@@ -63,11 +63,10 @@ _None._
 | Operator merge-risk holds | 0 |
 | Operator priority | 0 |
 | Ready (`loom:issue`) | 0 |
-| In Progress (`loom:building`) | 0 |
+| In Progress (`loom:building`) | 1 |
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 0 |
 | Curated | 4 |
 | Architect / Hermit proposals | 0 |
-| Active epics | 0 |
+| Active epics | 1 |
 <!-- guide:plan-body:end -->
-
