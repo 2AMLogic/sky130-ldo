@@ -4,6 +4,8 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 
 ### 2026-10-08
 
+- **Issue #236** (closed): Measure routed core area against the ratified 0.1 mm² limit
+- **PR #240**: Measure routed core area against the ratified 0.1 mm² limit
 - **Issue #229** (closed): Thermal hysteresis: develop and demonstrate a standalone regenerative comparator
 - **Issue #237** (closed): Extend simulation freshness to experiment and solver inputs
 - **PR #234**: Standalone regenerative thermal comparator, tt/3.30V hysteresis demonstration (#229)
