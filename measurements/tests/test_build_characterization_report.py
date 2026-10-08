@@ -841,5 +841,101 @@ class TestInputFreshness(unittest.TestCase):
         self.assertEqual(fp["version"], bcr.INPUT_FINGERPRINT_VERSION)
 
 
+
+class TestAreaRow(unittest.TestCase):
+    """Issue #236: the Area row reads a layout area record's verdict and
+    detects a changed routed GDS as stale, without recomputing anything."""
+
+    SPEC_ROWS = [{"parameter": "Area", "draft_target": "< 0.1 mm² total core area",
+                  "draft_stretch": "—", "src": "G+S", "note": ""}]
+
+    def setUp(self):
+        import hashlib
+
+        self._tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self._tmp.name)
+        self.reports = self.root / "layout" / "ldo-core" / "reports"
+        (self.reports / "L1").mkdir(parents=True)
+        (self.reports / "A1").mkdir()
+        self.gds = self.reports / "L1" / "ldo_core.gds"
+        self.gds.write_bytes(b"routed-v1")
+        (self.reports / "LATEST").write_text("L1\n")
+        (self.reports / "LATEST-AREA").write_text("A1\n")
+        self.rec = {
+            "record_id": "A1", "cell": "ldo_core", "verdict": "FAIL", "area_mm2": "0.4",
+            "limit_mm2": "0.1", "width_um": "1", "height_um": "1", "convention": "conv.",
+            "gds": {"path": "layout/ldo-core/reports/L1/ldo_core.gds",
+                    "sha256": hashlib.sha256(b"routed-v1").hexdigest()},
+        }
+        self._write_rec()
+        (self.reports / "A1" / "record.md").write_text("# rec\n")
+        self._saved = (bcr.REPO_ROOT, bcr.LAYOUT_DIR)
+        bcr.REPO_ROOT, bcr.LAYOUT_DIR = self.root, self.root / "layout"
+
+    def tearDown(self):
+        bcr.REPO_ROOT, bcr.LAYOUT_DIR = self._saved
+        self._tmp.cleanup()
+
+    def _write_rec(self):
+        (self.reports / "A1" / "area.json").write_text(json.dumps(self.rec))
+
+    def _row(self):
+        table, detail = bcr.build_spec_row_table(self.SPEC_ROWS, True)
+        return table[-1], detail[-1]
+
+    def test_verdict_is_read_from_the_record_not_derived(self):
+        self.rec["verdict"] = "PASS"  # contradicts area_mm2 on purpose
+        self._write_rec()
+        row, detail = self._row()
+        self.assertIn("**PASS**", row)
+        self.assertIn("**PASS**", detail)
+
+    def test_fresh_when_current_routed_gds_matches(self):
+        row, detail = self._row()
+        self.assertIn("**FAIL**", row)
+        self.assertTrue(row.endswith("| fresh (GDS sha256) |"), row)
+        self.assertIn("GDS freshness: fresh", detail)
+
+    def test_changed_routed_gds_is_stale(self):
+        # A re-route: LATEST now names a new record whose GDS bytes differ.
+        (self.reports / "L2").mkdir()
+        (self.reports / "L2" / "ldo_core.gds").write_bytes(b"routed-v2")
+        (self.reports / "LATEST").write_text("L2\n")
+        row, detail = self._row()
+        self.assertTrue(row.endswith("| STALE (GDS sha256) |"), row)
+        self.assertIn("GDS freshness: STALE", detail)
+
+    def test_edited_cited_gds_is_stale(self):
+        self.gds.write_bytes(b"routed-v1-edited")
+        row, _ = self._row()
+        self.assertIn("STALE", row)
+
+    def test_missing_pointer_is_an_error_row_not_na(self):
+        (self.reports / "LATEST-AREA").unlink()
+        row, _ = self._row()
+        self.assertIn("**ERROR**", row)
+
+    def test_area_freshness_survives_ignore_sim_freshness(self):
+        """The headless GDS-hash freshness must still be compared under
+        --ignore-sim-freshness: a stale Area row may not normalise away."""
+        row, detail = self._row()
+        text = bcr.LAYOUT_SECTION_HEADING + "\n"
+        fresh = "\n".join([row, detail, text])
+        (self.reports / "L2").mkdir()
+        (self.reports / "L2" / "ldo_core.gds").write_bytes(b"routed-v2")
+        (self.reports / "LATEST").write_text("L2\n")
+        row2, detail2 = self._row()
+        stale = "\n".join([row2, detail2, text])
+        self.assertNotEqual(bcr.normalize_sim_freshness(fresh), bcr.normalize_sim_freshness(stale))
+
+    def test_area_is_no_longer_na_in_the_committed_report(self):
+        bcr.REPO_ROOT, bcr.LAYOUT_DIR = self._saved
+        text = (MEASUREMENTS_DIR / "characterization.md").read_text()
+        area = [ln for ln in text.splitlines() if ln.startswith("| Area |")]
+        self.assertEqual(len(area), 1)
+        self.assertNotIn("N/A", area[0])
+        self.assertIn("layout/ldo-core/reports/", area[0])
+
+
 if __name__ == "__main__":
     unittest.main()

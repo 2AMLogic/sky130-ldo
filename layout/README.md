@@ -575,3 +575,22 @@ trivial-cell proof:
   above is the one concrete blocker on the resistor family specifically,
   and only for the `klt gen`-generated fixture path, not for hand-drawn or
   PCell-instanced resistor geometry that already carries the marker layer.
+
+## Core-area record (issue #236)
+
+The ratified Area row (`< 0.1 mm²`, pass FET included, pads/sealring excluded)
+is judged by `layout/bin/render-ldo-area-record.py`, which measures the routed
+`ldo_core.gds` named by `reports/LATEST` with `layout/bin/_gds_area.py` (standard
+library only; its module docstring is the single statement of the geometry
+convention: the top cell's flattened bounding rectangle over all layers,
+hierarchy and path widths included, database units read from the stream, strict
+`<` so exactly 0.1 mm² fails). It mints a NEW append-only
+`reports/<UTC>-<sha>/` directory (`area.json` + `record.md`, citing the GDS by
+path and SHA-256) and moves `reports/LATEST-AREA`; earlier records are never
+edited. `measurements/build_characterization_report.py` reads the record's
+`verdict` verbatim and marks the Area row STALE when the routed GDS in the
+current `LATEST` record no longer hashes to the recorded value -- re-run the
+layout flow, then mint a new area record. The first record
+(`20261008-161046-f4fbb86`) is a **FAIL**: 2430.17 µm × 183.86 µm = 0.4468 mm²,
+cross-checked against `klt stats`. The target is unchanged; compaction is a
+separate task. Tests: `layout/tests/test_gds_area.py`.
