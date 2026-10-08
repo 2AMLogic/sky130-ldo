@@ -173,7 +173,7 @@ class Runner:
             "ts_cmp_v": {k: c("ts_cmp", k) for k in (T_COLD, T_FORCED, T_HOLD, T_EN_LOW, T_REEN)},
             "m_tshut_vsg_v": {k: round(VSUP - at(t, v["ts_cmp"], k), 4) for k in (T_COLD, T_FORCED, T_HOLD, T_REEN)},
             "ea_out_v": {k: c("ea_out", k) for k in (T_COLD, T_FORCED, T_HOLD, T_REEN)},
-            "vout_v_at_hold": c("vout", T_HOLD),
+            "vout_v": {k: c("vout", k) for k in (T_COLD, T_FORCED, T_HOLD, T_REEN)},
             "rc_a_v": {k: c("rc_a", k) for k in (T_COLD, T_HOLD, T_REEN)},
             "rc_b_v": {k: c("rc_b", k) for k in (T_COLD, T_HOLD, T_REEN)},
             "sns_minus_ref_mv_at_hold": round(1e3 * (at(t, v["ts_sns"], T_HOLD) - at(t, v["ts_ref"], T_HOLD)), 2),
@@ -233,7 +233,12 @@ def main() -> int:
     with tempfile.TemporaryDirectory(prefix="thermal-hyst-nl-") as nl:
         net = cr.netlist_with_xschem(SCHEMATIC, Path(nl), pdk)
         text, n_expr = eval_xschem_exprs("\n".join(cr.netlist_body(net)) + "\n")
-        body = text.rstrip("\n").split("\n")
+        # The bench's IC_SEED `.nodeset` card seeds the `dc temp` sweeps (#178/#189).
+        # ngspice 42 also honours it as an initial condition under `tran ... uic`
+        # (it pre-charged VOUT to 1.8 V in the first draft), which would make the
+        # "cold start" a seeded one.  Drop it here so every node starts at 0.
+        stmts = [x for x in re.split(r"\n(?!\+)", text.rstrip("\n")) if not x.lower().startswith(".nodeset")]
+        body = "\n".join(stmts).split("\n")
         (out / "netlist.spice").write_text("\n".join(body) + "\n")
 
     r = Runner(out, pdk, body)
@@ -294,6 +299,7 @@ def main() -> int:
         "n_runs": len(r.runs),
         "runs_with_solver_diagnostic": diag_runs,
         "xschem_expr_substitutions": n_expr,
+        "nodeset_card_dropped_for_tran_uic": True,
         "runs": r.runs,
         "tools": cr.tool_versions(),
         "pdk": {"variant": pdk.variant, "installed_commit": pdk.installed_commit,
