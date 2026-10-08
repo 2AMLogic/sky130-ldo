@@ -149,6 +149,7 @@ GROUP_PREFIXES: list[tuple[str, str]] = [
     ("M_SS", "soft_start"),
     ("M_TS", "thermal_shutdown"),
     ("M_TC", "thermal_shutdown"),
+    ("M_RC", "thermal_shutdown"),  # regenerative trip comparator (#230)
 ]
 
 #: Row order for the placed floorplan. Every group listed here is emitted in

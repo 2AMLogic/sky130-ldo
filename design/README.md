@@ -780,6 +780,14 @@ spec row bounds the *settling time*, it does not require a slow ramp.
 
 ### Thermal shutdown (#29)
 
+> **Superseded in part by #230:** the trip comparator and the linear hysteresis
+> injection described below (`M_TCN1/2`, `M_TCP1/2`, `M_TCTAIL`, `M_TSHYS`,
+> `M_TSHYSB`) were replaced by the regenerative comparator, see "Regenerative
+> comparator integrated into the LDO (#230)". The sense/reference text, the
+> `M_TSHUT`/`M_ENP4` clamp and the measured history (#69, #77, #91) are kept as
+> the record of how the design got here; numbers quoted for the old comparator
+> are not measurements of the current schematic.
+
 Implements `spec/decision-records/DR-005-thermal-shutdown-trip.md`: trip
 `Tj_trip` = 150°C nominal (untrimmed), hysteresis 15°C nominal (reset
 `Tj_reset` ≈135°C), reference = internally generated / bias-generator-derived
@@ -1049,6 +1057,66 @@ lands inside the window resolves to the tripped (safe) state; hysteresis in °C
 scales with the sense/reference tempco (~4 mV/°C here) and the width ratio.
 Full PVT, mismatch and integration into the LDO remain with the sibling
 children of #131.
+
+## Regenerative comparator integrated into the LDO (#230)
+
+`ldo_3v3in_1v8out.sch` now carries the #229 regenerative trip comparator
+**flat** (devices `M_RCTAIL`, `M_RCN1/2`, `M_RCD1/2`, `M_RCC1/2`, `M_RCEA/B`,
+`M_RCOP`, `M_RCOS`, `M_RCEO`, sizes unchanged from `thermal_cmp_regen.sch`) in
+place of the #29 5T-OTA comparator and its linear current-injection hysteresis.
+Flat rather than a hierarchical instance because this block is one hand-captured
+schematic whose layout/LVS flow is driven device-by-device from its netlist
+(`layout/bin/gen-ldo-blocks.py`); `thermal_cmp_regen.sch` stays as the
+standalone development cell and the sizing source of truth.
+
+**Removed:** `M_TCTAIL`, `M_TCN1`, `M_TCN2`, `M_TCP1`, `M_TCP2`, `M_TSHYS`,
+`M_TSHYSB` (and nets `TC_TAIL`, `TC_D1`, `TS_HYS`). **Added:** the twelve
+`M_RC*` devices above (nets `RC_TAIL`, `RC_A`, `RC_B`). **Unchanged and still the
+contract:** the CTAT sense and reference stacks (`M_TSPS`, `M_TSD1/2`, `M_TSPR`,
+`M_TSR1`; bias-generator-derived, no `VREF`/bandgap), `TS_CMP` polarity (~`VIN` =
+not tripped, falling = engaged), `M_TSHUT` (`VIN` -> `EA_OUT`), the `M_ENP4`
+EN clamp (plus `M_RCEA/B/EO`, which put both latch nodes and `TS_CMP` at `VIN`
+while `EN` = 0), the EN-gated `AMP_ENN` ground return on every branch, `C_TS`
+(1 pF, kept; it only loads `TS_CMP`), and DR-005's auto-restart (non-latching)
+behaviour. Port list is unchanged. `NB` loading: `M_RCTAIL` (W=1) replaces
+`M_TCTAIL` (W=1) and `M_RCOS` (W=0.5, L=2) is a second, small `NB` mirror copy,
+so the comparator draws one extra tail-class branch of bias current (see the Iq
+note below).
+
+**Result (development evidence, tt / 3.30 V only):** `sim/thermal/hysteresis/20261008-190150-0275a8b-dev1`,
+50 independent transients of the real LDO bench (method and limits:
+`sim/README.md`, "Integrated regenerative comparator (#230)"). `T_reset`
+(falling) 159.22 C [159.06, 159.38], `T_trip` (rising) 172.34 C [172.19, 172.50],
+**hysteresis 13.1 C** (12.8 to 13.4 C by the bisection bracket; the old DC
+grid resolution is 2 C). 0 of 50 runs with a solver diagnostic. The integrated
+cell reproduces the standalone #229 result (13.1 C, 158.9 / 172.0 C) to within
+the bracket-plus-simulator-version scatter. EN disable/re-enable and cold start
+behave as in the standalone cell (nothing latched across an EN cycle; a cold
+start inside the window resolves to the tripped, safe side).
+
+**What this does not show.**
+- It is not PVT: one process corner, one supply, one temperature axis. DR-005's
+  `>= 150 C` worst-corner trip floor is **not** established here, and nothing in
+  this section claims it.
+- The rising trip at tt/3.30 V is 172.3 C, i.e. above DR-005's 150 C nominal
+  (the previous comparator read 165.0 C at tt/27 C/3.30 V with zero resolved
+  hysteresis in record `20260926-095154-f6ab418`). The sense/reference stacks
+  are unchanged, so this is a property of the comparator's thresholds
+  (about -27 mV / +26 mV of `TS_SNS - TS_REF` at the two flip points, converted at
+  about 4 mV/C), not a re-centring. Re-centring (the `M_TSPR` width knob from #69)
+  and the PVT spread are the qualification child's job (#231).
+- 13.1 C is below DR-005's 15 C nominal target; DR-005 treats 15 C as an
+  untrimmed, PVT-loose nominal and this change does not edit it.
+- Mismatch/Monte Carlo of the comparator offset is not run.
+- `Iq` was not re-measured. The comparator branch current changes (see the
+  device list); `sim/iq`'s record is stale and the qualification child must
+  re-run it before any Iq statement is made.
+
+**Measurement interface.** `sim/thermal/testbench/tb_thermal_trip.sch` gained a
+removable disturbance current `IX` at `xldo.TS_SNS` and an `EN` source that is
+`dc 'vsup'` for DC analyses and a PWL for transients (inert defaults through
+`experiment.json` `deck.params`), so the same schematic still serves the existing
+`dc temp` deck and now the staircase runner `sim/thermal/run_hysteresis.py`.
 
 ## Screening checks (screening only — not `sim/` evidence)
 

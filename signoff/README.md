@@ -761,3 +761,13 @@ In dependency order, not effort order:
 Filing the tool-side friction this surfaces belongs at
 `2AMLogic/klayout-tools`, per this repo's friction protocol in `CLAUDE.md` —
 generically, describing the tool gap and not this design.
+
+## Note from #230 (regenerative thermal comparator integrated)
+
+`design/ldo_3v3in_1v8out.sch` changed (trip comparator replaced). The pins for
+items 3, 4 and 11 still hash-match, but the DRC/LVS/ERC/area records they cite
+describe the pre-#230 schematic and are STALE against it (the regenerated
+`measurements/characterization.md` says so for DRC and LVS). Only item 8's pin
+was moved (that file was regenerated). The tier stays `null`, 5/11. The full
+inventory is in `sim/README.md`, "Stale artifacts caused by the schematic change";
+re-running them belongs to #231.
