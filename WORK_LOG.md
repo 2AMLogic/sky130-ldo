@@ -4,6 +4,13 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 
 ### 2026-10-08
 
+- **Issue #229** (closed): Thermal hysteresis: develop and demonstrate a standalone regenerative comparator
+- **Issue #237** (closed): Extend simulation freshness to experiment and solver inputs
+- **PR #234**: Standalone regenerative thermal comparator, tt/3.30V hysteresis demonstration (#229)
+- **PR #238**: Extend simulation freshness to experiment and solver inputs
+
+### 2026-10-08
+
 - **Issue #145** (closed): sim/enable-shutdown: decide whether the near-zero max-only shutdown-current bounds need a noise-safe physicality floor
 - **PR #232**: docs(sim/enable-shutdown): shutdown-current bounds stay max-only, deliberately (#145)
 

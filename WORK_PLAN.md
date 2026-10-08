@@ -19,13 +19,13 @@ _None._
 
 Human-approved issues ready for implementation (`loom:issue`).
 
-_None._
+- **#236**: Measure routed core area against the ratified 0.1 mm² limit
 
 ## In Progress
 
 Issues currently being built (`loom:building`).
 
-- **#229**: Thermal hysteresis: develop and demonstrate a standalone regenerative comparator
+_None._
 
 ## PRs Awaiting Review
 
@@ -46,7 +46,6 @@ Issues carrying `loom:curated`.
 - **#131**: Thermal shutdown: track regenerative auto-restart hysteresis design, integration, and qualification *(curated)*
 - **#177**: Seed sim/current-limit's leg-1 operating point to conform to the initial-condition contract *(curated)*
 - **#213**: sim(iq): mint the 45-corner record under #173's seeded deck + #133's regulation gate — deck fixed, matrix not re-run (host contention) *(curated)*
-- **#229**: Thermal hysteresis: develop and demonstrate a standalone regenerative comparator *(curated)*
 
 ## Proposed (Architect / Hermit)
 
@@ -62,11 +61,11 @@ _None._
 |------|-------|
 | Operator merge-risk holds | 0 |
 | Operator priority | 0 |
-| Ready (`loom:issue`) | 0 |
-| In Progress (`loom:building`) | 1 |
+| Ready (`loom:issue`) | 1 |
+| In Progress (`loom:building`) | 0 |
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 0 |
-| Curated | 4 |
+| Curated | 3 |
 | Architect / Hermit proposals | 0 |
 | Active epics | 1 |
 <!-- guide:plan-body:end -->
