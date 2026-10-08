@@ -41,7 +41,13 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 
-from _record_common import git, render_record_footer, render_record_header
+from _record_common import (
+    build_input_fingerprint,
+    git,
+    pvt_input_sections,
+    render_record_footer,
+    render_record_header,
+)
 
 SIM_DIR = Path(__file__).resolve().parent.parent
 REPO_ROOT = SIM_DIR.parent
@@ -994,6 +1000,11 @@ def main(argv: list[str]) -> int:
         # toolchain — record their hash so the record says which solver
         # configuration produced it (issue #190).
         "tools": {**tool_versions(), **spiceinit_provenance()},
+        # Versioned fingerprint of the effective experiment + solver inputs
+        # (issue #237): the report's headless freshness check compares it.
+        "input_fingerprint": build_input_fingerprint(
+            "pvt", pvt_input_sections(exp.raw, SPICEINIT_FILE.read_text())
+        ),
         "git": git_info,
         "matrix": {
             "process": unique_in_order(c.process for c in matrix),

@@ -49,6 +49,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from _record_common import (
+    build_input_fingerprint,
+    mc_input_sections,
     klt_binary as _shared_klt_binary,
     load_corner_run_module,
     render_record_footer,
@@ -804,6 +806,10 @@ def main(argv: list[str]) -> int:
             "lib_file": str(pdk.lib_file),
         },
         "tools": corner_run.tool_versions(),
+        # Versioned fingerprint of the effective experiment inputs (issue
+        # #237). No solver section: the klt backend is not shown to consume
+        # sim/spiceinit, so it is not claimed as an MC input.
+        "input_fingerprint": build_input_fingerprint("mc", mc_input_sections(exp)),
         "klt_version": response.get("provenance", {}).get("klt_version", "unknown"),
         "backend": args.backend,
         "git": git_info,

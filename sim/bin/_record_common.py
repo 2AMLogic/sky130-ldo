@@ -28,7 +28,9 @@ trailing usage phrase of their error message.
 
 from __future__ import annotations
 
+import hashlib
 import importlib.util
+import json
 import shutil
 import subprocess
 import sys
@@ -49,6 +51,153 @@ def git(repo_root: Path, *args: str) -> str:
         ).stdout.strip()
     except (subprocess.SubprocessError, OSError):
         return ""
+
+
+# --------------------------------------------------------------------------
+# effective-input fingerprint (issue #237)
+# --------------------------------------------------------------------------
+#
+# A campaign record's schematic freshness (a live re-netlist compared against
+# the committed netlist snapshot) says nothing about the OTHER inputs of a run:
+# the experiment manifest's analyses, measurement expressions/bounds and
+# declared matrix, and the solver settings. This block fingerprints exactly
+# those, so `measurements/build_characterization_report.py` can compare a
+# record against the current tree without xschem or the PDK.
+#
+# Every section is built from an explicit ALLOW-LIST of execution-relevant
+# manifest keys (never a deny-list), so prose keys -- `claim`, `title`,
+# `note`s, `corners_note`, `unit`, ... -- can be edited freely without
+# invalidating a simulation. Bump INPUT_FINGERPRINT_VERSION whenever an
+# allow-list or the serialization changes: the checker reports a version
+# mismatch as "unverified", never as a (false) match or mismatch.
+
+INPUT_FINGERPRINT_VERSION = 1
+
+PVT_FINGERPRINT_SECTIONS = ("analyses", "measurements", "matrix", "solver")
+MC_FINGERPRINT_SECTIONS = ("analyses", "measurements", "matrix", "netlist_patch")
+
+
+def _canon(value):
+    """Normalize a JSON value so numerically-equal spellings serialize alike
+    (`27` vs `27.0`)."""
+    if isinstance(value, bool) or value is None or isinstance(value, str):
+        return value
+    if isinstance(value, (int, float)):
+        return int(value) if float(value).is_integer() else float(value)
+    if isinstance(value, (list, tuple)):
+        return [_canon(v) for v in value]
+    if isinstance(value, dict):
+        return {str(k): _canon(v) for k, v in value.items()}
+    return str(value)
+
+
+def canonical_digest(value) -> str:
+    """sha256 of the deterministic (sorted-key, compact) JSON of *value*."""
+    text = json.dumps(_canon(value), sort_keys=True, separators=(",", ":"), ensure_ascii=True)
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def _code_lines(lines) -> list[str]:
+    """Drop whole-line `*` SPICE comments and blank lines (prose inside a
+    deck's `analyses` list); every other line is execution input."""
+    out = []
+    for ln in lines or []:
+        stripped = str(ln).strip()
+        if stripped and not stripped.startswith("*"):
+            out.append(stripped)
+    return out
+
+
+def spiceinit_sha256(text: str) -> str:
+    """sha256 of an ngspice init-settings file (same digest corner-run.py
+    records as `tools.spiceinit_sha256`, issue #190)."""
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def pvt_input_sections(raw: dict, spiceinit_text: str | None) -> dict[str, str]:
+    """Per-dimension digests of a PVT (`corner-run.py`) manifest's effective
+    inputs, plus the `sim/spiceinit` solver settings ngspice reads."""
+    deck = raw.get("deck") or {}
+    corners = raw.get("corners") or {}
+    sections = {
+        "analyses": canonical_digest(
+            {
+                "options": list(deck.get("options") or []),
+                "params": deck.get("params") or {},
+                "analyses": _code_lines(deck.get("analyses") or ["op"]),
+            }
+        ),
+        "measurements": canonical_digest(
+            {
+                "measurements": [
+                    {k: m.get(k) for k in ("name", "expr", "min", "max")}
+                    for m in raw.get("measurements") or []
+                ],
+                "spread_checks": [
+                    {k: c.get(k) for k in ("measurement", "min_spread")}
+                    for c in raw.get("spread_checks") or []
+                ],
+            }
+        ),
+        "matrix": canonical_digest(
+            {
+                "process": corners.get("process"),
+                "temperature_c": corners.get("temperature_c"),
+                "supply_v": corners.get("supply_v"),
+                "quick_subset": raw.get("quick_subset"),
+            }
+        ),
+    }
+    if spiceinit_text is not None:
+        sections["solver"] = spiceinit_sha256(spiceinit_text)
+    return sections
+
+
+def mc_input_sections(raw: dict) -> dict[str, str]:
+    """Per-dimension digests of a Monte Carlo (`mc-run.py`) manifest's
+    effective inputs.
+
+    No `solver` section, deliberately: the klt backend runs ngspice under its
+    own configuration and this harness cannot show it reads `sim/spiceinit`,
+    so claiming that file as an MC input would be a fabricated dependency.
+    The sample count / vary / k_sigma / seed are CLI-overridable, so they are
+    recorded in the record's own `monte_carlo_request`, not fingerprinted
+    against the manifest's defaults.
+    """
+    corner = raw.get("mc_corner") or {}
+    analysis = raw.get("mc_analysis") or {}
+    patch = raw.get("netlist_patch")
+    return {
+        "analyses": canonical_digest({k: v for k, v in analysis.items() if k in ("kind", "args")}),
+        "measurements": canonical_digest(
+            [
+                {"name": m.get("name"), "spice": m.get("spice"), "limits": m.get("limits")}
+                for m in raw.get("mc_measurements") or []
+            ]
+        ),
+        "matrix": canonical_digest(
+            {k: corner.get(k) for k in ("process", "temperature_c", "vsup")}
+        ),
+        "netlist_patch": canonical_digest(
+            None
+            if not patch
+            else [
+                {k: s.get(k) for k in ("match", "replace", "count")}
+                for s in patch.get("substitutions") or []
+            ]
+        ),
+    }
+
+
+def build_input_fingerprint(kind: str, sections: dict[str, str]) -> dict:
+    """The record's `input_fingerprint` block: version, backend kind
+    (`pvt` | `mc`), per-dimension digests, and one overall digest."""
+    return {
+        "version": INPUT_FINGERPRINT_VERSION,
+        "kind": kind,
+        "sections": dict(sections),
+        "sha256": canonical_digest({"version": INPUT_FINGERPRINT_VERSION, "kind": kind, "sections": sections}),
+    }
 
 
 def load_corner_run_module(bin_dir: Path):

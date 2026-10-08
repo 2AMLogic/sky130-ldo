@@ -600,8 +600,10 @@ class TestCheckCli(unittest.TestCase):
         """The committed file is generated WITH the PDK, so its cells say
         fresh/STALE where a headless run says unverified. That difference is
         the whole reason this mode exists -- it must not fail."""
-        pdk_flavoured = self.report.replace(
-            "| unverified |", "| fresh |"
+        # Only the LAST cell is the schematic Freshness verdict; the Inputs
+        # column before it is headless and must stay compared (#237).
+        pdk_flavoured = re.sub(
+            r"\| unverified \|$", "| fresh |", self.report, flags=re.MULTILINE
         ).replace(
             "Freshness: unverified: --no-netlist-freshness passed",
             "Freshness: fresh (a live xschem re-netlist of the current testbench "
@@ -622,10 +624,221 @@ class TestCheckCli(unittest.TestCase):
             self._run("--check", "--ignore-sim-freshness", "--out", str(self.report_path)), 1
         )
 
+    def test_fails_when_only_the_inputs_column_drifts(self):
+        """#237: the headless Inputs verdict is compared even under
+        --ignore-sim-freshness (only the schematic Freshness cell is masked)."""
+        drifted = self.report.replace("| unverified | unverified |", "| STALE | unverified |", 1)
+        self.assertNotEqual(drifted, self.report)
+        self.report_path.write_text(drifted)
+        self.assertEqual(
+            self._run("--check", "--ignore-sim-freshness", "--out", str(self.report_path)), 1
+        )
+
     def test_fails_on_a_missing_report(self):
         self.assertEqual(
             self._run("--check", "--ignore-sim-freshness", "--out", str(self.report_path)), 1
         )
+
+
+class TestInputFreshness(unittest.TestCase):
+    """Issue #237: experiment/solver freshness, headless and independent of the
+    schematic re-netlist. Each dimension must move on its own; prose-only
+    manifest edits must not; legacy records must read `unverified`."""
+
+    PVT = {
+        "slug": "demo",
+        "title": "Demo",
+        "claim": "prose claim",
+        "schematic": "testbench/tb.sch",
+        "corners": {"process": ["tt", "ss"], "temperature_c": [27], "supply_v": [3.3]},
+        "corners_note": "prose",
+        "quick_subset": [["tt", 27, 3.3]],
+        "deck": {
+            "options": ["wnflag=1"],
+            "params": {"a": 1},
+            "analyses": ["* a comment", "", "dc temp 80 180 2"],
+        },
+        "measurements": [
+            {"name": "m1", "expr": "v(vout)", "unit": "V", "min": 1.0, "max": 2.0, "note": "n"}
+        ],
+        "spread_checks": [{"measurement": "m1", "min_spread": 0.03, "note": "x"}],
+    }
+    MC = {
+        "slug": "mcdemo",
+        "claim": "prose",
+        "schematic": "testbench/tb.sch",
+        "mc_corner": {"process": "tt_mm", "temperature_c": 27, "vsup": 3.3, "note": "p"},
+        "mc_analysis": {"kind": "tran", "args": "10u 3m uic", "note": "p"},
+        "mc_measurements": [
+            {"name": "v", "spice": ".meas tran v avg v(vout)", "unit": "V",
+             "limits": {"min": 1.7, "max": 1.9}, "note": "p"}
+        ],
+        "monte_carlo_defaults": {"n": 200},
+    }
+    SPICEINIT = "option klu\n"
+
+    def setUp(self):
+        self._tmpdir = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tmpdir.cleanup)
+        root = Path(self._tmpdir.name)
+        (root / "sim" / "demo").mkdir(parents=True)
+        self._orig = (bcr.REPO_ROOT, bcr.SIM_DIR)
+        bcr.REPO_ROOT, bcr.SIM_DIR = root, root / "sim"
+        self.addCleanup(lambda: setattr(bcr, "REPO_ROOT", self._orig[0]))
+        self.addCleanup(lambda: setattr(bcr, "SIM_DIR", self._orig[1]))
+        (root / "sim" / "spiceinit").write_text(self.SPICEINIT)
+        self.manifest = root / "sim" / "demo" / "experiment.json"
+
+    def _write(self, raw):
+        self.manifest.write_text(json.dumps(raw))
+
+    def _record(self, raw, kind="pvt", **extra):
+        if kind == "pvt":
+            sections = bcr.pvt_input_sections(raw, self.SPICEINIT)
+        else:
+            sections = bcr.mc_input_sections(raw)
+        rec = {
+            "links": {"manifest": "sim/demo/experiment.json"},
+            "input_fingerprint": bcr.build_input_fingerprint(kind, sections),
+        }
+        if kind == "mc":
+            rec["klt_request"] = {}
+        rec.update(extra)
+        return rec
+
+    def _edit(self, raw, fn):
+        import copy
+
+        raw = copy.deepcopy(raw)
+        fn(raw)
+        return raw
+
+    def test_unchanged_inputs_are_fresh(self):
+        self._write(self.PVT)
+        self.assertTrue(bcr.check_input_freshness("demo", self._record(self.PVT)).startswith("fresh"))
+
+    def test_each_execution_input_changes_independently(self):
+        cases = {
+            "analyses": lambda r: r["deck"]["analyses"].append("dc temp 1 2 1"),
+            "measurements": lambda r: r["measurements"][0].update(expr="v(vin)"),
+            "matrix": lambda r: r["corners"].update(supply_v=[3.3, 3.6]),
+        }
+        for dim, fn in cases.items():
+            with self.subTest(dim=dim):
+                self._write(self._edit(self.PVT, fn))
+                out = bcr.check_input_freshness("demo", self._record(self.PVT))
+                self.assertTrue(out.startswith("STALE"), out)
+                self.assertIn(dim, out)
+                for other in {"analyses", "measurements", "matrix", "solver"} - {dim}:
+                    self.assertNotIn(other, out)
+
+    def test_measurement_bound_change_is_stale(self):
+        self._write(self._edit(self.PVT, lambda r: r["measurements"][0].update(max=1.9)))
+        out = bcr.check_input_freshness("demo", self._record(self.PVT))
+        self.assertTrue(out.startswith("STALE") and "measurements" in out, out)
+
+    def test_solver_settings_change_is_stale(self):
+        self._write(self.PVT)
+        rec = self._record(self.PVT)
+        (bcr.SIM_DIR / "spiceinit").write_text(self.SPICEINIT + "option noopac\n")
+        out = bcr.check_input_freshness("demo", rec)
+        self.assertTrue(out.startswith("STALE") and "solver" in out, out)
+
+    def test_prose_only_edits_stay_fresh(self):
+        def prose(r):
+            r["claim"] = "totally different prose"
+            r["title"] = "New"
+            r["corners_note"] = "edited"
+            r["measurements"][0].update(note="edited", unit="mV")
+            r["spread_checks"][0]["note"] = "edited"
+            r["deck"]["analyses"] = ["* another comment", "dc temp 80 180 2", ""]
+            r["corners"]["supply_v"] = [3.30]
+        self._write(self._edit(self.PVT, prose))
+        out = bcr.check_input_freshness("demo", self._record(self.PVT))
+        self.assertTrue(out.startswith("fresh"), out)
+
+    def test_legacy_record_is_unverified_and_unmodified(self):
+        self._write(self.PVT)
+        rec = {"links": {"manifest": "sim/demo/experiment.json"}}
+        before = json.dumps(rec, sort_keys=True)
+        out = bcr.check_input_freshness("demo", rec)
+        self.assertTrue(out.startswith("unverified: analyses, measurements, matrix, solver"), out)
+        self.assertIn("legacy", out)
+        self.assertEqual(json.dumps(rec, sort_keys=True), before)
+
+    def test_legacy_pvt_record_with_init_hash_still_compares_solver(self):
+        self._write(self.PVT)
+        good = {"links": {"manifest": "sim/demo/experiment.json"},
+                "tools": {"spiceinit_sha256": bcr.pvt_input_sections(self.PVT, self.SPICEINIT)["solver"]}}
+        out = bcr.check_input_freshness("demo", good)
+        self.assertTrue(out.startswith("unverified: analyses, measurements, matrix "), out)
+        self.assertIn("matching: solver", out)
+        bad = {"links": good["links"], "tools": {"spiceinit_sha256": "0" * 64}}
+        self.assertTrue(bcr.check_input_freshness("demo", bad).startswith("STALE"))
+
+    def test_unknown_fingerprint_version_is_unverified(self):
+        self._write(self.PVT)
+        rec = self._record(self.PVT)
+        rec["input_fingerprint"]["version"] = 999
+        self.assertTrue(bcr.check_input_freshness("demo", rec).startswith("unverified"))
+
+    def test_missing_manifest_is_unverified(self):
+        self.assertTrue(bcr.check_input_freshness("demo", self._record(self.PVT)).startswith("unverified"))
+
+    def test_mc_has_no_solver_dimension_and_ignores_spiceinit(self):
+        self._write(self.MC)
+        rec = self._record(self.MC, kind="mc")
+        self.assertNotIn("solver", rec["input_fingerprint"]["sections"])
+        (bcr.SIM_DIR / "spiceinit").write_text("option something-else\n")
+        out = bcr.check_input_freshness("demo", rec)
+        self.assertTrue(out.startswith("fresh"), out)
+        self.assertIn("not applicable", out)
+
+    def test_mc_dimensions_change_independently_and_prose_does_not(self):
+        rec = self._record(self.MC, kind="mc")
+        cases = {
+            "analyses": lambda r: r["mc_analysis"].update(args="10u 4m uic"),
+            "measurements": lambda r: r["mc_measurements"][0]["limits"].update(max=1.85),
+            "matrix": lambda r: r["mc_corner"].update(vsup=3.0),
+        }
+        for dim, fn in cases.items():
+            with self.subTest(dim=dim):
+                self._write(self._edit(self.MC, fn))
+                out = bcr.check_input_freshness("demo", rec)
+                self.assertTrue(out.startswith("STALE") and dim in out, out)
+        def prose(r):
+            r["claim"] = "x"
+            r["mc_analysis"]["note"] = "y"
+            r["mc_measurements"][0]["note"] = "z"
+            r["monte_carlo_defaults"]["n"] = 50
+        self._write(self._edit(self.MC, prose))
+        self.assertTrue(bcr.check_input_freshness("demo", rec).startswith("fresh"))
+
+    def test_inputs_verdict_survives_ignore_sim_freshness_normalisation(self):
+        """The Inputs verdict must not be masked by `--ignore-sim-freshness`."""
+        report = (
+            "| P | T | V | E | Inputs | Freshness |\n|---|---|---|---|---|---|\n"
+            "| Output | x | **PASS** | [`r`](a.md) | STALE | fresh |\n"
+            "- **Output**: **PASS** — rec. Experiment/solver inputs: STALE (changed: matrix). "
+            "Freshness: fresh (x).\n\n"
+            f"{bcr.LAYOUT_SECTION_HEADING}\n"
+        )
+        norm = bcr.normalize_sim_freshness(report)
+        self.assertIn("| STALE | <freshness not compared> |", norm)
+        self.assertIn("Experiment/solver inputs: STALE (changed: matrix).", norm)
+        self.assertNotEqual(
+            norm, bcr.normalize_sim_freshness(report.replace("| STALE |", "| fresh |", 1))
+        )
+
+    def test_fingerprint_is_deterministic_and_numeric_spelling_insensitive(self):
+        a = bcr.pvt_input_sections(self.PVT, self.SPICEINIT)
+        b = bcr.pvt_input_sections(
+            self._edit(self.PVT, lambda r: r["corners"].update(temperature_c=[27.0])), self.SPICEINIT
+        )
+        self.assertEqual(a, b)
+        fp = bcr.build_input_fingerprint("pvt", a)
+        self.assertEqual(fp, bcr.build_input_fingerprint("pvt", dict(reversed(list(a.items())))))
+        self.assertEqual(fp["version"], bcr.INPUT_FINGERPRINT_VERSION)
 
 
 if __name__ == "__main__":

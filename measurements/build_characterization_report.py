@@ -87,6 +87,12 @@ spec-row text, the prose, and the whole layout (DRC/LVS/PEX) section including
 *its* Freshness column, which is derived from git history and `LATEST*`
 pointers and therefore needs no toolchain at all.
 
+The **Inputs** column (issue #237) is NOT normalised: it compares a record's
+versioned input fingerprint (analyses, measurements, matrix, solver settings)
+with the current `experiment.json` / `sim/spiceinit`, needs no toolchain, and
+so stays verbatim-compared under `--ignore-sim-freshness` -- settings drift is
+caught headlessly even where the schematic re-netlist is unavailable.
+
 The gate is documented in `.github/workflows/ci.yml` and `package.json` rather
 than inside the report it checks, deliberately: `measurements/characterization.md`
 is sha256-pinned for T1 item 8 in `signoff/artifact-pins.json` (and, transitively,
@@ -118,7 +124,14 @@ SPEC_FILE = REPO_ROOT / "spec" / "target-spec.md"
 _SIM_BIN_DIR = str(SIM_DIR / "bin")
 if _SIM_BIN_DIR not in sys.path:
     sys.path.insert(0, _SIM_BIN_DIR)
-from _record_common import git, load_corner_run_module  # shared helpers (issues #51, #96)
+from _record_common import (  # shared helpers (issues #51, #96, #237)
+    INPUT_FINGERPRINT_VERSION,
+    build_input_fingerprint,
+    git,
+    load_corner_run_module,
+    mc_input_sections,
+    pvt_input_sections,
+)
 
 SCHEMATIC_FILE = "design/ldo_3v3in_1v8out.sch"
 DEFAULT_OUT = MEASUREMENTS_DIR / "characterization.md"
@@ -337,6 +350,95 @@ def sim_mc_sample_tally(record: dict) -> str | None:
     return f"{passed}/{len(corners)} individual sample(s) PASS"
 
 
+def _record_kind(record: dict) -> str:
+    fp = record.get("input_fingerprint")
+    if isinstance(fp, dict) and fp.get("kind") in ("pvt", "mc"):
+        return fp["kind"]
+    return "mc" if "klt_request" in record else "pvt"
+
+
+def check_input_freshness(slug: str, record: dict) -> str:
+    """Experiment/solver freshness (issue #237): does the cited record's
+    effective-input fingerprint still match the current manifest and solver
+    settings? Headless -- reads `experiment.json` and `sim/spiceinit` only, no
+    xschem/PDK -- so it runs under `--ignore-sim-freshness` and
+    `--no-netlist-freshness` too. Independent of the schematic re-netlist
+    (`check_netlist_freshness`); the two are reported as separate reasons.
+
+    Dimensions: analyses, measurements, matrix, solver (PVT) or
+    analyses, measurements, matrix, netlist_patch (MC; the klt backend is not
+    shown to read `sim/spiceinit`, so no solver dimension is claimed for it).
+    A dimension the record carries no provenance for is "unverified", never
+    assumed fresh; the original record is never modified.
+    """
+    manifest_rel = (record.get("links") or {}).get("manifest") or f"sim/{slug}/experiment.json"
+    manifest = REPO_ROOT / manifest_rel
+    if not manifest.is_file():
+        return f"unverified: experiment manifest not found ({manifest_rel})"
+    try:
+        raw = json.loads(manifest.read_text())
+    except (OSError, ValueError) as exc:
+        return f"unverified: experiment manifest unreadable ({manifest_rel}: {exc})"
+
+    kind = _record_kind(record)
+    spiceinit = SIM_DIR / "spiceinit"
+    if kind == "pvt":
+        current = pvt_input_sections(
+            raw, spiceinit.read_text() if spiceinit.is_file() else None
+        )
+    else:
+        current = mc_input_sections(raw)
+
+    fp = record.get("input_fingerprint")
+    recorded: dict = {}
+    legacy_note = ""
+    if isinstance(fp, dict) and fp.get("version") == INPUT_FINGERPRINT_VERSION and isinstance(
+        fp.get("sections"), dict
+    ):
+        recorded = dict(fp["sections"])
+    else:
+        legacy_note = (
+            "no input fingerprint in this legacy record"
+            if not isinstance(fp, dict)
+            else f"unsupported input-fingerprint version {fp.get('version')!r}"
+        )
+        # A PVT record from #190 on already carries the init-settings hash.
+        legacy_solver = (record.get("tools") or {}).get("spiceinit_sha256")
+        if kind == "pvt" and legacy_solver:
+            recorded["solver"] = legacy_solver
+
+    dims = list(current) if kind == "mc" else ["analyses", "measurements", "matrix", "solver"]
+    stale, unverified, matched = [], [], []
+    for dim in dims:
+        if dim not in recorded:
+            unverified.append(dim)
+        elif dim not in current:
+            unverified.append(dim)
+        elif recorded[dim] == current[dim]:
+            matched.append(dim)
+        else:
+            stale.append(dim)
+
+    na = (
+        "; solver settings: not applicable (klt backend; `sim/spiceinit` is not consumed)"
+        if kind == "mc"
+        else ""
+    )
+    if stale:
+        msg = f"STALE (changed since the record: {', '.join(stale)}"
+        if unverified:
+            msg += f"; unverified: {', '.join(unverified)}"
+        return msg + ")"
+    if unverified:
+        why = f" -- {legacy_note}" if legacy_note else ""
+        ok = f"; matching: {', '.join(matched)}" if matched else ""
+        return f"unverified: {', '.join(unverified)}{why}{ok}"
+    return (
+        f"fresh (the record's input fingerprint v{INPUT_FINGERPRINT_VERSION} matches the "
+        f"current manifest/solver inputs: {', '.join(matched)}{na})"
+    )
+
+
 def check_netlist_freshness(module, pdk, slug: str, record: dict) -> str:
     # Defense in depth alongside `latest_sim_record`'s own campaign-only
     # selection (issue #215): this function's whole job is to report
@@ -485,6 +587,13 @@ def rel(path: Path) -> str:
     return os.path.relpath(path, MEASUREMENTS_DIR)
 
 
+def _short_verdict(text: str) -> str:
+    for token in ("fresh", "STALE", "ERROR"):
+        if text.startswith(token):
+            return token
+    return "unverified"
+
+
 def build_spec_row_table(
     spec_rows: list[dict], skip_netlist_freshness: bool
 ) -> tuple[list[str], list[str]]:
@@ -509,8 +618,8 @@ def build_spec_row_table(
         _pdk_error = None
 
     table = [
-        "| Parameter | Ratified target | Verdict (vs ratified target) | Evidence | Freshness |",
-        "|---|---|---|---|---|",
+        "| Parameter | Ratified target | Verdict (vs ratified target) | Evidence | Inputs | Freshness |",
+        "|---|---|---|---|---|---|",
     ]
     detail: list[str] = []
 
@@ -519,7 +628,7 @@ def build_spec_row_table(
         slug = EVIDENCE_MAP.get(param)
         if slug is None:
             reason = NA_REASONS.get(param, GENERIC_NA_REASON)
-            table.append(f"| {param} | {row['draft_target']} | N/A | — | — |")
+            table.append(f"| {param} | {row['draft_target']} | N/A | — | — | — |")
             detail.append(f"- **{param}**: N/A — {reason}")
             continue
 
@@ -527,7 +636,7 @@ def build_spec_row_table(
         if found is None:
             table.append(
                 f"| {param} | {row['draft_target']} | **ERROR** | no record found under "
-                f"`sim/{slug}/records/` | — |"
+                f"`sim/{slug}/records/` | — | — |"
             )
             detail.append(
                 f"- **{param}**: ERROR — `EVIDENCE_MAP` cites `sim/{slug}`, but no record "
@@ -554,16 +663,20 @@ def build_spec_row_table(
             )
         )
 
+        inputs = check_input_freshness(slug, record)
+        inputs_short = _short_verdict(inputs)
+
         subset_reason = sim_subset_reason(record)
         subset_flag = " (PVT subset)" if subset_reason else ""
 
         table.append(
             f"| {param} | {row['draft_target']} | **{verdict}**{subset_flag} | "
-            f"[`{record_id}`]({record_rel}) | {freshness_short} |"
+            f"[`{record_id}`]({record_rel}) | {inputs_short} | {freshness_short} |"
         )
         detail_line = (
             f"- **{param}**: **{verdict}** (vs the ratified spec row) — "
             f"`sim/{slug}` record [`{record_id}`]({record_rel}), {tally}. "
+            f"Experiment/solver inputs: {inputs}. "
             f"Freshness: {freshness}."
         )
         failing = sim_failing_measurements(record)
@@ -727,7 +840,15 @@ def generate_report(skip_netlist_freshness: bool = False) -> str:
         "against the committed netlist snapshot); on a machine without the "
         "PDK toolchain it degrades to `unverified` rather than a false "
         "claim of freshness (`--no-netlist-freshness` forces this "
-        "explicitly). The layout (DRC/LVS/PEX) **Freshness** column instead "
+        "explicitly). The separate **Inputs** column / `Experiment/solver "
+        "inputs` clause is a headless check (no `xschem`/PDK): it compares "
+        "the cited record's versioned input fingerprint (analyses, "
+        "measurement expressions/bounds, declared matrix, solver settings — "
+        "an allow-list of execution-relevant manifest keys, so prose edits do "
+        "not invalidate a simulation; `sim/README.md`) with the current "
+        "`experiment.json` and `sim/spiceinit`, and reports a legacy record "
+        "without that provenance as `unverified` rather than guessing. It is "
+        "compared even under `--ignore-sim-freshness`. The layout (DRC/LVS/PEX) **Freshness** column instead "
         "compares the schematic/layout commit each record itself cites "
         "against the current git history / `LATEST*` pointers — no "
         "toolchain required."
