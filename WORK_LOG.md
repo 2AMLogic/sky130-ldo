@@ -2,6 +2,13 @@
 
 Chronological record of merged pull requests and closed issues. Maintained by the Loom Guide role.
 
+### 2026-10-09
+
+- **Issue #246** (closed): Area: quantify compaction feasibility under the ratified core footprint limit
+- **PR #248**: Area budget and compaction-feasibility study (#246)
+- **Issue #245** (closed): Characterization: propagate schematic staleness through PEX source provenance
+- **PR #247**: Characterization: propagate schematic staleness through PEX source provenance
+
 ### 2026-10-08
 
 - **Issue #230** (closed): Thermal hysteresis: integrate the demonstrated regenerative comparator into the LDO

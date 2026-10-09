@@ -19,13 +19,13 @@ _None._
 
 Human-approved issues ready for implementation (`loom:issue`).
 
-- **#177**: Seed sim/current-limit's leg-1 operating point to conform to the initial-condition contract
+_None._
 
 ## In Progress
 
 Issues currently being built (`loom:building`).
 
-_None._
+- **#177**: Seed sim/current-limit's leg-1 operating point to conform to the initial-condition contract
 
 ## PRs Awaiting Review
 
@@ -49,7 +49,7 @@ Issues carrying `loom:curated`.
 
 ## Proposed (Architect / Hermit)
 
-_None._
+- **#249**: layout: add PDK-free unit tests with negative controls for check-erc-supply-spec.py *(architect)*
 
 ## Epics
 
@@ -61,11 +61,11 @@ _None._
 |------|-------|
 | Operator merge-risk holds | 0 |
 | Operator priority | 0 |
-| Ready (`loom:issue`) | 1 |
-| In Progress (`loom:building`) | 0 |
+| Ready (`loom:issue`) | 0 |
+| In Progress (`loom:building`) | 1 |
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 0 |
 | Curated | 3 |
-| Architect / Hermit proposals | 0 |
+| Architect / Hermit proposals | 1 |
 | Active epics | 1 |
 <!-- guide:plan-body:end -->
