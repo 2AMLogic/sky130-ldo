@@ -604,6 +604,14 @@ def check_area_freshness(record: dict) -> str:
     )
 
 
+def read_layout_record_text(record_id: str) -> str | None:
+    path = LAYOUT_DIR / "ldo-core" / "reports" / record_id / "record.md"
+    try:
+        return path.read_text()
+    except OSError:
+        return None
+
+
 def check_pex_layout_freshness(record_text: str) -> str:
     m = LAYOUT_RECORD_RE.search(record_text)
     if not m:
@@ -612,9 +620,19 @@ def check_pex_layout_freshness(record_text: str) -> str:
     current = read_pointer(LAYOUT_DIR / "ldo-core" / "reports" / "LATEST-LVS")
     if current is None:
         return "unverified: layout/ldo-core/reports/LATEST-LVS pointer is missing"
-    if cited == current:
-        return f"fresh (cites the current `LATEST-LVS` record `{cited}`)"
-    return f"STALE (cites LVS record `{cited}`; `LATEST-LVS` now points to `{current}`)"
+    if cited != current:
+        return f"STALE (cites LVS record `{cited}`; `LATEST-LVS` now points to `{current}`)"
+    # The pointer matching is necessary but not sufficient: the cited LVS
+    # record must itself be current against the schematic (#245).
+    lvs_text = read_layout_record_text(cited)
+    if lvs_text is None:
+        return f"unverified: cited LVS record `{cited}` record.md is missing or unreadable"
+    sch = check_schematic_freshness_from_record(lvs_text)
+    if sch.startswith("fresh"):
+        return f"fresh (cites the current `LATEST-LVS` record `{cited}`; its {sch})"
+    if sch.startswith("STALE"):
+        return f"STALE (cites the current `LATEST-LVS` record `{cited}`, but that LVS record is stale: {sch})"
+    return f"unverified: cites the current `LATEST-LVS` record `{cited}`, but its schematic provenance is unverified ({sch})"
 
 
 def extract_pex_results(text: str) -> list[tuple[str, str]]:

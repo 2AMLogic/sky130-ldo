@@ -329,35 +329,61 @@ class TestSchematicFreshness(unittest.TestCase):
 
 
 class TestPexLayoutFreshness(unittest.TestCase):
+    CITE = "**Layout record**: `layout/ldo-core/reports/20260101-000000-lvs`\n"
+    LVS = "Schematic freshness: netlisted from commit `aaa1111`\n"
+
     def setUp(self):
-        self._orig = bcr.read_pointer
+        self._orig = (bcr.read_pointer, bcr.read_layout_record_text, bcr.current_schematic_sha)
+        bcr.read_pointer = lambda _p: "20260101-000000-lvs"
+        bcr.read_layout_record_text = lambda _i: self.LVS
+        bcr.current_schematic_sha = lambda: "aaa1111"
 
     def tearDown(self):
-        bcr.read_pointer = self._orig
+        (bcr.read_pointer, bcr.read_layout_record_text, bcr.current_schematic_sha) = self._orig
 
-    def test_fresh_when_cited_record_is_latest(self):
-        bcr.read_pointer = lambda _p: "20260101-000000-lvs"
-        out = bcr.check_pex_layout_freshness(
-            "**Layout record**: `layout/ldo-core/reports/20260101-000000-lvs`\n"
-        )
+    def test_fresh_when_pointer_matches_and_schematic_current(self):
+        out = bcr.check_pex_layout_freshness(self.CITE)
         self.assertTrue(out.startswith("fresh"), out)
+
+    def test_stale_when_pointer_matches_but_schematic_changed(self):
+        bcr.current_schematic_sha = lambda: "bbb2222"
+        out = bcr.check_pex_layout_freshness(self.CITE)
+        self.assertTrue(out.startswith("STALE"), out)
 
     def test_stale_when_latest_pointer_has_moved(self):
         bcr.read_pointer = lambda _p: "20260202-000000-lvs"
-        out = bcr.check_pex_layout_freshness(
-            "**Layout record**: `layout/ldo-core/reports/20260101-000000-lvs`\n"
-        )
+        out = bcr.check_pex_layout_freshness(self.CITE)
         self.assertTrue(out.startswith("STALE"), out)
+
+    def test_not_fresh_when_lvs_record_missing(self):
+        bcr.read_layout_record_text = lambda _i: None
+        out = bcr.check_pex_layout_freshness(self.CITE)
+        self.assertTrue(out.startswith("unverified"), out)
+
+    def test_not_fresh_when_lvs_record_has_no_provenance(self):
+        bcr.read_layout_record_text = lambda _i: "no provenance here"
+        out = bcr.check_pex_layout_freshness(self.CITE)
+        self.assertTrue(out.startswith("unverified"), out)
+
+    def test_not_fresh_when_git_history_unavailable(self):
+        bcr.current_schematic_sha = lambda: ""
+        out = bcr.check_pex_layout_freshness(self.CITE)
+        self.assertTrue(out.startswith("unverified"), out)
 
     def test_unverified_when_pointer_missing(self):
         bcr.read_pointer = lambda _p: None
-        out = bcr.check_pex_layout_freshness(
-            "**Layout record**: `layout/ldo-core/reports/20260101-000000-lvs`\n"
-        )
+        out = bcr.check_pex_layout_freshness(self.CITE)
         self.assertTrue(out.startswith("unverified"), out)
 
     def test_unverified_when_record_has_no_layout_record_line(self):
         self.assertTrue(bcr.check_pex_layout_freshness("nothing").startswith("unverified"))
+
+    def test_check_stays_active_under_ignore_sim_freshness(self):
+        # The layout section is not normalised away by --ignore-sim-freshness.
+        bcr.current_schematic_sha = lambda: "bbb2222"
+        self.assertTrue(bcr.check_pex_layout_freshness(self.CITE).startswith("STALE"))
+        text = "head\n" + bcr.LAYOUT_SECTION_HEADING + "\n| PEX | STALE |\n"
+        self.assertIn("| PEX | STALE |", bcr.normalize_sim_freshness(text))
 
 
 class TestNoSelfReferentialProvenance(unittest.TestCase):

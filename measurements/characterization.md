@@ -64,7 +64,7 @@ DRC/LVS/post-layout PEX substantiate that the routed layout matches the schemati
 |---|---|---|---|
 | DRC (issue #16) | **PASS** (status=clean, violation_count=0) | [`20260924-221821-a947aa8`](../layout/ldo-core/reports/20260924-221821-a947aa8/record.md) | STALE |
 | LVS (issue #17) | **MATCH** (status=match, mismatch_count=3) | [`20260924-221912-a947aa8`](../layout/ldo-core/reports/20260924-221912-a947aa8/record.md) | STALE |
-| Post-layout PEX (issue #20) | see detail — no single PASS/FAIL ([caveat](../sim/pex-post-layout/README.md)) | [`20260924-230726-a947aa8`](../sim/pex-post-layout/records/20260924-230726-a947aa8.md) | fresh |
+| Post-layout PEX (issue #20) | see detail — no single PASS/FAIL ([caveat](../sim/pex-post-layout/README.md)) | [`20260924-230726-a947aa8`](../sim/pex-post-layout/records/20260924-230726-a947aa8.md) | STALE |
 
 Post-layout PEX detail (record `20260924-230726-a947aa8`): `klt sim` (schematic-side leg, standalone): status=fail, corners=45, passed=38, failed=7, errored=0; `klt pex` (schematic + extracted legs + delta): status=fail, passed=39, failed=96, errored=0, pin_count_mismatch=None. This paragraph is generated from the record's own `- Result:` lines and carries no hand-written triage beyond them — the per-record narrative (`klt` pin, per-corner root-cause attribution, upstream/repo-local issue cross-references) is hand-maintained in [`sim/pex-post-layout/README.md`](../sim/pex-post-layout/README.md) instead, so do not hand-edit it in here.
 
