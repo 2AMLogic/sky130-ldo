@@ -216,6 +216,12 @@ are therefore not drawn. Filed generically per `CLAUDE.md`'s friction
 protocol as
 [`2AMLogic/klayout-tools#1117`](https://github.com/2AMLogic/klayout-tools/issues/1117).
 
+Issue #254 tested, outside this layout, whether the four capacitors can be
+drawn at all within the area budget: `layout/cap-rail-demo/` realises them as
+stacked MiM arrays over the planned core outline (DRC/LVS/extraction evidence
+and a feasibility verdict there). That demonstrator does not change this
+layout; integrating it is full-core work.
+
 `layout/bin/gen-ldo-reference-netlist.py` drops the same four elements from
 the LVS reference, so the compare stays symmetric: their absence is a
 disclosed coverage gap on both sides, not a silent one. It is a real gap
