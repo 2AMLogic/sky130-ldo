@@ -48,9 +48,12 @@ from _record_common import (
     build_input_fingerprint,
     klt_binary as _shared_klt_binary,
     git,
+    copy_new,
     pvt_input_sections,
+    reserve_record_id,
     render_record_footer,
     render_record_header,
+    write_new_text,
 )
 
 SIM_DIR = Path(__file__).resolve().parent.parent
@@ -1464,6 +1467,10 @@ def main(argv: list[str]) -> int:
     request_netlists_dir = exp.dir / "klt-request-netlists"
 
     if not args.dry_run and not args.no_write:
+        # Atomic claim BEFORE any scratch dir/evidence is written (issue #310).
+        reserve_record_id(BUILD_DIR, exp.dir.name, record_id, HarnessError)
+
+    if not args.dry_run and not args.no_write:
         extra = []
         if batch:
             extra = [
@@ -1478,6 +1485,9 @@ def main(argv: list[str]) -> int:
                 )
 
     run_dir = BUILD_DIR / exp.slug / record_id
+    if args.dry_run or args.no_write:
+        # no evidence => no reservation, so keep scratch off any real run's dir
+        run_dir = BUILD_DIR / exp.slug / f"{record_id}.ephemeral-{os.getpid()}"
     run_dir.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(SPICEINIT_FILE, run_dir / ".spiceinit")
 
@@ -1560,7 +1570,7 @@ def main(argv: list[str]) -> int:
         return 0 if overall else 2
 
     snapshot.parent.mkdir(parents=True, exist_ok=True)
-    snapshot.write_text("\n".join(body) + "\n.end\n")
+    write_new_text(snapshot, "\n".join(body) + "\n.end\n")
 
     record = {
         "record_id": record_id,
@@ -1631,11 +1641,11 @@ def main(argv: list[str]) -> int:
             ):
                 d.mkdir(parents=True, exist_ok=True)
                 dest = d / f"{record_id}.{key}.{ext}"
-                shutil.copyfile(src, dest)
+                copy_new(src, dest)
                 links[key] = str(dest.relative_to(REPO_ROOT))
         corners_dir.mkdir(parents=True, exist_ok=True)
         for cid, text in batch_logs.items():
-            (corners_dir / f"{cid}.log").write_text(text)
+            write_new_text(corners_dir / f"{cid}.log", text)
         for res in results:
             if res["corner_id"] in batch_logs:
                 res["log"] = str((corners_dir / f"{res['corner_id']}.log").relative_to(REPO_ROOT))
@@ -1648,8 +1658,8 @@ def main(argv: list[str]) -> int:
         )
 
     records_dir.mkdir(parents=True, exist_ok=True)
-    record_json.write_text(json.dumps(record, indent=2, sort_keys=True) + "\n")
-    record_md.write_text(render_record(record))
+    write_new_text(record_json, json.dumps(record, indent=2, sort_keys=True) + "\n")
+    write_new_text(record_md, render_record(record))
 
     print()
     print(f"record  : {record_md.relative_to(REPO_ROOT)}")

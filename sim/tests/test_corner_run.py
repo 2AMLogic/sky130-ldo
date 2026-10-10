@@ -11,6 +11,7 @@ sibling sky130-bandgap repo's harness.
 
 from __future__ import annotations
 
+import datetime
 import hashlib
 import importlib.util
 import re
@@ -603,10 +604,22 @@ class BatchHarness(unittest.TestCase):
             mock.patch.object(corner_run, "default_author", return_value="tester"),
             mock.patch.object(corner_run, "klt_binary", return_value="/fake/klt"),
             mock.patch.object(corner_run.subprocess, "run", side_effect=lambda *a, **k: self.fake(*a, **k)),
+            # ticking clock: every run mints a fresh record id (a consumed id
+            # stays reserved, issue #310), so repeated main() calls don't collide
+            mock.patch.object(corner_run, "datetime", self._ticking_datetime()),
         ]
         for p in patches:
             p.start()
             self.addCleanup(p.stop)
+
+    @staticmethod
+    def _ticking_datetime():
+        real = corner_run.datetime
+        ticks = iter(range(10**6))
+        fake = mock.Mock(wraps=real)
+        fake.now.side_effect = lambda tz=None: real(2026, 6, 1, tzinfo=corner_run.timezone.utc) + \
+            datetime.timedelta(seconds=next(ticks))
+        return fake
 
     def run_main(self, *argv, expect_exit=None):
         out, err = io.StringIO(), io.StringIO()
@@ -773,8 +786,20 @@ class TestBatchRecord(BatchHarness):
             dt.now.return_value = corner_run.datetime(2026, 1, 2, 3, 4, 5, tzinfo=corner_run.timezone.utc)
             self.run_main("--backend", "batch", *QUICK)
             n = len(self.klt_calls())
+            # Fresh scratch (as in another clone): only the committed-evidence
+            # check can refuse now. The same-scratch case is the reservation's.
+            shutil.rmtree(self.tmp / "build" / ".reservations")
             err, _, _ = self.run_main("--backend", "batch", *QUICK, expect_exit=HarnessErr)
         self.assertIn("append-only", str(err))
+        self.assertEqual(len(self.klt_calls()), n)
+
+    def test_same_id_rerun_in_same_scratch_is_refused_by_reservation(self):
+        with mock.patch.object(corner_run, "datetime", wraps=corner_run.datetime) as dt:
+            dt.now.return_value = corner_run.datetime(2026, 1, 2, 3, 4, 5, tzinfo=corner_run.timezone.utc)
+            self.run_main("--backend", "batch", *QUICK)
+            n = len(self.klt_calls())
+            err, _, _ = self.run_main("--backend", "batch", *QUICK, expect_exit=HarnessErr)
+        self.assertIn("already reserved", str(err))
         self.assertEqual(len(self.klt_calls()), n)
 
     def test_no_write_creates_no_evidence(self):

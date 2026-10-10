@@ -56,6 +56,8 @@ from _record_common import (
     load_corner_run_module,
     render_record_footer,
     render_record_header,
+    reserve_record_id,
+    write_new_text,
 )
 
 corner_run = load_corner_run_module(Path(__file__).resolve().parent)
@@ -697,6 +699,8 @@ def main(argv: list[str]) -> int:
     response_file = responses_dir / f"{record_id}.json"
 
     if not args.dry_run:
+        # Atomic claim BEFORE any scratch dir/evidence is written (issue #310).
+        reserve_record_id(BUILD_DIR, exp["_dir"].name, record_id, HarnessError)
         for path in (record_md, record_json, snapshot, request_file, response_file):
             if path.exists():
                 raise HarnessError(
@@ -704,6 +708,9 @@ def main(argv: list[str]) -> int:
                 )
 
     run_dir = BUILD_DIR / exp["slug"] / record_id
+    if args.dry_run:
+        # dry-run holds no reservation, so keep its scratch off any real run's dir
+        run_dir = BUILD_DIR / exp["slug"] / f"{record_id}.dry-{os.getpid()}"
     run_dir.mkdir(parents=True, exist_ok=True)
 
     netlist = corner_run.netlist_with_xschem(exp["_schematic"], run_dir, pdk)
@@ -741,13 +748,13 @@ def main(argv: list[str]) -> int:
         return 0
 
     snapshot.parent.mkdir(parents=True, exist_ok=True)
-    snapshot.write_text(prepped_netlist_text)
+    write_new_text(snapshot, prepped_netlist_text)
 
     request = build_klt_request(
         exp, pdk, snapshot.resolve(), n, args.seed, vary, k_sigma, args.timeout, args.keep_logs
     )
     requests_dir.mkdir(parents=True, exist_ok=True)
-    request_file.write_text(json.dumps(request, indent=2, sort_keys=True) + "\n")
+    write_new_text(request_file, json.dumps(request, indent=2, sort_keys=True) + "\n")
 
     klt_outdir = run_dir / "klt-out"
     response = run_klt_sim(
@@ -757,7 +764,7 @@ def main(argv: list[str]) -> int:
     assert_klt_read_the_pinned_pdk(response, pdk, pin, args.allow_pdk_mismatch)
 
     responses_dir.mkdir(parents=True, exist_ok=True)
-    response_file.write_text(json.dumps(response, indent=2, sort_keys=True) + "\n")
+    write_new_text(response_file, json.dumps(response, indent=2, sort_keys=True) + "\n")
 
     overall_pass = response.get("status") == "pass"
 
@@ -809,8 +816,8 @@ def main(argv: list[str]) -> int:
     }
 
     records_dir.mkdir(parents=True, exist_ok=True)
-    record_json.write_text(json.dumps(record, indent=2, sort_keys=True) + "\n")
-    record_md.write_text(render_record(record))
+    write_new_text(record_json, json.dumps(record, indent=2, sort_keys=True) + "\n")
+    write_new_text(record_md, render_record(record))
 
     print()
     print(f"record   : {record_md.relative_to(REPO_ROOT)}")

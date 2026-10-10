@@ -385,6 +385,33 @@ even to typo fixes, because the append-only guarantee is the whole point of an
 evidence trail. Corrections mint a new record that references the prior one via
 **Supersedes**.
 
+### Concurrent and interrupted runs (issue #310)
+
+Record ids are second-resolution UTC time + short sha, so two invocations for
+the same experiment in the same second pick the same id. `corner-run.py`,
+`mc-run.py` and `yield-run.py` therefore take an **atomic reservation** (an
+exclusive `mkdir` of `sim/build/.reservations/<experiment-dir>/<record-id>/`,
+git-ignored scratch) *before* creating any scratch directory or evidence and
+before netlisting or submission. The loser exits with an "already reserved"
+error and writes nothing; unrelated experiments or ids are not serialized.
+Final publication (snapshots, requests, responses, logs, `records/*`) also
+opens files exclusively, so a replacement is refused even if the reservation
+were bypassed. The existing "already exists -- append-only" check stays.
+
+- `--dry-run` and `--no-write` take no reservation and write nothing under
+  `sim/<experiment>/`; their scratch lives in a `<id>.ephemeral-<pid>` directory.
+- A reservation is never released or deleted by the tools: a consumed id stays
+  consumed, whether the run finished, failed or was killed.
+- **Recovery after an interrupted run**: just re-run (a later second mints a
+  fresh id). Partial evidence under `sim/<experiment>/` is left for a human to
+  review, never overwritten or auto-deleted; supersede it with a new record.
+  Never delete another process's reservation or evidence. A reservation's
+  `owner.json` (pid/host/time) shows who holds it; remove a stale one by hand
+  only when that process is gone and no evidence carries the id.
+- Reservations are per scratch tree (`sim/build/`), i.e. per checkout; the
+  committed-evidence guard (#283) and the append-only check cover cross-clone
+  reuse.
+
 ---
 
 ## Writing a new experiment
