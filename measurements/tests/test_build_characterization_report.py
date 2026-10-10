@@ -334,6 +334,9 @@ class TestPexLayoutFreshness(unittest.TestCase):
 
     def setUp(self):
         self._orig = (bcr.read_pointer, bcr.read_layout_record_text, bcr.current_schematic_sha)
+        self._geo = bcr.check_lvs_geometry_freshness
+        self.addCleanup(lambda: setattr(bcr, "check_lvs_geometry_freshness", self._geo))
+        bcr.check_lvs_geometry_freshness = lambda _d: "fresh (stub)"
         bcr.read_pointer = lambda _p: "20260101-000000-lvs"
         bcr.read_layout_record_text = lambda _i: self.LVS
         bcr.current_schematic_sha = lambda: "aaa1111"
@@ -384,6 +387,103 @@ class TestPexLayoutFreshness(unittest.TestCase):
         self.assertTrue(bcr.check_pex_layout_freshness(self.CITE).startswith("STALE"))
         text = "head\n" + bcr.LAYOUT_SECTION_HEADING + "\n| PEX | STALE |\n"
         self.assertIn("| PEX | STALE |", bcr.normalize_sim_freshness(text))
+
+
+class TestLvsGeometryFreshness(unittest.TestCase):
+    """Issue #287: LVS/PEX freshness is also content-based on the routed GDS."""
+
+    SCH = "Schematic freshness: netlisted from commit `aaa1111`\n"
+    GDS = b"gds-bytes-A"
+
+    def setUp(self):
+        import hashlib
+
+        self.sha = hashlib.sha256(self.GDS).hexdigest()
+        root = Path(tempfile.mkdtemp())
+        self.addCleanup(lambda: __import__("shutil").rmtree(root, ignore_errors=True))
+        self.reports = root / "layout" / "ldo-core" / "reports"
+        self.reports.mkdir(parents=True)
+        self._orig = (bcr.LAYOUT_DIR, bcr.current_schematic_sha)
+        self.addCleanup(lambda: (setattr(bcr, "LAYOUT_DIR", self._orig[0]),
+                                 setattr(bcr, "current_schematic_sha", self._orig[1])))
+        bcr.LAYOUT_DIR = root / "layout"
+        bcr.current_schematic_sha = lambda: "aaa1111"
+        self.lvs = self._record("20260101-000000-lvs", self.GDS, self.sha, lvs=True)
+        self._record("20260101-000001-drc", self.GDS)
+        (self.reports / "LATEST-LVS").write_text("20260101-000000-lvs\n")
+        (self.reports / "LATEST").write_text("20260101-000001-drc\n")
+        self.cite = "**Layout record**: `layout/ldo-core/reports/20260101-000000-lvs`\n"
+
+    def _record(self, rid, gds, sha=None, lvs=False):
+        import json as _j
+
+        d = self.reports / rid
+        d.mkdir()
+        (d / "ldo_core.gds").write_bytes(gds)
+        if lvs:
+            env = {"layout_sha256": sha} if sha is not None else {}
+            (d / "lvs.json").write_text(_j.dumps({"environment": env}))
+            (d / "record.md").write_text(self.SCH)
+        return d
+
+    def test_fresh_when_gds_identical(self):
+        self.assertTrue(bcr.check_lvs_geometry_freshness(self.lvs).startswith("fresh"))
+        self.assertTrue(bcr.check_pex_layout_freshness(self.cite).startswith("fresh"))
+
+    def test_changed_current_gds_makes_lvs_and_pex_stale(self):
+        (self.reports / "20260101-000001-drc" / "ldo_core.gds").write_bytes(b"rerouted")
+        self.assertTrue(bcr.check_lvs_geometry_freshness(self.lvs).startswith("STALE"))
+        self.assertTrue(bcr.check_pex_layout_freshness(self.cite).startswith("STALE"))
+
+    def test_new_layout_record_with_identical_bytes_stays_fresh(self):
+        self._record("20260202-000000-new", self.GDS)
+        (self.reports / "LATEST").write_text("20260202-000000-new\n")
+        self.assertTrue(bcr.check_lvs_geometry_freshness(self.lvs).startswith("fresh"))
+        self.assertTrue(bcr.check_pex_layout_freshness(self.cite).startswith("fresh"))
+
+    def test_tampered_cited_gds_detected(self):
+        (self.lvs / "ldo_core.gds").write_bytes(b"tampered")
+        self.assertTrue(bcr.check_lvs_geometry_freshness(self.lvs).startswith("STALE"))
+        self.assertTrue(bcr.check_pex_layout_freshness(self.cite).startswith("STALE"))
+
+    def test_missing_cited_gds_is_stale(self):
+        (self.lvs / "ldo_core.gds").unlink()
+        self.assertTrue(bcr.check_lvs_geometry_freshness(self.lvs).startswith("STALE"))
+
+    def test_missing_hash_unverified(self):
+        d = self._record("20260303-000000-nohash", self.GDS, None, lvs=True)
+        out = bcr.check_lvs_geometry_freshness(d)
+        self.assertTrue(out.startswith("unverified"), out)
+
+    def test_missing_lvs_json_unverified(self):
+        (self.lvs / "lvs.json").unlink()
+        self.assertTrue(bcr.check_lvs_geometry_freshness(self.lvs).startswith("unverified"))
+        self.assertFalse(bcr.check_pex_layout_freshness(self.cite).startswith("fresh"))
+
+    def test_corrupt_lvs_json_unverified(self):
+        (self.lvs / "lvs.json").write_text("{not json")
+        self.assertTrue(bcr.check_lvs_geometry_freshness(self.lvs).startswith("unverified"))
+
+    def test_missing_latest_pointer_unverified(self):
+        (self.reports / "LATEST").unlink()
+        out = bcr.check_lvs_geometry_freshness(self.lvs)
+        self.assertTrue(out.startswith("unverified"), out)
+        self.assertFalse(bcr.check_pex_layout_freshness(self.cite).startswith("fresh"))
+
+    def test_missing_current_gds_unverified(self):
+        (self.reports / "20260101-000001-drc" / "ldo_core.gds").unlink()
+        self.assertTrue(bcr.check_lvs_geometry_freshness(self.lvs).startswith("unverified"))
+
+    def test_stale_schematic_still_wins_over_fresh_geometry(self):
+        bcr.current_schematic_sha = lambda: "bbb2222"
+        self.assertTrue(bcr.check_pex_layout_freshness(self.cite).startswith("STALE"))
+
+    def test_geometry_verdict_survives_ignore_sim_freshness(self):
+        (self.reports / "20260101-000001-drc" / "ldo_core.gds").write_bytes(b"rerouted")
+        out = bcr.check_lvs_geometry_freshness(self.lvs)
+        text = "head\n" + bcr.LAYOUT_SECTION_HEADING + "\n| LVS | STALE |\n"
+        self.assertTrue(out.startswith("STALE"))
+        self.assertIn("| LVS | STALE |", bcr.normalize_sim_freshness(text))
 
 
 class TestNoSelfReferentialProvenance(unittest.TestCase):
