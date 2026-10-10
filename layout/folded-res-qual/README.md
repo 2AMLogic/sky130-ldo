@@ -197,3 +197,32 @@ value.
     It also changes the bank's row pitch (finding 5).
   - klayout-tools#2997 (series-chain generation) and #3017 (fold-offset
     disclosure) are open upstream.
+
+## PVT / mismatch qualification (issue #263) -- BLOCKED on the batch fleet
+
+#263 extends the single-point comparison above to a predeclared process x
+temperature x voltage matrix plus seeded mismatch Monte Carlo. Everything
+needed to run it is committed; **the run itself has not produced results**, so
+this README makes no new equivalence claim and no segment-count
+recommendation. The #253 findings above (tt / 27 C only) are unchanged.
+
+- `pvt/matrix.json` -- the matrix, the equivalence criterion (the unchanged
+  0.246 % / 1.601 % tolerance, applied to the worst shift over every point),
+  the new mismatch gates M1 (|mean shift| within the same tolerance) and M2
+  (sigma ratio <= 1.10), the candidate N lists (R_BIAS 1,2,3,4,5,6,8,10,12,16 with
+  N=16 the known nonequivalent control; R_FB 1..6) and the declared limitations.
+  It was committed before any run (see git history).
+- `bin/_folded_res_pvt.py`, `bin/run-folded-res-pvt.py`,
+  `tests/test_folded_res_pvt.py` -- deck/request generation, analysis and the
+  record writer. `python3 layout/bin/run-folded-res-pvt.py` goes to the batch
+  fleet and never falls back to a local grid; a failed submit mints a BLOCKED
+  record.
+- `pvt-reports/20261010-050239-509c688/` -- the BLOCKED record: deck, both
+  `klt sim` requests (63 deterministic points, 3000 Monte Carlo units), and
+  `ATTEMPTS.md` with every attempt and its outcome (runner/client version skew
+  `klt 0.5.0` vs `0.7.0` on the fleet, then fleet capacity refusal).
+
+To complete the study once the fleet accepts the client (runner updated, or
+capacity available): run `python3 layout/bin/run-folded-res-pvt.py` (add
+`--measure-form meas --klt "uvx --from klayout-tools==<runner version> klt"` for an
+older runner); it mints a new record and `pvt-reports/LATEST`.
