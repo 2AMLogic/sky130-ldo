@@ -62,7 +62,7 @@ DRC/LVS/post-layout PEX substantiate that the routed layout matches the schemati
 
 | Check | Verdict (record's own) | Record | Freshness |
 |---|---|---|---|
-| DRC (issue #16) | **FAIL** (curated deck: status=clean, violation_count=0; official deck: violations, 15060 markers in 7 rule families) | [`20261010-045715-e17e713`](../layout/ldo-core/reports/20261010-045715-e17e713/record.md) | fresh |
+| DRC (issue #16) | **FAIL** (curated deck: status=clean, violation_count=0; official deck `sky130A_mr.drc`: violations, violation_count=15060 in 7 rule families) | [`20261010-045715-e17e713`](../layout/ldo-core/reports/20261010-045715-e17e713/record.md) | fresh |
 | LVS (issue #17) | **MATCH** (status=match, mismatch_count=3) | [`20260924-221912-a947aa8`](../layout/ldo-core/reports/20260924-221912-a947aa8/record.md) | STALE |
 | Post-layout PEX (issue #20) | see detail — no single PASS/FAIL ([caveat](../sim/pex-post-layout/README.md)) | [`20260924-230726-a947aa8`](../sim/pex-post-layout/records/20260924-230726-a947aa8.md) | STALE |
 

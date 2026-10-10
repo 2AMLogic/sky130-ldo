@@ -963,6 +963,80 @@ class TestAreaRow(unittest.TestCase):
         self.assertIn("layout/ldo-core/reports/", area[0])
 
 
+class TestDrcRowDetail(unittest.TestCase):
+    """Issue #260 / PR #268 review: the DRC row's verdict covers both the
+    curated deck and the official `sky130A_mr.drc` deck, so its parenthetical
+    must name each deck -- a FAIL beside only `status=clean, violation_count=0`
+    contradicts itself."""
+
+    LYRDB = """<?xml version="1.0" encoding="utf-8"?>
+<report-database>
+ <top-cell>ldo_core</top-cell>
+ <categories>
+  <category><name>m2.5</name><description>d</description><categories/></category>
+  <category><name>via.1a_b</name><description>d</description><categories/></category>
+ </categories>
+ <items>
+{items} </items>
+</report-database>
+"""
+    ITEM = (
+        "  <item><category>'{rule}'</category><cell>ldo_core</cell>"
+        "<values><value>polygon: (0,0;0,0.16;0.16,0.16;0.16,0)</value></values></item>\n"
+    )
+    RUN_OK = {"deck_present": True, "klayout_found": True, "exit_code": 0}
+
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        self.d = Path(self._tmp.name)
+        (self.d / "drc.json").write_text(json.dumps({"status": "clean", "violation_count": 0}))
+
+    def tearDown(self):
+        self._tmp.cleanup()
+
+    def _official(self, rules, run=None):
+        (self.d / "mr-drc.run.json").write_text(json.dumps(run or self.RUN_OK))
+        items = "".join(self.ITEM.format(rule=r) for r in rules)
+        (self.d / "mr-drc.lyrdb").write_text(self.LYRDB.format(items=items))
+
+    def test_official_violations_surface_beside_curated_clean(self):
+        self._official(["m2.5", "m2.5", "via.1a_b"])
+        detail = bcr.drc_row_detail(self.d)
+        self.assertIn("curated deck: status=clean, violation_count=0", detail)
+        self.assertIn(
+            "official deck `sky130A_mr.drc`: violations, violation_count=3 in 2 rule families", detail
+        )
+
+    def test_official_clean_is_labelled_clean(self):
+        self._official([])
+        detail = bcr.drc_row_detail(self.d)
+        self.assertIn("official deck `sky130A_mr.drc`: clean", detail)
+
+    def test_official_error_is_not_clean(self):
+        self._official([], run={"deck_present": True, "klayout_found": True, "exit_code": 1})
+        detail = bcr.drc_row_detail(self.d)
+        self.assertIn("official deck `sky130A_mr.drc`: ERROR", detail)
+        self.assertNotIn("official deck `sky130A_mr.drc`: clean", detail)
+
+    def test_truncated_official_report_is_an_error(self):
+        self._official([])
+        p = self.d / "mr-drc.lyrdb"
+        p.write_text(p.read_text()[:40])
+        self.assertIn("official deck `sky130A_mr.drc`: ERROR", bcr.drc_row_detail(self.d))
+
+    def test_pre_dual_deck_record_says_official_not_run(self):
+        detail = bcr.drc_row_detail(self.d)
+        self.assertIn("curated deck: status=clean", detail)
+        self.assertIn("official deck: not run in this record", detail)
+
+    def test_committed_report_drc_row_names_both_decks(self):
+        text = (MEASUREMENTS_DIR / "characterization.md").read_text()
+        rows = [ln for ln in text.splitlines() if ln.startswith("| DRC (issue #16) |")]
+        self.assertEqual(len(rows), 1)
+        self.assertIn("curated deck:", rows[0])
+        self.assertIn("official deck", rows[0])
+
+
 class TestMalformedCampaignVerdict(unittest.TestCase):
     """Issue #255: a selected campaign's `overall_pass` must be a JSON boolean.
     Anything else is an evidence ERROR naming the record -- never coerced to
