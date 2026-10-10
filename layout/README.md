@@ -594,3 +594,14 @@ layout flow, then mint a new area record. The first record
 (`20261008-161046-f4fbb86`) is a **FAIL**: 2430.17 µm × 183.86 µm = 0.4468 mm²,
 cross-checked against `klt stats`. The target is unchanged; compaction is a
 separate task. Tests: `layout/tests/test_gds_area.py`.
+
+## ERC supply-spec checker tests (issue #249)
+
+`layout/tests/test_check_erc_supply_spec.py` pins the three pre-flight checks in
+`layout/bin/check-erc-supply-spec.py` (stackup covers drawn routing, drawn-well
+narrative, substrate `well_boxes` assertion) with tiny in-memory `klayout.db`
+layouts: one passing case and one negative control each, plus the `main()`
+exit-code contract. No PDK is needed, but the `klayout` module is: the tests run
+in the layout ERC venv (`layout/.venv-erc`) and are skipped, with an explicit
+reason, where `klayout` is not importable (CI's headless `checks` job installs
+no klayout wheel).
