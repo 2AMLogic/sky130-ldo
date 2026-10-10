@@ -134,6 +134,10 @@ layout/
     run-ldo-erc-flow.sh       # issue #112: T1 item 11 driver: pre-flight -> klt erc -> 4 controls -> record
     check-erc-supply-spec.py  # re-derives the spec's claims ABOUT the layout before each erc run
     render-ldo-erc-record.py  # renders + verdict-checks an ldo-core ERC record's record.md
+    run-folded-res-qual-flow.py   # issue #253: resistor-only folded-series qualification (gen -> drc -> extract -> lvs -> .op)
+    gen-folded-res-qual.py        # draws the unsplit / folded / open-chain resistor test blocks
+    render-folded-res-qual-record.py  # renders a folded-res-qual record's record.md from summary.json
+    _folded_res_analysis.py       # stdlib helpers (tolerance, .op deck, verdicts) -- unit-tested
   .venv/                      # gitignored -- `klt` install, created by setup-venv.sh
   .venv-erc/                  # gitignored -- the ERC flow's own pinned `klt` install
   ldo-core/                   # the real LDO layout (see "Extending to the LDO core")
@@ -156,6 +160,9 @@ layout/
                                 # content-hash is of the layout record's
                                 # committed ldo_core.gds, which
                                 # layout-record-id.txt names.
+  folded-res-qual/             # issue #253: resistor-only folded-series qualification (see its README)
+    cases.json                 # cases + single-operating-point electrical settings
+    reports/LATEST, <record-id>/  # append-only records; read <record-id>/record.md
   trivial-cell/
     reference.spice                    # known-good LVS reference netlist
     reference.broken-device.spice      # negative control 1: device.property corruption
