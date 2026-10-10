@@ -7,20 +7,25 @@ open PDK, built entirely on the open-source analog flow:
 [klayout-tools](https://github.com/2AMLogic/klayout-tools) (`klt`) for layout,
 DRC, and LVS.
 
-**Status: spec-ratified — designed, laid out, and simulated, not yet meeting
-its own ratified spec.** Nothing here has been fabricated. `spec/target-spec.md`
-is now **RATIFIED** (issue #1, [`DR-006`](spec/decision-records/DR-006-spec-ratification.md)
-— see the scoreboard below). A schematic, a routed layout, DRC/LVS reports,
-and a full 45-point PVT + Monte Carlo corner campaign (with a post-layout PEX
-attempt) all exist, and the aggregated result is
-[`measurements/characterization.md`](measurements/characterization.md) —
-which currently shows the design **failing** most rows of the now-ratified
-target specification; the open PVT-fix work is tracked in issue #60, and two
-rows (PSRR, Stability) additionally have a topology-level root cause and a
-proposed replacement disclosed in [`DR-007`](spec/decision-records/DR-007-psrr-stability-vs-iq.md)
-(pending its own ratification). Read every number in this repo as either a
-ratified target or a simulation result against an open PDK's models, with the
-corner and testbench that produced it recorded alongside it.
+**Status: spec-ratified — designed, laid out, and simulated, not yet shown to
+meet its own ratified spec.** Nothing here has been fabricated. `spec/target-spec.md`
+is **RATIFIED** (issue #1, [`DR-006`](spec/decision-records/DR-006-spec-ratification.md)).
+A schematic, a routed layout, DRC/LVS reports, and a PVT + Monte Carlo corner
+campaign (with a post-layout PEX attempt) all exist. The per-row verdicts live
+in exactly one place, the generated
+[`measurements/characterization.md`](measurements/characterization.md); this
+README deliberately carries no pass/fail counts, because hand-copied counts
+drift. **Read that report's Freshness column together with its verdict
+column:** a record's verdict (PASS/FAIL) and its freshness are separate facts,
+and most electrical records there are `STALE` against the current design, so
+even a PASS on a stale record does not qualify the current integrated
+schematic. Two rows (PSRR, Stability) additionally have a topology-level root
+cause and a proposed replacement disclosed in
+[`DR-007`](spec/decision-records/DR-007-psrr-stability-vs-iq.md) (pending its own
+ratification). Refreshing stale electrical evidence is tracked separately (issue
+#231). Read every number in this repo as either a ratified target or a
+simulation result against an open PDK's models, with the corner and testbench
+that produced it recorded alongside it.
 
 ![fleet burndown](https://raw.githubusercontent.com/2AMLogic/2am/main/fleet-metrics/charts/sky130-ldo.svg)
 
@@ -78,7 +83,7 @@ ratified
 recommendation — `sky130_fd_pr__pfet_g5v0d10v5` as the pass device, 3.3 V ±10% in
 / 1.8 V out / 0–50 mA, preserving port parity with gf180-ldo. The full numeric
 target table is now ratified too, unchanged from its gf180-ldo-mirrored
-starting point — see the scoreboard below.
+starting point — see the target specification below.
 
 ## Private, for now
 
@@ -101,7 +106,7 @@ which also ratifies DR-001 (pass-device/supply framing), DR-002 (output
 capacitor / ESR window), DR-003 (sky130 device characterization), DR-004
 (corner-model names) and DR-005 (thermal-shutdown trip/hysteresis/reference).
 Changing a line below requires a new decision record; it may not be relaxed
-to make a result pass — see DR-006 for why the currently-failing rows below
+to make a result pass — see DR-006 for why rows the design did not yet meet
 were ratified unchanged rather than loosened. Two rows (PSRR, Stability) are
 additionally covered by
 [`DR-007`](spec/decision-records/DR-007-psrr-stability-vs-iq.md), which
@@ -132,52 +137,38 @@ pending DR-007's own market-comparison mechanism.
 Notes — these are part of the ratified spec, not commentary:
 
 1. **Dropout**, test point `V_in = V_out + dropout`, binding corners `{ss,
-   sf}` at 125 °C (DR-003). **Current verdict: FAIL** — 0/45 PVT corners
-   pass, best case 365 mV (`ss`/−40 °C). Tracked design gap, no superseding
-   record proposed.
+   sf}` at 125 °C (DR-003). Current verdict and freshness: see the
+   characterization report.
 2. **Line regulation / Load regulation** have no dedicated sky130 porting
-   note beyond the ratified numbers themselves. **Current verdict: FAIL** —
-   18/45 and 34/45 PVT corners pass respectively. Tracked design gaps, no
-   superseding record proposed.
+   note beyond the ratified numbers themselves. Current verdicts: see the
+   characterization report.
 3. **Load transient**, over the ratified C_out/ESR window (0.33–4.7 µF,
-   0–500 mΩ, no minimum ESR, ceramic-stable — DR-002). **Current verdict:
-   FAIL** — 25/45 PVT corners pass. Tracked design gap, no superseding
-   record proposed.
-4. **PSRR and Stability** are disclosed FAIL — PSRR 0/45 PVT corners, now
-   measured at **both** ratified load points (#117) and, since #179, with the
-   `ac` linearization point seeded per `sim/README.md`'s initial-condition
-   contract: the 1 kHz sub-metric fails at 1 mA and at 50 mA alike
-   (20.30–25.66 dB against the 50 dB floor), and the 100 kHz sub-metric
-   passes 45/45 at 1 mA (31.88–35.56 dB) but fails 0/45 at 50 mA
-   (10.49–12.57 dB against the 20 dB floor); Stability 7/45 PVT corners,
-   confirmed stable at every load ≥ 1 mA within the window (DR-002 append),
-   with the 0 mA end the binding, unresolved gap. Both rows' numbers moved
-   with #179's re-run, which is the **#116/#139 pass-device resize** reaching
-   these two benches for the first time (their predecessors were `STALE`
-   against it), not the seeding: seeded and unseeded decks agree to five or
-   six digits at 42 of 45 corners — see `sim/README.md`'s "#179". Unlike the other FAIL rows,
-   both have a topology-level root cause and a named superseding proposal:
+   0–500 mΩ, no minimum ESR, ceramic-stable — DR-002). Current verdict: see
+   the characterization report.
+4. **PSRR and Stability** both have a topology-level root cause and a named
+   superseding proposal, unlike the other rows:
    [`DR-007`](spec/decision-records/DR-007-psrr-stability-vs-iq.md)
    (`proposed`) recommends PSRR ≥ 18 dB @ 1 kHz / ≥ 28 dB @ 100 kHz and a
    Stability floor scoped to `I_load ≥ 1 mA` only — not adopted here, and
    pending its own ratification via the two-key market-comparison mechanism.
+   PSRR is measured at both ratified load points with the `ac` linearization
+   point seeded per `sim/README.md`'s initial-condition contract (#179); the
+   0 mA end of Stability is the binding, unresolved gap. Current verdicts and
+   freshness: see the characterization report.
 5. **Iq** is set by
    [`DR-009`](spec/decision-records/DR-009-iq-budget.md) (`proposed`; it
    ratifies on merge of its PR, per 2AMLogic/2am#357). The number comes from
    gf180-ldo parity, checked against a sky130 device-fact budget and public
    comps, not from the measured result. It closes the item DR-003/DR-006 left
-   open. No named binding corner (DR-004 caveat). **Current verdict: FAIL**
-   — 36/45 PVT corners pass. All 9 failing corners are non-regulating DC
-   operating points (#71/#81 → #79), not bias overspend (DR-009
-   Consequences).
-6. **Current limit, Startup/soft-start, and Enable/shutdown** all **PASS**
-   (45/45 PVT corners each) — the only three rows with a testbench that
-   currently meet their ratified target.
+   open. No named binding corner (DR-004 caveat). Current verdict: see the
+   characterization report; DR-009's Consequences discuss the non-regulating
+   DC operating points among failing corners.
+6. **Current limit, Startup/soft-start, and Enable/shutdown** — current
+   verdicts and freshness: see the characterization report.
 7. **Thermal**'s fault-only 150 °C/135 °C trip/reset backstop is
    internally-generated (not `VREF`, not a bandgap), auto-restart, per
    DR-005; it sits outside this repo's characterized 125 °C temperature
-   ceiling and is PVT-loose. **Current verdict: FAIL** — 12/15 corners pass.
-   Tracked design gap, no superseding record proposed.
+   ceiling and is PVT-loose. Current verdict: see the characterization report.
 
 **Current verdict per row**: this table states the ratified target, not the
 current pass/fail state of the evidence behind it — for that, see
@@ -187,12 +178,16 @@ record behind every row's current verdict. Regenerate it with
 `python3 measurements/build_characterization_report.py` after any `sim/`
 record lands or `design/` changes; this table (the ratified spec + notes
 above) stays the authority on what is required, `measurements/characterization.md`
-on what the evidence currently shows.
+on what the evidence currently shows. Verdict and freshness are separate:
+a PASS on a `STALE` record is not qualification of the current integrated
+schematic, and this README makes no such claim. Check that the committed report
+is current with `python3 measurements/build_characterization_report.py --check`.
 
 Maturity ladder: spec-ratified → simulation-complete → layout DRC/LVS-clean →
 shuttle seat → measured silicon over temperature. **Current position:
-spec-ratified** — simulation and layout work are underway (see the scoreboard
-above) but do not yet clear most ratified rows.
+spec-ratified** — simulation and layout work are underway, but no ratified row
+is qualified on the current integrated schematic (see the report's Freshness
+column).
 
 ### Where this block sits on the evidence ladder: **T1 5/11, `tier: null`**
 
@@ -210,8 +205,10 @@ each with a machine-readable reason.
 coverage disclosures the grader structurally cannot check — read it before
 drawing any conclusion from either the five `met` rows or the six `unmet`
 ones. Item 6 in particular: its yield report's status is `reported`, not
-`pass`, because this block's spec ratifies no yield target, and the campaign
-declares no negative control.
+`pass`, because this block's spec ratifies no yield target — reported yield
+is not a ratified yield target. The campaign does carry a recorded
+deterministic negative control (issue #211, a seeded known-bad variant graded
+`detected`); see `signoff/README.md` for what it does and does not show.
 
 ## Repository layout
 
