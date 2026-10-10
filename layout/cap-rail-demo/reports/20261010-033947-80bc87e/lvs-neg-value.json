@@ -1,0 +1,474 @@
+{
+  "schema_version": 1,
+  "engine": "klayout",
+  "layout": "cap_rail_demo.extract.spice",
+  "reference": "reference.neg-value.spice",
+  "top": "CAP_RAIL_DEMO",
+  "reference_top": "CAP_RAIL_DEMO",
+  "parameter_tolerance": 0.001,
+  "options": {
+    "combine_devices": true,
+    "combine_devices_per_circuit": null,
+    "combine_devices_max_attempts": 5,
+    "flatten_layout": false,
+    "flatten_reference": false,
+    "netgen_setup": null,
+    "parameter_tolerance": 0.001,
+    "compare_parameters": null,
+    "power_connectivity": null,
+    "anchor_top_level_pins": true,
+    "supply_nets": [
+      "GND",
+      "VCC",
+      "VDD",
+      "VGND",
+      "VPWR",
+      "VSS"
+    ]
+  },
+  "hints_applied": null,
+  "status": "mismatch",
+  "power_connectivity": {
+    "status": "unchecked",
+    "reason": "reference.form is 'plain-element', whose reference netlist carries its own power/ground pins and nets -- they take part in the ordinary compare, so this check (which exists to cover the signal-only 'gate-level-verilog' form) does not apply",
+    "power_pins": [],
+    "power_pins_derivation": null,
+    "instance_count": 0,
+    "expected_nets": null,
+    "unchecked_expected_pins": [],
+    "findings": [],
+    "finding_count": 0
+  },
+  "body_verification": {
+    "status": "verified",
+    "reason": null,
+    "device_classes": [],
+    "device_count": 0,
+    "findings": [],
+    "finding_count": 0
+  },
+  "device_parameter_coverage": [
+    {
+      "class": "sky130_fd_pr__model__cap_mim",
+      "device_kind": "capacitor",
+      "layout_devices": 4,
+      "reference_devices": 4,
+      "compared": [
+        "C"
+      ],
+      "not_compared": [
+        {
+          "parameter": "A",
+          "reason": "secondary"
+        },
+        {
+          "parameter": "P",
+          "reason": "secondary"
+        }
+      ]
+    },
+    {
+      "class": "sky130_fd_pr__model__cap_mim_m4",
+      "device_kind": "capacitor",
+      "layout_devices": 4,
+      "reference_devices": 4,
+      "compared": [
+        "C"
+      ],
+      "not_compared": [
+        {
+          "parameter": "A",
+          "reason": "secondary"
+        },
+        {
+          "parameter": "P",
+          "reason": "secondary"
+        }
+      ]
+    }
+  ],
+  "mismatch_count": 13,
+  "error_count": 4,
+  "category_counts": {
+    "device.geometry_not_compared": 2,
+    "device.parameter_tolerated": 6,
+    "device.property": 2,
+    "hints.rejected": 2,
+    "topology.top_level_pins_anchored": 1
+  },
+  "category_error_counts": {
+    "device.property": 2,
+    "hints.rejected": 2
+  },
+  "counts": {
+    "nets": {
+      "layout": 7,
+      "reference": 7,
+      "matched": 5
+    },
+    "devices": {
+      "layout": 8,
+      "reference": 8,
+      "matched": 6
+    },
+    "pins": {
+      "layout": 6,
+      "reference": 6,
+      "matched": 6
+    }
+  },
+  "device_classes": [
+    "nfet",
+    "pfet",
+    "pnp",
+    "sky130_fd_pr__model__cap_mim",
+    "sky130_fd_pr__model__cap_mim_m4",
+    "resistor"
+  ],
+  "environment": {
+    "engine": "klayout",
+    "engine_version": "0.30.12",
+    "netgen_binary": null,
+    "layout_sha256": "b09846fcf097b219a564f121d9d8e7230920993d01c0af95fc63a786fab1da5a",
+    "reference_sha256": "58a45f35a55cc50189cef8bc59e8f377297e15431e1a0212520952247a68bc74",
+    "extracted_netlist": null
+  },
+  "provenance": {
+    "klt_version": "0.7.0+gb82427b30c96",
+    "klayout_version": "0.30.12",
+    "pdk": null,
+    "deck": {
+      "name": "sky130",
+      "content_hash": "sha256:f8f2c3f48eada473dc34a7a8926c0b04fef446fb351a70a636ce43a9ca9c70ba",
+      "released": true
+    },
+    "input": {
+      "content_hash": "sha256:b09846fcf097b219a564f121d9d8e7230920993d01c0af95fc63a786fab1da5a",
+      "role": "netlist"
+    },
+    "klayout_version_mismatch": false
+  },
+  "mismatches": [
+    {
+      "category": "device.geometry_not_compared",
+      "severity": "warning",
+      "description": "device class 'sky130_fd_pr__model__cap_mim' is a capacitor class, whose ['A', 'P'] parameter(s) KLayout declares *secondary*: kdb.NetlistComparer compares primary parameters only, so none of them took part in this compare and each is NOT verified -- this capacitor's geometry could differ between the two sides by any amount and this run would still report 'match'. The compared parameter(s) were ['C']. Name them in options.compare_parameters to compare them (see docs/cli/lvs.md, 'device.geometry_not_compared')",
+      "side": "both",
+      "net": null,
+      "device": {
+        "layout": null,
+        "reference": null,
+        "class": "sky130_fd_pr__model__cap_mim"
+      },
+      "property": null,
+      "details": {
+        "device_kind": "capacitor",
+        "compared_parameters": [
+          "C"
+        ],
+        "not_compared_parameters": [
+          "A",
+          "P"
+        ],
+        "layout_devices": 4,
+        "reference_devices": 4
+      },
+      "circuit": null,
+      "instance": null,
+      "subcircuit": null
+    },
+    {
+      "category": "device.geometry_not_compared",
+      "severity": "warning",
+      "description": "device class 'sky130_fd_pr__model__cap_mim_m4' is a capacitor class, whose ['A', 'P'] parameter(s) KLayout declares *secondary*: kdb.NetlistComparer compares primary parameters only, so none of them took part in this compare and each is NOT verified -- this capacitor's geometry could differ between the two sides by any amount and this run would still report 'match'. The compared parameter(s) were ['C']. Name them in options.compare_parameters to compare them (see docs/cli/lvs.md, 'device.geometry_not_compared')",
+      "side": "both",
+      "net": null,
+      "device": {
+        "layout": null,
+        "reference": null,
+        "class": "sky130_fd_pr__model__cap_mim_m4"
+      },
+      "property": null,
+      "details": {
+        "device_kind": "capacitor",
+        "compared_parameters": [
+          "C"
+        ],
+        "not_compared_parameters": [
+          "A",
+          "P"
+        ],
+        "layout_devices": 4,
+        "reference_devices": 4
+      },
+      "circuit": null,
+      "instance": null,
+      "subcircuit": null
+    },
+    {
+      "category": "device.parameter_tolerated",
+      "severity": "warning",
+      "description": "matched device parameter 'c' differs by 0.03124%, within the requested options.parameter_tolerance -- the reference value was snapped to the layout value for the comparison, so this dimension of the compare was verified only to that tolerance, not exactly (see docs/cli/lvs.md, 'device.parameter_tolerated')",
+      "side": "both",
+      "net": null,
+      "device": {
+        "layout": "\\$101",
+        "reference": "_CL_M4",
+        "class": "sky130_fd_pr__model__cap_mim_m4"
+      },
+      "property": {
+        "name": "c",
+        "layout": 5.0015625e-13,
+        "reference": 5e-13
+      },
+      "details": {
+        "relative_delta": 0.0003124023742580998,
+        "tolerance": 0.001
+      },
+      "circuit": null,
+      "instance": null,
+      "subcircuit": null
+    },
+    {
+      "category": "device.parameter_tolerated",
+      "severity": "warning",
+      "description": "matched device parameter 'c' differs by 0.03124%, within the requested options.parameter_tolerance -- the reference value was snapped to the layout value for the comparison, so this dimension of the compare was verified only to that tolerance, not exactly (see docs/cli/lvs.md, 'device.parameter_tolerated')",
+      "side": "both",
+      "net": null,
+      "device": {
+        "layout": "\\$102",
+        "reference": "_TS_M4",
+        "class": "sky130_fd_pr__model__cap_mim_m4"
+      },
+      "property": {
+        "name": "c",
+        "layout": 5.0015625e-13,
+        "reference": 5e-13
+      },
+      "details": {
+        "relative_delta": 0.0003124023742580998,
+        "tolerance": 0.001
+      },
+      "circuit": null,
+      "instance": null,
+      "subcircuit": null
+    },
+    {
+      "category": "device.parameter_tolerated",
+      "severity": "warning",
+      "description": "matched device parameter 'c' differs by 0.005776%, within the requested options.parameter_tolerance -- the reference value was snapped to the layout value for the comparison, so this dimension of the compare was verified only to that tolerance, not exactly (see docs/cli/lvs.md, 'device.parameter_tolerated')",
+      "side": "both",
+      "net": null,
+      "device": {
+        "layout": "\\$46",
+        "reference": "_SS_M3",
+        "class": "sky130_fd_pr__model__cap_mim"
+      },
+      "property": {
+        "name": "c",
+        "layout": 4.9997112e-12,
+        "reference": 5.0000000000000005e-12
+      },
+      "details": {
+        "relative_delta": 5.776000000006174e-05,
+        "tolerance": 0.001
+      },
+      "circuit": null,
+      "instance": null,
+      "subcircuit": null
+    },
+    {
+      "category": "device.parameter_tolerated",
+      "severity": "warning",
+      "description": "matched device parameter 'c' differs by 0.03124%, within the requested options.parameter_tolerance -- the reference value was snapped to the layout value for the comparison, so this dimension of the compare was verified only to that tolerance, not exactly (see docs/cli/lvs.md, 'device.parameter_tolerated')",
+      "side": "both",
+      "net": null,
+      "device": {
+        "layout": "\\$50",
+        "reference": "_CL_M3",
+        "class": "sky130_fd_pr__model__cap_mim"
+      },
+      "property": {
+        "name": "c",
+        "layout": 5.0015625e-13,
+        "reference": 5e-13
+      },
+      "details": {
+        "relative_delta": 0.0003124023742580998,
+        "tolerance": 0.001
+      },
+      "circuit": null,
+      "instance": null,
+      "subcircuit": null
+    },
+    {
+      "category": "device.parameter_tolerated",
+      "severity": "warning",
+      "description": "matched device parameter 'c' differs by 0.03124%, within the requested options.parameter_tolerance -- the reference value was snapped to the layout value for the comparison, so this dimension of the compare was verified only to that tolerance, not exactly (see docs/cli/lvs.md, 'device.parameter_tolerated')",
+      "side": "both",
+      "net": null,
+      "device": {
+        "layout": "\\$51",
+        "reference": "_TS_M3",
+        "class": "sky130_fd_pr__model__cap_mim"
+      },
+      "property": {
+        "name": "c",
+        "layout": 5.0015625e-13,
+        "reference": 5e-13
+      },
+      "details": {
+        "relative_delta": 0.0003124023742580998,
+        "tolerance": 0.001
+      },
+      "circuit": null,
+      "instance": null,
+      "subcircuit": null
+    },
+    {
+      "category": "device.parameter_tolerated",
+      "severity": "warning",
+      "description": "matched device parameter 'c' differs by 0.005776%, within the requested options.parameter_tolerance -- the reference value was snapped to the layout value for the comparison, so this dimension of the compare was verified only to that tolerance, not exactly (see docs/cli/lvs.md, 'device.parameter_tolerated')",
+      "side": "both",
+      "net": null,
+      "device": {
+        "layout": "\\$97",
+        "reference": "_SS_M4",
+        "class": "sky130_fd_pr__model__cap_mim_m4"
+      },
+      "property": {
+        "name": "c",
+        "layout": 4.9997112e-12,
+        "reference": 5.0000000000000005e-12
+      },
+      "details": {
+        "relative_delta": 5.776000000006174e-05,
+        "tolerance": 0.001
+      },
+      "circuit": null,
+      "instance": null,
+      "subcircuit": null
+    },
+    {
+      "category": "device.property",
+      "severity": "error",
+      "description": "matched device parameters differ",
+      "side": "both",
+      "net": null,
+      "device": {
+        "layout": "\\$1",
+        "reference": "_COMP_M3",
+        "class": "sky130_fd_pr__model__cap_mim"
+      },
+      "property": null,
+      "details": null,
+      "circuit": null,
+      "instance": null,
+      "subcircuit": null
+    },
+    {
+      "category": "device.property",
+      "severity": "error",
+      "description": "matched device parameters differ",
+      "side": "both",
+      "net": null,
+      "device": {
+        "layout": "\\$52",
+        "reference": "_COMP_M4",
+        "class": "sky130_fd_pr__model__cap_mim_m4"
+      },
+      "property": null,
+      "details": null,
+      "circuit": null,
+      "instance": null,
+      "subcircuit": null
+    },
+    {
+      "category": "hints.rejected",
+      "severity": "error",
+      "description": "top-level pin 'EA_CZ' is declared on both sides, so options.anchor_top_level_pins asserted that its layout net and its reference net are the same node -- and the comparer did not confirm that pairing. The two sides disagree about what this boundary pin is wired to (a permuted bus on a black-box macro is the ordinary cause: every bit wired straight through is topologically interchangeable with its neighbours, so only the pin names can tell them apart). Set options.anchor_top_level_pins: false to compare on topology alone (see docs/cli/lvs.md, \"Top-level pin anchoring\")",
+      "side": "both",
+      "net": {
+        "layout": "EA_CZ",
+        "reference": "EA_CZ"
+      },
+      "device": null,
+      "property": null,
+      "details": {
+        "anchored_top_level_pin": "EA_CZ"
+      },
+      "circuit": null,
+      "instance": null,
+      "subcircuit": null
+    },
+    {
+      "category": "hints.rejected",
+      "severity": "error",
+      "description": "top-level pin 'VOUT' is declared on both sides, so options.anchor_top_level_pins asserted that its layout net and its reference net are the same node -- and the comparer did not confirm that pairing. The two sides disagree about what this boundary pin is wired to (a permuted bus on a black-box macro is the ordinary cause: every bit wired straight through is topologically interchangeable with its neighbours, so only the pin names can tell them apart). Set options.anchor_top_level_pins: false to compare on topology alone (see docs/cli/lvs.md, \"Top-level pin anchoring\")",
+      "side": "both",
+      "net": {
+        "layout": "VOUT",
+        "reference": "VOUT"
+      },
+      "device": null,
+      "property": null,
+      "details": {
+        "anchored_top_level_pin": "VOUT"
+      },
+      "circuit": null,
+      "instance": null,
+      "subcircuit": null
+    },
+    {
+      "category": "topology.top_level_pins_anchored",
+      "severity": "warning",
+      "description": "6 top-level pin name(s) declared on both sides were anchored by name before comparing (options.anchor_top_level_pins): each one's layout net is asserted to match the reference net of the same-named pin, which the comparer's own topology-only net pairing does not otherwise require. Without it, two boundary nets with identical topology (e.g. two bits of a black-box macro's bus) are interchangeable and a swap between them compares clean -- see docs/cli/lvs.md, \"Top-level pin anchoring\"",
+      "side": "both",
+      "net": null,
+      "device": null,
+      "property": null,
+      "details": {
+        "pins": [
+          "CL_CMP",
+          "EA_CZ",
+          "SS",
+          "TS_CMP",
+          "VIN",
+          "VOUT"
+        ],
+        "pin_count": 6,
+        "pins_truncated": false
+      },
+      "circuit": null,
+      "instance": null,
+      "subcircuit": null
+    }
+  ],
+  "net_correspondence": [
+    {
+      "layout": "0",
+      "reference": "0",
+      "pin": false
+    },
+    {
+      "layout": "CL_CMP",
+      "reference": "CL_CMP",
+      "pin": true
+    },
+    {
+      "layout": "SS",
+      "reference": "SS",
+      "pin": true
+    },
+    {
+      "layout": "TS_CMP",
+      "reference": "TS_CMP",
+      "pin": true
+    },
+    {
+      "layout": "VIN",
+      "reference": "VIN",
+      "pin": true
+    }
+  ]
+}

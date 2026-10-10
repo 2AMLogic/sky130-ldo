@@ -126,6 +126,29 @@ electrical effect of the parasitics. The footprint verdict assumes the measured
 MOS-domain width (the comparator devices added in #230 are assumed to fit in the
 bank column's free height) and the #246 conservative folded-resistor bank.
 
+## Tool friction
+
+Filed generically at `2AMLogic/klayout-tools` per the friction protocol:
+
+- [#3019](https://github.com/2AMLogic/klayout-tools/issues/3019) -- `klt lvs`
+  `layout.file` vs `layout.netlist` disagree after `combine_devices` when two
+  MiM classes are stacked in parallel (why the verdict uses `layout.netlist`
+  and `lvs-gds-shape.json` is kept as evidence).
+- [#3020](https://github.com/2AMLogic/klayout-tools/issues/3020) -- the MiM
+  top-plate-via exclusion still cuts a via on the bottom-plate polygon outside
+  the top plate (false open; why the outer-plate strap uses a separate island).
+- [#3021](https://github.com/2AMLogic/klayout-tools/issues/3021) --
+  `--parasitics` double-counts plate overlap inside a recognised MiM.
+- [#3022](https://github.com/2AMLogic/klayout-tools/issues/3022) -- `gen
+  cap_array` has no parallel-connected or stacked mode (why it is not used).
+- [#3023](https://github.com/2AMLogic/klayout-tools/issues/3023) --
+  `parameter_tolerance` cannot pair devices in a passive-only cell without
+  `anchor_top_level_pins`.
+
+Found on the way, filed in this repo: the measured `ldo_core` layout is not
+clean under the PDK's own `sky130A_mr.drc` although the curated deck passes it
+(#260).
+
 ## Reproduce
 
 ```bash
