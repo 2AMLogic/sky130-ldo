@@ -1,0 +1,542 @@
+* issue #263 folded-resistor PVT/mismatch chains (isolated passive devices)
+Vsweep_idle sweep_idle 0 0
+Rsweep_idle sweep_idle 0 1k
+Vop_r_bias nop_r_bias 0 2
+Vop_r_fb_a nop_r_fb_a 0 0.6
+* r_r_bias_n1_noj: 1 x l=1500 w=0.42 joint=0
+VSr_r_bias_n1_noj nop_r_bias r_r_bias_n1_noj_0 0
+Br_r_bias_n1_noj m_r_r_bias_n1_noj 0 V = v(nop_r_bias)/i(VSr_r_bias_n1_noj)
+Xr_r_bias_n1_noj_0 r_r_bias_n1_noj_0 0 0 sky130_fd_pr__res_high_po w=0.42 l=1500
+* r_r_bias_n2_noj: 2 x l=750 w=0.42 joint=0
+VSr_r_bias_n2_noj nop_r_bias r_r_bias_n2_noj_0 0
+Br_r_bias_n2_noj m_r_r_bias_n2_noj 0 V = v(nop_r_bias)/i(VSr_r_bias_n2_noj)
+Xr_r_bias_n2_noj_0 r_r_bias_n2_noj_0 r_r_bias_n2_noj_s0 0 sky130_fd_pr__res_high_po w=0.42 l=750
+Xr_r_bias_n2_noj_1 r_r_bias_n2_noj_s0 0 0 sky130_fd_pr__res_high_po w=0.42 l=750
+* r_r_bias_n2_j1: 2 x l=750 w=0.42 joint=37.7905
+VSr_r_bias_n2_j1 nop_r_bias r_r_bias_n2_j1_0 0
+Br_r_bias_n2_j1 m_r_r_bias_n2_j1 0 V = v(nop_r_bias)/i(VSr_r_bias_n2_j1)
+Xr_r_bias_n2_j1_0 r_r_bias_n2_j1_0 r_r_bias_n2_j1_j0 0 sky130_fd_pr__res_high_po w=0.42 l=750
+RJr_r_bias_n2_j1_0 r_r_bias_n2_j1_j0 r_r_bias_n2_j1_s0 37.7905
+Xr_r_bias_n2_j1_1 r_r_bias_n2_j1_s0 0 0 sky130_fd_pr__res_high_po w=0.42 l=750
+* r_r_bias_n2_j4: 2 x l=750 w=0.42 joint=151.162
+VSr_r_bias_n2_j4 nop_r_bias r_r_bias_n2_j4_0 0
+Br_r_bias_n2_j4 m_r_r_bias_n2_j4 0 V = v(nop_r_bias)/i(VSr_r_bias_n2_j4)
+Xr_r_bias_n2_j4_0 r_r_bias_n2_j4_0 r_r_bias_n2_j4_j0 0 sky130_fd_pr__res_high_po w=0.42 l=750
+RJr_r_bias_n2_j4_0 r_r_bias_n2_j4_j0 r_r_bias_n2_j4_s0 151.162
+Xr_r_bias_n2_j4_1 r_r_bias_n2_j4_s0 0 0 sky130_fd_pr__res_high_po w=0.42 l=750
+* r_r_bias_n3_noj: 3 x l=500 w=0.42 joint=0
+VSr_r_bias_n3_noj nop_r_bias r_r_bias_n3_noj_0 0
+Br_r_bias_n3_noj m_r_r_bias_n3_noj 0 V = v(nop_r_bias)/i(VSr_r_bias_n3_noj)
+Xr_r_bias_n3_noj_0 r_r_bias_n3_noj_0 r_r_bias_n3_noj_s0 0 sky130_fd_pr__res_high_po w=0.42 l=500
+Xr_r_bias_n3_noj_1 r_r_bias_n3_noj_s0 r_r_bias_n3_noj_s1 0 sky130_fd_pr__res_high_po w=0.42 l=500
+Xr_r_bias_n3_noj_2 r_r_bias_n3_noj_s1 0 0 sky130_fd_pr__res_high_po w=0.42 l=500
+* r_r_bias_n3_j1: 3 x l=500 w=0.42 joint=37.7905
+VSr_r_bias_n3_j1 nop_r_bias r_r_bias_n3_j1_0 0
+Br_r_bias_n3_j1 m_r_r_bias_n3_j1 0 V = v(nop_r_bias)/i(VSr_r_bias_n3_j1)
+Xr_r_bias_n3_j1_0 r_r_bias_n3_j1_0 r_r_bias_n3_j1_j0 0 sky130_fd_pr__res_high_po w=0.42 l=500
+RJr_r_bias_n3_j1_0 r_r_bias_n3_j1_j0 r_r_bias_n3_j1_s0 37.7905
+Xr_r_bias_n3_j1_1 r_r_bias_n3_j1_s0 r_r_bias_n3_j1_j1 0 sky130_fd_pr__res_high_po w=0.42 l=500
+RJr_r_bias_n3_j1_1 r_r_bias_n3_j1_j1 r_r_bias_n3_j1_s1 37.7905
+Xr_r_bias_n3_j1_2 r_r_bias_n3_j1_s1 0 0 sky130_fd_pr__res_high_po w=0.42 l=500
+* r_r_bias_n3_j4: 3 x l=500 w=0.42 joint=151.162
+VSr_r_bias_n3_j4 nop_r_bias r_r_bias_n3_j4_0 0
+Br_r_bias_n3_j4 m_r_r_bias_n3_j4 0 V = v(nop_r_bias)/i(VSr_r_bias_n3_j4)
+Xr_r_bias_n3_j4_0 r_r_bias_n3_j4_0 r_r_bias_n3_j4_j0 0 sky130_fd_pr__res_high_po w=0.42 l=500
+RJr_r_bias_n3_j4_0 r_r_bias_n3_j4_j0 r_r_bias_n3_j4_s0 151.162
+Xr_r_bias_n3_j4_1 r_r_bias_n3_j4_s0 r_r_bias_n3_j4_j1 0 sky130_fd_pr__res_high_po w=0.42 l=500
+RJr_r_bias_n3_j4_1 r_r_bias_n3_j4_j1 r_r_bias_n3_j4_s1 151.162
+Xr_r_bias_n3_j4_2 r_r_bias_n3_j4_s1 0 0 sky130_fd_pr__res_high_po w=0.42 l=500
+* r_r_bias_n4_noj: 4 x l=375 w=0.42 joint=0
+VSr_r_bias_n4_noj nop_r_bias r_r_bias_n4_noj_0 0
+Br_r_bias_n4_noj m_r_r_bias_n4_noj 0 V = v(nop_r_bias)/i(VSr_r_bias_n4_noj)
+Xr_r_bias_n4_noj_0 r_r_bias_n4_noj_0 r_r_bias_n4_noj_s0 0 sky130_fd_pr__res_high_po w=0.42 l=375
+Xr_r_bias_n4_noj_1 r_r_bias_n4_noj_s0 r_r_bias_n4_noj_s1 0 sky130_fd_pr__res_high_po w=0.42 l=375
+Xr_r_bias_n4_noj_2 r_r_bias_n4_noj_s1 r_r_bias_n4_noj_s2 0 sky130_fd_pr__res_high_po w=0.42 l=375
+Xr_r_bias_n4_noj_3 r_r_bias_n4_noj_s2 0 0 sky130_fd_pr__res_high_po w=0.42 l=375
+* r_r_bias_n4_j1: 4 x l=375 w=0.42 joint=37.7905
+VSr_r_bias_n4_j1 nop_r_bias r_r_bias_n4_j1_0 0
+Br_r_bias_n4_j1 m_r_r_bias_n4_j1 0 V = v(nop_r_bias)/i(VSr_r_bias_n4_j1)
+Xr_r_bias_n4_j1_0 r_r_bias_n4_j1_0 r_r_bias_n4_j1_j0 0 sky130_fd_pr__res_high_po w=0.42 l=375
+RJr_r_bias_n4_j1_0 r_r_bias_n4_j1_j0 r_r_bias_n4_j1_s0 37.7905
+Xr_r_bias_n4_j1_1 r_r_bias_n4_j1_s0 r_r_bias_n4_j1_j1 0 sky130_fd_pr__res_high_po w=0.42 l=375
+RJr_r_bias_n4_j1_1 r_r_bias_n4_j1_j1 r_r_bias_n4_j1_s1 37.7905
+Xr_r_bias_n4_j1_2 r_r_bias_n4_j1_s1 r_r_bias_n4_j1_j2 0 sky130_fd_pr__res_high_po w=0.42 l=375
+RJr_r_bias_n4_j1_2 r_r_bias_n4_j1_j2 r_r_bias_n4_j1_s2 37.7905
+Xr_r_bias_n4_j1_3 r_r_bias_n4_j1_s2 0 0 sky130_fd_pr__res_high_po w=0.42 l=375
+* r_r_bias_n4_j4: 4 x l=375 w=0.42 joint=151.162
+VSr_r_bias_n4_j4 nop_r_bias r_r_bias_n4_j4_0 0
+Br_r_bias_n4_j4 m_r_r_bias_n4_j4 0 V = v(nop_r_bias)/i(VSr_r_bias_n4_j4)
+Xr_r_bias_n4_j4_0 r_r_bias_n4_j4_0 r_r_bias_n4_j4_j0 0 sky130_fd_pr__res_high_po w=0.42 l=375
+RJr_r_bias_n4_j4_0 r_r_bias_n4_j4_j0 r_r_bias_n4_j4_s0 151.162
+Xr_r_bias_n4_j4_1 r_r_bias_n4_j4_s0 r_r_bias_n4_j4_j1 0 sky130_fd_pr__res_high_po w=0.42 l=375
+RJr_r_bias_n4_j4_1 r_r_bias_n4_j4_j1 r_r_bias_n4_j4_s1 151.162
+Xr_r_bias_n4_j4_2 r_r_bias_n4_j4_s1 r_r_bias_n4_j4_j2 0 sky130_fd_pr__res_high_po w=0.42 l=375
+RJr_r_bias_n4_j4_2 r_r_bias_n4_j4_j2 r_r_bias_n4_j4_s2 151.162
+Xr_r_bias_n4_j4_3 r_r_bias_n4_j4_s2 0 0 sky130_fd_pr__res_high_po w=0.42 l=375
+* r_r_bias_n5_noj: 5 x l=300 w=0.42 joint=0
+VSr_r_bias_n5_noj nop_r_bias r_r_bias_n5_noj_0 0
+Br_r_bias_n5_noj m_r_r_bias_n5_noj 0 V = v(nop_r_bias)/i(VSr_r_bias_n5_noj)
+Xr_r_bias_n5_noj_0 r_r_bias_n5_noj_0 r_r_bias_n5_noj_s0 0 sky130_fd_pr__res_high_po w=0.42 l=300
+Xr_r_bias_n5_noj_1 r_r_bias_n5_noj_s0 r_r_bias_n5_noj_s1 0 sky130_fd_pr__res_high_po w=0.42 l=300
+Xr_r_bias_n5_noj_2 r_r_bias_n5_noj_s1 r_r_bias_n5_noj_s2 0 sky130_fd_pr__res_high_po w=0.42 l=300
+Xr_r_bias_n5_noj_3 r_r_bias_n5_noj_s2 r_r_bias_n5_noj_s3 0 sky130_fd_pr__res_high_po w=0.42 l=300
+Xr_r_bias_n5_noj_4 r_r_bias_n5_noj_s3 0 0 sky130_fd_pr__res_high_po w=0.42 l=300
+* r_r_bias_n5_j1: 5 x l=300 w=0.42 joint=37.7905
+VSr_r_bias_n5_j1 nop_r_bias r_r_bias_n5_j1_0 0
+Br_r_bias_n5_j1 m_r_r_bias_n5_j1 0 V = v(nop_r_bias)/i(VSr_r_bias_n5_j1)
+Xr_r_bias_n5_j1_0 r_r_bias_n5_j1_0 r_r_bias_n5_j1_j0 0 sky130_fd_pr__res_high_po w=0.42 l=300
+RJr_r_bias_n5_j1_0 r_r_bias_n5_j1_j0 r_r_bias_n5_j1_s0 37.7905
+Xr_r_bias_n5_j1_1 r_r_bias_n5_j1_s0 r_r_bias_n5_j1_j1 0 sky130_fd_pr__res_high_po w=0.42 l=300
+RJr_r_bias_n5_j1_1 r_r_bias_n5_j1_j1 r_r_bias_n5_j1_s1 37.7905
+Xr_r_bias_n5_j1_2 r_r_bias_n5_j1_s1 r_r_bias_n5_j1_j2 0 sky130_fd_pr__res_high_po w=0.42 l=300
+RJr_r_bias_n5_j1_2 r_r_bias_n5_j1_j2 r_r_bias_n5_j1_s2 37.7905
+Xr_r_bias_n5_j1_3 r_r_bias_n5_j1_s2 r_r_bias_n5_j1_j3 0 sky130_fd_pr__res_high_po w=0.42 l=300
+RJr_r_bias_n5_j1_3 r_r_bias_n5_j1_j3 r_r_bias_n5_j1_s3 37.7905
+Xr_r_bias_n5_j1_4 r_r_bias_n5_j1_s3 0 0 sky130_fd_pr__res_high_po w=0.42 l=300
+* r_r_bias_n5_j4: 5 x l=300 w=0.42 joint=151.162
+VSr_r_bias_n5_j4 nop_r_bias r_r_bias_n5_j4_0 0
+Br_r_bias_n5_j4 m_r_r_bias_n5_j4 0 V = v(nop_r_bias)/i(VSr_r_bias_n5_j4)
+Xr_r_bias_n5_j4_0 r_r_bias_n5_j4_0 r_r_bias_n5_j4_j0 0 sky130_fd_pr__res_high_po w=0.42 l=300
+RJr_r_bias_n5_j4_0 r_r_bias_n5_j4_j0 r_r_bias_n5_j4_s0 151.162
+Xr_r_bias_n5_j4_1 r_r_bias_n5_j4_s0 r_r_bias_n5_j4_j1 0 sky130_fd_pr__res_high_po w=0.42 l=300
+RJr_r_bias_n5_j4_1 r_r_bias_n5_j4_j1 r_r_bias_n5_j4_s1 151.162
+Xr_r_bias_n5_j4_2 r_r_bias_n5_j4_s1 r_r_bias_n5_j4_j2 0 sky130_fd_pr__res_high_po w=0.42 l=300
+RJr_r_bias_n5_j4_2 r_r_bias_n5_j4_j2 r_r_bias_n5_j4_s2 151.162
+Xr_r_bias_n5_j4_3 r_r_bias_n5_j4_s2 r_r_bias_n5_j4_j3 0 sky130_fd_pr__res_high_po w=0.42 l=300
+RJr_r_bias_n5_j4_3 r_r_bias_n5_j4_j3 r_r_bias_n5_j4_s3 151.162
+Xr_r_bias_n5_j4_4 r_r_bias_n5_j4_s3 0 0 sky130_fd_pr__res_high_po w=0.42 l=300
+* r_r_bias_n6_noj: 6 x l=250 w=0.42 joint=0
+VSr_r_bias_n6_noj nop_r_bias r_r_bias_n6_noj_0 0
+Br_r_bias_n6_noj m_r_r_bias_n6_noj 0 V = v(nop_r_bias)/i(VSr_r_bias_n6_noj)
+Xr_r_bias_n6_noj_0 r_r_bias_n6_noj_0 r_r_bias_n6_noj_s0 0 sky130_fd_pr__res_high_po w=0.42 l=250
+Xr_r_bias_n6_noj_1 r_r_bias_n6_noj_s0 r_r_bias_n6_noj_s1 0 sky130_fd_pr__res_high_po w=0.42 l=250
+Xr_r_bias_n6_noj_2 r_r_bias_n6_noj_s1 r_r_bias_n6_noj_s2 0 sky130_fd_pr__res_high_po w=0.42 l=250
+Xr_r_bias_n6_noj_3 r_r_bias_n6_noj_s2 r_r_bias_n6_noj_s3 0 sky130_fd_pr__res_high_po w=0.42 l=250
+Xr_r_bias_n6_noj_4 r_r_bias_n6_noj_s3 r_r_bias_n6_noj_s4 0 sky130_fd_pr__res_high_po w=0.42 l=250
+Xr_r_bias_n6_noj_5 r_r_bias_n6_noj_s4 0 0 sky130_fd_pr__res_high_po w=0.42 l=250
+* r_r_bias_n6_j1: 6 x l=250 w=0.42 joint=37.7905
+VSr_r_bias_n6_j1 nop_r_bias r_r_bias_n6_j1_0 0
+Br_r_bias_n6_j1 m_r_r_bias_n6_j1 0 V = v(nop_r_bias)/i(VSr_r_bias_n6_j1)
+Xr_r_bias_n6_j1_0 r_r_bias_n6_j1_0 r_r_bias_n6_j1_j0 0 sky130_fd_pr__res_high_po w=0.42 l=250
+RJr_r_bias_n6_j1_0 r_r_bias_n6_j1_j0 r_r_bias_n6_j1_s0 37.7905
+Xr_r_bias_n6_j1_1 r_r_bias_n6_j1_s0 r_r_bias_n6_j1_j1 0 sky130_fd_pr__res_high_po w=0.42 l=250
+RJr_r_bias_n6_j1_1 r_r_bias_n6_j1_j1 r_r_bias_n6_j1_s1 37.7905
+Xr_r_bias_n6_j1_2 r_r_bias_n6_j1_s1 r_r_bias_n6_j1_j2 0 sky130_fd_pr__res_high_po w=0.42 l=250
+RJr_r_bias_n6_j1_2 r_r_bias_n6_j1_j2 r_r_bias_n6_j1_s2 37.7905
+Xr_r_bias_n6_j1_3 r_r_bias_n6_j1_s2 r_r_bias_n6_j1_j3 0 sky130_fd_pr__res_high_po w=0.42 l=250
+RJr_r_bias_n6_j1_3 r_r_bias_n6_j1_j3 r_r_bias_n6_j1_s3 37.7905
+Xr_r_bias_n6_j1_4 r_r_bias_n6_j1_s3 r_r_bias_n6_j1_j4 0 sky130_fd_pr__res_high_po w=0.42 l=250
+RJr_r_bias_n6_j1_4 r_r_bias_n6_j1_j4 r_r_bias_n6_j1_s4 37.7905
+Xr_r_bias_n6_j1_5 r_r_bias_n6_j1_s4 0 0 sky130_fd_pr__res_high_po w=0.42 l=250
+* r_r_bias_n6_j4: 6 x l=250 w=0.42 joint=151.162
+VSr_r_bias_n6_j4 nop_r_bias r_r_bias_n6_j4_0 0
+Br_r_bias_n6_j4 m_r_r_bias_n6_j4 0 V = v(nop_r_bias)/i(VSr_r_bias_n6_j4)
+Xr_r_bias_n6_j4_0 r_r_bias_n6_j4_0 r_r_bias_n6_j4_j0 0 sky130_fd_pr__res_high_po w=0.42 l=250
+RJr_r_bias_n6_j4_0 r_r_bias_n6_j4_j0 r_r_bias_n6_j4_s0 151.162
+Xr_r_bias_n6_j4_1 r_r_bias_n6_j4_s0 r_r_bias_n6_j4_j1 0 sky130_fd_pr__res_high_po w=0.42 l=250
+RJr_r_bias_n6_j4_1 r_r_bias_n6_j4_j1 r_r_bias_n6_j4_s1 151.162
+Xr_r_bias_n6_j4_2 r_r_bias_n6_j4_s1 r_r_bias_n6_j4_j2 0 sky130_fd_pr__res_high_po w=0.42 l=250
+RJr_r_bias_n6_j4_2 r_r_bias_n6_j4_j2 r_r_bias_n6_j4_s2 151.162
+Xr_r_bias_n6_j4_3 r_r_bias_n6_j4_s2 r_r_bias_n6_j4_j3 0 sky130_fd_pr__res_high_po w=0.42 l=250
+RJr_r_bias_n6_j4_3 r_r_bias_n6_j4_j3 r_r_bias_n6_j4_s3 151.162
+Xr_r_bias_n6_j4_4 r_r_bias_n6_j4_s3 r_r_bias_n6_j4_j4 0 sky130_fd_pr__res_high_po w=0.42 l=250
+RJr_r_bias_n6_j4_4 r_r_bias_n6_j4_j4 r_r_bias_n6_j4_s4 151.162
+Xr_r_bias_n6_j4_5 r_r_bias_n6_j4_s4 0 0 sky130_fd_pr__res_high_po w=0.42 l=250
+* r_r_bias_n8_noj: 8 x l=187.5 w=0.42 joint=0
+VSr_r_bias_n8_noj nop_r_bias r_r_bias_n8_noj_0 0
+Br_r_bias_n8_noj m_r_r_bias_n8_noj 0 V = v(nop_r_bias)/i(VSr_r_bias_n8_noj)
+Xr_r_bias_n8_noj_0 r_r_bias_n8_noj_0 r_r_bias_n8_noj_s0 0 sky130_fd_pr__res_high_po w=0.42 l=187.5
+Xr_r_bias_n8_noj_1 r_r_bias_n8_noj_s0 r_r_bias_n8_noj_s1 0 sky130_fd_pr__res_high_po w=0.42 l=187.5
+Xr_r_bias_n8_noj_2 r_r_bias_n8_noj_s1 r_r_bias_n8_noj_s2 0 sky130_fd_pr__res_high_po w=0.42 l=187.5
+Xr_r_bias_n8_noj_3 r_r_bias_n8_noj_s2 r_r_bias_n8_noj_s3 0 sky130_fd_pr__res_high_po w=0.42 l=187.5
+Xr_r_bias_n8_noj_4 r_r_bias_n8_noj_s3 r_r_bias_n8_noj_s4 0 sky130_fd_pr__res_high_po w=0.42 l=187.5
+Xr_r_bias_n8_noj_5 r_r_bias_n8_noj_s4 r_r_bias_n8_noj_s5 0 sky130_fd_pr__res_high_po w=0.42 l=187.5
+Xr_r_bias_n8_noj_6 r_r_bias_n8_noj_s5 r_r_bias_n8_noj_s6 0 sky130_fd_pr__res_high_po w=0.42 l=187.5
+Xr_r_bias_n8_noj_7 r_r_bias_n8_noj_s6 0 0 sky130_fd_pr__res_high_po w=0.42 l=187.5
+* r_r_bias_n8_j1: 8 x l=187.5 w=0.42 joint=37.7905
+VSr_r_bias_n8_j1 nop_r_bias r_r_bias_n8_j1_0 0
+Br_r_bias_n8_j1 m_r_r_bias_n8_j1 0 V = v(nop_r_bias)/i(VSr_r_bias_n8_j1)
+Xr_r_bias_n8_j1_0 r_r_bias_n8_j1_0 r_r_bias_n8_j1_j0 0 sky130_fd_pr__res_high_po w=0.42 l=187.5
+RJr_r_bias_n8_j1_0 r_r_bias_n8_j1_j0 r_r_bias_n8_j1_s0 37.7905
+Xr_r_bias_n8_j1_1 r_r_bias_n8_j1_s0 r_r_bias_n8_j1_j1 0 sky130_fd_pr__res_high_po w=0.42 l=187.5
+RJr_r_bias_n8_j1_1 r_r_bias_n8_j1_j1 r_r_bias_n8_j1_s1 37.7905
+Xr_r_bias_n8_j1_2 r_r_bias_n8_j1_s1 r_r_bias_n8_j1_j2 0 sky130_fd_pr__res_high_po w=0.42 l=187.5
+RJr_r_bias_n8_j1_2 r_r_bias_n8_j1_j2 r_r_bias_n8_j1_s2 37.7905
+Xr_r_bias_n8_j1_3 r_r_bias_n8_j1_s2 r_r_bias_n8_j1_j3 0 sky130_fd_pr__res_high_po w=0.42 l=187.5
+RJr_r_bias_n8_j1_3 r_r_bias_n8_j1_j3 r_r_bias_n8_j1_s3 37.7905
+Xr_r_bias_n8_j1_4 r_r_bias_n8_j1_s3 r_r_bias_n8_j1_j4 0 sky130_fd_pr__res_high_po w=0.42 l=187.5
+RJr_r_bias_n8_j1_4 r_r_bias_n8_j1_j4 r_r_bias_n8_j1_s4 37.7905
+Xr_r_bias_n8_j1_5 r_r_bias_n8_j1_s4 r_r_bias_n8_j1_j5 0 sky130_fd_pr__res_high_po w=0.42 l=187.5
+RJr_r_bias_n8_j1_5 r_r_bias_n8_j1_j5 r_r_bias_n8_j1_s5 37.7905
+Xr_r_bias_n8_j1_6 r_r_bias_n8_j1_s5 r_r_bias_n8_j1_j6 0 sky130_fd_pr__res_high_po w=0.42 l=187.5
+RJr_r_bias_n8_j1_6 r_r_bias_n8_j1_j6 r_r_bias_n8_j1_s6 37.7905
+Xr_r_bias_n8_j1_7 r_r_bias_n8_j1_s6 0 0 sky130_fd_pr__res_high_po w=0.42 l=187.5
+* r_r_bias_n8_j4: 8 x l=187.5 w=0.42 joint=151.162
+VSr_r_bias_n8_j4 nop_r_bias r_r_bias_n8_j4_0 0
+Br_r_bias_n8_j4 m_r_r_bias_n8_j4 0 V = v(nop_r_bias)/i(VSr_r_bias_n8_j4)
+Xr_r_bias_n8_j4_0 r_r_bias_n8_j4_0 r_r_bias_n8_j4_j0 0 sky130_fd_pr__res_high_po w=0.42 l=187.5
+RJr_r_bias_n8_j4_0 r_r_bias_n8_j4_j0 r_r_bias_n8_j4_s0 151.162
+Xr_r_bias_n8_j4_1 r_r_bias_n8_j4_s0 r_r_bias_n8_j4_j1 0 sky130_fd_pr__res_high_po w=0.42 l=187.5
+RJr_r_bias_n8_j4_1 r_r_bias_n8_j4_j1 r_r_bias_n8_j4_s1 151.162
+Xr_r_bias_n8_j4_2 r_r_bias_n8_j4_s1 r_r_bias_n8_j4_j2 0 sky130_fd_pr__res_high_po w=0.42 l=187.5
+RJr_r_bias_n8_j4_2 r_r_bias_n8_j4_j2 r_r_bias_n8_j4_s2 151.162
+Xr_r_bias_n8_j4_3 r_r_bias_n8_j4_s2 r_r_bias_n8_j4_j3 0 sky130_fd_pr__res_high_po w=0.42 l=187.5
+RJr_r_bias_n8_j4_3 r_r_bias_n8_j4_j3 r_r_bias_n8_j4_s3 151.162
+Xr_r_bias_n8_j4_4 r_r_bias_n8_j4_s3 r_r_bias_n8_j4_j4 0 sky130_fd_pr__res_high_po w=0.42 l=187.5
+RJr_r_bias_n8_j4_4 r_r_bias_n8_j4_j4 r_r_bias_n8_j4_s4 151.162
+Xr_r_bias_n8_j4_5 r_r_bias_n8_j4_s4 r_r_bias_n8_j4_j5 0 sky130_fd_pr__res_high_po w=0.42 l=187.5
+RJr_r_bias_n8_j4_5 r_r_bias_n8_j4_j5 r_r_bias_n8_j4_s5 151.162
+Xr_r_bias_n8_j4_6 r_r_bias_n8_j4_s5 r_r_bias_n8_j4_j6 0 sky130_fd_pr__res_high_po w=0.42 l=187.5
+RJr_r_bias_n8_j4_6 r_r_bias_n8_j4_j6 r_r_bias_n8_j4_s6 151.162
+Xr_r_bias_n8_j4_7 r_r_bias_n8_j4_s6 0 0 sky130_fd_pr__res_high_po w=0.42 l=187.5
+* r_r_bias_n10_noj: 10 x l=150 w=0.42 joint=0
+VSr_r_bias_n10_noj nop_r_bias r_r_bias_n10_noj_0 0
+Br_r_bias_n10_noj m_r_r_bias_n10_noj 0 V = v(nop_r_bias)/i(VSr_r_bias_n10_noj)
+Xr_r_bias_n10_noj_0 r_r_bias_n10_noj_0 r_r_bias_n10_noj_s0 0 sky130_fd_pr__res_high_po w=0.42 l=150
+Xr_r_bias_n10_noj_1 r_r_bias_n10_noj_s0 r_r_bias_n10_noj_s1 0 sky130_fd_pr__res_high_po w=0.42 l=150
+Xr_r_bias_n10_noj_2 r_r_bias_n10_noj_s1 r_r_bias_n10_noj_s2 0 sky130_fd_pr__res_high_po w=0.42 l=150
+Xr_r_bias_n10_noj_3 r_r_bias_n10_noj_s2 r_r_bias_n10_noj_s3 0 sky130_fd_pr__res_high_po w=0.42 l=150
+Xr_r_bias_n10_noj_4 r_r_bias_n10_noj_s3 r_r_bias_n10_noj_s4 0 sky130_fd_pr__res_high_po w=0.42 l=150
+Xr_r_bias_n10_noj_5 r_r_bias_n10_noj_s4 r_r_bias_n10_noj_s5 0 sky130_fd_pr__res_high_po w=0.42 l=150
+Xr_r_bias_n10_noj_6 r_r_bias_n10_noj_s5 r_r_bias_n10_noj_s6 0 sky130_fd_pr__res_high_po w=0.42 l=150
+Xr_r_bias_n10_noj_7 r_r_bias_n10_noj_s6 r_r_bias_n10_noj_s7 0 sky130_fd_pr__res_high_po w=0.42 l=150
+Xr_r_bias_n10_noj_8 r_r_bias_n10_noj_s7 r_r_bias_n10_noj_s8 0 sky130_fd_pr__res_high_po w=0.42 l=150
+Xr_r_bias_n10_noj_9 r_r_bias_n10_noj_s8 0 0 sky130_fd_pr__res_high_po w=0.42 l=150
+* r_r_bias_n10_j1: 10 x l=150 w=0.42 joint=37.7905
+VSr_r_bias_n10_j1 nop_r_bias r_r_bias_n10_j1_0 0
+Br_r_bias_n10_j1 m_r_r_bias_n10_j1 0 V = v(nop_r_bias)/i(VSr_r_bias_n10_j1)
+Xr_r_bias_n10_j1_0 r_r_bias_n10_j1_0 r_r_bias_n10_j1_j0 0 sky130_fd_pr__res_high_po w=0.42 l=150
+RJr_r_bias_n10_j1_0 r_r_bias_n10_j1_j0 r_r_bias_n10_j1_s0 37.7905
+Xr_r_bias_n10_j1_1 r_r_bias_n10_j1_s0 r_r_bias_n10_j1_j1 0 sky130_fd_pr__res_high_po w=0.42 l=150
+RJr_r_bias_n10_j1_1 r_r_bias_n10_j1_j1 r_r_bias_n10_j1_s1 37.7905
+Xr_r_bias_n10_j1_2 r_r_bias_n10_j1_s1 r_r_bias_n10_j1_j2 0 sky130_fd_pr__res_high_po w=0.42 l=150
+RJr_r_bias_n10_j1_2 r_r_bias_n10_j1_j2 r_r_bias_n10_j1_s2 37.7905
+Xr_r_bias_n10_j1_3 r_r_bias_n10_j1_s2 r_r_bias_n10_j1_j3 0 sky130_fd_pr__res_high_po w=0.42 l=150
+RJr_r_bias_n10_j1_3 r_r_bias_n10_j1_j3 r_r_bias_n10_j1_s3 37.7905
+Xr_r_bias_n10_j1_4 r_r_bias_n10_j1_s3 r_r_bias_n10_j1_j4 0 sky130_fd_pr__res_high_po w=0.42 l=150
+RJr_r_bias_n10_j1_4 r_r_bias_n10_j1_j4 r_r_bias_n10_j1_s4 37.7905
+Xr_r_bias_n10_j1_5 r_r_bias_n10_j1_s4 r_r_bias_n10_j1_j5 0 sky130_fd_pr__res_high_po w=0.42 l=150
+RJr_r_bias_n10_j1_5 r_r_bias_n10_j1_j5 r_r_bias_n10_j1_s5 37.7905
+Xr_r_bias_n10_j1_6 r_r_bias_n10_j1_s5 r_r_bias_n10_j1_j6 0 sky130_fd_pr__res_high_po w=0.42 l=150
+RJr_r_bias_n10_j1_6 r_r_bias_n10_j1_j6 r_r_bias_n10_j1_s6 37.7905
+Xr_r_bias_n10_j1_7 r_r_bias_n10_j1_s6 r_r_bias_n10_j1_j7 0 sky130_fd_pr__res_high_po w=0.42 l=150
+RJr_r_bias_n10_j1_7 r_r_bias_n10_j1_j7 r_r_bias_n10_j1_s7 37.7905
+Xr_r_bias_n10_j1_8 r_r_bias_n10_j1_s7 r_r_bias_n10_j1_j8 0 sky130_fd_pr__res_high_po w=0.42 l=150
+RJr_r_bias_n10_j1_8 r_r_bias_n10_j1_j8 r_r_bias_n10_j1_s8 37.7905
+Xr_r_bias_n10_j1_9 r_r_bias_n10_j1_s8 0 0 sky130_fd_pr__res_high_po w=0.42 l=150
+* r_r_bias_n10_j4: 10 x l=150 w=0.42 joint=151.162
+VSr_r_bias_n10_j4 nop_r_bias r_r_bias_n10_j4_0 0
+Br_r_bias_n10_j4 m_r_r_bias_n10_j4 0 V = v(nop_r_bias)/i(VSr_r_bias_n10_j4)
+Xr_r_bias_n10_j4_0 r_r_bias_n10_j4_0 r_r_bias_n10_j4_j0 0 sky130_fd_pr__res_high_po w=0.42 l=150
+RJr_r_bias_n10_j4_0 r_r_bias_n10_j4_j0 r_r_bias_n10_j4_s0 151.162
+Xr_r_bias_n10_j4_1 r_r_bias_n10_j4_s0 r_r_bias_n10_j4_j1 0 sky130_fd_pr__res_high_po w=0.42 l=150
+RJr_r_bias_n10_j4_1 r_r_bias_n10_j4_j1 r_r_bias_n10_j4_s1 151.162
+Xr_r_bias_n10_j4_2 r_r_bias_n10_j4_s1 r_r_bias_n10_j4_j2 0 sky130_fd_pr__res_high_po w=0.42 l=150
+RJr_r_bias_n10_j4_2 r_r_bias_n10_j4_j2 r_r_bias_n10_j4_s2 151.162
+Xr_r_bias_n10_j4_3 r_r_bias_n10_j4_s2 r_r_bias_n10_j4_j3 0 sky130_fd_pr__res_high_po w=0.42 l=150
+RJr_r_bias_n10_j4_3 r_r_bias_n10_j4_j3 r_r_bias_n10_j4_s3 151.162
+Xr_r_bias_n10_j4_4 r_r_bias_n10_j4_s3 r_r_bias_n10_j4_j4 0 sky130_fd_pr__res_high_po w=0.42 l=150
+RJr_r_bias_n10_j4_4 r_r_bias_n10_j4_j4 r_r_bias_n10_j4_s4 151.162
+Xr_r_bias_n10_j4_5 r_r_bias_n10_j4_s4 r_r_bias_n10_j4_j5 0 sky130_fd_pr__res_high_po w=0.42 l=150
+RJr_r_bias_n10_j4_5 r_r_bias_n10_j4_j5 r_r_bias_n10_j4_s5 151.162
+Xr_r_bias_n10_j4_6 r_r_bias_n10_j4_s5 r_r_bias_n10_j4_j6 0 sky130_fd_pr__res_high_po w=0.42 l=150
+RJr_r_bias_n10_j4_6 r_r_bias_n10_j4_j6 r_r_bias_n10_j4_s6 151.162
+Xr_r_bias_n10_j4_7 r_r_bias_n10_j4_s6 r_r_bias_n10_j4_j7 0 sky130_fd_pr__res_high_po w=0.42 l=150
+RJr_r_bias_n10_j4_7 r_r_bias_n10_j4_j7 r_r_bias_n10_j4_s7 151.162
+Xr_r_bias_n10_j4_8 r_r_bias_n10_j4_s7 r_r_bias_n10_j4_j8 0 sky130_fd_pr__res_high_po w=0.42 l=150
+RJr_r_bias_n10_j4_8 r_r_bias_n10_j4_j8 r_r_bias_n10_j4_s8 151.162
+Xr_r_bias_n10_j4_9 r_r_bias_n10_j4_s8 0 0 sky130_fd_pr__res_high_po w=0.42 l=150
+* r_r_bias_n12_noj: 12 x l=125 w=0.42 joint=0
+VSr_r_bias_n12_noj nop_r_bias r_r_bias_n12_noj_0 0
+Br_r_bias_n12_noj m_r_r_bias_n12_noj 0 V = v(nop_r_bias)/i(VSr_r_bias_n12_noj)
+Xr_r_bias_n12_noj_0 r_r_bias_n12_noj_0 r_r_bias_n12_noj_s0 0 sky130_fd_pr__res_high_po w=0.42 l=125
+Xr_r_bias_n12_noj_1 r_r_bias_n12_noj_s0 r_r_bias_n12_noj_s1 0 sky130_fd_pr__res_high_po w=0.42 l=125
+Xr_r_bias_n12_noj_2 r_r_bias_n12_noj_s1 r_r_bias_n12_noj_s2 0 sky130_fd_pr__res_high_po w=0.42 l=125
+Xr_r_bias_n12_noj_3 r_r_bias_n12_noj_s2 r_r_bias_n12_noj_s3 0 sky130_fd_pr__res_high_po w=0.42 l=125
+Xr_r_bias_n12_noj_4 r_r_bias_n12_noj_s3 r_r_bias_n12_noj_s4 0 sky130_fd_pr__res_high_po w=0.42 l=125
+Xr_r_bias_n12_noj_5 r_r_bias_n12_noj_s4 r_r_bias_n12_noj_s5 0 sky130_fd_pr__res_high_po w=0.42 l=125
+Xr_r_bias_n12_noj_6 r_r_bias_n12_noj_s5 r_r_bias_n12_noj_s6 0 sky130_fd_pr__res_high_po w=0.42 l=125
+Xr_r_bias_n12_noj_7 r_r_bias_n12_noj_s6 r_r_bias_n12_noj_s7 0 sky130_fd_pr__res_high_po w=0.42 l=125
+Xr_r_bias_n12_noj_8 r_r_bias_n12_noj_s7 r_r_bias_n12_noj_s8 0 sky130_fd_pr__res_high_po w=0.42 l=125
+Xr_r_bias_n12_noj_9 r_r_bias_n12_noj_s8 r_r_bias_n12_noj_s9 0 sky130_fd_pr__res_high_po w=0.42 l=125
+Xr_r_bias_n12_noj_10 r_r_bias_n12_noj_s9 r_r_bias_n12_noj_s10 0 sky130_fd_pr__res_high_po w=0.42 l=125
+Xr_r_bias_n12_noj_11 r_r_bias_n12_noj_s10 0 0 sky130_fd_pr__res_high_po w=0.42 l=125
+* r_r_bias_n12_j1: 12 x l=125 w=0.42 joint=37.7905
+VSr_r_bias_n12_j1 nop_r_bias r_r_bias_n12_j1_0 0
+Br_r_bias_n12_j1 m_r_r_bias_n12_j1 0 V = v(nop_r_bias)/i(VSr_r_bias_n12_j1)
+Xr_r_bias_n12_j1_0 r_r_bias_n12_j1_0 r_r_bias_n12_j1_j0 0 sky130_fd_pr__res_high_po w=0.42 l=125
+RJr_r_bias_n12_j1_0 r_r_bias_n12_j1_j0 r_r_bias_n12_j1_s0 37.7905
+Xr_r_bias_n12_j1_1 r_r_bias_n12_j1_s0 r_r_bias_n12_j1_j1 0 sky130_fd_pr__res_high_po w=0.42 l=125
+RJr_r_bias_n12_j1_1 r_r_bias_n12_j1_j1 r_r_bias_n12_j1_s1 37.7905
+Xr_r_bias_n12_j1_2 r_r_bias_n12_j1_s1 r_r_bias_n12_j1_j2 0 sky130_fd_pr__res_high_po w=0.42 l=125
+RJr_r_bias_n12_j1_2 r_r_bias_n12_j1_j2 r_r_bias_n12_j1_s2 37.7905
+Xr_r_bias_n12_j1_3 r_r_bias_n12_j1_s2 r_r_bias_n12_j1_j3 0 sky130_fd_pr__res_high_po w=0.42 l=125
+RJr_r_bias_n12_j1_3 r_r_bias_n12_j1_j3 r_r_bias_n12_j1_s3 37.7905
+Xr_r_bias_n12_j1_4 r_r_bias_n12_j1_s3 r_r_bias_n12_j1_j4 0 sky130_fd_pr__res_high_po w=0.42 l=125
+RJr_r_bias_n12_j1_4 r_r_bias_n12_j1_j4 r_r_bias_n12_j1_s4 37.7905
+Xr_r_bias_n12_j1_5 r_r_bias_n12_j1_s4 r_r_bias_n12_j1_j5 0 sky130_fd_pr__res_high_po w=0.42 l=125
+RJr_r_bias_n12_j1_5 r_r_bias_n12_j1_j5 r_r_bias_n12_j1_s5 37.7905
+Xr_r_bias_n12_j1_6 r_r_bias_n12_j1_s5 r_r_bias_n12_j1_j6 0 sky130_fd_pr__res_high_po w=0.42 l=125
+RJr_r_bias_n12_j1_6 r_r_bias_n12_j1_j6 r_r_bias_n12_j1_s6 37.7905
+Xr_r_bias_n12_j1_7 r_r_bias_n12_j1_s6 r_r_bias_n12_j1_j7 0 sky130_fd_pr__res_high_po w=0.42 l=125
+RJr_r_bias_n12_j1_7 r_r_bias_n12_j1_j7 r_r_bias_n12_j1_s7 37.7905
+Xr_r_bias_n12_j1_8 r_r_bias_n12_j1_s7 r_r_bias_n12_j1_j8 0 sky130_fd_pr__res_high_po w=0.42 l=125
+RJr_r_bias_n12_j1_8 r_r_bias_n12_j1_j8 r_r_bias_n12_j1_s8 37.7905
+Xr_r_bias_n12_j1_9 r_r_bias_n12_j1_s8 r_r_bias_n12_j1_j9 0 sky130_fd_pr__res_high_po w=0.42 l=125
+RJr_r_bias_n12_j1_9 r_r_bias_n12_j1_j9 r_r_bias_n12_j1_s9 37.7905
+Xr_r_bias_n12_j1_10 r_r_bias_n12_j1_s9 r_r_bias_n12_j1_j10 0 sky130_fd_pr__res_high_po w=0.42 l=125
+RJr_r_bias_n12_j1_10 r_r_bias_n12_j1_j10 r_r_bias_n12_j1_s10 37.7905
+Xr_r_bias_n12_j1_11 r_r_bias_n12_j1_s10 0 0 sky130_fd_pr__res_high_po w=0.42 l=125
+* r_r_bias_n12_j4: 12 x l=125 w=0.42 joint=151.162
+VSr_r_bias_n12_j4 nop_r_bias r_r_bias_n12_j4_0 0
+Br_r_bias_n12_j4 m_r_r_bias_n12_j4 0 V = v(nop_r_bias)/i(VSr_r_bias_n12_j4)
+Xr_r_bias_n12_j4_0 r_r_bias_n12_j4_0 r_r_bias_n12_j4_j0 0 sky130_fd_pr__res_high_po w=0.42 l=125
+RJr_r_bias_n12_j4_0 r_r_bias_n12_j4_j0 r_r_bias_n12_j4_s0 151.162
+Xr_r_bias_n12_j4_1 r_r_bias_n12_j4_s0 r_r_bias_n12_j4_j1 0 sky130_fd_pr__res_high_po w=0.42 l=125
+RJr_r_bias_n12_j4_1 r_r_bias_n12_j4_j1 r_r_bias_n12_j4_s1 151.162
+Xr_r_bias_n12_j4_2 r_r_bias_n12_j4_s1 r_r_bias_n12_j4_j2 0 sky130_fd_pr__res_high_po w=0.42 l=125
+RJr_r_bias_n12_j4_2 r_r_bias_n12_j4_j2 r_r_bias_n12_j4_s2 151.162
+Xr_r_bias_n12_j4_3 r_r_bias_n12_j4_s2 r_r_bias_n12_j4_j3 0 sky130_fd_pr__res_high_po w=0.42 l=125
+RJr_r_bias_n12_j4_3 r_r_bias_n12_j4_j3 r_r_bias_n12_j4_s3 151.162
+Xr_r_bias_n12_j4_4 r_r_bias_n12_j4_s3 r_r_bias_n12_j4_j4 0 sky130_fd_pr__res_high_po w=0.42 l=125
+RJr_r_bias_n12_j4_4 r_r_bias_n12_j4_j4 r_r_bias_n12_j4_s4 151.162
+Xr_r_bias_n12_j4_5 r_r_bias_n12_j4_s4 r_r_bias_n12_j4_j5 0 sky130_fd_pr__res_high_po w=0.42 l=125
+RJr_r_bias_n12_j4_5 r_r_bias_n12_j4_j5 r_r_bias_n12_j4_s5 151.162
+Xr_r_bias_n12_j4_6 r_r_bias_n12_j4_s5 r_r_bias_n12_j4_j6 0 sky130_fd_pr__res_high_po w=0.42 l=125
+RJr_r_bias_n12_j4_6 r_r_bias_n12_j4_j6 r_r_bias_n12_j4_s6 151.162
+Xr_r_bias_n12_j4_7 r_r_bias_n12_j4_s6 r_r_bias_n12_j4_j7 0 sky130_fd_pr__res_high_po w=0.42 l=125
+RJr_r_bias_n12_j4_7 r_r_bias_n12_j4_j7 r_r_bias_n12_j4_s7 151.162
+Xr_r_bias_n12_j4_8 r_r_bias_n12_j4_s7 r_r_bias_n12_j4_j8 0 sky130_fd_pr__res_high_po w=0.42 l=125
+RJr_r_bias_n12_j4_8 r_r_bias_n12_j4_j8 r_r_bias_n12_j4_s8 151.162
+Xr_r_bias_n12_j4_9 r_r_bias_n12_j4_s8 r_r_bias_n12_j4_j9 0 sky130_fd_pr__res_high_po w=0.42 l=125
+RJr_r_bias_n12_j4_9 r_r_bias_n12_j4_j9 r_r_bias_n12_j4_s9 151.162
+Xr_r_bias_n12_j4_10 r_r_bias_n12_j4_s9 r_r_bias_n12_j4_j10 0 sky130_fd_pr__res_high_po w=0.42 l=125
+RJr_r_bias_n12_j4_10 r_r_bias_n12_j4_j10 r_r_bias_n12_j4_s10 151.162
+Xr_r_bias_n12_j4_11 r_r_bias_n12_j4_s10 0 0 sky130_fd_pr__res_high_po w=0.42 l=125
+* r_r_bias_n16_noj: 16 x l=93.75 w=0.42 joint=0
+VSr_r_bias_n16_noj nop_r_bias r_r_bias_n16_noj_0 0
+Br_r_bias_n16_noj m_r_r_bias_n16_noj 0 V = v(nop_r_bias)/i(VSr_r_bias_n16_noj)
+Xr_r_bias_n16_noj_0 r_r_bias_n16_noj_0 r_r_bias_n16_noj_s0 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+Xr_r_bias_n16_noj_1 r_r_bias_n16_noj_s0 r_r_bias_n16_noj_s1 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+Xr_r_bias_n16_noj_2 r_r_bias_n16_noj_s1 r_r_bias_n16_noj_s2 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+Xr_r_bias_n16_noj_3 r_r_bias_n16_noj_s2 r_r_bias_n16_noj_s3 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+Xr_r_bias_n16_noj_4 r_r_bias_n16_noj_s3 r_r_bias_n16_noj_s4 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+Xr_r_bias_n16_noj_5 r_r_bias_n16_noj_s4 r_r_bias_n16_noj_s5 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+Xr_r_bias_n16_noj_6 r_r_bias_n16_noj_s5 r_r_bias_n16_noj_s6 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+Xr_r_bias_n16_noj_7 r_r_bias_n16_noj_s6 r_r_bias_n16_noj_s7 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+Xr_r_bias_n16_noj_8 r_r_bias_n16_noj_s7 r_r_bias_n16_noj_s8 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+Xr_r_bias_n16_noj_9 r_r_bias_n16_noj_s8 r_r_bias_n16_noj_s9 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+Xr_r_bias_n16_noj_10 r_r_bias_n16_noj_s9 r_r_bias_n16_noj_s10 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+Xr_r_bias_n16_noj_11 r_r_bias_n16_noj_s10 r_r_bias_n16_noj_s11 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+Xr_r_bias_n16_noj_12 r_r_bias_n16_noj_s11 r_r_bias_n16_noj_s12 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+Xr_r_bias_n16_noj_13 r_r_bias_n16_noj_s12 r_r_bias_n16_noj_s13 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+Xr_r_bias_n16_noj_14 r_r_bias_n16_noj_s13 r_r_bias_n16_noj_s14 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+Xr_r_bias_n16_noj_15 r_r_bias_n16_noj_s14 0 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+* r_r_bias_n16_j1: 16 x l=93.75 w=0.42 joint=37.7905
+VSr_r_bias_n16_j1 nop_r_bias r_r_bias_n16_j1_0 0
+Br_r_bias_n16_j1 m_r_r_bias_n16_j1 0 V = v(nop_r_bias)/i(VSr_r_bias_n16_j1)
+Xr_r_bias_n16_j1_0 r_r_bias_n16_j1_0 r_r_bias_n16_j1_j0 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+RJr_r_bias_n16_j1_0 r_r_bias_n16_j1_j0 r_r_bias_n16_j1_s0 37.7905
+Xr_r_bias_n16_j1_1 r_r_bias_n16_j1_s0 r_r_bias_n16_j1_j1 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+RJr_r_bias_n16_j1_1 r_r_bias_n16_j1_j1 r_r_bias_n16_j1_s1 37.7905
+Xr_r_bias_n16_j1_2 r_r_bias_n16_j1_s1 r_r_bias_n16_j1_j2 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+RJr_r_bias_n16_j1_2 r_r_bias_n16_j1_j2 r_r_bias_n16_j1_s2 37.7905
+Xr_r_bias_n16_j1_3 r_r_bias_n16_j1_s2 r_r_bias_n16_j1_j3 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+RJr_r_bias_n16_j1_3 r_r_bias_n16_j1_j3 r_r_bias_n16_j1_s3 37.7905
+Xr_r_bias_n16_j1_4 r_r_bias_n16_j1_s3 r_r_bias_n16_j1_j4 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+RJr_r_bias_n16_j1_4 r_r_bias_n16_j1_j4 r_r_bias_n16_j1_s4 37.7905
+Xr_r_bias_n16_j1_5 r_r_bias_n16_j1_s4 r_r_bias_n16_j1_j5 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+RJr_r_bias_n16_j1_5 r_r_bias_n16_j1_j5 r_r_bias_n16_j1_s5 37.7905
+Xr_r_bias_n16_j1_6 r_r_bias_n16_j1_s5 r_r_bias_n16_j1_j6 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+RJr_r_bias_n16_j1_6 r_r_bias_n16_j1_j6 r_r_bias_n16_j1_s6 37.7905
+Xr_r_bias_n16_j1_7 r_r_bias_n16_j1_s6 r_r_bias_n16_j1_j7 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+RJr_r_bias_n16_j1_7 r_r_bias_n16_j1_j7 r_r_bias_n16_j1_s7 37.7905
+Xr_r_bias_n16_j1_8 r_r_bias_n16_j1_s7 r_r_bias_n16_j1_j8 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+RJr_r_bias_n16_j1_8 r_r_bias_n16_j1_j8 r_r_bias_n16_j1_s8 37.7905
+Xr_r_bias_n16_j1_9 r_r_bias_n16_j1_s8 r_r_bias_n16_j1_j9 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+RJr_r_bias_n16_j1_9 r_r_bias_n16_j1_j9 r_r_bias_n16_j1_s9 37.7905
+Xr_r_bias_n16_j1_10 r_r_bias_n16_j1_s9 r_r_bias_n16_j1_j10 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+RJr_r_bias_n16_j1_10 r_r_bias_n16_j1_j10 r_r_bias_n16_j1_s10 37.7905
+Xr_r_bias_n16_j1_11 r_r_bias_n16_j1_s10 r_r_bias_n16_j1_j11 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+RJr_r_bias_n16_j1_11 r_r_bias_n16_j1_j11 r_r_bias_n16_j1_s11 37.7905
+Xr_r_bias_n16_j1_12 r_r_bias_n16_j1_s11 r_r_bias_n16_j1_j12 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+RJr_r_bias_n16_j1_12 r_r_bias_n16_j1_j12 r_r_bias_n16_j1_s12 37.7905
+Xr_r_bias_n16_j1_13 r_r_bias_n16_j1_s12 r_r_bias_n16_j1_j13 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+RJr_r_bias_n16_j1_13 r_r_bias_n16_j1_j13 r_r_bias_n16_j1_s13 37.7905
+Xr_r_bias_n16_j1_14 r_r_bias_n16_j1_s13 r_r_bias_n16_j1_j14 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+RJr_r_bias_n16_j1_14 r_r_bias_n16_j1_j14 r_r_bias_n16_j1_s14 37.7905
+Xr_r_bias_n16_j1_15 r_r_bias_n16_j1_s14 0 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+* r_r_bias_n16_j4: 16 x l=93.75 w=0.42 joint=151.162
+VSr_r_bias_n16_j4 nop_r_bias r_r_bias_n16_j4_0 0
+Br_r_bias_n16_j4 m_r_r_bias_n16_j4 0 V = v(nop_r_bias)/i(VSr_r_bias_n16_j4)
+Xr_r_bias_n16_j4_0 r_r_bias_n16_j4_0 r_r_bias_n16_j4_j0 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+RJr_r_bias_n16_j4_0 r_r_bias_n16_j4_j0 r_r_bias_n16_j4_s0 151.162
+Xr_r_bias_n16_j4_1 r_r_bias_n16_j4_s0 r_r_bias_n16_j4_j1 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+RJr_r_bias_n16_j4_1 r_r_bias_n16_j4_j1 r_r_bias_n16_j4_s1 151.162
+Xr_r_bias_n16_j4_2 r_r_bias_n16_j4_s1 r_r_bias_n16_j4_j2 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+RJr_r_bias_n16_j4_2 r_r_bias_n16_j4_j2 r_r_bias_n16_j4_s2 151.162
+Xr_r_bias_n16_j4_3 r_r_bias_n16_j4_s2 r_r_bias_n16_j4_j3 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+RJr_r_bias_n16_j4_3 r_r_bias_n16_j4_j3 r_r_bias_n16_j4_s3 151.162
+Xr_r_bias_n16_j4_4 r_r_bias_n16_j4_s3 r_r_bias_n16_j4_j4 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+RJr_r_bias_n16_j4_4 r_r_bias_n16_j4_j4 r_r_bias_n16_j4_s4 151.162
+Xr_r_bias_n16_j4_5 r_r_bias_n16_j4_s4 r_r_bias_n16_j4_j5 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+RJr_r_bias_n16_j4_5 r_r_bias_n16_j4_j5 r_r_bias_n16_j4_s5 151.162
+Xr_r_bias_n16_j4_6 r_r_bias_n16_j4_s5 r_r_bias_n16_j4_j6 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+RJr_r_bias_n16_j4_6 r_r_bias_n16_j4_j6 r_r_bias_n16_j4_s6 151.162
+Xr_r_bias_n16_j4_7 r_r_bias_n16_j4_s6 r_r_bias_n16_j4_j7 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+RJr_r_bias_n16_j4_7 r_r_bias_n16_j4_j7 r_r_bias_n16_j4_s7 151.162
+Xr_r_bias_n16_j4_8 r_r_bias_n16_j4_s7 r_r_bias_n16_j4_j8 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+RJr_r_bias_n16_j4_8 r_r_bias_n16_j4_j8 r_r_bias_n16_j4_s8 151.162
+Xr_r_bias_n16_j4_9 r_r_bias_n16_j4_s8 r_r_bias_n16_j4_j9 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+RJr_r_bias_n16_j4_9 r_r_bias_n16_j4_j9 r_r_bias_n16_j4_s9 151.162
+Xr_r_bias_n16_j4_10 r_r_bias_n16_j4_s9 r_r_bias_n16_j4_j10 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+RJr_r_bias_n16_j4_10 r_r_bias_n16_j4_j10 r_r_bias_n16_j4_s10 151.162
+Xr_r_bias_n16_j4_11 r_r_bias_n16_j4_s10 r_r_bias_n16_j4_j11 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+RJr_r_bias_n16_j4_11 r_r_bias_n16_j4_j11 r_r_bias_n16_j4_s11 151.162
+Xr_r_bias_n16_j4_12 r_r_bias_n16_j4_s11 r_r_bias_n16_j4_j12 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+RJr_r_bias_n16_j4_12 r_r_bias_n16_j4_j12 r_r_bias_n16_j4_s12 151.162
+Xr_r_bias_n16_j4_13 r_r_bias_n16_j4_s12 r_r_bias_n16_j4_j13 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+RJr_r_bias_n16_j4_13 r_r_bias_n16_j4_j13 r_r_bias_n16_j4_s13 151.162
+Xr_r_bias_n16_j4_14 r_r_bias_n16_j4_s13 r_r_bias_n16_j4_j14 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+RJr_r_bias_n16_j4_14 r_r_bias_n16_j4_j14 r_r_bias_n16_j4_s14 151.162
+Xr_r_bias_n16_j4_15 r_r_bias_n16_j4_s14 0 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+* r_r_fb_a_n1_noj: 1 x l=180 w=0.42 joint=0
+VSr_r_fb_a_n1_noj nop_r_fb_a r_r_fb_a_n1_noj_0 0
+Br_r_fb_a_n1_noj m_r_r_fb_a_n1_noj 0 V = v(nop_r_fb_a)/i(VSr_r_fb_a_n1_noj)
+Xr_r_fb_a_n1_noj_0 r_r_fb_a_n1_noj_0 0 0 sky130_fd_pr__res_xhigh_po w=0.42 l=180
+* r_r_fb_a_n2_noj: 2 x l=90 w=0.42 joint=0
+VSr_r_fb_a_n2_noj nop_r_fb_a r_r_fb_a_n2_noj_0 0
+Br_r_fb_a_n2_noj m_r_r_fb_a_n2_noj 0 V = v(nop_r_fb_a)/i(VSr_r_fb_a_n2_noj)
+Xr_r_fb_a_n2_noj_0 r_r_fb_a_n2_noj_0 r_r_fb_a_n2_noj_s0 0 sky130_fd_pr__res_xhigh_po w=0.42 l=90
+Xr_r_fb_a_n2_noj_1 r_r_fb_a_n2_noj_s0 0 0 sky130_fd_pr__res_xhigh_po w=0.42 l=90
+* r_r_fb_a_n2_j1: 2 x l=90 w=0.42 joint=37.7905
+VSr_r_fb_a_n2_j1 nop_r_fb_a r_r_fb_a_n2_j1_0 0
+Br_r_fb_a_n2_j1 m_r_r_fb_a_n2_j1 0 V = v(nop_r_fb_a)/i(VSr_r_fb_a_n2_j1)
+Xr_r_fb_a_n2_j1_0 r_r_fb_a_n2_j1_0 r_r_fb_a_n2_j1_j0 0 sky130_fd_pr__res_xhigh_po w=0.42 l=90
+RJr_r_fb_a_n2_j1_0 r_r_fb_a_n2_j1_j0 r_r_fb_a_n2_j1_s0 37.7905
+Xr_r_fb_a_n2_j1_1 r_r_fb_a_n2_j1_s0 0 0 sky130_fd_pr__res_xhigh_po w=0.42 l=90
+* r_r_fb_a_n2_j4: 2 x l=90 w=0.42 joint=151.162
+VSr_r_fb_a_n2_j4 nop_r_fb_a r_r_fb_a_n2_j4_0 0
+Br_r_fb_a_n2_j4 m_r_r_fb_a_n2_j4 0 V = v(nop_r_fb_a)/i(VSr_r_fb_a_n2_j4)
+Xr_r_fb_a_n2_j4_0 r_r_fb_a_n2_j4_0 r_r_fb_a_n2_j4_j0 0 sky130_fd_pr__res_xhigh_po w=0.42 l=90
+RJr_r_fb_a_n2_j4_0 r_r_fb_a_n2_j4_j0 r_r_fb_a_n2_j4_s0 151.162
+Xr_r_fb_a_n2_j4_1 r_r_fb_a_n2_j4_s0 0 0 sky130_fd_pr__res_xhigh_po w=0.42 l=90
+* r_r_fb_a_n3_noj: 3 x l=60 w=0.42 joint=0
+VSr_r_fb_a_n3_noj nop_r_fb_a r_r_fb_a_n3_noj_0 0
+Br_r_fb_a_n3_noj m_r_r_fb_a_n3_noj 0 V = v(nop_r_fb_a)/i(VSr_r_fb_a_n3_noj)
+Xr_r_fb_a_n3_noj_0 r_r_fb_a_n3_noj_0 r_r_fb_a_n3_noj_s0 0 sky130_fd_pr__res_xhigh_po w=0.42 l=60
+Xr_r_fb_a_n3_noj_1 r_r_fb_a_n3_noj_s0 r_r_fb_a_n3_noj_s1 0 sky130_fd_pr__res_xhigh_po w=0.42 l=60
+Xr_r_fb_a_n3_noj_2 r_r_fb_a_n3_noj_s1 0 0 sky130_fd_pr__res_xhigh_po w=0.42 l=60
+* r_r_fb_a_n3_j1: 3 x l=60 w=0.42 joint=37.7905
+VSr_r_fb_a_n3_j1 nop_r_fb_a r_r_fb_a_n3_j1_0 0
+Br_r_fb_a_n3_j1 m_r_r_fb_a_n3_j1 0 V = v(nop_r_fb_a)/i(VSr_r_fb_a_n3_j1)
+Xr_r_fb_a_n3_j1_0 r_r_fb_a_n3_j1_0 r_r_fb_a_n3_j1_j0 0 sky130_fd_pr__res_xhigh_po w=0.42 l=60
+RJr_r_fb_a_n3_j1_0 r_r_fb_a_n3_j1_j0 r_r_fb_a_n3_j1_s0 37.7905
+Xr_r_fb_a_n3_j1_1 r_r_fb_a_n3_j1_s0 r_r_fb_a_n3_j1_j1 0 sky130_fd_pr__res_xhigh_po w=0.42 l=60
+RJr_r_fb_a_n3_j1_1 r_r_fb_a_n3_j1_j1 r_r_fb_a_n3_j1_s1 37.7905
+Xr_r_fb_a_n3_j1_2 r_r_fb_a_n3_j1_s1 0 0 sky130_fd_pr__res_xhigh_po w=0.42 l=60
+* r_r_fb_a_n3_j4: 3 x l=60 w=0.42 joint=151.162
+VSr_r_fb_a_n3_j4 nop_r_fb_a r_r_fb_a_n3_j4_0 0
+Br_r_fb_a_n3_j4 m_r_r_fb_a_n3_j4 0 V = v(nop_r_fb_a)/i(VSr_r_fb_a_n3_j4)
+Xr_r_fb_a_n3_j4_0 r_r_fb_a_n3_j4_0 r_r_fb_a_n3_j4_j0 0 sky130_fd_pr__res_xhigh_po w=0.42 l=60
+RJr_r_fb_a_n3_j4_0 r_r_fb_a_n3_j4_j0 r_r_fb_a_n3_j4_s0 151.162
+Xr_r_fb_a_n3_j4_1 r_r_fb_a_n3_j4_s0 r_r_fb_a_n3_j4_j1 0 sky130_fd_pr__res_xhigh_po w=0.42 l=60
+RJr_r_fb_a_n3_j4_1 r_r_fb_a_n3_j4_j1 r_r_fb_a_n3_j4_s1 151.162
+Xr_r_fb_a_n3_j4_2 r_r_fb_a_n3_j4_s1 0 0 sky130_fd_pr__res_xhigh_po w=0.42 l=60
+* r_r_fb_a_n4_noj: 4 x l=45 w=0.42 joint=0
+VSr_r_fb_a_n4_noj nop_r_fb_a r_r_fb_a_n4_noj_0 0
+Br_r_fb_a_n4_noj m_r_r_fb_a_n4_noj 0 V = v(nop_r_fb_a)/i(VSr_r_fb_a_n4_noj)
+Xr_r_fb_a_n4_noj_0 r_r_fb_a_n4_noj_0 r_r_fb_a_n4_noj_s0 0 sky130_fd_pr__res_xhigh_po w=0.42 l=45
+Xr_r_fb_a_n4_noj_1 r_r_fb_a_n4_noj_s0 r_r_fb_a_n4_noj_s1 0 sky130_fd_pr__res_xhigh_po w=0.42 l=45
+Xr_r_fb_a_n4_noj_2 r_r_fb_a_n4_noj_s1 r_r_fb_a_n4_noj_s2 0 sky130_fd_pr__res_xhigh_po w=0.42 l=45
+Xr_r_fb_a_n4_noj_3 r_r_fb_a_n4_noj_s2 0 0 sky130_fd_pr__res_xhigh_po w=0.42 l=45
+* r_r_fb_a_n4_j1: 4 x l=45 w=0.42 joint=37.7905
+VSr_r_fb_a_n4_j1 nop_r_fb_a r_r_fb_a_n4_j1_0 0
+Br_r_fb_a_n4_j1 m_r_r_fb_a_n4_j1 0 V = v(nop_r_fb_a)/i(VSr_r_fb_a_n4_j1)
+Xr_r_fb_a_n4_j1_0 r_r_fb_a_n4_j1_0 r_r_fb_a_n4_j1_j0 0 sky130_fd_pr__res_xhigh_po w=0.42 l=45
+RJr_r_fb_a_n4_j1_0 r_r_fb_a_n4_j1_j0 r_r_fb_a_n4_j1_s0 37.7905
+Xr_r_fb_a_n4_j1_1 r_r_fb_a_n4_j1_s0 r_r_fb_a_n4_j1_j1 0 sky130_fd_pr__res_xhigh_po w=0.42 l=45
+RJr_r_fb_a_n4_j1_1 r_r_fb_a_n4_j1_j1 r_r_fb_a_n4_j1_s1 37.7905
+Xr_r_fb_a_n4_j1_2 r_r_fb_a_n4_j1_s1 r_r_fb_a_n4_j1_j2 0 sky130_fd_pr__res_xhigh_po w=0.42 l=45
+RJr_r_fb_a_n4_j1_2 r_r_fb_a_n4_j1_j2 r_r_fb_a_n4_j1_s2 37.7905
+Xr_r_fb_a_n4_j1_3 r_r_fb_a_n4_j1_s2 0 0 sky130_fd_pr__res_xhigh_po w=0.42 l=45
+* r_r_fb_a_n4_j4: 4 x l=45 w=0.42 joint=151.162
+VSr_r_fb_a_n4_j4 nop_r_fb_a r_r_fb_a_n4_j4_0 0
+Br_r_fb_a_n4_j4 m_r_r_fb_a_n4_j4 0 V = v(nop_r_fb_a)/i(VSr_r_fb_a_n4_j4)
+Xr_r_fb_a_n4_j4_0 r_r_fb_a_n4_j4_0 r_r_fb_a_n4_j4_j0 0 sky130_fd_pr__res_xhigh_po w=0.42 l=45
+RJr_r_fb_a_n4_j4_0 r_r_fb_a_n4_j4_j0 r_r_fb_a_n4_j4_s0 151.162
+Xr_r_fb_a_n4_j4_1 r_r_fb_a_n4_j4_s0 r_r_fb_a_n4_j4_j1 0 sky130_fd_pr__res_xhigh_po w=0.42 l=45
+RJr_r_fb_a_n4_j4_1 r_r_fb_a_n4_j4_j1 r_r_fb_a_n4_j4_s1 151.162
+Xr_r_fb_a_n4_j4_2 r_r_fb_a_n4_j4_s1 r_r_fb_a_n4_j4_j2 0 sky130_fd_pr__res_xhigh_po w=0.42 l=45
+RJr_r_fb_a_n4_j4_2 r_r_fb_a_n4_j4_j2 r_r_fb_a_n4_j4_s2 151.162
+Xr_r_fb_a_n4_j4_3 r_r_fb_a_n4_j4_s2 0 0 sky130_fd_pr__res_xhigh_po w=0.42 l=45
+* r_r_fb_a_n5_noj: 5 x l=36 w=0.42 joint=0
+VSr_r_fb_a_n5_noj nop_r_fb_a r_r_fb_a_n5_noj_0 0
+Br_r_fb_a_n5_noj m_r_r_fb_a_n5_noj 0 V = v(nop_r_fb_a)/i(VSr_r_fb_a_n5_noj)
+Xr_r_fb_a_n5_noj_0 r_r_fb_a_n5_noj_0 r_r_fb_a_n5_noj_s0 0 sky130_fd_pr__res_xhigh_po w=0.42 l=36
+Xr_r_fb_a_n5_noj_1 r_r_fb_a_n5_noj_s0 r_r_fb_a_n5_noj_s1 0 sky130_fd_pr__res_xhigh_po w=0.42 l=36
+Xr_r_fb_a_n5_noj_2 r_r_fb_a_n5_noj_s1 r_r_fb_a_n5_noj_s2 0 sky130_fd_pr__res_xhigh_po w=0.42 l=36
+Xr_r_fb_a_n5_noj_3 r_r_fb_a_n5_noj_s2 r_r_fb_a_n5_noj_s3 0 sky130_fd_pr__res_xhigh_po w=0.42 l=36
+Xr_r_fb_a_n5_noj_4 r_r_fb_a_n5_noj_s3 0 0 sky130_fd_pr__res_xhigh_po w=0.42 l=36
+* r_r_fb_a_n5_j1: 5 x l=36 w=0.42 joint=37.7905
+VSr_r_fb_a_n5_j1 nop_r_fb_a r_r_fb_a_n5_j1_0 0
+Br_r_fb_a_n5_j1 m_r_r_fb_a_n5_j1 0 V = v(nop_r_fb_a)/i(VSr_r_fb_a_n5_j1)
+Xr_r_fb_a_n5_j1_0 r_r_fb_a_n5_j1_0 r_r_fb_a_n5_j1_j0 0 sky130_fd_pr__res_xhigh_po w=0.42 l=36
+RJr_r_fb_a_n5_j1_0 r_r_fb_a_n5_j1_j0 r_r_fb_a_n5_j1_s0 37.7905
+Xr_r_fb_a_n5_j1_1 r_r_fb_a_n5_j1_s0 r_r_fb_a_n5_j1_j1 0 sky130_fd_pr__res_xhigh_po w=0.42 l=36
+RJr_r_fb_a_n5_j1_1 r_r_fb_a_n5_j1_j1 r_r_fb_a_n5_j1_s1 37.7905
+Xr_r_fb_a_n5_j1_2 r_r_fb_a_n5_j1_s1 r_r_fb_a_n5_j1_j2 0 sky130_fd_pr__res_xhigh_po w=0.42 l=36
+RJr_r_fb_a_n5_j1_2 r_r_fb_a_n5_j1_j2 r_r_fb_a_n5_j1_s2 37.7905
+Xr_r_fb_a_n5_j1_3 r_r_fb_a_n5_j1_s2 r_r_fb_a_n5_j1_j3 0 sky130_fd_pr__res_xhigh_po w=0.42 l=36
+RJr_r_fb_a_n5_j1_3 r_r_fb_a_n5_j1_j3 r_r_fb_a_n5_j1_s3 37.7905
+Xr_r_fb_a_n5_j1_4 r_r_fb_a_n5_j1_s3 0 0 sky130_fd_pr__res_xhigh_po w=0.42 l=36
+* r_r_fb_a_n5_j4: 5 x l=36 w=0.42 joint=151.162
+VSr_r_fb_a_n5_j4 nop_r_fb_a r_r_fb_a_n5_j4_0 0
+Br_r_fb_a_n5_j4 m_r_r_fb_a_n5_j4 0 V = v(nop_r_fb_a)/i(VSr_r_fb_a_n5_j4)
+Xr_r_fb_a_n5_j4_0 r_r_fb_a_n5_j4_0 r_r_fb_a_n5_j4_j0 0 sky130_fd_pr__res_xhigh_po w=0.42 l=36
+RJr_r_fb_a_n5_j4_0 r_r_fb_a_n5_j4_j0 r_r_fb_a_n5_j4_s0 151.162
+Xr_r_fb_a_n5_j4_1 r_r_fb_a_n5_j4_s0 r_r_fb_a_n5_j4_j1 0 sky130_fd_pr__res_xhigh_po w=0.42 l=36
+RJr_r_fb_a_n5_j4_1 r_r_fb_a_n5_j4_j1 r_r_fb_a_n5_j4_s1 151.162
+Xr_r_fb_a_n5_j4_2 r_r_fb_a_n5_j4_s1 r_r_fb_a_n5_j4_j2 0 sky130_fd_pr__res_xhigh_po w=0.42 l=36
+RJr_r_fb_a_n5_j4_2 r_r_fb_a_n5_j4_j2 r_r_fb_a_n5_j4_s2 151.162
+Xr_r_fb_a_n5_j4_3 r_r_fb_a_n5_j4_s2 r_r_fb_a_n5_j4_j3 0 sky130_fd_pr__res_xhigh_po w=0.42 l=36
+RJr_r_fb_a_n5_j4_3 r_r_fb_a_n5_j4_j3 r_r_fb_a_n5_j4_s3 151.162
+Xr_r_fb_a_n5_j4_4 r_r_fb_a_n5_j4_s3 0 0 sky130_fd_pr__res_xhigh_po w=0.42 l=36
+* r_r_fb_a_n6_noj: 6 x l=30 w=0.42 joint=0
+VSr_r_fb_a_n6_noj nop_r_fb_a r_r_fb_a_n6_noj_0 0
+Br_r_fb_a_n6_noj m_r_r_fb_a_n6_noj 0 V = v(nop_r_fb_a)/i(VSr_r_fb_a_n6_noj)
+Xr_r_fb_a_n6_noj_0 r_r_fb_a_n6_noj_0 r_r_fb_a_n6_noj_s0 0 sky130_fd_pr__res_xhigh_po w=0.42 l=30
+Xr_r_fb_a_n6_noj_1 r_r_fb_a_n6_noj_s0 r_r_fb_a_n6_noj_s1 0 sky130_fd_pr__res_xhigh_po w=0.42 l=30
+Xr_r_fb_a_n6_noj_2 r_r_fb_a_n6_noj_s1 r_r_fb_a_n6_noj_s2 0 sky130_fd_pr__res_xhigh_po w=0.42 l=30
+Xr_r_fb_a_n6_noj_3 r_r_fb_a_n6_noj_s2 r_r_fb_a_n6_noj_s3 0 sky130_fd_pr__res_xhigh_po w=0.42 l=30
+Xr_r_fb_a_n6_noj_4 r_r_fb_a_n6_noj_s3 r_r_fb_a_n6_noj_s4 0 sky130_fd_pr__res_xhigh_po w=0.42 l=30
+Xr_r_fb_a_n6_noj_5 r_r_fb_a_n6_noj_s4 0 0 sky130_fd_pr__res_xhigh_po w=0.42 l=30
+* r_r_fb_a_n6_j1: 6 x l=30 w=0.42 joint=37.7905
+VSr_r_fb_a_n6_j1 nop_r_fb_a r_r_fb_a_n6_j1_0 0
+Br_r_fb_a_n6_j1 m_r_r_fb_a_n6_j1 0 V = v(nop_r_fb_a)/i(VSr_r_fb_a_n6_j1)
+Xr_r_fb_a_n6_j1_0 r_r_fb_a_n6_j1_0 r_r_fb_a_n6_j1_j0 0 sky130_fd_pr__res_xhigh_po w=0.42 l=30
+RJr_r_fb_a_n6_j1_0 r_r_fb_a_n6_j1_j0 r_r_fb_a_n6_j1_s0 37.7905
+Xr_r_fb_a_n6_j1_1 r_r_fb_a_n6_j1_s0 r_r_fb_a_n6_j1_j1 0 sky130_fd_pr__res_xhigh_po w=0.42 l=30
+RJr_r_fb_a_n6_j1_1 r_r_fb_a_n6_j1_j1 r_r_fb_a_n6_j1_s1 37.7905
+Xr_r_fb_a_n6_j1_2 r_r_fb_a_n6_j1_s1 r_r_fb_a_n6_j1_j2 0 sky130_fd_pr__res_xhigh_po w=0.42 l=30
+RJr_r_fb_a_n6_j1_2 r_r_fb_a_n6_j1_j2 r_r_fb_a_n6_j1_s2 37.7905
+Xr_r_fb_a_n6_j1_3 r_r_fb_a_n6_j1_s2 r_r_fb_a_n6_j1_j3 0 sky130_fd_pr__res_xhigh_po w=0.42 l=30
+RJr_r_fb_a_n6_j1_3 r_r_fb_a_n6_j1_j3 r_r_fb_a_n6_j1_s3 37.7905
+Xr_r_fb_a_n6_j1_4 r_r_fb_a_n6_j1_s3 r_r_fb_a_n6_j1_j4 0 sky130_fd_pr__res_xhigh_po w=0.42 l=30
+RJr_r_fb_a_n6_j1_4 r_r_fb_a_n6_j1_j4 r_r_fb_a_n6_j1_s4 37.7905
+Xr_r_fb_a_n6_j1_5 r_r_fb_a_n6_j1_s4 0 0 sky130_fd_pr__res_xhigh_po w=0.42 l=30
+* r_r_fb_a_n6_j4: 6 x l=30 w=0.42 joint=151.162
+VSr_r_fb_a_n6_j4 nop_r_fb_a r_r_fb_a_n6_j4_0 0
+Br_r_fb_a_n6_j4 m_r_r_fb_a_n6_j4 0 V = v(nop_r_fb_a)/i(VSr_r_fb_a_n6_j4)
+Xr_r_fb_a_n6_j4_0 r_r_fb_a_n6_j4_0 r_r_fb_a_n6_j4_j0 0 sky130_fd_pr__res_xhigh_po w=0.42 l=30
+RJr_r_fb_a_n6_j4_0 r_r_fb_a_n6_j4_j0 r_r_fb_a_n6_j4_s0 151.162
+Xr_r_fb_a_n6_j4_1 r_r_fb_a_n6_j4_s0 r_r_fb_a_n6_j4_j1 0 sky130_fd_pr__res_xhigh_po w=0.42 l=30
+RJr_r_fb_a_n6_j4_1 r_r_fb_a_n6_j4_j1 r_r_fb_a_n6_j4_s1 151.162
+Xr_r_fb_a_n6_j4_2 r_r_fb_a_n6_j4_s1 r_r_fb_a_n6_j4_j2 0 sky130_fd_pr__res_xhigh_po w=0.42 l=30
+RJr_r_fb_a_n6_j4_2 r_r_fb_a_n6_j4_j2 r_r_fb_a_n6_j4_s2 151.162
+Xr_r_fb_a_n6_j4_3 r_r_fb_a_n6_j4_s2 r_r_fb_a_n6_j4_j3 0 sky130_fd_pr__res_xhigh_po w=0.42 l=30
+RJr_r_fb_a_n6_j4_3 r_r_fb_a_n6_j4_j3 r_r_fb_a_n6_j4_s3 151.162
+Xr_r_fb_a_n6_j4_4 r_r_fb_a_n6_j4_s3 r_r_fb_a_n6_j4_j4 0 sky130_fd_pr__res_xhigh_po w=0.42 l=30
+RJr_r_fb_a_n6_j4_4 r_r_fb_a_n6_j4_j4 r_r_fb_a_n6_j4_s4 151.162
+Xr_r_fb_a_n6_j4_5 r_r_fb_a_n6_j4_s4 0 0 sky130_fd_pr__res_xhigh_po w=0.42 l=30
+.end
