@@ -44,7 +44,9 @@ from pathlib import Path
 
 from xschem_exprs import eval_xschem_exprs  # noqa: F401  (re-exported; tests call corner_run.eval_xschem_exprs)
 from _record_common import (
+    assert_klt_read_the_pinned_pdk as _shared_assert_pdk,
     build_input_fingerprint,
+    klt_binary as _shared_klt_binary,
     git,
     pvt_input_sections,
     render_record_footer,
@@ -785,8 +787,440 @@ def spread_checks(exp: Experiment, results: list[dict]) -> list[dict]:
 
 
 # --------------------------------------------------------------------------
+# opt-in `klt sim` batch backend (issue #298)
+# --------------------------------------------------------------------------
+#
+# BOUNDED on purpose: only the unchanged `pdk-smoke` shape (one `op` analysis,
+# two scalar measurements) may use it. Every other manifest is refused before
+# any netlisting, submission or local ngspice -- see sim/README.md "Batch
+# backend". The local path above is untouched; this section only adds a second
+# way to obtain the same per-corner result dicts.
+
+BATCH_ALLOWLIST = {
+    "pdk-smoke": {
+        "analyses": ["op"],
+        "measurements": [("vgs", "v(vg)"), ("isup", "-i(v1)")],
+    },
+}
+
+BATCH_REFUSAL_HINT = (
+    "the batch backend is bounded to the unchanged sim/pdk-smoke shape (one `op` "
+    "analysis, scalar measurements); every other experiment, including all "
+    "transient/AC/DC-sweep and mc-* manifests, stays on the local backend "
+    "(see sim/README.md, \"Batch backend\")"
+)
+
+
+def klt_binary() -> str:
+    return _shared_klt_binary("run batch PVT grids", error_cls=HarnessError)
+
+
+def check_batch_supported(exp: Experiment) -> None:
+    """Refuse an experiment outside the batch allowlist, before any work."""
+    allowed = BATCH_ALLOWLIST.get(exp.slug)
+    if allowed is None:
+        raise HarnessError(
+            f"--backend batch does not support experiment {exp.slug!r}: {BATCH_REFUSAL_HINT}"
+        )
+    deck = exp.raw.get("deck") or {}
+    analyses = list(deck.get("analyses") or ["op"])
+    meas = [(m.name, m.expr) for m in exp.measurements]
+    if analyses != allowed["analyses"] or meas != allowed["measurements"]:
+        raise HarnessError(
+            f"--backend batch: {exp.slug!r} no longer has the supported smoke shape "
+            f"(analyses {analyses}, measurements {meas}): {BATCH_REFUSAL_HINT}"
+        )
+
+
+def spiceinit_lines() -> list[str]:
+    """`sim/spiceinit` as request `ngspice_init` lines: empty lines dropped,
+    comments, order and command text retained."""
+    return [ln for ln in SPICEINIT_FILE.read_text().splitlines() if ln.strip()]
+
+
+@dataclass
+class BatchGroup:
+    key: str
+    supply_v: float
+    corners: list[Corner]  # the selected points this request covers
+    process: list[str]
+    temperature_c: list[float]
+
+
+def group_batch_requests(matrix: list[Corner], quick: bool) -> list[BatchGroup]:
+    """Partition the selected points into `klt sim` requests.
+
+    A supply is a netlist `.param`, not a klt corner axis, so each request has
+    ONE fixed supply. The full/overridden Cartesian matrix becomes one request
+    per supply (process x temperature grid); `--quick` tuples are explicit
+    points and each is its own singleton request, never a Cartesian expansion.
+    """
+    groups: list[BatchGroup] = []
+    if quick:
+        for i, c in enumerate(matrix, start=1):
+            groups.append(BatchGroup(f"q{i}-{c.id}", c.supply_v, [c], [c.process], [c.temp_c]))
+        return groups
+    for supply in unique_in_order(c.supply_v for c in matrix):
+        pts = [c for c in matrix if c.supply_v == supply]
+        procs = unique_in_order(c.process for c in pts)
+        temps = unique_in_order(c.temp_c for c in pts)
+        if len(pts) != len(procs) * len(temps) or len({(c.process, c.temp_c) for c in pts}) != len(pts):
+            raise HarnessError(
+                f"batch grouping: points at {supply:g} V are not a process x temperature "
+                "grid; refusing to widen the request"
+            )
+        groups.append(BatchGroup(f"v{supply:.2f}", supply, pts, procs, temps))
+    return groups
+
+
+def build_batch_netlist(exp: Experiment, group: BatchGroup, body: list[str]) -> list[str]:
+    """Request netlist body: fixed `.param vsup`, deck params/options, saved
+    vectors, then the circuit body (the same pieces `build_deck` emits)."""
+    deck = exp.raw.get("deck", {})
+    head = [f".param vsup={group.supply_v}"]
+    for name, value in (deck.get("params") or {}).items():
+        head.append(f".param {name}={value}")
+    for opt in deck.get("options") or []:
+        head.append(f".option {opt}")
+    head.append(".save all")
+    return head + body
+
+
+def build_batch_request(
+    exp: Experiment, pdk: Pdk, group: BatchGroup, netlist_path: Path, timeout: int
+) -> dict:
+    return {
+        "netlist": str(netlist_path),
+        "engine": "ngspice",
+        "models": {"pdk": pdk.variant, "lib": str(pdk.lib_file.relative_to(pdk.dir))},
+        "corners": {"process": list(group.process), "temperature_c": list(group.temperature_c)},
+        "analysis": {"kind": "op", "args": ""},
+        "measurements": [
+            {"name": f"meas_{m.name}", "expr": m.expr, "unit": m.unit} for m in exp.measurements
+        ],
+        "options": {
+            "timeout_s": timeout,
+            "keep_artifacts": True,
+            "ngspice_init": spiceinit_lines(),
+        },
+    }
+
+
+def prepare_batch_requests(
+    exp: Experiment, pdk: Pdk, matrix: list[Corner], is_quick: bool, body: list[str],
+    run_dir: Path, timeout: int,
+) -> list[tuple[BatchGroup, Path, dict]]:
+    """Write each request's netlist + request JSON under the scratch run dir."""
+    req_dir = run_dir / "klt-requests"
+    req_dir.mkdir(parents=True, exist_ok=True)
+    out = []
+    for group in group_batch_requests(matrix, is_quick):
+        netlist_path = (req_dir / f"{group.key}.spice").resolve()
+        netlist_path.write_text("\n".join(build_batch_netlist(exp, group, body)) + "\n")
+        request = build_batch_request(exp, pdk, group, netlist_path, timeout)
+        request_path = req_dir / f"{group.key}.json"
+        request_path.write_text(json.dumps(request, indent=2, sort_keys=True) + "\n")
+        out.append((group, request_path, request))
+    return out
+
+
+_JOB_ID_RE = re.compile(r"klt-sim-[0-9a-f]+")
+
+
+def run_klt_batch(request_path: Path, outdir: Path, pdk_root: Path) -> tuple[dict, dict]:
+    """Invoke `klt sim --backend batch` once (never retried, never replaced by a
+    local run). Returns (response, meta); raises HarnessError, keeping whatever
+    stdout/stderr/job ids exist, if no usable JSON object came back."""
+    cmd = [
+        klt_binary(), "sim", str(request_path), "-o", str(outdir),
+        "--backend", "batch", "--format", "json",
+    ]
+    env = dict(os.environ)
+    env["PDK_ROOT"] = str(pdk_root)
+    outdir.mkdir(parents=True, exist_ok=True)
+
+    def diag(stdout: str, stderr: str) -> str:
+        (outdir / "klt.stdout").write_text(stdout or "")
+        (outdir / "klt.stderr").write_text(stderr or "")
+        ids = unique_in_order(_JOB_ID_RE.findall((stdout or "") + "\n" + (stderr or "")))
+        return (
+            f"  cmd: {' '.join(cmd)}\n"
+            f"  remote job id(s) seen: {', '.join(ids) if ids else 'none'}\n"
+            f"  stdout: {(stdout or '').strip()[:2000]}\n"
+            f"  stderr: {(stderr or '').strip()[:2000]}\n"
+            f"  diagnostics kept in {outdir}"
+        )
+
+    try:
+        proc = subprocess.run(
+            cmd, capture_output=True, text=True, timeout=None, env=env,
+            stdin=subprocess.DEVNULL,
+        )
+    except subprocess.TimeoutExpired as exc:
+        def _s(v):
+            return v.decode(errors="replace") if isinstance(v, bytes) else (v or "")
+        raise HarnessError(
+            "klt sim (batch) timed out; NOT resubmitting and NOT falling back to a "
+            "local run -- the remote job may still be running\n"
+            + diag(_s(exc.stdout), _s(exc.stderr))
+        ) from exc
+    except OSError as exc:
+        raise HarnessError(f"could not launch klt sim: {exc}") from exc
+    if not proc.stdout.strip():
+        raise HarnessError(
+            f"klt sim produced no stdout (rc {proc.returncode})\n" + diag(proc.stdout, proc.stderr)
+        )
+    try:
+        response = json.loads(proc.stdout)
+    except json.JSONDecodeError as exc:
+        raise HarnessError(
+            f"klt sim produced non-JSON stdout ({exc}; rc {proc.returncode})\n"
+            + diag(proc.stdout, proc.stderr)
+        ) from exc
+    diag(proc.stdout, proc.stderr)
+    if not isinstance(response, dict) or not isinstance(response.get("corners"), list):
+        raise HarnessError(
+            f"klt sim returned an error envelope / non-sim response (rc {proc.returncode})\n"
+            + diag(proc.stdout, proc.stderr)
+        )
+    return response, {"returncode": proc.returncode, "cmd": cmd}
+
+
+def _finite_number(value) -> bool:
+    return (
+        isinstance(value, (int, float))
+        and not isinstance(value, bool)
+        and value == value
+        and value not in (float("inf"), float("-inf"))
+    )
+
+
+def batch_remote_info(response: dict) -> dict:
+    env = response.get("environment") if isinstance(response.get("environment"), dict) else {}
+    remote = env.get("remote") if isinstance(env.get("remote"), dict) else {}
+    return {
+        "reported_backend": remote.get("provider"),
+        "job_id": remote.get("job_id"),
+        "remote": remote,
+        "engine": env.get("engine"),
+        "engine_version": env.get("engine_version"),
+        "klt_version": (response.get("provenance") or {}).get("klt_version"),
+        "pdk_version": ((response.get("provenance") or {}).get("pdk") or {}).get("version"),
+        "klt_status": response.get("status"),
+    }
+
+
+def normalize_batch_response(
+    exp: Experiment, group: BatchGroup, response: dict, outdir: Path, timeout: int
+) -> tuple[list[dict], dict[str, str]]:
+    """Validate one response against its request and grade each point locally.
+
+    Structure problems (missing/duplicate/unexpected/malformed points) raise
+    HarnessError -- there is no trustworthy result to record. Per-point
+    problems (errored/inconclusive corner, absent or non-finite value, absent
+    log) become recorded FAIL results. klt's own verdict is never consulted;
+    limits, spread and the solver-diagnostic gate are the harness's own.
+    Returns (results in request point order, {corner id: engine log text}).
+    """
+    want = {(c.process, c.temp_c): c for c in group.corners}
+    seen: dict[tuple[str, float], dict] = {}
+    for i, rc in enumerate(response["corners"]):
+        if (
+            not isinstance(rc, dict)
+            or not isinstance(rc.get("process"), str)
+            or not _finite_number(rc.get("temperature_c"))
+            or not isinstance(rc.get("status"), str)
+            or not isinstance(rc.get("measurements"), list)
+        ):
+            raise HarnessError(f"request {group.key}: malformed corner entry #{i} in response: {rc!r:.300}")
+        key = (rc["process"], float(rc["temperature_c"]))
+        if key not in want:
+            raise HarnessError(f"request {group.key}: unexpected corner {key} in response")
+        if key in seen:
+            raise HarnessError(f"request {group.key}: duplicate corner {key} in response")
+        seen[key] = rc
+    missing = [k for k in want if k not in seen]
+    if missing:
+        raise HarnessError(f"request {group.key}: response is missing corner(s) {missing}")
+
+    results, logs = [], {}
+    for key, corner in want.items():
+        rc = seen[key]
+        reasons: list[str] = []
+        status = rc["status"]
+        if status not in ("pass", "fail"):
+            reasons.append(f"klt sim corner status {status!r} (not a completed result)")
+        by_name: dict[str, list] = {}
+        for rm in rc["measurements"]:
+            if isinstance(rm, dict) and isinstance(rm.get("name"), str):
+                by_name.setdefault(rm["name"], []).append(rm)
+        checks = []
+        for m in exp.measurements:
+            entries = by_name.get(f"meas_{m.name}", [])
+            value, reason = None, ""
+            if len(entries) != 1:
+                reason = ("measurement not found in klt sim response" if not entries
+                          else "measurement reported more than once in klt sim response")
+            elif not _finite_number(entries[0].get("value")):
+                reason = f"measurement value is missing or non-finite ({entries[0].get('value')!r})"
+            else:
+                value = float(entries[0]["value"])
+            passed = value is not None
+            if passed and m.min is not None and value < m.min:
+                passed, reason = False, f"below min {m.min:g}"
+            if passed and m.max is not None and value > m.max:
+                passed, reason = False, f"above max {m.max:g}"
+            checks.append({
+                "name": m.name, "expr": m.expr, "unit": m.unit, "value": value,
+                "min": m.min, "max": m.max, "pass": passed, "reason": reason,
+            })
+
+        solver_diagnostic, log_text, log_note = None, None, None
+        art = rc.get("artifacts")
+        log_ref = art.get("log") if isinstance(art, dict) else None
+        if isinstance(log_ref, str) and log_ref:
+            lp = Path(log_ref)
+            if not lp.is_absolute():
+                lp = outdir / lp
+            try:
+                log_text = lp.read_text(errors="replace")
+            except OSError as exc:
+                log_note = f"engine log unreadable ({lp}: {exc})"
+        else:
+            log_note = "engine log not retained in klt sim response (artifacts.log absent)"
+        if log_text is not None:
+            solver_diagnostic = detect_solver_diagnostic(log_text)
+            logs[corner.id] = log_text
+        else:
+            reasons.append(log_note)
+        if solver_diagnostic is not None:
+            reasons.append(f"solver diagnostic: {solver_diagnostic}")
+
+        runtime = rc.get("runtime_s")
+        ok = (not reasons) and all(c["pass"] for c in checks)
+        results.append({
+            "corner_id": corner.id,
+            "process": corner.process,
+            "temperature_c": corner.temp_c,
+            "supply_v": corner.supply_v,
+            "execution": "batch",
+            "ngspice_exit": None,  # not observable for a remote run; never fabricated
+            "timed_out": False,
+            "killed_by_signal": None,
+            "killed_by_signal_name": None,
+            "elapsed_s": runtime if _finite_number(runtime) else None,
+            "timeout_s": timeout,
+            "measurements": checks,
+            "solver_diagnostic": solver_diagnostic,
+            "pass": ok,
+            "log": None,
+            "klt_request": group.key,
+            "klt_corner_id": rc.get("corner_id"),
+            "klt_status": status,
+            "batch_reasons": reasons,
+        })
+    return results, logs
+
+
+def run_batch(
+    exp: Experiment, pdk: Pdk, pin: dict, prepared: list[tuple[BatchGroup, Path, dict]],
+    matrix: list[Corner], run_dir: Path, timeout: int, allow_mismatch: bool,
+) -> tuple[list[dict], dict[str, str], dict]:
+    """Submit each request in turn and reassemble results in matrix order."""
+    by_id: dict[str, dict] = {}
+    logs: dict[str, str] = {}
+    requests_meta = []
+    jobs: list[str] = []
+    for group, request_path, request in prepared:
+        outdir = run_dir / "klt-out" / group.key
+        try:
+            response, meta = run_klt_batch(request_path, outdir, pdk.root)
+            (outdir / "response.json").write_text(json.dumps(response, indent=2, sort_keys=True) + "\n")
+            info = batch_remote_info(response)
+            if info["job_id"]:
+                jobs.append(str(info["job_id"]))
+            _shared_assert_pdk(response, pdk, pin, allow_mismatch, error_cls=HarnessError)
+            res, lg = normalize_batch_response(exp, group, response, outdir, timeout)
+        except HarnessError as exc:
+            raise HarnessError(
+                f"{exc}\n  request {group.key} failed; no evidence record written, no local "
+                f"fallback, no resubmission\n  remote job id(s) from earlier requests: "
+                f"{', '.join(jobs) if jobs else 'none'}"
+            ) from exc
+        for r in res:
+            by_id[r["corner_id"]] = r
+        logs.update(lg)
+        requests_meta.append({
+            "key": group.key,
+            "supply_v": group.supply_v,
+            "n_points": len(group.corners),
+            "returncode": meta["returncode"],
+            "response_file": str((outdir / "response.json")),
+            "request_file": str(request_path),
+            **info,
+            "klt_pdk_names_pin": pin["open_pdks_commit"] in (info["pdk_version"] or ""),
+        })
+    results = [by_id[c.id] for c in matrix]
+    return results, logs, {"requests": requests_meta}
+
+
+def batch_tools(base: dict, execution: dict) -> dict:
+    """The record's `tools` block for a batch run: ngspice is the executor's,
+    as klt reported it, not this machine's."""
+    tools = dict(base)
+    engines = unique_in_order(
+        f"{r['engine'] or 'ngspice'}-{r['engine_version']}" if r["engine_version"] else "unreported"
+        for r in execution["requests"]
+    )
+    tools["ngspice"] = (
+        f"{engines[0]} (remote executor, reported by klt sim)"
+        if len(engines) == 1 else f"mixed: {', '.join(engines)} (remote executor, reported by klt sim)"
+    )
+    if tools.get("declared"):
+        versions = {"ngspice": engines[0] if len(engines) == 1 else "mixed", "xschem": tools["xschem"]}
+        tools["on_baseline"] = not compare_tool_versions(tools["declared"], versions)
+    return tools
+
+
+# --------------------------------------------------------------------------
 # record rendering
 # --------------------------------------------------------------------------
+
+
+def render_batch_execution(record: dict) -> list[str]:
+    """Requested vs klt-reported execution environment of a batch record."""
+    ex = record["execution"]
+    lines = [
+        f"- **Execution backend**: requested `{ex['requested_backend']}` via `klt sim` "
+        f"({len(ex['requests'])} request(s), one per fixed supply value unless `--quick`); "
+        "ngspice ran **on the remote executor, not this machine** and no local ngspice "
+        "exit code exists for these corners"
+    ]
+    for rq in ex["requests"]:
+        remote = rq.get("remote") or {}
+        detail = ", ".join(
+            f"{k}=`{remote[k]}`"
+            for k in ("provider", "job_id", "instance_type", "lifecycle", "region", "elapsed_seconds")
+            if remote.get(k) is not None
+        )
+        lines.append(
+            f"  - request `{rq['key']}` ({rq['supply_v']:g} V, {rq['n_points']} point(s)): "
+            f"reported backend `{rq.get('reported_backend') or 'not reported'}`, "
+            f"engine {rq.get('engine') or '?'} {rq.get('engine_version') or '?'}, "
+            f"klt {rq.get('klt_version') or '?'}, job `{rq.get('job_id') or 'not reported'}`"
+            + (f" ({detail})" if detail else "")
+        )
+        lines.append(
+            f"    - klt provenance.pdk.version `{rq.get('pdk_version') or 'not reported'}` — "
+            + ("names" if rq.get("klt_pdk_names_pin") else "**does NOT name**")
+            + " the pinned open_pdks commit"
+        )
+    lines.append(
+        f"- **ngspice init settings**: `{record['tools'].get('spiceinit_file', 'sim/spiceinit')}` "
+        f"(sha256 `{record['tools'].get('spiceinit_sha256', '?')}`) sent as the request's "
+        "`options.ngspice_init` lines (empty lines dropped, order kept)"
+    )
+    return lines
 
 
 def render_record(record: dict) -> str:
@@ -805,7 +1239,9 @@ def render_record(record: dict) -> str:
             f"- **toolchain baseline** (`sim/pdk.json` tools): {decl} — "
             + ("recorded ON baseline" if tools.get("on_baseline") else "recorded on DRIFTED tools")
         )
-    if tools.get("spiceinit_sha256"):
+    if r.get("backend") == "batch":
+        lines.extend(render_batch_execution(r))
+    elif tools.get("spiceinit_sha256"):
         lines.append(
             f"- **ngspice init settings**: `{tools.get('spiceinit_file', 'sim/spiceinit')}` "
             f"(sha256 `{tools['spiceinit_sha256']}`), copied into the run directory as "
@@ -851,7 +1287,10 @@ def render_record(record: dict) -> str:
         fails = [c["reason"] for c in res["measurements"] if not c["pass"] and c["reason"]]
         if res.get("solver_diagnostic"):
             fails.append(f"solver diagnostic: {res['solver_diagnostic']}")
-        if res["timed_out"]:
+        if res.get("execution") == "batch":
+            # remote result: no local ngspice exit code exists to report
+            fails.extend(res.get("batch_reasons") or [])
+        elif res["timed_out"]:
             fails.append(
                 "ngspice TIMED OUT — the harness killed it after "
                 f"--timeout {res.get('timeout_s', '?')}s"
@@ -882,6 +1321,12 @@ def render_record(record: dict) -> str:
     lines.append(f"  - Testbench: `{r['links']['testbench']}`")
     lines.append(f"  - Netlist snapshot: `{r['links']['netlist_snapshot']}`")
     lines.append(f"  - Raw per-corner logs: `{r['links']['corners_dir']}`")
+    for key, path in (r["links"].get("klt_requests") or {}).items():
+        lines.append(f"  - klt sim request `{key}`: `{path}`")
+    for key, path in (r["links"].get("klt_responses") or {}).items():
+        lines.append(f"  - klt sim response `{key}` (raw): `{path}`")
+    for key, path in (r["links"].get("request_netlists") or {}).items():
+        lines.append(f"  - Request netlist `{key}`: `{path}`")
     lines.append(f"  - Machine-readable record: `{r['links']['json']}`")
     lines.append(f"  - Experiment manifest: `{r['links']['manifest']}`")
     lines.extend(render_record_footer(r, "corner-run.py"))
@@ -931,6 +1376,15 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     p.add_argument("--author", default="", help="record author (default: git user.email)")
     p.add_argument("--timeout", type=int, default=300, help="per-corner ngspice timeout (s)")
     p.add_argument(
+        "--backend",
+        choices=["local", "batch"],
+        default="local",
+        help="execution backend. `local` (default) runs ngspice here, one process per "
+        "corner. `batch` hands the grid to `klt sim --backend batch` (one request per "
+        "supply value); opt-in and bounded to the unchanged sim/pdk-smoke shape -- "
+        "every other experiment is refused (see sim/README.md, \"Batch backend\")",
+    )
+    p.add_argument(
         "--allow-pdk-mismatch",
         action="store_true",
         help="run even if the installed PDK differs from the sim/pdk.json pin",
@@ -978,6 +1432,12 @@ def main(argv: list[str]) -> int:
         )
 
     exp = load_experiment(Path(args.experiment))
+    batch = args.backend == "batch"
+    if batch:
+        # Refuse before netlisting, submission or any local ngspice.
+        check_batch_supported(exp)
+        if not args.dry_run:
+            klt_binary()  # fail fast if klt is missing
     matrix, is_subset = build_matrix(exp, args, pin)
     if not matrix:
         raise HarnessError("empty corner matrix")
@@ -999,8 +1459,19 @@ def main(argv: list[str]) -> int:
     record_json = records_dir / f"{record_id}.json"
     snapshot = snapshots_dir / f"{record_id}.spice"
 
+    requests_dir = exp.dir / "klt-requests"
+    responses_dir = exp.dir / "klt-responses"
+    request_netlists_dir = exp.dir / "klt-request-netlists"
+
     if not args.dry_run and not args.no_write:
-        for path in (record_md, record_json, snapshot, corners_dir):
+        extra = []
+        if batch:
+            extra = [
+                p
+                for d in (requests_dir, responses_dir, request_netlists_dir)
+                for p in (d.glob(f"{record_id}.*") if d.is_dir() else [])
+            ]
+        for path in (record_md, record_json, snapshot, corners_dir, *extra):
             if path.exists():
                 raise HarnessError(
                     f"{path} already exists — sim/ is append-only, refusing to overwrite"
@@ -1020,6 +1491,23 @@ def main(argv: list[str]) -> int:
     print(f"corner points   : {len(matrix)}" + (" (SUBSET)" if is_subset else " (full matrix)"))
     print(f"scratch run dir : {run_dir}")
 
+    if batch:
+        prepared = prepare_batch_requests(
+            exp, pdk, matrix, args.quick, body, run_dir, args.timeout
+        )
+        print(f"backend         : batch ({len(prepared)} klt sim request(s))")
+
+    if args.dry_run and batch:
+        print("\n-- corner list --")
+        for corner in matrix:
+            print(f"  {corner.id}")
+        for group, request_path, request in prepared:
+            print(f"\n-- klt sim request {group.key} (dry run; netlist: {request['netlist']}) --")
+            print(json.dumps(request, indent=2))
+        print("\n(dry run: klt sim not invoked, nothing submitted, nothing written under "
+              "sim/<experiment>/)")
+        return 0
+
     if args.dry_run:
         print("\n-- corner list --")
         for corner in matrix:
@@ -1030,7 +1518,13 @@ def main(argv: list[str]) -> int:
         return 0
 
     results = []
-    for i, corner in enumerate(matrix, start=1):
+    batch_logs: dict[str, str] = {}
+    execution = None
+    if batch:
+        results, batch_logs, execution = run_batch(
+            exp, pdk, pin, prepared, matrix, run_dir, args.timeout, args.allow_pdk_mismatch
+        )
+    for i, corner in enumerate([] if batch else matrix, start=1):
         log_path = None if args.no_write else corners_dir / f"{corner.id}.log"
         res = run_corner(exp, pdk, corner, body, run_dir, log_path, args.timeout)
         results.append(res)
@@ -1042,6 +1536,19 @@ def main(argv: list[str]) -> int:
             f"[{i:>3}/{len(matrix)}] {corner.id:<20} "
             f"{'PASS' if res['pass'] else 'FAIL'}  {summary}"
         )
+
+    if batch:
+        for i, (corner, res) in enumerate(zip(matrix, results), start=1):
+            summary = ", ".join(
+                f"{c['name']}={'n/a' if c['value'] is None else format(c['value'], '.6g')}"
+                for c in res["measurements"]
+            )
+            print(
+                f"[{i:>3}/{len(matrix)}] {corner.id:<20} "
+                f"{'PASS' if res['pass'] else 'FAIL'}  {summary}"
+            )
+            for why in res["batch_reasons"]:
+                print(f"      {why}", file=sys.stderr)
 
     spreads = spread_checks(exp, results)
     overall = all(r["pass"] for r in results) and all(s["pass"] for s in spreads)
@@ -1110,6 +1617,35 @@ def main(argv: list[str]) -> int:
             "record": str(record_md.relative_to(REPO_ROOT)),
         },
     }
+
+    if batch:
+        record["backend"] = "batch"
+        record["tools"] = batch_tools(record["tools"], execution)
+        link_reqs, link_resps, link_nets = {}, {}, {}
+        for rq in execution["requests"]:
+            key = rq["key"]
+            for d, src, ext, links in (
+                (requests_dir, rq["request_file"], "json", link_reqs),
+                (responses_dir, rq["response_file"], "json", link_resps),
+                (request_netlists_dir, str(Path(rq["request_file"]).with_suffix(".spice")), "spice", link_nets),
+            ):
+                d.mkdir(parents=True, exist_ok=True)
+                dest = d / f"{record_id}.{key}.{ext}"
+                shutil.copyfile(src, dest)
+                links[key] = str(dest.relative_to(REPO_ROOT))
+        corners_dir.mkdir(parents=True, exist_ok=True)
+        for cid, text in batch_logs.items():
+            (corners_dir / f"{cid}.log").write_text(text)
+        for res in results:
+            if res["corner_id"] in batch_logs:
+                res["log"] = str((corners_dir / f"{res['corner_id']}.log").relative_to(REPO_ROOT))
+        for rq in execution["requests"]:
+            rq["request_file"] = link_reqs[rq["key"]]
+            rq["response_file"] = link_resps[rq["key"]]
+        record["execution"] = {"requested_backend": "batch", **execution}
+        record["links"].update(
+            {"klt_requests": link_reqs, "klt_responses": link_resps, "request_netlists": link_nets}
+        )
 
     records_dir.mkdir(parents=True, exist_ok=True)
     record_json.write_text(json.dumps(record, indent=2, sort_keys=True) + "\n")

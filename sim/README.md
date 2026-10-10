@@ -414,12 +414,62 @@ evidence trail. Corrections mint a new record that references the prior one via
 | `--supersedes <record-id>` | record which prior record this replaces |
 | `--author`, `--timeout` | record author (default `git config user.email`), per-corner ngspice timeout |
 | `--allow-pdk-mismatch` | run against a non-pinned PDK; the record flags it |
-| `--dry-run` | netlist, print the corner list and one deck, run nothing, write nothing |
+| `--backend {local,batch}` | `local` (default) runs ngspice here. `batch` is the opt-in `klt sim` batch backend, **`sim/pdk-smoke` only** — see "Batch backend" below |
+| `--dry-run` | netlist, print the corner list and one deck, run nothing, write nothing (with `--backend batch`: print the `klt sim` requests, submit nothing) |
 | `--no-write` | run every corner for real (ngspice included) but skip writing an evidence record — for CI/selftest liveness runs that should not mint new evidence on every push |
 
 Exit status: `0` all checks passed, `2` a record was written (or would have
 been, under `--no-write`) but something failed, `1` harness/setup error (no
 record written).
+
+### Batch backend (issue #298)
+
+`python3 sim/bin/corner-run.py sim/pdk-smoke --backend batch` sends the PVT
+grid to `klt sim --backend batch` instead of running ngspice here. It is
+**opt-in and deliberately bounded**: the allowlist is only `sim/pdk-smoke`
+with its single `op` analysis and two scalar measurements (`vgs`, `isup`).
+Every other manifest — `current-limit`, `dropout-vs-load`, `enable-shutdown`,
+`ic-screen-125c-*`, `iq`, `line-regulation`, `load-regulation`,
+`load-transient`, `loop-gain`, `psrr-dc`, `startup`, `thermal`, and the `mc-*`
+experiments (which have their own runner, `mc-run.py`) — and any edited smoke
+shape is **refused before netlisting, submission or local ngspice**. The
+wider regulation grids stay deferred on `klt sim` request-shape work
+(2AMLogic/klayout-tools#2482) and on translating their measurement cards.
+
+- **Requests.** The supply is the netlist's `.param vsup`, not a klt corner
+  axis (klt's supply override alters sources, which is not this harness's
+  parameter). A full or CLI-overridden Cartesian matrix is therefore split
+  **by supply**: the default run is three requests, each with five process
+  values and three temperatures (45 unique points). `--quick` submits one
+  singleton request per explicit tuple — never a Cartesian expansion of them.
+  Each request's netlist opens with `.param vsup=<that supply>`, then the
+  deck params/options (`.option wnflag=1`) and `.save all`, then the circuit.
+  `options.ngspice_init` carries the non-empty lines of `sim/spiceinit`
+  verbatim and in order; `PDK_ROOT` is passed to `klt` explicitly.
+- **Grading stays local.** Results are reassembled in the local matrix order
+  and graded by this harness: inclusive min/max limits, the `spread_checks`,
+  and the strict solver-diagnostic gate applied to each retained engine log.
+  klt's own verdict is never substituted for `overall_pass`, and a klt
+  "recovered warning" is not the harness's gate. A missing/unreadable engine
+  log cannot PASS.
+- **Failures never become PASS and never fall back.** A malformed/error-envelope
+  response, a nonzero tool exit without a valid response, a subprocess
+  timeout, or a missing/duplicate/unexpected/malformed point, or a klt PDK
+  provenance that does not name the pin (the shared check `mc-run.py` uses),
+  aborts with exit `1`, **no record**, the klt stdout/stderr and any remote
+  job ids kept in the scratch run dir (`sim/build/...`) and printed. There is
+  no local fallback and no resubmission after an ambiguous timeout. An
+  errored/inconclusive corner, an absent or non-finite value, or an out-of-
+  limits value is a recorded FAIL (exit `2`) with its reason.
+- **Evidence.** A batch record adds `klt-requests/`, `klt-responses/` (raw)
+  and `klt-request-netlists/` files named `<record-id>.<request>.<ext>`, the
+  per-corner engine logs under `corners/<record-id>/`, and an `execution`
+  block / "Execution backend" line naming the requested backend, the
+  backend, engine version and job id **as klt reported them**, and whether
+  klt's PDK provenance names the pin. The record's ngspice is the remote
+  executor's, and no local ngspice exit code is recorded for these corners.
+  Local records are unchanged. The same append-only overwrite refusal,
+  `--dry-run` and `--no-write` rules apply.
 
 ### Writing a new Monte Carlo experiment
 

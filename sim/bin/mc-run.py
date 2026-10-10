@@ -51,6 +51,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _record_common import (
     build_input_fingerprint,
     mc_input_sections,
+    assert_klt_read_the_pinned_pdk as _shared_assert_pdk,
     klt_binary as _shared_klt_binary,
     load_corner_run_module,
     render_record_footer,
@@ -92,33 +93,10 @@ def load_mc_experiment(path: Path) -> dict:
 def assert_klt_read_the_pinned_pdk(
     response: dict, pdk, pin: dict, allow_mismatch: bool
 ) -> None:
-    """Check `klt sim`'s OWN provenance names the PDK this harness pinned.
-
-    The pre-run `resolve_pdk()`/`matches_pin` check (issue #2) verifies the
-    install *this harness* resolved. It says nothing about the one `klt`
-    resolved, and before issue #211 nothing did: `run_klt_sim` passed no
-    `PDK_ROOT`, the request's `models.lib` is relative, and on a host with two
-    sky130A installs `klt` read the other one -- so a record could name the
-    pinned open_pdks commit while the simulation behind it read a different
-    build's FET cards. Passing `PDK_ROOT` fixes the cause; this asserts the
-    effect, because a provenance claim nothing checks is the kind that rots
-    silently. `--allow-pdk-mismatch` downgrades it to a warning, the same
-    escape hatch the pre-run check offers.
-    """
-    claimed = ((response.get("provenance") or {}).get("pdk") or {}).get("version") or ""
-    if pin["open_pdks_commit"] in claimed:
-        return
-    message = (
-        f"klt sim's own provenance.pdk.version is {claimed!r}, which does not name "
-        f"sim/pdk.json's pinned open_pdks commit {pin['open_pdks_commit']}\n"
-        f"  this harness resolved: {pdk.dir}\n"
-        "  klt resolved something else -- the record's `pdk` block would name the "
-        "pin while the simulation read a different model build. Set PDK_ROOT "
-        "explicitly, or remove the competing install"
-    )
-    if not allow_mismatch:
-        raise HarnessError(message)
-    print(f"WARNING: {message}", file=sys.stderr)
+    """Check `klt sim`'s OWN provenance names the PDK this harness pinned
+    (issue #211). The implementation is shared with `corner-run.py --backend
+    batch` and lives in `_record_common.py`; see its docstring."""
+    _shared_assert_pdk(response, pdk, pin, allow_mismatch, error_cls=HarnessError)
 
 
 # --------------------------------------------------------------------------
