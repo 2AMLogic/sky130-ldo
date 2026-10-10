@@ -6,7 +6,6 @@ PDK-free: fake simulator/netlister calls, no PVT matrices, no ngspice/klt.
 from __future__ import annotations
 
 import importlib.util
-import json
 import subprocess
 import sys
 import tempfile
@@ -39,7 +38,7 @@ import sys, time
 from pathlib import Path
 sys.path.insert(0, {bin!r})
 import _record_common as rc
-build, exp, rid, tag = map(Path, sys.argv[1:3]) if False else sys.argv[1:5]
+build, exp, rid, tag = sys.argv[1:5]
 try:
     rc.reserve_record_id(Path(build), exp, rid)
 except RuntimeError:
