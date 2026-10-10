@@ -118,16 +118,23 @@ if [[ "$MR_DECK_PRESENT" == true && "$MR_KLAYOUT_FOUND" == true ]]; then
   set -e
   if [[ "$MR_RC" -ne 0 ]]; then tail -n 40 "$MR_LOG" > "$OUT_DIR/mr-drc.error.txt"; fi
 fi
+# `input_sha256` binds the official verdict to the GDS bytes the deck read
+# (issue #304): the characterization report only calls the DRC row fresh when
+# the stored GDS still hashes to it. Null when the deck did not run.
 python3 - "$OUT_DIR/mr-drc.run.json" "$MR_DECK_NAME" "$MR_DECK_PRESENT" "$MR_KLAYOUT_FOUND" \
-  "$MR_RC" "$MR_SHA" "$MR_KLAYOUT_VERSION" "$MR_SWITCHES" <<'PYEOF'
-import json, sys
-out, name, present, found, rc, sha, ver, sw = sys.argv[1:9]
+  "$MR_RC" "$MR_SHA" "$MR_KLAYOUT_VERSION" "$MR_SWITCHES" "$OUT_DIR/$CELL.gds" <<'PYEOF'
+import hashlib, json, sys
+out, name, present, found, rc, sha, ver, sw, gds = sys.argv[1:10]
+input_sha = None
+if rc != "null":
+    with open(gds, "rb") as f:
+        input_sha = hashlib.sha256(f.read()).hexdigest()
 json.dump({
     "schema": "ldo-official-drc-run/1",
     "deck_name": name, "deck_present": present == "true", "klayout_found": found == "true",
     "exit_code": None if rc == "null" else int(rc),
     "deck_sha256": sha or None, "klayout_version": ver or None,
-    "switches": sw, "report": "mr-drc.lyrdb",
+    "switches": sw, "report": "mr-drc.lyrdb", "input_sha256": input_sha,
 }, open(out, "w"), indent=1)
 PYEOF
 
