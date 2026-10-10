@@ -242,6 +242,17 @@ def parse_spec_rows(text: str) -> list[dict]:
 # --------------------------------------------------------------------------
 
 
+# Malformed-evidence diagnostics collected while a report is generated; the
+# CLI exits nonzero when any are present (issue #255).
+EVIDENCE_ERRORS: list[str] = []
+
+
+def _describe_value(value: object) -> str:
+    if value is None:
+        return "null or missing"
+    return f"{type(value).__name__} {json.dumps(value)[:40]}"
+
+
 def latest_sim_record(slug: str) -> tuple[dict, Path] | None:
     """The latest *campaign* record under `sim/<slug>/records/`.
 
@@ -760,9 +771,24 @@ def build_spec_row_table(
             continue
 
         record, md_path = found
-        verdict = "PASS" if record.get("overall_pass") else "FAIL"
         record_id = record.get("record_id", "?")
         record_rel = rel(md_path)
+        overall = record.get("overall_pass")
+        if not isinstance(overall, bool):
+            msg = (
+                f"record `{record_id}` ({record_rel}) under sim/{slug} has a malformed "
+                f"`overall_pass` verdict ({_describe_value(overall)}); a campaign record "
+                "must state a JSON boolean. Not coerced, and no older campaign record is "
+                "substituted."
+            )
+            EVIDENCE_ERRORS.append(f"{param}: {msg}")
+            table.append(
+                f"| {param} | {row['draft_target']} | **ERROR** | "
+                f"[`{record_id}`]({record_rel}) | — | — |"
+            )
+            detail.append(f"- **{param}**: ERROR — {msg}")
+            continue
+        verdict = "PASS" if overall else "FAIL"
         tally = sim_corner_tally(record) or sim_mc_sample_tally(record) or "n/a"
 
         if module is not None and pdk is not None:
@@ -898,6 +924,7 @@ def build_layout_section() -> list[str]:
 
 
 def generate_report(skip_netlist_freshness: bool = False) -> str:
+    EVIDENCE_ERRORS.clear()
     spec_text = SPEC_FILE.read_text()
     spec_rows = parse_spec_rows(spec_text)
     table, detail = build_spec_row_table(spec_rows, skip_netlist_freshness)
@@ -1153,6 +1180,11 @@ def main(argv: list[str]) -> int:
     args = parse_args(argv)
     skip_netlist_freshness = args.no_netlist_freshness or args.ignore_sim_freshness
     report = generate_report(skip_netlist_freshness=skip_netlist_freshness)
+
+    if EVIDENCE_ERRORS:
+        for err in EVIDENCE_ERRORS:
+            print(f"ERROR: {err}", file=sys.stderr)
+        return 1
 
     if args.check:
         if not args.out.is_file():
