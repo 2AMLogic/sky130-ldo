@@ -244,6 +244,45 @@ def klt_binary(usage_context: str, error_cls: type[Exception] = RuntimeError) ->
     return exe
 
 
+def assert_klt_read_the_pinned_pdk(
+    response: dict,
+    pdk,
+    pin: dict,
+    allow_mismatch: bool,
+    error_cls: type[Exception] = RuntimeError,
+) -> None:
+    """Check `klt sim`'s OWN provenance names the PDK this harness pinned.
+
+    The pre-run `resolve_pdk()`/`matches_pin` check (issue #2) verifies the
+    install *this harness* resolved. It says nothing about the one `klt`
+    resolved, and before issue #211 nothing did: `run_klt_sim` passed no
+    `PDK_ROOT`, the request's `models.lib` is relative, and on a host with two
+    sky130A installs `klt` read the other one -- so a record could name the
+    pinned open_pdks commit while the simulation behind it read a different
+    build's FET cards. Passing `PDK_ROOT` fixes the cause; this asserts the
+    effect, because a provenance claim nothing checks is the kind that rots
+    silently. `allow_mismatch` (`--allow-pdk-mismatch`) downgrades it to a
+    warning, the same escape hatch the pre-run check offers. Missing
+    provenance counts as a mismatch: absent evidence never implies a pin.
+
+    Shared by `mc-run.py` and `corner-run.py --backend batch` (issue #298).
+    """
+    claimed = ((response.get("provenance") or {}).get("pdk") or {}).get("version") or ""
+    if pin["open_pdks_commit"] in claimed:
+        return
+    message = (
+        f"klt sim's own provenance.pdk.version is {claimed!r}, which does not name "
+        f"sim/pdk.json's pinned open_pdks commit {pin['open_pdks_commit']}\n"
+        f"  this harness resolved: {pdk.dir}\n"
+        "  klt resolved something else -- the record's `pdk` block would name the "
+        "pin while the simulation read a different model build. Set PDK_ROOT "
+        "explicitly, or remove the competing install"
+    )
+    if not allow_mismatch:
+        raise error_cls(message)
+    print(f"WARNING: {message}", file=sys.stderr)
+
+
 def render_record_header(record: dict, tools_line: str) -> list[str]:
     """Render the shared Record ID/Experiment/Claim/Netlist provenance/PDK/
     Tools/Repo state header lines common to both runners' `record.md`.
