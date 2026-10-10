@@ -171,6 +171,17 @@ jobs:
           export PATH="$HOME/.local/bin:$PATH"
           sim/selftest.sh --quick --require-pdk
 
+      - name: Upload harness diagnostics (scratch netlist, decks, ngspice logs)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pdk-smoke-diagnostics
+          path: |
+            sim/build/
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 14
+
       - name: Byte-exact characterization check (includes the live Freshness column)
         run: |
           export PATH="$HOME/.local/bin:$PATH"
