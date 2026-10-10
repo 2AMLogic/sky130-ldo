@@ -193,10 +193,12 @@ def main() -> int:
                              "-rd", f"report={xml.relative_to(out)}", "-rd", "feol=true", "-rd", "beol=true"],
                             cwd=out)
                 (drc_dir / f"{v['top_cell']}.pdk.log").write_text(pproc.stdout + pproc.stderr)
-                # The report XML echoes the runset's absolute path; replace the
-                # host-specific PDK prefix with a placeholder (no other edit).
+                # The report XML / log echo the runset's and the report's
+                # absolute paths; replace the host-specific PDK prefix and the
+                # record directory with placeholders (no other edit).
                 for f in (xml, drc_dir / f"{v['top_cell']}.pdk.log"):
-                    f.write_text(f.read_text().replace(str(variant_dir), f"$PDK_ROOT/{args.pdk_variant}"))
+                    f.write_text(f.read_text().replace(str(variant_dir), f"$PDK_ROOT/{args.pdk_variant}")
+                                 .replace(str(out.resolve()), "<record>"))
                 entry["pdk_signoff_counts"] = pdk_drc_counts(xml)
             cs["drc"][vname] = entry
             if d["status"] != "clean":
