@@ -65,13 +65,12 @@ from __future__ import annotations
 import argparse
 import json
 import math
-import re
 import subprocess
 import sys
 from pathlib import Path
 from typing import Any
 
-from _netlist_common import _merge_continuations
+from _netlist_common import _merge_continuations, parse_x_card
 from _spec_constants import SpecConstants, read_spec_constants
 
 # --------------------------------------------------------------------------
@@ -299,29 +298,17 @@ def parse_netlist(path: Path) -> tuple[list[dict[str, Any]], list[str]]:
     for line in lines:
         if not line.startswith(("X", "C", "R", "M")):
             continue
-        m = re.match(r"^X(\S+)\s+(.*)$", line)
-        if not m:
+        card = parse_x_card(line, MOS_MODELS.keys() | RES_MODELS.keys())
+        if card is None:
             # A non-subcircuit element (the schematic's capacitors are plain
             # `C...` cards): no model token this module recognises.
             if line[:1] in ("C", "R", "M"):
                 skipped.append(line)
             continue
-        name, rest = m.group(1), m.group(2)
-        toks = rest.split()
-        model_idx = next(
-            (i for i, t in enumerate(toks) if t in MOS_MODELS or t in RES_MODELS),
-            None,
-        )
-        if model_idx is None:
+        if card.model is None:
             skipped.append(line)
             continue
-        nets = toks[:model_idx]
-        model = toks[model_idx]
-        params: dict[str, str] = {}
-        for tok in toks[model_idx + 1 :]:
-            if "=" in tok:
-                key, value = tok.split("=", 1)
-                params[key] = value
+        name, model, nets, params = card.suffix, card.model, card.nets, card.params
 
         # The schematic reuses at least one instance name across two
         # sub-blocks (a genuine schematic defect, see this issue's PR). Keep
