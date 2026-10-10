@@ -1357,7 +1357,7 @@ def render_record(record: dict) -> str:
                     f"  - {res['corner_id']} leg `{leg['leg']}`: {leg['status']}, drawdown "
                     f"{'n/a' if leg['max_drawdown_v'] is None else format(leg['max_drawdown_v'], '.6g') + ' V'}"
                     + (f", worst interval {iv[0]:.6g}-{iv[1]:.6g} s" if iv else "")
-                    + f", worst sample gap "
+                    + ", worst sample gap "
                     + ("n/a" if leg["resolution_s"] is None else f"{leg['resolution_s']:.3g} s")
                 )
     for sc in r["spread_checks"]:

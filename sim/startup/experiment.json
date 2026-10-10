@@ -7,45 +7,17 @@
   "schematic": "testbench/tb_startup.sch",
   "statistical_convention": "N/A (corner-matrix check, not a distribution claim)",
   "corners": {
-    "process": [
-      "tt",
-      "ss",
-      "ff",
-      "sf",
-      "fs"
-    ],
-    "temperature_c": [
-      -40,
-      27,
-      125
-    ],
-    "supply_v": [
-      2.97,
-      3.3,
-      3.63
-    ]
+    "process": ["tt", "ss", "ff", "sf", "fs"],
+    "temperature_c": [-40, 27, 125],
+    "supply_v": [2.97, 3.3, 3.63]
   },
   "quick_subset": [
-    [
-      "tt",
-      27,
-      3.3
-    ],
-    [
-      "ss",
-      -40,
-      2.97
-    ],
-    [
-      "ff",
-      125,
-      3.63
-    ]
+    ["tt", 27, 3.3],
+    ["ss", -40, 2.97],
+    ["ff", 125, 3.63]
   ],
   "deck": {
-    "options": [
-      "wnflag=1"
-    ],
+    "options": ["wnflag=1"],
     "params": {},
     "analyses": [
       "* --- leg 1: C_out 0.33uF, 0 mA (feedback divider is the only preload) ---",
@@ -185,18 +157,10 @@
     "min_samples": 20,
     "tolerance_v": 0.0,
     "legs": [
-      {
-        "id": "c033_0ma"
-      },
-      {
-        "id": "c033_50ma"
-      },
-      {
-        "id": "c47_0ma"
-      },
-      {
-        "id": "c47_50ma"
-      }
+      {"id": "c033_0ma"},
+      {"id": "c033_50ma"},
+      {"id": "c47_0ma"},
+      {"id": "c47_50ma"}
     ]
   }
 }
