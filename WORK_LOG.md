@@ -4,6 +4,8 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 
 ### 2026-10-10
 
+- **PR #274**: layout: consolidate git() and run_klt_json() helpers (#273)
+- **Issue #273** (closed): layout: consolidate duplicated subprocess helpers in record-producing scripts
 - **PR #270**: layout: folded-resistor PVT/mismatch qualification matrix, driver and BLOCKED record (#263)
 - **PR #269**: test(layout): PDK-free unit tests for gen-ldo-blocks placement and track planners
 - **PR #268**: layout: dual-deck (curated + official sky130A_mr) DRC gate and rule-family diagnosis for ldo-core (#260)

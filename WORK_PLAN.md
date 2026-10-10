@@ -19,13 +19,14 @@ _None._
 
 Human-approved issues ready for implementation (`loom:issue`).
 
-_None._
+- **#177**: Seed sim/current-limit's leg-1 operating point to conform to the initial-condition contract
+- **#263**: Qualify folded resistor electrical equivalence across process, temperature and mismatch
 
 ## In Progress
 
 Issues currently being built (`loom:building`).
 
-- **#263**: Qualify folded resistor electrical equivalence across process, temperature and mismatch
+_None._
 
 ## PRs Awaiting Review
 
@@ -47,10 +48,11 @@ Issues carrying `loom:curated`.
 - **#177**: Seed sim/current-limit's leg-1 operating point to conform to the initial-condition contract *(curated)*
 - **#213**: sim(iq): mint the 45-corner record under #173's seeded deck + #133's regulation gate — deck fixed, matrix not re-run (host contention) *(curated)*
 - **#263**: Qualify folded resistor electrical equivalence across process, temperature and mismatch *(curated)*
+- **#267**: layout: fix locally-routed official-DRC families (via.1a_b, m2.5, via2.5, nwell.9) found by #260 *(curated)*
 
 ## Proposed (Architect / Hermit)
 
-_None._
+- **#278**: layout: PDK-free verdict tests for the ERC/LVS/area evidence renderers *(architect)*
 
 ## Epics
 
@@ -62,11 +64,11 @@ _None._
 |------|-------|
 | Operator merge-risk holds | 0 |
 | Operator priority | 0 |
-| Ready (`loom:issue`) | 0 |
-| In Progress (`loom:building`) | 1 |
+| Ready (`loom:issue`) | 2 |
+| In Progress (`loom:building`) | 0 |
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 0 |
-| Curated | 4 |
-| Architect / Hermit proposals | 0 |
+| Curated | 5 |
+| Architect / Hermit proposals | 1 |
 | Active epics | 1 |
 <!-- guide:plan-body:end -->
