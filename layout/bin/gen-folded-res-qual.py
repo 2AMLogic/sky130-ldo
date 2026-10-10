@@ -46,10 +46,11 @@ from __future__ import annotations
 
 import argparse
 import json
-import subprocess
 import sys
 from pathlib import Path
 from typing import Any
+
+from _record_common import run_klt_json
 
 #: li1 drawing / label, licon, tap -- sky130 GDS layer numbers, the same ones
 #: `gen-ldo-blocks.py` draws its routing and body ties on.
@@ -75,15 +76,6 @@ BANK_MARKER_LAYERS = [(94, 20), (86, 20), (79, 20)]
 
 class GenError(RuntimeError):
     pass
-
-
-def _run_klt(klt: str, *args: str) -> dict[str, Any]:
-    proc = subprocess.run(
-        [klt, *args, "--format", "json"], capture_output=True, text=True
-    )
-    if proc.returncode != 0:
-        raise GenError(f"klt {' '.join(args)} failed: {proc.stderr.strip()}")
-    return json.loads(proc.stdout)
 
 
 def segment_length_um(total_l_um: float, segments: int) -> float:
@@ -278,9 +270,10 @@ def generate_case(klt: str, pdk: str, out_dir: Path, case: dict[str, Any]) -> di
     # --- unsplit baseline (exactly what the core flow draws) --------------
     unsplit_params = {"length_um": total_l, "width_um": w, "num": 1, "dummy": 0, "flavor": flavor}
     un_raw = scratch / f"{name}_unsplit_raw.gds"
-    un_rep = _run_klt(
+    un_rep = run_klt_json(
         klt, "gen", "res_array", "--pdk", pdk, "--cell-name", f"{name}_unsplit_raw",
         "--params", json.dumps(unsplit_params), "-o", str(un_raw),
+        error_cls=GenError,
     )
     (scratch / f"gen.{name}_unsplit.json").write_text(json.dumps(un_rep, indent=2))
     un_meta = compose(un_raw, out_dir / f"{name}_unsplit.gds", f"{name}_unsplit",
@@ -296,9 +289,10 @@ def generate_case(klt: str, pdk: str, out_dir: Path, case: dict[str, Any]) -> di
     # --- folded bank + its open-chain negative control --------------------
     folded_params = {"length_um": seg_l, "width_um": w, "num": n, "rows": n, "dummy": 0, "flavor": flavor}
     fo_raw = scratch / f"{name}_folded_raw.gds"
-    fo_rep = _run_klt(
+    fo_rep = run_klt_json(
         klt, "gen", "res_array", "--pdk", pdk, "--cell-name", f"{name}_folded_raw",
         "--params", json.dumps(folded_params), "-o", str(fo_raw),
+        error_cls=GenError,
     )
     (scratch / f"gen.{name}_folded.json").write_text(json.dumps(fo_rep, indent=2))
     straps = plan_series_straps(fo_rep["ports"], n)

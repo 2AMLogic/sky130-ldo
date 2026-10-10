@@ -65,11 +65,11 @@ from __future__ import annotations
 import argparse
 import json
 import math
-import subprocess
 import sys
 from pathlib import Path
 from typing import Any
 
+from _record_common import run_klt_json
 from _netlist_common import _merge_continuations, parse_x_card
 from _spec_constants import SpecConstants, read_spec_constants
 
@@ -577,13 +577,6 @@ def power_rail_width_um(
 # --------------------------------------------------------------------------
 
 
-def _run_klt(klt: str, *args: str) -> dict[str, Any]:
-    proc = subprocess.run(
-        [klt, *args, "--format", "json"], check=True, capture_output=True, text=True
-    )
-    return json.loads(proc.stdout)
-
-
 def generate_blocks(
     klt: str, pdk_variant: str, out_dir: Path, devices: list[dict[str, Any]]
 ) -> dict[str, dict[str, Any]]:
@@ -616,7 +609,7 @@ def generate_blocks(
                 "flavor": device["flavor"],
             }
             generator = "res_array"
-        report = _run_klt(
+        report = run_klt_json(
             klt,
             "gen",
             generator,
@@ -628,6 +621,7 @@ def generate_blocks(
             json.dumps(params),
             "-o",
             str(out_dir / f"{block_id}.gds"),
+            error_cls=GenError,
         )
         if device["kind"] == "mos":
             # `klt gen` never *rejects* an unresolvable `voltage_flavor` -- it
@@ -1424,7 +1418,9 @@ def main() -> int:
     request = build_compose_request(out_dir, args.pdk_variant, plan, args.cell_name)
     request_path = out_dir / "compose.request.json"
     request_path.write_text(json.dumps(request, indent=2))
-    compose_report = _run_klt(args.klt, "gen-compose", str(request_path))
+    compose_report = run_klt_json(
+        args.klt, "gen-compose", str(request_path), error_cls=GenError
+    )
     (out_dir / "compose.json").write_text(json.dumps(compose_report, indent=2))
 
     nets = collect_terminals(ordered, reports, plan)

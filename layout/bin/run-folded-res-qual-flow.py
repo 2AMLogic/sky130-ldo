@@ -47,6 +47,7 @@ from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import _folded_res_analysis as fra  # noqa: E402
+from _record_common import git as _repo_git  # noqa: E402
 
 LAYOUT_DIR = Path(__file__).resolve().parent.parent
 REPO_ROOT = LAYOUT_DIR.parent
@@ -63,10 +64,6 @@ def run(cmd: list[str], cwd: Path | None = None, check: bool = False) -> subproc
     if check and proc.returncode != 0:
         raise SystemExit(f"command failed ({proc.returncode}): {' '.join(cmd)}\n{proc.stderr}")
     return proc
-
-
-def git(*args: str) -> str:
-    return run(["git", "-C", str(REPO_ROOT), *args], check=True).stdout.strip()
 
 
 def deck_constants() -> dict[str, tuple[float, float]]:
@@ -137,10 +134,10 @@ def main() -> int:
     klt = str(Path(args.klt).resolve())
     # Captured before the record directory exists, so the record itself
     # (an untracked directory until committed) never reads as a dirty tree.
-    git_sha = git("rev-parse", "HEAD")
-    git_dirty = git("status", "--porcelain") != ""
+    git_sha = _repo_git(REPO_ROOT, "rev-parse", "HEAD")
+    git_dirty = _repo_git(REPO_ROOT, "status", "--porcelain") != ""
     ts = _dt.datetime.now(_dt.timezone.utc).strftime("%Y%m%d-%H%M%S")
-    record_id = f"{ts}-{git('rev-parse', '--short', 'HEAD')}"
+    record_id = f"{ts}-{_repo_git(REPO_ROOT, 'rev-parse', '--short', 'HEAD')}"
     out = args.out_root / record_id
     if out.exists():
         raise SystemExit(f"record {out} already exists -- records are append-only")
@@ -348,7 +345,7 @@ def main() -> int:
         "pdk_variant": args.pdk_variant,
         "pdk_version": pdk["version"],
         "open_pdks_commit_pinned": sim_pdk["open_pdks_commit"],
-        "schematic_sha": git("log", "-1", "--format=%h", "--", "design/ldo_3v3in_1v8out.sch"),
+        "schematic_sha": _repo_git(REPO_ROOT, "log", "-1", "--format=%h", "--", "design/ldo_3v3in_1v8out.sch"),
         "pdk_drc_runset": "libs.tech/klayout/drc/sky130A_mr.drc (feol=true beol=true)",
     }
     summary["flow_failures"] = failures

@@ -33,16 +33,11 @@ from pathlib import Path
 BIN_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(BIN_DIR))
 import _gds_area as ga  # noqa: E402
+from _record_common import git as _repo_git  # noqa: E402
 
 REPO_ROOT = BIN_DIR.parent.parent
 REPORTS = REPO_ROOT / "layout" / "ldo-core" / "reports"
 SCHEMA_VERSION = 1
-
-
-def _git(*args: str) -> str:
-    return subprocess.run(
-        ["git", "-C", str(REPO_ROOT), *args], check=True, capture_output=True, text=True
-    ).stdout.strip()
 
 
 def _fmt(d: Decimal, places: int = 6) -> str:
@@ -87,7 +82,7 @@ def main() -> int:
     sha = ga.sha256_file(gds)
     rel_gds = gds.relative_to(REPO_ROOT).as_posix()
 
-    short = _git("rev-parse", "--short", "HEAD")
+    short = _repo_git(REPO_ROOT, "rev-parse", "--short", "HEAD")
     rid = args.record_id or f"{datetime.now(timezone.utc):%Y%m%d-%H%M%S}-{short}"
     out_dir = REPORTS / rid
     out_dir.mkdir(parents=True, exist_ok=False)  # never overwrite a record
@@ -115,7 +110,7 @@ def main() -> int:
         "comparison": "area_mm2 < limit_mm2 (strict; exactly the limit FAILS)",
         "verdict": m.verdict,
         "crosscheck": cross,
-        "provenance": {"git_sha": _git("rev-parse", "HEAD"), "tool": "layout/bin/render-ldo-area-record.py"},
+        "provenance": {"git_sha": _repo_git(REPO_ROOT, "rev-parse", "HEAD"), "tool": "layout/bin/render-ldo-area-record.py"},
     }
     (out_dir / "area.json").write_text(json.dumps(record, indent=2) + "\n")
 
