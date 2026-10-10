@@ -620,6 +620,62 @@ def check_area_freshness(record: dict) -> str:
     )
 
 
+def check_lvs_geometry_freshness(lvs_dir: Path) -> str:
+    """Is the LVS record about the routed GDS that exists now? (issue #287)
+
+    Content-based and toolchain-free, modelled on `check_area_freshness`: (1)
+    the GDS stored in the LVS record dir hashes to the `environment.layout_sha256`
+    its `lvs.json` recorded, and (2) the CURRENT routed GDS in the
+    `layout/ldo-core/reports/LATEST` record hashes to the same value. Identity
+    is bytes, never timestamps, directory names or pointer identity. Every
+    missing input gives a diagnosed `unverified`/`STALE` result.
+    """
+    path = lvs_dir / "lvs.json"
+    try:
+        env = json.loads(path.read_text()).get("environment") or {}
+        recorded = env.get("layout_sha256")
+    except (OSError, ValueError, AttributeError):
+        return "unverified: LVS record has no readable lvs.json"
+    if not isinstance(recorded, str) or not recorded:
+        return "unverified: LVS record carries no environment.layout_sha256"
+    cited_path = lvs_dir / "ldo_core.gds"
+    if not cited_path.is_file():
+        return "STALE (the GDS cited by the LVS record no longer exists)"
+    try:
+        if _sha256_of(cited_path) != recorded:
+            return "STALE (the GDS stored with the LVS record no longer hashes to its recorded layout_sha256)"
+    except OSError:
+        return "unverified: the GDS stored with the LVS record is unreadable"
+    latest = layout_record("LATEST")
+    if latest is None:
+        return "unverified: layout/ldo-core/reports/LATEST pointer is missing"
+    latest_id, latest_dir = latest
+    current = latest_dir / "ldo_core.gds"
+    if not current.is_file():
+        return f"unverified: no routed GDS in the current `LATEST` record `{latest_id}`"
+    try:
+        same = _sha256_of(current) == recorded
+    except OSError:
+        return f"unverified: routed GDS in the current `LATEST` record `{latest_id}` is unreadable"
+    if same:
+        return f"fresh (the routed GDS in the current `LATEST` record `{latest_id}` has the LVS-recorded sha256)"
+    return (
+        f"STALE (the routed GDS in the current `LATEST` record `{latest_id}` differs from "
+        "the one LVS checked; re-run LVS)"
+    )
+
+
+def combine_freshness(*parts: str) -> str:
+    """STALE if any part is STALE; fresh only if all are; otherwise unverified."""
+    for p in parts:
+        if p.startswith("STALE"):
+            return p
+    for p in parts:
+        if not p.startswith("fresh"):
+            return p if p.startswith("unverified") else f"unverified: {p}"
+    return "fresh (" + "; ".join(parts) + ")"
+
+
 def read_layout_record_text(record_id: str) -> str | None:
     path = LAYOUT_DIR / "ldo-core" / "reports" / record_id / "record.md"
     try:
@@ -643,7 +699,10 @@ def check_pex_layout_freshness(record_text: str) -> str:
     lvs_text = read_layout_record_text(cited)
     if lvs_text is None:
         return f"unverified: cited LVS record `{cited}` record.md is missing or unreadable"
-    sch = check_schematic_freshness_from_record(lvs_text)
+    sch = combine_freshness(
+        check_schematic_freshness_from_record(lvs_text),
+        check_lvs_geometry_freshness(LAYOUT_DIR / "ldo-core" / "reports" / cited),
+    )
     if sch.startswith("fresh"):
         return f"fresh (cites the current `LATEST-LVS` record `{cited}`; its {sch})"
     if sch.startswith("STALE"):
@@ -919,7 +978,12 @@ def build_layout_section() -> list[str]:
                 f"status={lvs_json.get('status')}, mismatch_count={lvs_json.get('mismatch_count')}"
             )
         freshness = (
-            check_schematic_freshness_from_record(record_text) if record_text else "unverified"
+            combine_freshness(
+                check_schematic_freshness_from_record(record_text),
+                check_lvs_geometry_freshness(d),
+            )
+            if record_text
+            else "unverified"
         )
         freshness_short = "fresh" if freshness.startswith("fresh") else (
             "STALE" if freshness.startswith("STALE") else "unverified"
