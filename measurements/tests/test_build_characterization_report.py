@@ -727,14 +727,18 @@ class TestCheckCli(unittest.TestCase):
         fresh/STALE where a headless run says unverified. That difference is
         the whole reason this mode exists -- it must not fail."""
         # Only the LAST cell is the schematic Freshness verdict; the Inputs
-        # column before it is headless and must stay compared (#237).
+        # column before it is headless and must stay compared (#237). Only the
+        # per-spec-row section is PDK-dependent: the layout section's
+        # Freshness (which can itself read `unverified`, #304) is headless.
+        idx = self.report.index(bcr.LAYOUT_SECTION_HEADING)
+        head, tail = self.report[:idx], self.report[idx:]
         pdk_flavoured = re.sub(
-            r"\| unverified \|$", "| fresh |", self.report, flags=re.MULTILINE
+            r"\| unverified \|$", "| fresh |", head, flags=re.MULTILINE
         ).replace(
             "Freshness: unverified: --no-netlist-freshness passed",
             "Freshness: fresh (a live xschem re-netlist of the current testbench "
             "schematic matches the committed netlist snapshot verbatim)",
-        )
+        ) + tail
         self.assertNotEqual(pdk_flavoured, self.report)
         self.report_path.write_text(pdk_flavoured)
         self.assertEqual(
@@ -1135,6 +1139,272 @@ class TestDrcRowDetail(unittest.TestCase):
         self.assertEqual(len(rows), 1)
         self.assertIn("curated deck:", rows[0])
         self.assertIn("official deck", rows[0])
+
+
+class TestDrcInputFreshness(unittest.TestCase):
+    """Issue #304: the DRC row's Freshness covers the GDS bytes the checkers
+    read, not only the schematic commit. Every case renders the REAL DRC row
+    through `build_layout_section` against a PDK-free fixture tree, so what is
+    asserted is what the committed report would say."""
+
+    RID = "20260101-000000-drc"
+    SCH = "aaa1111"
+    GDS = b"routed-gds-bytes"
+    RECORD_MD = "## Overall verdict: FAIL\n\nSchematic freshness: netlisted from commit `aaa1111`\n"
+    LYRDB = TestDrcRowDetail.LYRDB
+    ITEM = TestDrcRowDetail.ITEM
+
+    def setUp(self):
+        import hashlib
+        import shutil
+
+        self.sha = hashlib.sha256(self.GDS).hexdigest()
+        root = Path(tempfile.mkdtemp())
+        self.addCleanup(lambda: shutil.rmtree(root, ignore_errors=True))
+        saved = (bcr.LAYOUT_DIR, bcr.SIM_DIR, bcr.current_schematic_sha, bcr._sha256_of)
+        self.addCleanup(lambda: (
+            setattr(bcr, "LAYOUT_DIR", saved[0]), setattr(bcr, "SIM_DIR", saved[1]),
+            setattr(bcr, "current_schematic_sha", saved[2]), setattr(bcr, "_sha256_of", saved[3]),
+        ))
+        bcr.LAYOUT_DIR = root / "layout"
+        bcr.SIM_DIR = root / "sim"  # no PEX record: that row renders its own ERROR line
+        bcr.current_schematic_sha = lambda: self.SCH
+        reports = bcr.LAYOUT_DIR / "ldo-core" / "reports"
+        self.d = reports / self.RID
+        self.d.mkdir(parents=True)
+        (reports / "LATEST").write_text(self.RID + "\n")
+        (self.d / "record.md").write_text(self.RECORD_MD)
+        (self.d / "ldo_core.gds").write_bytes(self.GDS)
+        self.write_drc()
+        self.write_run()
+
+    # -- fixture writers ---------------------------------------------------
+
+    def write_drc(self, content_hash="__default__", file="/elsewhere/out/ldo_core.gds", **extra):
+        drc = {"status": "clean", "violation_count": 0}
+        if file is not None:
+            drc["file"] = file
+        if content_hash is not None:
+            if content_hash == "__default__":
+                content_hash = "sha256:" + self.sha
+            drc["provenance"] = {"input": {"content_hash": content_hash, "role": "layout"}}
+        drc.update(extra)
+        (self.d / "drc.json").write_text(json.dumps(drc))
+
+    def write_run(self, input_sha256="__default__", rules=("m2.5", "m2.5", "via.1a_b")):
+        run = dict(TestDrcRowDetail.RUN_OK)
+        if input_sha256 is not None:
+            run["input_sha256"] = self.sha if input_sha256 == "__default__" else input_sha256
+        (self.d / "mr-drc.run.json").write_text(json.dumps(run))
+        items = "".join(self.ITEM.format(rule=r) for r in rules)
+        (self.d / "mr-drc.lyrdb").write_text(self.LYRDB.format(items=items))
+
+    # -- readers -----------------------------------------------------------
+
+    def row(self) -> str:
+        rows = [ln for ln in bcr.build_layout_section() if ln.startswith("| DRC (issue #16) |")]
+        self.assertEqual(len(rows), 1)
+        return rows[0]
+
+    def freshness(self) -> str:
+        return self.row().rstrip(" |").rsplit("|", 1)[-1].strip()
+
+    def verdict_cells(self) -> str:
+        return self.row().rsplit("|", 2)[0]
+
+    def note(self) -> str:
+        notes = [ln for ln in bcr.build_layout_section() if ln.startswith("DRC freshness detail")]
+        self.assertEqual(len(notes), 1)
+        return notes[0]
+
+    # -- acceptance --------------------------------------------------------
+
+    def test_matching_bytes_and_schematic_are_fresh(self):
+        self.assertEqual(self.freshness(), "fresh")
+        self.assertIn("official deck's recorded input_sha256", self.note())
+
+    def test_appended_gds_bytes_are_stale_with_schematic_unchanged(self):
+        before = self.verdict_cells()
+        with (self.d / "ldo_core.gds").open("ab") as f:
+            f.write(b"\x00\x04\x04\x00")
+        self.assertEqual(self.freshness(), "STALE")
+        self.assertIn("curated deck's recorded input content_hash", self.note())
+        # The verdict and both decks' results are the record's own, unchanged.
+        self.assertEqual(self.verdict_cells(), before)
+
+    def test_both_verdicts_stay_visible_whatever_the_freshness(self):
+        for mutate in (lambda: None, lambda: (self.d / "ldo_core.gds").write_bytes(b"x"),
+                       lambda: self.write_drc(content_hash=None)):
+            mutate()
+            row = self.row()
+            self.assertIn("**FAIL**", row)
+            self.assertIn("curated deck: status=clean, violation_count=0", row)
+            self.assertIn(
+                "official deck `sky130A_mr.drc`: violations, violation_count=3 in 2 rule families", row
+            )
+
+    def test_moved_schematic_is_stale_even_with_matching_bytes(self):
+        bcr.current_schematic_sha = lambda: "bbb2222"
+        self.assertEqual(self.freshness(), "STALE")
+
+    def test_missing_gds_is_stale(self):
+        (self.d / "ldo_core.gds").unlink()
+        self.assertEqual(self.freshness(), "STALE")
+
+    def test_unreadable_gds_is_not_fresh(self):
+        def boom(_p):
+            raise OSError("permission denied")
+
+        bcr._sha256_of = boom
+        self.assertEqual(self.freshness(), "unverified")
+        self.assertIn("unreadable", self.note())
+
+    def test_cited_file_is_resolved_inside_the_record_not_at_its_absolute_path(self):
+        # The recorded absolute path is the flow's run-time out dir; a file
+        # that happens to exist there must not stand in for the record's GDS.
+        self.write_drc(file=str(Path(self._outside_gds(b"other-bytes"))))
+        self.assertEqual(self.freshness(), "fresh")
+        (self.d / "ldo_core.gds").write_bytes(b"other-bytes")
+        self.assertEqual(self.freshness(), "STALE")
+
+    def _outside_gds(self, data: bytes) -> str:
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        p = Path(tmp.name) / "ldo_core.gds"
+        p.write_bytes(data)
+        return str(p)
+
+    # -- missing / malformed provenance ------------------------------------
+
+    def test_missing_curated_input_hash_is_unverified(self):
+        self.write_drc(content_hash=None)
+        self.assertEqual(self.freshness(), "unverified")
+        self.assertIn("provenance.input.content_hash", self.note())
+
+    def test_missing_input_file_is_unverified_not_inferred_from_the_directory(self):
+        self.write_drc(file=None)
+        self.assertEqual(self.freshness(), "unverified")
+        self.assertIn("no input file", self.note())
+
+    def test_malformed_curated_hashes_are_unverified(self):
+        for bad in ("md5:" + self.sha[:32], "sha256:" + self.sha[:40], "sha256:", 1234, None, ""):
+            with self.subTest(bad=bad):
+                drc = {"status": "clean", "violation_count": 0, "file": "ldo_core.gds",
+                       "provenance": {"input": {"content_hash": bad, "role": "layout"}}}
+                (self.d / "drc.json").write_text(json.dumps(drc))
+                self.assertEqual(self.freshness(), "unverified")
+
+    def test_non_layout_input_role_is_unverified(self):
+        drc = json.loads((self.d / "drc.json").read_text())
+        drc["provenance"]["input"]["role"] = "netlist"
+        (self.d / "drc.json").write_text(json.dumps(drc))
+        self.assertEqual(self.freshness(), "unverified")
+
+    def test_corrupt_or_missing_drc_json_is_unverified(self):
+        (self.d / "drc.json").write_text("{not json")
+        self.assertEqual(self.freshness(), "unverified")
+        (self.d / "drc.json").write_text("[]")
+        self.assertEqual(self.freshness(), "unverified")
+        (self.d / "drc.json").unlink()
+        self.assertEqual(self.freshness(), "unverified")
+
+    def test_missing_record_md_is_unverified(self):
+        (self.d / "record.md").unlink()
+        self.assertEqual(self.freshness(), "unverified")
+
+    def test_official_input_hash_mismatch_is_stale(self):
+        self.write_run(input_sha256="0" * 64)
+        self.assertEqual(self.freshness(), "STALE")
+        self.assertIn("official deck's recorded input_sha256", self.note())
+
+    def test_malformed_official_input_hash_is_unverified(self):
+        for bad in ("deadbeef", None, 7):
+            with self.subTest(bad=bad):
+                run = dict(TestDrcRowDetail.RUN_OK, input_sha256=bad)
+                (self.d / "mr-drc.run.json").write_text(json.dumps(run))
+                self.assertEqual(self.freshness(), "unverified")
+
+    def test_unreadable_official_run_record_is_unverified_and_its_verdict_an_error(self):
+        (self.d / "mr-drc.run.json").write_text("{not json")
+        self.assertEqual(self.freshness(), "unverified")
+        self.assertIn("official deck `sky130A_mr.drc`: ERROR", self.row())
+
+    # -- legacy records ----------------------------------------------------
+
+    def test_legacy_dual_deck_record_without_official_input_hash_is_unverified(self):
+        # The shape of every dual-deck record minted before #304.
+        self.write_run(input_sha256=None)
+        self.assertEqual(self.freshness(), "unverified")
+        self.assertIn("records no input_sha256", self.note())
+        self.assertIn("**FAIL**", self.row())
+
+    def test_legacy_pre_dual_deck_record_is_judged_on_the_curated_deck(self):
+        for name in ("mr-drc.run.json", "mr-drc.lyrdb"):
+            (self.d / name).unlink()
+        self.assertEqual(self.freshness(), "fresh")
+        self.assertIn("official deck: not run in this record", self.row())
+        (self.d / "ldo_core.gds").write_bytes(b"rerouted")
+        self.assertEqual(self.freshness(), "STALE")
+
+    def test_legacy_curated_envelope_without_provenance_is_unverified(self):
+        for name in ("mr-drc.run.json", "mr-drc.lyrdb"):
+            (self.d / name).unlink()
+        (self.d / "drc.json").write_text(json.dumps(
+            {"file": "ldo_core.gds", "status": "clean", "violation_count": 0, "provenance": None}
+        ))
+        self.assertEqual(self.freshness(), "unverified")
+
+    def test_check_never_modifies_the_record(self):
+        before = {p.name: p.read_bytes() for p in self.d.iterdir()}
+        (self.d / "ldo_core.gds").write_bytes(b"changed")
+        before["ldo_core.gds"] = b"changed"
+        self.row()
+        self.assertEqual({p.name: p.read_bytes() for p in self.d.iterdir()}, before)
+
+    # -- hash spelling -----------------------------------------------------
+
+    def test_hash_prefix_spellings_are_normalized(self):
+        for curated, official in (
+            ("sha256:" + self.sha, self.sha),
+            (self.sha, "sha256:" + self.sha),
+            ("SHA256:" + self.sha.upper(), self.sha.upper()),
+            (" sha256:" + self.sha + "\n", self.sha),
+        ):
+            with self.subTest(curated=curated, official=official):
+                self.write_drc(content_hash=curated)
+                self.write_run(input_sha256=official)
+                self.assertEqual(self.freshness(), "fresh")
+
+    def test_normalize_sha256(self):
+        self.assertEqual(bcr.normalize_sha256("sha256:" + self.sha), self.sha)
+        self.assertEqual(bcr.normalize_sha256(self.sha.upper()), self.sha)
+        for bad in (None, 1, "", "sha256:", "md5:" + self.sha, "sha1:" + self.sha, self.sha + "0"):
+            self.assertIsNone(bcr.normalize_sha256(bad), bad)
+
+    # -- headless check ----------------------------------------------------
+
+    def test_drc_staleness_survives_ignore_sim_freshness(self):
+        (self.d / "ldo_core.gds").write_bytes(b"rerouted")
+        row = self.row()
+        self.assertTrue(row.endswith("| STALE |"), row)
+        text = "head\n| Out | x | PASS | r | fresh | fresh |\n" + bcr.LAYOUT_SECTION_HEADING + "\n" + row + "\n"
+        self.assertIn(row, bcr.normalize_sim_freshness(text))
+        fresh_text = text.replace("| STALE |", "| fresh |")
+        self.assertNotEqual(bcr.normalize_sim_freshness(text), bcr.normalize_sim_freshness(fresh_text))
+
+
+class TestCommittedDrcRow(unittest.TestCase):
+    """The committed rollup's DRC row is the live renderer's output for the
+    real tree (headless -- no PDK needed for the layout section)."""
+
+    def test_committed_drc_row_matches_the_live_renderer(self):
+        text = (MEASUREMENTS_DIR / "characterization.md").read_text()
+        live = bcr.build_layout_section()
+        for prefix in ("| DRC (issue #16) |", "DRC freshness detail"):
+            committed = [ln for ln in text.splitlines() if ln.startswith(prefix)]
+            rendered = [ln for ln in live if ln.startswith(prefix)]
+            self.assertEqual(len(rendered), 1, prefix)
+            self.assertEqual(committed, rendered, prefix)
 
 
 class TestMalformedCampaignVerdict(unittest.TestCase):

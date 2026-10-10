@@ -18,8 +18,9 @@ Design rules (see the issue and `sim/README.md`'s own conventions):
   cited, the script re-netlists the current testbench schematic via xschem
   and checks it against the committed netlist snapshot verbatim. For the
   DRC/LVS/PEX layout records, it checks the schematic/layout commit each
-  record itself cites against the current git history / `LATEST*` pointers.
-  A record that no longer matches is flagged `STALE`, not silently reported
+  record itself cites against the current git history / `LATEST*` pointers,
+  and the stored GDS against the input content hash each checker recorded
+  (`check_drc_input_freshness`, `check_lvs_geometry_freshness`). A record that no longer matches is flagged `STALE`, not silently reported
   as current.
 - **Conformance guardrail.** `spec/target-spec.md` is ratified (issue #1,
   DR-006) -- every verdict below is a conformance check against that ratified
@@ -665,6 +666,115 @@ def check_lvs_geometry_freshness(lvs_dir: Path) -> str:
     )
 
 
+_SHA256_HEX_RE = re.compile(r"^[0-9a-f]{64}$")
+
+
+def normalize_sha256(value: object) -> str | None:
+    """A recorded sha256 reduced to bare lowercase hex, or None if malformed.
+
+    Accepts both spellings this repo's envelopes use -- bare hex
+    (`lvs.json`'s `layout_sha256`) and the `sha256:`-prefixed form (`klt`
+    provenance `content_hash`) -- the same convention as
+    `signoff/verify-pins.py`'s `norm`. Anything else (another algorithm's
+    prefix, a truncated digest, a non-string) is malformed provenance, which a
+    caller must report as unverified, never coerce into a match.
+    """
+    if not isinstance(value, str):
+        return None
+    v = value.strip().lower()
+    if v.startswith("sha256:"):
+        v = v[len("sha256:"):]
+    return v if _SHA256_HEX_RE.match(v) else None
+
+
+def check_drc_input_freshness(drc_dir: Path) -> str:
+    """Are the DRC record's verdicts about the GDS bytes it stores? (issue #304)
+
+    Content-based and toolchain-free, the DRC analogue of
+    `check_lvs_geometry_freshness`. The record dir's GDS is the artifact the
+    report cites; it must hash to what each checker recorded reading:
+
+    1. the curated klt deck: `drc.json` names its input (`file`, resolved by
+       basename inside the record dir, since the absolute path is the flow's
+       out dir at run time) and records its bytes in
+       `provenance.input.content_hash`. Both are required -- a record without
+       them is unverified, never assumed to cover whatever GDS sits in the
+       directory.
+    2. the official deck: when `mr-drc.run.json` exists (dual-deck records,
+       #260), it must carry `input_sha256` for the same bytes. A run record
+       that predates that field leaves the official verdict's input
+       association unproven, so the result is unverified (the verdict itself
+       is untouched). A record with no official run at all (pre-#260) has
+       nothing to associate and is judged on the curated deck alone.
+
+    Only reads; the verdicts are never recomputed here and no record is
+    modified. Every missing or malformed input gives a diagnosed
+    `unverified`/`STALE` result.
+    """
+    try:
+        drc = json.loads((drc_dir / "drc.json").read_text())
+        if not isinstance(drc, dict):
+            raise ValueError("not an object")
+    except (OSError, ValueError):
+        return "unverified: DRC record has no readable drc.json"
+    cited = drc.get("file")
+    if not isinstance(cited, str) or not cited.strip():
+        return "unverified: drc.json records no input file"
+    prov = drc.get("provenance")
+    inp = prov.get("input") if isinstance(prov, dict) else None
+    if not isinstance(inp, dict) or "content_hash" not in inp:
+        return "unverified: drc.json carries no provenance.input.content_hash"
+    role = inp.get("role")
+    if role is not None and role != "layout":
+        return f"unverified: drc.json provenance.input.role is {role!r}, not 'layout'"
+    recorded = normalize_sha256(inp.get("content_hash"))
+    if recorded is None:
+        return "unverified: drc.json provenance.input.content_hash is not a sha256 digest"
+    name = cited.replace("\\", "/").rsplit("/", 1)[-1]
+    gds = drc_dir / name
+    if not gds.is_file():
+        return f"STALE (the GDS `{name}` cited by the DRC record no longer exists)"
+    try:
+        actual = _sha256_of(gds)
+    except OSError:
+        return f"unverified: the GDS `{name}` stored with the DRC record is unreadable"
+    if actual != recorded:
+        return (
+            f"STALE (the GDS `{name}` stored with the DRC record no longer hashes to the "
+            "curated deck's recorded input content_hash; re-run DRC)"
+        )
+    run_path = drc_dir / "mr-drc.run.json"
+    if not run_path.exists():
+        return (
+            f"fresh (`{name}` hashes to the curated deck's recorded input content_hash; "
+            "no official-deck run in this record)"
+        )
+    try:
+        run = json.loads(run_path.read_text())
+        if not isinstance(run, dict):
+            raise ValueError("not an object")
+    except (OSError, ValueError):
+        return "unverified: the official-deck run record mr-drc.run.json is unreadable"
+    if "input_sha256" not in run:
+        return (
+            f"unverified: `{name}` hashes to the curated deck's recorded input, but "
+            "mr-drc.run.json records no input_sha256, so the official-deck verdict's "
+            "input is not bound to these bytes"
+        )
+    official = normalize_sha256(run.get("input_sha256"))
+    if official is None:
+        return "unverified: mr-drc.run.json input_sha256 is not a sha256 digest"
+    if official != actual:
+        return (
+            f"STALE (the GDS `{name}` stored with the DRC record no longer hashes to the "
+            "official deck's recorded input_sha256; re-run DRC)"
+        )
+    return (
+        f"fresh (`{name}` hashes to both the curated deck's recorded input content_hash "
+        "and the official deck's recorded input_sha256)"
+    )
+
+
 def combine_freshness(*parts: str) -> str:
     """STALE if any part is STALE; fresh only if all are; otherwise unverified."""
     for p in parts:
@@ -916,6 +1026,8 @@ def drc_row_detail(d: Path) -> str:
     if drc_json_path.is_file():
         try:
             drc_json = json.loads(drc_json_path.read_text())
+            if not isinstance(drc_json, dict):
+                raise ValueError("not an object")
             parts.append(
                 f"curated deck: status={drc_json.get('status')}, "
                 f"violation_count={drc_json.get('violation_count')}"
@@ -946,15 +1058,25 @@ def build_layout_section() -> list[str]:
     lines.append("| Check | Verdict (record's own) | Record | Freshness |")
     lines.append("|---|---|---|---|")
 
+    notes: list[str] = []
     drc = layout_record("LATEST")
     if drc is not None:
         record_id, d = drc
         record_text = (d / "record.md").read_text() if (d / "record.md").is_file() else ""
         verdict = extract_overall_verdict_md(record_text) or "?"
         detail = drc_row_detail(d)
+        # Schematic history AND the checked bytes (#304): a record whose GDS
+        # no longer matches what the checkers read is STALE however current
+        # the schematic is. The verdict is the record's own, either way.
         freshness = (
-            check_schematic_freshness_from_record(record_text) if record_text else "unverified"
+            combine_freshness(
+                check_schematic_freshness_from_record(record_text),
+                check_drc_input_freshness(d),
+            )
+            if record_text
+            else "unverified: DRC record has no record.md"
         )
+        notes.append(f"DRC freshness detail (record `{record_id}`): {freshness}.")
         freshness_short = "fresh" if freshness.startswith("fresh") else (
             "STALE" if freshness.startswith("STALE") else "unverified"
         )
@@ -1029,6 +1151,9 @@ def build_layout_section() -> list[str]:
             "| Post-layout PEX (issue #20) | **ERROR** | no `sim/pex-post-layout/records/` record | — |"
         )
 
+    for note in notes:
+        lines.append("")
+        lines.append(note)
     return lines
 
 
@@ -1101,8 +1226,12 @@ def generate_report(skip_netlist_freshness: bool = False) -> str:
         "without that provenance as `unverified` rather than guessing. It is "
         "compared even under `--ignore-sim-freshness`. The layout (DRC/LVS/PEX) **Freshness** column instead "
         "compares the schematic/layout commit each record itself cites "
-        "against the current git history / `LATEST*` pointers — no "
-        "toolchain required."
+        "against the current git history / `LATEST*` pointers, and the "
+        "stored GDS bytes against the content hash each checker recorded "
+        "for its input (DRC: the curated deck's `provenance.input."
+        "content_hash` and the official deck's `input_sha256`; LVS: "
+        "`environment.layout_sha256`) — no toolchain required. A record "
+        "missing that provenance is `unverified`, never assumed fresh."
     )
     lines.append("")
     lines.append(
