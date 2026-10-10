@@ -112,7 +112,6 @@ import argparse
 import hashlib
 import json
 import platform
-import shutil
 import subprocess
 import sys
 from datetime import datetime, timezone
@@ -120,7 +119,14 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from _record_common import git, klt_binary as _shared_klt_binary, render_record_footer  # noqa: E402
+from _record_common import (  # noqa: E402
+    copy_new,
+    git,
+    klt_binary as _shared_klt_binary,
+    render_record_footer,
+    reserve_record_id,
+    write_new_text,
+)
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
@@ -943,6 +949,8 @@ def main(argv: list[str]) -> int:
         record_json = records_dir / f"{record_id}.json"
         record_md = records_dir / f"{record_id}.md"
         sample_set_path = responses_dir / f"{record_id}.samples.json"
+        # Atomic claim before any evidence is written (issue #310).
+        reserve_record_id(REPO_ROOT / "sim" / "build", exp_dir.name, record_id, HarnessError)
         guarded = [limits_path, report_path, record_json, record_md]
         if args.negative_control:
             guarded.append(sample_set_path)
@@ -955,9 +963,9 @@ def main(argv: list[str]) -> int:
 
         requests_dir.mkdir(parents=True, exist_ok=True)
         if limits_src is not None:
-            shutil.copyfile(limits_src, limits_path)
+            copy_new(limits_src, limits_path)
         else:
-            with limits_path.open("w") as fh:
+            with limits_path.open("x") as fh:
                 json.dump(limits_doc, fh, indent=2)
                 fh.write("\n")
 
@@ -1068,7 +1076,7 @@ def main(argv: list[str]) -> int:
         cmd, raw_stdout, report, exit_code = run_klt_yield(
             exe, responses_dir, analysed_name, limits_rel, args
         )
-        report_path.write_text(raw_stdout if raw_stdout.endswith("\n") else raw_stdout + "\n")
+        write_new_text(report_path, raw_stdout if raw_stdout.endswith("\n") else raw_stdout + "\n")
 
         if negative_control is not None:
             negative_control["nominal_statistics_cross_check"] = cross_check_nominal(
@@ -1215,10 +1223,10 @@ def main(argv: list[str]) -> int:
                 "experiment_manifest"
             ]
 
-        with record_json.open("w") as fh:
+        with record_json.open("x") as fh:
             json.dump(record, fh, indent=2, sort_keys=True)
             fh.write("\n")
-        record_md.write_text(render_record(record))
+        write_new_text(record_md, render_record(record))
 
         print(f"wrote {rel(report_path)}")
         print(f"wrote {rel(limits_path)}")

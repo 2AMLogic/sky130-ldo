@@ -31,9 +31,12 @@ from __future__ import annotations
 import hashlib
 import importlib.util
 import json
+import os
 import shutil
+import socket
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 
@@ -328,3 +331,60 @@ def render_record_footer(record: dict, script_name: str) -> list[str]:
     )
     lines.append("")
     return lines
+
+
+# --------------------------------------------------------------------------
+# atomic record-ID reservation + exclusive publication (issue #310)
+# --------------------------------------------------------------------------
+#
+# Record IDs are second-resolution UTC time + short SHA, so two invocations
+# for the same experiment in the same second pick the same ID. An
+# "exists()" pre-check cannot close that window (check-then-act), so each
+# runner takes an exclusive reservation -- an atomic `mkdir` under the
+# git-ignored scratch tree -- BEFORE creating any scratch directory or
+# evidence. The loser fails before netlisting or submission. Publication then
+# refuses replacement too (`write_new_text` / `copy_new`, O_EXCL) as a second
+# defence. Reservations are never released or deleted by the tools: a consumed
+# ID stays consumed (see sim/README.md "Concurrent and interrupted runs").
+
+RESERVATION_DIRNAME = ".reservations"
+
+
+def reserve_record_id(build_dir: Path, experiment: str, record_id: str, error_cls=RuntimeError) -> Path:
+    """Atomically reserve `record_id` for `experiment` (the experiment
+    directory name). Returns the reservation directory. Raises `error_cls`
+    if another invocation already holds it. Never touches an existing
+    reservation."""
+    parent = Path(build_dir) / RESERVATION_DIRNAME / experiment
+    parent.mkdir(parents=True, exist_ok=True)
+    resv = parent / record_id
+    try:
+        resv.mkdir()  # atomic: exactly one concurrent caller succeeds
+    except FileExistsError:
+        owner = ""
+        try:
+            owner = (resv / "owner.json").read_text().strip()
+        except OSError:
+            pass
+        raise error_cls(
+            f"record id {record_id} for experiment {experiment} is already reserved "
+            f"({resv}{'; owner ' + owner if owner else ''}) -- another run holds it or "
+            "was interrupted; wait a second and re-run to mint a fresh id. "
+            "Reservations are never removed automatically (sim/README.md)"
+        ) from None
+    (resv / "owner.json").write_text(
+        json.dumps({"pid": os.getpid(), "host": socket.gethostname(), "time": time.time()}) + "\n"
+    )
+    return resv
+
+
+def write_new_text(path: Path, text: str) -> None:
+    """Write `text` to `path`, refusing (FileExistsError) to replace it."""
+    with open(path, "x") as fh:
+        fh.write(text)
+
+
+def copy_new(src, dest: Path) -> None:
+    """Copy `src` to `dest`, refusing (FileExistsError) to replace it."""
+    with open(src, "rb") as fi, open(dest, "xb") as fo:
+        shutil.copyfileobj(fi, fo)
