@@ -422,6 +422,60 @@ Exit status: `0` all checks passed, `2` a record was written (or would have
 been, under `--no-write`) but something failed, `1` harness/setup error (no
 record written).
 
+### Startup ramp monotonicity (issue #309)
+
+`sim/startup` declares a `ramp_monotonicity` block in `experiment.json`;
+`sim/bin/ramp_monotonicity.py` (standard library only, PDK-free) evaluates it
+for each of the four independent cold-enable legs (`c033_0ma`, `c033_50ma`,
+`c47_0ma`, `c47_50ma`) of every corner. This is local-only post-processing:
+`--backend batch` refuses any manifest carrying the block.
+
+- **Trace.** After each leg's `tran`, the deck runs
+  `wrdata {corner_id}.<leg>.trace.dat v(vout)` (`{corner_id}` is substituted by
+  the runner). Writing a record copies the raw files next to the corner logs
+  in `corners/<record id>/`; the per-leg sha256 is in the JSON record. Under
+  `--no-write` the trace is graded but not retained.
+- **Measurement window.** From the first sample at or after the enable instant
+  (`t_enable_s`, 100 us) up to and including the first sample with
+  `V(VOUT) >= v_low` (1.764 V, the lower edge of the ratified window). The
+  metric is the maximum drawdown `running_max - v` over that window, reported
+  with the interval (time of the running maximum, time of the trough) of the
+  worst drawdown. Post-entry behaviour is not examined here: overshoot stays
+  with `vpk_*` and the settled window with `vfloor_*`, so ramp monotonicity is
+  kept distinct from post-settling ripple.
+- **Verdicts.** PASS needs a valid trace with drawdown <= `tolerance_v`.
+  FAIL is a valid trace with a larger drawdown. INVALID (never PASS, and the
+  corner FAILs) is a missing/unreadable/empty file, mismatched columns,
+  nonfinite values, non-strictly-increasing time, a trace that starts after
+  enable, never enters the window, has fewer than `min_samples` window
+  samples, or has a sample gap above `max_dt_s`.
+- **Numerical uncertainty and resolution.** The claim is about the SAMPLED
+  trace only. A dip shorter than the worst window sample gap (reported per leg
+  as `resolution_s`; bounded by `max_dt_s` = 20 us, ngspice `tran` print step
+  10 us) can be missed. Dips are compared at the ngspice-printed precision
+  with `tolerance_v = 0.0` (strict, recorded in every result); solver noise
+  below the printed precision is not distinguishable and is not separately
+  budgeted. The tolerance is **not** a physical allowance: it must not be
+  raised to pass a result.
+- **Open decision-record question.** The ratified row says "monotonic"
+  without a tolerance. If a physical dip (or noise) allowance is judged
+  acceptable, that needs a decision record under `spec/`; none is chosen here
+  and `spec/` is unchanged.
+- **First observation (not a record).** A single-corner `--no-write` smoke
+  run (tt, 27 C, 3.30 V; wiring check only, no evidence minted) shows all four
+  legs at strict `tolerance_v = 0` FAIL with drawdowns of 2 uV to 32 uV: VOUT
+  sags by that amount in the first ~18 us after the enable edge, while still at
+  the sub-mV pre-ramp level, before the soft-start ramp takes over. That is
+  physical-looking, far below any window edge, and exactly the case the open
+  decision-record question above covers. The checker deliberately does not
+  hide it with a tolerance; a decision record must say whether such a dip is
+  acceptable (and over what window) before any tolerance is set.
+- **Records.** Records minted before #309 did not measure monotonicity; they
+  are untouched and, because the manifest's analyses, measurements and
+  checker settings are part of the input fingerprint, the report marks them
+  STALE rather than presenting them as having measured it. Full-matrix
+  refresh remains #231.
+
 ### Batch backend (issue #298)
 
 `python3 sim/bin/corner-run.py sim/pdk-smoke --backend batch` sends the PVT

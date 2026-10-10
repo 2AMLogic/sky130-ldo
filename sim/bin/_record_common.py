@@ -148,6 +148,8 @@ def pvt_input_sections(raw: dict, spiceinit_text: str | None) -> dict[str, str]:
             }
         ),
     }
+    if raw.get("ramp_monotonicity"):
+        sections["ramp_monotonicity"] = canonical_digest(raw["ramp_monotonicity"])
     if spiceinit_text is not None:
         sections["solver"] = spiceinit_sha256(spiceinit_text)
     return sections

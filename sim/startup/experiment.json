@@ -1,33 +1,63 @@
 {
   "slug": "startup",
   "title": "Startup / soft-start: cold enable into 0mA and 50mA across the DR-002 C_out window",
-  "claim": "Substantiates spec/target-spec.md's ratified \"Startup / soft-start\" row (monotonic into any load 0-50 mA and any C_out in the stability window; controlled ramp; inside +-2% within a few ms of enable; overshoot <= +2%) against the current-starved soft-start ramp issue #22 added to design/ldo_3v3in_1v8out.sch (M_SSCHG / C_SS / M_SSDIS feeding the M_IN2S min-select input -- see design/README.md's \"Soft start (#22)\"). The row is ratified by issue #1 / DR-006, and the stability window it quantifies over is DR-002's (C_eff 0.33-4.7 uF), ratified by the same act, so the bounds below cite those numbers verbatim rather than an invented final limit. Each of the four legs is an independent COLD enable: EN sits at 0 V until t = 100 us and ngspice computes each transient's own t = 0 operating point from the source's time-zero value, so every leg starts from a disabled, fully discharged block rather than from a settled solution. Two readings of the row are made explicit rather than left implicit. (1) \"inside +-2% within a few ms of enable\": this testbench reads \"a few ms\" as 3 ms after the enable edge and checks the output is inside the ratified Output row's 1.764-1.836 V window continuously from there to the end of the run -- 3 ms is this testbench's stated interpretation of a phrase the ratified row leaves unquantified -- the 3 ms itself is not a ratified number, and it is the one thing here that would need revisiting if a later decision record quantifies the phrase differently. (2) \"monotonic ... controlled ramp\": the numeric consequence of a non-monotonic or uncontrolled ramp is an excursion outside that same +-2% window, which vpk_* (peak over the whole post-enable run, bounded at the row's own overshoot <= +2%) and vmin_* (floor over the settled window) do bound; a direct sample-by-sample monotonicity predicate is NOT computed here, and the 10-90% ramp time is reported instead as the \"controlled ramp\" witness. That is a stated coverage limitation of this experiment, not a claim that monotonicity is proven.",
+  "claim": "Substantiates spec/target-spec.md's ratified \"Startup / soft-start\" row (monotonic into any load 0-50 mA and any C_out in the stability window; controlled ramp; inside +-2% within a few ms of enable; overshoot <= +2%) against the current-starved soft-start ramp issue #22 added to design/ldo_3v3in_1v8out.sch (M_SSCHG / C_SS / M_SSDIS feeding the M_IN2S min-select input -- see design/README.md's \"Soft start (#22)\"). The row is ratified by issue #1 / DR-006, and the stability window it quantifies over is DR-002's (C_eff 0.33-4.7 uF), ratified by the same act, so the bounds below cite those numbers verbatim rather than an invented final limit. Each of the four legs is an independent COLD enable: EN sits at 0 V until t = 100 us and ngspice computes each transient's own t = 0 operating point from the source's time-zero value, so every leg starts from a disabled, fully discharged block rather than from a settled solution. Two readings of the row are made explicit rather than left implicit. (1) \"inside +-2% within a few ms of enable\": this testbench reads \"a few ms\" as 3 ms after the enable edge and checks the output is inside the ratified Output row's 1.764-1.836 V window continuously from there to the end of the run -- 3 ms is this testbench's stated interpretation of a phrase the ratified row leaves unquantified -- the 3 ms itself is not a ratified number, and it is the one thing here that would need revisiting if a later decision record quantifies the phrase differently. (2) \"monotonic ... controlled ramp\": since issue #309 a direct predicate IS computed for each leg by sim/bin/ramp_monotonicity.py -- the maximum drawdown from the running maximum between the enable edge (100 us) and the first sample at or above 1.764 V, with the worst drawdown's time interval and the worst sample gap reported, and the raw V(VOUT) trace retained per corner and leg (ramp_drawdown_<leg>_v). The numerical tolerance is 0 V (strict) and the claim covers only the SAMPLED trace (dips shorter than the reported sample gap are not resolvable); see sim/README.md \"Startup ramp monotonicity\". Whether the ratified row implies a physical dip tolerance is an open decision-record question, not chosen here. vpk_* and vmin_* (floor over the settled window) continue to bound overshoot and the settled window, and the 10-90% ramp time is still reported as the \"controlled ramp\" witness. Records minted before #309 did not measure monotonicity and are not retroactively presented as having done so.",
   "provenance": "schematic",
   "provenance_source": "sim/startup/testbench/tb_startup.sch",
   "schematic": "testbench/tb_startup.sch",
   "statistical_convention": "N/A (corner-matrix check, not a distribution claim)",
   "corners": {
-    "process": ["tt", "ss", "ff", "sf", "fs"],
-    "temperature_c": [-40, 27, 125],
-    "supply_v": [2.97, 3.3, 3.63]
+    "process": [
+      "tt",
+      "ss",
+      "ff",
+      "sf",
+      "fs"
+    ],
+    "temperature_c": [
+      -40,
+      27,
+      125
+    ],
+    "supply_v": [
+      2.97,
+      3.3,
+      3.63
+    ]
   },
   "quick_subset": [
-    ["tt", 27, 3.3],
-    ["ss", -40, 2.97],
-    ["ff", 125, 3.63]
+    [
+      "tt",
+      27,
+      3.3
+    ],
+    [
+      "ss",
+      -40,
+      2.97
+    ],
+    [
+      "ff",
+      125,
+      3.63
+    ]
   ],
   "deck": {
-    "options": ["wnflag=1"],
+    "options": [
+      "wnflag=1"
+    ],
     "params": {},
     "analyses": [
       "* --- leg 1: C_out 0.33uF, 0 mA (feedback divider is the only preload) ---",
       "tran 10u 4m",
+      "wrdata {corner_id}.c033_0ma.trace.dat v(vout)",
       "meas tran vpk max v(vout) from=100u to=4m",
       "meas tran vfloor min v(vout) from=3.1m to=4m",
       "meas tran tset when v(vout)=1.764 rise=1",
       "* --- leg 2: C_out 0.33uF, 50 mA ---",
       "alter rload = 36",
       "tran 10u 4m",
+      "wrdata {corner_id}.c033_50ma.trace.dat v(vout)",
       "meas tran vpk max v(vout) from=100u to=4m",
       "meas tran vfloor min v(vout) from=3.1m to=4m",
       "meas tran tset when v(vout)=1.764 rise=1",
@@ -35,12 +65,14 @@
       "alter cout = 4.7u",
       "alter rload = 1e12",
       "tran 10u 4m",
+      "wrdata {corner_id}.c47_0ma.trace.dat v(vout)",
       "meas tran vpk max v(vout) from=100u to=4m",
       "meas tran vfloor min v(vout) from=3.1m to=4m",
       "meas tran tset when v(vout)=1.764 rise=1",
       "* --- leg 4: C_out 4.7uF, 50 mA ---",
       "alter rload = 36",
       "tran 10u 4m",
+      "wrdata {corner_id}.c47_50ma.trace.dat v(vout)",
       "meas tran vpk max v(vout) from=100u to=4m",
       "meas tran vfloor min v(vout) from=3.1m to=4m",
       "meas tran tset when v(vout)=1.764 rise=1"
@@ -144,5 +176,27 @@
       "note": "Ramp time to the +-2% window at C_out 4.7 uF / 50 mA. Reported, not bounded: this is also the leg where a soft-start ramp fast enough to demand more than the current limit would show up, as a ramp time longer than the other three legs' (the clamp, not the ramp, would then be setting dV/dt)."
     }
   ],
-  "spread_checks": []
+  "spread_checks": [],
+  "ramp_monotonicity": {
+    "signal": "v(vout)",
+    "t_enable_s": 0.0001,
+    "v_low": 1.764,
+    "max_dt_s": 2e-05,
+    "min_samples": 20,
+    "tolerance_v": 0.0,
+    "legs": [
+      {
+        "id": "c033_0ma"
+      },
+      {
+        "id": "c033_50ma"
+      },
+      {
+        "id": "c47_0ma"
+      },
+      {
+        "id": "c47_50ma"
+      }
+    ]
+  }
 }
