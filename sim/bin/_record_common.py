@@ -390,3 +390,43 @@ def copy_new(src, dest: Path) -> None:
     """Copy `src` to `dest`, refusing (FileExistsError) to replace it."""
     with open(src, "rb") as fi, open(dest, "xb") as fo:
         shutil.copyfileobj(fi, fo)
+
+
+# ---- thermal trip/release search helpers (issue #297) ----------------------
+# Shared by sim/thermal/run_hysteresis.py and sim/thermal-regen-cmp/run_demo.py.
+
+
+def read_dat(path: Path, names):
+    """Parse an ngspice `wrdata` file: (time, value) column pairs, one pair per
+    vector in `names` order. Returns (time vector from column 0, {name: values})."""
+    rows = [list(map(float, ln.split())) for ln in path.read_text().splitlines() if ln.strip()]
+    t = [r[0] for r in rows]
+    return t, {n: [r[2 * i + 1] for r in rows] for i, n in enumerate(names)}
+
+
+def at(t, y, t_us):
+    """Nearest-sample value of `y` at `t_us` microseconds (no interpolation;
+    ties pick the first index, out-of-range targets pick an endpoint)."""
+    target = t_us * 1e-6
+    best = min(range(len(t)), key=lambda i: abs(t[i] - target))
+    return y[best]
+
+
+def tripped(v_cmp: float, supply_v: float) -> bool:
+    """Comparator output counts as tripped when strictly below half-supply."""
+    return v_cmp < supply_v / 2
+
+
+def bisect(pred, lo, hi, tol, want_lowest):
+    """pred is monotone: for want_lowest, False..False True..True over [lo,hi]
+    (find the lowest True); otherwise True..True False..False (highest True)."""
+    assert pred(hi) if want_lowest else pred(lo), "bracket end does not satisfy predicate"
+    assert (not pred(lo)) if want_lowest else (not pred(hi)), "bracket other end already satisfies predicate"
+    while hi - lo > tol:
+        mid = round((lo + hi) / 2, 4)
+        ok = pred(mid)
+        if want_lowest:
+            lo, hi = (lo, mid) if ok else (mid, hi)
+        else:
+            lo, hi = (mid, hi) if ok else (lo, mid)
+    return lo, hi
