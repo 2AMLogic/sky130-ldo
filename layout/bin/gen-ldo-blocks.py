@@ -177,7 +177,7 @@ TAP_SLOT_UM = 4.0  # reserved x slot for a drawn body tie
 STUB_W_UM = 0.19  # li1 stub (deck minimum li1 width 0.17)
 TRUNK_W_UM = 0.30  # met1 trunk / met2 riser (deck minimum 0.14)
 MCON_UM = 0.17  # li1 <-> met1 via
-VIA1_UM = 0.16  # met1 <-> met2 via (deck minimum size 0.15)
+VIA1_UM = 0.15  # met1 <-> met2 via (sky130A_mr via.1a_b: exactly 0.15 max length)
 VIA2_UM = 0.20  # met2 <-> met3 via (deck minimum size 0.20)
 TRACK_PITCH_UM = 0.8  # between adjacent net trunks
 CHANNEL_TOP_UM = -3.0  # first trunk's y (the row's blocks sit at y >= 0)
@@ -233,6 +233,11 @@ POWER_RISER_W_UM = TRUNK_W_UM
 POWER_MET3_RISER_W_UM = 0.40
 #: Landing-pad side for the met1 <-> met2 <-> met3 transition stack.
 POWER_VIA_PAD_UM = 0.30
+#: Deck "adjacent-edge" enclosure (m2.5 / via2.5): if a metal side encloses a
+#: via by less than the 0.085 um long-form enclosure, the adjacent side must
+#: enclose it by >= 0.085. Metal ends extended past a via centre by
+#: ``via/2 + ADJ_ENCLOSURE_UM`` satisfy it with the (narrower) sides left alone.
+ADJ_ENCLOSURE_UM = 0.085
 #: How far a rail segment is extended past the outermost riser that lands on
 #: it: one met3 riser half-width plus a margin, so no riser overhangs into a
 #: sliver at the rail's end.
@@ -1075,6 +1080,7 @@ def route_composed_cell(
     licon = layout.layer(66, 44)
     tap = layout.layer(65, 44)
     nwell = layout.layer(64, 20)
+    hvi = layout.layer(75, 20)
     met1_label = layout.layer(68, 5)
 
     #: Conductor level index (0=li1, 1=met1, 2=met2, 3=met3) -> its drawn
@@ -1099,17 +1105,29 @@ def route_composed_cell(
         y_pad = block_top + RISER_CLEAR_UM
         box(li1, x - STUB_W_UM / 2, y_from, x + STUB_W_UM / 2, y_pad + STUB_W_UM / 2)
         square(mcon, x, y_pad, MCON_UM)
-        square(met1, x, y_pad, TRUNK_W_UM)
+        # via.5a: met1 encloses the 0.15 via by only 0.075 left/right, so both
+        # ends must reach >= ADJ_ENCLOSURE_UM past it.
+        half_y = VIA1_UM / 2 + ADJ_ENCLOSURE_UM
+        box(met1, x - TRUNK_W_UM / 2, y_pad - half_y, x + TRUNK_W_UM / 2, y_pad + half_y)
         square(via1, x, y_pad, VIA1_UM)
         box(
             met2,
             x - TRUNK_W_UM / 2,
-            track_y - TRUNK_W_UM / 2,
+            track_y - VIA1_UM / 2 - ADJ_ENCLOSURE_UM,
             x + TRUNK_W_UM / 2,
-            y_pad + TRUNK_W_UM / 2,
+            y_pad + VIA1_UM / 2 + ADJ_ENCLOSURE_UM,
         )
         square(via1, x, track_y, VIA1_UM)
-        square(met1, x, track_y, TRUNK_W_UM)
+        # Trunk-end landing: extend along the trunk so both ends of the via
+        # have >= ADJ_ENCLOSURE_UM of met1 even where the trunk stops here.
+        half_x = VIA1_UM / 2 + ADJ_ENCLOSURE_UM
+        box(
+            met1,
+            x - half_x,
+            track_y - TRUNK_W_UM / 2,
+            x + half_x,
+            track_y + TRUNK_W_UM / 2,
+        )
 
     rails: dict[str, dict[str, Any]] = rail_plan["rails"]
     transition_y = rail_plan["transition_y_um"]
@@ -1205,9 +1223,25 @@ def route_composed_cell(
             return mcons
         # Band 1: met1 stops below band 0, and the crossing happens on met3.
         box(met1, x - riser_half, strap_y1, x + riser_half, transition_y)
-        square(met1, x, transition_y, POWER_VIA_PAD_UM)
+        m1_half_y = VIA1_UM / 2.0 + ADJ_ENCLOSURE_UM
+        box(
+            met1,
+            x - POWER_VIA_PAD_UM / 2.0,
+            transition_y - m1_half_y,
+            x + POWER_VIA_PAD_UM / 2.0,
+            transition_y + m1_half_y,
+        )
         square(via1, x, transition_y, VIA1_UM)
-        square(met2, x, transition_y, POWER_VIA_PAD_UM)
+        # met2 landing pad: 0.30 wide, tall enough that the end enclosure of
+        # both via1 (0.15) and via2 (0.20) is >= ADJ_ENCLOSURE_UM.
+        pad_half_y = VIA2_UM / 2.0 + ADJ_ENCLOSURE_UM
+        box(
+            met2,
+            x - POWER_VIA_PAD_UM / 2.0,
+            transition_y - pad_half_y,
+            x + POWER_VIA_PAD_UM / 2.0,
+            transition_y + pad_half_y,
+        )
         square(via2, x, transition_y, VIA2_UM)
         m3_half = POWER_MET3_RISER_W_UM / 2.0
         box(
@@ -1222,6 +1256,9 @@ def route_composed_cell(
     # --- n-well over the whole PMOS span + its own well tie ----------------
     row_top = plan["row_height_um"]
     box(nwell, plan["nwell_x0_um"], -1.0, plan["nwell_x1_um"], row_top + 1.0)
+    # nwell.9: an n-well carrying hvi devices must be covered by hvi. Blocks
+    # draw hvi only over their own bbox, so cover the whole well box here.
+    box(hvi, plan["nwell_x0_um"], -1.0, plan["nwell_x1_um"], row_top + 1.0)
 
     def body_tie(x: float, net: str, inside_well: bool) -> dict[str, Any]:
         # Both ties sit in a reserved x slot in the row itself (y > 0), so the

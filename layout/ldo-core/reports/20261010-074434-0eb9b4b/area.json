@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "record_id": "20261010-074434-0eb9b4b",
+  "issue": 236,
+  "spec_row": "Area",
+  "target": "< 0.1 mm^2 total core area, pass FET included, excluding pads and sealring",
+  "layout_record": "20261010-074336-0eb9b4b",
+  "gds": {
+    "path": "layout/ldo-core/reports/20261010-074336-0eb9b4b/ldo_core.gds",
+    "sha256": "80f98681debd11e46c0a9fdb4fd307314db07198dbc485b31973ba2d5531c726",
+    "bytes": 807194
+  },
+  "cell": "ldo_core",
+  "convention": "Top-cell flattened bounding rectangle over all layers/datatypes (hierarchy, SREF/AREF transforms and path widths included; TEXT and NODE excluded); area = width x height in um^2 converted to mm^2 from the stream's own UNITS record; PASS iff area < 0.1 mm^2 (strict).",
+  "dbu_um": "0.001",
+  "bbox_dbu": [
+    -190,
+    -23160,
+    2451680,
+    160710
+  ],
+  "bbox_um": [
+    "-0.190",
+    "-23.160",
+    "2451.680",
+    "160.710"
+  ],
+  "width_um": "2451.870",
+  "height_um": "183.870",
+  "area_um2": "450825.336900",
+  "area_mm2": "0.4508253369",
+  "limit_mm2": "0.1",
+  "comparison": "area_mm2 < limit_mm2 (strict; exactly the limit FAILS)",
+  "verdict": "FAIL",
+  "crosscheck": {
+    "tool": "klt 0.6.0+g040f3406b485",
+    "command": "klt stats <gds> --format json",
+    "bbox_width_um": "2451.87",
+    "bbox_height_um": "183.87",
+    "status": "agrees",
+    "tolerance_um": "0.002"
+  },
+  "provenance": {
+    "git_sha": "0eb9b4bbdd763572d4e717010c3904cc31db630d",
+    "tool": "layout/bin/render-ldo-area-record.py"
+  }
+}
