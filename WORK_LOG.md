@@ -4,6 +4,20 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 
 ### 2026-10-10
 
+- **PR #270**: layout: folded-resistor PVT/mismatch qualification matrix, driver and BLOCKED record (#263)
+- **PR #269**: test(layout): PDK-free unit tests for gen-ldo-blocks placement and track planners
+- **PR #268**: layout: dual-deck (curated + official sky130A_mr) DRC gate and rule-family diagnosis for ldo-core (#260)
+- **PR #266**: docs(readme): remove superseded verdicts and yield-control claim (#264)
+- **PR #262**: Core area: MiM capacitor + supply-rail overlay demonstrator (feasible on plan, 0.0768 mm^2) (#254)
+- **PR #259**: Folded resistors: resistor-only series-compaction qualification (#253)
+- **Issue #265** (closed): layout: PDK-free unit tests for gen-ldo-blocks.py's placement and track planners
+- **Issue #264** (closed): README: remove superseded measurement verdicts and yield-control claims
+- **Issue #260** (closed): Routed ldo_core layout is not clean under the PDK's own sky130A_mr.drc (curated klt deck passes)
+- **Issue #254** (closed): Core area: prove a MiM capacitor and supply-rail overlay plan
+- **Issue #253** (closed): Folded resistors: validate series compaction before changing the LDO floorplan
+
+### 2026-10-10
+
 - **Issue #255** (closed): Characterization: reject malformed campaign verdicts instead of coercing truthiness
 - **PR #257**: Characterization: reject malformed campaign verdicts (#255)
 - **Issue #252** (closed): Share duplicated X-card token parsing between layout and LVS generators
