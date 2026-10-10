@@ -16,7 +16,16 @@ JOINT_MODES = ("noj", "j1", "j4")  # model only / measured joint / 4x measured j
 
 
 def param_name(device: dict[str, Any]) -> str:
-    return "vop_" + device["schematic_device"].lower()
+    """Name of the device's shared bias SOURCE (``corners.supply_v`` key).
+
+    A source (its own name, which `alter` needs), not a `.param`: ngspice's ``alter`` rejects a bare parameter name
+    (measured: "no such device or model name"), and klt reports no error for it.
+    """
+    return "Vop_" + device["schematic_device"].lower()
+
+
+def bias_node(device: dict[str, Any]) -> str:
+    return "nop_" + device["schematic_device"].lower()
 
 
 def tag(device: str, n: int, mode: str) -> str:
@@ -46,7 +55,7 @@ def variants(matrix: dict[str, Any]) -> list[dict[str, Any]]:
     return out
 
 
-def build_deck(matrix: dict[str, Any]) -> str:
+def build_deck(matrix: dict[str, Any], meas_form: str = "expr") -> str:
     """One netlist, no `.lib`/`.temp` (klt sim injects those per corner).
 
     Each chain is its own source + N PDK resistor instances (segment
@@ -55,15 +64,24 @@ def build_deck(matrix: dict[str, Any]) -> str:
     ``corners.supply_v`` can step it by index.
     """
     lines = ["* issue #263 folded-resistor PVT/mismatch chains (isolated passive devices)"]
+    if meas_form == "meas":
+        # Older klt clients have no `expr` measurement: a B source computes R
+        # as a node voltage and a two-point dc sweep of this idle source gives
+        # `.meas dc` something to evaluate at.
+        lines.append("Vsweep_idle sweep_idle 0 0")
+        lines.append("Rsweep_idle sweep_idle 0 1k")
     for dev in matrix["devices"]:
-        lines.append(f".param {param_name(dev)}={dev['mc_op_v']:g}")
+        lines.append(f"{param_name(dev)} {bias_node(dev)} 0 {dev['mc_op_v']:g}")
     by_dev = {d["schematic_device"]: d for d in matrix["devices"]}
     for v in variants(matrix):
         dev = by_dev[v["device"]]
         n, t, rj = v["segments"], v["tag"], v["joint_ohm"]
         seg_l = dev["l_um"] / n
         lines.append(f"* {t}: {n} x l={seg_l:g} w={dev['w_um']:g} joint={rj:g}")
-        lines.append(f"V{t} {t}_0 0 '{param_name(dev)}'")
+        # 0 V sense source in series with the shared device bias source.
+        lines.append(f"VS{t} {bias_node(dev)} {t}_0 0")
+        if meas_form == "meas":
+            lines.append(f"B{t} m_{t} 0 V = v({bias_node(dev)})/i(VS{t})")
         node = f"{t}_0"
         for i in range(n):
             last = i == n - 1
@@ -77,41 +95,56 @@ def build_deck(matrix: dict[str, Any]) -> str:
     return "\n".join(lines) + "\n"
 
 
-def measurements(matrix: dict[str, Any]) -> list[dict[str, Any]]:
+def measurements(matrix: dict[str, Any], meas_form: str = "expr") -> list[dict[str, Any]]:
+    by_dev = {d["schematic_device"]: d for d in matrix["devices"]}
+    if meas_form == "meas":
+        return [
+            {"name": v["tag"],
+             "spice": f".meas dc {v['tag']} FIND v(m_{v['tag']}) AT=0",
+             "unit": "ohm"}
+            for v in variants(matrix)
+        ]
     return [
-        {"name": v["tag"], "expr": f"-v({v['tag']}_0)/i(V{v['tag']})", "unit": "ohm"}
+        {"name": v["tag"],
+         "expr": f"v({bias_node(by_dev[v['device']])})/i(VS{v['tag']})", "unit": "ohm"}
         for v in variants(matrix)
     ]
 
 
-def det_request(matrix: dict[str, Any], netlist: str) -> dict[str, Any]:
+def analysis(meas_form: str) -> dict[str, str]:
+    if meas_form == "meas":
+        return {"kind": "dc", "args": "Vsweep_idle 0 1 1"}
+    return {"kind": "op", "args": ""}
+
+
+def det_request(matrix: dict[str, Any], netlist: str, meas_form: str = "expr") -> dict[str, Any]:
     ops = [d["op_v"] for d in matrix["devices"]]
     if len({len(o) for o in ops}) != 1:
         raise ValueError("op_v arrays must be equal length (supply_v steps by index)")
     return {
         "engine": "ngspice",
         "netlist": netlist,
-        "analysis": {"kind": "op", "args": ""},
+        "analysis": analysis(meas_form),
         "models": {"pdk": "sky130A", "lib": matrix["lib"]},
         "corners": {
             "process": matrix["deterministic"]["process"],
             "temperature_c": matrix["deterministic"]["temperature_c"],
             "supply_v": {param_name(d): d["op_v"] for d in matrix["devices"]},
         },
-        "measurements": measurements(matrix),
+        "measurements": measurements(matrix, meas_form),
         "options": {"keep_artifacts": False, "timeout_s": 120, "ngspice_init": ["set numdgt=12"]},
     }
 
 
-def mc_request(matrix: dict[str, Any], netlist: str) -> dict[str, Any]:
+def mc_request(matrix: dict[str, Any], netlist: str, meas_form: str = "expr") -> dict[str, Any]:
     mc = matrix["monte_carlo"]
     return {
         "engine": "ngspice",
         "netlist": netlist,
-        "analysis": {"kind": "op", "args": ""},
+        "analysis": analysis(meas_form),
         "models": {"pdk": "sky130A", "lib": matrix["lib"]},
         "corners": {"process": mc["process"], "temperature_c": mc["temperature_c"]},
-        "measurements": measurements(matrix),
+        "measurements": measurements(matrix, meas_form),
         "monte_carlo": {"n": mc["n"], "seed": mc["seed"], "vary": mc["vary"], "k_sigma": 3},
         "options": {"keep_artifacts": False, "timeout_s": 120, "ngspice_init": ["set numdgt=12"]},
     }

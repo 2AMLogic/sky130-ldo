@@ -37,6 +37,14 @@ class Deck(unittest.TestCase):
         self.assertEqual(deck.count("RJr_r_bias_n4_j4_"), 3)
         self.assertNotIn("RJr_r_bias_n4_noj_", deck)
 
+    def test_bias_is_a_shared_source_not_a_param(self):
+        deck = pvt.build_deck(MATRIX)
+        self.assertNotIn(".param", deck)
+        self.assertIn("\nVop_r_bias nop_r_bias 0 2\n", deck)
+        self.assertIn("VSr_r_bias_n2_j1 nop_r_bias r_r_bias_n2_j1_0 0", deck)
+        self.assertEqual(pvt.det_request(MATRIX, "d")["measurements"][0]["expr"],
+                         "v(nop_r_bias)/i(VSr_r_bias_n1_noj)")
+
     def test_requests_step_supply_by_index(self):
         r = pvt.det_request(MATRIX, "deck.cir")
         lens = {len(v) for v in r["corners"]["supply_v"].values()}

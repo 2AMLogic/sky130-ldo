@@ -168,6 +168,8 @@ def main() -> int:
     ap.add_argument("--backend", default=os.environ.get("KLT_SIM_BACKEND", "batch"))
     ap.add_argument("--klt", default="klt")
     ap.add_argument("--pdk-root", type=Path, default=Path(os.environ.get("PDK_ROOT", Path.home() / ".volare")))
+    ap.add_argument("--measure-form", choices=("expr", "meas"), default="expr",
+                    help="'meas' = `.meas dc` cards, for older klt clients without measurements[].expr")
     ap.add_argument("--dry-run", action="store_true", help="write deck/requests and exit (no simulation)")
     args = ap.parse_args()
 
@@ -197,9 +199,9 @@ def main() -> int:
     print(f"run-folded-res-pvt: record {record_id} -> {out}")
 
     (out / "matrix.json").write_text(args.matrix.read_text())
-    (out / "deck.cir").write_text(pvt.build_deck(matrix))
-    det_req = pvt.det_request(matrix, "deck.cir")
-    mc_req = pvt.mc_request(matrix, "deck.cir")
+    (out / "deck.cir").write_text(pvt.build_deck(matrix, args.measure_form))
+    det_req = pvt.det_request(matrix, "deck.cir", args.measure_form)
+    mc_req = pvt.mc_request(matrix, "deck.cir", args.measure_form)
     (out / "det.request.json").write_text(json.dumps(det_req, indent=2) + "\n")
     (out / "mc.request.json").write_text(json.dumps(mc_req, indent=2) + "\n")
     if args.dry_run:
