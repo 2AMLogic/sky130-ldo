@@ -16,7 +16,12 @@
     "                  ll/hh are the resistor/capacitor-only skew corners. Additional",
     "                  sections (hl/lh, the *_mm mismatch sections, mc Monte Carlo)",
     "                  exist in the library and can be added here once an experiment",
-    "                  manifest actually needs them."
+    "                  manifest actually needs them.",
+    "tools             the ngspice/xschem versions this harness is tested against (issue",
+    "                  #291), declared the way open_pdks_commit declares the PDK. Each",
+    "                  value is the version token parsed from `ngspice -v` / `xschem",
+    "                  --version`. A mismatch is a named WARN from --check-env and a",
+    "                  FAIL under --require-pdk; it never changes a measurement gate."
   ],
   "family": "sky130",
   "variant": "sky130A",
@@ -25,5 +30,6 @@
   "default_pdk_root": "~/.volare",
   "ngspice_lib": "libs.tech/combined/sky130.lib.spice",
   "xschem_pdk_rc": "libs.tech/xschem/xschemrc",
-  "process_corners": ["tt", "ss", "ff", "sf", "fs", "ll", "hh"]
+  "process_corners": ["tt", "ss", "ff", "sf", "fs", "ll", "hh"],
+  "tools": {"ngspice": "42", "xschem": "3.4.4"}
 }

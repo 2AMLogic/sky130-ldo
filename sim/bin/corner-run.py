@@ -19,6 +19,7 @@ Usage
         --subset-reason "harness liveness check"            # 3-point subset
     sim/bin/corner-run.py --print-env                       # PDK env exports
     sim/bin/corner-run.py --check-env                       # toolchain/PDK check
+    sim/bin/corner-run.py --check-env --require-pdk         # ... tool drift is a FAIL
 
 The runner never edits or deletes an existing record: it refuses to start if
 the record id it would mint already exists on disk.
@@ -165,13 +166,53 @@ def first_line(cmd: list[str]) -> str:
     return "unknown"
 
 
+_VERSION_TOKEN = {
+    # ngspice: "ngspice-42 : Circuit level simulation program"
+    "ngspice": re.compile(r"ngspice-(\d+(?:\.\d+)*)"),
+    # xschem: "XSCHEM V3.4.4"
+    "xschem": re.compile(r"V(\d+(?:\.\d+)*)", re.IGNORECASE),
+}
+
+
+def parse_tool_version(tool: str, line: str) -> str | None:
+    """The bare version token from a tool's first version line, else None."""
+    m = _VERSION_TOKEN[tool].search(line)
+    return m.group(1) if m else None
+
+
+def declared_tool_versions(pin: dict) -> dict:
+    """The `tools` block of sim/pdk.json (empty if the pin does not declare one)."""
+    return dict(pin.get("tools") or {})
+
+
+def compare_tool_versions(declared: dict, versions: dict) -> list[tuple[str, str, str]]:
+    """(tool, declared, actual) for every declared tool not on its declared version."""
+    drift = []
+    for tool, want in declared.items():
+        line = versions.get(tool, "not found")
+        got = parse_tool_version(tool, line) if tool in _VERSION_TOKEN else None
+        if got != want:
+            drift.append((tool, want, got or line))
+    return drift
+
+
 def tool_versions() -> dict:
-    return {
+    versions = {
         "ngspice": first_line(["ngspice", "-v"]),
         "xschem": first_line(["xschem", "--version"]),
         "platform": f"{platform.system()} {platform.release()} {platform.machine()}",
         "python": platform.python_version(),
     }
+    # issue #291: say whether this run is on the declared baseline, so a reader
+    # can tell "recorded on baseline" from "recorded on drifted tools".
+    try:
+        declared = declared_tool_versions(load_pin())
+    except (HarnessError, ValueError):
+        declared = {}
+    if declared:
+        versions["declared"] = declared
+        versions["on_baseline"] = not compare_tool_versions(declared, versions)
+    return versions
 
 
 # --------------------------------------------------------------------------
@@ -231,13 +272,19 @@ TOOL_VERSION_FLAGS = {
 }
 
 
-def check_env() -> int:
-    """Print a short toolchain/PDK liveness report. 0 if everything is usable."""
+def check_env(require_pdk: bool = False) -> int:
+    """Print a short toolchain/PDK liveness report. 0 if everything is usable.
+
+    A tool version that differs from sim/pdk.json's `tools` block is a named
+    WARN (exit unchanged) -- or a FAIL when `require_pdk` is set (issue #291).
+    """
     status = 0
+    versions: dict = {}
     for tool, flag in TOOL_VERSION_FLAGS.items():
         exe = shutil.which(tool)
         if exe:
-            print(f"{tool:<8}: OK   {first_line([tool, flag])}")
+            versions[tool] = first_line([tool, flag])
+            print(f"{tool:<8}: OK   {versions[tool]}")
         else:
             print(f"{tool:<8}: MISSING (not on PATH)")
             status = 1
@@ -246,6 +293,15 @@ def check_env() -> int:
     except HarnessError as exc:
         print(f"PDK     : MISSING\n{exc}")
         return 1
+    declared = declared_tool_versions(pin)
+    for tool, want, got in compare_tool_versions(
+        {t: v for t, v in declared.items() if t in versions}, versions
+    ):
+        level = "FAIL" if require_pdk else "WARN"
+        print(f"{tool:<8}: {level} {tool} drifted from declared {want} to {got} "
+              "(sim/pdk.json tools)")
+        if require_pdk:
+            status = 1
     try:
         pdk = resolve_pdk(pin)
     except HarnessError as exc:
@@ -788,6 +844,12 @@ def render_record(record: dict) -> str:
     # `.spiceinit` that was in force, so the record says which solver
     # configuration produced these numbers. `.get()` because records minted
     # before #190 have no such field.
+    if tools.get("declared"):
+        decl = ", ".join(f"{t} {v}" for t, v in tools["declared"].items())
+        lines.append(
+            f"- **toolchain baseline** (`sim/pdk.json` tools): {decl} — "
+            + ("recorded ON baseline" if tools.get("on_baseline") else "recorded on DRIFTED tools")
+        )
     if tools.get("spiceinit_sha256"):
         lines.append(
             f"- **ngspice init settings**: `{tools.get('spiceinit_file', 'sim/spiceinit')}` "
@@ -895,6 +957,12 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         action="store_true",
         help="check ngspice/xschem/volare/PDK are usable and exit (0 if all OK)",
     )
+    p.add_argument(
+        "--require-pdk",
+        action="store_true",
+        help="with --check-env: a tool version differing from sim/pdk.json 'tools' "
+        "is a FAIL instead of a WARN",
+    )
     p.add_argument("--process", type=csv_list, help="process corners (default: manifest)")
     p.add_argument("--temp", type=csv_floats, help="temperatures in °C (default: manifest)")
     p.add_argument("--supply", type=csv_floats, help="supply voltages (default: manifest)")
@@ -932,7 +1000,7 @@ def main(argv: list[str]) -> int:
     pin = load_pin()
 
     if args.check_env:
-        return check_env()
+        return check_env(require_pdk=args.require_pdk)
 
     pdk = resolve_pdk(pin)
 
