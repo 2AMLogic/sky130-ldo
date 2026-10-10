@@ -126,7 +126,7 @@ def main() -> int:
     ap.add_argument("--ngspice", default=shutil.which("ngspice") or "ngspice")
     args = ap.parse_args()
 
-    klt = args.klt
+    klt = str(Path(args.klt).resolve())
     # Captured before the record directory exists, so the record itself
     # (an untracked directory until committed) never reads as a dirty tree.
     git_sha = git("rev-parse", "HEAD")
@@ -150,8 +150,8 @@ def main() -> int:
 
     # --- 1. generate -------------------------------------------------------
     run([sys.executable, str(LAYOUT_DIR / "bin" / "gen-folded-res-qual.py"), "--klt", klt,
-         "--pdk-variant", args.pdk_variant, "--cases", str(out / "cases.json"),
-         "--out-dir", str(out)], check=True)
+         "--pdk-variant", args.pdk_variant, "--cases", "cases.json",
+         "--out-dir", "."], cwd=out, check=True)
     geometry = json.loads((out / "geometry.json").read_text())
 
     consts = deck_constants()
@@ -176,7 +176,9 @@ def main() -> int:
         cs["drc"] = {}
         for vname, v in case["variants"].items():
             gds = out / v["gds"]
-            proc = run([klt, "drc", str(gds), "--deck", "sky130", "--format", "json"])
+            # klt echoes input paths into its JSON; run from the record dir
+            # with record-relative paths so no host path is committed.
+            proc = run([klt, "drc", v["gds"], "--deck", "sky130", "--format", "json"], cwd=out)
             (drc_dir / f"{v['top_cell']}.klt.json").write_text(proc.stdout)
             d = json.loads(proc.stdout)
             entry = {"klt_status": d["status"], "klt_violations": d["violation_count"],
@@ -193,7 +195,8 @@ def main() -> int:
                 (drc_dir / f"{v['top_cell']}.pdk.log").write_text(pproc.stdout + pproc.stderr)
                 # The report XML echoes the runset's absolute path; replace the
                 # host-specific PDK prefix with a placeholder (no other edit).
-                xml.write_text(xml.read_text().replace(str(variant_dir), f"$PDK_ROOT/{args.pdk_variant}"))
+                for f in (xml, drc_dir / f"{v['top_cell']}.pdk.log"):
+                    f.write_text(f.read_text().replace(str(variant_dir), f"$PDK_ROOT/{args.pdk_variant}"))
                 entry["pdk_signoff_counts"] = pdk_drc_counts(xml)
             cs["drc"][vname] = entry
             if d["status"] != "clean":
@@ -209,8 +212,9 @@ def main() -> int:
                 flavours += [("parasitics", ["--parasitics"])]
             for tag, extra in flavours:
                 stem = ext_dir / f"{v['top_cell']}.{tag}"
-                proc = run([klt, "extract", str(out / v["gds"]), "--deck", "sky130", "--top", v["top_cell"],
-                            "--pins", "A,B,SUB", *extra, "-o", f"{stem}.spice", "--format", "json"])
+                proc = run([klt, "extract", v["gds"], "--deck", "sky130", "--top", v["top_cell"],
+                            "--pins", "A,B,SUB", *extra, "-o", f"{stem.relative_to(out)}.spice",
+                            "--format", "json"], cwd=out)
                 (Path(f"{stem}.json")).write_text(proc.stdout)
                 d = json.loads(proc.stdout)
                 res = [x for x in d.get("devices", []) if x.get("class") == klass]
