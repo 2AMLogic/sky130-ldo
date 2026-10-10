@@ -134,6 +134,11 @@ from _record_common import (  # shared helpers (issues #51, #96, #237)
     pvt_input_sections,
 )
 
+_LAYOUT_BIN_DIR = str(LAYOUT_DIR / "bin")
+if _LAYOUT_BIN_DIR not in sys.path:
+    sys.path.insert(0, _LAYOUT_BIN_DIR)
+from _official_drc import official_result  # fail-closed official-deck reader (issue #260)
+
 SCHEMATIC_FILE = "design/ldo_3v3in_1v8out.sch"
 DEFAULT_OUT = MEASUREMENTS_DIR / "characterization.md"
 
@@ -833,6 +838,50 @@ def build_spec_row_table(
     return table, detail
 
 
+LDO_CORE_CELL = "ldo_core"  # top cell of the ldo-core flow (run-ldo-layout-flow.sh CELL)
+
+
+def drc_row_detail(d: Path) -> str:
+    """The DRC row's parenthetical, naming each deck explicitly (issue #260).
+
+    The record's overall verdict covers BOTH the curated klt deck (`drc.json`)
+    and, from #260 on, the PDK's official deck (`mr-drc.run.json` +
+    `mr-drc.lyrdb`). Showing only the curated fields beside a FAIL driven by
+    the official deck would make the row contradict itself, so each deck is
+    labelled. The official deck's state comes from the same fail-closed reader
+    the flow uses (`layout/bin/_official_drc.py`); a record that predates the
+    dual-deck gate (no `mr-drc.run.json`) says so rather than implying clean.
+    """
+    parts: list[str] = []
+    drc_json_path = d / "drc.json"
+    if drc_json_path.is_file():
+        try:
+            drc_json = json.loads(drc_json_path.read_text())
+            parts.append(
+                f"curated deck: status={drc_json.get('status')}, "
+                f"violation_count={drc_json.get('violation_count')}"
+            )
+        except ValueError:
+            parts.append("curated deck: ERROR (unreadable drc.json)")
+    else:
+        parts.append("curated deck: ERROR (no drc.json)")
+
+    if not (d / "mr-drc.run.json").is_file():
+        parts.append("official deck: not run in this record")
+    else:
+        off = official_result(d, LDO_CORE_CELL)
+        if off.state == "clean":
+            parts.append(f"official deck `sky130A_mr.drc`: clean, {off.detail}")
+        elif off.state == "violations":
+            parts.append(
+                f"official deck `sky130A_mr.drc`: violations, violation_count={off.total} "
+                f"in {len(off.counts)} rule families"
+            )
+        else:
+            parts.append(f"official deck `sky130A_mr.drc`: ERROR ({off.detail})")
+    return "; ".join(parts)
+
+
 def build_layout_section() -> list[str]:
     lines: list[str] = []
     lines.append("| Check | Verdict (record's own) | Record | Freshness |")
@@ -843,11 +892,7 @@ def build_layout_section() -> list[str]:
         record_id, d = drc
         record_text = (d / "record.md").read_text() if (d / "record.md").is_file() else ""
         verdict = extract_overall_verdict_md(record_text) or "?"
-        drc_json_path = d / "drc.json"
-        detail = ""
-        if drc_json_path.is_file():
-            drc_json = json.loads(drc_json_path.read_text())
-            detail = f"status={drc_json.get('status')}, violation_count={drc_json.get('violation_count')}"
+        detail = drc_row_detail(d)
         freshness = (
             check_schematic_freshness_from_record(record_text) if record_text else "unverified"
         )

@@ -151,7 +151,8 @@ layout/
     floorplan.md               # device-to-block mapping, placement + routing rationale
     erc-supply-spec.json       # issue #112: the T1 item 11 `klt erc` supply spec (heavily commented)
     reports/
-      LATEST                    # newest gen/compose/route/drc record
+      LATEST                    # newest gen/compose/route/drc record, PASS or FAIL (#260:
+                                # curated + official sky130A_mr.drc, see ldo-core/floorplan.md)
       LATEST-LVS                 # newest LVS record
       LATEST-ERC                 # newest ERC supply record
       <record-id>/             # xschem_out/, gen.<device>.json/<device>.gds per device,

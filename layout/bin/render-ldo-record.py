@@ -5,7 +5,10 @@ envelopes `run-ldo-layout-flow.sh` just produced in that directory.
 Standard library only (matches `layout/bin/render-record.py`'s convention).
 
 Exits non-zero (after writing record.md, so the evidence trail still gets a
-record of the failure) if the layout is not DRC-clean, or if the drawn block
+record of the failure) if the layout is not clean under BOTH DRC decks -- the
+curated `klt drc --deck sky130` deck and the PDK's own official
+`sky130A_mr.drc` (issue #260), reported separately, the latter fail-closed
+(see `_official_drc.py`) -- or if the drawn block
 set does not cover the schematic's own device set -- those are this flow's
 gating claims. LVS is its own driver and its own record
 (`run-ldo-lvs-flow.sh`, issue #17).
@@ -17,6 +20,7 @@ import argparse
 import sys
 from pathlib import Path
 
+from _official_drc import official_result, overall_pass
 from _record_common import _load, provenance
 
 #: `klt gen`'s `voltage_flavor` name -> the sky130 marker layer it draws, for
@@ -28,6 +32,78 @@ from _record_common import _load, provenance
 VOLTAGE_FLAVOR_MARK_LAYERS = {
     "hvi": "75/20",
 }
+
+
+DIAGNOSIS_HEADER = (
+    "### Rule-family attribution (issue #260)\n\n"
+    "Each line separates what was measured from this record's own GDS "
+    "(`official-drc-diagnosis.json`) from hypotheses about the fix. A "
+    "hypothesis is not a claim until a later record demonstrates it."
+)
+
+
+def describe_family(rule: str, n: int, d: dict | None) -> str:
+    """One attribution line per family, built only from measured fields."""
+    if not d:
+        return f"{n} markers; not diagnosed by this tool version."
+    if rule == "via.1a_b":
+        v = d.get("via1_census") or {}
+        return (
+            f"{n} markers. Measured: every via1 in the layout is drawn by the "
+            f"flow's own router in the top cell, sizes (um) "
+            f"{v.get('top_cell_own_shapes', {})}; inside generated blocks: "
+            f"{v.get('inside_block_cells') or 'none'}. The "
+            "deck's cap is a 0.15um via. Owner: local routing "
+            "(`VIA1_UM` in `gen-ldo-blocks.py`). Hypothesis: shrinking to "
+            "0.15um removes this family but changes metal enclosure (see "
+            "`m2.5`); needs LVS/PEX re-run."
+        )
+    if rule == "licon.1":
+        return (
+            f"{n} markers. Measured: {d.get('offending_block_count')} "
+            "generated block cells (resistor and MOS `klt gen` blocks) contain "
+            "licons whose size is not 0.17um (sizes: "
+            f"{sorted({k for v in d.get('off_size_licons_by_block', {}).values() for k in v})}); "
+            "the flow's own body-tie licons are 0.17um and are not flagged. "
+            "Owner: upstream `klt gen` (generic tool gap, see PR notes). "
+            "Deck marker cell names (`mos_array$N`) are the deck's own "
+            "renumbering and are not block names."
+        )
+    if rule in ("m2.5", "via2.5"):
+        cls = d.get("enclosure_classes") or []
+        txt = "; ".join(f"{c['count']} x {c['class']}" for c in cls)
+        return (
+            f"{n} markers. Measured, all in the top cell (local routing): {txt}. "
+            "The rule flags a via with <0.085um met2 enclosure on two ADJACENT "
+            "edges. "
+            + (
+                "Owner: local routing (met2 riser ends / landing pad). "
+                "Hypothesis: extend riser ends >=0.085um past the via and/or "
+                "widen the pad; needs LVS/PEX re-run."
+            )
+        )
+    if rule == "nwell.9":
+        w = d.get("nwell_minus_hvi") or {}
+        return (
+            f"{n} markers. Measured: n-well area {w.get('nwell_area_um2')}um2 "
+            f"vs hvi marker {w.get('hvi_area_um2')}um2; n-well not covered by "
+            f"hvi = {w.get('area_um2')}um2, of which "
+            f"{w.get('area_inside_block_bboxes_um2')}um2 lies inside a "
+            "generated block's own bbox (so the uncovered well is the local "
+            "overhang: the 1um margins and the inter-block gaps). Owner: local "
+            "routing (the single n-well rectangle). Hypothesis: extend the "
+            "voltage-domain marker over the well; changes the marked area and "
+            "needs LVS re-run."
+        )
+    if rule in ("rpm.1a", "urpm.1a"):
+        rows = d.get("marker_layer_by_block") or {}
+        return (
+            f"{n} markers. Measured resistor-marker extents by block: {rows}. "
+            "The marker is drawn exactly the resistor body width (0.42um), "
+            "below the deck's 1.27um minimum marker width. Owner: upstream "
+            "`klt gen res_array` (generic tool gap, see PR notes)."
+        )
+    return f"{n} markers (additional family; not yet diagnosed)."
 
 
 def main() -> int:
@@ -44,7 +120,15 @@ def main() -> int:
     out_dir: Path = args.out_dir
     floorplan = _load(out_dir / "floorplan.json")
     compose = _load(out_dir / "compose.json")
-    drc = _load(out_dir / "drc.json")
+    try:
+        drc = _load(out_dir / "drc.json")
+    except (OSError, ValueError) as exc:
+        drc = {"status": "error", "error": f"drc.json: {exc}"}
+    off = official_result(out_dir, args.cell_name)
+    try:
+        diag = _load(out_dir / "official-drc-diagnosis.json").get("families", {})
+    except (OSError, ValueError):
+        diag = {}
     routing = floorplan.get("routing", {})
 
     prov = provenance(args.repo_root, args.klt, args.pdk_variant)
@@ -52,7 +136,16 @@ def main() -> int:
     klt_version, pdk_info = prov.klt_version, prov.pdk_info
 
     checks = [
-        ("DRC on the routed ldo-core layout is clean", drc.get("status") == "clean"),
+        (
+            "Curated-deck DRC (`klt drc --deck sky130`) on the routed ldo-core "
+            "layout is clean",
+            drc.get("status") == "clean",
+        ),
+        (
+            "Official-deck DRC (PDK `sky130A_mr.drc`) ran to completion and "
+            f"reports zero markers ({off.detail})",
+            off.state == "clean",
+        ),
         (
             "Every schematic MOS/resistor device has exactly one placed "
             f"`klt gen` block ({floorplan.get('device_count')} devices)",
@@ -66,6 +159,9 @@ def main() -> int:
         ),
     ]
     all_pass = all(ok for _, ok in checks)
+    assert all_pass == overall_pass(
+        drc.get("status"), off, checks[2][1], checks[3][1]
+    )
 
     lines: list[str] = []
     a = lines.append
@@ -101,7 +197,13 @@ def main() -> int:
         "`layout/ldo-core/floorplan.md`), runs `klt gen-compose` to place "
         "them, then draws the inter-block routing and the two body ties."
     )
-    a(f"3. `klt drc {args.cell_name}.gds --deck sky130`")
+    a(f"3. `klt drc {args.cell_name}.gds --deck sky130` (curated deck)")
+    a(
+        f"4. `klayout -b -r sky130A_mr.drc` on the same `{args.cell_name}.gds` "
+        "(the PDK's official deck; FEOL/BEOL/offgrid on, floating-metal and "
+        "seal off, mirroring `layout/bin/run-cap-rail-demo-flow.sh`), then "
+        "`layout/bin/diagnose-official-drc.py` to attribute any markers"
+    )
     a("")
     a("## Composed cell")
     a("")
@@ -207,10 +309,53 @@ def main() -> int:
     a("| Stage | Status | Detail |")
     a("| --- | --- | --- |")
     a(
-        "| DRC | "
+        "| DRC, curated deck (`klt drc --deck sky130`) | "
         f"{drc.get('status')} | violation_count={drc.get('violation_count')} |"
     )
+    off_status = {"clean": "clean", "violations": "violations", "error": "ERROR"}[off.state]
+    a(f"| DRC, official deck (`sky130A_mr.drc`) | {off_status} | {off.detail} |")
     a("")
+    a(
+        "The two decks are separate gates and neither substitutes for the "
+        "other: the curated deck is a hand-transcribed subset that is clean "
+        "on this layout, while the PDK's own deck is the authority a tapeout "
+        "would be checked against."
+    )
+    a("")
+    if off.state == "violations":
+        a("### Official-deck markers per rule family")
+        a("")
+        a("| Rule | Markers |")
+        a("| --- | --- |")
+        for rule, n in sorted(off.counts.items(), key=lambda kv: -kv[1]):
+            a(f"| `{rule}` | {n} |")
+        a(f"| **total** | **{off.total}** |")
+        a("")
+        a(
+            "Marker totals are raw deck markers (edges / edge-pairs / "
+            "polygons), not distinct defects: for example every undersized "
+            "via contributes one marker per edge."
+        )
+        a("")
+        a(DIAGNOSIS_HEADER)
+        a("")
+        if diag:
+            for rule in sorted(off.counts):
+                a(f"- `{rule}`: " + describe_family(rule, off.counts[rule], diag.get(rule)))
+        else:
+            a("(`official-drc-diagnosis.json` is absent: attribution was not produced for this record.)")
+        a("")
+    elif off.state == "error":
+        a(f"**Official deck did not complete: {off.detail}.** No verdict is claimed from it.")
+        a("")
+        err = out_dir / "mr-drc.error.txt"
+        if err.is_file():
+            a("Diagnostic tail (`mr-drc.error.txt`):")
+            a("")
+            a("```")
+            a(err.read_text(errors="replace").rstrip()[-3000:])
+            a("```")
+            a("")
     coverage = drc.get("coverage", {})
     if coverage:
         a(
@@ -250,6 +395,12 @@ def main() -> int:
         f"- KLayout engine version: "
         f"`{drc.get('provenance', {}).get('klayout_version')}`"
     )
+    run = off.run
+    a(
+        f"- Official deck: `{run.get('deck_name')}` sha256 "
+        f"`{run.get('deck_sha256')}` from the resolved PDK; switches "
+        f"`{run.get('switches')}`; `klayout -v`: `{run.get('klayout_version')}`"
+    )
     a(f"- PDK: `{pdk_info.get('variant')}`, `{pdk_info.get('version')}`")
     a(
         "- PDK pin cross-check: compare `version` above against "
@@ -274,7 +425,16 @@ def main() -> int:
         f"- [`{args.cell_name}.placed.gds`]({args.cell_name}.placed.gds) -- "
         "`klt gen-compose`'s own output, before this flow's routing was drawn"
     )
-    a("- [`drc.json`](drc.json)")
+    a("- [`drc.json`](drc.json) -- curated-deck envelope")
+    a(
+        "- [`mr-drc.lyrdb`](mr-drc.lyrdb), [`mr-drc.run.json`](mr-drc.run.json) -- "
+        "the official deck's report database and the run record "
+        "(deck sha256, switches, exit status)"
+    )
+    a(
+        "- [`official-drc-diagnosis.json`](official-drc-diagnosis.json) -- "
+        "per-family attribution measured from this record's `ldo_core.gds`"
+    )
     a(
         "- `gen.<device>.json` / `<device>.gds` -- per-device `klt gen` "
         "report and standalone cell, one pair per schematic device"
