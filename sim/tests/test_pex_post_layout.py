@@ -55,6 +55,42 @@ class ParseSubcktPinsTests(unittest.TestCase):
         self.assertIn("no .SUBCKT ldo_core", str(ctx.exception))
 
 
+class SchematicDeviceBodyExprTests(unittest.TestCase):
+    """xschem 3.4.4 raw expr('...') shape must be normalized, or fail closed (#277)."""
+
+    RAW = (
+        "XM1 VG VG 0 0 sky130_fd_pr__nfet_g5v0d10v5 L=1 W=4 nf=1 "
+        "ad=expr('int((@nf + 1)/2) * @W / @nf * 0.29')\n"
+        "+ nrd=expr('0.29 / @W ') nrs=expr('0.29 / @W ') sa=0 sb=0 sd=0 mult=1 m=1\n"
+        ".end\n"
+    )
+
+    def test_normalizes_to_numbers(self):
+        out = gen.schematic_device_body(self.RAW)
+        self.assertNotIn("expr(", out)
+        self.assertIn("ad=1.16", out)
+        self.assertIn("nrd=0.0725", out)
+        self.assertIn("nrs=0.0725", out)
+        self.assertNotIn(".end", out.lower())
+
+    def test_already_normalized_is_noop(self):
+        plain = "XM1 a b c d m L=1 W=4 nf=1 ad=1.16 nrd=0.0725\n.end\n"
+        self.assertEqual(gen.schematic_device_body(plain), "XM1 a b c d m L=1 W=4 nf=1 ad=1.16 nrd=0.0725")
+
+    def test_unknown_parameter_fails_closed(self):
+        with self.assertRaises(SystemExit) as ctx:
+            gen.schematic_device_body("X1 a b m W=2 ad=expr('@nope * 2')\n.end\n")
+        self.assertIn("unresolved xschem expr", str(ctx.exception))
+
+    def test_unsafe_expression_fails_closed(self):
+        with self.assertRaises(SystemExit):
+            gen.schematic_device_body("X1 a b m W=2 ad=expr('__import__(1)')\n.end\n")
+
+    def test_comment_mentioning_expr_is_not_a_failure(self):
+        out = gen.schematic_device_body("* note expr('x') in a comment\nR1 a b 1\n.end\n")
+        self.assertIn("R1 a b 1", out)
+
+
 class WrapPinsTests(unittest.TestCase):
     PINS = [f"NET_NUMBER_{i:02d}" for i in range(28)]
 
