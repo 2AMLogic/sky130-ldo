@@ -100,6 +100,13 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Install uv (runs the pinned ruff lint, test:lint-py)
+        # `check:ci` -> `test` -> `test:lint-py` shells out to
+        # `uvx --from ruff==0.17.0`, so this job needs uv/uvx on PATH (#293).
+        # uv itself is pinned too, so the lint toolchain is reproducible end
+        # to end rather than tracking whatever uv release is newest.
+        run: python3 -m pip install "uv==0.12.23"
+
       - name: npm run check:ci
         run: npm run check:ci
 
