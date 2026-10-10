@@ -55,6 +55,10 @@ import sys
 import tempfile
 from pathlib import Path
 
+# Shared guarded xschem-expression normalizer (also used by sim/bin/corner-run.py).
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "bin"))
+from xschem_exprs import eval_xschem_exprs, find_unresolved_exprs  # noqa: E402
+
 SUBCKT_RE = re.compile(r"^\.SUBCKT\s+(\S+)\s+(.*)$", re.IGNORECASE)
 CONT_RE = re.compile(r"^\+\s*(.*)$")
 
@@ -98,6 +102,18 @@ def schematic_device_body(schem_netlist_text: str) -> str:
     this DUT file must follow (docs/cli/sim.md's "Netlist convention: a
     circuit body, not a full deck") forbids a `.end` card of its own.
     """
+    # Older xschem (3.4.4) writes the sky130 symbols' raw `expr('...')`
+    # geometry templates, which ngspice cannot parse (issues #288, #277).
+    # Evaluate them with the shared guarded helper; anything it cannot
+    # resolve safely must stay a hard failure, never a silent rewrite.
+    schem_netlist_text, _ = eval_xschem_exprs(schem_netlist_text)
+    unresolved = find_unresolved_exprs(schem_netlist_text)
+    if unresolved:
+        raise SystemExit(
+            "gen-pex-testbench.py: unresolved xschem expr(...) in schematic netlist "
+            f"({len(unresolved)} line(s)); refusing to emit a DUT ngspice cannot parse. "
+            f"First: {unresolved[0][:200]}"
+        )
     lines = [
         line
         for line in schem_netlist_text.splitlines()

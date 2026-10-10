@@ -584,6 +584,37 @@ That path was abandoned once the 3-terminal resistor incompatibility (above)
 was found to block it regardless -- kept here only as a documented dead end,
 not reused.
 
+## xschem-version compatibility and failed-run retention (issue #277)
+
+**Constraint.** xschem 3.4.4 (Ubuntu apt; CI and the dispatch workers) writes
+the sky130 symbols' raw `expr('...')` geometry templates (`nrd=expr('0.29 / @W ')`
+...) where the pinned 3.4.7 writes numbers. ngspice cannot parse them; the
+failure surfaces as `Undefined parameter [...]` inside the PDK device
+subcircuit (e.g. `[expr]` / `[nrd]` on ngspice 46; the batch host reported
+`[swx_nrds]`, a PDK-internal `.param` evaluated alongside `nrd`).
+`gen-pex-testbench.py` bypassed the normalization `sim/bin/corner-run.py` gained
+in #288/#290. It now calls the same guarded helper (`sim/bin/xschem_exprs.py`,
+shared by both) and **fails closed**: any `expr(` it cannot evaluate safely aborts
+generation instead of emitting an unparseable DUT. No limit or device model is
+changed.
+
+*Measured:* injecting the 3.4.4 `expr` shape into this DUT reproduces an
+ngspice "Undefined parameter" parse failure locally (ngspice 46); the committed
+DUT is already numeric and simulates on one tt corner. *Not measured:* the
+original batch-host deck/log was discarded, so that `[swx_nrds]` is the same
+cause is consistent with, not proven by, this reproduction.
+
+**Failed-run retention.** If `run-pex.sh` sees a hard failure (any `klt` exit
+other than 0 or 3) or generator failure, it writes
+`failures/<record-id>/` (append-only, never reused): request, testbench + DUT,
+response/error envelope, full stderr logs, per-corner decks/ngspice logs, and
+`provenance.txt` (git HEAD, GDS sha256, klt/ngspice/xschem versions, backend).
+
+**Handoff to #267 / PR #275.** After this lands, PR #275 rebases, reruns both
+legs against its changed GDS, commits a new append-only record, and compares it
+with `20260924-230726-a947aa8`, separating known baseline failures from new
+regressions.
+
 ## Regenerating
 
 ```bash
