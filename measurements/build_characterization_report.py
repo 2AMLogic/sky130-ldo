@@ -847,7 +847,13 @@ def build_layout_section() -> list[str]:
         detail = ""
         if drc_json_path.is_file():
             drc_json = json.loads(drc_json_path.read_text())
-            detail = f"status={drc_json.get('status')}, violation_count={drc_json.get('violation_count')}"
+            detail = (
+                "curated deck: "
+                f"status={drc_json.get('status')}, violation_count={drc_json.get('violation_count')}"
+            )
+        official = re.search(r"^\| DRC, official deck[^|]*\| ([^|]+) \| ([^|]+) \|", record_text, re.M)
+        if official:
+            detail += f"; official deck: {official.group(1).strip()}, {official.group(2).strip()}"
         freshness = (
             check_schematic_freshness_from_record(record_text) if record_text else "unverified"
         )
