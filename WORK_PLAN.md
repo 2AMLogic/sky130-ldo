@@ -19,7 +19,6 @@ _None._
 
 Human-approved issues ready for implementation (`loom:issue`).
 
-- **#177**: Seed sim/current-limit's leg-1 operating point to conform to the initial-condition contract
 - **#263**: Qualify folded resistor electrical equivalence across process, temperature and mismatch
 
 ## In Progress
@@ -49,10 +48,13 @@ Issues carrying `loom:curated`.
 - **#213**: sim(iq): mint the 45-corner record under #173's seeded deck + #133's regulation gate — deck fixed, matrix not re-run (host contention) *(curated)*
 - **#263**: Qualify folded resistor electrical equivalence across process, temperature and mismatch *(curated)*
 - **#267**: layout: fix locally-routed official-DRC families (via.1a_b, m2.5, via2.5, nwell.9) found by #260 *(curated)*
+- **#277**: sim: post-layout PEX schematic-side corners fail with 'Undefined parameter [swx_nrds]'; no PEX evidence for #267 geometry *(curated)*
 
 ## Proposed (Architect / Hermit)
 
-- **#278**: layout: PDK-free verdict tests for the ERC/LVS/area evidence renderers *(architect)*
+- **#291**: ci: pin and gate the ngspice/xschem versions the way the PDK is pinned *(architect)*
+- **#292**: spec: add a decision-record status index and lint; flip DRs whose ratifying PR has merged *(architect)*
+- **#293**: ci: add a pyflakes-class static lint to check:ci (py_compile misses dead imports and unused locals) *(architect)*
 
 ## Epics
 
@@ -64,11 +66,11 @@ Issues carrying `loom:curated`.
 |------|-------|
 | Operator merge-risk holds | 0 |
 | Operator priority | 0 |
-| Ready (`loom:issue`) | 2 |
+| Ready (`loom:issue`) | 1 |
 | In Progress (`loom:building`) | 0 |
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 0 |
-| Curated | 5 |
-| Architect / Hermit proposals | 1 |
+| Curated | 6 |
+| Architect / Hermit proposals | 3 |
 | Active epics | 1 |
 <!-- guide:plan-body:end -->

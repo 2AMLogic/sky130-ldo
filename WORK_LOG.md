@@ -4,6 +4,18 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 
 ### 2026-10-10
 
+- **PR #290**: fix(sim): pdk-smoke fails on xschem 3.4.4 expr() params; retain diagnostics (#288)
+- **PR #289**: report: content-based GDS freshness for LVS and dependent PEX
+- **PR #286**: docs: split sim/README.md into harness reference plus sim/docs (#284)
+- **PR #285**: ci: fail PRs that modify/rename/delete committed sim records (#283)
+- **PR #282**: ci: lint every tracked shell script with bash -n
+- **PR #281**: layout: PDK-free verdict tests for ERC/LVS/area renderers
+- **Issue #288** (closed): Build/runtime failure on main: nightly PDK smoke fails all three corners
+- **Issue #287** (closed): Characterization: invalidate LVS and PEX freshness when routed GDS changes
+- **Issue #284** (closed): Split the 3,400-line sim/README.md into a harness reference plus per-experiment docs
+- **Issue #283** (closed): CI guard: fail PRs that modify or delete committed sim records (append-only evidence)
+- **Issue #280** (closed): ci: lint every tracked shell script with bash -n (4 flow scripts are missing from the hardcoded list)
+- **Issue #278** (closed): layout: PDK-free verdict tests for the ERC/LVS/area evidence renderers
 - **PR #274**: layout: consolidate git() and run_klt_json() helpers (#273)
 - **Issue #273** (closed): layout: consolidate duplicated subprocess helpers in record-producing scripts
 - **PR #270**: layout: folded-resistor PVT/mismatch qualification matrix, driver and BLOCKED record (#263)
