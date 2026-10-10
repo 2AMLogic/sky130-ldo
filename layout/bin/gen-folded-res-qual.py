@@ -144,7 +144,6 @@ def fill_bank_markers(layout: Any, bank: Any, top: Any) -> list[dict[str, Any]]:
     device by (poly 66/20 + id marker 66/13), so extraction is unchanged.
     Returns the boxes drawn, for geometry.json.
     """
-    import klayout.db as kdb
 
     drawn: list[dict[str, Any]] = []
     for ln, dt in BANK_MARKER_LAYERS:

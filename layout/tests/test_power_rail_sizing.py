@@ -163,7 +163,7 @@ class DeckConstantsTest(unittest.TestCase):
 
     def setUp(self) -> None:
         try:
-            import klayout_tools.decks  # noqa: F401
+            import klayout_tools.decks  # noqa: F401 -- availability probe (skipTest on ImportError)
         except ImportError:
             self.skipTest("klayout_tools not importable (run under layout/.venv)")
 

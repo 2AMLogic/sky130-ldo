@@ -127,7 +127,7 @@ if _SIM_BIN_DIR not in sys.path:
     sys.path.insert(0, _SIM_BIN_DIR)
 from _record_common import (  # shared helpers (issues #51, #96, #237)
     INPUT_FINGERPRINT_VERSION,
-    build_input_fingerprint,
+    build_input_fingerprint,  # noqa: F401 -- re-exported; tests use the module attribute
     git,
     load_corner_run_module,
     mc_input_sections,
