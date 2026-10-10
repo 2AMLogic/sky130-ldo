@@ -63,11 +63,10 @@ deck's synthesized fallback.
 from __future__ import annotations
 
 import argparse
-import re
 import sys
 from pathlib import Path
 
-from _netlist_common import _merge_continuations
+from _netlist_common import _merge_continuations, parse_x_card
 
 MOS_MODEL_MAP = {
     "sky130_fd_pr__nfet_g5v0d10v5": "nfet",
@@ -129,29 +128,14 @@ def translate(
     for line in lines:
         if not line.startswith("X"):
             continue
-        m = re.match(r"^X(\S+)\s+(.*)$", line)
-        if not m:
+        card = parse_x_card(line, MOS_MODEL_MAP.keys() | RES_MODEL_MAP.keys())
+        if card is None:
             continue
-        inst_suffix, rest = m.group(1), m.group(2)
-        toks = rest.split()
-
-        model_idx = None
-        for i, t in enumerate(toks):
-            if t in MOS_MODEL_MAP or t in RES_MODEL_MAP:
-                model_idx = i
-                break
-        if model_idx is None:
+        if card.model is None:
             skipped.append(line)
             continue
-
-        nets = toks[:model_idx]
-        model_token = toks[model_idx]
-        params = toks[model_idx + 1 :]
-        pdict: dict[str, str] = {}
-        for p in params:
-            if "=" in p:
-                k, v = p.split("=", 1)
-                pdict[k] = v
+        inst_suffix, model_token = card.suffix, card.model
+        nets, pdict = card.nets, card.params
 
         if model_token in MOS_MODEL_MAP:
             d, g, s, b = nets
