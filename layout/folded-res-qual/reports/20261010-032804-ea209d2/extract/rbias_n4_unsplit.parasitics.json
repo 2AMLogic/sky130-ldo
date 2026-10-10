@@ -1,0 +1,285 @@
+{
+  "schema_version": 3,
+  "file": "rbias_n4_unsplit.gds",
+  "deck": "sky130",
+  "top": "rbias_n4_unsplit",
+  "dbu_um": 0.001,
+  "netlist_path": "extract/rbias_n4_unsplit.parasitics.spice",
+  "netlist_sha256": "60506e3c5531a06435699990e917c4bee19c3eb56bf1ac8ed33c8337e8032a7b",
+  "status": "extracted",
+  "device_count": 1,
+  "net_count": 3,
+  "pin_count": 3,
+  "device_counts": {
+    "res_high_po": 1
+  },
+  "dummy_devices_dropped": 0,
+  "ignored_layers": [],
+  "device_recognition_only_layers": [
+    {
+      "layer": 66,
+      "datatype": 13,
+      "shapes": 1
+    },
+    {
+      "layer": 86,
+      "datatype": 20,
+      "shapes": 1
+    },
+    {
+      "layer": 94,
+      "datatype": 20,
+      "shapes": 1
+    }
+  ],
+  "device_classes": [
+    "nfet",
+    "pfet",
+    "pnp",
+    "sky130_fd_pr__model__cap_mim",
+    "sky130_fd_pr__model__cap_mim_m4",
+    "resistor"
+  ],
+  "devices": [
+    {
+      "name": "$1",
+      "class": "res_high_po",
+      "nets": {
+        "a": "A",
+        "b": "B",
+        "w": "SUB"
+      },
+      "params": {
+        "r_ohm": 1160477.005147,
+        "l_um": 1500.0,
+        "w_um": 0.42,
+        "area_um2": 630.0,
+        "perimeter_um": 3000.84
+      },
+      "instance_path": [
+        {
+          "cell": "rbias_n4_unsplit_bank",
+          "array_index": null
+        },
+        {
+          "cell": "res_array",
+          "array_index": null
+        }
+      ]
+    }
+  ],
+  "nets": [
+    {
+      "name": "A",
+      "pin": true,
+      "device_count": 1,
+      "net_id": 1,
+      "pin_index": 0,
+      "label_positions_um": [
+        {
+          "text": "A",
+          "x_um": 0.21,
+          "y_um": 0.21
+        }
+      ]
+    },
+    {
+      "name": "B",
+      "pin": true,
+      "device_count": 1,
+      "net_id": 2,
+      "pin_index": 1,
+      "label_positions_um": [
+        {
+          "text": "B",
+          "x_um": 1500.63,
+          "y_um": 0.21
+        }
+      ]
+    },
+    {
+      "name": "SUB",
+      "pin": true,
+      "device_count": 1,
+      "net_id": 4,
+      "pin_index": 2,
+      "label_positions_um": [
+        {
+          "text": "SUB",
+          "x_um": 0.75,
+          "y_um": -1.75
+        }
+      ]
+    }
+  ],
+  "warnings": [],
+  "black_box_regions": [],
+  "abstracted_cells": [],
+  "unmodelled_poly": [],
+  "merged_net_labels": [],
+  "voltage_domain_warnings": [],
+  "unbiased_pmos_body_nets": [],
+  "single_terminal_nets": [],
+  "dead_metal": [],
+  "matched_device_groups": [],
+  "pdk": null,
+  "provenance": {
+    "klt_version": "0.6.0+g040f3406b485",
+    "klayout_version": "0.30.12",
+    "pdk": null,
+    "deck": {
+      "name": "sky130",
+      "content_hash": "sha256:d7a9ddfa4785e2427553cc8701f9ed547d1b68abb21aef2c8c9fb6c8d8ca3791",
+      "released": false
+    },
+    "input": {
+      "content_hash": "sha256:bca27bfe84cfc6f55bf0e49dbdd27d17319bb434cb143466e5268dc7e0c0d153",
+      "role": "layout"
+    }
+  },
+  "parasitics": {
+    "r_count": 3,
+    "c_count": 3,
+    "cc_count": 0,
+    "l_count": 0,
+    "total_resistance_ohm": 134.8,
+    "total_capacitance_ff": 0.448165,
+    "total_coupling_capacitance_ff": 0.0,
+    "total_inductance_nh": 0.0,
+    "nets": [
+      {
+        "net": "A",
+        "net_id": 1,
+        "resistance_ohm": 61.0,
+        "capacitance_ff": 0.186631,
+        "by_layer": [
+          {
+            "layer": "poly",
+            "resistance_ohm": 48.2,
+            "capacitance_ff": 0.111728
+          },
+          {
+            "layer": "metal0",
+            "resistance_ohm": 12.8,
+            "capacitance_ff": 0.074903
+          }
+        ],
+        "resistance_ohm_top_cell": null,
+        "capacitance_ff_top_cell": null,
+        "inductance_nh": 0.0,
+        "hub_net": "A",
+        "rc_model": "lumped",
+        "terminals": [
+          {
+            "device": "$1",
+            "terminal": "A",
+            "leg_net": "A__t0",
+            "resistance_ohm": 61.0
+          }
+        ],
+        "segments": [],
+        "coupled": []
+      },
+      {
+        "net": "B",
+        "net_id": 2,
+        "resistance_ohm": 61.0,
+        "capacitance_ff": 0.186631,
+        "by_layer": [
+          {
+            "layer": "poly",
+            "resistance_ohm": 48.2,
+            "capacitance_ff": 0.111728
+          },
+          {
+            "layer": "metal0",
+            "resistance_ohm": 12.8,
+            "capacitance_ff": 0.074903
+          }
+        ],
+        "resistance_ohm_top_cell": null,
+        "capacitance_ff_top_cell": null,
+        "inductance_nh": 0.0,
+        "hub_net": "B",
+        "rc_model": "lumped",
+        "terminals": [
+          {
+            "device": "$1",
+            "terminal": "B",
+            "leg_net": "B__t0",
+            "resistance_ohm": 61.0
+          }
+        ],
+        "segments": [],
+        "coupled": []
+      },
+      {
+        "net": "SUB",
+        "net_id": 4,
+        "resistance_ohm": 12.8,
+        "capacitance_ff": 0.074903,
+        "by_layer": [
+          {
+            "layer": "metal0",
+            "resistance_ohm": 12.8,
+            "capacitance_ff": 0.074903
+          }
+        ],
+        "resistance_ohm_top_cell": null,
+        "capacitance_ff_top_cell": null,
+        "inductance_nh": 0.0,
+        "hub_net": "SUB",
+        "rc_model": "lumped",
+        "terminals": [
+          {
+            "device": "$1",
+            "terminal": "W",
+            "leg_net": "SUB__t0",
+            "resistance_ohm": 12.8
+          }
+        ],
+        "segments": [],
+        "coupled": []
+      }
+    ],
+    "substrate_dc_tie": {
+      "resistance_ohm": 1000000000000.0,
+      "nets": [
+        {
+          "net": "vsubs",
+          "device": "Rvsubs_dctie"
+        }
+      ],
+      "node_scope": "global"
+    },
+    "metals_without_coefficient": [],
+    "overlap_pairs_without_coefficient": [],
+    "critical_nets": [],
+    "parasitics_nets": [],
+    "distributed_rc": false,
+    "top_cell_only": false,
+    "model": {
+      "capacitance": "net-to-ground for every net's own (non-coupled) area/perimeter, plus net-to-net for the vertical-overlap coupling `coupling` describes below -- a coupled net pair gets a direct capacitor between their two hub nodes, not just capacitors to the deck's ground/substrate net",
+      "coupling": "vertical overlap (crossover) unconditionally -- where one net's conductor on an adjacent metal level sits directly over another *distinct* net's conductor, that overlap area is charged between the two nets instead of to ground (issue #760) -- plus lateral (same-layer, sidewall) coupling, but only for a net pair naming one of the caller's declared `--critical-net` nets (issue #976): facing-edge length within that layer's own minimum-spacing lookback is charged between the two nets, *additively* (not deducted from either net's substrate fringe term, unlike the vertical case -- a known simplification). Any same-layer pair with neither side named `--critical-net`, and fringe shielding in general, are still not modelled",
+      "resistance": "single lumped series resistance per net, distributed as a star across that net's device terminals (issue #592) -- not a per-segment, distributed RC ladder, *unless* `--distributed-rc` names this net via `--critical-net` (issue #977, Epic #709 Phase 2b): then the net's terminals are ordered along their approximate physical spread and its total R/C is broken into a chain of per-segment resistors (segment length proportional to inter-terminal distance) with a ground capacitor at each terminal node (proportional to its adjacent segment length/2), instead of one star hub -- still an approximation (terminal position is a device-placement proxy, not true per-segment routing geometry), but a strictly finer-grained one than the single-hub star",
+      "frequency": "quasi-static -- one frequency-independent R and C per net; no skin effect, no distributed transmission-line behavior"
+    },
+    "mom_crosscheck": null,
+    "mom_rlc_override": null
+  },
+  "spef_path": null,
+  "subcircuit": null,
+  "metrics": {
+    "extract__device__count": 1,
+    "extract__net__count": 3,
+    "extract__pin__count": 3,
+    "extract__resistor__count": 3,
+    "extract__capacitor__count": 3,
+    "extract__coupling__capacitor__count": 0,
+    "extract__inductor__count": 0,
+    "extract__resistance__ohm": 134.8,
+    "extract__capacitance__ff": 0.448165,
+    "extract__coupling__capacitance__ff": 0.0,
+    "extract__inductance__nh": 0.0
+  }
+}

@@ -1,0 +1,180 @@
+* extracted by klt extract --deck sky130
+* parasitic model (--parasitics):
+* - capacitance: net-to-ground for every net's own (non-coupled) area/perimeter, plus net-to-net for the vertical-overlap coupling `coupling` describes below -- a coupled net pair gets a direct capacitor between their two hub nodes, not just capacitors to the deck's ground/substrate net
+* - coupling: vertical overlap (crossover) unconditionally -- where one net's conductor on an adjacent metal level sits directly over another *distinct* net's conductor, that overlap area is charged between the two nets instead of to ground (issue #760) -- plus lateral (same-layer, sidewall) coupling, but only for a net pair naming one of the caller's declared `--critical-net` nets (issue #976): facing-edge length within that layer's own minimum-spacing lookback is charged between the two nets, *additively* (not deducted from either net's substrate fringe term, unlike the vertical case -- a known simplification). Any same-layer pair with neither side named `--critical-net`, and fringe shielding in general, are still not modelled
+* - resistance: single lumped series resistance per net, distributed as a star across that net's device terminals (issue #592) -- not a per-segment, distributed RC ladder, *unless* `--distributed-rc` names this net via `--critical-net` (issue #977, Epic #709 Phase 2b): then the net's terminals are ordered along their approximate physical spread and its total R/C is broken into a chain of per-segment resistors (segment length proportional to inter-terminal distance) with a ground capacitor at each terminal node (proportional to its adjacent segment length/2), instead of one star hub -- still an approximation (terminal position is a device-placement proxy, not true per-segment routing geometry), but a strictly finer-grained one than the single-hub star
+* - frequency: quasi-static -- one frequency-independent R and C per net; no skin effect, no distributed transmission-line behavior
+.GLOBAL vsubs
+
+* cell rbias_n16_folded
+* pin A
+* pin B
+* pin SUB
+.SUBCKT rbias_n16_folded A B SUB
+* device instance $1 r0 *1 47.295,0.21 res_high_po
+X$1 A__t0 \$2__t0 SUB__t0 res_high_po r=72885.786397 L=93.75U W=0.42U
+* device instance $2 r0 *1 47.295,1.03 res_high_po
+X$2 \$3__t0 \$2__t1 SUB__t1 res_high_po r=72885.786397 L=93.75U W=0.42U
+* device instance $3 r0 *1 47.295,1.85 res_high_po
+X$3 \$3__t1 \$5__t1 SUB__t2 res_high_po r=72885.786397 L=93.75U W=0.42U
+* device instance $4 r0 *1 47.295,2.67 res_high_po
+X$4 \$6__t1 \$5__t0 SUB__t3 res_high_po r=72885.786397 L=93.75U W=0.42U
+* device instance $5 r0 *1 47.295,3.49 res_high_po
+X$5 \$6__t0 \$7__t1 SUB__t4 res_high_po r=72885.786397 L=93.75U W=0.42U
+* device instance $6 r0 *1 47.295,4.31 res_high_po
+X$6 \$8__t1 \$7__t0 SUB__t5 res_high_po r=72885.786397 L=93.75U W=0.42U
+* device instance $7 r0 *1 47.295,5.13 res_high_po
+X$7 \$8__t0 \$9__t1 SUB__t6 res_high_po r=72885.786397 L=93.75U W=0.42U
+* device instance $8 r0 *1 47.295,5.95 res_high_po
+X$8 \$10__t1 \$9__t0 SUB__t7 res_high_po r=72885.786397 L=93.75U W=0.42U
+* device instance $9 r0 *1 47.295,6.77 res_high_po
+X$9 \$10__t0 \$11__t1 SUB__t8 res_high_po r=72885.786397 L=93.75U W=0.42U
+* device instance $10 r0 *1 47.295,7.59 res_high_po
+X$10 \$12__t1 \$11__t0 SUB__t9 res_high_po r=72885.786397 L=93.75U W=0.42U
+* device instance $11 r0 *1 47.295,8.41 res_high_po
+X$11 \$12__t0 \$13__t1 SUB__t10 res_high_po r=72885.786397 L=93.75U W=0.42U
+* device instance $12 r0 *1 47.295,9.23 res_high_po
+X$12 \$14__t1 \$13__t0 SUB__t11 res_high_po r=72885.786397 L=93.75U W=0.42U
+* device instance $13 r0 *1 47.295,10.05 res_high_po
+X$13 \$14__t0 \$15__t1 SUB__t12 res_high_po r=72885.786397 L=93.75U W=0.42U
+* device instance $14 r0 *1 47.295,10.87 res_high_po
+X$14 \$16__t1 \$15__t0 SUB__t13 res_high_po r=72885.786397 L=93.75U W=0.42U
+* device instance $15 r0 *1 47.295,11.69 res_high_po
+X$15 \$16__t0 \$17__t1 SUB__t14 res_high_po r=72885.786397 L=93.75U W=0.42U
+* device instance $16 r0 *1 47.295,12.51 res_high_po
+X$16 B__t0 \$17__t0 SUB__t15 res_high_po r=72885.786397 L=93.75U W=0.42U
+* device instance _10_t0 r0 *1 0,0 
+R_10_t0 \$10__t0 \$10 159.36035
+* device instance _10_t1 r0 *1 0,0 
+R_10_t1 \$10__t1 \$10 159.36035
+* device instance _10 r0 *1 0,0 
+C_10 \$10 vsubs 3.7785e-16
+* device instance _11_t0 r0 *1 0,0 
+R_11_t0 \$11__t0 \$11 159.36035
+* device instance _11_t1 r0 *1 0,0 
+R_11_t1 \$11__t1 \$11 159.36035
+* device instance _11 r0 *1 0,0 
+C_11 \$11 vsubs 3.7785e-16
+* device instance _12_t0 r0 *1 0,0 
+R_12_t0 \$12__t0 \$12 159.36035
+* device instance _12_t1 r0 *1 0,0 
+R_12_t1 \$12__t1 \$12 159.36035
+* device instance _12 r0 *1 0,0 
+C_12 \$12 vsubs 3.7785e-16
+* device instance _13_t0 r0 *1 0,0 
+R_13_t0 \$13__t0 \$13 159.36035
+* device instance _13_t1 r0 *1 0,0 
+R_13_t1 \$13__t1 \$13 159.36035
+* device instance _13 r0 *1 0,0 
+C_13 \$13 vsubs 3.7785e-16
+* device instance _14_t0 r0 *1 0,0 
+R_14_t0 \$14__t0 \$14 159.36035
+* device instance _14_t1 r0 *1 0,0 
+R_14_t1 \$14__t1 \$14 159.36035
+* device instance _14 r0 *1 0,0 
+C_14 \$14 vsubs 3.7785e-16
+* device instance _15_t0 r0 *1 0,0 
+R_15_t0 \$15__t0 \$15 159.36035
+* device instance _15_t1 r0 *1 0,0 
+R_15_t1 \$15__t1 \$15 159.36035
+* device instance _15 r0 *1 0,0 
+C_15 \$15 vsubs 3.7785e-16
+* device instance _16_t0 r0 *1 0,0 
+R_16_t0 \$16__t0 \$16 159.36035
+* device instance _16_t1 r0 *1 0,0 
+R_16_t1 \$16__t1 \$16 159.36035
+* device instance _16 r0 *1 0,0 
+C_16 \$16 vsubs 3.7785e-16
+* device instance _17_t0 r0 *1 0,0 
+R_17_t0 \$17__t0 \$17 159.36035
+* device instance _17_t1 r0 *1 0,0 
+R_17_t1 \$17__t1 \$17 159.36035
+* device instance _17 r0 *1 0,0 
+C_17 \$17 vsubs 3.7785e-16
+* device instance _2_t0 r0 *1 0,0 
+R_2_t0 \$2__t0 \$2 159.36035
+* device instance _2_t1 r0 *1 0,0 
+R_2_t1 \$2__t1 \$2 159.36035
+* device instance _2 r0 *1 0,0 
+C_2 \$2 vsubs 3.7785e-16
+* device instance _3_t0 r0 *1 0,0 
+R_3_t0 \$3__t0 \$3 159.36035
+* device instance _3_t1 r0 *1 0,0 
+R_3_t1 \$3__t1 \$3 159.36035
+* device instance _3 r0 *1 0,0 
+C_3 \$3 vsubs 3.7785e-16
+* device instance _5_t0 r0 *1 0,0 
+R_5_t0 \$5__t0 \$5 159.36035
+* device instance _5_t1 r0 *1 0,0 
+R_5_t1 \$5__t1 \$5 159.36035
+* device instance _5 r0 *1 0,0 
+C_5 \$5 vsubs 3.7785e-16
+* device instance _6_t0 r0 *1 0,0 
+R_6_t0 \$6__t0 \$6 159.36035
+* device instance _6_t1 r0 *1 0,0 
+R_6_t1 \$6__t1 \$6 159.36035
+* device instance _6 r0 *1 0,0 
+C_6 \$6 vsubs 3.7785e-16
+* device instance _7_t0 r0 *1 0,0 
+R_7_t0 \$7__t0 \$7 159.36035
+* device instance _7_t1 r0 *1 0,0 
+R_7_t1 \$7__t1 \$7 159.36035
+* device instance _7 r0 *1 0,0 
+C_7 \$7 vsubs 3.7785e-16
+* device instance _8_t0 r0 *1 0,0 
+R_8_t0 \$8__t0 \$8 159.36035
+* device instance _8_t1 r0 *1 0,0 
+R_8_t1 \$8__t1 \$8 159.36035
+* device instance _8 r0 *1 0,0 
+C_8 \$8 vsubs 3.7785e-16
+* device instance _9_t0 r0 *1 0,0 
+R_9_t0 \$9__t0 \$9 159.36035
+* device instance _9_t1 r0 *1 0,0 
+R_9_t1 \$9__t1 \$9 159.36035
+* device instance _9 r0 *1 0,0 
+C_9 \$9 vsubs 3.7785e-16
+* device instance A_t0 r0 *1 0,0 
+RA_t0 A__t0 A 61
+* device instance A r0 *1 0,0 
+CA A vsubs 1.86631e-16
+* device instance B_t0 r0 *1 0,0 
+RB_t0 B__t0 B 61
+* device instance B r0 *1 0,0 
+CB B vsubs 1.86631e-16
+* device instance SUB_t0 r0 *1 0,0 
+RSUB_t0 SUB__t0 SUB 1.5
+* device instance SUB_t1 r0 *1 0,0 
+RSUB_t1 SUB__t1 SUB 1.3
+* device instance SUB_t2 r0 *1 0,0 
+RSUB_t2 SUB__t2 SUB 1.1
+* device instance SUB_t3 r0 *1 0,0 
+RSUB_t3 SUB__t3 SUB 0.9
+* device instance SUB_t4 r0 *1 0,0 
+RSUB_t4 SUB__t4 SUB 0.7
+* device instance SUB_t5 r0 *1 0,0 
+RSUB_t5 SUB__t5 SUB 0.5
+* device instance SUB_t6 r0 *1 0,0 
+RSUB_t6 SUB__t6 SUB 0.3
+* device instance SUB_t7 r0 *1 0,0 
+RSUB_t7 SUB__t7 SUB 0.1
+* device instance SUB_t8 r0 *1 0,0 
+RSUB_t8 SUB__t8 SUB 0.1
+* device instance SUB_t9 r0 *1 0,0 
+RSUB_t9 SUB__t9 SUB 0.3
+* device instance SUB_t10 r0 *1 0,0 
+RSUB_t10 SUB__t10 SUB 0.5
+* device instance SUB_t11 r0 *1 0,0 
+RSUB_t11 SUB__t11 SUB 0.7
+* device instance SUB_t12 r0 *1 0,0 
+RSUB_t12 SUB__t12 SUB 0.9
+* device instance SUB_t13 r0 *1 0,0 
+RSUB_t13 SUB__t13 SUB 1.1
+* device instance SUB_t14 r0 *1 0,0 
+RSUB_t14 SUB__t14 SUB 1.3
+* device instance SUB_t15 r0 *1 0,0 
+RSUB_t15 SUB__t15 SUB 1.5
+* device instance SUB r0 *1 0,0 
+CSUB SUB vsubs 7.4903e-17
+* device instance vsubs_dctie r0 *1 0,0 
+Rvsubs_dctie vsubs 0 1e+12
+.ENDS rbias_n16_folded

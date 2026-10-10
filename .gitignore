@@ -6,6 +6,9 @@ __pycache__/
 # sim/ harness: per-corner ngspice logs under corners/ are committed evidence
 # (append-only record trail, see sim/README.md), so they escape the *.log rule.
 !sim/*/corners/**/*.log
+# layout/folded-res-qual/ records (issue #253): the ngspice .op log and the
+# PDK signoff runset logs are committed evidence too.
+!layout/folded-res-qual/reports/**/*.log
 # harness scratch: regenerated netlists and generated corner decks
 sim/build/
 # ngspice model-check scratch dumps (e.g. bsim4v5.out) from ad hoc ngspice

@@ -1,0 +1,731 @@
+{
+  "schema": "sky130-ldo.folded-res-qual.geometry/1",
+  "cases": [
+    {
+      "case": "rbias_n16",
+      "schematic_device": "R_BIAS",
+      "flavor": "high",
+      "schematic_l_um": 1500.0,
+      "schematic_w_um": 0.42,
+      "segments": 16,
+      "segment_l_um": 93.75,
+      "drawn_body_l_sum_um": 1500.0,
+      "variants": {
+        "unsplit": {
+          "gds": "rbias_n16_unsplit.gds",
+          "klt_gen_params": {
+            "length_um": 1500.0,
+            "width_um": 0.42,
+            "num": 1,
+            "dummy": 0,
+            "flavor": "high"
+          },
+          "device_bbox_um": {
+            "x0": 0.0,
+            "y0": 0.0,
+            "x1": 1500.84,
+            "y1": 0.42
+          },
+          "device_bbox": {
+            "width_um": 1500.84,
+            "height_um": 0.42,
+            "area_um2": 630.3528
+          },
+          "top_cell": "rbias_n16_unsplit",
+          "bbox_without_tie_um": {
+            "x0": 0.0,
+            "y0": 0.0,
+            "x1": 1500.84,
+            "y1": 0.42
+          },
+          "bbox_with_tie_um": {
+            "x0": 0.0,
+            "y0": -2.5,
+            "x1": 1500.84,
+            "y1": 0.42
+          },
+          "merged_marker_boxes": [],
+          "strap_count": 0,
+          "strap_li1_area_um2": 0.0,
+          "tie": {
+            "x_um": 0.75,
+            "y_um": -1.75,
+            "tap_side_um": 1.5
+          },
+          "chain_ends": {
+            "A": "R0_A",
+            "B": "R0_B"
+          }
+        },
+        "folded": {
+          "gds": "rbias_n16_folded.gds",
+          "klt_gen_params": {
+            "length_um": 93.75,
+            "width_um": 0.42,
+            "num": 16,
+            "rows": 16,
+            "dummy": 0,
+            "flavor": "high"
+          },
+          "device_bbox_um": {
+            "x0": 0.0,
+            "y0": 0.0,
+            "x1": 94.59,
+            "y1": 12.72
+          },
+          "device_bbox": {
+            "width_um": 94.59,
+            "height_um": 12.72,
+            "area_um2": 1203.1848
+          },
+          "straps": [
+            {
+              "joint": 0,
+              "from": "R0_B",
+              "to": "R1_A",
+              "x_um": 94.38,
+              "y0_um": 0.21,
+              "y1_um": 1.03,
+              "pad_w_um": 0.42
+            },
+            {
+              "joint": 1,
+              "from": "R1_B",
+              "to": "R2_A",
+              "x_um": 0.21000000000000002,
+              "y0_um": 1.03,
+              "y1_um": 1.85,
+              "pad_w_um": 0.42
+            },
+            {
+              "joint": 2,
+              "from": "R2_B",
+              "to": "R3_A",
+              "x_um": 94.38,
+              "y0_um": 1.85,
+              "y1_um": 2.67,
+              "pad_w_um": 0.42
+            },
+            {
+              "joint": 3,
+              "from": "R3_B",
+              "to": "R4_A",
+              "x_um": 0.21000000000000002,
+              "y0_um": 2.67,
+              "y1_um": 3.49,
+              "pad_w_um": 0.42
+            },
+            {
+              "joint": 4,
+              "from": "R4_B",
+              "to": "R5_A",
+              "x_um": 94.38,
+              "y0_um": 3.49,
+              "y1_um": 4.3100000000000005,
+              "pad_w_um": 0.42
+            },
+            {
+              "joint": 5,
+              "from": "R5_B",
+              "to": "R6_A",
+              "x_um": 0.21000000000000002,
+              "y0_um": 4.3100000000000005,
+              "y1_um": 5.13,
+              "pad_w_um": 0.42
+            },
+            {
+              "joint": 6,
+              "from": "R6_B",
+              "to": "R7_A",
+              "x_um": 94.38,
+              "y0_um": 5.13,
+              "y1_um": 5.95,
+              "pad_w_um": 0.42
+            },
+            {
+              "joint": 7,
+              "from": "R7_B",
+              "to": "R8_A",
+              "x_um": 0.21000000000000002,
+              "y0_um": 5.95,
+              "y1_um": 6.7700000000000005,
+              "pad_w_um": 0.42
+            },
+            {
+              "joint": 8,
+              "from": "R8_B",
+              "to": "R9_A",
+              "x_um": 94.38,
+              "y0_um": 6.7700000000000005,
+              "y1_um": 7.590000000000001,
+              "pad_w_um": 0.42
+            },
+            {
+              "joint": 9,
+              "from": "R9_B",
+              "to": "R10_A",
+              "x_um": 0.21000000000000002,
+              "y0_um": 7.590000000000001,
+              "y1_um": 8.410000000000002,
+              "pad_w_um": 0.42
+            },
+            {
+              "joint": 10,
+              "from": "R10_B",
+              "to": "R11_A",
+              "x_um": 94.38,
+              "y0_um": 8.410000000000002,
+              "y1_um": 9.230000000000002,
+              "pad_w_um": 0.42
+            },
+            {
+              "joint": 11,
+              "from": "R11_B",
+              "to": "R12_A",
+              "x_um": 0.21000000000000002,
+              "y0_um": 9.230000000000002,
+              "y1_um": 10.05,
+              "pad_w_um": 0.42
+            },
+            {
+              "joint": 12,
+              "from": "R12_B",
+              "to": "R13_A",
+              "x_um": 94.38,
+              "y0_um": 10.05,
+              "y1_um": 10.870000000000001,
+              "pad_w_um": 0.42
+            },
+            {
+              "joint": 13,
+              "from": "R13_B",
+              "to": "R14_A",
+              "x_um": 0.21000000000000002,
+              "y0_um": 10.870000000000001,
+              "y1_um": 11.690000000000001,
+              "pad_w_um": 0.42
+            },
+            {
+              "joint": 14,
+              "from": "R14_B",
+              "to": "R15_A",
+              "x_um": 94.38,
+              "y0_um": 11.690000000000001,
+              "y1_um": 12.510000000000002,
+              "pad_w_um": 0.42
+            }
+          ],
+          "top_cell": "rbias_n16_folded",
+          "bbox_without_tie_um": {
+            "x0": 0.0,
+            "y0": 0.0,
+            "x1": 94.59,
+            "y1": 12.72
+          },
+          "bbox_with_tie_um": {
+            "x0": 0.0,
+            "y0": -2.5,
+            "x1": 94.59,
+            "y1": 12.72
+          },
+          "merged_marker_boxes": [
+            {
+              "layer": "94/20",
+              "x0": 0.42,
+              "y0": 0.0,
+              "x1": 94.17,
+              "y1": 12.72
+            },
+            {
+              "layer": "86/20",
+              "x0": 0.42,
+              "y0": 0.0,
+              "x1": 94.17,
+              "y1": 12.72
+            }
+          ],
+          "strap_count": 15,
+          "strap_li1_area_um2": 7.812,
+          "tie": {
+            "x_um": 0.75,
+            "y_um": -1.75,
+            "tap_side_um": 1.5
+          },
+          "chain_ends": {
+            "A": "R0_A",
+            "B": "R15_B"
+          }
+        },
+        "broken": {
+          "gds": "rbias_n16_broken.gds",
+          "klt_gen_params": {
+            "length_um": 93.75,
+            "width_um": 0.42,
+            "num": 16,
+            "rows": 16,
+            "dummy": 0,
+            "flavor": "high"
+          },
+          "omitted_joint": 7,
+          "device_bbox_um": {
+            "x0": 0.0,
+            "y0": 0.0,
+            "x1": 94.59,
+            "y1": 12.72
+          },
+          "device_bbox": {
+            "width_um": 94.59,
+            "height_um": 12.72,
+            "area_um2": 1203.1848
+          },
+          "top_cell": "rbias_n16_broken",
+          "bbox_without_tie_um": {
+            "x0": 0.0,
+            "y0": 0.0,
+            "x1": 94.59,
+            "y1": 12.72
+          },
+          "bbox_with_tie_um": {
+            "x0": 0.0,
+            "y0": -2.5,
+            "x1": 94.59,
+            "y1": 12.72
+          },
+          "merged_marker_boxes": [
+            {
+              "layer": "94/20",
+              "x0": 0.42,
+              "y0": 0.0,
+              "x1": 94.17,
+              "y1": 12.72
+            },
+            {
+              "layer": "86/20",
+              "x0": 0.42,
+              "y0": 0.0,
+              "x1": 94.17,
+              "y1": 12.72
+            }
+          ],
+          "strap_count": 14,
+          "strap_li1_area_um2": 7.2912,
+          "tie": {
+            "x_um": 0.75,
+            "y_um": -1.75,
+            "tap_side_um": 1.5
+          },
+          "chain_ends": {
+            "A": "R0_A",
+            "B": "R15_B"
+          }
+        }
+      }
+    },
+    {
+      "case": "rbias_n4",
+      "schematic_device": "R_BIAS",
+      "flavor": "high",
+      "schematic_l_um": 1500.0,
+      "schematic_w_um": 0.42,
+      "segments": 4,
+      "segment_l_um": 375.0,
+      "drawn_body_l_sum_um": 1500.0,
+      "variants": {
+        "unsplit": {
+          "gds": "rbias_n4_unsplit.gds",
+          "klt_gen_params": {
+            "length_um": 1500.0,
+            "width_um": 0.42,
+            "num": 1,
+            "dummy": 0,
+            "flavor": "high"
+          },
+          "device_bbox_um": {
+            "x0": 0.0,
+            "y0": 0.0,
+            "x1": 1500.84,
+            "y1": 0.42
+          },
+          "device_bbox": {
+            "width_um": 1500.84,
+            "height_um": 0.42,
+            "area_um2": 630.3528
+          },
+          "top_cell": "rbias_n4_unsplit",
+          "bbox_without_tie_um": {
+            "x0": 0.0,
+            "y0": 0.0,
+            "x1": 1500.84,
+            "y1": 0.42
+          },
+          "bbox_with_tie_um": {
+            "x0": 0.0,
+            "y0": -2.5,
+            "x1": 1500.84,
+            "y1": 0.42
+          },
+          "merged_marker_boxes": [],
+          "strap_count": 0,
+          "strap_li1_area_um2": 0.0,
+          "tie": {
+            "x_um": 0.75,
+            "y_um": -1.75,
+            "tap_side_um": 1.5
+          },
+          "chain_ends": {
+            "A": "R0_A",
+            "B": "R0_B"
+          }
+        },
+        "folded": {
+          "gds": "rbias_n4_folded.gds",
+          "klt_gen_params": {
+            "length_um": 375.0,
+            "width_um": 0.42,
+            "num": 4,
+            "rows": 4,
+            "dummy": 0,
+            "flavor": "high"
+          },
+          "device_bbox_um": {
+            "x0": 0.0,
+            "y0": 0.0,
+            "x1": 375.84000000000003,
+            "y1": 2.88
+          },
+          "device_bbox": {
+            "width_um": 375.84,
+            "height_um": 2.88,
+            "area_um2": 1082.4192
+          },
+          "straps": [
+            {
+              "joint": 0,
+              "from": "R0_B",
+              "to": "R1_A",
+              "x_um": 375.63,
+              "y0_um": 0.21,
+              "y1_um": 1.03,
+              "pad_w_um": 0.42
+            },
+            {
+              "joint": 1,
+              "from": "R1_B",
+              "to": "R2_A",
+              "x_um": 0.21000000000000002,
+              "y0_um": 1.03,
+              "y1_um": 1.85,
+              "pad_w_um": 0.42
+            },
+            {
+              "joint": 2,
+              "from": "R2_B",
+              "to": "R3_A",
+              "x_um": 375.63,
+              "y0_um": 1.85,
+              "y1_um": 2.67,
+              "pad_w_um": 0.42
+            }
+          ],
+          "top_cell": "rbias_n4_folded",
+          "bbox_without_tie_um": {
+            "x0": 0.0,
+            "y0": 0.0,
+            "x1": 375.84000000000003,
+            "y1": 2.88
+          },
+          "bbox_with_tie_um": {
+            "x0": 0.0,
+            "y0": -2.5,
+            "x1": 375.84000000000003,
+            "y1": 2.88
+          },
+          "merged_marker_boxes": [
+            {
+              "layer": "94/20",
+              "x0": 0.42,
+              "y0": 0.0,
+              "x1": 375.42,
+              "y1": 2.88
+            },
+            {
+              "layer": "86/20",
+              "x0": 0.42,
+              "y0": 0.0,
+              "x1": 375.42,
+              "y1": 2.88
+            }
+          ],
+          "strap_count": 3,
+          "strap_li1_area_um2": 1.5624,
+          "tie": {
+            "x_um": 0.75,
+            "y_um": -1.75,
+            "tap_side_um": 1.5
+          },
+          "chain_ends": {
+            "A": "R0_A",
+            "B": "R3_B"
+          }
+        },
+        "broken": {
+          "gds": "rbias_n4_broken.gds",
+          "klt_gen_params": {
+            "length_um": 375.0,
+            "width_um": 0.42,
+            "num": 4,
+            "rows": 4,
+            "dummy": 0,
+            "flavor": "high"
+          },
+          "omitted_joint": 1,
+          "device_bbox_um": {
+            "x0": 0.0,
+            "y0": 0.0,
+            "x1": 375.84000000000003,
+            "y1": 2.88
+          },
+          "device_bbox": {
+            "width_um": 375.84,
+            "height_um": 2.88,
+            "area_um2": 1082.4192
+          },
+          "top_cell": "rbias_n4_broken",
+          "bbox_without_tie_um": {
+            "x0": 0.0,
+            "y0": 0.0,
+            "x1": 375.84000000000003,
+            "y1": 2.88
+          },
+          "bbox_with_tie_um": {
+            "x0": 0.0,
+            "y0": -2.5,
+            "x1": 375.84000000000003,
+            "y1": 2.88
+          },
+          "merged_marker_boxes": [
+            {
+              "layer": "94/20",
+              "x0": 0.42,
+              "y0": 0.0,
+              "x1": 375.42,
+              "y1": 2.88
+            },
+            {
+              "layer": "86/20",
+              "x0": 0.42,
+              "y0": 0.0,
+              "x1": 375.42,
+              "y1": 2.88
+            }
+          ],
+          "strap_count": 2,
+          "strap_li1_area_um2": 1.0416,
+          "tie": {
+            "x_um": 0.75,
+            "y_um": -1.75,
+            "tap_side_um": 1.5
+          },
+          "chain_ends": {
+            "A": "R0_A",
+            "B": "R3_B"
+          }
+        }
+      }
+    },
+    {
+      "case": "rfb_n2",
+      "schematic_device": "R_FB_A",
+      "flavor": "xhigh",
+      "schematic_l_um": 180.0,
+      "schematic_w_um": 0.42,
+      "segments": 2,
+      "segment_l_um": 90.0,
+      "drawn_body_l_sum_um": 180.0,
+      "variants": {
+        "unsplit": {
+          "gds": "rfb_n2_unsplit.gds",
+          "klt_gen_params": {
+            "length_um": 180.0,
+            "width_um": 0.42,
+            "num": 1,
+            "dummy": 0,
+            "flavor": "xhigh"
+          },
+          "device_bbox_um": {
+            "x0": 0.0,
+            "y0": 0.0,
+            "x1": 180.84,
+            "y1": 0.42
+          },
+          "device_bbox": {
+            "width_um": 180.84,
+            "height_um": 0.42,
+            "area_um2": 75.9528
+          },
+          "top_cell": "rfb_n2_unsplit",
+          "bbox_without_tie_um": {
+            "x0": 0.0,
+            "y0": 0.0,
+            "x1": 180.84,
+            "y1": 0.42
+          },
+          "bbox_with_tie_um": {
+            "x0": 0.0,
+            "y0": -2.5,
+            "x1": 180.84,
+            "y1": 0.42
+          },
+          "merged_marker_boxes": [],
+          "strap_count": 0,
+          "strap_li1_area_um2": 0.0,
+          "tie": {
+            "x_um": 0.75,
+            "y_um": -1.75,
+            "tap_side_um": 1.5
+          },
+          "chain_ends": {
+            "A": "R0_A",
+            "B": "R0_B"
+          }
+        },
+        "folded": {
+          "gds": "rfb_n2_folded.gds",
+          "klt_gen_params": {
+            "length_um": 90.0,
+            "width_um": 0.42,
+            "num": 2,
+            "rows": 2,
+            "dummy": 0,
+            "flavor": "xhigh"
+          },
+          "device_bbox_um": {
+            "x0": 0.0,
+            "y0": 0.0,
+            "x1": 90.84,
+            "y1": 1.24
+          },
+          "device_bbox": {
+            "width_um": 90.84,
+            "height_um": 1.24,
+            "area_um2": 112.6416
+          },
+          "straps": [
+            {
+              "joint": 0,
+              "from": "R0_B",
+              "to": "R1_A",
+              "x_um": 90.63,
+              "y0_um": 0.21,
+              "y1_um": 1.03,
+              "pad_w_um": 0.42
+            }
+          ],
+          "top_cell": "rfb_n2_folded",
+          "bbox_without_tie_um": {
+            "x0": 0.0,
+            "y0": 0.0,
+            "x1": 90.84,
+            "y1": 1.24
+          },
+          "bbox_with_tie_um": {
+            "x0": 0.0,
+            "y0": -2.5,
+            "x1": 90.84,
+            "y1": 1.24
+          },
+          "merged_marker_boxes": [
+            {
+              "layer": "94/20",
+              "x0": 0.42,
+              "y0": 0.0,
+              "x1": 90.42,
+              "y1": 1.24
+            },
+            {
+              "layer": "79/20",
+              "x0": 0.42,
+              "y0": 0.0,
+              "x1": 90.42,
+              "y1": 1.24
+            }
+          ],
+          "strap_count": 1,
+          "strap_li1_area_um2": 0.5208,
+          "tie": {
+            "x_um": 0.75,
+            "y_um": -1.75,
+            "tap_side_um": 1.5
+          },
+          "chain_ends": {
+            "A": "R0_A",
+            "B": "R1_B"
+          }
+        },
+        "broken": {
+          "gds": "rfb_n2_broken.gds",
+          "klt_gen_params": {
+            "length_um": 90.0,
+            "width_um": 0.42,
+            "num": 2,
+            "rows": 2,
+            "dummy": 0,
+            "flavor": "xhigh"
+          },
+          "omitted_joint": 0,
+          "device_bbox_um": {
+            "x0": 0.0,
+            "y0": 0.0,
+            "x1": 90.84,
+            "y1": 1.24
+          },
+          "device_bbox": {
+            "width_um": 90.84,
+            "height_um": 1.24,
+            "area_um2": 112.6416
+          },
+          "top_cell": "rfb_n2_broken",
+          "bbox_without_tie_um": {
+            "x0": 0.0,
+            "y0": 0.0,
+            "x1": 90.84,
+            "y1": 1.24
+          },
+          "bbox_with_tie_um": {
+            "x0": 0.0,
+            "y0": -2.5,
+            "x1": 90.84,
+            "y1": 1.24
+          },
+          "merged_marker_boxes": [
+            {
+              "layer": "94/20",
+              "x0": 0.42,
+              "y0": 0.0,
+              "x1": 90.42,
+              "y1": 1.24
+            },
+            {
+              "layer": "79/20",
+              "x0": 0.42,
+              "y0": 0.0,
+              "x1": 90.42,
+              "y1": 1.24
+            }
+          ],
+          "strap_count": 0,
+          "strap_li1_area_um2": 0.0,
+          "tie": {
+            "x_um": 0.75,
+            "y_um": -1.75,
+            "tap_side_um": 1.5
+          },
+          "chain_ends": {
+            "A": "R0_A",
+            "B": "R1_B"
+          }
+        }
+      }
+    }
+  ]
+}

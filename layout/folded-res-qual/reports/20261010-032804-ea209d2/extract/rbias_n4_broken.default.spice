@@ -1,0 +1,16 @@
+* extracted by klt extract --deck sky130
+
+* cell rbias_n4_broken
+* pin A
+* pin B
+* pin SUB
+.SUBCKT rbias_n4_broken A B SUB
+* device instance $1 r0 *1 187.92,0.21 res_high_po
+X$1 A \$2 SUB res_high_po r=290404.030147 L=375U W=0.42U
+* device instance $2 r0 *1 187.92,1.03 res_high_po
+X$2 \$3 \$2 SUB res_high_po r=290404.030147 L=375U W=0.42U
+* device instance $3 r0 *1 187.92,1.85 res_high_po
+X$3 \$4 \$5 SUB res_high_po r=290404.030147 L=375U W=0.42U
+* device instance $4 r0 *1 187.92,2.67 res_high_po
+X$4 B \$5 SUB res_high_po r=290404.030147 L=375U W=0.42U
+.ENDS rbias_n4_broken
