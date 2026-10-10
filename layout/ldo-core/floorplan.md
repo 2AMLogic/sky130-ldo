@@ -22,6 +22,43 @@ newest `reports/<lvs-record-id>/record.md` (pointed to by `reports/LATEST-LVS`)
 for the LVS verdict; `reports/<record-id>/floorplan.json` carries the exact
 per-device sizing, placement, and routed-net table each run produced.
 
+## Two-deck DRC gate (issue #260)
+
+`run-ldo-layout-flow.sh` checks the routed `ldo_core.gds` under two decks,
+reported separately in each record:
+
+1. the curated `klt drc --deck sky130` (a hand-transcribed subset), and
+2. the PDK's own `sky130A_mr.drc` run through `klayout -b` with FEOL/BEOL/
+   offgrid on and floating-metal/seal off (same switches as
+   `run-cap-rail-demo-flow.sh`). The `.lyrdb`, a `mr-drc.run.json` run record
+   (deck sha256, switches, exit status) and
+   `official-drc-diagnosis.json` (per-family attribution, produced by
+   `layout/bin/diagnose-official-drc.py`) are kept in the record.
+
+A record is PASS only if both are clean *and* the device/routing checks hold.
+A missing deck, missing `klayout`, nonzero KLayout exit, or an absent /
+empty / truncated / structurally empty report is an ERROR rendered as FAIL --
+exit status 0 and an empty marker list are not trusted on their own
+(`layout/bin/_official_drc.py`, tests in `layout/tests/test_ldo_record.py`).
+The driver always renders the record, then exits nonzero on FAIL.
+`reports/LATEST` names the **newest** record, PASS or FAIL; no earlier record
+is rewritten. (Records minted before #260 checked the curated deck only; their
+"PASS" does not speak to the official deck.)
+
+The first live dual-deck record is FAIL with 15060 official markers in seven
+families. Attribution (measured in that record; fixes are not yet attempted):
+
+| Family | Owner | Measured cause |
+| --- | --- | --- |
+| `via.1a_b` | local router | every via1 is drawn 0.16 um (`VIA1_UM`); deck max is 0.15 |
+| `m2.5`, `via2.5` | local router | met2 riser ends / 0.30 um landing pad enclose the via by <0.085 um on two adjacent edges (note the deck's own `via2.5` code checks met2 although its message says m3) |
+| `nwell.9` | local router | one n-well rectangle overhangs the per-block hvi markers (margins and inter-block gaps) |
+| `licon.1` | upstream `klt gen` | generated MOS/resistor blocks draw 0.22 um licons; the flow's own body-tie licons are 0.17 and pass (known upstream: klayout-tools#2594, #2835) |
+| `rpm.1a`, `urpm.1a` | upstream `klt gen res_array` | marker drawn at the 0.42 um body width, deck minimum 1.27 um (klayout-tools#3030) |
+
+The local fixes are tracked in sky130-ldo#267; the curated-deck blind spots in
+klayout-tools#3031. Neither the curated deck nor any rule is relaxed.
+
 ## Where the device set comes from
 
 `layout/bin/run-ldo-layout-flow.sh` netlists `design/ldo_3v3in_1v8out.sch`
