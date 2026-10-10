@@ -34,6 +34,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import _folded_res_analysis as fra  # noqa: E402
 import _folded_res_pvt as pvt  # noqa: E402
+from _record_common import git as _repo_git  # noqa: E402
 
 LAYOUT_DIR = Path(__file__).resolve().parent.parent
 REPO_ROOT = LAYOUT_DIR.parent
@@ -42,10 +43,6 @@ QUAL_DIR = LAYOUT_DIR / "folded-res-qual"
 
 def sh(cmd: list[str], **kw) -> subprocess.CompletedProcess:
     return subprocess.run(cmd, capture_output=True, text=True, **kw)
-
-
-def git(*a: str) -> str:
-    return sh(["git", "-C", str(REPO_ROOT), *a]).stdout.strip()
 
 
 def pct(x: float, d: int = 4) -> str:
@@ -190,10 +187,10 @@ def main() -> int:
     }
     tol = {k: v["tolerance_frac"] for k, v in tol_info.items()}
 
-    git_sha = git("rev-parse", "HEAD")
-    git_dirty = bool(git("status", "--porcelain", "--", "layout/bin", "layout/folded-res-qual/pvt"))
+    git_sha = _repo_git(REPO_ROOT, "rev-parse", "HEAD")
+    git_dirty = bool(_repo_git(REPO_ROOT, "status", "--porcelain", "--", "layout/bin", "layout/folded-res-qual/pvt"))
     ts = _dt.datetime.now(_dt.timezone.utc).strftime("%Y%m%d-%H%M%S")
-    record_id = f"{ts}-{git('rev-parse', '--short', 'HEAD')}"
+    record_id = f"{ts}-{_repo_git(REPO_ROOT, 'rev-parse', '--short', 'HEAD')}"
     out = args.out_root / record_id
     out.mkdir(parents=True, exist_ok=False)  # append-only: never reuse an id
     print(f"run-folded-res-pvt: record {record_id} -> {out}")
