@@ -1,0 +1,40 @@
+* extracted by klt extract --deck sky130
+
+* cell rbias_n16_folded
+* pin A
+* pin B
+* pin SUB
+.SUBCKT rbias_n16_folded A B SUB
+* device instance $1 r0 *1 47.295,0.21 res_high_po
+X$1 A \$2 SUB res_high_po r=72885.786397 L=93.75U W=0.42U
+* device instance $2 r0 *1 47.295,1.03 res_high_po
+X$2 \$3 \$2 SUB res_high_po r=72885.786397 L=93.75U W=0.42U
+* device instance $3 r0 *1 47.295,1.85 res_high_po
+X$3 \$3 \$5 SUB res_high_po r=72885.786397 L=93.75U W=0.42U
+* device instance $4 r0 *1 47.295,2.67 res_high_po
+X$4 \$6 \$5 SUB res_high_po r=72885.786397 L=93.75U W=0.42U
+* device instance $5 r0 *1 47.295,3.49 res_high_po
+X$5 \$6 \$7 SUB res_high_po r=72885.786397 L=93.75U W=0.42U
+* device instance $6 r0 *1 47.295,4.31 res_high_po
+X$6 \$8 \$7 SUB res_high_po r=72885.786397 L=93.75U W=0.42U
+* device instance $7 r0 *1 47.295,5.13 res_high_po
+X$7 \$8 \$9 SUB res_high_po r=72885.786397 L=93.75U W=0.42U
+* device instance $8 r0 *1 47.295,5.95 res_high_po
+X$8 \$10 \$9 SUB res_high_po r=72885.786397 L=93.75U W=0.42U
+* device instance $9 r0 *1 47.295,6.77 res_high_po
+X$9 \$10 \$11 SUB res_high_po r=72885.786397 L=93.75U W=0.42U
+* device instance $10 r0 *1 47.295,7.59 res_high_po
+X$10 \$12 \$11 SUB res_high_po r=72885.786397 L=93.75U W=0.42U
+* device instance $11 r0 *1 47.295,8.41 res_high_po
+X$11 \$12 \$13 SUB res_high_po r=72885.786397 L=93.75U W=0.42U
+* device instance $12 r0 *1 47.295,9.23 res_high_po
+X$12 \$14 \$13 SUB res_high_po r=72885.786397 L=93.75U W=0.42U
+* device instance $13 r0 *1 47.295,10.05 res_high_po
+X$13 \$14 \$15 SUB res_high_po r=72885.786397 L=93.75U W=0.42U
+* device instance $14 r0 *1 47.295,10.87 res_high_po
+X$14 \$16 \$15 SUB res_high_po r=72885.786397 L=93.75U W=0.42U
+* device instance $15 r0 *1 47.295,11.69 res_high_po
+X$15 \$16 \$17 SUB res_high_po r=72885.786397 L=93.75U W=0.42U
+* device instance $16 r0 *1 47.295,12.51 res_high_po
+X$16 B \$17 SUB res_high_po r=72885.786397 L=93.75U W=0.42U
+.ENDS rbias_n16_folded

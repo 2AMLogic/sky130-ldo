@@ -1,0 +1,148 @@
+{
+  "schema_version": 3,
+  "file": "rbias_n4_unsplit.gds",
+  "deck": "sky130",
+  "top": "rbias_n4_unsplit",
+  "dbu_um": 0.001,
+  "netlist_path": "extract/rbias_n4_unsplit.default.spice",
+  "netlist_sha256": "f27e9c9b971740ed0ba77c55430c5e5c7a8d6cabe39b23eceea096449780f386",
+  "status": "extracted",
+  "device_count": 1,
+  "net_count": 3,
+  "pin_count": 3,
+  "device_counts": {
+    "res_high_po": 1
+  },
+  "dummy_devices_dropped": 0,
+  "ignored_layers": [],
+  "device_recognition_only_layers": [
+    {
+      "layer": 66,
+      "datatype": 13,
+      "shapes": 1
+    },
+    {
+      "layer": 86,
+      "datatype": 20,
+      "shapes": 1
+    },
+    {
+      "layer": 94,
+      "datatype": 20,
+      "shapes": 1
+    }
+  ],
+  "device_classes": [
+    "nfet",
+    "pfet",
+    "pnp",
+    "sky130_fd_pr__model__cap_mim",
+    "sky130_fd_pr__model__cap_mim_m4",
+    "resistor"
+  ],
+  "devices": [
+    {
+      "name": "$1",
+      "class": "res_high_po",
+      "nets": {
+        "a": "A",
+        "b": "B",
+        "w": "SUB"
+      },
+      "params": {
+        "r_ohm": 1160477.005147,
+        "l_um": 1500.0,
+        "w_um": 0.42,
+        "area_um2": 630.0,
+        "perimeter_um": 3000.84
+      },
+      "instance_path": [
+        {
+          "cell": "rbias_n4_unsplit_bank",
+          "array_index": null
+        },
+        {
+          "cell": "res_array",
+          "array_index": null
+        }
+      ]
+    }
+  ],
+  "nets": [
+    {
+      "name": "A",
+      "pin": true,
+      "device_count": 1,
+      "net_id": 1,
+      "pin_index": 0,
+      "label_positions_um": [
+        {
+          "text": "A",
+          "x_um": 0.21,
+          "y_um": 0.21
+        }
+      ]
+    },
+    {
+      "name": "B",
+      "pin": true,
+      "device_count": 1,
+      "net_id": 2,
+      "pin_index": 1,
+      "label_positions_um": [
+        {
+          "text": "B",
+          "x_um": 1500.63,
+          "y_um": 0.21
+        }
+      ]
+    },
+    {
+      "name": "SUB",
+      "pin": true,
+      "device_count": 1,
+      "net_id": 4,
+      "pin_index": 2,
+      "label_positions_um": [
+        {
+          "text": "SUB",
+          "x_um": 0.75,
+          "y_um": -1.75
+        }
+      ]
+    }
+  ],
+  "warnings": [],
+  "black_box_regions": [],
+  "abstracted_cells": [],
+  "unmodelled_poly": [],
+  "merged_net_labels": [],
+  "voltage_domain_warnings": [],
+  "unbiased_pmos_body_nets": [],
+  "single_terminal_nets": [],
+  "dead_metal": [],
+  "matched_device_groups": [],
+  "pdk": null,
+  "provenance": {
+    "klt_version": "0.6.0+g040f3406b485",
+    "klayout_version": "0.30.12",
+    "pdk": null,
+    "deck": {
+      "name": "sky130",
+      "content_hash": "sha256:d7a9ddfa4785e2427553cc8701f9ed547d1b68abb21aef2c8c9fb6c8d8ca3791",
+      "released": false
+    },
+    "input": {
+      "content_hash": "sha256:bca27bfe84cfc6f55bf0e49dbdd27d17319bb434cb143466e5268dc7e0c0d153",
+      "role": "layout"
+    }
+  },
+  "parasitics": null,
+  "spef_path": null,
+  "subcircuit": null,
+  "metrics": {
+    "extract__device__count": 1,
+    "extract__net__count": 3,
+    "extract__pin__count": 3
+  }
+}

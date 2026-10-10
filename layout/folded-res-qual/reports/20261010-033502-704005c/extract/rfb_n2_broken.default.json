@@ -1,0 +1,205 @@
+{
+  "schema_version": 3,
+  "file": "rfb_n2_broken.gds",
+  "deck": "sky130",
+  "top": "rfb_n2_broken",
+  "dbu_um": 0.001,
+  "netlist_path": "extract/rfb_n2_broken.default.spice",
+  "netlist_sha256": "43374920e88c587ec3f020d4e82f59a436f76833da60b3dd5f37a89e8f377437",
+  "status": "extracted",
+  "device_count": 2,
+  "net_count": 5,
+  "pin_count": 3,
+  "device_counts": {
+    "res_xhigh_po": 2
+  },
+  "dummy_devices_dropped": 0,
+  "ignored_layers": [],
+  "device_recognition_only_layers": [
+    {
+      "layer": 66,
+      "datatype": 13,
+      "shapes": 2
+    },
+    {
+      "layer": 79,
+      "datatype": 20,
+      "shapes": 3
+    },
+    {
+      "layer": 94,
+      "datatype": 20,
+      "shapes": 3
+    }
+  ],
+  "device_classes": [
+    "nfet",
+    "pfet",
+    "pnp",
+    "sky130_fd_pr__model__cap_mim",
+    "sky130_fd_pr__model__cap_mim_m4",
+    "resistor"
+  ],
+  "devices": [
+    {
+      "name": "$1",
+      "class": "res_xhigh_po",
+      "nets": {
+        "a": "A",
+        "b": "\\$2",
+        "w": "SUB"
+      },
+      "params": {
+        "r_ohm": 428571.428571,
+        "l_um": 90.0,
+        "w_um": 0.42,
+        "area_um2": 37.8,
+        "perimeter_um": 180.84
+      },
+      "instance_path": [
+        {
+          "cell": "rfb_n2_broken_bank",
+          "array_index": null
+        },
+        {
+          "cell": "res_array",
+          "array_index": null
+        }
+      ]
+    },
+    {
+      "name": "$2",
+      "class": "res_xhigh_po",
+      "nets": {
+        "a": "B",
+        "b": "\\$4",
+        "w": "SUB"
+      },
+      "params": {
+        "r_ohm": 428571.428571,
+        "l_um": 90.0,
+        "w_um": 0.42,
+        "area_um2": 37.8,
+        "perimeter_um": 180.84
+      },
+      "instance_path": [
+        {
+          "cell": "rfb_n2_broken_bank",
+          "array_index": null
+        },
+        {
+          "cell": "res_array",
+          "array_index": null
+        }
+      ]
+    }
+  ],
+  "nets": [
+    {
+      "name": "A",
+      "pin": true,
+      "device_count": 1,
+      "net_id": 1,
+      "pin_index": 0,
+      "label_positions_um": [
+        {
+          "text": "A",
+          "x_um": 0.21,
+          "y_um": 0.21
+        }
+      ]
+    },
+    {
+      "name": "B",
+      "pin": true,
+      "device_count": 1,
+      "net_id": 3,
+      "pin_index": 1,
+      "label_positions_um": [
+        {
+          "text": "B",
+          "x_um": 0.21,
+          "y_um": 1.03
+        }
+      ]
+    },
+    {
+      "name": "SUB",
+      "pin": true,
+      "device_count": 2,
+      "net_id": 6,
+      "pin_index": 2,
+      "label_positions_um": [
+        {
+          "text": "SUB",
+          "x_um": 0.75,
+          "y_um": -1.75
+        }
+      ]
+    },
+    {
+      "name": "\\$2",
+      "pin": false,
+      "device_count": 1,
+      "net_id": 2,
+      "pin_index": null,
+      "label_positions_um": []
+    },
+    {
+      "name": "\\$4",
+      "pin": false,
+      "device_count": 1,
+      "net_id": 4,
+      "pin_index": null,
+      "label_positions_um": []
+    }
+  ],
+  "warnings": [
+    "2 nets connect to exactly one device terminal -- source/drain/body/resistor-equivalent, not a gate -- and are not a declared pin; this can be a legitimate single-terminal tie (e.g. an intentionally unterminated dummy's diffusion tie), but confirm these nets have no other intended connectivity -- see single_terminal_nets[] for the full list."
+  ],
+  "black_box_regions": [],
+  "abstracted_cells": [],
+  "unmodelled_poly": [],
+  "merged_net_labels": [],
+  "voltage_domain_warnings": [],
+  "unbiased_pmos_body_nets": [],
+  "single_terminal_nets": [
+    {
+      "net": "\\$2",
+      "device": "$1",
+      "terminal": "b",
+      "terminal_kind": "b"
+    },
+    {
+      "net": "\\$4",
+      "device": "$2",
+      "terminal": "b",
+      "terminal_kind": "b"
+    }
+  ],
+  "dead_metal": [],
+  "matched_device_groups": [],
+  "pdk": null,
+  "provenance": {
+    "klt_version": "0.6.0+g040f3406b485",
+    "klayout_version": "0.30.12",
+    "pdk": null,
+    "deck": {
+      "name": "sky130",
+      "content_hash": "sha256:d7a9ddfa4785e2427553cc8701f9ed547d1b68abb21aef2c8c9fb6c8d8ca3791",
+      "released": false
+    },
+    "input": {
+      "content_hash": "sha256:540ff4e99fd476841e68dafa6bd3941a6ac511d6bcfcaec9a6c508e99ca81a88",
+      "role": "layout"
+    }
+  },
+  "parasitics": null,
+  "spef_path": null,
+  "subcircuit": null,
+  "metrics": {
+    "extract__device__count": 2,
+    "extract__net__count": 5,
+    "extract__pin__count": 3
+  }
+}

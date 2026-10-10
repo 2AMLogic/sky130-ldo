@@ -1,0 +1,32 @@
+{
+  "_comment": [
+    "Issue #253 resistor-only folded-series qualification cases.",
+    "Each case folds one schematic resistor (design/ldo_3v3in_1v8out.sch, W/L copied",
+    "verbatim, never changed) into `segments` equal series segments of the same W.",
+    "rbias_n16 is the #246 study's 100 um bank (16 rows of 93.75 um); rbias_n4 is a",
+    "4-row alternative included to bound how the end/head correction scales with N;",
+    "rfb_n2 covers the res_xhigh_po flavor (R_FB_A/B/C are identical, so one stands",
+    "for all three; R_CZ at L=52 um needs no folding at a ~100 um bank width).",
+    "sim_segments lists the N values the single-operating-point ngspice comparison",
+    "evaluates for that device (model-only, no layout); op_v is the DC voltage",
+    "forced across the resistor for that comparison (see README for the choice)."
+  ],
+  "cases": [
+    {"name": "rbias_n16", "schematic_device": "R_BIAS", "flavor": "high",
+     "model": "sky130_fd_pr__res_high_po", "l_um": 1500, "w_um": 0.42, "segments": 16},
+    {"name": "rbias_n4", "schematic_device": "R_BIAS", "flavor": "high",
+     "model": "sky130_fd_pr__res_high_po", "l_um": 1500, "w_um": 0.42, "segments": 4},
+    {"name": "rfb_n2", "schematic_device": "R_FB_A", "flavor": "xhigh",
+     "model": "sky130_fd_pr__res_xhigh_po", "l_um": 180, "w_um": 0.42, "segments": 2}
+  ],
+  "electrical": {
+    "corner": "tt",
+    "temp_c": 27,
+    "devices": [
+      {"schematic_device": "R_BIAS", "model": "sky130_fd_pr__res_high_po",
+       "l_um": 1500, "w_um": 0.42, "op_v": 2.0, "sim_segments": [1, 2, 4, 8, 16, 32]},
+      {"schematic_device": "R_FB_A", "model": "sky130_fd_pr__res_xhigh_po",
+       "l_um": 180, "w_um": 0.42, "op_v": 0.6, "sim_segments": [1, 2, 3, 4, 6]}
+    ]
+  }
+}

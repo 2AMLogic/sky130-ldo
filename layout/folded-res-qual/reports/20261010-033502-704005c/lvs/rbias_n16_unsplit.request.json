@@ -1,0 +1,24 @@
+{
+  "schema": "klt.lvs.request/1",
+  "engine": "klayout",
+  "layout": {
+    "file": "../rbias_n16_unsplit.gds",
+    "deck": "sky130",
+    "top": "rbias_n16_unsplit",
+    "declared_pins": [
+      "A",
+      "B",
+      "SUB"
+    ]
+  },
+  "reference": {
+    "netlist": "rbias_n16_unsplit.reference.spice",
+    "top": "rbias_n16_unsplit",
+    "device_bulk": {
+      "res_high_po": "SUB"
+    }
+  },
+  "options": {
+    "combine_devices": true
+  }
+}

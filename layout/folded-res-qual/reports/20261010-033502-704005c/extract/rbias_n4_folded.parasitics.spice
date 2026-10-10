@@ -1,0 +1,60 @@
+* extracted by klt extract --deck sky130
+* parasitic model (--parasitics):
+* - capacitance: net-to-ground for every net's own (non-coupled) area/perimeter, plus net-to-net for the vertical-overlap coupling `coupling` describes below -- a coupled net pair gets a direct capacitor between their two hub nodes, not just capacitors to the deck's ground/substrate net
+* - coupling: vertical overlap (crossover) unconditionally -- where one net's conductor on an adjacent metal level sits directly over another *distinct* net's conductor, that overlap area is charged between the two nets instead of to ground (issue #760) -- plus lateral (same-layer, sidewall) coupling, but only for a net pair naming one of the caller's declared `--critical-net` nets (issue #976): facing-edge length within that layer's own minimum-spacing lookback is charged between the two nets, *additively* (not deducted from either net's substrate fringe term, unlike the vertical case -- a known simplification). Any same-layer pair with neither side named `--critical-net`, and fringe shielding in general, are still not modelled
+* - resistance: single lumped series resistance per net, distributed as a star across that net's device terminals (issue #592) -- not a per-segment, distributed RC ladder, *unless* `--distributed-rc` names this net via `--critical-net` (issue #977, Epic #709 Phase 2b): then the net's terminals are ordered along their approximate physical spread and its total R/C is broken into a chain of per-segment resistors (segment length proportional to inter-terminal distance) with a ground capacitor at each terminal node (proportional to its adjacent segment length/2), instead of one star hub -- still an approximation (terminal position is a device-placement proxy, not true per-segment routing geometry), but a strictly finer-grained one than the single-hub star
+* - frequency: quasi-static -- one frequency-independent R and C per net; no skin effect, no distributed transmission-line behavior
+.GLOBAL vsubs
+
+* cell rbias_n4_folded
+* pin A
+* pin B
+* pin SUB
+.SUBCKT rbias_n4_folded A B SUB
+* device instance $1 r0 *1 187.92,0.21 res_high_po
+X$1 A__t0 \$2__t0 SUB__t0 res_high_po r=290404.030147 L=375U W=0.42U
+* device instance $2 r0 *1 187.92,1.03 res_high_po
+X$2 \$3__t1 \$2__t1 SUB__t1 res_high_po r=290404.030147 L=375U W=0.42U
+* device instance $3 r0 *1 187.92,1.85 res_high_po
+X$3 \$3__t0 \$4__t1 SUB__t2 res_high_po r=290404.030147 L=375U W=0.42U
+* device instance $4 r0 *1 187.92,2.67 res_high_po
+X$4 B__t0 \$4__t0 SUB__t3 res_high_po r=290404.030147 L=375U W=0.42U
+* device instance _2_t0 r0 *1 0,0 
+R_2_t0 \$2__t0 \$2 159.36035
+* device instance _2_t1 r0 *1 0,0 
+R_2_t1 \$2__t1 \$2 159.36035
+* device instance _2 r0 *1 0,0 
+C_2 \$2 vsubs 3.7785e-16
+* device instance _3_t0 r0 *1 0,0 
+R_3_t0 \$3__t0 \$3 159.36035
+* device instance _3_t1 r0 *1 0,0 
+R_3_t1 \$3__t1 \$3 159.36035
+* device instance _3 r0 *1 0,0 
+C_3 \$3 vsubs 3.7785e-16
+* device instance _4_t0 r0 *1 0,0 
+R_4_t0 \$4__t0 \$4 159.36035
+* device instance _4_t1 r0 *1 0,0 
+R_4_t1 \$4__t1 \$4 159.36035
+* device instance _4 r0 *1 0,0 
+C_4 \$4 vsubs 3.7785e-16
+* device instance A_t0 r0 *1 0,0 
+RA_t0 A__t0 A 61
+* device instance A r0 *1 0,0 
+CA A vsubs 1.86631e-16
+* device instance B_t0 r0 *1 0,0 
+RB_t0 B__t0 B 61
+* device instance B r0 *1 0,0 
+CB B vsubs 1.86631e-16
+* device instance SUB_t0 r0 *1 0,0 
+RSUB_t0 SUB__t0 SUB 4.8
+* device instance SUB_t1 r0 *1 0,0 
+RSUB_t1 SUB__t1 SUB 1.6
+* device instance SUB_t2 r0 *1 0,0 
+RSUB_t2 SUB__t2 SUB 1.6
+* device instance SUB_t3 r0 *1 0,0 
+RSUB_t3 SUB__t3 SUB 4.8
+* device instance SUB r0 *1 0,0 
+CSUB SUB vsubs 7.4903e-17
+* device instance vsubs_dctie r0 *1 0,0 
+Rvsubs_dctie vsubs 0 1e+12
+.ENDS rbias_n4_folded

@@ -1,0 +1,312 @@
+* issue #253 folded-resistor single-operating-point comparison
+.lib pdk/libs.tech/combined/sky130.lib.spice tt
+.temp 27
+* r_r_bias_n1: R_BIAS as 1 x l=1500 w=0.42, joint R=0
+Vr_r_bias_n1 r_r_bias_n1_0 0 2
+Xr_r_bias_n1_0 r_r_bias_n1_0 0 0 sky130_fd_pr__res_high_po w=0.42 l=1500
+* r_r_bias_n2: R_BIAS as 2 x l=750 w=0.42, joint R=0
+Vr_r_bias_n2 r_r_bias_n2_0 0 2
+Xr_r_bias_n2_0 r_r_bias_n2_0 r_r_bias_n2_s0 0 sky130_fd_pr__res_high_po w=0.42 l=750
+Xr_r_bias_n2_1 r_r_bias_n2_s0 0 0 sky130_fd_pr__res_high_po w=0.42 l=750
+* r_r_bias_n2_j: R_BIAS as 2 x l=750 w=0.42, joint R=37.7905
+Vr_r_bias_n2_j r_r_bias_n2_j_0 0 2
+Xr_r_bias_n2_j_0 r_r_bias_n2_j_0 r_r_bias_n2_j_j0 0 sky130_fd_pr__res_high_po w=0.42 l=750
+RJr_r_bias_n2_j_0 r_r_bias_n2_j_j0 r_r_bias_n2_j_s0 37.7905
+Xr_r_bias_n2_j_1 r_r_bias_n2_j_s0 0 0 sky130_fd_pr__res_high_po w=0.42 l=750
+* r_r_bias_n4: R_BIAS as 4 x l=375 w=0.42, joint R=0
+Vr_r_bias_n4 r_r_bias_n4_0 0 2
+Xr_r_bias_n4_0 r_r_bias_n4_0 r_r_bias_n4_s0 0 sky130_fd_pr__res_high_po w=0.42 l=375
+Xr_r_bias_n4_1 r_r_bias_n4_s0 r_r_bias_n4_s1 0 sky130_fd_pr__res_high_po w=0.42 l=375
+Xr_r_bias_n4_2 r_r_bias_n4_s1 r_r_bias_n4_s2 0 sky130_fd_pr__res_high_po w=0.42 l=375
+Xr_r_bias_n4_3 r_r_bias_n4_s2 0 0 sky130_fd_pr__res_high_po w=0.42 l=375
+* r_r_bias_n4_j: R_BIAS as 4 x l=375 w=0.42, joint R=37.7905
+Vr_r_bias_n4_j r_r_bias_n4_j_0 0 2
+Xr_r_bias_n4_j_0 r_r_bias_n4_j_0 r_r_bias_n4_j_j0 0 sky130_fd_pr__res_high_po w=0.42 l=375
+RJr_r_bias_n4_j_0 r_r_bias_n4_j_j0 r_r_bias_n4_j_s0 37.7905
+Xr_r_bias_n4_j_1 r_r_bias_n4_j_s0 r_r_bias_n4_j_j1 0 sky130_fd_pr__res_high_po w=0.42 l=375
+RJr_r_bias_n4_j_1 r_r_bias_n4_j_j1 r_r_bias_n4_j_s1 37.7905
+Xr_r_bias_n4_j_2 r_r_bias_n4_j_s1 r_r_bias_n4_j_j2 0 sky130_fd_pr__res_high_po w=0.42 l=375
+RJr_r_bias_n4_j_2 r_r_bias_n4_j_j2 r_r_bias_n4_j_s2 37.7905
+Xr_r_bias_n4_j_3 r_r_bias_n4_j_s2 0 0 sky130_fd_pr__res_high_po w=0.42 l=375
+* r_r_bias_n8: R_BIAS as 8 x l=187.5 w=0.42, joint R=0
+Vr_r_bias_n8 r_r_bias_n8_0 0 2
+Xr_r_bias_n8_0 r_r_bias_n8_0 r_r_bias_n8_s0 0 sky130_fd_pr__res_high_po w=0.42 l=187.5
+Xr_r_bias_n8_1 r_r_bias_n8_s0 r_r_bias_n8_s1 0 sky130_fd_pr__res_high_po w=0.42 l=187.5
+Xr_r_bias_n8_2 r_r_bias_n8_s1 r_r_bias_n8_s2 0 sky130_fd_pr__res_high_po w=0.42 l=187.5
+Xr_r_bias_n8_3 r_r_bias_n8_s2 r_r_bias_n8_s3 0 sky130_fd_pr__res_high_po w=0.42 l=187.5
+Xr_r_bias_n8_4 r_r_bias_n8_s3 r_r_bias_n8_s4 0 sky130_fd_pr__res_high_po w=0.42 l=187.5
+Xr_r_bias_n8_5 r_r_bias_n8_s4 r_r_bias_n8_s5 0 sky130_fd_pr__res_high_po w=0.42 l=187.5
+Xr_r_bias_n8_6 r_r_bias_n8_s5 r_r_bias_n8_s6 0 sky130_fd_pr__res_high_po w=0.42 l=187.5
+Xr_r_bias_n8_7 r_r_bias_n8_s6 0 0 sky130_fd_pr__res_high_po w=0.42 l=187.5
+* r_r_bias_n8_j: R_BIAS as 8 x l=187.5 w=0.42, joint R=37.7905
+Vr_r_bias_n8_j r_r_bias_n8_j_0 0 2
+Xr_r_bias_n8_j_0 r_r_bias_n8_j_0 r_r_bias_n8_j_j0 0 sky130_fd_pr__res_high_po w=0.42 l=187.5
+RJr_r_bias_n8_j_0 r_r_bias_n8_j_j0 r_r_bias_n8_j_s0 37.7905
+Xr_r_bias_n8_j_1 r_r_bias_n8_j_s0 r_r_bias_n8_j_j1 0 sky130_fd_pr__res_high_po w=0.42 l=187.5
+RJr_r_bias_n8_j_1 r_r_bias_n8_j_j1 r_r_bias_n8_j_s1 37.7905
+Xr_r_bias_n8_j_2 r_r_bias_n8_j_s1 r_r_bias_n8_j_j2 0 sky130_fd_pr__res_high_po w=0.42 l=187.5
+RJr_r_bias_n8_j_2 r_r_bias_n8_j_j2 r_r_bias_n8_j_s2 37.7905
+Xr_r_bias_n8_j_3 r_r_bias_n8_j_s2 r_r_bias_n8_j_j3 0 sky130_fd_pr__res_high_po w=0.42 l=187.5
+RJr_r_bias_n8_j_3 r_r_bias_n8_j_j3 r_r_bias_n8_j_s3 37.7905
+Xr_r_bias_n8_j_4 r_r_bias_n8_j_s3 r_r_bias_n8_j_j4 0 sky130_fd_pr__res_high_po w=0.42 l=187.5
+RJr_r_bias_n8_j_4 r_r_bias_n8_j_j4 r_r_bias_n8_j_s4 37.7905
+Xr_r_bias_n8_j_5 r_r_bias_n8_j_s4 r_r_bias_n8_j_j5 0 sky130_fd_pr__res_high_po w=0.42 l=187.5
+RJr_r_bias_n8_j_5 r_r_bias_n8_j_j5 r_r_bias_n8_j_s5 37.7905
+Xr_r_bias_n8_j_6 r_r_bias_n8_j_s5 r_r_bias_n8_j_j6 0 sky130_fd_pr__res_high_po w=0.42 l=187.5
+RJr_r_bias_n8_j_6 r_r_bias_n8_j_j6 r_r_bias_n8_j_s6 37.7905
+Xr_r_bias_n8_j_7 r_r_bias_n8_j_s6 0 0 sky130_fd_pr__res_high_po w=0.42 l=187.5
+* r_r_bias_n16: R_BIAS as 16 x l=93.75 w=0.42, joint R=0
+Vr_r_bias_n16 r_r_bias_n16_0 0 2
+Xr_r_bias_n16_0 r_r_bias_n16_0 r_r_bias_n16_s0 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+Xr_r_bias_n16_1 r_r_bias_n16_s0 r_r_bias_n16_s1 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+Xr_r_bias_n16_2 r_r_bias_n16_s1 r_r_bias_n16_s2 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+Xr_r_bias_n16_3 r_r_bias_n16_s2 r_r_bias_n16_s3 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+Xr_r_bias_n16_4 r_r_bias_n16_s3 r_r_bias_n16_s4 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+Xr_r_bias_n16_5 r_r_bias_n16_s4 r_r_bias_n16_s5 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+Xr_r_bias_n16_6 r_r_bias_n16_s5 r_r_bias_n16_s6 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+Xr_r_bias_n16_7 r_r_bias_n16_s6 r_r_bias_n16_s7 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+Xr_r_bias_n16_8 r_r_bias_n16_s7 r_r_bias_n16_s8 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+Xr_r_bias_n16_9 r_r_bias_n16_s8 r_r_bias_n16_s9 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+Xr_r_bias_n16_10 r_r_bias_n16_s9 r_r_bias_n16_s10 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+Xr_r_bias_n16_11 r_r_bias_n16_s10 r_r_bias_n16_s11 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+Xr_r_bias_n16_12 r_r_bias_n16_s11 r_r_bias_n16_s12 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+Xr_r_bias_n16_13 r_r_bias_n16_s12 r_r_bias_n16_s13 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+Xr_r_bias_n16_14 r_r_bias_n16_s13 r_r_bias_n16_s14 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+Xr_r_bias_n16_15 r_r_bias_n16_s14 0 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+* r_r_bias_n16_j: R_BIAS as 16 x l=93.75 w=0.42, joint R=37.7905
+Vr_r_bias_n16_j r_r_bias_n16_j_0 0 2
+Xr_r_bias_n16_j_0 r_r_bias_n16_j_0 r_r_bias_n16_j_j0 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+RJr_r_bias_n16_j_0 r_r_bias_n16_j_j0 r_r_bias_n16_j_s0 37.7905
+Xr_r_bias_n16_j_1 r_r_bias_n16_j_s0 r_r_bias_n16_j_j1 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+RJr_r_bias_n16_j_1 r_r_bias_n16_j_j1 r_r_bias_n16_j_s1 37.7905
+Xr_r_bias_n16_j_2 r_r_bias_n16_j_s1 r_r_bias_n16_j_j2 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+RJr_r_bias_n16_j_2 r_r_bias_n16_j_j2 r_r_bias_n16_j_s2 37.7905
+Xr_r_bias_n16_j_3 r_r_bias_n16_j_s2 r_r_bias_n16_j_j3 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+RJr_r_bias_n16_j_3 r_r_bias_n16_j_j3 r_r_bias_n16_j_s3 37.7905
+Xr_r_bias_n16_j_4 r_r_bias_n16_j_s3 r_r_bias_n16_j_j4 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+RJr_r_bias_n16_j_4 r_r_bias_n16_j_j4 r_r_bias_n16_j_s4 37.7905
+Xr_r_bias_n16_j_5 r_r_bias_n16_j_s4 r_r_bias_n16_j_j5 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+RJr_r_bias_n16_j_5 r_r_bias_n16_j_j5 r_r_bias_n16_j_s5 37.7905
+Xr_r_bias_n16_j_6 r_r_bias_n16_j_s5 r_r_bias_n16_j_j6 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+RJr_r_bias_n16_j_6 r_r_bias_n16_j_j6 r_r_bias_n16_j_s6 37.7905
+Xr_r_bias_n16_j_7 r_r_bias_n16_j_s6 r_r_bias_n16_j_j7 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+RJr_r_bias_n16_j_7 r_r_bias_n16_j_j7 r_r_bias_n16_j_s7 37.7905
+Xr_r_bias_n16_j_8 r_r_bias_n16_j_s7 r_r_bias_n16_j_j8 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+RJr_r_bias_n16_j_8 r_r_bias_n16_j_j8 r_r_bias_n16_j_s8 37.7905
+Xr_r_bias_n16_j_9 r_r_bias_n16_j_s8 r_r_bias_n16_j_j9 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+RJr_r_bias_n16_j_9 r_r_bias_n16_j_j9 r_r_bias_n16_j_s9 37.7905
+Xr_r_bias_n16_j_10 r_r_bias_n16_j_s9 r_r_bias_n16_j_j10 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+RJr_r_bias_n16_j_10 r_r_bias_n16_j_j10 r_r_bias_n16_j_s10 37.7905
+Xr_r_bias_n16_j_11 r_r_bias_n16_j_s10 r_r_bias_n16_j_j11 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+RJr_r_bias_n16_j_11 r_r_bias_n16_j_j11 r_r_bias_n16_j_s11 37.7905
+Xr_r_bias_n16_j_12 r_r_bias_n16_j_s11 r_r_bias_n16_j_j12 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+RJr_r_bias_n16_j_12 r_r_bias_n16_j_j12 r_r_bias_n16_j_s12 37.7905
+Xr_r_bias_n16_j_13 r_r_bias_n16_j_s12 r_r_bias_n16_j_j13 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+RJr_r_bias_n16_j_13 r_r_bias_n16_j_j13 r_r_bias_n16_j_s13 37.7905
+Xr_r_bias_n16_j_14 r_r_bias_n16_j_s13 r_r_bias_n16_j_j14 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+RJr_r_bias_n16_j_14 r_r_bias_n16_j_j14 r_r_bias_n16_j_s14 37.7905
+Xr_r_bias_n16_j_15 r_r_bias_n16_j_s14 0 0 sky130_fd_pr__res_high_po w=0.42 l=93.75
+* r_r_bias_n32: R_BIAS as 32 x l=46.875 w=0.42, joint R=0
+Vr_r_bias_n32 r_r_bias_n32_0 0 2
+Xr_r_bias_n32_0 r_r_bias_n32_0 r_r_bias_n32_s0 0 sky130_fd_pr__res_high_po w=0.42 l=46.875
+Xr_r_bias_n32_1 r_r_bias_n32_s0 r_r_bias_n32_s1 0 sky130_fd_pr__res_high_po w=0.42 l=46.875
+Xr_r_bias_n32_2 r_r_bias_n32_s1 r_r_bias_n32_s2 0 sky130_fd_pr__res_high_po w=0.42 l=46.875
+Xr_r_bias_n32_3 r_r_bias_n32_s2 r_r_bias_n32_s3 0 sky130_fd_pr__res_high_po w=0.42 l=46.875
+Xr_r_bias_n32_4 r_r_bias_n32_s3 r_r_bias_n32_s4 0 sky130_fd_pr__res_high_po w=0.42 l=46.875
+Xr_r_bias_n32_5 r_r_bias_n32_s4 r_r_bias_n32_s5 0 sky130_fd_pr__res_high_po w=0.42 l=46.875
+Xr_r_bias_n32_6 r_r_bias_n32_s5 r_r_bias_n32_s6 0 sky130_fd_pr__res_high_po w=0.42 l=46.875
+Xr_r_bias_n32_7 r_r_bias_n32_s6 r_r_bias_n32_s7 0 sky130_fd_pr__res_high_po w=0.42 l=46.875
+Xr_r_bias_n32_8 r_r_bias_n32_s7 r_r_bias_n32_s8 0 sky130_fd_pr__res_high_po w=0.42 l=46.875
+Xr_r_bias_n32_9 r_r_bias_n32_s8 r_r_bias_n32_s9 0 sky130_fd_pr__res_high_po w=0.42 l=46.875
+Xr_r_bias_n32_10 r_r_bias_n32_s9 r_r_bias_n32_s10 0 sky130_fd_pr__res_high_po w=0.42 l=46.875
+Xr_r_bias_n32_11 r_r_bias_n32_s10 r_r_bias_n32_s11 0 sky130_fd_pr__res_high_po w=0.42 l=46.875
+Xr_r_bias_n32_12 r_r_bias_n32_s11 r_r_bias_n32_s12 0 sky130_fd_pr__res_high_po w=0.42 l=46.875
+Xr_r_bias_n32_13 r_r_bias_n32_s12 r_r_bias_n32_s13 0 sky130_fd_pr__res_high_po w=0.42 l=46.875
+Xr_r_bias_n32_14 r_r_bias_n32_s13 r_r_bias_n32_s14 0 sky130_fd_pr__res_high_po w=0.42 l=46.875
+Xr_r_bias_n32_15 r_r_bias_n32_s14 r_r_bias_n32_s15 0 sky130_fd_pr__res_high_po w=0.42 l=46.875
+Xr_r_bias_n32_16 r_r_bias_n32_s15 r_r_bias_n32_s16 0 sky130_fd_pr__res_high_po w=0.42 l=46.875
+Xr_r_bias_n32_17 r_r_bias_n32_s16 r_r_bias_n32_s17 0 sky130_fd_pr__res_high_po w=0.42 l=46.875
+Xr_r_bias_n32_18 r_r_bias_n32_s17 r_r_bias_n32_s18 0 sky130_fd_pr__res_high_po w=0.42 l=46.875
+Xr_r_bias_n32_19 r_r_bias_n32_s18 r_r_bias_n32_s19 0 sky130_fd_pr__res_high_po w=0.42 l=46.875
+Xr_r_bias_n32_20 r_r_bias_n32_s19 r_r_bias_n32_s20 0 sky130_fd_pr__res_high_po w=0.42 l=46.875
+Xr_r_bias_n32_21 r_r_bias_n32_s20 r_r_bias_n32_s21 0 sky130_fd_pr__res_high_po w=0.42 l=46.875
+Xr_r_bias_n32_22 r_r_bias_n32_s21 r_r_bias_n32_s22 0 sky130_fd_pr__res_high_po w=0.42 l=46.875
+Xr_r_bias_n32_23 r_r_bias_n32_s22 r_r_bias_n32_s23 0 sky130_fd_pr__res_high_po w=0.42 l=46.875
+Xr_r_bias_n32_24 r_r_bias_n32_s23 r_r_bias_n32_s24 0 sky130_fd_pr__res_high_po w=0.42 l=46.875
+Xr_r_bias_n32_25 r_r_bias_n32_s24 r_r_bias_n32_s25 0 sky130_fd_pr__res_high_po w=0.42 l=46.875
+Xr_r_bias_n32_26 r_r_bias_n32_s25 r_r_bias_n32_s26 0 sky130_fd_pr__res_high_po w=0.42 l=46.875
+Xr_r_bias_n32_27 r_r_bias_n32_s26 r_r_bias_n32_s27 0 sky130_fd_pr__res_high_po w=0.42 l=46.875
+Xr_r_bias_n32_28 r_r_bias_n32_s27 r_r_bias_n32_s28 0 sky130_fd_pr__res_high_po w=0.42 l=46.875
+Xr_r_bias_n32_29 r_r_bias_n32_s28 r_r_bias_n32_s29 0 sky130_fd_pr__res_high_po w=0.42 l=46.875
+Xr_r_bias_n32_30 r_r_bias_n32_s29 r_r_bias_n32_s30 0 sky130_fd_pr__res_high_po w=0.42 l=46.875
+Xr_r_bias_n32_31 r_r_bias_n32_s30 0 0 sky130_fd_pr__res_high_po w=0.42 l=46.875
+* r_r_bias_n32_j: R_BIAS as 32 x l=46.875 w=0.42, joint R=37.7905
+Vr_r_bias_n32_j r_r_bias_n32_j_0 0 2
+Xr_r_bias_n32_j_0 r_r_bias_n32_j_0 r_r_bias_n32_j_j0 0 sky130_fd_pr__res_high_po w=0.42 l=46.875
+RJr_r_bias_n32_j_0 r_r_bias_n32_j_j0 r_r_bias_n32_j_s0 37.7905
+Xr_r_bias_n32_j_1 r_r_bias_n32_j_s0 r_r_bias_n32_j_j1 0 sky130_fd_pr__res_high_po w=0.42 l=46.875
+RJr_r_bias_n32_j_1 r_r_bias_n32_j_j1 r_r_bias_n32_j_s1 37.7905
+Xr_r_bias_n32_j_2 r_r_bias_n32_j_s1 r_r_bias_n32_j_j2 0 sky130_fd_pr__res_high_po w=0.42 l=46.875
+RJr_r_bias_n32_j_2 r_r_bias_n32_j_j2 r_r_bias_n32_j_s2 37.7905
+Xr_r_bias_n32_j_3 r_r_bias_n32_j_s2 r_r_bias_n32_j_j3 0 sky130_fd_pr__res_high_po w=0.42 l=46.875
+RJr_r_bias_n32_j_3 r_r_bias_n32_j_j3 r_r_bias_n32_j_s3 37.7905
+Xr_r_bias_n32_j_4 r_r_bias_n32_j_s3 r_r_bias_n32_j_j4 0 sky130_fd_pr__res_high_po w=0.42 l=46.875
+RJr_r_bias_n32_j_4 r_r_bias_n32_j_j4 r_r_bias_n32_j_s4 37.7905
+Xr_r_bias_n32_j_5 r_r_bias_n32_j_s4 r_r_bias_n32_j_j5 0 sky130_fd_pr__res_high_po w=0.42 l=46.875
+RJr_r_bias_n32_j_5 r_r_bias_n32_j_j5 r_r_bias_n32_j_s5 37.7905
+Xr_r_bias_n32_j_6 r_r_bias_n32_j_s5 r_r_bias_n32_j_j6 0 sky130_fd_pr__res_high_po w=0.42 l=46.875
+RJr_r_bias_n32_j_6 r_r_bias_n32_j_j6 r_r_bias_n32_j_s6 37.7905
+Xr_r_bias_n32_j_7 r_r_bias_n32_j_s6 r_r_bias_n32_j_j7 0 sky130_fd_pr__res_high_po w=0.42 l=46.875
+RJr_r_bias_n32_j_7 r_r_bias_n32_j_j7 r_r_bias_n32_j_s7 37.7905
+Xr_r_bias_n32_j_8 r_r_bias_n32_j_s7 r_r_bias_n32_j_j8 0 sky130_fd_pr__res_high_po w=0.42 l=46.875
+RJr_r_bias_n32_j_8 r_r_bias_n32_j_j8 r_r_bias_n32_j_s8 37.7905
+Xr_r_bias_n32_j_9 r_r_bias_n32_j_s8 r_r_bias_n32_j_j9 0 sky130_fd_pr__res_high_po w=0.42 l=46.875
+RJr_r_bias_n32_j_9 r_r_bias_n32_j_j9 r_r_bias_n32_j_s9 37.7905
+Xr_r_bias_n32_j_10 r_r_bias_n32_j_s9 r_r_bias_n32_j_j10 0 sky130_fd_pr__res_high_po w=0.42 l=46.875
+RJr_r_bias_n32_j_10 r_r_bias_n32_j_j10 r_r_bias_n32_j_s10 37.7905
+Xr_r_bias_n32_j_11 r_r_bias_n32_j_s10 r_r_bias_n32_j_j11 0 sky130_fd_pr__res_high_po w=0.42 l=46.875
+RJr_r_bias_n32_j_11 r_r_bias_n32_j_j11 r_r_bias_n32_j_s11 37.7905
+Xr_r_bias_n32_j_12 r_r_bias_n32_j_s11 r_r_bias_n32_j_j12 0 sky130_fd_pr__res_high_po w=0.42 l=46.875
+RJr_r_bias_n32_j_12 r_r_bias_n32_j_j12 r_r_bias_n32_j_s12 37.7905
+Xr_r_bias_n32_j_13 r_r_bias_n32_j_s12 r_r_bias_n32_j_j13 0 sky130_fd_pr__res_high_po w=0.42 l=46.875
+RJr_r_bias_n32_j_13 r_r_bias_n32_j_j13 r_r_bias_n32_j_s13 37.7905
+Xr_r_bias_n32_j_14 r_r_bias_n32_j_s13 r_r_bias_n32_j_j14 0 sky130_fd_pr__res_high_po w=0.42 l=46.875
+RJr_r_bias_n32_j_14 r_r_bias_n32_j_j14 r_r_bias_n32_j_s14 37.7905
+Xr_r_bias_n32_j_15 r_r_bias_n32_j_s14 r_r_bias_n32_j_j15 0 sky130_fd_pr__res_high_po w=0.42 l=46.875
+RJr_r_bias_n32_j_15 r_r_bias_n32_j_j15 r_r_bias_n32_j_s15 37.7905
+Xr_r_bias_n32_j_16 r_r_bias_n32_j_s15 r_r_bias_n32_j_j16 0 sky130_fd_pr__res_high_po w=0.42 l=46.875
+RJr_r_bias_n32_j_16 r_r_bias_n32_j_j16 r_r_bias_n32_j_s16 37.7905
+Xr_r_bias_n32_j_17 r_r_bias_n32_j_s16 r_r_bias_n32_j_j17 0 sky130_fd_pr__res_high_po w=0.42 l=46.875
+RJr_r_bias_n32_j_17 r_r_bias_n32_j_j17 r_r_bias_n32_j_s17 37.7905
+Xr_r_bias_n32_j_18 r_r_bias_n32_j_s17 r_r_bias_n32_j_j18 0 sky130_fd_pr__res_high_po w=0.42 l=46.875
+RJr_r_bias_n32_j_18 r_r_bias_n32_j_j18 r_r_bias_n32_j_s18 37.7905
+Xr_r_bias_n32_j_19 r_r_bias_n32_j_s18 r_r_bias_n32_j_j19 0 sky130_fd_pr__res_high_po w=0.42 l=46.875
+RJr_r_bias_n32_j_19 r_r_bias_n32_j_j19 r_r_bias_n32_j_s19 37.7905
+Xr_r_bias_n32_j_20 r_r_bias_n32_j_s19 r_r_bias_n32_j_j20 0 sky130_fd_pr__res_high_po w=0.42 l=46.875
+RJr_r_bias_n32_j_20 r_r_bias_n32_j_j20 r_r_bias_n32_j_s20 37.7905
+Xr_r_bias_n32_j_21 r_r_bias_n32_j_s20 r_r_bias_n32_j_j21 0 sky130_fd_pr__res_high_po w=0.42 l=46.875
+RJr_r_bias_n32_j_21 r_r_bias_n32_j_j21 r_r_bias_n32_j_s21 37.7905
+Xr_r_bias_n32_j_22 r_r_bias_n32_j_s21 r_r_bias_n32_j_j22 0 sky130_fd_pr__res_high_po w=0.42 l=46.875
+RJr_r_bias_n32_j_22 r_r_bias_n32_j_j22 r_r_bias_n32_j_s22 37.7905
+Xr_r_bias_n32_j_23 r_r_bias_n32_j_s22 r_r_bias_n32_j_j23 0 sky130_fd_pr__res_high_po w=0.42 l=46.875
+RJr_r_bias_n32_j_23 r_r_bias_n32_j_j23 r_r_bias_n32_j_s23 37.7905
+Xr_r_bias_n32_j_24 r_r_bias_n32_j_s23 r_r_bias_n32_j_j24 0 sky130_fd_pr__res_high_po w=0.42 l=46.875
+RJr_r_bias_n32_j_24 r_r_bias_n32_j_j24 r_r_bias_n32_j_s24 37.7905
+Xr_r_bias_n32_j_25 r_r_bias_n32_j_s24 r_r_bias_n32_j_j25 0 sky130_fd_pr__res_high_po w=0.42 l=46.875
+RJr_r_bias_n32_j_25 r_r_bias_n32_j_j25 r_r_bias_n32_j_s25 37.7905
+Xr_r_bias_n32_j_26 r_r_bias_n32_j_s25 r_r_bias_n32_j_j26 0 sky130_fd_pr__res_high_po w=0.42 l=46.875
+RJr_r_bias_n32_j_26 r_r_bias_n32_j_j26 r_r_bias_n32_j_s26 37.7905
+Xr_r_bias_n32_j_27 r_r_bias_n32_j_s26 r_r_bias_n32_j_j27 0 sky130_fd_pr__res_high_po w=0.42 l=46.875
+RJr_r_bias_n32_j_27 r_r_bias_n32_j_j27 r_r_bias_n32_j_s27 37.7905
+Xr_r_bias_n32_j_28 r_r_bias_n32_j_s27 r_r_bias_n32_j_j28 0 sky130_fd_pr__res_high_po w=0.42 l=46.875
+RJr_r_bias_n32_j_28 r_r_bias_n32_j_j28 r_r_bias_n32_j_s28 37.7905
+Xr_r_bias_n32_j_29 r_r_bias_n32_j_s28 r_r_bias_n32_j_j29 0 sky130_fd_pr__res_high_po w=0.42 l=46.875
+RJr_r_bias_n32_j_29 r_r_bias_n32_j_j29 r_r_bias_n32_j_s29 37.7905
+Xr_r_bias_n32_j_30 r_r_bias_n32_j_s29 r_r_bias_n32_j_j30 0 sky130_fd_pr__res_high_po w=0.42 l=46.875
+RJr_r_bias_n32_j_30 r_r_bias_n32_j_j30 r_r_bias_n32_j_s30 37.7905
+Xr_r_bias_n32_j_31 r_r_bias_n32_j_s30 0 0 sky130_fd_pr__res_high_po w=0.42 l=46.875
+* r_r_fb_a_n1: R_FB_A as 1 x l=180 w=0.42, joint R=0
+Vr_r_fb_a_n1 r_r_fb_a_n1_0 0 0.6
+Xr_r_fb_a_n1_0 r_r_fb_a_n1_0 0 0 sky130_fd_pr__res_xhigh_po w=0.42 l=180
+* r_r_fb_a_n2: R_FB_A as 2 x l=90 w=0.42, joint R=0
+Vr_r_fb_a_n2 r_r_fb_a_n2_0 0 0.6
+Xr_r_fb_a_n2_0 r_r_fb_a_n2_0 r_r_fb_a_n2_s0 0 sky130_fd_pr__res_xhigh_po w=0.42 l=90
+Xr_r_fb_a_n2_1 r_r_fb_a_n2_s0 0 0 sky130_fd_pr__res_xhigh_po w=0.42 l=90
+* r_r_fb_a_n2_j: R_FB_A as 2 x l=90 w=0.42, joint R=37.7905
+Vr_r_fb_a_n2_j r_r_fb_a_n2_j_0 0 0.6
+Xr_r_fb_a_n2_j_0 r_r_fb_a_n2_j_0 r_r_fb_a_n2_j_j0 0 sky130_fd_pr__res_xhigh_po w=0.42 l=90
+RJr_r_fb_a_n2_j_0 r_r_fb_a_n2_j_j0 r_r_fb_a_n2_j_s0 37.7905
+Xr_r_fb_a_n2_j_1 r_r_fb_a_n2_j_s0 0 0 sky130_fd_pr__res_xhigh_po w=0.42 l=90
+* r_r_fb_a_n3: R_FB_A as 3 x l=60 w=0.42, joint R=0
+Vr_r_fb_a_n3 r_r_fb_a_n3_0 0 0.6
+Xr_r_fb_a_n3_0 r_r_fb_a_n3_0 r_r_fb_a_n3_s0 0 sky130_fd_pr__res_xhigh_po w=0.42 l=60
+Xr_r_fb_a_n3_1 r_r_fb_a_n3_s0 r_r_fb_a_n3_s1 0 sky130_fd_pr__res_xhigh_po w=0.42 l=60
+Xr_r_fb_a_n3_2 r_r_fb_a_n3_s1 0 0 sky130_fd_pr__res_xhigh_po w=0.42 l=60
+* r_r_fb_a_n3_j: R_FB_A as 3 x l=60 w=0.42, joint R=37.7905
+Vr_r_fb_a_n3_j r_r_fb_a_n3_j_0 0 0.6
+Xr_r_fb_a_n3_j_0 r_r_fb_a_n3_j_0 r_r_fb_a_n3_j_j0 0 sky130_fd_pr__res_xhigh_po w=0.42 l=60
+RJr_r_fb_a_n3_j_0 r_r_fb_a_n3_j_j0 r_r_fb_a_n3_j_s0 37.7905
+Xr_r_fb_a_n3_j_1 r_r_fb_a_n3_j_s0 r_r_fb_a_n3_j_j1 0 sky130_fd_pr__res_xhigh_po w=0.42 l=60
+RJr_r_fb_a_n3_j_1 r_r_fb_a_n3_j_j1 r_r_fb_a_n3_j_s1 37.7905
+Xr_r_fb_a_n3_j_2 r_r_fb_a_n3_j_s1 0 0 sky130_fd_pr__res_xhigh_po w=0.42 l=60
+* r_r_fb_a_n4: R_FB_A as 4 x l=45 w=0.42, joint R=0
+Vr_r_fb_a_n4 r_r_fb_a_n4_0 0 0.6
+Xr_r_fb_a_n4_0 r_r_fb_a_n4_0 r_r_fb_a_n4_s0 0 sky130_fd_pr__res_xhigh_po w=0.42 l=45
+Xr_r_fb_a_n4_1 r_r_fb_a_n4_s0 r_r_fb_a_n4_s1 0 sky130_fd_pr__res_xhigh_po w=0.42 l=45
+Xr_r_fb_a_n4_2 r_r_fb_a_n4_s1 r_r_fb_a_n4_s2 0 sky130_fd_pr__res_xhigh_po w=0.42 l=45
+Xr_r_fb_a_n4_3 r_r_fb_a_n4_s2 0 0 sky130_fd_pr__res_xhigh_po w=0.42 l=45
+* r_r_fb_a_n4_j: R_FB_A as 4 x l=45 w=0.42, joint R=37.7905
+Vr_r_fb_a_n4_j r_r_fb_a_n4_j_0 0 0.6
+Xr_r_fb_a_n4_j_0 r_r_fb_a_n4_j_0 r_r_fb_a_n4_j_j0 0 sky130_fd_pr__res_xhigh_po w=0.42 l=45
+RJr_r_fb_a_n4_j_0 r_r_fb_a_n4_j_j0 r_r_fb_a_n4_j_s0 37.7905
+Xr_r_fb_a_n4_j_1 r_r_fb_a_n4_j_s0 r_r_fb_a_n4_j_j1 0 sky130_fd_pr__res_xhigh_po w=0.42 l=45
+RJr_r_fb_a_n4_j_1 r_r_fb_a_n4_j_j1 r_r_fb_a_n4_j_s1 37.7905
+Xr_r_fb_a_n4_j_2 r_r_fb_a_n4_j_s1 r_r_fb_a_n4_j_j2 0 sky130_fd_pr__res_xhigh_po w=0.42 l=45
+RJr_r_fb_a_n4_j_2 r_r_fb_a_n4_j_j2 r_r_fb_a_n4_j_s2 37.7905
+Xr_r_fb_a_n4_j_3 r_r_fb_a_n4_j_s2 0 0 sky130_fd_pr__res_xhigh_po w=0.42 l=45
+* r_r_fb_a_n6: R_FB_A as 6 x l=30 w=0.42, joint R=0
+Vr_r_fb_a_n6 r_r_fb_a_n6_0 0 0.6
+Xr_r_fb_a_n6_0 r_r_fb_a_n6_0 r_r_fb_a_n6_s0 0 sky130_fd_pr__res_xhigh_po w=0.42 l=30
+Xr_r_fb_a_n6_1 r_r_fb_a_n6_s0 r_r_fb_a_n6_s1 0 sky130_fd_pr__res_xhigh_po w=0.42 l=30
+Xr_r_fb_a_n6_2 r_r_fb_a_n6_s1 r_r_fb_a_n6_s2 0 sky130_fd_pr__res_xhigh_po w=0.42 l=30
+Xr_r_fb_a_n6_3 r_r_fb_a_n6_s2 r_r_fb_a_n6_s3 0 sky130_fd_pr__res_xhigh_po w=0.42 l=30
+Xr_r_fb_a_n6_4 r_r_fb_a_n6_s3 r_r_fb_a_n6_s4 0 sky130_fd_pr__res_xhigh_po w=0.42 l=30
+Xr_r_fb_a_n6_5 r_r_fb_a_n6_s4 0 0 sky130_fd_pr__res_xhigh_po w=0.42 l=30
+* r_r_fb_a_n6_j: R_FB_A as 6 x l=30 w=0.42, joint R=37.7905
+Vr_r_fb_a_n6_j r_r_fb_a_n6_j_0 0 0.6
+Xr_r_fb_a_n6_j_0 r_r_fb_a_n6_j_0 r_r_fb_a_n6_j_j0 0 sky130_fd_pr__res_xhigh_po w=0.42 l=30
+RJr_r_fb_a_n6_j_0 r_r_fb_a_n6_j_j0 r_r_fb_a_n6_j_s0 37.7905
+Xr_r_fb_a_n6_j_1 r_r_fb_a_n6_j_s0 r_r_fb_a_n6_j_j1 0 sky130_fd_pr__res_xhigh_po w=0.42 l=30
+RJr_r_fb_a_n6_j_1 r_r_fb_a_n6_j_j1 r_r_fb_a_n6_j_s1 37.7905
+Xr_r_fb_a_n6_j_2 r_r_fb_a_n6_j_s1 r_r_fb_a_n6_j_j2 0 sky130_fd_pr__res_xhigh_po w=0.42 l=30
+RJr_r_fb_a_n6_j_2 r_r_fb_a_n6_j_j2 r_r_fb_a_n6_j_s2 37.7905
+Xr_r_fb_a_n6_j_3 r_r_fb_a_n6_j_s2 r_r_fb_a_n6_j_j3 0 sky130_fd_pr__res_xhigh_po w=0.42 l=30
+RJr_r_fb_a_n6_j_3 r_r_fb_a_n6_j_j3 r_r_fb_a_n6_j_s3 37.7905
+Xr_r_fb_a_n6_j_4 r_r_fb_a_n6_j_s3 r_r_fb_a_n6_j_j4 0 sky130_fd_pr__res_xhigh_po w=0.42 l=30
+RJr_r_fb_a_n6_j_4 r_r_fb_a_n6_j_j4 r_r_fb_a_n6_j_s4 37.7905
+Xr_r_fb_a_n6_j_5 r_r_fb_a_n6_j_s4 0 0 sky130_fd_pr__res_xhigh_po w=0.42 l=30
+.control
+set numdgt=12
+op
+let r_r_bias_n1 = -v(r_r_bias_n1_0)/i(Vr_r_bias_n1)
+print r_r_bias_n1
+let r_r_bias_n2 = -v(r_r_bias_n2_0)/i(Vr_r_bias_n2)
+print r_r_bias_n2
+let r_r_bias_n2_j = -v(r_r_bias_n2_j_0)/i(Vr_r_bias_n2_j)
+print r_r_bias_n2_j
+let r_r_bias_n4 = -v(r_r_bias_n4_0)/i(Vr_r_bias_n4)
+print r_r_bias_n4
+let r_r_bias_n4_j = -v(r_r_bias_n4_j_0)/i(Vr_r_bias_n4_j)
+print r_r_bias_n4_j
+let r_r_bias_n8 = -v(r_r_bias_n8_0)/i(Vr_r_bias_n8)
+print r_r_bias_n8
+let r_r_bias_n8_j = -v(r_r_bias_n8_j_0)/i(Vr_r_bias_n8_j)
+print r_r_bias_n8_j
+let r_r_bias_n16 = -v(r_r_bias_n16_0)/i(Vr_r_bias_n16)
+print r_r_bias_n16
+let r_r_bias_n16_j = -v(r_r_bias_n16_j_0)/i(Vr_r_bias_n16_j)
+print r_r_bias_n16_j
+let r_r_bias_n32 = -v(r_r_bias_n32_0)/i(Vr_r_bias_n32)
+print r_r_bias_n32
+let r_r_bias_n32_j = -v(r_r_bias_n32_j_0)/i(Vr_r_bias_n32_j)
+print r_r_bias_n32_j
+let r_r_fb_a_n1 = -v(r_r_fb_a_n1_0)/i(Vr_r_fb_a_n1)
+print r_r_fb_a_n1
+let r_r_fb_a_n2 = -v(r_r_fb_a_n2_0)/i(Vr_r_fb_a_n2)
+print r_r_fb_a_n2
+let r_r_fb_a_n2_j = -v(r_r_fb_a_n2_j_0)/i(Vr_r_fb_a_n2_j)
+print r_r_fb_a_n2_j
+let r_r_fb_a_n3 = -v(r_r_fb_a_n3_0)/i(Vr_r_fb_a_n3)
+print r_r_fb_a_n3
+let r_r_fb_a_n3_j = -v(r_r_fb_a_n3_j_0)/i(Vr_r_fb_a_n3_j)
+print r_r_fb_a_n3_j
+let r_r_fb_a_n4 = -v(r_r_fb_a_n4_0)/i(Vr_r_fb_a_n4)
+print r_r_fb_a_n4
+let r_r_fb_a_n4_j = -v(r_r_fb_a_n4_j_0)/i(Vr_r_fb_a_n4_j)
+print r_r_fb_a_n4_j
+let r_r_fb_a_n6 = -v(r_r_fb_a_n6_0)/i(Vr_r_fb_a_n6)
+print r_r_fb_a_n6
+let r_r_fb_a_n6_j = -v(r_r_fb_a_n6_j_0)/i(Vr_r_fb_a_n6_j)
+print r_r_fb_a_n6_j
+.endc
+.end
