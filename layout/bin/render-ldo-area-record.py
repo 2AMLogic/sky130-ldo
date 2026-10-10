@@ -44,6 +44,12 @@ def _fmt(d: Decimal, places: int = 6) -> str:
     return f"{d:.{places}f}"
 
 
+def bbox_agrees(w: Decimal, h: Decimal, m: ga.AreaMeasurement) -> bool:
+    """klt's bbox agrees with ours within two database units on each axis."""
+    tol = m.dbu_um * 2
+    return abs(w - m.width_um) <= tol and abs(h - m.height_um) <= tol
+
+
 def klt_crosscheck(klt: str, gds: Path, m: ga.AreaMeasurement) -> dict:
     try:
         ver = subprocess.run([klt, "--version"], check=True, capture_output=True, text=True).stdout.strip()
@@ -55,7 +61,7 @@ def klt_crosscheck(klt: str, gds: Path, m: ga.AreaMeasurement) -> dict:
         return {"tool": klt, "status": "unavailable", "detail": str(exc)}
     w, h = Decimal(str(b["width"])), Decimal(str(b["height"]))
     tol = m.dbu_um * 2
-    agree = abs(w - m.width_um) <= tol and abs(h - m.height_um) <= tol
+    agree = bbox_agrees(w, h, m)
     return {
         "tool": ver,
         "command": "klt stats <gds> --format json",
