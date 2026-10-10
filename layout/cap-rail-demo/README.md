@@ -126,6 +126,20 @@ electrical effect of the parasitics. The footprint verdict assumes the measured
 MOS-domain width (the comparator devices added in #230 are assumed to fit in the
 bank column's free height) and the #246 conservative folded-resistor bank.
 
+### Sensitivity to #253's resistor finding (arithmetic, not drawn)
+
+The first record (`20261010-033947-80bc87e`) prices the resistors as the #246
+conservative 100 um bank column. #253, which landed while this work was in
+review, found that the 16-row `R_BIAS` fold that bank assumes is **not**
+electrically equivalent (+1.06 %, ~4x its tolerance); equivalent `R_BIAS` folds
+stop at about 4 segments, a 375.84 x 2.88 um strip. Placing that strip along the
+full core width, with a 2 um gap, adds at most (2.88 + 2) x 417.78 um = 2039
+um^2: the rectangle becomes ~0.0789 mm^2, still below the limit (~21 % margin),
+and every drawn capacitor block keeps its place (the rectangle only grows). The
+feedback/compensation resistors fold equivalently per #253 and stay in the bank
+column. This is arithmetic on the record's numbers, not a drawn or extracted
+result; the full-core refresh re-measures it.
+
 ## Tool friction
 
 Filed generically at `2AMLogic/klayout-tools` per the friction protocol:
