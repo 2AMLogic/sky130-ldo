@@ -121,6 +121,7 @@ layout/
   README.md                  # this file
   requirements.txt           # pinned `klt` install for the DRC/LVS/PEX flows (git commit SHA)
   erc-requirements.txt       # SECOND pin, for the `klt erc` supply-spec flow (and why it differs)
+  cap-requirements.txt       # THIRD pin, for the #254 MiM + rail overlay demonstrator (and why)
   bin/
     setup-venv.sh             # create/refresh a venv from one of the requirements files
     run-trivial-cell-flow.sh  # the repeatable driver: gen -> drc -> extract -> lvs -> report
@@ -138,8 +139,14 @@ layout/
     gen-folded-res-qual.py        # draws the unsplit / folded / open-chain resistor test blocks
     render-folded-res-qual-record.py  # renders a folded-res-qual record's record.md from summary.json
     _folded_res_analysis.py       # stdlib helpers (tolerance, .op deck, verdicts) -- unit-tested
+    run-cap-rail-demo-flow.sh # issue #254: MiM + rail overlay demonstrator -> drc x2 -> extract -> lvs + controls
+    gen-cap-rail-demo.py      # draws the stacked-MiM capacitors + rails, writes plan.json + LVS reference
+    _cap_rail_plan.py         # stdlib-only sizing / plate / footprint arithmetic (unit-tested)
+    render-cap-rail-record.py # renders + verdict-checks a demonstrator record's record.md
   .venv/                      # gitignored -- `klt` install, created by setup-venv.sh
   .venv-erc/                  # gitignored -- the ERC flow's own pinned `klt` install
+  .venv-cap/                  # gitignored -- the #254 demonstrator's own pinned `klt` install
+  cap-rail-demo/              # issue #254 demonstrator: README.md + reports/<record-id>/ (NOT the core)
   ldo-core/                   # the real LDO layout (see "Extending to the LDO core")
     floorplan.md               # device-to-block mapping, placement + routing rationale
     erc-supply-spec.json       # issue #112: the T1 item 11 `klt erc` supply spec (heavily commented)
@@ -612,3 +619,18 @@ exit-code contract. No PDK is needed, but the `klayout` module is: the tests run
 in the layout ERC venv (`layout/.venv-erc`) and are skipped, with an explicit
 reason, where `klayout` is not importable (CI's headless `checks` job installs
 no klayout wheel).
+
+## MiM capacitor + supply-rail overlay demonstrator (issue #254)
+
+`layout/cap-rail-demo/` holds a bounded demonstrator -- not the core -- that
+draws the schematic's four capacitors as stacked sky130 MiM arrays over the
+planned core outline, with the load-current rails on a proposed metal
+assignment that confines met3 rail use to the column above the pass device.
+`layout/bin/run-cap-rail-demo-flow.sh` checks it with the curated `klt drc`
+deck, the PDK's own `sky130A_mr.drc`, `klt extract` (devices and parasitics) and
+`klt lvs` against a schematic-derived reference plus two negative controls, and
+renders a feasibility verdict against the unchanged Area row. It runs on its own
+klt pin (`cap-requirements.txt`), so the ldo-core records keep theirs. See
+`layout/cap-rail-demo/README.md` for the metal assignment, every disclosed LVS
+condition and the five klayout-tools issues it filed. Tests:
+`layout/tests/test_cap_rail_plan.py` (stdlib only).

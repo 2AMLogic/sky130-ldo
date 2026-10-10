@@ -1,0 +1,36 @@
+# Pinned klayout-tools (`klt`) build for layout/'s MiM-capacitor + supply-rail
+# overlay demonstrator (issue #254, layout/bin/run-cap-rail-demo-flow.sh).
+#
+# WHY A THIRD PIN, SEPARATE FROM requirements.txt AND erc-requirements.txt
+#
+# requirements.txt (`040f3406`) is the build every committed ldo-core
+# DRC/LVS/PEX record was produced on; bumping it would orphan those records'
+# stated provenance, and issue #254 is explicitly not a full-core re-run. The
+# demonstrator needs capability that pin does not have:
+#
+#   * MiM DRC coverage on the curated sky130 deck (met3/met4/met5,
+#     via2/via3/via4, capm/capm2 width/space/enclosure/separation rules) --
+#     without it `klt drc` reports "clean" on a MiM stack no rule looked at;
+#   * MiM device recognition for BOTH sky130 stacks in `klt extract`
+#     (`sky130_fd_pr__model__cap_mim` on met3/capm and
+#     `sky130_fd_pr__model__cap_mim_m4` on met4/capm2) with the area +
+#     perimeter law and the top-plate-via exclusion that keeps a DRM-legal
+#     top-plate via from shorting the two plates;
+#   * `klt gen cap_array` exists on this build (the demonstrator does not use
+#     it -- see layout/cap-rail-demo/README.md for why -- but its presence was
+#     the capability the #246 study and the #254 champion review checked).
+#
+# This exact commit was chosen because it is the build the #246 area study
+# already recorded (`klt 0.7.0+gb82427b30c96`, layout/area-study/
+# 20261009-study-246/budget.json) and the one the #254 champion review
+# verified carries the capability above -- not `main`'s tip, which has moved
+# on since. Cross-check any committed report against its own
+# `provenance.klt_version`; for this pin that string is `0.7.0+gb82427b30c96`.
+#
+# Install: layout/bin/setup-venv.sh --requirements layout/cap-requirements.txt
+# (-> layout/.venv-cap), or, on a host whose python lacks ensurepip, let
+# run-cap-rail-demo-flow.sh run the same pin through `uvx --from` (a
+# throwaway environment; nothing is installed host-wide).
+#
+# Bump deliberately and mint a fresh record (never overwrite one).
+klayout-tools @ git+https://github.com/2AMLogic/klayout-tools@b82427b30c9604b53b2dce64850409841cc38bde
