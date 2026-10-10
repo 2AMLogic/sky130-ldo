@@ -1,0 +1,103 @@
+{
+  "netlist": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-277/sim/build/pex-post-layout/20261010-193154-0c8ccf6/pex/00-tb_pex_post_layout.request.extracted-dut-testbench.spice",
+  "engine": "ngspice",
+  "models": {
+    "lib": "/home/ubuntu/.volare/sky130A/libs.tech/combined/sky130.lib.spice"
+  },
+  "corners": {
+    "process": [
+      "tt",
+      "ss",
+      "ff",
+      "sf",
+      "fs"
+    ],
+    "supply_v": {
+      "vvin": [
+        2.97,
+        3.3,
+        3.63
+      ]
+    },
+    "temperature_c": [
+      -40,
+      27,
+      125
+    ]
+  },
+  "analysis": {
+    "kind": "dc",
+    "args": "Iload 1m 50m 49m"
+  },
+  "_limits_comment": [
+    "Every measurement below declares limits (issue #154). Without them a",
+    "`klt pex` delta[] row's `status: pass` means only that both legs produced",
+    "a number -- not that the extracted value is anywhere near the schematic",
+    "one; `klt pex` grades a row against the *extracted*-side value's own",
+    "declared limits (see klayout-tools' pex.py `_row_status`).",
+    "Every bound below is derived from two things this file or the ratified",
+    "spec already states, never invented here:",
+    "  vout_*_v            -- the ratified `Output` row of spec/target-spec.md,",
+    "                         1.8V +/-2%, i.e. 1.764V .. 1.836V, quoted",
+    "                         verbatim.",
+    "  vin_minus_vout_*_v  -- NOT the ratified `Dropout @ 50 mA` row. Reading",
+    "                         that row onto this measurement is a category",
+    "                         error: `Iload` is swept at a FIXED `vvin`, so",
+    "                         V(VIN)-V(VOUT) here is the supply-to-output",
+    "                         HEADROOM at that corner's supply, not the dropout",
+    "                         voltage (dropout is VIN swept down until VOUT",
+    "                         leaves regulation -- that is sim/dropout-vs-load's",
+    "                         testbench, not this one). With VIN held at one of",
+    "                         this request's own `corners.supply_v.vvin` values",
+    "                         and VOUT bounded by the ratified `Output` row, the",
+    "                         headroom of an in-spec part is bounded exactly by",
+    "                         those two declarations:",
+    "                           min = min(vvin) - max(Output) = 2.97 - 1.836",
+    "                               = 1.134 V",
+    "                           max = max(vvin) - min(Output) = 3.63 - 1.764",
+    "                               = 1.866 V",
+    "                         So this row adds a physicality check (a negative",
+    "                         or collapsed headroom fails) without asserting a",
+    "                         spec line this testbench cannot measure.",
+    "Consequence, stated plainly: the vout_* bounds are *spec* bounds, and",
+    "measurements/characterization.md already records the schematic-side",
+    "implementation as FAIL against the Output row at some PVT corners. A",
+    "failing row here is therefore not automatically an extraction artifact --",
+    "read it against the same corner's schematic_value in delta[] before",
+    "attributing it to the layout."
+  ],
+  "measurements": [
+    {
+      "name": "vout_light_load_v",
+      "spice": ".meas dc vout_light_load_v FIND V(VOUT) AT=1m",
+      "unit": "V",
+      "limits": {
+        "min": 1.764,
+        "max": 1.836
+      }
+    },
+    {
+      "name": "vout_full_load_v",
+      "spice": ".meas dc vout_full_load_v FIND V(VOUT) AT=50m",
+      "unit": "V",
+      "limits": {
+        "min": 1.764,
+        "max": 1.836
+      }
+    },
+    {
+      "name": "vin_minus_vout_full_load_v",
+      "spice": ".meas dc vin_minus_vout_full_load_v FIND PAR('V(VIN)-V(VOUT)') AT=50m",
+      "unit": "V",
+      "limits": {
+        "min": 1.134,
+        "max": 1.866
+      }
+    }
+  ],
+  "options": {
+    "timeout_s": 120,
+    "keep_artifacts": true
+  },
+  "netlist_source": "extracted"
+}

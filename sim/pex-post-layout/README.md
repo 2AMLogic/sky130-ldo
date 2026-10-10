@@ -610,6 +610,22 @@ other than 0 or 3) or generator failure, it writes
 response/error envelope, full stderr logs, per-corner decks/ngspice logs, and
 `provenance.txt` (git HEAD, GDS sha256, klt/ngspice/xschem versions, backend).
 
+**Batch verification status (2026-10-10, record `20261010-193154-0c8ccf6`).**
+The 45-corner schematic leg was re-attempted on `main` @ `0c8ccf6` and again
+failed at batch submit for all 45 corners (`batch_job_failed`; fleet runner
+klt 0.5.0 vs client 0.7.0, `runner_compatibility: mismatch`, job
+`klt-sim-9bedf17191ac`, exit 87, ~4 s). No simulation ran, so this is not a
+design or parse result; no local-grid fallback was used. Evidence is retained in
+`failures/20261010-193154-0c8ccf6/`. The leg stays unverified until the fleet
+runner image is updated (a worker-spec change, not a change in this repo). The
+regeneration also showed the tracked `testbench/ldo_core_schematic_dut.spice`
+is stale vs the current schematic (netlist snapshot
+`netlist-snapshots/20261010-193154-0c8ccf6.schematic-dut.spice`); it was not
+re-committed here. The record stamps `evidence_kind: "batch_submit_failure"`
+and `supersedes: null`. It is not comparable to `20260924-230726-a947aa8`, which
+stays the latest valid baseline. The characterization rollup and `run-pex.sh`'s
+supersede pointer both skip records that carry a non-null `evidence_kind`.
+
 **Handoff to #267 / PR #275.** After this lands, PR #275 rebases, reruns both
 legs against its changed GDS, commits a new append-only record, and compares it
 with `20260924-230726-a947aa8`, separating known baseline failures from new

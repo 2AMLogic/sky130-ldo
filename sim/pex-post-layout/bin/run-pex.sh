@@ -64,10 +64,19 @@ TESTBENCH_DIR="$EXP_DIR/testbench"
 
 # Append-only evidence: if a prior record already exists, this run
 # supersedes it (record the pointer rather than overwriting).
+# Only a comparable result record is a supersede target: a record stamping a
+# non-null `evidence_kind` (e.g. "batch_submit_failure", PR #308) produced no
+# result and is skipped -- same rule as the characterization rollup's
+# latest_sim_record().
 PRIOR_RECORD_ID=""
 if compgen -G "$EXP_DIR/records/*.json" >/dev/null; then
-  PRIOR_RECORD_ID="$(basename "$(ls -1 "$EXP_DIR"/records/*.json | sort | tail -1)" .json)"
-  echo "run-pex.sh: this run will supersede prior record $PRIOR_RECORD_ID"
+  PRIOR_RECORD_ID="$(python3 -c '
+import json, pathlib, sys
+ids = [p.stem for p in sorted(pathlib.Path(sys.argv[1]).glob("*.json"))
+       if json.loads(p.read_text()).get("evidence_kind") is None]
+print(ids[-1] if ids else "")
+' "$EXP_DIR/records")"
+  [[ -n "$PRIOR_RECORD_ID" ]] && echo "run-pex.sh: this run will supersede prior record $PRIOR_RECORD_ID"
 fi
 
 BUILD_ROOT_TMP="$(mktemp -d)"
