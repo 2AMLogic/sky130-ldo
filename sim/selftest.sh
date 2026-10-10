@@ -7,7 +7,8 @@
 #   sim/selftest.sh                unit tests + smoke PVT run (no evidence written)
 #   sim/selftest.sh --record       also mint an evidence record under sim/pdk-smoke/
 #   sim/selftest.sh --quick        unit tests + a 3-point corner subset (faster)
-#   sim/selftest.sh --require-pdk  fail (instead of skipping) if the PDK is absent
+#   sim/selftest.sh --require-pdk  fail (instead of skipping) if the PDK is absent or
+#                                  ngspice/xschem differ from sim/pdk.json 'tools'
 #
 # Exit codes: 0 pass (or skipped sim stage), 1 something failed.
 
@@ -24,7 +25,7 @@ for arg in "$@"; do
     --record) RECORD=1 ;;
     --quick) QUICK=1 ;;
     --require-pdk) REQUIRE_PDK=1 ;;
-    -h|--help) sed -n '2,12p' "${BASH_SOURCE[0]}"; exit 0 ;;
+    -h|--help) sed -n '2,13p' "${BASH_SOURCE[0]}"; exit 0 ;;
     *) echo "unknown option: ${arg}" >&2; exit 1 ;;
   esac
 done
@@ -37,9 +38,12 @@ fi
 
 echo
 echo "== 2/3 environment =="
-if ! python3 "${SIM_DIR}/bin/corner-run.py" --check-env; then
+env_args=(--check-env)
+[ "${REQUIRE_PDK}" -eq 1 ] && env_args+=(--require-pdk)
+if ! python3 "${SIM_DIR}/bin/corner-run.py" "${env_args[@]}"; then
   if [ "${REQUIRE_PDK}" -eq 1 ]; then
-    echo "FAIL: ngspice/xschem/volare and/or the sky130 PDK are not available"
+    echo "FAIL: ngspice/xschem/volare and/or the sky130 PDK are not available,"
+    echo "      or ngspice/xschem drifted from the versions declared in sim/pdk.json"
     exit 1
   fi
   echo

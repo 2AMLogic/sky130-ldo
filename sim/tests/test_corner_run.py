@@ -29,6 +29,53 @@ sys.modules["corner_run"] = corner_run
 _spec.loader.exec_module(corner_run)
 
 
+class TestToolVersionPin(unittest.TestCase):
+    """Issue #291: ngspice/xschem versions are declared in sim/pdk.json and checked."""
+
+    def test_parse_versions(self):
+        self.assertEqual(
+            corner_run.parse_tool_version("ngspice", "ngspice-42 : Circuit level simulation program"), "42"
+        )
+        self.assertEqual(corner_run.parse_tool_version("xschem", "XSCHEM V3.4.4"), "3.4.4")
+        self.assertIsNone(corner_run.parse_tool_version("xschem", "not found"))
+
+    def test_compare_flags_only_drift(self):
+        declared = {"ngspice": "42", "xschem": "3.4.4"}
+        ok = {"ngspice": "ngspice-42 : x", "xschem": "XSCHEM V3.4.4"}
+        self.assertEqual(corner_run.compare_tool_versions(declared, ok), [])
+        drift = corner_run.compare_tool_versions(declared, {**ok, "xschem": "XSCHEM V3.4.5"})
+        self.assertEqual(drift, [("xschem", "3.4.4", "3.4.5")])
+        gone = corner_run.compare_tool_versions(declared, {"ngspice": "ngspice-42 : x"})
+        self.assertEqual([d[0] for d in gone], ["xschem"])
+
+    def test_pin_declares_tools(self):
+        self.assertEqual(set(corner_run.declared_tool_versions(corner_run.load_pin())), {"ngspice", "xschem"})
+
+    def _check_env(self, require_pdk, xschem_line):
+        lines = {"ngspice": "ngspice-42 : x", "xschem": xschem_line, "volare": "1.0"}
+        pdk = mock.Mock(matches_pin=True, installed_commit="c", dir="d", lib_file="l")
+        with mock.patch.object(corner_run.shutil, "which", return_value="/bin/x"), \
+             mock.patch.object(corner_run, "first_line", side_effect=lambda cmd: lines[cmd[0]]), \
+             mock.patch.object(corner_run, "load_pin", return_value={"tools": {"ngspice": "42", "xschem": "3.4.4"}}), \
+             mock.patch.object(corner_run, "resolve_pdk", return_value=pdk), \
+             mock.patch("builtins.print") as pr:
+            rc = corner_run.check_env(require_pdk=require_pdk)
+        return rc, "\n".join(str(c.args[0]) for c in pr.call_args_list if c.args)
+
+    def test_drift_warns_locally_and_fails_under_require_pdk(self):
+        rc, out = self._check_env(False, "XSCHEM V3.4.5")
+        self.assertEqual(rc, 0)
+        self.assertIn("WARN xschem drifted from declared 3.4.4 to 3.4.5", out)
+        rc, out = self._check_env(True, "XSCHEM V3.4.5")
+        self.assertEqual(rc, 1)
+        self.assertIn("FAIL xschem drifted from declared 3.4.4 to 3.4.5", out)
+
+    def test_baseline_is_clean(self):
+        rc, out = self._check_env(True, "XSCHEM V3.4.4")
+        self.assertEqual(rc, 0)
+        self.assertNotIn("drifted", out)
+
+
 class TestCornerId(unittest.TestCase):
     def test_id_format(self):
         c = corner_run.Corner(process="tt", temp_c=27.0, supply_v=1.8)
