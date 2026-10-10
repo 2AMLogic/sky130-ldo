@@ -66,32 +66,7 @@ VECTORS = ["xldo.ts_cmp", "xldo.rc_a", "xldo.rc_b", "xldo.ea_out", "vout", "en",
 KEYS = ["ts_cmp", "rc_a", "rc_b", "ea_out", "vout", "en", "ts_sns", "ts_ref"]
 
 
-def eval_xschem_exprs(text: str) -> tuple[str, int]:
-    """Evaluate `expr('...')` geometry parameters (ad/as/pd/ps/nrd/nrs).
-
-    The pinned toolchain (XSCHEM 3.4.7) emits these as numbers; an older xschem
-    (3.4.4 on the AWS dispatch workers) emits the raw sky130 symbol `expr('..')`
-    template, which ngspice cannot evaluate.  The substitution applies the PDK
-    symbol's own formulae to each device's own nf/W, so the numbers equal what
-    3.4.7 writes (checked: they reproduce the committed snapshots).  Returns
-    (text, number_of_substitutions).
-    """
-    n = 0
-    out = []
-    for stmt in re.split(r"\n(?!\+)", text):
-        if "expr(" in stmt:
-            nf = float(re.search(r"\bnf=([0-9.eE+-]+)", stmt).group(1))
-            w = float(re.search(r"\bW=([0-9.eE+-]+)", stmt).group(1))
-
-            def ev(m):
-                nonlocal n
-                n += 1
-                f = m.group(1).replace("@nf", repr(nf)).replace("@W", repr(w))
-                return f"{eval(f, {'__builtins__': {}}, {'int': int}):.6g}"
-
-            stmt = re.sub(r"expr\('([^']*)'\)", ev, stmt)
-        out.append(stmt)
-    return "\n".join(out), n
+eval_xschem_exprs = cr.eval_xschem_exprs
 
 
 def deck_text(netlist_body: list[str], pdk, temp_c: float, ix_amp: float, en_dip: str, dat: str) -> str:
@@ -232,7 +207,7 @@ def main() -> int:
 
     with tempfile.TemporaryDirectory(prefix="thermal-hyst-nl-") as nl:
         net = cr.netlist_with_xschem(SCHEMATIC, Path(nl), pdk)
-        text, n_expr = eval_xschem_exprs("\n".join(cr.netlist_body(net)) + "\n")
+        text, n_expr = eval_xschem_exprs("\n".join(cr.netlist_body(net, eval_exprs=False)) + "\n")
         # The bench's IC_SEED `.nodeset` card seeds the `dc temp` sweeps (#178/#189).
         # ngspice 42 also honours it as an initial condition under `tran ... uic`
         # (it pre-charged VOUT to 1.8 V in the first draft), which would make the

@@ -423,5 +423,38 @@ def _minimal_record() -> dict:
     }
 
 
+class TestEvalXschemExprs(unittest.TestCase):
+    """xschem 3.4.4 writes raw expr('...') templates; ngspice 42 cannot read
+    them (issue #288). They must evaluate to what xschem 3.4.7 writes."""
+
+    RAW = (
+        "XM1 VG VG 0 0 sky130_fd_pr__nfet_01v8 L=0.5 W=2 nf=1 "
+        "ad=expr('int((@nf + 1)/2) * @W / @nf * 0.29') as=expr('int((@nf + 2)/2) * @W / @nf * 0.29')\n"
+        "+ pd=expr('2*int((@nf + 1)/2) * (@W / @nf + 0.29)') ps=expr('2*int((@nf + 2)/2) * (@W / @nf + 0.29)') "
+        "nrd=expr('0.29 / @W ')\n"
+        "+ nrs=expr('0.29 / @W ') sa=0 sb=0 sd=0 mult=1 m=1\n"
+    )
+
+    def test_matches_xschem_347_output(self):
+        text, n = corner_run.eval_xschem_exprs(self.RAW)
+        self.assertEqual(n, 6)
+        self.assertNotIn("expr(", text)
+        for want in ("ad=0.58", "as=0.58", "pd=4.58", "ps=4.58", "nrd=0.145", "nrs=0.145"):
+            self.assertIn(want, text)
+
+    def test_noop_without_expr(self):
+        plain = "R1 VDD VG 1meg m=1\nV1 VDD 0 'vsup'\n"
+        self.assertEqual(corner_run.eval_xschem_exprs(plain), (plain, 0))
+
+    def test_unknown_parameter_left_visible(self):
+        raw = "X1 a b m W=2 ad=expr('@nope * 2')\n"
+        text, n = corner_run.eval_xschem_exprs(raw)
+        self.assertEqual((text, n), (raw, 0))
+
+    def test_refuses_unsafe_expression(self):
+        raw = "X1 a b m W=2 ad=expr('__import__(1)')\n"
+        self.assertEqual(corner_run.eval_xschem_exprs(raw)[1], 0)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -435,14 +435,63 @@ def netlist_with_xschem(schematic: Path, out_dir: Path, pdk: Pdk) -> Path:
     return produced
 
 
-def netlist_body(netlist: Path) -> list[str]:
+_EXPR_RE = re.compile(r"expr\('([^']*)'\)")
+_EXPR_SAFE_RE = re.compile(r"^[0-9a-zA-Z_.+\-*/()\s]*$")
+
+
+def eval_xschem_exprs(text: str) -> tuple[str, int]:
+    """Evaluate `expr('...')` geometry parameters (ad/as/pd/ps/nrd/nrs).
+
+    The pinned toolchain (xschem 3.4.7) writes these sky130 symbol parameters
+    as numbers. An older xschem (3.4.4, what Ubuntu's apt ships -- the CI
+    `pdk-smoke` job and the dispatch workers) writes the symbol's raw
+    `expr('...')` template, which ngspice cannot evaluate: the whole deck then
+    fails to parse and every measurement is unavailable (issue #288). This
+    applies the PDK symbol's own formulae to each device's own instance
+    parameters (`@nf`, `@W`, ...), so the numbers equal what 3.4.7 writes.
+    A no-op on text that has no `expr('...')`. Returns (text, substitutions).
+    """
+    n = 0
+    out = []
+    for stmt in re.split(r"\n(?!\+)", text):
+        if "expr(" in stmt:
+            params = {
+                k.lower(): v
+                for k, v in re.findall(r"(?<![\w@])(\w+)=([0-9.eE+-]+)(?=\s|$)", stmt)
+            }
+
+            def ev(m: re.Match) -> str:
+                nonlocal n
+                f = m.group(1)
+                for name in set(re.findall(r"@(\w+)", f)):
+                    if name.lower() not in params:
+                        return m.group(0)  # unknown parameter: leave it visible
+                    f = re.sub(rf"@{name}\b", f"({params[name.lower()]})", f)
+                if not _EXPR_SAFE_RE.match(f) or set(re.findall(r"[A-Za-z_]\w*", f)) - {"int"}:
+                    return m.group(0)
+                try:
+                    val = eval(f, {"__builtins__": {}}, {"int": int})
+                except (SyntaxError, ArithmeticError, TypeError, NameError):
+                    return m.group(0)
+                n += 1
+                return f"{val:.6g}"
+
+            stmt = _EXPR_RE.sub(ev, stmt)
+        out.append(stmt)
+    return "\n".join(out), n
+
+
+def netlist_body(netlist: Path, eval_exprs: bool = True) -> list[str]:
     """Strip the trailing .end so the deck can wrap the netlist.
 
     Also rewrites the absolute path xschem stamps into its `** sch_path:`
     comment to a repo-relative one, so netlist snapshots are byte-comparable
-    across machines and checkouts.
+    across machines and checkouts, and (unless eval_exprs=False) evaluates
+    un-evaluated `expr('...')` parameters from older xschem releases.
     """
     text = netlist.read_text().replace(str(REPO_ROOT) + os.sep, "")
+    if eval_exprs:
+        text, _ = eval_xschem_exprs(text)
     return [ln for ln in text.splitlines() if ln.strip().lower() != ".end"]
 
 
@@ -654,6 +703,16 @@ def run_corner(
     if log_path is not None:
         log_path.parent.mkdir(parents=True, exist_ok=True)
         log_path.write_text(log_text)
+    if not ok:
+        # Failure diagnostics survive --no-write (issue #288): the full
+        # simulator log lands next to the deck in the scratch run dir, which CI
+        # uploads as an artifact on failure.
+        (run_dir / f"{corner.id}.fail.log").write_text(log_text)
+        print(f"  ngspice diagnostics ({corner.id}, exit {rc}):", file=sys.stderr)
+        for ln in (stdout + "\n" + stderr).splitlines():
+            if re.search(r"error|undefined|fatal|cannot|timestep too small", ln, re.I):
+                print(f"    {ln.strip()[:200]}", file=sys.stderr)
+        print(f"  full log: {run_dir / (corner.id + '.fail.log')}", file=sys.stderr)
 
     return {
         "corner_id": corner.id,
