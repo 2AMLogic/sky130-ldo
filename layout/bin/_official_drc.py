@@ -15,7 +15,7 @@ import hashlib
 import json
 import re
 import xml.etree.ElementTree as ET
-from collections import defaultdict
+from collections import Counter, defaultdict
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -92,6 +92,31 @@ def parse_lyrdb(path: Path, expect_top_cell: str | None = None) -> Report:
         )
         total += 1
     return Report(top, rule_count, total, dict(by_rule))
+
+
+# --- marker-family summary (diagnosis seam) --------------------------------
+
+def summarize_marker_families(report: Report, max_samples: int) -> dict[str, dict]:
+    """Per-rule-family summary of an already parsed report (issue #306).
+
+    Standard library only -- the PDK-free seam of `diagnose-official-drc.py`,
+    whose KLayout geometry census stays in that script. Families are in sorted
+    rule order; each carries its marker `count`, the six most frequent deck
+    cells (`deck_cells`, a histogram in descending count) and up to
+    `max_samples` markers in report order, geometry truncated to 200 chars.
+    """
+    fams: dict[str, dict] = {}
+    for fam, items in sorted(report.by_rule.items()):
+        cells = Counter(i.cell for i in items)
+        samples = []
+        for i in items[:max_samples]:
+            samples.append({"cell": i.cell, "kind": i.kind, "geometry": i.geometry[:200]})
+        fams[fam] = {
+            "count": len(items),
+            "deck_cells": dict(cells.most_common(6)),
+            "sample_markers": samples,
+        }
+    return fams
 
 
 # --- verdict ---------------------------------------------------------------
