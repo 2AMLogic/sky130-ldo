@@ -963,5 +963,110 @@ class TestAreaRow(unittest.TestCase):
         self.assertIn("layout/ldo-core/reports/", area[0])
 
 
+class TestMalformedCampaignVerdict(unittest.TestCase):
+    """Issue #255: a selected campaign's `overall_pass` must be a JSON boolean.
+    Anything else is an evidence ERROR naming the record -- never coerced to
+    PASS/FAIL by truthiness, and never replaced by an older campaign."""
+
+    SLUG = "fake-slug"
+    PARAM = "Fake param"
+    ROWS = [{"parameter": PARAM, "draft_target": "< 1", "draft_stretch": "—",
+             "src": "G+S", "note": ""}]
+    MISSING = object()
+
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tmp.cleanup)
+        root = Path(self._tmp.name)
+        self._saved = (bcr.REPO_ROOT, bcr.SIM_DIR, dict(bcr.EVIDENCE_MAP))
+        bcr.REPO_ROOT, bcr.SIM_DIR = root, root / "sim"
+        bcr.EVIDENCE_MAP[self.PARAM] = self.SLUG
+        bcr.EVIDENCE_ERRORS.clear()
+        self.addCleanup(self._restore)
+
+    def _restore(self):
+        bcr.REPO_ROOT, bcr.SIM_DIR = self._saved[0], self._saved[1]
+        bcr.EVIDENCE_MAP.clear()
+        bcr.EVIDENCE_MAP.update(self._saved[2])
+        bcr.EVIDENCE_ERRORS.clear()
+
+    def _write(self, record_id, overall=True, **extra):
+        d = bcr.SIM_DIR / self.SLUG / "records"
+        d.mkdir(parents=True, exist_ok=True)
+        data = {"record_id": record_id, **extra}
+        if overall is not self.MISSING:
+            data["overall_pass"] = overall
+        (d / f"{record_id}.json").write_text(json.dumps(data))
+        (d / f"{record_id}.md").write_text(f"# {record_id}\n")
+
+    def _row(self):
+        table, detail = bcr.build_spec_row_table(self.ROWS, True)
+        return table[-1], detail[-1]
+
+    def test_valid_booleans_render_unchanged(self):
+        for value, word in ((True, "PASS"), (False, "FAIL")):
+            with self.subTest(value=value):
+                bcr.EVIDENCE_ERRORS.clear()
+                self._write("20260101-000000-good", value)
+                row, _ = self._row()
+                self.assertIn(f"**{word}**", row)
+                self.assertEqual(bcr.EVIDENCE_ERRORS, [])
+
+    def test_non_boolean_verdicts_are_errors_not_pass_or_fail(self):
+        bad = ["false", "true", "", "PASS", 0, 1, None, self.MISSING, [], [True], {}, {"a": 1}]
+        for value in bad:
+            with self.subTest(value=repr(value)):
+                bcr.EVIDENCE_ERRORS.clear()
+                self._write("20260101-000000-bad", value)
+                row, detail = self._row()
+                self.assertIn("**ERROR**", row)
+                self.assertNotIn("**PASS**", row)
+                self.assertNotIn("**FAIL**", row)
+                self.assertIn("20260101-000000-bad", detail)
+                self.assertEqual(len(bcr.EVIDENCE_ERRORS), 1)
+                self.assertIn("20260101-000000-bad", bcr.EVIDENCE_ERRORS[0])
+
+    def test_valid_older_then_invalid_newer_errors_naming_newer(self):
+        self._write("20260101-000000-older", True)
+        self._write("20260202-000000-newer", "false")
+        row, detail = self._row()
+        self.assertIn("**ERROR**", row)
+        self.assertIn("20260202-000000-newer", row)
+        self.assertNotIn("20260101-000000-older", row + detail)
+        self.assertIn("20260202-000000-newer", bcr.EVIDENCE_ERRORS[0])
+
+    def test_derived_record_with_no_verdict_is_still_excluded(self):
+        self._write("20260101-000000-camp", False)
+        self._write("20260202-000000-yield", self.MISSING, evidence_kind="yield")
+        row, _ = self._row()
+        self.assertIn("**FAIL**", row)
+        self.assertIn("20260101-000000-camp", row)
+        self.assertEqual(bcr.EVIDENCE_ERRORS, [])
+
+    def test_subset_disclosure_and_freshness_still_rendered_for_valid_record(self):
+        self._write("20260101-000000-sub", True,
+                    matrix={"is_subset": True, "subset_reason": "3-point subset"})
+        row, detail = self._row()
+        self.assertIn("(PVT subset)", row)
+        self.assertIn("3-point subset", detail)
+        self.assertIn("unverified: --no-netlist-freshness passed", detail)
+
+    def test_cli_exits_nonzero_on_malformed_verdict(self):
+        self._write("20260101-000000-bad", "false")
+        saved_spec = bcr.parse_spec_rows
+        bcr.parse_spec_rows = lambda _text: self.ROWS
+        self.addCleanup(lambda: setattr(bcr, "parse_spec_rows", saved_spec))
+        out = Path(self._tmp.name) / "out.md"
+        out.write_text("x")
+        for argv in (["--check", "--ignore-sim-freshness"], ["--stdout"], []):
+            with self.subTest(argv=argv):
+                err = io.StringIO()
+                with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(err):
+                    rc = bcr.main([*argv, "--out", str(out)])
+                self.assertEqual(rc, 1)
+                self.assertIn("20260101-000000-bad", err.getvalue())
+        self.assertEqual(out.read_text(), "x")
+
+
 if __name__ == "__main__":
     unittest.main()
