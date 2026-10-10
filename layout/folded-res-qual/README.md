@@ -32,7 +32,7 @@ Inputs are `cases.json` (the cases and the operating point) and the PDK
 pinned in `sim/pdk.json`. The flow runs one step at a time (no parallel
 fan-out) and takes about 40 s:
 
-1. `layout/bin/gen-folded-res-qual.py` writes three streams per case:
+1. `layout/bin/gen-folded-res-qual.py` writes four streams per case:
    - `<case>_unsplit`: `klt gen res_array num=1` at the schematic L. This is
      exactly what the core flow draws today.
    - `<case>_folded`: `res_array num=N rows=N` (one L/N segment per row, in
@@ -41,6 +41,10 @@ fan-out) and takes about 40 s:
      are merged into one rectangle over the bank.
    - `<case>_broken`: the folded bank with one strap left out. This is the
      LVS negative control.
+   - `<case>_unmerged`: the folded bank with every strap, but with the
+     per-row markers left as `res_array` draws them (no merge). This is the
+     expected-to-fail DRC control for the marker merge. It gets no
+     extraction or LVS.
 
    Each stream also gets a substrate tie labelled `SUB` and the chain-end
    labels `A`/`B`. `res_array` cannot chain its own units in series. That
@@ -49,7 +53,9 @@ fan-out) and takes about 40 s:
 2. DRC runs `klt drc --deck sky130` on every stream. This is the same gate the
    core records use. As a coverage cross-check, the PDK's own KLayout signoff
    runset (`libs.tech/klayout/drc/sky130A_mr.drc`, FEOL+BEOL) also runs on the
-   unsplit and folded streams.
+   unsplit, folded and unmerged streams. The flow fails unless the runset
+   reports at least one rule class on the unmerged stream that it does not
+   report on the folded stream.
 3. `klt extract` runs once with defaults, once with
    `--defer-resistor-fixed-offset`, and once with `--parasitics`. The
    parasitics run gives the measured lumped resistance of each joint's li1
@@ -83,7 +89,11 @@ or compensated, not assumed away. The record also shows the global
 sheet-rho corner spread and the process Monte Carlo sigma for context. They
 do not affect the verdict.
 
-## Findings (record `20261010-032804-ea209d2`)
+## Findings (record `20261010-033502-704005c`)
+
+This record supersedes `20261010-032804-ea209d2`, which stays in place
+unchanged (records are append-only). The new record adds the unmerged-marker
+DRC control. Every other number in it is identical to the earlier record.
 
 | case | layout | klt DRC | LVS vs unsplit | negative controls | R_eff shift | tolerance | verdict |
 |---|---|---|---|---|---|---|---|
@@ -99,8 +109,10 @@ do not affect the verdict.
    resistance convention. It does not prove electrical equivalence. The
    report gave no hint that anything was absorbed, so this was filed
    generically as **2AMLogic/klayout-tools#3017**. Secondary resistor
-   parameters (L, P) are not compared either: the 16-segment fold's
-   combined P is 3013.44 um against the reference's 3000.84 um.
+   parameters (L, P) never cause a mismatch by themselves. The 16-segment
+   fold's combined P is 3013.44 um against the reference's 3000.84 um, and
+   the unperturbed fold still matches. A `p` difference is listed only in
+   the perturbed report, on a device that has already failed on `r`.
 2. **End/contact effects were measured, not assumed.**
    - In the PDK model, each extra `res_high_po` segment adds about
      **+821 ohm**: one more head term plus the model's +0.247 um effective
@@ -127,22 +139,28 @@ do not affect the verdict.
      also pre-existing.
    - The merged bank markers clear the marker-width rule for N >= 4. The
      2-row bank is still 1.24 um tall, under the 1.27 um minimum.
-   - Folding added no new rule class. Without the merge, it would have added
-     `urpm.2` marker spacing between rows. That showed up in an unrecorded
-     development probe before the merge was added, and is why the merge
-     exists.
+   - With the markers merged, folding added no new rule class. The
+     unmerged control shows what the merge removes. In `rbias_n16` the
+     runset adds `rpm.2` x15 (marker spacing, one per row gap) and
+     `rpm.1a` x16 (marker width, one per row). In `rbias_n4` it adds
+     `rpm.2` x3 and `rpm.1a` x4. In `rfb_n2` it adds `urpm.2` x1, and
+     `urpm.1a` rises from x1 to x2. This is why the folded stream merges
+     its markers.
 4. **Area.** The 16-row R_BIAS bank is 94.59 x 12.72 um = 1203 um^2. The
    routed bbox is the same, because the straps sit inside the pad columns
    and add no bbox growth. They are 7.81 um^2 of li1. The #246 study
    estimated 4960 um^2 for this bank with a conservative pitch and
    1472 um^2 with an optimistic one. The equivalent 4-row bank is
    1082 um^2 but still 375.84 um wide.
-5. **Observation, not qualified.** A newer host build,
-   `klt 0.7.0+g8eec069c7576`, draws `res_array` high/xhigh with 0.19 x 2.0 um
+5. **Observation, not qualified and not in the record.** A newer
+   `klt 0.7.0+g8eec069c7576` build installed on the host, outside this
+   repo's pin (`layout/requirements.txt`), draws `res_array` high/xhigh with 0.19 x 2.0 um
    precision-poly contacts and per-row markers that abut at a 2.6 um row
    pitch, instead of 0.82 um at the pin. A 16-row bank from that generator
-   would be about 41.6 um tall (about 4000 um^2). Any future pin bump has to
-   re-mint this record before its area figures are reused.
+   would be about 41.6 um tall (about 4000 um^2). Nothing from that build
+   is in the record: these figures come from an unrecorded look at that
+   build's output. Any future pin bump has to re-mint this record before its
+   area figures are reused.
 
 **Verdict for the floorplan question.** Folding works for DRC (on the repo's
 gate) and LVS (by klt's fold convention) for both resistor flavours. Folding

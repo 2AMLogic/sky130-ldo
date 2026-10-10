@@ -1,0 +1,1618 @@
+{
+  "record_id": "20261010-033502-704005c",
+  "cases": [
+    {
+      "case": "rbias_n16",
+      "schematic_device": "R_BIAS",
+      "class": "res_high_po",
+      "l_um": 1500.0,
+      "w_um": 0.42,
+      "segments": 16,
+      "segment_l_um": 93.75,
+      "drc": {
+        "unsplit": {
+          "klt_status": "clean",
+          "klt_violations": 0,
+          "klt_rule_counts": {},
+          "klt_rules_checked": [
+            "li1.enclosing.licon1.1",
+            "li1.space.1",
+            "li1.width.1",
+            "poly.enclosing.licon.1",
+            "poly.width.1",
+            "tap.enclosing.licon.1",
+            "tap.width.1"
+          ],
+          "pdk_signoff_counts": {
+            "rpm.1a": 1,
+            "licon.1": 8
+          }
+        },
+        "folded": {
+          "klt_status": "clean",
+          "klt_violations": 0,
+          "klt_rule_counts": {},
+          "klt_rules_checked": [
+            "li1.enclosing.licon1.1",
+            "li1.space.1",
+            "li1.width.1",
+            "poly.enclosing.licon.1",
+            "poly.width.1",
+            "tap.enclosing.licon.1",
+            "tap.width.1"
+          ],
+          "pdk_signoff_counts": {
+            "licon.1": 128
+          }
+        },
+        "broken": {
+          "klt_status": "clean",
+          "klt_violations": 0,
+          "klt_rule_counts": {},
+          "klt_rules_checked": [
+            "li1.enclosing.licon1.1",
+            "li1.space.1",
+            "li1.width.1",
+            "poly.enclosing.licon.1",
+            "poly.width.1",
+            "tap.enclosing.licon.1",
+            "tap.width.1"
+          ]
+        },
+        "unmerged": {
+          "klt_status": "clean",
+          "klt_violations": 0,
+          "klt_rule_counts": {},
+          "klt_rules_checked": [
+            "li1.enclosing.licon1.1",
+            "li1.space.1",
+            "li1.width.1",
+            "poly.enclosing.licon.1",
+            "poly.width.1",
+            "tap.enclosing.licon.1",
+            "tap.width.1"
+          ],
+          "pdk_signoff_counts": {
+            "rpm.1a": 16,
+            "rpm.2": 15,
+            "licon.1": 128
+          },
+          "expected": "PDK signoff adds rule classes vs folded",
+          "added_vs_folded": {
+            "rpm.1a": 16,
+            "rpm.2": 15
+          }
+        }
+      },
+      "extract": {
+        "unsplit.default": {
+          "device_count": 1,
+          "r_sum_ohm": 1160477.005147,
+          "r_each_ohm": [
+            1160477.005147
+          ]
+        },
+        "unsplit.parasitics": {
+          "device_count": 1,
+          "r_sum_ohm": 1160477.005147,
+          "r_each_ohm": [
+            1160477.005147
+          ],
+          "nets": [
+            {
+              "net": "A",
+              "resistance_ohm": 61.0,
+              "by_layer": {
+                "poly": 48.2,
+                "metal0": 12.8
+              }
+            },
+            {
+              "net": "B",
+              "resistance_ohm": 61.0,
+              "by_layer": {
+                "poly": 48.2,
+                "metal0": 12.8
+              }
+            },
+            {
+              "net": "SUB",
+              "resistance_ohm": 12.8,
+              "by_layer": {
+                "metal0": 12.8
+              }
+            }
+          ]
+        },
+        "folded.default": {
+          "device_count": 16,
+          "r_sum_ohm": 1166172.582352,
+          "r_each_ohm": [
+            72885.786397
+          ]
+        },
+        "folded.defer": {
+          "device_count": 16,
+          "r_sum_ohm": 1160097.3,
+          "r_each_ohm": [
+            72506.08125
+          ]
+        },
+        "folded.parasitics": {
+          "device_count": 16,
+          "r_sum_ohm": 1166172.582352,
+          "r_each_ohm": [
+            72885.786397
+          ],
+          "nets": [
+            {
+              "net": "\\$10",
+              "resistance_ohm": 318.7207,
+              "by_layer": {
+                "poly": 280.9302,
+                "metal0": 37.7905
+              }
+            },
+            {
+              "net": "\\$11",
+              "resistance_ohm": 318.7207,
+              "by_layer": {
+                "poly": 280.9302,
+                "metal0": 37.7905
+              }
+            },
+            {
+              "net": "\\$12",
+              "resistance_ohm": 318.7207,
+              "by_layer": {
+                "poly": 280.9302,
+                "metal0": 37.7905
+              }
+            },
+            {
+              "net": "\\$13",
+              "resistance_ohm": 318.7207,
+              "by_layer": {
+                "poly": 280.9302,
+                "metal0": 37.7905
+              }
+            },
+            {
+              "net": "\\$14",
+              "resistance_ohm": 318.7207,
+              "by_layer": {
+                "poly": 280.9302,
+                "metal0": 37.7905
+              }
+            },
+            {
+              "net": "\\$15",
+              "resistance_ohm": 318.7207,
+              "by_layer": {
+                "poly": 280.9302,
+                "metal0": 37.7905
+              }
+            },
+            {
+              "net": "\\$16",
+              "resistance_ohm": 318.7207,
+              "by_layer": {
+                "poly": 280.9302,
+                "metal0": 37.7905
+              }
+            },
+            {
+              "net": "\\$17",
+              "resistance_ohm": 318.7207,
+              "by_layer": {
+                "poly": 280.9302,
+                "metal0": 37.7905
+              }
+            },
+            {
+              "net": "\\$2",
+              "resistance_ohm": 318.7207,
+              "by_layer": {
+                "poly": 280.9302,
+                "metal0": 37.7905
+              }
+            },
+            {
+              "net": "\\$3",
+              "resistance_ohm": 318.7207,
+              "by_layer": {
+                "poly": 280.9302,
+                "metal0": 37.7905
+              }
+            },
+            {
+              "net": "\\$5",
+              "resistance_ohm": 318.7207,
+              "by_layer": {
+                "poly": 280.9302,
+                "metal0": 37.7905
+              }
+            },
+            {
+              "net": "\\$6",
+              "resistance_ohm": 318.7207,
+              "by_layer": {
+                "poly": 280.9302,
+                "metal0": 37.7905
+              }
+            },
+            {
+              "net": "\\$7",
+              "resistance_ohm": 318.7207,
+              "by_layer": {
+                "poly": 280.9302,
+                "metal0": 37.7905
+              }
+            },
+            {
+              "net": "\\$8",
+              "resistance_ohm": 318.7207,
+              "by_layer": {
+                "poly": 280.9302,
+                "metal0": 37.7905
+              }
+            },
+            {
+              "net": "\\$9",
+              "resistance_ohm": 318.7207,
+              "by_layer": {
+                "poly": 280.9302,
+                "metal0": 37.7905
+              }
+            },
+            {
+              "net": "A",
+              "resistance_ohm": 61.0,
+              "by_layer": {
+                "poly": 48.2,
+                "metal0": 12.8
+              }
+            },
+            {
+              "net": "B",
+              "resistance_ohm": 61.0,
+              "by_layer": {
+                "poly": 48.2,
+                "metal0": 12.8
+              }
+            },
+            {
+              "net": "SUB",
+              "resistance_ohm": 12.8,
+              "by_layer": {
+                "metal0": 12.8
+              }
+            }
+          ]
+        },
+        "broken.default": {
+          "device_count": 16,
+          "r_sum_ohm": 1166172.582352,
+          "r_each_ohm": [
+            72885.786397
+          ]
+        }
+      },
+      "resistance": {
+        "deck_sheet_rho_ohm_sq": 324.827244,
+        "deck_fixed_offset_ohm": 379.705147,
+        "unsplit_deck_r_ohm": 1160477.005147,
+        "unsplit_extracted_r_ohm": 1160477.005147,
+        "folded_extracted_sum_ohm": 1166172.582352,
+        "folded_extracted_sum_delta_frac": 0.0049079621394811776,
+        "folded_defer_sum_ohm": 1160097.3,
+        "folded_defer_plus_one_offset_ohm": 1160477.005147,
+        "joint_count": 15,
+        "joint_li1_ohm_each": [
+          37.7905,
+          37.7905,
+          37.7905,
+          37.7905,
+          37.7905,
+          37.7905,
+          37.7905,
+          37.7905,
+          37.7905,
+          37.7905,
+          37.7905,
+          37.7905,
+          37.7905,
+          37.7905,
+          37.7905
+        ],
+        "joint_poly_head_ohm_each": [
+          280.9302,
+          280.9302,
+          280.9302,
+          280.9302,
+          280.9302,
+          280.9302,
+          280.9302,
+          280.9302,
+          280.9302,
+          280.9302,
+          280.9302,
+          280.9302,
+          280.9302,
+          280.9302,
+          280.9302
+        ]
+      },
+      "lvs": {
+        "unsplit": {
+          "name": "rbias_n16_unsplit",
+          "status": "match",
+          "counts": {
+            "nets": {
+              "layout": 3,
+              "reference": 3,
+              "matched": 3
+            },
+            "devices": {
+              "layout": 1,
+              "reference": 1,
+              "matched": 1
+            },
+            "pins": {
+              "layout": 3,
+              "reference": 3,
+              "matched": 3
+            }
+          },
+          "category_counts": {
+            "device.bulk_reconciled": 1,
+            "topology": 3
+          },
+          "error_properties": []
+        },
+        "folded": {
+          "name": "rbias_n16_folded",
+          "status": "match",
+          "counts": {
+            "nets": {
+              "layout": 3,
+              "reference": 3,
+              "matched": 3
+            },
+            "devices": {
+              "layout": 1,
+              "reference": 1,
+              "matched": 1
+            },
+            "pins": {
+              "layout": 3,
+              "reference": 3,
+              "matched": 3
+            }
+          },
+          "category_counts": {
+            "device.bulk_reconciled": 1,
+            "topology": 3
+          },
+          "error_properties": []
+        },
+        "folded_perturbed": {
+          "name": "rbias_n16_folded.perturbed",
+          "status": "mismatch",
+          "counts": {
+            "nets": {
+              "layout": 3,
+              "reference": 3,
+              "matched": 0
+            },
+            "devices": {
+              "layout": 1,
+              "reference": 1,
+              "matched": 0
+            },
+            "pins": {
+              "layout": 3,
+              "reference": 3,
+              "matched": 6
+            }
+          },
+          "category_counts": {
+            "device.bulk_reconciled": 1,
+            "device.property": 2,
+            "device.unmatched": 2,
+            "net.unmatched": 6,
+            "topology": 3
+          },
+          "error_properties": [
+            {
+              "name": "r",
+              "layout": 1160477.0051470003,
+              "reference": 1161637.4821519998
+            },
+            {
+              "name": "p",
+              "layout": 3013.4400000000005,
+              "reference": 3000.84
+            }
+          ]
+        },
+        "broken": {
+          "name": "rbias_n16_broken",
+          "status": "mismatch",
+          "counts": {
+            "nets": {
+              "layout": 5,
+              "reference": 3,
+              "matched": 0
+            },
+            "devices": {
+              "layout": 2,
+              "reference": 1,
+              "matched": 0
+            },
+            "pins": {
+              "layout": 3,
+              "reference": 3,
+              "matched": 6
+            }
+          },
+          "category_counts": {
+            "device.bulk_reconciled": 1,
+            "device.unmatched": 3,
+            "net.unmatched": 8,
+            "topology": 3
+          },
+          "error_properties": []
+        }
+      },
+      "area": {
+        "unsplit_device_bbox": {
+          "width_um": 1500.84,
+          "height_um": 0.42,
+          "area_um2": 630.3528
+        },
+        "folded_device_bbox": {
+          "width_um": 94.59,
+          "height_um": 12.72,
+          "area_um2": 1203.1848
+        },
+        "unsplit_with_tie_bbox": {
+          "width_um": 1500.84,
+          "height_um": 2.92,
+          "area_um2": 4382.4528
+        },
+        "folded_with_tie_bbox": {
+          "width_um": 94.59,
+          "height_um": 15.22,
+          "area_um2": 1439.6598
+        },
+        "body_area_um2": 630.0,
+        "folded_vs_unsplit_area_ratio": 1.9087,
+        "width_reduction_um": 1406.25,
+        "strap_count": 15,
+        "strap_li1_area_um2": 7.812,
+        "folded_routed_bbox": {
+          "width_um": 94.59,
+          "height_um": 12.72,
+          "area_um2": 1203.1848
+        },
+        "strap_bbox_growth_um2": 0.0
+      }
+    },
+    {
+      "case": "rbias_n4",
+      "schematic_device": "R_BIAS",
+      "class": "res_high_po",
+      "l_um": 1500.0,
+      "w_um": 0.42,
+      "segments": 4,
+      "segment_l_um": 375.0,
+      "drc": {
+        "unsplit": {
+          "klt_status": "clean",
+          "klt_violations": 0,
+          "klt_rule_counts": {},
+          "klt_rules_checked": [
+            "li1.enclosing.licon1.1",
+            "li1.space.1",
+            "li1.width.1",
+            "poly.enclosing.licon.1",
+            "poly.width.1",
+            "tap.enclosing.licon.1",
+            "tap.width.1"
+          ],
+          "pdk_signoff_counts": {
+            "rpm.1a": 1,
+            "licon.1": 8
+          }
+        },
+        "folded": {
+          "klt_status": "clean",
+          "klt_violations": 0,
+          "klt_rule_counts": {},
+          "klt_rules_checked": [
+            "li1.enclosing.licon1.1",
+            "li1.space.1",
+            "li1.width.1",
+            "poly.enclosing.licon.1",
+            "poly.width.1",
+            "tap.enclosing.licon.1",
+            "tap.width.1"
+          ],
+          "pdk_signoff_counts": {
+            "licon.1": 32
+          }
+        },
+        "broken": {
+          "klt_status": "clean",
+          "klt_violations": 0,
+          "klt_rule_counts": {},
+          "klt_rules_checked": [
+            "li1.enclosing.licon1.1",
+            "li1.space.1",
+            "li1.width.1",
+            "poly.enclosing.licon.1",
+            "poly.width.1",
+            "tap.enclosing.licon.1",
+            "tap.width.1"
+          ]
+        },
+        "unmerged": {
+          "klt_status": "clean",
+          "klt_violations": 0,
+          "klt_rule_counts": {},
+          "klt_rules_checked": [
+            "li1.enclosing.licon1.1",
+            "li1.space.1",
+            "li1.width.1",
+            "poly.enclosing.licon.1",
+            "poly.width.1",
+            "tap.enclosing.licon.1",
+            "tap.width.1"
+          ],
+          "pdk_signoff_counts": {
+            "rpm.1a": 4,
+            "rpm.2": 3,
+            "licon.1": 32
+          },
+          "expected": "PDK signoff adds rule classes vs folded",
+          "added_vs_folded": {
+            "rpm.1a": 4,
+            "rpm.2": 3
+          }
+        }
+      },
+      "extract": {
+        "unsplit.default": {
+          "device_count": 1,
+          "r_sum_ohm": 1160477.005147,
+          "r_each_ohm": [
+            1160477.005147
+          ]
+        },
+        "unsplit.parasitics": {
+          "device_count": 1,
+          "r_sum_ohm": 1160477.005147,
+          "r_each_ohm": [
+            1160477.005147
+          ],
+          "nets": [
+            {
+              "net": "A",
+              "resistance_ohm": 61.0,
+              "by_layer": {
+                "poly": 48.2,
+                "metal0": 12.8
+              }
+            },
+            {
+              "net": "B",
+              "resistance_ohm": 61.0,
+              "by_layer": {
+                "poly": 48.2,
+                "metal0": 12.8
+              }
+            },
+            {
+              "net": "SUB",
+              "resistance_ohm": 12.8,
+              "by_layer": {
+                "metal0": 12.8
+              }
+            }
+          ]
+        },
+        "folded.default": {
+          "device_count": 4,
+          "r_sum_ohm": 1161616.120588,
+          "r_each_ohm": [
+            290404.030147
+          ]
+        },
+        "folded.defer": {
+          "device_count": 4,
+          "r_sum_ohm": 1160097.3,
+          "r_each_ohm": [
+            290024.325
+          ]
+        },
+        "folded.parasitics": {
+          "device_count": 4,
+          "r_sum_ohm": 1161616.120588,
+          "r_each_ohm": [
+            290404.030147
+          ],
+          "nets": [
+            {
+              "net": "\\$2",
+              "resistance_ohm": 318.7207,
+              "by_layer": {
+                "poly": 280.9302,
+                "metal0": 37.7905
+              }
+            },
+            {
+              "net": "\\$3",
+              "resistance_ohm": 318.7207,
+              "by_layer": {
+                "poly": 280.9302,
+                "metal0": 37.7905
+              }
+            },
+            {
+              "net": "\\$4",
+              "resistance_ohm": 318.7207,
+              "by_layer": {
+                "poly": 280.9302,
+                "metal0": 37.7905
+              }
+            },
+            {
+              "net": "A",
+              "resistance_ohm": 61.0,
+              "by_layer": {
+                "poly": 48.2,
+                "metal0": 12.8
+              }
+            },
+            {
+              "net": "B",
+              "resistance_ohm": 61.0,
+              "by_layer": {
+                "poly": 48.2,
+                "metal0": 12.8
+              }
+            },
+            {
+              "net": "SUB",
+              "resistance_ohm": 12.8,
+              "by_layer": {
+                "metal0": 12.8
+              }
+            }
+          ]
+        },
+        "broken.default": {
+          "device_count": 4,
+          "r_sum_ohm": 1161616.120588,
+          "r_each_ohm": [
+            290404.030147
+          ]
+        }
+      },
+      "resistance": {
+        "deck_sheet_rho_ohm_sq": 324.827244,
+        "deck_fixed_offset_ohm": 379.705147,
+        "unsplit_deck_r_ohm": 1160477.005147,
+        "unsplit_extracted_r_ohm": 1160477.005147,
+        "folded_extracted_sum_ohm": 1161616.120588,
+        "folded_extracted_sum_delta_frac": 0.0009815924278961151,
+        "folded_defer_sum_ohm": 1160097.3,
+        "folded_defer_plus_one_offset_ohm": 1160477.005147,
+        "joint_count": 3,
+        "joint_li1_ohm_each": [
+          37.7905,
+          37.7905,
+          37.7905
+        ],
+        "joint_poly_head_ohm_each": [
+          280.9302,
+          280.9302,
+          280.9302
+        ]
+      },
+      "lvs": {
+        "unsplit": {
+          "name": "rbias_n4_unsplit",
+          "status": "match",
+          "counts": {
+            "nets": {
+              "layout": 3,
+              "reference": 3,
+              "matched": 3
+            },
+            "devices": {
+              "layout": 1,
+              "reference": 1,
+              "matched": 1
+            },
+            "pins": {
+              "layout": 3,
+              "reference": 3,
+              "matched": 3
+            }
+          },
+          "category_counts": {
+            "device.bulk_reconciled": 1,
+            "topology": 3
+          },
+          "error_properties": []
+        },
+        "folded": {
+          "name": "rbias_n4_folded",
+          "status": "match",
+          "counts": {
+            "nets": {
+              "layout": 3,
+              "reference": 3,
+              "matched": 3
+            },
+            "devices": {
+              "layout": 1,
+              "reference": 1,
+              "matched": 1
+            },
+            "pins": {
+              "layout": 3,
+              "reference": 3,
+              "matched": 3
+            }
+          },
+          "category_counts": {
+            "device.bulk_reconciled": 1,
+            "topology": 3
+          },
+          "error_properties": []
+        },
+        "folded_perturbed": {
+          "name": "rbias_n4_folded.perturbed",
+          "status": "mismatch",
+          "counts": {
+            "nets": {
+              "layout": 3,
+              "reference": 3,
+              "matched": 0
+            },
+            "devices": {
+              "layout": 1,
+              "reference": 1,
+              "matched": 0
+            },
+            "pins": {
+              "layout": 3,
+              "reference": 3,
+              "matched": 6
+            }
+          },
+          "category_counts": {
+            "device.bulk_reconciled": 1,
+            "device.property": 2,
+            "device.unmatched": 2,
+            "net.unmatched": 6,
+            "topology": 3
+          },
+          "error_properties": [
+            {
+              "name": "r",
+              "layout": 1160477.005147,
+              "reference": 1161637.4821519998
+            },
+            {
+              "name": "p",
+              "layout": 3003.36,
+              "reference": 3000.84
+            }
+          ]
+        },
+        "broken": {
+          "name": "rbias_n4_broken",
+          "status": "mismatch",
+          "counts": {
+            "nets": {
+              "layout": 5,
+              "reference": 3,
+              "matched": 0
+            },
+            "devices": {
+              "layout": 2,
+              "reference": 1,
+              "matched": 0
+            },
+            "pins": {
+              "layout": 3,
+              "reference": 3,
+              "matched": 6
+            }
+          },
+          "category_counts": {
+            "device.bulk_reconciled": 1,
+            "device.unmatched": 3,
+            "net.unmatched": 8,
+            "topology": 3
+          },
+          "error_properties": []
+        }
+      },
+      "area": {
+        "unsplit_device_bbox": {
+          "width_um": 1500.84,
+          "height_um": 0.42,
+          "area_um2": 630.3528
+        },
+        "folded_device_bbox": {
+          "width_um": 375.84,
+          "height_um": 2.88,
+          "area_um2": 1082.4192
+        },
+        "unsplit_with_tie_bbox": {
+          "width_um": 1500.84,
+          "height_um": 2.92,
+          "area_um2": 4382.4528
+        },
+        "folded_with_tie_bbox": {
+          "width_um": 375.84,
+          "height_um": 5.38,
+          "area_um2": 2022.0192
+        },
+        "body_area_um2": 630.0,
+        "folded_vs_unsplit_area_ratio": 1.7172,
+        "width_reduction_um": 1125.0,
+        "strap_count": 3,
+        "strap_li1_area_um2": 1.5624,
+        "folded_routed_bbox": {
+          "width_um": 375.84,
+          "height_um": 2.88,
+          "area_um2": 1082.4192
+        },
+        "strap_bbox_growth_um2": 0.0
+      }
+    },
+    {
+      "case": "rfb_n2",
+      "schematic_device": "R_FB_A",
+      "class": "res_xhigh_po",
+      "l_um": 180.0,
+      "w_um": 0.42,
+      "segments": 2,
+      "segment_l_um": 90.0,
+      "drc": {
+        "unsplit": {
+          "klt_status": "clean",
+          "klt_violations": 0,
+          "klt_rule_counts": {},
+          "klt_rules_checked": [
+            "li1.enclosing.licon1.1",
+            "li1.space.1",
+            "li1.width.1",
+            "poly.enclosing.licon.1",
+            "poly.width.1",
+            "tap.enclosing.licon.1",
+            "tap.width.1"
+          ],
+          "pdk_signoff_counts": {
+            "urpm.1a": 1,
+            "licon.1": 8
+          }
+        },
+        "folded": {
+          "klt_status": "clean",
+          "klt_violations": 0,
+          "klt_rule_counts": {},
+          "klt_rules_checked": [
+            "li1.enclosing.licon1.1",
+            "li1.space.1",
+            "li1.width.1",
+            "poly.enclosing.licon.1",
+            "poly.width.1",
+            "tap.enclosing.licon.1",
+            "tap.width.1"
+          ],
+          "pdk_signoff_counts": {
+            "urpm.1a": 1,
+            "licon.1": 16
+          }
+        },
+        "broken": {
+          "klt_status": "clean",
+          "klt_violations": 0,
+          "klt_rule_counts": {},
+          "klt_rules_checked": [
+            "li1.enclosing.licon1.1",
+            "li1.space.1",
+            "li1.width.1",
+            "poly.enclosing.licon.1",
+            "poly.width.1",
+            "tap.enclosing.licon.1",
+            "tap.width.1"
+          ]
+        },
+        "unmerged": {
+          "klt_status": "clean",
+          "klt_violations": 0,
+          "klt_rule_counts": {},
+          "klt_rules_checked": [
+            "li1.enclosing.licon1.1",
+            "li1.space.1",
+            "li1.width.1",
+            "poly.enclosing.licon.1",
+            "poly.width.1",
+            "tap.enclosing.licon.1",
+            "tap.width.1"
+          ],
+          "pdk_signoff_counts": {
+            "urpm.1a": 2,
+            "urpm.2": 1,
+            "licon.1": 16
+          },
+          "expected": "PDK signoff adds rule classes vs folded",
+          "added_vs_folded": {
+            "urpm.2": 1
+          }
+        }
+      },
+      "extract": {
+        "unsplit.default": {
+          "device_count": 1,
+          "r_sum_ohm": 857142.857143,
+          "r_each_ohm": [
+            857142.857143
+          ]
+        },
+        "unsplit.parasitics": {
+          "device_count": 1,
+          "r_sum_ohm": 857142.857143,
+          "r_each_ohm": [
+            857142.857143
+          ],
+          "nets": [
+            {
+              "net": "A",
+              "resistance_ohm": 61.0,
+              "by_layer": {
+                "poly": 48.2,
+                "metal0": 12.8
+              }
+            },
+            {
+              "net": "B",
+              "resistance_ohm": 61.0,
+              "by_layer": {
+                "poly": 48.2,
+                "metal0": 12.8
+              }
+            },
+            {
+              "net": "SUB",
+              "resistance_ohm": 12.8,
+              "by_layer": {
+                "metal0": 12.8
+              }
+            }
+          ]
+        },
+        "folded.default": {
+          "device_count": 2,
+          "r_sum_ohm": 857142.857142,
+          "r_each_ohm": [
+            428571.428571
+          ]
+        },
+        "folded.defer": {
+          "device_count": 2,
+          "r_sum_ohm": 857142.857142,
+          "r_each_ohm": [
+            428571.428571
+          ]
+        },
+        "folded.parasitics": {
+          "device_count": 2,
+          "r_sum_ohm": 857142.857142,
+          "r_each_ohm": [
+            428571.428571
+          ],
+          "nets": [
+            {
+              "net": "\\$2",
+              "resistance_ohm": 318.7207,
+              "by_layer": {
+                "poly": 280.9302,
+                "metal0": 37.7905
+              }
+            },
+            {
+              "net": "A",
+              "resistance_ohm": 61.0,
+              "by_layer": {
+                "poly": 48.2,
+                "metal0": 12.8
+              }
+            },
+            {
+              "net": "B",
+              "resistance_ohm": 61.0,
+              "by_layer": {
+                "poly": 48.2,
+                "metal0": 12.8
+              }
+            },
+            {
+              "net": "SUB",
+              "resistance_ohm": 12.8,
+              "by_layer": {
+                "metal0": 12.8
+              }
+            }
+          ]
+        },
+        "broken.default": {
+          "device_count": 2,
+          "r_sum_ohm": 857142.857142,
+          "r_each_ohm": [
+            428571.428571
+          ]
+        }
+      },
+      "resistance": {
+        "deck_sheet_rho_ohm_sq": 2000.0,
+        "deck_fixed_offset_ohm": 0.0,
+        "unsplit_deck_r_ohm": 857142.8571428572,
+        "unsplit_extracted_r_ohm": 857142.857143,
+        "folded_extracted_sum_ohm": 857142.857142,
+        "folded_extracted_sum_delta_frac": -1.0000270170470078e-12,
+        "folded_defer_sum_ohm": 857142.857142,
+        "folded_defer_plus_one_offset_ohm": 857142.857142,
+        "joint_count": 1,
+        "joint_li1_ohm_each": [
+          37.7905
+        ],
+        "joint_poly_head_ohm_each": [
+          280.9302
+        ]
+      },
+      "lvs": {
+        "unsplit": {
+          "name": "rfb_n2_unsplit",
+          "status": "match",
+          "counts": {
+            "nets": {
+              "layout": 3,
+              "reference": 3,
+              "matched": 3
+            },
+            "devices": {
+              "layout": 1,
+              "reference": 1,
+              "matched": 1
+            },
+            "pins": {
+              "layout": 3,
+              "reference": 3,
+              "matched": 3
+            }
+          },
+          "category_counts": {
+            "device.bulk_reconciled": 1,
+            "topology": 3
+          },
+          "error_properties": []
+        },
+        "folded": {
+          "name": "rfb_n2_folded",
+          "status": "match",
+          "counts": {
+            "nets": {
+              "layout": 3,
+              "reference": 3,
+              "matched": 3
+            },
+            "devices": {
+              "layout": 1,
+              "reference": 1,
+              "matched": 1
+            },
+            "pins": {
+              "layout": 3,
+              "reference": 3,
+              "matched": 3
+            }
+          },
+          "category_counts": {
+            "device.bulk_reconciled": 1,
+            "topology": 3
+          },
+          "error_properties": []
+        },
+        "folded_perturbed": {
+          "name": "rfb_n2_folded.perturbed",
+          "status": "mismatch",
+          "counts": {
+            "nets": {
+              "layout": 3,
+              "reference": 3,
+              "matched": 0
+            },
+            "devices": {
+              "layout": 1,
+              "reference": 1,
+              "matched": 0
+            },
+            "pins": {
+              "layout": 3,
+              "reference": 3,
+              "matched": 6
+            }
+          },
+          "category_counts": {
+            "device.bulk_reconciled": 1,
+            "device.property": 2,
+            "device.unmatched": 2,
+            "net.unmatched": 6,
+            "topology": 3
+          },
+          "error_properties": [
+            {
+              "name": "r",
+              "layout": 857142.8571428572,
+              "reference": 858000.0
+            },
+            {
+              "name": "p",
+              "layout": 361.68,
+              "reference": 360.84000000000003
+            }
+          ]
+        },
+        "broken": {
+          "name": "rfb_n2_broken",
+          "status": "mismatch",
+          "counts": {
+            "nets": {
+              "layout": 5,
+              "reference": 3,
+              "matched": 0
+            },
+            "devices": {
+              "layout": 2,
+              "reference": 1,
+              "matched": 0
+            },
+            "pins": {
+              "layout": 3,
+              "reference": 3,
+              "matched": 6
+            }
+          },
+          "category_counts": {
+            "device.bulk_reconciled": 1,
+            "device.unmatched": 3,
+            "net.unmatched": 8,
+            "topology": 3
+          },
+          "error_properties": []
+        }
+      },
+      "area": {
+        "unsplit_device_bbox": {
+          "width_um": 180.84,
+          "height_um": 0.42,
+          "area_um2": 75.9528
+        },
+        "folded_device_bbox": {
+          "width_um": 90.84,
+          "height_um": 1.24,
+          "area_um2": 112.6416
+        },
+        "unsplit_with_tie_bbox": {
+          "width_um": 180.84,
+          "height_um": 2.92,
+          "area_um2": 528.0528
+        },
+        "folded_with_tie_bbox": {
+          "width_um": 90.84,
+          "height_um": 3.74,
+          "area_um2": 339.7416
+        },
+        "body_area_um2": 75.6,
+        "folded_vs_unsplit_area_ratio": 1.483,
+        "width_reduction_um": 90.0,
+        "strap_count": 1,
+        "strap_li1_area_um2": 0.5208,
+        "folded_routed_bbox": {
+          "width_um": 90.84,
+          "height_um": 1.24,
+          "area_um2": 112.6416
+        },
+        "strap_bbox_growth_um2": 0.0
+      }
+    }
+  ],
+  "electrical": {
+    "corner": "tt",
+    "temp_c": 27,
+    "lib": "libs.tech/combined/sky130.lib.spice",
+    "joint_ohm": {
+      "R_BIAS": 37.7905,
+      "R_FB_A": 37.7905
+    },
+    "tolerances": {
+      "R_BIAS": {
+        "basis": "3 x local-mismatch sigma of the unsplit device (PDK combined model library)",
+        "mismatch_param": "sw_mm_sky130_fd_pr__res_high_po",
+        "mismatch_param_value": 0.0206,
+        "mismatch_factor": 1.0,
+        "sigma_frac": 0.0008207236450762837,
+        "sigmas": 3.0,
+        "tolerance_frac": 0.002462170935228851,
+        "context_sheet_rho": {
+          "low": {
+            "nominal": 325.0,
+            "corner_delta": -48.0,
+            "process_mc_sigma_frac": 0.035
+          },
+          "nom": {
+            "nominal": 325.0,
+            "corner_delta": 0.0,
+            "process_mc_sigma_frac": 0.035
+          },
+          "high": {
+            "nominal": 325.0,
+            "corner_delta": 45.0,
+            "process_mc_sigma_frac": 0.035
+          }
+        }
+      },
+      "R_FB_A": {
+        "basis": "3 x local-mismatch sigma of the unsplit device (PDK combined model library)",
+        "mismatch_param": "sw_mm_sky130_fd_pr__res_xhigh_po",
+        "mismatch_param_value": 0.0464,
+        "mismatch_factor": 1.0,
+        "sigma_frac": 0.005336506992247539,
+        "sigmas": 3.0,
+        "tolerance_frac": 0.016009520976742617,
+        "context_sheet_rho": {
+          "low": {
+            "nominal": 2000.0,
+            "corner_delta": -300.0,
+            "process_mc_sigma_frac": 0.04
+          },
+          "nom": {
+            "nominal": 2000.0,
+            "corner_delta": 0.0,
+            "process_mc_sigma_frac": 0.04
+          },
+          "high": {
+            "nominal": 2000.0,
+            "corner_delta": 300.0,
+            "process_mc_sigma_frac": 0.04
+          }
+        }
+      }
+    },
+    "rows": [
+      {
+        "tag": "r_r_bias_n1",
+        "schematic_device": "R_BIAS",
+        "segments": 1,
+        "segment_l_um": 1500.0,
+        "joints_included": false,
+        "joint_ohm": 0.0,
+        "op_v": 2.0,
+        "r_eff_ohm": 1215106.716311,
+        "r_unsplit_ohm": 1215106.716311,
+        "delta_ohm": 0.0,
+        "delta_frac": 0.0,
+        "tolerance_frac": 0.002462170935228851,
+        "verdict": "EQUIVALENT"
+      },
+      {
+        "tag": "r_r_bias_n2",
+        "schematic_device": "R_BIAS",
+        "segments": 2,
+        "segment_l_um": 750.0,
+        "joints_included": false,
+        "joint_ohm": 0.0,
+        "op_v": 2.0,
+        "r_eff_ohm": 1215927.934214,
+        "r_unsplit_ohm": 1215106.716311,
+        "delta_ohm": 821.217902999837,
+        "delta_frac": 0.0006758401480102186,
+        "tolerance_frac": 0.002462170935228851,
+        "verdict": "EQUIVALENT"
+      },
+      {
+        "tag": "r_r_bias_n2_j",
+        "schematic_device": "R_BIAS",
+        "segments": 2,
+        "segment_l_um": 750.0,
+        "joints_included": true,
+        "joint_ohm": 37.7905,
+        "op_v": 2.0,
+        "r_eff_ohm": 1215965.724714,
+        "r_unsplit_ohm": 1215106.716311,
+        "delta_ohm": 859.0084029999562,
+        "delta_frac": 0.0007069407085559204,
+        "tolerance_frac": 0.002462170935228851,
+        "verdict": "EQUIVALENT"
+      },
+      {
+        "tag": "r_r_bias_n4",
+        "schematic_device": "R_BIAS",
+        "segments": 4,
+        "segment_l_um": 375.0,
+        "joints_included": false,
+        "joint_ohm": 0.0,
+        "op_v": 2.0,
+        "r_eff_ohm": 1217570.370018,
+        "r_unsplit_ohm": 1215106.716311,
+        "delta_ohm": 2463.6537069999613,
+        "delta_frac": 0.0020275204423850805,
+        "tolerance_frac": 0.002462170935228851,
+        "verdict": "EQUIVALENT"
+      },
+      {
+        "tag": "r_r_bias_n4_j",
+        "schematic_device": "R_BIAS",
+        "segments": 4,
+        "segment_l_um": 375.0,
+        "joints_included": true,
+        "joint_ohm": 37.7905,
+        "op_v": 2.0,
+        "r_eff_ohm": 1217683.741523,
+        "r_unsplit_ohm": 1215106.716311,
+        "delta_ohm": 2577.0252119998913,
+        "delta_frac": 0.002120822128136699,
+        "tolerance_frac": 0.002462170935228851,
+        "verdict": "EQUIVALENT"
+      },
+      {
+        "tag": "r_r_bias_n8",
+        "schematic_device": "R_BIAS",
+        "segments": 8,
+        "segment_l_um": 187.5,
+        "joints_included": false,
+        "joint_ohm": 0.0,
+        "op_v": 2.0,
+        "r_eff_ohm": 1220855.24163,
+        "r_unsplit_ohm": 1215106.716311,
+        "delta_ohm": 5748.525319000008,
+        "delta_frac": 0.0047308810344265295,
+        "tolerance_frac": 0.002462170935228851,
+        "verdict": "NOT EQUIVALENT"
+      },
+      {
+        "tag": "r_r_bias_n8_j",
+        "schematic_device": "R_BIAS",
+        "segments": 8,
+        "segment_l_um": 187.5,
+        "joints_included": true,
+        "joint_ohm": 37.7905,
+        "op_v": 2.0,
+        "r_eff_ohm": 1221119.775132,
+        "r_unsplit_ohm": 1215106.716311,
+        "delta_ohm": 6013.058820999926,
+        "delta_frac": 0.004948584959891635,
+        "tolerance_frac": 0.002462170935228851,
+        "verdict": "NOT EQUIVALENT"
+      },
+      {
+        "tag": "r_r_bias_n16",
+        "schematic_device": "R_BIAS",
+        "segments": 16,
+        "segment_l_um": 93.75,
+        "joints_included": false,
+        "joint_ohm": 0.0,
+        "op_v": 2.0,
+        "r_eff_ohm": 1227424.984848,
+        "r_unsplit_ohm": 1215106.716311,
+        "delta_ohm": 12318.268537000054,
+        "delta_frac": 0.010137602213571552,
+        "tolerance_frac": 0.002462170935228851,
+        "verdict": "NOT EQUIVALENT"
+      },
+      {
+        "tag": "r_r_bias_n16_j",
+        "schematic_device": "R_BIAS",
+        "segments": 16,
+        "segment_l_um": 93.75,
+        "joints_included": true,
+        "joint_ohm": 37.7905,
+        "op_v": 2.0,
+        "r_eff_ohm": 1227991.842358,
+        "r_unsplit_ohm": 1215106.716311,
+        "delta_ohm": 12885.126047000056,
+        "delta_frac": 0.01060411062998534,
+        "tolerance_frac": 0.002462170935228851,
+        "verdict": "NOT EQUIVALENT"
+      },
+      {
+        "tag": "r_r_bias_n32",
+        "schematic_device": "R_BIAS",
+        "segments": 32,
+        "segment_l_um": 46.875,
+        "joints_included": false,
+        "joint_ohm": 0.0,
+        "op_v": 2.0,
+        "r_eff_ohm": 1240564.471291,
+        "r_unsplit_ohm": 1215106.716311,
+        "delta_ohm": 25457.75497999997,
+        "delta_frac": 0.02095104457762226,
+        "tolerance_frac": 0.002462170935228851,
+        "verdict": "NOT EQUIVALENT"
+      },
+      {
+        "tag": "r_r_bias_n32_j",
+        "schematic_device": "R_BIAS",
+        "segments": 32,
+        "segment_l_um": 46.875,
+        "joints_included": true,
+        "joint_ohm": 37.7905,
+        "op_v": 2.0,
+        "r_eff_ohm": 1241735.976769,
+        "r_unsplit_ohm": 1215106.716311,
+        "delta_ohm": 26629.260458000004,
+        "delta_frac": 0.021915161936430602,
+        "tolerance_frac": 0.002462170935228851,
+        "verdict": "NOT EQUIVALENT"
+      },
+      {
+        "tag": "r_r_fb_a_n1",
+        "schematic_device": "R_FB_A",
+        "segments": 1,
+        "segment_l_um": 180.0,
+        "joints_included": false,
+        "joint_ohm": 0.0,
+        "op_v": 0.6,
+        "r_eff_ohm": 1040766.371839,
+        "r_unsplit_ohm": 1040766.371839,
+        "delta_ohm": 0.0,
+        "delta_frac": 0.0,
+        "tolerance_frac": 0.016009520976742617,
+        "verdict": "EQUIVALENT"
+      },
+      {
+        "tag": "r_r_fb_a_n2",
+        "schematic_device": "R_FB_A",
+        "segments": 2,
+        "segment_l_um": 90.0,
+        "joints_included": false,
+        "joint_ohm": 0.0,
+        "op_v": 0.6,
+        "r_eff_ohm": 1040556.214945,
+        "r_unsplit_ohm": 1040766.371839,
+        "delta_ohm": -210.1568940000143,
+        "delta_frac": -0.00020192513871165337,
+        "tolerance_frac": 0.016009520976742617,
+        "verdict": "EQUIVALENT"
+      },
+      {
+        "tag": "r_r_fb_a_n2_j",
+        "schematic_device": "R_FB_A",
+        "segments": 2,
+        "segment_l_um": 90.0,
+        "joints_included": true,
+        "joint_ohm": 37.7905,
+        "op_v": 0.6,
+        "r_eff_ohm": 1040594.002525,
+        "r_unsplit_ohm": 1040766.371839,
+        "delta_ohm": -172.3693140000105,
+        "delta_frac": -0.0001656176819927796,
+        "tolerance_frac": 0.016009520976742617,
+        "verdict": "EQUIVALENT"
+      },
+      {
+        "tag": "r_r_fb_a_n3",
+        "schematic_device": "R_FB_A",
+        "segments": 3,
+        "segment_l_um": 60.0,
+        "joints_included": false,
+        "joint_ohm": 0.0,
+        "op_v": 0.6,
+        "r_eff_ohm": 1040400.769315,
+        "r_unsplit_ohm": 1040766.371839,
+        "delta_ohm": -365.60252399998717,
+        "delta_frac": -0.0003512820301389826,
+        "tolerance_frac": 0.016009520976742617,
+        "verdict": "EQUIVALENT"
+      },
+      {
+        "tag": "r_r_fb_a_n3_j",
+        "schematic_device": "R_FB_A",
+        "segments": 3,
+        "segment_l_um": 60.0,
+        "joints_included": true,
+        "joint_ohm": 37.7905,
+        "op_v": 0.6,
+        "r_eff_ohm": 1040476.346446,
+        "r_unsplit_ohm": 1040766.371839,
+        "delta_ohm": -290.025392999989,
+        "delta_frac": -0.0002786652229044676,
+        "tolerance_frac": 0.016009520976742617,
+        "verdict": "EQUIVALENT"
+      },
+      {
+        "tag": "r_r_fb_a_n4",
+        "schematic_device": "R_FB_A",
+        "segments": 4,
+        "segment_l_um": 45.0,
+        "joints_included": false,
+        "joint_ohm": 0.0,
+        "op_v": 0.6,
+        "r_eff_ohm": 1040259.00262,
+        "r_unsplit_ohm": 1040766.371839,
+        "delta_ohm": -507.3692189999856,
+        "delta_frac": -0.00048749578457601473,
+        "tolerance_frac": 0.016009520976742617,
+        "verdict": "EQUIVALENT"
+      },
+      {
+        "tag": "r_r_fb_a_n4_j",
+        "schematic_device": "R_FB_A",
+        "segments": 4,
+        "segment_l_um": 45.0,
+        "joints_included": true,
+        "joint_ohm": 37.7905,
+        "op_v": 0.6,
+        "r_eff_ohm": 1040372.369804,
+        "r_unsplit_ohm": 1040766.371839,
+        "delta_ohm": -394.00203500001226,
+        "delta_frac": -0.0003785691444890015,
+        "tolerance_frac": 0.016009520976742617,
+        "verdict": "EQUIVALENT"
+      },
+      {
+        "tag": "r_r_fb_a_n6",
+        "schematic_device": "R_FB_A",
+        "segments": 6,
+        "segment_l_um": 30.0,
+        "joints_included": false,
+        "joint_ohm": 0.0,
+        "op_v": 0.6,
+        "r_eff_ohm": 1039989.142298,
+        "r_unsplit_ohm": 1040766.371839,
+        "delta_ohm": -777.2295409999788,
+        "delta_frac": -0.0007467857936518834,
+        "tolerance_frac": 0.016009520976742617,
+        "verdict": "EQUIVALENT"
+      },
+      {
+        "tag": "r_r_fb_a_n6_j",
+        "schematic_device": "R_FB_A",
+        "segments": 6,
+        "segment_l_um": 30.0,
+        "joints_included": true,
+        "joint_ohm": 37.7905,
+        "op_v": 0.6,
+        "r_eff_ohm": 1040178.09007,
+        "r_unsplit_ohm": 1040766.371839,
+        "delta_ohm": -588.2817689999938,
+        "delta_frac": -0.0005652390247395477,
+        "tolerance_frac": 0.016009520976742617,
+        "verdict": "EQUIVALENT"
+      }
+    ]
+  },
+  "provenance": {
+    "git_sha": "704005c84d8adeb5f72f15ba526be1d498c8801a",
+    "git_dirty": false,
+    "klt_version": "klt 0.6.0+g040f3406b485",
+    "klt_pin": "klayout-tools @ git+https://github.com/2AMLogic/klayout-tools@040f3406b4858ac7a5b8faa8df5327fd62a65afa",
+    "klayout_version": "KLayout 0.28.16",
+    "ngspice_version": "ngspice-46 : Circuit level simulation program",
+    "pdk_variant": "sky130A",
+    "pdk_version": "open_pdks c6d73a35f524070e85faff4a6a9eef49553ebc2b",
+    "open_pdks_commit_pinned": "c6d73a35f524070e85faff4a6a9eef49553ebc2b",
+    "schematic_sha": "a09aa83",
+    "pdk_drc_runset": "libs.tech/klayout/drc/sky130A_mr.drc (feol=true beol=true)"
+  },
+  "flow_failures": []
+}

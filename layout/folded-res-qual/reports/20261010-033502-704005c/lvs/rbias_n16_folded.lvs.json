@@ -1,0 +1,191 @@
+{
+  "schema_version": 1,
+  "engine": "klayout",
+  "layout": "../rbias_n16_folded.gds",
+  "reference": "rbias_n16_folded.reference.spice",
+  "top": "rbias_n16_folded",
+  "reference_top": "RBIAS_N16_FOLDED",
+  "parameter_tolerance": null,
+  "options": {
+    "combine_devices": true,
+    "combine_devices_per_circuit": null,
+    "flatten_layout": false,
+    "flatten_reference": false,
+    "netgen_setup": null,
+    "parameter_tolerance": null,
+    "compare_parameters": null,
+    "power_connectivity": null,
+    "supply_nets": [
+      "GND",
+      "VCC",
+      "VDD",
+      "VGND",
+      "VPWR",
+      "VSS"
+    ]
+  },
+  "hints_applied": null,
+  "status": "match",
+  "power_connectivity": {
+    "status": "unchecked",
+    "reason": "reference.form is 'plain-element', whose reference netlist carries its own power/ground pins and nets -- they take part in the ordinary compare, so this check (which exists to cover the signal-only 'gate-level-verilog' form) does not apply",
+    "power_pins": [],
+    "power_pins_derivation": null,
+    "instance_count": 0,
+    "expected_nets": null,
+    "unchecked_expected_pins": [],
+    "findings": [],
+    "finding_count": 0
+  },
+  "body_verification": {
+    "status": "verified",
+    "reason": null,
+    "device_classes": [],
+    "device_count": 0,
+    "findings": [],
+    "finding_count": 0
+  },
+  "mismatch_count": 4,
+  "error_count": 0,
+  "category_counts": {
+    "device.bulk_reconciled": 1,
+    "topology": 3
+  },
+  "category_error_counts": {},
+  "counts": {
+    "nets": {
+      "layout": 3,
+      "reference": 3,
+      "matched": 3
+    },
+    "devices": {
+      "layout": 1,
+      "reference": 1,
+      "matched": 1
+    },
+    "pins": {
+      "layout": 3,
+      "reference": 3,
+      "matched": 3
+    }
+  },
+  "device_classes": [
+    "nfet",
+    "pfet",
+    "pnp",
+    "sky130_fd_pr__model__cap_mim",
+    "sky130_fd_pr__model__cap_mim_m4",
+    "resistor"
+  ],
+  "environment": {
+    "engine": "klayout",
+    "engine_version": "0.30.12",
+    "layout_sha256": "c05f026dd31e2229294a21e9dd0192b12789bc264d9c64ccbb4d9577ef866dfa",
+    "reference_sha256": "8b3fbeb10927c15dd58eb89c91885398893330c12be245cbe8deaf1d6f9c5a4a",
+    "extracted_netlist": null
+  },
+  "provenance": {
+    "klt_version": "0.6.0+g040f3406b485",
+    "klayout_version": "0.30.12",
+    "pdk": null,
+    "deck": {
+      "name": "sky130",
+      "content_hash": "sha256:d7a9ddfa4785e2427553cc8701f9ed547d1b68abb21aef2c8c9fb6c8d8ca3791",
+      "released": false
+    },
+    "input": {
+      "content_hash": "sha256:c05f026dd31e2229294a21e9dd0192b12789bc264d9c64ccbb4d9577ef866dfa",
+      "role": "layout"
+    },
+    "klayout_version_mismatch": true
+  },
+  "mismatches": [
+    {
+      "category": "device.bulk_reconciled",
+      "severity": "warning",
+      "description": "request.reference.device_bulk reconciled reference device class 'RES_HIGH_PO' with the layout side: a 'W' terminal was added to the reference class (layout: ['A', 'B', 'W'], reference was: ['A', 'B']) and tied to reference net 'SUB' on 1 device instance(s), an existing reference net -- that terminal's connectivity was asserted by the request, not read from the reference netlist, so this dimension of the compare is not independently verified (see docs/cli/lvs.md, 'device.bulk_reconciled')",
+      "side": "reference",
+      "net": null,
+      "device": {
+        "layout": null,
+        "reference": null,
+        "class": "RES_HIGH_PO"
+      },
+      "property": null,
+      "details": {
+        "terminal": "W",
+        "reference_net": "SUB",
+        "reference_net_created": false,
+        "devices": 1,
+        "layout_terminals": [
+          "A",
+          "B",
+          "W"
+        ],
+        "reference_terminals": [
+          "A",
+          "B"
+        ]
+      },
+      "circuit": null,
+      "instance": null,
+      "subcircuit": null
+    },
+    {
+      "category": "topology",
+      "severity": "warning",
+      "description": "device class has no counterpart on the other side, but no devices of this class were extracted either -- not a real topology mismatch",
+      "side": "layout",
+      "net": null,
+      "device": null,
+      "property": null,
+      "details": null,
+      "circuit": null,
+      "instance": null,
+      "subcircuit": null
+    },
+    {
+      "category": "topology",
+      "severity": "warning",
+      "description": "device class has no counterpart on the other side, but no devices of this class were extracted either -- not a real topology mismatch",
+      "side": "layout",
+      "net": null,
+      "device": null,
+      "property": null,
+      "details": null,
+      "circuit": null,
+      "instance": null,
+      "subcircuit": null
+    },
+    {
+      "category": "topology",
+      "severity": "warning",
+      "description": "device class has no counterpart on the other side, but no devices of this class were extracted either -- not a real topology mismatch",
+      "side": "layout",
+      "net": null,
+      "device": null,
+      "property": null,
+      "details": null,
+      "circuit": null,
+      "instance": null,
+      "subcircuit": null
+    }
+  ],
+  "net_correspondence": [
+    {
+      "layout": "A",
+      "reference": "A",
+      "pin": true
+    },
+    {
+      "layout": "B",
+      "reference": "B",
+      "pin": true
+    },
+    {
+      "layout": "SUB",
+      "reference": "SUB",
+      "pin": true
+    }
+  ]
+}
