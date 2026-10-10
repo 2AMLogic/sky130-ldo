@@ -46,7 +46,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 REPO_ROOT = HERE.parent.parent
 sys.path.insert(0, str(REPO_ROOT / "sim" / "bin"))
-from _record_common import load_corner_run_module  # noqa: E402
+from _record_common import at, bisect, load_corner_run_module, read_dat, tripped  # noqa: E402
 
 cr = load_corner_run_module(REPO_ROOT / "sim" / "bin")
 
@@ -60,6 +60,7 @@ T_COLD, T_FORCED, T_HOLD, T_EN_LOW, T_REEN = 19, 39, 59, 70, 105
 PROGRESS_RE = re.compile(r"\s*Reference value :\s*[-+0-9.eE]+")
 EXTRA_MARKERS = ("source stepping failed", "timestep too small", "Transient op")
 VX_HOT, VX_COLD = -0.25, +0.25
+KEYS = ["ts_cmp", "rc_a", "rc_b", "ea_stub", "en", "ts_sns", "ts_ref"]  # wrdata vector order
 
 
 def deck_text(netlist_body: list[str], pdk, temp_c: float, vx_amp: float, en_dip: str, dat: str) -> str:
@@ -83,24 +84,6 @@ def deck_text(netlist_body: list[str], pdk, temp_c: float, vx_amp: float, en_dip
         "",
     ]
     return "\n".join(head + netlist_body + ctl)
-
-
-def read_dat(path: Path):
-    """wrdata layout: (time, value) column pairs, one pair per vector."""
-    rows = [list(map(float, ln.split())) for ln in path.read_text().splitlines() if ln.strip()]
-    names = ["ts_cmp", "rc_a", "rc_b", "ea_stub", "en", "ts_sns", "ts_ref"]
-    t = [r[0] for r in rows]
-    return t, {n: [r[2 * i + 1] for r in rows] for i, n in enumerate(names)}
-
-
-def at(t, y, t_us):
-    target = t_us * 1e-6
-    best = min(range(len(t)), key=lambda i: abs(t[i] - target))
-    return y[best]
-
-
-def tripped(v_cmp: float) -> bool:
-    return v_cmp < VSUP / 2
 
 
 class Runner:
@@ -129,24 +112,24 @@ class Runner:
         )
         if not dat.is_file():
             raise RuntimeError(f"{rid}: ngspice produced no data (rc={proc.returncode})\n{log[-800:]}")
-        t, v = read_dat(dat)
+        t, v = read_dat(dat, KEYS)
         res = {
             "id": rid, "scenario": scenario, "temp_c": temp_c, "vx_amp_v": vx_amp, "en_dip": en_dip,
             "ngspice_rc": proc.returncode, "solver_diagnostic": diag,
-            "cold_start_tripped": tripped(at(t, v["ts_cmp"], T_COLD)),
-            "forced_tripped": tripped(at(t, v["ts_cmp"], T_FORCED)),
-            "hold_tripped": tripped(at(t, v["ts_cmp"], T_HOLD)),
+            "cold_start_tripped": tripped(at(t, v["ts_cmp"], T_COLD), VSUP),
+            "forced_tripped": tripped(at(t, v["ts_cmp"], T_FORCED), VSUP),
+            "hold_tripped": tripped(at(t, v["ts_cmp"], T_HOLD), VSUP),
             "ts_cmp_v": {k: round(at(t, v["ts_cmp"], k), 4) for k in (T_COLD, T_FORCED, T_HOLD, T_EN_LOW, T_REEN)},
             "rc_a_v": {k: round(at(t, v["rc_a"], k), 4) for k in (T_COLD, T_HOLD, T_REEN)},
             "rc_b_v": {k: round(at(t, v["rc_b"], k), 4) for k in (T_COLD, T_HOLD, T_REEN)},
             "ea_stub_v_at_hold": round(at(t, v["ea_stub"], T_HOLD), 4),
             "sns_minus_ref_mv_at_hold": round(1e3 * (at(t, v["ts_sns"], T_HOLD) - at(t, v["ts_ref"], T_HOLD)), 2),
-            "after_en_reenable_tripped": tripped(at(t, v["ts_cmp"], T_REEN)),
+            "after_en_reenable_tripped": tripped(at(t, v["ts_cmp"], T_REEN), VSUP),
             "ts_cmp_while_en_low_v": round(at(t, v["ts_cmp"], T_EN_LOW), 4),
         }
         (self.out / "runs" / f"{rid}.log").write_text(log + "\n")
         with (self.out / "runs" / f"{rid}.csv").open("w") as f:
-            f.write("t_us,ts_cmp,rc_a,rc_b,ea_stub,en,ts_sns,ts_ref\n")
+            f.write("t_us," + ",".join(KEYS) + "\n")
             for i in range(0, len(t), max(1, len(t) // 220)):
                 f.write(f"{t[i]*1e6:.3f}," + ",".join(f"{v[k][i]:.5f}" for k in
                         ("ts_cmp", "rc_a", "rc_b", "ea_stub", "en", "ts_sns", "ts_ref")) + "\n")
@@ -163,21 +146,6 @@ class Runner:
     def untripped_held(self, temp, amp=VX_COLD):
         r = self.run("cold_exc", temp, amp)
         return (not r["forced_tripped"]) and (not r["hold_tripped"])
-
-
-def bisect(pred, lo, hi, tol, want_lowest):
-    """pred is monotone: for want_lowest, False..False True..True over [lo,hi]
-    (find the lowest True); otherwise True..True False..False (highest True)."""
-    assert pred(hi) if want_lowest else pred(lo), "bracket end does not satisfy predicate"
-    assert (not pred(lo)) if want_lowest else (not pred(hi)), "bracket other end already satisfies predicate"
-    while hi - lo > tol:
-        mid = round((lo + hi) / 2, 4)
-        ok = pred(mid)
-        if want_lowest:
-            lo, hi = (lo, mid) if ok else (mid, hi)
-        else:
-            lo, hi = (mid, hi) if ok else (lo, mid)
-    return lo, hi
 
 
 def main() -> int:
