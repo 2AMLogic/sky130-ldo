@@ -8,8 +8,8 @@ stacked as rows of a bank. This script draws that proposal -- in isolation,
 never inside the full core -- so its DRC, LVS and electrical behaviour can be
 qualified before any floorplan change.
 
-For every case in `layout/folded-res-qual/cases.json` it writes three GDS
-streams, each its own top cell:
+For every case in `layout/folded-res-qual/cases.json` it writes up to four
+GDS streams, each its own top cell:
 
 * ``<case>_unsplit`` -- the schematic resistor drawn exactly as the current
   core flow draws it (`klt gen res_array`, ``num=1``, full schematic ``L``).
@@ -23,6 +23,11 @@ streams, each its own top cell:
   it is drawn here with `klayout.db` rather than re-filed.
 * ``<case>_broken``  -- the folded bank with one series strap deliberately
   omitted: the LVS negative control (an open chain must not match).
+* ``<case>_unmerged`` -- the folded bank (all straps) with the per-row
+  psdm/rpm/urpm markers left exactly as `res_array` draws them, i.e. without
+  `fill_bank_markers`. The DRC control that shows *why* the folded stream
+  merges its markers: the PDK signoff runset is expected to flag marker
+  spacing between rows here and not on ``<case>_folded``.
 
 Each stream also gets one substrate tie (a `tap` square with a licon + li1
 pad, the same idiom `gen-ldo-blocks.py`'s `body_tie` uses) labelled ``SUB``,
@@ -222,7 +227,7 @@ def compose(
     )
     top.shapes(li1_label).insert(kdb.DText("SUB", kdb.DTrans(kdb.DVector(tx, ty))))
 
-    # Rename the generated bank cell so the three streams of a case never
+    # Rename the generated bank cell so the streams of a case never
     # share a cell name, then write only the composed hierarchy.
     bank.name = f"{cell_name}_bank"
     layout.write(str(out_gds))
@@ -323,6 +328,17 @@ def generate_case(klt: str, pdk: str, out_dir: Path, case: dict[str, Any]) -> di
             "device_bbox_um": fo_rep["bbox_um"],
             "device_bbox": bbox_dims(fo_rep["bbox_um"]),
             **br_meta,
+        }
+        um_meta = compose(fo_raw, out_dir / f"{name}_unmerged.gds", f"{name}_unmerged",
+                          fo_rep["ports"], n, straps, fo_rep["bbox_um"],
+                          merge_markers=False)
+        result["variants"]["unmerged"] = {
+            "gds": f"{name}_unmerged.gds",
+            "klt_gen_params": folded_params,
+            "device_bbox_um": fo_rep["bbox_um"],
+            "device_bbox": bbox_dims(fo_rep["bbox_um"]),
+            "straps": straps,
+            **um_meta,
         }
     return result
 

@@ -86,7 +86,8 @@ def render(summary: dict[str, Any]) -> str:
     w("|---|---|---|---|---|---|---|---|---|")
     for cs in summary["cases"]:
         r = drawn_row(summary, cs)
-        drc = "clean" if all(v["klt_status"] == "clean" for v in cs["drc"].values()) else "VIOLATIONS"
+        drc = "clean" if all(v["klt_status"] == "clean" for k, v in cs["drc"].items()
+                             if k != "unmerged") else "VIOLATIONS"
         neg = []
         for k in ("broken", "folded_perturbed"):
             if k in cs["lvs"]:
@@ -142,6 +143,14 @@ def render(summary: dict[str, Any]) -> str:
             w(f"| {vname} | {d['klt_status']} ({d['klt_violations']}) | {pdk} |")
         rules = next(iter(cs["drc"].values()))["klt_rules_checked"]
         w("")
+        um = cs["drc"].get("unmerged")
+        if um is not None:
+            added = um.get("added_vs_folded") or {}
+            w("`unmerged` is an expected-to-fail DRC control: the folded bank with every strap but with the "
+              "per-row psdm/rpm/urpm markers left as `res_array` draws them (no merge). It is not gated on the "
+              "klt deck and gets no extraction or LVS. Rule classes the PDK signoff runset reports on it and "
+              f"not on `folded`: {fmt_counts(added) if added else '**none (control did not fail)**'}.")
+            w("")
         w(f"klt deck rules that had geometry to check: {', '.join(f'`{r}`' for r in rules)}.")
         w("")
         w("**LVS** (reference = one unsplit element, `options.combine_devices: true`)")

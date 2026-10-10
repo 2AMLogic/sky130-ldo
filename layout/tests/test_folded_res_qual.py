@@ -123,5 +123,17 @@ class ExtractionBookkeeping(unittest.TestCase):
         self.assertAlmostEqual(fra.extracted_sum(seg) - whole, (n - 1) * off, places=6)
 
 
+class UnmergedMarkerControl(unittest.TestCase):
+    def test_reports_only_rule_classes_the_merge_removes(self):
+        control = {"licon.1": 16, "urpm.1a": 1, "urpm.2": 1}
+        merged = {"licon.1": 16, "urpm.1a": 1}
+        self.assertEqual(fra.added_rule_classes(control, merged), {"urpm.2": 1})
+
+    def test_control_that_adds_nothing_is_empty(self):
+        same = {"licon.1": 8}
+        self.assertEqual(fra.added_rule_classes(same, same), {})
+        self.assertEqual(fra.added_rule_classes({"x": 0}, {}), {})
+
+
 if __name__ == "__main__":
     unittest.main()

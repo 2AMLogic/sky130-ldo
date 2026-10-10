@@ -1,6 +1,6 @@
 """Pure helpers for the issue #253 folded-resistor qualification flow.
 
-Standard library only, so `layout/tests/test_folded_res_analysis.py` can
+Standard library only, so `layout/tests/test_folded_res_qual.py` can
 exercise every number the record's verdicts rest on without `klt`, KLayout
 or ngspice installed. `run-folded-res-qual-flow.py` does the I/O.
 """
@@ -204,6 +204,23 @@ def electrical_rows(
 
 def verdict(delta_frac: float, tol_frac: float) -> str:
     return "EQUIVALENT" if abs(delta_frac) <= tol_frac else "NOT EQUIVALENT"
+
+
+# --------------------------------------------------------------------------
+# DRC control: unmerged per-row markers
+# --------------------------------------------------------------------------
+
+
+def added_rule_classes(control: dict[str, int], reference: dict[str, int]) -> dict[str, int]:
+    """PDK-signoff rule categories the control stream (per-row markers left
+    unmerged) violates that the reference stream (merged markers) does not.
+
+    The unmerged-marker control is *expected to fail*: a non-empty result is
+    the evidence that the folded stream's marker merge removes violations
+    that folding would otherwise add. An empty result means the control did
+    not demonstrate anything, which the flow records as a flow failure.
+    """
+    return {k: v for k, v in sorted(control.items()) if v > 0 and not reference.get(k)}
 
 
 # --------------------------------------------------------------------------

@@ -5,12 +5,16 @@ Mints one append-only record under
 ``layout/folded-res-qual/reports/<UTC timestamp>-<short sha>/`` and runs,
 strictly sequentially (shared host -- no parallel fan-out):
 
-1. ``gen-folded-res-qual.py`` -- unsplit / folded / open-chain GDS per case.
+1. ``gen-folded-res-qual.py`` -- unsplit / folded / open-chain /
+   unmerged-marker GDS per case.
 2. DRC: ``klt drc --deck sky130`` (this repo's DRC gate, same deck as the
    core records) on every stream, plus the PDK's own KLayout signoff runset
-   (``libs.tech/klayout/drc/sky130A_mr.drc``, FEOL+BEOL) on the unsplit and
-   folded streams as a coverage cross-check.
-3. Extraction: ``klt extract`` per stream (default), the folded stream again
+   (``libs.tech/klayout/drc/sky130A_mr.drc``, FEOL+BEOL) on the unsplit,
+   folded and unmerged streams. The unmerged stream is an expected-to-fail
+   control: the runset must report at least one rule class on it that the
+   merged folded stream does not have.
+3. Extraction: ``klt extract`` per stream (default; not the DRC-only
+   unmerged control), the folded stream again
    with ``--defer-resistor-fixed-offset`` and with ``--parasitics``.
 4. LVS: each stream against a one-element reference for the *unsplit*
    schematic resistor (``options.combine_devices``), plus a perturbed
@@ -23,7 +27,8 @@ strictly sequentially (shared host -- no parallel fan-out):
 
 Must run under ``layout/.venv/bin/python`` (needs ``klayout_tools`` for the
 deck constants). Exit status is 0 only if every expected outcome held (DRC
-gate clean, positive LVS matches, negative controls mismatch); an electrical
+gate clean, positive LVS matches, negative controls mismatch, unmerged-marker
+control adds signoff violations); an electrical
 NOT EQUIVALENT verdict is a finding, not a flow failure.
 """
 
@@ -48,6 +53,9 @@ REPO_ROOT = LAYOUT_DIR.parent
 QUAL_DIR = LAYOUT_DIR / "folded-res-qual"
 RES_CLASS = {"high": "res_high_po", "xhigh": "res_xhigh_po"}
 PERTURB = 1.001
+#: Streams that exist only as DRC controls: no extraction, LVS or klt-gate
+#: verdict is taken on them.
+DRC_ONLY = {"unmerged"}
 
 
 def run(cmd: list[str], cwd: Path | None = None, check: bool = False) -> subprocess.CompletedProcess:
@@ -184,7 +192,7 @@ def main() -> int:
             entry = {"klt_status": d["status"], "klt_violations": d["violation_count"],
                      "klt_rule_counts": d.get("rule_counts", {}),
                      "klt_rules_checked": d["coverage"].get("rules_checked", [])}
-            if vname in ("unsplit", "folded"):
+            if vname in ("unsplit", "folded", "unmerged"):
                 xml = drc_dir / f"{v['top_cell']}.pdk.xml"
                 # Relative input/report paths (cwd = record dir) keep host
                 # paths out of the committed report XML.
@@ -201,12 +209,23 @@ def main() -> int:
                                  .replace(str(out.resolve()), "<record>"))
                 entry["pdk_signoff_counts"] = pdk_drc_counts(xml)
             cs["drc"][vname] = entry
-            if d["status"] != "clean":
+            if vname not in DRC_ONLY and d["status"] != "clean":
                 failures.append(f"{name}/{vname}: klt drc {d['status']}")
+
+        if "unmerged" in cs["drc"]:
+            added = fra.added_rule_classes(cs["drc"]["unmerged"]["pdk_signoff_counts"],
+                                           cs["drc"]["folded"]["pdk_signoff_counts"])
+            cs["drc"]["unmerged"]["expected"] = "PDK signoff adds rule classes vs folded"
+            cs["drc"]["unmerged"]["added_vs_folded"] = added
+            if not added:
+                failures.append(f"{name}/unmerged: PDK signoff added no rule class vs folded "
+                                "(expected-to-fail control did not fail)")
 
         # --- 3. extraction -------------------------------------------------
         cs["extract"] = {}
         for vname, v in case["variants"].items():
+            if vname in DRC_ONLY:
+                continue
             flavours = [("default", [])]
             if vname == "folded":
                 flavours += [("defer", ["--defer-resistor-fixed-offset"]), ("parasitics", ["--parasitics"])]
@@ -257,6 +276,8 @@ def main() -> int:
         # --- 4. LVS --------------------------------------------------------
         cs["lvs"] = {}
         for vname, v in case["variants"].items():
+            if vname in DRC_ONLY:
+                continue
             top = v["top_cell"]
             ref = f"{top}.reference.spice"
             write_reference(lvs_dir / ref, top, klass, r_unsplit_deck, L, W)
