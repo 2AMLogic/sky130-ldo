@@ -22,6 +22,31 @@ from pathlib import Path
 from _record_common import _load, provenance
 
 
+def trivial_cell_checks(
+    drc: dict, lvs_good: dict, lvs_bad_dev: dict, lvs_bad_topo: dict
+) -> list[tuple[str, bool]]:
+    """The four named DRC/LVS checks, in record order (issue #306: pure,
+    PDK-free tested): DRC clean, LVS match on the good reference, and LVS
+    mismatch on each of the two negative-control references."""
+    return [
+        ("DRC on trivial_mos_array is clean", drc.get("status") == "clean"),
+        ("LVS matches the known-good reference", lvs_good.get("status") == "match"),
+        (
+            "LVS negative control (device-parameter corruption) reports mismatch",
+            lvs_bad_dev.get("status") == "mismatch",
+        ),
+        (
+            "LVS negative control (topology corruption) reports mismatch",
+            lvs_bad_topo.get("status") == "mismatch",
+        ),
+    ]
+
+
+def overall_pass(checks: list[tuple[str, bool]]) -> bool:
+    """Overall verdict: PASS only when every named check holds."""
+    return all(ok for _, ok in checks)
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--out-dir", required=True, type=Path)
@@ -43,19 +68,8 @@ def main() -> int:
     sha, branch, dirty = prov.sha, prov.branch, prov.dirty
     klt_version, pdk_info = prov.klt_version, prov.pdk_info
 
-    checks = [
-        ("DRC on trivial_mos_array is clean", drc.get("status") == "clean"),
-        ("LVS matches the known-good reference", lvs_good.get("status") == "match"),
-        (
-            "LVS negative control (device-parameter corruption) reports mismatch",
-            lvs_bad_dev.get("status") == "mismatch",
-        ),
-        (
-            "LVS negative control (topology corruption) reports mismatch",
-            lvs_bad_topo.get("status") == "mismatch",
-        ),
-    ]
-    all_pass = all(ok for _, ok in checks)
+    checks = trivial_cell_checks(drc, lvs_good, lvs_bad_dev, lvs_bad_topo)
+    all_pass = overall_pass(checks)
 
     lines: list[str] = []
     a = lines.append

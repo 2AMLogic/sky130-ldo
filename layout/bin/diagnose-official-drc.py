@@ -28,7 +28,7 @@ from pathlib import Path
 import klayout.db as kdb
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _official_drc import parse_lyrdb  # noqa: E402
+from _official_drc import parse_lyrdb, summarize_marker_families  # noqa: E402
 
 LAYERS = {
     "licon": (66, 44), "mcon": (67, 44), "via1": (68, 44), "via2": (69, 44),
@@ -98,17 +98,7 @@ def main() -> int:
                 return name
         return "ldo_core (local routing)"
 
-    fams: dict[str, dict] = {}
-    for fam, items in sorted(markers.by_rule.items()):
-        cells = Counter(i.cell for i in items)
-        samples = []
-        for i in items[: args.max_samples]:
-            samples.append({"cell": i.cell, "kind": i.kind, "geometry": i.geometry[:200]})
-        fams[fam] = {
-            "count": len(items),
-            "deck_cells": dict(cells.most_common(6)),
-            "sample_markers": samples,
-        }
+    fams = summarize_marker_families(markers, args.max_samples)
 
     # --- via.1a_b: every via1 in the layout, by drawn size and owner -------
     for name in ("via1", "via2", "mcon", "licon"):
