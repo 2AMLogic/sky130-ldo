@@ -180,7 +180,6 @@ def main() -> int:
         # --- 2. DRC ------------------------------------------------------
         cs["drc"] = {}
         for vname, v in case["variants"].items():
-            gds = out / v["gds"]
             # klt echoes input paths into its JSON; run from the record dir
             # with record-relative paths so no host path is committed.
             proc = run([klt, "drc", v["gds"], "--deck", "sky130", "--format", "json"], cwd=out)

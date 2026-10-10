@@ -36,7 +36,6 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import json
-import os
 import re
 import shutil
 import subprocess
@@ -261,7 +260,7 @@ def main() -> int:
         "pdk": {"variant": pdk.variant, "installed_commit": pdk.installed_commit,
                 "pinned_commit": pdk.pin["open_pdks_commit"], "lib": str(pdk.lib_file)},
         "repo": git,
-        "command": "python3 sim/thermal-regen-cmp/run_demo.py" + (f" --tag " + args.tag if args.tag else ""),
+        "command": "python3 sim/thermal-regen-cmp/run_demo.py" + (" --tag " + args.tag if args.tag else ""),
         "timestamp": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
     }
     (out / "result.json").write_text(json.dumps(result, indent=2) + "\n")
