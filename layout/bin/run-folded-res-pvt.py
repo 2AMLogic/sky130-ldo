@@ -26,6 +26,7 @@ import gzip
 import json
 import os
 import re
+import shlex
 import subprocess
 import sys
 from pathlib import Path
@@ -52,7 +53,7 @@ def pct(x: float, d: int = 4) -> str:
 
 
 def run_sim(klt: str, req: Path, backend: str, env: dict) -> tuple[dict | None, str, int]:
-    cmd = [klt, "sim", str(req), "--backend", backend, "--format", "json"]
+    cmd = [*shlex.split(klt), "sim", str(req), "--backend", backend, "--format", "json"]
     proc = sh(cmd, env=env)
     try:
         rep = json.loads(proc.stdout) if proc.stdout.strip() else None
@@ -62,6 +63,10 @@ def run_sim(klt: str, req: Path, backend: str, env: dict) -> tuple[dict | None, 
         return None, json.dumps(rep["error"]), proc.returncode
     if rep is None:
         return None, (proc.stderr.strip() or "no stdout") , proc.returncode
+    diags = [d for c in rep.get("corners", []) for d in c.get("diagnostics", [])]
+    if rep.get("status") == "error" and diags and all(d.get("code") == "batch_job_failed" for d in diags) \
+            and len(diags) == len(rep.get("corners", [])):
+        return None, f"{len(diags)} units failed: {diags[0]['message']}", proc.returncode
     return rep, proc.stderr.strip(), proc.returncode
 
 
@@ -202,7 +207,7 @@ def main() -> int:
 
     env = dict(os.environ)
     env["PDK_ROOT"] = str(args.pdk_root)
-    klt_ver = sh([args.klt, "--version"]).stdout.strip()
+    klt_ver = sh([*shlex.split(args.klt), "--version"]).stdout.strip()
     summary: dict = {"record_id": record_id, "status": "COMPLETE"}
     reports = {}
     for name in ("det", "mc"):
