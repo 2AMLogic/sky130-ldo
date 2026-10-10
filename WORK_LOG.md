@@ -2,6 +2,15 @@
 
 Chronological record of merged pull requests and closed issues. Maintained by the Loom Guide role.
 
+### 2026-10-10
+
+- **Issue #255** (closed): Characterization: reject malformed campaign verdicts instead of coercing truthiness
+- **PR #257**: Characterization: reject malformed campaign verdicts (#255)
+- **Issue #252** (closed): Share duplicated X-card token parsing between layout and LVS generators
+- **PR #256**: refactor(layout): share X-card token parsing between generators
+- **Issue #249** (closed): layout: add PDK-free unit tests with negative controls for check-erc-supply-spec.py
+- **PR #251**: test(layout): PDK-free unit tests for check-erc-supply-spec.py
+
 ### 2026-10-09
 
 - **Issue #246** (closed): Area: quantify compaction feasibility under the ratified core footprint limit

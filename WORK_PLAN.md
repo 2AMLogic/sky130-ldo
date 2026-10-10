@@ -26,6 +26,8 @@ _None._
 Issues currently being built (`loom:building`).
 
 - **#177**: Seed sim/current-limit's leg-1 operating point to conform to the initial-condition contract
+- **#253**: Folded resistors: validate series compaction before changing the LDO floorplan
+- **#254**: Core area: prove a MiM capacitor and supply-rail overlay plan
 
 ## PRs Awaiting Review
 
@@ -49,7 +51,7 @@ Issues carrying `loom:curated`.
 
 ## Proposed (Architect / Hermit)
 
-- **#249**: layout: add PDK-free unit tests with negative controls for check-erc-supply-spec.py *(architect)*
+_None._
 
 ## Epics
 
@@ -62,10 +64,10 @@ Issues carrying `loom:curated`.
 | Operator merge-risk holds | 0 |
 | Operator priority | 0 |
 | Ready (`loom:issue`) | 0 |
-| In Progress (`loom:building`) | 1 |
+| In Progress (`loom:building`) | 3 |
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 0 |
 | Curated | 3 |
-| Architect / Hermit proposals | 1 |
+| Architect / Hermit proposals | 0 |
 | Active epics | 1 |
 <!-- guide:plan-body:end -->
