@@ -42,6 +42,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 
+from ramp_monotonicity import evaluate_legs
 from xschem_exprs import eval_xschem_exprs  # noqa: F401  (re-exported; tests call corner_run.eval_xschem_exprs)
 from _record_common import (
     assert_klt_read_the_pinned_pdk as _shared_assert_pdk,
@@ -531,7 +532,8 @@ def build_deck(exp: Experiment, pdk: Pdk, corner: Corner, body: list[str]) -> st
     head.append(f'.lib "{pdk.lib_file}" {corner.process}')
 
     control = [".control", "save all"]
-    control += list(deck.get("analyses") or ["op"])
+    # `{corner_id}` lets a manifest write a per-corner trace file (issue #309).
+    control += [ln.replace("{corner_id}", corner.id) for ln in (deck.get("analyses") or ["op"])]
     for m in exp.measurements:
         control.append(f"let meas_{m.name} = {m.expr}")
     for m in exp.measurements:
@@ -681,6 +683,32 @@ def run_corner(
         )
         ok = ok and passed
 
+    ramp_legs = []
+    ramp_cfg = exp.raw.get("ramp_monotonicity")
+    if ramp_cfg:
+        ramp_legs = evaluate_legs(ramp_cfg, run_dir, corner.id)
+        for leg in ramp_legs:
+            passed = leg["pass"]
+            checks.append(
+                {
+                    "name": f"ramp_drawdown_{leg['leg']}_v",
+                    "expr": "ramp_monotonicity.max_drawdown(v(vout))",
+                    "unit": "V",
+                    "value": leg["max_drawdown_v"],
+                    "min": None,
+                    "max": leg["settings"]["tolerance_v"],
+                    "pass": passed,
+                    "reason": "" if passed else f"{leg['status']}: " + "; ".join(leg["reasons"]),
+                }
+            )
+            ok = ok and passed
+        if log_path is not None:
+            for leg in ramp_legs:
+                src = run_dir / leg["trace_file"]
+                if src.is_file():
+                    log_path.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.copyfile(src, log_path.parent / leg["trace_file"])
+
     log_text = "\n".join(
         [
             f"# corner: {corner.id}",
@@ -744,6 +772,7 @@ def run_corner(
         "elapsed_s": round(elapsed_s, 3),
         "timeout_s": timeout,
         "measurements": checks,
+        **({"ramp_monotonicity": ramp_legs} if ramp_legs else {}),
         "solver_diagnostic": solver_diagnostic,
         "pass": ok,
         "log": str(log_path.relative_to(REPO_ROOT)) if log_path is not None else None,
@@ -826,6 +855,11 @@ def check_batch_supported(exp: Experiment) -> None:
             f"--backend batch does not support experiment {exp.slug!r}: {BATCH_REFUSAL_HINT}"
         )
     deck = exp.raw.get("deck") or {}
+    if exp.raw.get("ramp_monotonicity"):
+        raise HarnessError(
+            f"--backend batch does not support {exp.slug!r}: waveform post-processing "
+            f"(ramp_monotonicity) is local-only: {BATCH_REFUSAL_HINT}"
+        )
     analyses = list(deck.get("analyses") or ["op"])
     meas = [(m.name, m.expr) for m in exp.measurements]
     if analyses != allowed["analyses"] or meas != allowed["measurements"]:
@@ -1310,6 +1344,25 @@ def render_record(record: dict) -> str:
         if fails:
             why = f" — {'; '.join(fails)}"
         lines.append(f"  - {res['corner_id']}: {verdict} ({detail}){why}")
+    if r.get("ramp_monotonicity_settings"):
+        cfg = r["ramp_monotonicity_settings"]
+        lines.append(
+            "- **Ramp-monotonicity checker settings** (issue #309; `sim/README.md`, "
+            f"\"Startup ramp monotonicity\"): `{json.dumps(cfg, sort_keys=True)}`. Raw "
+            "`<corner>.<leg>.trace.dat` files (time, V(VOUT)) are retained beside the "
+            "per-corner logs; per-leg sha256, drawdown, worst interval and sampling "
+            "resolution are in the machine-readable record."
+        )
+        for res in r["corners"]:
+            for leg in res.get("ramp_monotonicity") or []:
+                iv = leg.get("worst_interval_s")
+                lines.append(
+                    f"  - {res['corner_id']} leg `{leg['leg']}`: {leg['status']}, drawdown "
+                    f"{'n/a' if leg['max_drawdown_v'] is None else format(leg['max_drawdown_v'], '.6g') + ' V'}"
+                    + (f", worst interval {iv[0]:.6g}-{iv[1]:.6g} s" if iv else "")
+                    + ", worst sample gap "
+                    + ("n/a" if leg["resolution_s"] is None else f"{leg['resolution_s']:.3g} s")
+                )
     for sc in r["spread_checks"]:
         verdict = "PASS" if sc["pass"] else "FAIL"
         lines.append(
@@ -1616,6 +1669,11 @@ def main(argv: list[str]) -> int:
             "point_ids": [c.id for c in matrix],
         },
         "corners": results,
+        **(
+            {"ramp_monotonicity_settings": exp.raw["ramp_monotonicity"]}
+            if exp.raw.get("ramp_monotonicity")
+            else {}
+        ),
         "spread_checks": spreads,
         "overall_pass": overall,
         "links": {

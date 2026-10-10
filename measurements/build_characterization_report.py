@@ -423,6 +423,11 @@ def check_input_freshness(slug: str, record: dict) -> str:
             recorded["solver"] = legacy_solver
 
     dims = list(current) if kind == "mc" else ["analyses", "measurements", "matrix", "solver"]
+    if kind == "pvt" and "ramp_monotonicity" in current:
+        # issue #309: a manifest that declares a ramp-monotonicity checker
+        # makes its settings part of the effective inputs; a record minted
+        # before it carries no such section and is therefore never "fresh".
+        dims.append("ramp_monotonicity")
     stale, unverified, matched = [], [], []
     for dim in dims:
         if dim not in recorded:
