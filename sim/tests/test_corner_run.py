@@ -1145,5 +1145,134 @@ class TestWindowGrid(unittest.TestCase):
         self.assertEqual(corner_run.window_leg_lines(exp), [])
 
 
+class TestBoundInclusivity(BatchHarness):
+    """Issue #335: explicit per-bound inclusivity, one grader for every path."""
+
+    @staticmethod
+    def meas(**kw):
+        return corner_run.Measurement(name="x", expr="x", **kw)
+
+    def test_strict_upper_equality_fails_inclusive_passes(self):
+        strict = self.meas(max=0.3, max_inclusive=False)
+        incl = self.meas(max=0.3)
+        self.assertFalse(corner_run.grade_bounds(strict, 0.3)[0])
+        self.assertTrue(corner_run.grade_bounds(strict, 0.2999)[0])
+        self.assertFalse(corner_run.grade_bounds(strict, 0.3001)[0])
+        self.assertTrue(corner_run.grade_bounds(incl, 0.3)[0])
+        self.assertFalse(corner_run.grade_bounds(incl, 0.3001)[0])
+
+    def test_strict_lower_equality_fails_inclusive_passes(self):
+        strict = self.meas(min=50, min_inclusive=False)
+        incl = self.meas(min=50)
+        self.assertFalse(corner_run.grade_bounds(strict, 50.0)[0])
+        self.assertTrue(corner_run.grade_bounds(strict, 50.0001)[0])
+        self.assertFalse(corner_run.grade_bounds(strict, 49.9999)[0])
+        self.assertTrue(corner_run.grade_bounds(incl, 50.0)[0])
+
+    def test_zero_valued_bounds_are_enforced(self):
+        # 0 is a real bound, not "unset"
+        self.assertFalse(corner_run.grade_bounds(self.meas(min=0, min_inclusive=False), 0.0)[0])
+        self.assertTrue(corner_run.grade_bounds(self.meas(min=0), 0.0)[0])
+        self.assertFalse(corner_run.grade_bounds(self.meas(min=0), -1e-12)[0])
+        self.assertFalse(corner_run.grade_bounds(self.meas(max=0, max_inclusive=False), 0.0)[0])
+        self.assertTrue(corner_run.grade_bounds(self.meas(max=0), 0.0)[0])
+        self.assertFalse(corner_run.grade_bounds(self.meas(max=0), 1e-12)[0])
+
+    def test_flags_without_a_bound_are_inert_and_default_is_inclusive(self):
+        m = self.meas()
+        self.assertTrue(m.min_inclusive and m.max_inclusive)
+        self.assertTrue(corner_run.grade_bounds(self.meas(min_inclusive=False), 1.0)[0])
+
+    def test_missing_and_nonfinite_fail(self):
+        m = self.meas(max=1.0, max_inclusive=False)
+        self.assertFalse(corner_run.grade_bounds(m, None)[0])
+        for v in (float("nan"), float("inf"), float("-inf")):
+            self.assertFalse(corner_run.grade_bounds(self.meas(), v)[0], v)
+
+    def test_malformed_policy_fails_clearly(self):
+        for kw in ({"max": 1.0, "max_inclusive": "false"}, {"min": 1.0, "min_inclusive": 0},
+                   {"min": 1.0, "min_inclusive": None}):
+            with self.assertRaisesRegex(corner_run.HarnessError, r"_inclusive must be a JSON boolean"):
+                corner_run.grade_bounds(self.meas(**kw), 1.0)
+        with self.assertRaisesRegex(corner_run.HarnessError, "finite number or null"):
+            corner_run.grade_bounds(self.meas(max="0.3"), 0.1)
+
+    def test_unknown_flag_spelling_is_rejected_at_load(self):
+        with self.assertRaises(TypeError):
+            corner_run.Measurement(name="x", expr="x", max_exclusive=True)
+
+    def test_batch_path_agrees_with_local_grader(self):
+        exp = corner_run.load_experiment(self.exp_dir)
+        group = corner_run.group_batch_requests([corner_run.Corner("tt", 27.0, 1.8)], True)[0]
+        vgs_m = next(m for m in exp.measurements if m.name == "vgs")
+        isup_m = next(m for m in exp.measurements if m.name == "isup")
+        cases = [(True, True), (False, True), (True, False), (False, False)]
+        for lo_i, hi_i in cases:
+            for vgs in (vgs_m.min, vgs_m.max, 0.6, vgs_m.min - 1e-6, vgs_m.max + 1e-6, float("nan"), None):
+                vgs_m.min_inclusive, vgs_m.max_inclusive = lo_i, hi_i
+                logp = self.tmp / "l.log"
+                logp.write_text("ok\n")
+                ms = [{"name": "meas_isup", "value": 1e-8}]
+                if vgs is not None:
+                    ms.append({"name": "meas_vgs", "value": vgs})
+                resp = {"corners": [{"process": "tt", "temperature_c": 27, "status": "pass",
+                                     "artifacts": {"log": str(logp)}, "measurements": ms}]}
+                res, _ = corner_run.normalize_batch_response(exp, group, resp, self.tmp, 300)
+                chk = next(c for c in res[0]["measurements"] if c["name"] == "vgs")
+                self.assertEqual(chk["pass"], corner_run.grade_bounds(vgs_m, vgs)[0], (lo_i, hi_i, vgs))
+                self.assertIs(chk["min_inclusive"], lo_i)  # serialized with the check
+                self.assertIs(chk["max_inclusive"], hi_i)
+        self.assertIsNotNone(isup_m)
+
+    def test_window_grid_expansion_carries_policy(self):
+        raw = {"measurements": [{"name": "t", "expr": "e", "max": 1, "max_inclusive": False,
+                                 "per_leg": True}],
+               "window_grid": {"legs": [{"id": "a", "cout_f": 1e-6, "esr_ohm": 0.0},
+                                        {"id": "b", "cout_f": 2e-6, "esr_ohm": 0.1}]}}
+        ms = corner_run.expand_measurements(raw)
+        self.assertEqual(len(ms), 2)
+        for m in ms:
+            self.assertFalse(corner_run.grade_bounds(m, 1.0)[0])
+            self.assertTrue(corner_run.grade_bounds(m, 0.5)[0])
+
+    def test_policy_only_change_alters_fingerprint_and_legacy_is_stable(self):
+        from _record_common import pvt_input_sections
+        base = {"measurements": [{"name": "d", "expr": "e", "min": None, "max": 0.3}]}
+
+        def sec(m):
+            return pvt_input_sections({"measurements": [m]}, None)["measurements"]
+
+        legacy = sec(base["measurements"][0])
+        # omitted == explicit default: identical to the pre-#335 digest (legacy records stay fresh)
+        self.assertEqual(legacy, sec({**base["measurements"][0], "max_inclusive": True}))
+        strict = sec({**base["measurements"][0], "max_inclusive": False})
+        self.assertNotEqual(legacy, strict)
+        self.assertNotEqual(strict, sec({**base["measurements"][0], "min_inclusive": False}))
+        self.assertNotEqual(legacy, sec({**base["measurements"][0], "max_inclusive": "false"}))
+        # pinned legacy digest: the exact pre-#335 canonicalisation of this entry
+        from _record_common import canonical_digest
+        self.assertEqual(
+            legacy,
+            canonical_digest({"measurements": [{"name": "d", "expr": "e", "min": None, "max": 0.3}],
+                              "spread_checks": []}),
+        )
+
+    def test_shipped_strict_manifests_match_ratified_rows(self):
+        expect = {
+            "dropout-vs-load": {"dropout_v": "max_inclusive"},
+            "psrr-dc": {n: "min_inclusive" for n in (
+                "psrr_1khz_1ma_db", "psrr_100khz_1ma_db", "psrr_1khz_50ma_db", "psrr_100khz_50ma_db")},
+            "iq": {"iq_no_load_ua": "max_inclusive", "iq_full_load_ua": "max_inclusive"},
+            "enable-shutdown": {"iq_shutdown_static_ua": "max_inclusive",
+                                "iq_shutdown_after_edge_ua": "max_inclusive"},
+        }
+        for slug, strict in expect.items():
+            raw = json.loads((SIM_DIR / slug / "experiment.json").read_text())
+            for m in raw["measurements"]:
+                for flag in ("min_inclusive", "max_inclusive"):
+                    self.assertEqual(m.get(flag) is False, strict.get(m["name"]) == flag, (slug, m["name"], flag))
+            corner_run.load_experiment(SIM_DIR / slug)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -117,6 +117,23 @@ def spiceinit_sha256(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
+def measurement_fingerprint_entry(m: dict) -> dict:
+    """The fingerprinted view of one manifest measurement (issue #335).
+
+    Legacy compatibility: `min_inclusive` / `max_inclusive` default to inclusive
+    (True). They are added to the entry ONLY when present and not True, so a
+    manifest that omits them, or states the default explicitly, digests exactly
+    as it did before the flags existed and existing records stay fresh. Any
+    non-default (strict or malformed) value enters the digest, so a
+    comparison-policy-only change invalidates input freshness.
+    """
+    entry = {k: m.get(k) for k in ("name", "expr", "min", "max")}
+    for flag in ("min_inclusive", "max_inclusive"):
+        if flag in m and m[flag] is not True:
+            entry[flag] = m[flag]
+    return entry
+
+
 def pvt_input_sections(raw: dict, spiceinit_text: str | None) -> dict[str, str]:
     """Per-dimension digests of a PVT (`corner-run.py`) manifest's effective
     inputs, plus the `sim/spiceinit` solver settings ngspice reads."""
@@ -142,10 +159,7 @@ def pvt_input_sections(raw: dict, spiceinit_text: str | None) -> dict[str, str]:
         "analyses": canonical_digest(analyses),
         "measurements": canonical_digest(
             {
-                "measurements": [
-                    {k: m.get(k) for k in ("name", "expr", "min", "max")}
-                    for m in raw.get("measurements") or []
-                ],
+                "measurements": [measurement_fingerprint_entry(m) for m in raw.get("measurements") or []],
                 "spread_checks": [
                     {k: c.get(k) for k in ("measurement", "min_spread")}
                     for c in raw.get("spread_checks") or []

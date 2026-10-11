@@ -684,3 +684,17 @@ shape cannot run on the fleet until the runner image is updated. Because of that
 failed run, the runner now refuses to mint a record when any corner comes back
 without an engine log, i.e. when the simulation never ran. Single-corner spot-check
 numbers are not evidence records and are not cited as the binding-condition finding.
+
+## Bound inclusivity (issue #335)
+
+A measurement's `min` / `max` are inclusive by default (value == bound passes).
+Set `"min_inclusive": false` / `"max_inclusive": false` to make a bound strict
+(value == bound fails), only where the ratified `spec/target-spec.md` row is a
+strict `<` / `>`. Flags must be JSON booleans (anything else is a harness
+error). One grader, `grade_bounds()` in `corner-run.py`, serves the local,
+window-grid and klt-batch paths, and each check records both flags. In the
+effective-input fingerprint the flags are added only when not `true`, so legacy
+manifests (flags omitted or default) keep their previous digest; flipping a
+flag to strict changes the `measurements` digest, so records made before the
+change are reported as input-stale rather than regraded (records are
+append-only and are never rewritten).
