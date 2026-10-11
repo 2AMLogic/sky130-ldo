@@ -5,13 +5,56 @@
   "title": "PSRR reduced C_eff x ESR characterization sweep manifest (Phase 1 of #314)",
   "note": "Separate from experiment.json on purpose: the 45-corner psrr-dc manifest and its records stay unchanged (Phase 3 of #314 decides whether the binding point becomes a leg there). This manifest is a SAMPLED grid: 3 corners x 3 C_eff x 3 ESR. It cannot prove the continuous-window or all-45-corner worst case. No threshold lives here; bounds stay in experiment.json / spec/target-spec.md.",
   "experiment": "sim/psrr-dc/experiment.json",
-  "corners": [["tt", 27, 3.3], ["ss", -40, 2.97], ["ff", 125, 3.63]],
+  "corners": [
+    [
+      "tt",
+      27,
+      3.3
+    ],
+    [
+      "ss",
+      -40,
+      2.97
+    ],
+    [
+      "ff",
+      125,
+      3.63
+    ]
+  ],
   "corners_source": "identical to experiment.json quick_subset (verified by sim/tests/test_psrr_cap_sweep.py)",
-  "c_eff_uf": [0.33, 1.0, 4.7],
-  "esr_ohm": [0.0, 0.01, 0.5],
-  "esr_zero_topology": "ESR 0 is NOT a small-resistance stand-in: RESR is removed and COUT's bottom plate goes straight to node 0. The nominal point is C_eff 1 uF / ESR 10 mOhm (DR-002 proposed nominal; spot-check against record 20260926-033606-4a9ec09 at tt/27C/3.3V).",
-  "seeding": "Each (corner, point) is its own ngspice process built from the testbench netlist, so the .nodeset seed of #171/#179 applies fresh to both load points of every point; no state carries between points.",
-  "loads": ["1ma", "50ma"],
+  "c_eff_uf": [
+    0.33,
+    1.0,
+    4.7
+  ],
+  "esr_ohm": [
+    0.0,
+    0.01,
+    0.5
+  ],
+  "esr_zero_topology": "ESR 0 is NOT a small-resistance stand-in. Batch path: the request netlist gains a direct capacitor CDIR from VOUT to ground (0 F by default, same realisation as sim/load-transient #313); an ESR = 0 point sets CDIR = C_eff and opens the series branch (COUT = 0 F, RESR parked at resr_park_ohm carrying no current); ESR > 0 points set CDIR = 0 F. apply_cap_point instead removes RESR and grounds COUT. The nominal point is C_eff 1 uF / ESR 10 mOhm (DR-002 proposed nominal).",
+  "seeding": "Batch path (sim/bin/psrr-cap-sweep-run.py): ONE klt sim request per corner whose deck walks every point as ordered analysis_steps. Each point/load sets ALL of COUT, RESR, CDIR and RLOAD with explicit alters before its own op and ac, and the testbench's .nodeset seed (#171/#179) applies to every operating-point solve (ngspice applies .nodeset to each op, including the one each ac performs); order independence is checked by re-running independence_check.point at the end of the deck. The per-process helper apply_cap_point (one ngspice process per point) remains for local single-point spot checks.",
+  "loads": [
+    "1ma",
+    "50ma"
+  ],
+  "load_rload_ohm": {
+    "1ma": 1800,
+    "50ma": 36
+  },
+  "load_rload_source": "1ma = the testbench's own RLOAD 1.8k; 50ma = experiment.json's 'alter rload = 36'",
+  "ac_args": "lin 3 1e3 1e5",
+  "ac_args_source": "experiment.json deck: 'ac lin 3 1e3 1e5', index 0 = 1 kHz, index 2 = 100 kHz",
+  "resr_park_ohm": 0.01,
+  "independence_check": {
+    "point": [
+      1.0,
+      0.01
+    ],
+    "tol_db": 1e-06,
+    "note": "The nominal point is re-run as the LAST point of each corner's deck; its values must equal the first run's (no state carried between points)."
+  },
   "metrics": [
     "psrr_1khz_1ma_db",
     "psrr_100khz_1ma_db",

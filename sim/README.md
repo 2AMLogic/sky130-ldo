@@ -640,6 +640,47 @@ load points). `sim/bin/psrr_cap_sweep.py` rewrites the testbench netlist per poi
 (ESR 0 removes RESR, a real zero-ESR topology) and selects the worst sampled point
 per sub-metric (min over corners, ties -> lower C_eff then lower ESR; any missing or
 non-finite cell -> no finding, listed). Tests: `sim/tests/test_psrr_cap_sweep.py`.
-No evidence record exists yet: `psrr-dc` is refused by `--backend batch` (see "Batch
-backend"), and a local 27-deck grid is not allowed on the dispatch worker. The grid
-samples the window; it cannot prove the continuous-window or 45-corner worst case.
+The grid samples the window; it cannot prove the continuous-window or 45-corner
+worst case.
+
+**Runner (`sim/bin/psrr-cap-sweep-run.py`).** `corner-run.py --backend batch` still
+refuses `psrr-dc` (its allowlist is untouched). This dedicated runner sends the sweep
+to `klt sim` instead, as **one request per corner**. Each corner's deck walks every
+point as ordered `analysis_steps`: for each point and load, an `op` step whose
+`alter`s set COUT, RESR, CDIR and RLOAD explicitly, followed by the `ac lin 3 1e3 1e5`
+step. The testbench's `.nodeset` seed (#171/#179) applies to every one of these
+operating-point solves. Zero ESR uses the #313 realisation: the request netlist gains
+a direct `CDIR` VOUT-to-ground branch, and an ESR = 0 point puts C_eff on CDIR and
+opens the series branch (COUT = 0 F). The nominal 1 uF / 10 mOhm point is re-run at
+the end of each deck, and its values must match the first run (order independence).
+
+- `--backend batch` (default) submits every corner to the fleet. Any failed submit
+  aborts with **no record and no local fallback**.
+- `--backend local` runs **exactly one** `--corner`, as a spot check, and never
+  writes a record.
+- A record (`sim/psrr-dc/records/<id>.{json,md}`, `evidence_kind:
+  "psrr-cap-esr-sweep"`) is minted only when all three corners return from the
+  fleet. The characterization report's campaign-record selector skips it. Raw
+  requests, responses, request netlists and engine logs go under
+  `klt-requests/`, `klt-responses/`, `klt-request-netlists/` and `corners/<id>/`.
+- `-o` is always passed as an absolute path. A relative `-o` makes `klt sim`'s
+  local backend error out before ngspice starts (klayout-tools#2892).
+
+**Status (2026-10-11): no record yet.** One single-corner local spot check ran
+(tt / 27 C / 3.30 V, all 9 points, both loads, about 18 s for one ngspice process).
+In it, the nominal point reproduces record `20260926-033606-4a9ec09` within
+1e-5 dB on all four sub-metrics, including 100 kHz / 50 mA (11.3201 vs
+11.3201 dB). The 0.03 dB gap noted when this tooling first landed did not
+reproduce through this deck. The repeat of the nominal point was identical.
+The three-corner batch submission was attempted from this host. The first four
+attempts were refused at launch by `BATCH_MAX_CONCURRENT_INSTANCES=8`: the fleet was
+saturated and `klt` does not wait out that refusal (klayout-tools#2917). The fifth
+attempt got instances, but all three jobs (`klt-sim-3aad4243db62`,
+`klt-sim-a16bef68e1e2`, `klt-sim-f4edf7efc374`) failed after about 5 s with exit 87,
+`batch_runner_version_mismatch`. The fleet runner is klt 0.5.0 and this host's
+client is 0.7.0, and **the request was not run** (klayout-tools#2948). The 0.5.0
+runner also predates `analysis_steps` and `measurements[].expr`, so this request
+shape cannot run on the fleet until the runner image is updated. Because of that
+failed run, the runner now refuses to mint a record when any corner comes back
+without an engine log, i.e. when the simulation never ran. Single-corner spot-check
+numbers are not evidence records and are not cited as the binding-condition finding.
