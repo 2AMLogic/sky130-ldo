@@ -169,7 +169,7 @@ def bias_cards(rev: int) -> list[str]:
 
 
 def amp_cards(rev: int) -> list[str]:
-    r = _rev(rev)
+    _rev(rev)  # validates the revision
     return [
         f"XM_NTAIL NTAIL NBR AMP_ENN 0 {NF} " + ntail_geom(rev),
         f"XM_NIN1 NX1 FB NTAIL 0 {NF} " + geom(10, 2, 2),

@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import importlib.util
 import json
-import math
 import sys
 import tempfile
 import unittest
@@ -71,7 +70,7 @@ class Transformation(unittest.TestCase):
         for rev in (0, 1):
             ed, notes = cand.apply_candidate(BASE, rev)
             self.assertEqual(cand.check_candidate(BASE, ed), [], rev)
-            self.assertIn(f"removed XM_TAIL", notes)
+            self.assertIn("removed XM_TAIL", notes)
 
     def test_wrap_independent_exact_match(self):
         ed, _ = cand.apply_candidate(rewrap(BASE), 1)
