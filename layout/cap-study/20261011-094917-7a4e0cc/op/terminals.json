@@ -1,0 +1,37 @@
+{
+  "capacitors": [
+    {
+      "name": "C_COMP",
+      "nets": [
+        "VOUT",
+        "EA_CZ"
+      ],
+      "value_f": 1.5e-10
+    },
+    {
+      "name": "C_CL",
+      "nets": [
+        "VIN",
+        "CL_CMP"
+      ],
+      "value_f": 1e-12
+    },
+    {
+      "name": "C_SS",
+      "nets": [
+        "SS",
+        "0"
+      ],
+      "value_f": 1e-11
+    },
+    {
+      "name": "C_TS",
+      "nets": [
+        "VIN",
+        "TS_CMP"
+      ],
+      "value_f": 1e-12
+    }
+  ],
+  "source": "xschem netlist of sim/load-regulation/testbench/tb_load_regulation.sch (DUT design/ldo_3v3in_1v8out.sch); terminals only, not voltages"
+}
