@@ -1058,6 +1058,35 @@ class TestAreaRow(unittest.TestCase):
         stale = "\n".join([row2, detail2, text])
         self.assertNotEqual(bcr.normalize_sim_freshness(fresh), bcr.normalize_sim_freshness(stale))
 
+    def test_pre_318_record_without_coverage_gets_no_clause(self):
+        _, detail = self._row()
+        self.assertNotIn("Coverage (from the record)", detail)
+
+    def test_coverage_disclosure_is_quoted_next_to_the_verdict(self):
+        """Issue #318: a footprint measured without the capacitors, beside an
+        official-DRC FAIL and a stale LVS, must say so in the Area detail."""
+        self.rec["coverage"] = {
+            "statement": "The measured footprint omits 4 schematic element(s) (C_X).",
+            "official_drc": {"state": "violations", "detail": "9 markers in 2 rule families"},
+            "lvs": {"record": "V0", "freshness": "STALE", "detail": "checked a different GDS"},
+            "capacitor_demonstrator": {"record": "layout/cap-rail-demo/reports/D1/record.md"},
+        }
+        self._write_rec()
+        _, detail = self._row()
+        self.assertIn("omits 4 schematic element(s)", detail)
+        self.assertIn("Official-deck DRC on the same layout record: violations", detail)
+        self.assertIn("LVS at mint time: STALE", detail)
+        self.assertIn("does not certify the core", detail)
+
+    def test_committed_area_record_discloses_coverage(self):
+        bcr.REPO_ROOT, bcr.LAYOUT_DIR = self._saved
+        text = (MEASUREMENTS_DIR / "characterization.md").read_text()
+        area = [ln for ln in text.splitlines() if ln.startswith("- **Area**")]
+        self.assertEqual(len(area), 1)
+        self.assertIn("C_COMP", area[0])
+        self.assertIn("Official-deck DRC on the same layout record: violations", area[0])
+        self.assertIn("LVS at mint time: STALE", area[0])
+
     def test_area_is_no_longer_na_in_the_committed_report(self):
         bcr.REPO_ROOT, bcr.LAYOUT_DIR = self._saved
         text = (MEASUREMENTS_DIR / "characterization.md").read_text()

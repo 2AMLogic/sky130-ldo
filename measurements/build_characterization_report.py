@@ -676,6 +676,30 @@ def check_area_freshness(record: dict) -> str:
     )
 
 
+def area_coverage_clause(record: dict) -> str:
+    """The area record's own coverage disclosure (issue #318), quoted -- never
+    recomputed. Records minted before #318 carry none and get no clause, so
+    their detail line is unchanged; a record that does carry one keeps its
+    missing-capacitor statement, official-DRC state and LVS freshness visible
+    next to the Area verdict."""
+    cov = record.get("coverage")
+    if not isinstance(cov, dict):
+        return ""
+    parts = [f" Coverage (from the record): {cov.get('statement', 'unstated')}"]
+    off = cov.get("official_drc") or {}
+    if off:
+        parts.append(f"Official-deck DRC on the same layout record: {off.get('state')} ({off.get('detail')}).")
+    lvs = cov.get("lvs") or {}
+    if lvs:
+        parts.append(
+            f"LVS at mint time: {lvs.get('freshness')} (`LATEST-LVS` `{lvs.get('record')}`: {lvs.get('detail')})."
+        )
+    demo = cov.get("capacitor_demonstrator") or {}
+    if demo:
+        parts.append(f"Standalone capacitor demonstrator `{demo.get('record')}` is cited separately and does not certify the core.")
+    return " ".join(parts)
+
+
 def check_lvs_geometry_freshness(lvs_dir: Path) -> str:
     """Is the LVS record about the routed GDS that exists now? (issue #287)
 
@@ -976,7 +1000,7 @@ def build_spec_row_table(
                 f"limit (strict). Convention: {arec.get('convention')} "
                 f"GDS `{(arec.get('gds') or {}).get('path')}` "
                 f"(sha256 `{(arec.get('gds') or {}).get('sha256')}`). "
-                f"GDS freshness: {freshness}."
+                f"GDS freshness: {freshness}.{area_coverage_clause(arec)}"
             )
             continue
 
