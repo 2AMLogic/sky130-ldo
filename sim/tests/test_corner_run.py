@@ -1619,12 +1619,19 @@ class TestBatchWindowGrid(BatchHarness):
         corner_run.netlist_with_xschem.assert_not_called()
 
     def test_other_transient_slugs_stay_refused(self):
-        for slug in ("startup", "load-regulation", "dropout-vs-load"):
+        for slug in ("startup", "load-regulation"):
             raw = json.loads((SIM_DIR / self.SLUG / "experiment.json").read_text())
             raw["slug"] = slug
             (self.exp_dir / "experiment.json").write_text(json.dumps(raw))
             err, _, _ = self.run_main("--backend", "batch", *QUICK, expect_exit=HarnessErr)
             self.assertIn("bounded", str(err), slug)
+        # issue #374: dropout-vs-load is admitted only in its validated
+        # cold-start shape; a foreign manifest under that slug is refused.
+        raw = json.loads((SIM_DIR / self.SLUG / "experiment.json").read_text())
+        raw["slug"] = "dropout-vs-load"
+        (self.exp_dir / "experiment.json").write_text(json.dumps(raw))
+        err, _, _ = self.run_main("--backend", "batch", *QUICK, expect_exit=HarnessErr)
+        self.assertIn("validated cold-start crossing shape", str(err))
         self.assertEqual(self.fake.calls, [])
 
     def test_local_deck_still_uses_reset_per_leg(self):

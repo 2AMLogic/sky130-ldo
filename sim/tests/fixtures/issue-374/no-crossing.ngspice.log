@@ -1,0 +1,30 @@
+
+Note: No compatibility mode selected!
+
+
+Circuit: * klt sim -- generated corner deck, do not edit
+
+klt_step_begin 0 unknown1
+Doing analysis at TEMP = 27.000000 and TNOM = 27.000000
+
+Using SPARSE 1.3 as Direct Linear Solver
+Operating point simulation skipped by 'uic',
+  now using transient initial conditions.
+
+No. of Data Rows : 218
+klt_step_end 0 tran1
+
+Error: measure  dropout_vin_x  find(AT) : out of interval
+ meas tran dropout_vin_x find v(vin) when v(vout)=5 fall=1 td=0.5m failed!
+
+Warning from checkvalid: vector dropout_vin_x is not available or has zero length.
+Error: RHS "dropout_vin_x" invalid
+Warning from checkvalid: vector dropout__dropout_vin_x is not available or has zero length.
+vout_at_max_vin_v   =  1.00000e+00 from=  1.50000e-03 to=  2.00000e-03
+dropout__vout_at_max_vin_v = 1.000000e+00
+Warning from checkvalid: vector dropout_vin_x is not available or has zero length.
+Error: RHS "dropout_vin_x - 1.764" invalid
+Warning from checkvalid: vector dropout_v is not available or has zero length.
+Error: RHS "dropout_v" invalid
+Warning from checkvalid: vector dropout__dropout_v is not available or has zero length.
+ngspice-46 done

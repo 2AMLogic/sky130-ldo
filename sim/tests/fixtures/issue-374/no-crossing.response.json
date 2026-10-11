@@ -1,0 +1,194 @@
+{
+  "schema_version": 3,
+  "netlist": {
+    "path": null,
+    "scope": "external"
+  },
+  "status": "error",
+  "corner_count": 1,
+  "passed": 0,
+  "failed": 0,
+  "errored": 1,
+  "inconclusive": 0,
+  "diagnostic_counts": {
+    "by_code": {
+      "measurement": 2
+    },
+    "by_severity": {
+      "error": 2
+    },
+    "corners_with_diagnostics": 1
+  },
+  "metrics": {
+    "sim__corner__count": 1,
+    "sim__corner__passed_count": 0,
+    "sim__corner__failed_count": 0,
+    "sim__corner__errored_count": 1,
+    "sim__corner__inconclusive_count": 0
+  },
+  "environment": {
+    "engine": "ngspice",
+    "engine_version": "46",
+    "models_lib": {
+      "path": null,
+      "scope": "absent"
+    },
+    "models_lib_sha256": null,
+    "netlist_sha256": "1ecf95cbc94f0d606ba21e2bb4882a012a8980c3fc22921a95f96917cab9252f",
+    "netlist_closure": [
+      {
+        "path": null,
+        "scope": "external",
+        "sha256": "1ecf95cbc94f0d606ba21e2bb4882a012a8980c3fc22921a95f96917cab9252f"
+      }
+    ]
+  },
+  "coverage": {
+    "corners_simulated": 1,
+    "measurements_declared": 3,
+    "measurements_with_limits": 0,
+    "unrecognized_limit_keys": [],
+    "schema_version": 1,
+    "known": true,
+    "checked": [
+      "measurement:[0,\"default/novdd/27C\",\"dropout.vout_at_max_vin_v\"]/observation"
+    ],
+    "skipped": [
+      {
+        "id": "measurement:[0,\"default/novdd/27C\",\"dropout.dropout_v\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[0,\"default/novdd/27C\",\"dropout.dropout_vin_x\"]/observation",
+        "reason": "unavailable_measurement"
+      }
+    ],
+    "inapplicable": [
+      {
+        "id": "measurement:[0,\"default/novdd/27C\",\"dropout.dropout_v\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"default/novdd/27C\",\"dropout.dropout_vin_x\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"default/novdd/27C\",\"dropout.vout_at_max_vin_v\"]/limits",
+        "reason": "characterization_without_limits"
+      }
+    ],
+    "unknown": [],
+    "nothing_checked": false,
+    "nothing_checked_reasons": []
+  },
+  "provenance": {
+    "klt_version": "0.7.0+gff97d692a147",
+    "klayout_version": "0.30.12",
+    "pdk": null,
+    "deck": null,
+    "input": {
+      "content_hash": "sha256:1ecf95cbc94f0d606ba21e2bb4882a012a8980c3fc22921a95f96917cab9252f",
+      "role": "netlist"
+    }
+  },
+  "measurements": [
+    {
+      "name": "dropout.dropout_vin_x",
+      "unit": null,
+      "limits": null,
+      "status": "error",
+      "worst_case": {
+        "corner_id": "default/novdd/27C",
+        "value": null,
+        "margin": null
+      },
+      "step": "dropout"
+    },
+    {
+      "name": "dropout.vout_at_max_vin_v",
+      "unit": "V",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "default/novdd/27C",
+        "value": 1.0,
+        "margin": null
+      },
+      "step": "dropout"
+    },
+    {
+      "name": "dropout.dropout_v",
+      "unit": "V",
+      "limits": null,
+      "status": "error",
+      "worst_case": {
+        "corner_id": "default/novdd/27C",
+        "value": null,
+        "margin": null
+      },
+      "step": "dropout"
+    }
+  ],
+  "corners": [
+    {
+      "corner_id": "default/novdd/27C",
+      "process": null,
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "error",
+      "runtime_s": 0.009,
+      "measurements": [
+        {
+          "name": "dropout.dropout_vin_x",
+          "value": null,
+          "unit": null,
+          "status": "error",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.vout_at_max_vin_v",
+          "value": 1.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.dropout_v",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null,
+          "step": "dropout"
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'dropout.dropout_vin_x' produced no value: step 'dropout' completed, but its .meas card ('.meas tran dropout_vin_x find v(vin) when v(vout)=5 fall=1 td=0.5m') printed no 'dropout__dropout_vin_x = <value>' line -- check that it resolves against that step's saved vectors and reduces to a single real scalar"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'dropout.dropout_v' produced no value: step 'dropout' completed, but its 'expr' ('dropout_vin_x - 1.764') printed no 'dropout__dropout_v = <value>' line -- check that it resolves against that step's saved vectors and reduces to a single real scalar"
+        }
+      ],
+      "artifacts": {
+        "log": "no-crossing.ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": null
+      },
+      "monte_carlo": null,
+      "steps": [
+        {
+          "name": "dropout",
+          "kind": "tran",
+          "status": "ok"
+        }
+      ]
+    }
+  ]
+}

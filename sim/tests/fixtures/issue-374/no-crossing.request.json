@@ -1,0 +1,38 @@
+{
+  "netlist": "no-crossing.rc.spice",
+  "engine": "ngspice",
+  "corners": {
+    "temperature_c": [
+      27
+    ]
+  },
+  "analysis_steps": [
+    {
+      "name": "dropout",
+      "analysis": {
+        "kind": "tran",
+        "args": "10u 2m uic"
+      },
+      "measurements": [
+        {
+          "name": "dropout_vin_x",
+          "spice": ".meas tran dropout_vin_x find v(vin) when v(vout)=5 fall=1 td=0.5m"
+        },
+        {
+          "name": "vout_at_max_vin_v",
+          "spice": ".meas tran vout_at_max_vin_v avg v(vout) from=1.5m to=2m",
+          "unit": "V"
+        },
+        {
+          "name": "dropout_v",
+          "expr": "dropout_vin_x - 1.764",
+          "unit": "V"
+        }
+      ]
+    }
+  ],
+  "options": {
+    "timeout_s": 60,
+    "keep_artifacts": true
+  }
+}

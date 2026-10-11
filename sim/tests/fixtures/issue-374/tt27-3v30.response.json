@@ -1,0 +1,180 @@
+{
+  "schema_version": 3,
+  "netlist": {
+    "path": "sim/build/dropout-vs-load/20261011-221210-62eb565.ephemeral-148511/klt-requests/v3.30.spice",
+    "scope": "repo"
+  },
+  "status": "pass",
+  "corner_count": 1,
+  "passed": 1,
+  "failed": 0,
+  "errored": 0,
+  "inconclusive": 0,
+  "diagnostic_counts": {
+    "by_code": {},
+    "by_severity": {},
+    "corners_with_diagnostics": 0
+  },
+  "metrics": {
+    "sim__corner__count": 1,
+    "sim__corner__passed_count": 1,
+    "sim__corner__failed_count": 0,
+    "sim__corner__errored_count": 0,
+    "sim__corner__inconclusive_count": 0
+  },
+  "environment": {
+    "engine": "ngspice",
+    "engine_version": "46",
+    "models_lib": {
+      "path": null,
+      "scope": "external"
+    },
+    "models_lib_sha256": "48de7c677e2c6e7d09b2559279de9f818be71010a4aa933d728eb4db3b133c84",
+    "netlist_sha256": "b26290c1bf8f1a41906b9d0b6a245ff1e71558cf859589b7f280c885a114f129",
+    "netlist_closure": [
+      {
+        "path": "sim/build/dropout-vs-load/20261011-221210-62eb565.ephemeral-148511/klt-requests/v3.30.spice",
+        "scope": "repo",
+        "sha256": "b26290c1bf8f1a41906b9d0b6a245ff1e71558cf859589b7f280c885a114f129"
+      }
+    ]
+  },
+  "coverage": {
+    "corners_simulated": 1,
+    "measurements_declared": 3,
+    "measurements_with_limits": 0,
+    "unrecognized_limit_keys": [],
+    "schema_version": 1,
+    "known": true,
+    "checked": [
+      "measurement:[0,\"tt/novdd/27C\",\"dropout.dropout_v\"]/observation",
+      "measurement:[0,\"tt/novdd/27C\",\"dropout.dropout_vin_x\"]/observation",
+      "measurement:[0,\"tt/novdd/27C\",\"dropout.vout_at_max_vin_v\"]/observation"
+    ],
+    "skipped": [],
+    "inapplicable": [
+      {
+        "id": "measurement:[0,\"tt/novdd/27C\",\"dropout.dropout_v\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/27C\",\"dropout.dropout_vin_x\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/27C\",\"dropout.vout_at_max_vin_v\"]/limits",
+        "reason": "characterization_without_limits"
+      }
+    ],
+    "unknown": [],
+    "nothing_checked": false,
+    "nothing_checked_reasons": []
+  },
+  "provenance": {
+    "klt_version": "0.7.0+gff97d692a147",
+    "klayout_version": "0.30.12",
+    "pdk": {
+      "name": "sky130A",
+      "source": "PDK_ROOT environment variable",
+      "version": "open_pdks c6d73a35f524070e85faff4a6a9eef49553ebc2b"
+    },
+    "deck": {
+      "name": "sky130.lib.spice",
+      "content_hash": "sha256:48de7c677e2c6e7d09b2559279de9f818be71010a4aa933d728eb4db3b133c84",
+      "released": false
+    },
+    "input": {
+      "content_hash": "sha256:b26290c1bf8f1a41906b9d0b6a245ff1e71558cf859589b7f280c885a114f129",
+      "role": "netlist"
+    }
+  },
+  "measurements": [
+    {
+      "name": "dropout.dropout_vin_x",
+      "unit": null,
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/27C",
+        "value": 2.161658,
+        "margin": null
+      },
+      "step": "dropout"
+    },
+    {
+      "name": "dropout.vout_at_max_vin_v",
+      "unit": "V",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/27C",
+        "value": 1.798832,
+        "margin": null
+      },
+      "step": "dropout"
+    },
+    {
+      "name": "dropout.dropout_v",
+      "unit": "V",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/27C",
+        "value": 0.397658,
+        "margin": null
+      },
+      "step": "dropout"
+    }
+  ],
+  "corners": [
+    {
+      "corner_id": "tt/novdd/27C",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27.0,
+      "status": "pass",
+      "runtime_s": 16.976,
+      "measurements": [
+        {
+          "name": "dropout.dropout_vin_x",
+          "value": 2.161658,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.vout_at_max_vin_v",
+          "value": 1.798832,
+          "unit": "V",
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.dropout_v",
+          "value": 0.397658,
+          "unit": "V",
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "tt27-3v30.ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": null
+      },
+      "monte_carlo": null,
+      "steps": [
+        {
+          "name": "dropout",
+          "kind": "tran",
+          "status": "ok"
+        }
+      ]
+    }
+  ]
+}
