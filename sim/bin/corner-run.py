@@ -357,6 +357,11 @@ class Measurement:
     unit: str = ""
     min: float | None = None
     max: float | None = None
+    # Bound inclusivity (issue #335). Default inclusive (value == bound passes);
+    # `false` makes the bound strict (value == bound fails), implementing a
+    # ratified `<` / `>` row. Validated by grade_bounds().
+    min_inclusive: bool = True
+    max_inclusive: bool = True
     note: str = ""
     # Window-grid support (issue #313). A manifest measurement with
     # `per_leg: true` is a TEMPLATE that load_experiment() expands once per
@@ -391,6 +396,32 @@ def window_legs(raw: dict) -> list[dict]:
     """The declared COUT/ESR legs of a manifest's `window_grid` (issue #313),
     or [] for an experiment that does not declare one."""
     return list((raw.get("window_grid") or {}).get("legs") or [])
+
+
+def grade_bounds(m: Measurement, value: float | None) -> tuple[bool, str]:
+    """Single grader for a measurement's [min, max] window (issue #335), shared
+    by the local, window-grid (local, per-leg) and klt-batch paths so they
+    cannot drift. Missing/non-finite values fail. A bound is inclusive unless
+    its `*_inclusive` flag is exactly False; non-bool flags are malformed.
+    """
+    for flag in ("min_inclusive", "max_inclusive"):
+        if not isinstance(getattr(m, flag), bool):
+            raise HarnessError(
+                f"measurement {m.name!r}: {flag} must be a JSON boolean, got {getattr(m, flag)!r}"
+            )
+    for bound in ("min", "max"):
+        b = getattr(m, bound)
+        if b is not None and (isinstance(b, bool) or not _finite_number(b)):
+            raise HarnessError(f"measurement {m.name!r}: {bound} must be a finite number or null, got {b!r}")
+    if value is None:
+        return False, "measurement not found in ngspice output"
+    if not _finite_number(value):
+        return False, "non-finite measurement value"
+    if m.min is not None and (value < m.min or (value == m.min and not m.min_inclusive)):
+        return False, f"below min {m.min:g}" if value < m.min else f"not above strict min {m.min:g}"
+    if m.max is not None and (value > m.max or (value == m.max and not m.max_inclusive)):
+        return False, f"above max {m.max:g}" if value > m.max else f"not below strict max {m.max:g}"
+    return True, ""
 
 
 def leg_measurement_name(template: str, leg_id: str) -> str:
@@ -764,14 +795,7 @@ def run_corner(
     ok = rc == 0 and not timed_out and solver_diagnostic is None
     for m in exp.measurements:
         value = values.get(m.name)
-        passed = value is not None
-        reason = "" if passed else "measurement not found in ngspice output"
-        if passed and not _finite_number(value):
-            passed, reason = False, "non-finite measurement value"
-        if passed and m.min is not None and value < m.min:
-            passed, reason = False, f"below min {m.min:g}"
-        if passed and m.max is not None and value > m.max:
-            passed, reason = False, f"above max {m.max:g}"
+        passed, reason = grade_bounds(m, value)
         checks.append(
             {
                 "name": m.name,
@@ -780,6 +804,8 @@ def run_corner(
                 "value": value,
                 "min": m.min,
                 "max": m.max,
+                "min_inclusive": m.min_inclusive,
+                "max_inclusive": m.max_inclusive,
                 "pass": passed,
                 "reason": reason,
                 **(
@@ -1310,14 +1336,15 @@ def normalize_batch_response(
                 reason = f"measurement value is missing or non-finite ({entries[0].get('value')!r})"
             else:
                 value = float(entries[0]["value"])
-            passed = value is not None
-            if passed and m.min is not None and value < m.min:
-                passed, reason = False, f"below min {m.min:g}"
-            if passed and m.max is not None and value > m.max:
-                passed, reason = False, f"above max {m.max:g}"
+            graded, bound_reason = grade_bounds(m, value)
+            passed = graded
+            if value is not None:
+                reason = bound_reason
             checks.append({
                 "name": m.name, "expr": m.expr, "unit": m.unit, "value": value,
-                "min": m.min, "max": m.max, "pass": passed, "reason": reason,
+                "min": m.min, "max": m.max,
+                "min_inclusive": m.min_inclusive, "max_inclusive": m.max_inclusive,
+                "pass": passed, "reason": reason,
             })
 
         solver_diagnostic, log_text, log_note = None, None, None
