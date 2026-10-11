@@ -1270,6 +1270,8 @@ class TestBoundInclusivity(BatchHarness):
                 "psrr_1khz_1ma_db", "psrr_100khz_1ma_db", "psrr_1khz_50ma_db", "psrr_100khz_50ma_db")},
             "iq": {"iq_no_load_ua": "max_inclusive", "iq_full_load_ua": "max_inclusive"},
             "load-regulation": {"load_reg_v": "max_inclusive", "load_reg_pct": "max_inclusive"},
+            "line-regulation": {"line_reg_1ma_mv_per_v": "max_inclusive",
+                                "line_reg_50ma_mv_per_v": "max_inclusive"},
             "enable-shutdown": {"iq_shutdown_static_ua": "max_inclusive",
                                 "iq_shutdown_after_edge_ua": "max_inclusive"},
         }
@@ -1345,6 +1347,87 @@ class TestLoadRegulationManifestGate(unittest.TestCase):
         r = self.grade(1.80, 1.80 + 0.017)
         self.assertTrue(all(r.values()), r)
         self.assertFalse(corner_run.grade_bounds(self.ms["load_reg_v"], 0.018001)[0])
+
+
+class TestLineRegulationManifestGate(unittest.TestCase):
+    """Issue #369: the ACTUAL line-regulation manifest, graded by the shared
+    grade_bounds, must gate all four settled endpoints on the Output window
+    and treat the ratified slope maxima as strict."""
+
+    ENDPOINTS = ("vout_1ma_lo", "vout_1ma_hi", "vout_50ma_lo", "vout_50ma_hi")
+    SLOPES = ("line_reg_1ma_mv_per_v", "line_reg_50ma_mv_per_v")
+
+    @classmethod
+    def setUpClass(cls):
+        exp = corner_run.load_experiment(SIM_DIR / "line-regulation")
+        cls.ms = {m.name: m for m in exp.measurements}
+
+    def grade(self, l1, h1, l50, h50):
+        """Derive each slope by evaluating its manifest expr over the endpoint
+        values, then grade everything via grade_bounds."""
+        vals = {"vout_1ma_lo": l1, "vout_1ma_hi": h1,
+                "vout_50ma_lo": l50, "vout_50ma_hi": h50}
+        env = {"abs": abs, "tran1": mock.Mock(vout_1ma_lo=l1), "tran2": mock.Mock(vout_1ma_hi=h1),
+               "tran3": mock.Mock(vout_50ma_lo=l50), "tran4": mock.Mock(vout_50ma_hi=h50)}
+        for n in self.SLOPES:
+            vals[n] = eval(self.ms[n].expr, {"__builtins__": {}}, env)
+        return {n: corner_run.grade_bounds(self.ms[n], v)[0] for n, v in vals.items()}
+
+    def test_manifest_shape(self):
+        exprs = {"vout_1ma_lo": "tran1.vout_1ma_lo", "vout_1ma_hi": "tran2.vout_1ma_hi",
+                 "vout_50ma_lo": "tran3.vout_50ma_lo", "vout_50ma_hi": "tran4.vout_50ma_hi"}
+        for n, e in exprs.items():
+            self.assertEqual(self.ms[n].expr, e)
+            self.assertEqual((self.ms[n].min, self.ms[n].max), (1.764, 1.836))
+            self.assertTrue(self.ms[n].min_inclusive and self.ms[n].max_inclusive)
+        for n in self.SLOPES:
+            self.assertEqual(self.ms[n].max, 5)
+            self.assertFalse(self.ms[n].max_inclusive)
+        self.assertIn("tran1.vout_1ma_lo", self.ms["line_reg_1ma_mv_per_v"].expr)
+        self.assertIn("tran4.vout_50ma_hi", self.ms["line_reg_50ma_mv_per_v"].expr)
+
+    def test_equal_collapsed_endpoints_fail_with_zero_slope(self):
+        r = self.grade(0.0, 0.0, 0.0, 0.0)
+        self.assertTrue(r["line_reg_1ma_mv_per_v"] and r["line_reg_50ma_mv_per_v"])  # the old hole
+        for n in self.ENDPOINTS:
+            self.assertFalse(r[n], n)
+        r = self.grade(1.0, 1.0, 1.0, 1.0)
+        for n in self.ENDPOINTS:
+            self.assertFalse(r[n], n)
+
+    def test_equal_overvoltage_endpoints_fail(self):
+        r = self.grade(1.9, 1.9, 1.9, 1.9)
+        self.assertTrue(r["line_reg_1ma_mv_per_v"] and r["line_reg_50ma_mv_per_v"])
+        for n in self.ENDPOINTS:
+            self.assertFalse(r[n], n)
+
+    def test_valid_regulated_endpoints_pass(self):
+        r = self.grade(1.800, 1.8020, 1.799, 1.8008)  # ~3.0 / ~2.7 mV/V
+        self.assertTrue(all(r.values()), r)
+
+    def test_slope_exactly_five_fails_at_each_load(self):
+        for n in self.SLOPES:
+            self.assertFalse(corner_run.grade_bounds(self.ms[n], 5)[0])
+            self.assertFalse(corner_run.grade_bounds(self.ms[n], 5.0)[0])
+            self.assertTrue(corner_run.grade_bounds(self.ms[n], 4.999)[0])
+            self.assertFalse(corner_run.grade_bounds(self.ms[n], 5.001)[0])
+        # an endpoint pair that really yields a slope above 5 through the expr fails
+        r = self.grade(1.800, 1.804, 1.800, 1.804)
+        self.assertFalse(r["line_reg_1ma_mv_per_v"] or r["line_reg_50ma_mv_per_v"])
+        self.assertTrue(all(r[n] for n in self.ENDPOINTS))
+
+    def test_window_edges_pass(self):
+        r = self.grade(1.764, 1.836, 1.764, 1.836)
+        for n in self.ENDPOINTS:
+            self.assertTrue(r[n], n)
+        r = self.grade(1.7639, 1.8361, 1.7639, 1.8361)
+        for n in self.ENDPOINTS:
+            self.assertFalse(r[n], n)
+
+    def test_missing_and_nonfinite_endpoints_fail(self):
+        for bad in (None, float("nan"), float("inf"), float("-inf")):
+            for n in self.ENDPOINTS + self.SLOPES:
+                self.assertFalse(corner_run.grade_bounds(self.ms[n], bad)[0], (n, bad))
 
 
 # --------------------------------------------------------------------------
