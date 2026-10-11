@@ -1,0 +1,83 @@
+--- diagnosis: `Undefined parameter [swx_nrds]` in the PEX schematic-side leg (issue #277)
+captured_utc: 2026-10-11T01:20Z
+git_head: 1be508a (main; branch feature/issue-277, no source changes at capture time)
+layout_record: 20260924-221912-a947aa8 (layout/ldo-core/reports/LATEST-LVS)
+gds_sha256: 3e7f504b56ea85cdd733ecf456650b6f08c72540ec4a6ad38b73f3a0369beb9a
+pdk: sky130A, open_pdks c6d73a35f524070e85faff4a6a9eef49553ebc2b (sim/pdk.json), PDK_ROOT=~/.volare
+models_lib_sha256: 48de7c677e2c6e7d09b2559279de9f818be71010a4aa933d728eb4db3b133c84 (combined/sky130.lib.spice)
+ngspice: ngspice-46 (~/.local/bin/ngspice)
+klt: 0.7.0+g39f6da54ae4c (klayout 0.30.12)
+xschem (two on this host): /usr/bin/xschem = V3.4.4 (apt); /usr/local/bin/xschem = V3.4.7 (pinned, sim/pdk.json `tools`)
+host: loom dispatch worker (all runs below are single-corner / single-device; no grid ran locally)
+
+=== MEASURED ===
+
+1. Where `swx_nrds` comes from (PDK, not this repo):
+   combined/continuous/models_fet.spice defines it inside the
+   `sky130_fd_pr__{n,p}fet_g5v0d10v5` subckts' own `.param` line
+   (`.param l=1 w=1 nf=1 ad=0 ... nrd={0.14/w} ... + swx_nrds = {89.1*nf/w+443.5}`
+   for nfet, `{361*nf/w+1489}` for pfet) and consumes it as `rsh = {swx_nrds}` in
+   every binned model card. It is never written by xschem or by this repo.
+
+2. What introduces the failure (xschem-netlists/):
+   Netlisting design/ldo_3v3in_1v8out.sch with the same command
+   gen-pex-testbench.py uses (`xschem -n -q -x -s -o <dir> --rcfile sim/xschemrc`):
+     - xschem 3.4.4: 144 lines contain the symbol's raw geometry templates
+       `ad=expr('int((@nf + 1)/2) * @W / @nf * 0.29')`, `as=/pd=/ps=/nrd=/nrs=expr('...')`.
+     - xschem 3.4.7: 0 `expr(` -- numbers only.
+   sim/bin/xschem_exprs.eval_xschem_exprs() on the 3.4.4 netlist: 288
+   substitutions, 0 unresolved; the result is numerically identical (rel. tol
+   1e-5, 58/58 statements) to the 3.4.7 netlist. Pinned by
+   sim/tests/test_pex_post_layout.py::Xschem344FixtureTests.
+
+3. Mechanism (min-device/, one `ngspice -b` each):
+   One nfet_g5v0d10v5 instance with the raw 3.4.4 parameter shape (raw.cir):
+   ngspice-46 reports 1x `Undefined parameter [expr]`, 1x `[ad]` and
+   56x `Undefined parameter [swx_nrds]`. numparam fails the subckt's whole
+   instance `.param` line on the first `expr(...)`, so `swx_nrds` (evaluated on
+   that same line) is never defined, and every `rsh = {swx_nrds}` model card
+   then reports it. The same device after normalization (norm.cir): 0
+   undefined-parameter errors, exit 0.
+
+4. Reproduction on the real design (one corner: tt / vvin=3.3 V / 27 C,
+   `klt sim --backend local`, testbench regenerated against the LATEST-LVS GDS
+   with xschem 3.4.4 first on PATH):
+     - one-corner-raw-control/: DUT = raw 3.4.4 body with normalization
+       deliberately bypassed (a control; the generator itself now refuses to
+       emit this). ngspice log (gzip, complete): 2485x `[swx_nrds]`, 48x
+       `[expr]`, 48x `[ad]`; corner status `error`, every measurement "produced
+       no value" -- the PR #275 symptom.
+     - one-corner-normalized/: DUT as emitted by the current
+       gen-pex-testbench.py (shared normalizer). 0 undefined-parameter errors;
+       status `pass`: vout_light_load_v 1.8006 V, vout_full_load_v 1.79883 V,
+       vin_minus_vout_full_load_v 1.50117 V (warnings: singular_matrix at
+       xldo.xr_fb_b.t2/fb, recovered gmin stepping -- pre-existing, not a
+       parse error). Its non-comment statements are numerically identical to
+       the DUT the 3.4.7 path emits (only line wrapping and xschem's own
+       `**` comment lines differ), and the 3.4.7-path DUT gives the same three
+       values at the same corner.
+
+5. Fleet status (fleet-probe/): a trivial 2-corner `klt sim` (no PDK) submitted
+   to the batch fleet at 2026-10-11T01:1xZ still fails before simulation:
+   job klt-sim-c9ff88880c3e, exit 87, runner_code
+   batch_runner_version_mismatch (runner klt 0.5.0 vs client
+   0.7.0+g39f6da54ae4c). Therefore the 45-corner schematic leg could NOT be
+   run on the fleet, and it was not run locally (host policy).
+
+=== HYPOTHESIS (not measured) ===
+
+- That the PR #275 run's xschem was 3.4.4 (PATH resolving /usr/bin before
+  /usr/local/bin in that sweep's environment). The PR #275 deck/log were
+  discarded, so this cannot be confirmed directly; it is the only mechanism
+  found that reproduces the exact error class on this design, and it is what
+  the generator now guards against (normalize, or fail closed).
+- That the batch runner's ngspice behaves like ngspice-46 here once it can run
+  at all. Untested while the runner version gate fails.
+
+=== NOTES ===
+
+- corner.cir / resp.json carry absolute sim/build/ scratch paths from the
+  capture host; the DUT/testbench copies alongside them are byte-identical to
+  what those paths held.
+- Nothing under records/ was written or modified; this directory is
+  append-only diagnosis evidence, not a PEX record, and supersedes nothing.
