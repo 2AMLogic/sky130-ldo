@@ -429,6 +429,17 @@ were bypassed. The existing "already exists -- append-only" check stays.
    root `.gitignore` ignores `*.log` globally but un-ignores
    `sim/*/corners/**/*.log`, which is committed evidence.)
 
+### Writing a new diagnostic probe (issue #353)
+
+Single-corner ngspice probes under `sim/*/diagnostics/` should import
+`sim/bin/_probe_common.py` rather than copy scaffolding from an earlier probe:
+`load_corner_run()` (the `corner-run.py` module), `sha()`,
+`logical_lines()`/`find_card()` (netlist editing; accept a string or a list of
+lines), `run_ngspice_deck(run_dir)` (returns `(log, elapsed_s, returncode)` and
+writes `ngspice.log`), `git_provenance()` and `load_results()`. Existing
+diagnostics run-id directories are append-only evidence and keep their own
+copies unedited; the helper is forward-only. Tests: `sim/tests/test_probe_common.py`.
+
 ### Runner options
 
 | Flag | Effect |
