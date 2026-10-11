@@ -25,7 +25,7 @@ Human-approved issues ready for implementation (`loom:issue`).
 
 Issues currently being built (`loom:building`).
 
-_None._
+- **#277**: sim: post-layout PEX schematic-side corners fail with 'Undefined parameter [swx_nrds]'; no PEX evidence for #267 geometry
 
 ## PRs Awaiting Review
 
@@ -49,12 +49,15 @@ Issues carrying `loom:curated`.
 - **#263**: Qualify folded resistor electrical equivalence across process, temperature and mismatch *(curated)*
 - **#267**: layout: fix locally-routed official-DRC families (via.1a_b, m2.5, via2.5, nwell.9) found by #260 *(curated)*
 - **#277**: sim: post-layout PEX schematic-side corners fail with 'Undefined parameter [swx_nrds]'; no PEX evidence for #267 geometry *(curated)*
+- **#313**: Load transient: qualify the ratified capacitor and ESR window *(curated)*
+- **#314**: PSRR: decide and evidence the binding output-capacitor/ESR condition *(curated)*
 
 ## Proposed (Architect / Hermit)
 
-- **#291**: ci: pin and gate the ngspice/xschem versions the way the PDK is pinned *(architect)*
-- **#292**: spec: add a decision-record status index and lint; flip DRs whose ratifying PR has merged *(architect)*
-- **#293**: ci: add a pyflakes-class static lint to check:ci (py_compile misses dead imports and unused locals) *(architect)*
+- **#313**: Load transient: qualify the ratified capacitor and ESR window *(architect)*
+- **#314**: PSRR: decide and evidence the binding output-capacitor/ESR condition *(architect)*
+- **#318**: layout: regenerate ldo_core from the current schematic and re-mint the area record *(architect)*
+- **#319**: Area: compare capacitor implementations (MiM, vpp, MOS-cap) for the 162 pF compensation/soft-start budget *(architect)*
 
 ## Epics
 
@@ -67,10 +70,10 @@ Issues carrying `loom:curated`.
 | Operator merge-risk holds | 0 |
 | Operator priority | 0 |
 | Ready (`loom:issue`) | 1 |
-| In Progress (`loom:building`) | 0 |
+| In Progress (`loom:building`) | 1 |
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 0 |
-| Curated | 6 |
-| Architect / Hermit proposals | 3 |
+| Curated | 8 |
+| Architect / Hermit proposals | 4 |
 | Active epics | 1 |
 <!-- guide:plan-body:end -->
