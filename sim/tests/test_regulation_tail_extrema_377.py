@@ -184,8 +184,11 @@ class TestManifestCards(unittest.TestCase):
             last_meas = max(i for i, ln in enumerate(lines) if ln.startswith("meas tran "))
             self.assertLess(last_meas, first_let, slug)
 
-    def test_batch_backend_still_refuses_both_manifests(self):
-        for slug in ENDPOINTS:
+    def test_batch_backend_refuses_load_regulation_and_admits_line_regulation_strictly(self):
+        # issue #379 admits sim/line-regulation (pinned shape, see
+        # test_batch_line_regulation_379.py); load-regulation stays local-only.
+        corner_run.check_batch_supported(corner_run.load_experiment(SIM_DIR / "line-regulation"))
+        for slug in ("load-regulation",):
             exp = corner_run.load_experiment(SIM_DIR / slug)
             with self.assertRaises(corner_run.HarnessError) as cm:
                 corner_run.check_batch_supported(exp)

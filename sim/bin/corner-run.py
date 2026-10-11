@@ -43,6 +43,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 import batch_dropout
+import batch_line_regulation as blr
 from batch_window_grid import TranslationError, leg_step, parse_leg_template
 from ramp_monotonicity import evaluate_legs
 from xschem_exprs import eval_xschem_exprs  # noqa: F401  (re-exported; tests call corner_run.eval_xschem_exprs)
@@ -1105,13 +1106,35 @@ BATCH_ALLOWLIST = {
             "ILOAD VOUT 0 PWL(0 0 2.5m 0 2.6m 50m)",
         ],
     },
+    # Shape (issue #379): four independent cold-start endpoint points, each its
+    # own single-step `tran ... uic` request (the per-point VIN / EN PWL / load
+    # state travels in the request netlist; see sim/bin/batch_line_regulation.py).
+    # RENEWAL: pinned exactly like dropout-vs-load, by the record
+    # input-fingerprint digests (sim/tests/test_batch_line_regulation_379.py).
+    "line-regulation": {
+        "endpoint_adapter": True,
+        "manifest_sections": {
+            "analyses": "0cfeeac0f4e21500b2c5cca10b68e5d15ebc0e8a1c70a24fb917bd99d9938c48",
+            "measurements": "6eae44b4f597147dc34d973ba0c061c5418708fef80a14a43d525dac2ed300fb",
+            "matrix": "639e50d5a920cef70120de11fefa3ffc5bf53f0446c56a853f87c39e95976b21",
+        },
+        # the baseline (pre-`alter`) source lines each request rewrites
+        "stimulus": [
+            "VVIN VIN 0 3.3",
+            "VEN EN 0 dc 0 pwl(0 0 100u 0 101u 3.3 10 3.3)",
+            "ILOAD VOUT 0 1m",
+        ],
+        "baseline_iload": "1m",
+    },
 }
 
 BATCH_REFUSAL_HINT = (
     "the batch backend is bounded to the unchanged sim/pdk-smoke shape (one `op` "
     "analysis, scalar measurements), the sim/load-transient COUT/ESR window "
     "grid (one `tran` step per leg) and the validated sim/dropout-vs-load "
-    "cold-start crossing (one `tran ... uic` step per supply); every other "
+    "cold-start crossing (one `tran ... uic` step per supply) and the validated "
+    "sim/line-regulation endpoints (four single-step `tran ... uic` requests per "
+    "supply); every other "
     "experiment, including the other transient/AC/DC-sweep and mc-* manifests, "
     "stays on the local backend (see sim/README.md, \"Batch backend\")"
 )
@@ -1161,9 +1184,67 @@ def check_cold_start_batch_shape(exp: Experiment) -> None:
         )
 
 
+def is_endpoint_adapter(exp: Experiment) -> bool:
+    """Whether the experiment runs through the issue #379 line-regulation
+    endpoint adapter."""
+    return bool(BATCH_ALLOWLIST.get(exp.slug, {}).get("endpoint_adapter"))
+
+
+def endpoint_deck(exp: Experiment) -> list[blr.Endpoint]:
+    """The four endpoints of the deck, parsed and with every graded
+    expression checked against them (raises EndpointTranslationError)."""
+    endpoints = blr.parse_deck(
+        (exp.raw.get("deck") or {}).get("analyses") or [], BATCH_ALLOWLIST[exp.slug]["baseline_iload"]
+    )
+    blr.check_measurements(endpoints, [(m.name, m.expr, m.unit) for m in exp.measurements])
+    return endpoints
+
+
+def endpoint_step(exp: Experiment, endpoint_id: str) -> dict:
+    """The klt `analysis_steps[]` entry for one endpoint request."""
+    endpoints = endpoint_deck(exp)
+    units = blr.check_measurements(endpoints, [(m.name, m.expr, m.unit) for m in exp.measurements])
+    ep = next(e for e in endpoints if e.step_name == endpoint_id)
+    return blr.endpoint_step(ep, units)
+
+
+def check_endpoint_batch_shape(exp: Experiment) -> None:
+    """Refuse a line-regulation manifest whose shape is not the validated one:
+    the structural translation must succeed AND the execution sections must
+    still digest to the pinned values (issue #379)."""
+    allowed = BATCH_ALLOWLIST[exp.slug]
+    why = None
+    if exp.raw.get("window_grid") or any(m.leg is not None for m in exp.measurements):
+        why = "a window_grid / per_leg measurement is not part of the endpoint shape"
+    elif exp.raw.get("spread_checks"):
+        why = "spread_checks are not part of the validated endpoint shape"
+    else:
+        try:
+            endpoint_deck(exp)
+        except blr.EndpointTranslationError as exc:
+            why = f"deck does not translate to cold-start endpoint steps ({exc})"
+    if why is None:
+        got = pvt_input_sections(exp.raw, None)
+        changed = [k for k, v in allowed["manifest_sections"].items() if got.get(k) != v]
+        extra = sorted(set(got) - set(allowed["manifest_sections"]))
+        if changed or extra:
+            why = (
+                f"manifest section(s) {changed + extra} changed since the adapter was validated "
+                "(pinned digests in BATCH_ALLOWLIST); re-validate the translation and update "
+                "the pins deliberately"
+            )
+    if why:
+        raise HarnessError(
+            f"--backend batch: {exp.slug!r} no longer has the validated line-regulation "
+            f"endpoint shape ({why}): {BATCH_REFUSAL_HINT}"
+        )
+
+
 def batch_legs(exp: Experiment) -> list[str] | None:
-    """Window-grid leg ids a batch run splits into per-leg requests, or None
-    for an allowlisted experiment that is not a window-grid shape."""
+    """Per-request leg ids a batch run splits into: window-grid legs, or the
+    line-regulation endpoint ids; None for any other allowlisted experiment."""
+    if is_endpoint_adapter(exp):
+        return [e.step_name for e in endpoint_deck(exp)]
     if not BATCH_ALLOWLIST.get(exp.slug, {}).get("window_grid"):
         return None
     return [leg["id"] for leg in window_legs(exp.raw)]
@@ -1233,6 +1314,9 @@ def check_batch_supported(exp: Experiment) -> None:
         return
     if allowed.get("cold_start_crossing"):
         check_cold_start_batch_shape(exp)
+        return
+    if allowed.get("endpoint_adapter"):
+        check_endpoint_batch_shape(exp)
         return
     analyses = list(deck.get("analyses") or ["op"])
     meas = [(m.name, m.expr) for m in exp.measurements]
@@ -1310,13 +1394,21 @@ def build_batch_netlist(exp: Experiment, group: BatchGroup, body: list[str]) -> 
     for opt in deck.get("options") or []:
         head.append(f".option {opt}")
     head.append(".save all")
+    if is_endpoint_adapter(exp):
+        # Each endpoint request carries that point's complete source state
+        # (VIN, EN's PWL high level, load) in the netlist (issue #379).
+        ep = next(e for e in endpoint_deck(exp) if e.step_name == group.leg)
+        body = blr.endpoint_body(body, ep)
     return head + body
 
 
 def build_batch_request(
     exp: Experiment, pdk: Pdk, group: BatchGroup, netlist_path: Path, timeout: int
 ) -> dict:
-    if group.leg is not None:
+    if is_endpoint_adapter(exp):
+        # One single-step request per supply group x endpoint (issue #379).
+        shape = {"analysis_steps": [endpoint_step(exp, group.leg)]}
+    elif group.leg is not None:
         # One single-step request per window-grid leg (issue #326).
         shape = {"analysis_steps": [window_grid_step(exp, group.leg)]}
     elif is_cold_start_crossing(exp):
@@ -1357,6 +1449,14 @@ def prepare_batch_requests(
             raise HarnessError(
                 f"--backend batch: {exp.slug!r} netlist is not the validated cold-start "
                 f"shape ({exc}): {BATCH_REFUSAL_HINT}"
+            ) from exc
+    if is_endpoint_adapter(exp):
+        try:
+            blr.check_netlist(body, BATCH_ALLOWLIST[exp.slug]["stimulus"])
+        except blr.EndpointTranslationError as exc:
+            raise HarnessError(
+                f"--backend batch: {exp.slug!r} netlist is not the validated line-regulation "
+                f"endpoint baseline ({exc}): {BATCH_REFUSAL_HINT}"
             ) from exc
     req_dir = run_dir / "klt-requests"
     req_dir.mkdir(parents=True, exist_ok=True)
@@ -1457,25 +1557,11 @@ def batch_remote_info(response: dict) -> dict:
     }
 
 
-def normalize_batch_response(
-    exp: Experiment, group: BatchGroup, response: dict, outdir: Path, timeout: int
-) -> tuple[list[dict], dict[str, str]]:
-    """Validate one response against its request and grade each point locally.
-
-    Structure problems (missing/duplicate/unexpected/malformed points) raise
-    HarnessError -- there is no trustworthy result to record. Per-point
-    problems (errored/inconclusive corner, absent or non-finite value, absent
-    log) become recorded FAIL results. klt's own verdict is never consulted;
-    limits, spread and the solver-diagnostic gate are the harness's own.
-    Returns (results in request point order, {corner id: engine log text}).
-    """
-    cold_start = group.leg is None and is_cold_start_crossing(exp)
-    if cold_start:
-        # An unfinished / incompatible / unidentified remote job is never a
-        # result (issue #374): abort, no record, no fallback.
-        problem = batch_dropout.remote_completion_problem(response)
-        if problem:
-            raise HarnessError(f"request {group.key}: {problem}")
+def _index_response_corners(
+    group: BatchGroup, response: dict
+) -> tuple[dict[tuple[str, float], Corner], dict[tuple[str, float], dict]]:
+    """Match a response's corners to the request's points: malformed,
+    unexpected, duplicate or missing points raise HarnessError."""
     want = {(c.process, c.temp_c): c for c in group.corners}
     seen: dict[tuple[str, float], dict] = {}
     for i, rc in enumerate(response["corners"]):
@@ -1496,7 +1582,29 @@ def normalize_batch_response(
     missing = [k for k in want if k not in seen]
     if missing:
         raise HarnessError(f"request {group.key}: response is missing corner(s) {missing}")
+    return want, seen
 
+
+def normalize_batch_response(
+    exp: Experiment, group: BatchGroup, response: dict, outdir: Path, timeout: int
+) -> tuple[list[dict], dict[str, str]]:
+    """Validate one response against its request and grade each point locally.
+
+    Structure problems (missing/duplicate/unexpected/malformed points) raise
+    HarnessError -- there is no trustworthy result to record. Per-point
+    problems (errored/inconclusive corner, absent or non-finite value, absent
+    log) become recorded FAIL results. klt's own verdict is never consulted;
+    limits, spread and the solver-diagnostic gate are the harness's own.
+    Returns (results in request point order, {corner id: engine log text}).
+    """
+    cold_start = group.leg is None and is_cold_start_crossing(exp)
+    if cold_start:
+        # An unfinished / incompatible / unidentified remote job is never a
+        # result (issue #374): abort, no record, no fallback.
+        problem = batch_dropout.remote_completion_problem(response)
+        if problem:
+            raise HarnessError(f"request {group.key}: {problem}")
+    want, seen = _index_response_corners(group, response)
     if cold_start:
         wanted = [(m, batch_dropout.klt_result_name(m.name)) for m in exp.measurements]
     elif group.leg is None:
@@ -1591,6 +1699,110 @@ def normalize_batch_response(
     return results, logs
 
 
+def normalize_endpoint_response(
+    exp: Experiment, group: BatchGroup, response: dict, outdir: Path
+) -> tuple[list[dict], dict[str, str]]:
+    """Validate one line-regulation endpoint response (issue #379) and return,
+    per corner, that endpoint's RAW card values plus the reasons it cannot
+    PASS. Grading happens in `finalize_endpoint_results` once all four
+    endpoints of a corner are in hand (the slopes span two of them).
+
+    Structure problems (and an unfinished/incompatible remote job) raise
+    HarnessError; per-corner problems (errored status, klt error diagnostics,
+    missing/duplicate/non-finite/unexpected results, absent log, solver
+    diagnostic) become reasons.
+    """
+    problem = batch_dropout.remote_completion_problem(response)
+    if problem:
+        raise HarnessError(f"request {group.key}: {problem}")
+    want, seen = _index_response_corners(group, response)
+    ep = next(e for e in endpoint_deck(exp) if e.step_name == group.leg)
+    parts, logs = [], {}
+    for key, corner in want.items():
+        rc = seen[key]
+        reasons: list[str] = []
+        if rc["status"] not in ("pass", "fail"):
+            reasons.append(f"[{ep.step_name}] klt sim corner status {rc['status']!r} (not a completed result)")
+        reasons.extend(f"[{ep.step_name}] {r}" for r in batch_dropout.corner_diagnostic_problems(rc))
+        values, vreasons = blr.extract_endpoint_values(ep, rc["measurements"])
+        reasons.extend(vreasons)
+        log_text, solver_diagnostic = None, None
+        art = rc.get("artifacts")
+        log_ref = art.get("log") if isinstance(art, dict) else None
+        if isinstance(log_ref, str) and log_ref:
+            lp = Path(log_ref)
+            if not lp.is_absolute():
+                lp = outdir / lp
+            try:
+                log_text = lp.read_text(errors="replace")
+            except OSError as exc:
+                reasons.append(f"[{ep.step_name}] engine log unreadable ({lp}: {exc})")
+        else:
+            reasons.append(f"[{ep.step_name}] engine log not retained in klt sim response (artifacts.log absent)")
+        if log_text is not None:
+            solver_diagnostic = detect_solver_diagnostic(log_text)
+            logs[corner.id] = log_text
+        if solver_diagnostic is not None:
+            reasons.append(f"[{ep.step_name}] solver diagnostic: {solver_diagnostic}")
+        runtime = rc.get("runtime_s")
+        parts.append({
+            "corner": corner, "endpoint": ep.step_name, "values": values, "reasons": reasons,
+            "solver_diagnostic": solver_diagnostic,
+            "elapsed_s": runtime if _finite_number(runtime) else None,
+            "klt_request": group.key, "klt_corner_id": rc.get("corner_id"), "klt_status": rc["status"],
+        })
+    return parts, logs
+
+
+def finalize_endpoint_results(
+    exp: Experiment, matrix: list[Corner], parts: dict[str, list[dict]], timeout: int
+) -> list[dict]:
+    """Grade each corner locally from its four endpoints' raw card values, with
+    the manifest's own expressions and `grade_bounds` (identical to the local
+    backend's grading). A corner missing an endpoint part cannot PASS."""
+    endpoints = endpoint_deck(exp)
+    refs = blr.card_refs(endpoints)
+    results = []
+    for corner in matrix:
+        mine = parts.get(corner.id, [])
+        reasons = [r for p in mine for r in p["reasons"]]
+        for ep in endpoints:
+            if not any(p["endpoint"] == ep.step_name for p in mine):
+                reasons.append(f"[{ep.step_name}] no result for this endpoint")
+        values: dict[str, float | None] = {}
+        for p in mine:
+            values.update(p["values"])
+        checks = []
+        for m in exp.measurements:
+            value = blr.evaluate(m.expr, values, refs)
+            passed, why = grade_bounds(m, value)
+            reason = why if value is not None else "measurement not found in endpoint results"
+            checks.append({
+                "name": m.name, "expr": m.expr, "unit": m.unit, "value": value,
+                "min": m.min, "max": m.max,
+                "min_inclusive": m.min_inclusive, "max_inclusive": m.max_inclusive,
+                "pass": passed, "reason": reason,
+            })
+        diags = [p["solver_diagnostic"] for p in mine if p["solver_diagnostic"]]
+        elapsed = [p["elapsed_s"] for p in mine]
+        results.append({
+            "corner_id": corner.id, "process": corner.process, "temperature_c": corner.temp_c,
+            "supply_v": corner.supply_v, "execution": "batch",
+            "ngspice_exit": None, "timed_out": False, "killed_by_signal": None,
+            "killed_by_signal_name": None,
+            "elapsed_s": sum(elapsed) if elapsed and all(_finite_number(e) for e in elapsed) else None,
+            "timeout_s": timeout, "measurements": checks,
+            "solver_diagnostic": "; ".join(diags) if diags else None,
+            "pass": (not reasons) and all(c["pass"] for c in checks),
+            "log": None,
+            "klt_request": [p["klt_request"] for p in mine],
+            "klt_corner_id": [p["klt_corner_id"] for p in mine],
+            "klt_status": [p["klt_status"] for p in mine],
+            "batch_reasons": reasons,
+        })
+    return results
+
+
 def merge_leg_parts(exp: Experiment, acc: dict | None, part: dict) -> dict:
     """Fold one window-grid leg's batch result for a corner into that corner's
     single result dict (issue #326). Checks are kept in manifest order; the
@@ -1626,6 +1838,8 @@ def run_batch(
 ) -> tuple[list[dict], dict[str, str], dict]:
     """Submit each request in turn and reassemble results in matrix order."""
     by_id: dict[str, dict] = {}
+    endpoint_parts: dict[str, list[dict]] = {}
+    endpoint_mode = is_endpoint_adapter(exp)
     logs: dict[str, str] = {}
     requests_meta = []
     jobs: list[str] = []
@@ -1638,7 +1852,10 @@ def run_batch(
             if info["job_id"]:
                 jobs.append(str(info["job_id"]))
             _shared_assert_pdk(response, pdk, pin, allow_mismatch, error_cls=HarnessError)
-            res, lg = normalize_batch_response(exp, group, response, outdir, timeout)
+            if endpoint_mode:
+                res, lg = normalize_endpoint_response(exp, group, response, outdir)
+            else:
+                res, lg = normalize_batch_response(exp, group, response, outdir, timeout)
         except HarnessError as exc:
             raise HarnessError(
                 f"{exc}\n  request {group.key} failed; no evidence record written, no local "
@@ -1646,10 +1863,17 @@ def run_batch(
                 f"{', '.join(jobs) if jobs else 'none'}"
             ) from exc
         for r in res:
+            if endpoint_mode:
+                endpoint_parts.setdefault(r["corner"].id, []).append(r)
+                continue
             cid = r["corner_id"]
             by_id[cid] = r if group.leg is None else merge_leg_parts(exp, by_id.get(cid), r)
         for cid, text in lg.items():
-            if group.leg is None:
+            if endpoint_mode:
+                logs[cid] = logs.get(cid, "") + (
+                    f"***** line-regulation endpoint {group.leg} (klt sim request {group.key}) *****\n{text}\n"
+                )
+            elif group.leg is None:
                 logs[cid] = text
             else:
                 logs[cid] = logs.get(cid, "") + (
@@ -1657,7 +1881,7 @@ def run_batch(
                 )
         requests_meta.append({
             "key": group.key,
-            **({"leg": group.leg} if group.leg is not None else {}),
+            **({"endpoint" if endpoint_mode else "leg": group.leg} if group.leg is not None else {}),
             "supply_v": group.supply_v,
             "n_points": len(group.corners),
             "returncode": meta["returncode"],
@@ -1666,7 +1890,10 @@ def run_batch(
             **info,
             "klt_pdk_names_pin": pin["open_pdks_commit"] in (info["pdk_version"] or ""),
         })
-    results = [by_id[c.id] for c in matrix]
+    if endpoint_mode:
+        results = finalize_endpoint_results(exp, matrix, endpoint_parts, timeout)
+    else:
+        results = [by_id[c.id] for c in matrix]
     return results, logs, {"requests": requests_meta}
 
 
@@ -1709,6 +1936,28 @@ def cold_start_adapter_info(exp: Experiment) -> dict:
     }
 
 
+def endpoint_adapter_info(exp: Experiment) -> dict:
+    """Provenance of the issue #379 adapter for a batch record / dry run."""
+    allowed = BATCH_ALLOWLIST[exp.slug]
+    endpoints = endpoint_deck(exp)
+    return {
+        "name": "line-regulation-endpoints",
+        "issue": 379,
+        "endpoints": [
+            {
+                "step": e.step_name, "vin": e.vin, "iload": e.iload,
+                "analysis": f"tran {e.tran_args}",
+                "sources": blr.endpoint_source_lines(e),
+                "cards": [text for _, _, text in e.cards],
+            }
+            for e in endpoints
+        ],
+        "graded": [{"name": m.name, "expr": m.expr} for m in exp.measurements],
+        "validated_manifest_sections": dict(allowed["manifest_sections"]),
+        "validated_baseline_stimulus": list(allowed["stimulus"]),
+    }
+
+
 def render_batch_execution(record: dict) -> list[str]:
     """Requested vs klt-reported execution environment of a batch record."""
     ex = record["execution"]
@@ -1738,7 +1987,21 @@ def render_batch_execution(record: dict) -> list[str]:
             + ("names" if rq.get("klt_pdk_names_pin") else "**does NOT name**")
             + " the pinned open_pdks commit"
         )
-    if ex.get("adapter"):
+    if ex.get("adapter") and ex["adapter"].get("name") == "line-regulation-endpoints":
+        ad = ex["adapter"]
+        lines.append(
+            f"- **Batch adapter**: `{ad['name']}` (issue #{ad['issue']}): one single-step "
+            "`analysis_steps` request per supply group x endpoint ("
+            + "; ".join(
+                f"`{e['step']}` = `tran {e['analysis'].split(' ', 1)[1]}` at VIN {e['vin']} V, "
+                f"I_LOAD {e['iload']}"
+                for e in ad["endpoints"]
+            )
+            + "); each request's netlist carries that endpoint's complete VIN / EN-PWL / load "
+            "state, EN's high level equal to VIN; raw endpoint values come back as "
+            "`tran<N>.<card>` and the slopes, windows and bounds are graded locally"
+        )
+    elif ex.get("adapter"):
         ad = ex["adapter"]
         lines.append(
             f"- **Batch adapter**: `{ad['name']}` (issue #{ad['issue']}): one `analysis_steps` "
@@ -2123,6 +2386,15 @@ def main(argv: list[str]) -> int:
         print(f"backend         : batch ({len(prepared)} klt sim request(s))")
 
     if args.dry_run and batch:
+        if is_endpoint_adapter(exp):
+            ad = endpoint_adapter_info(exp)
+            print(f"\n-- batch adapter {ad['name']} (issue #379) --")
+            for e in ad["endpoints"]:
+                print(f"  {e['step']}: {e['analysis']}; VIN={e['vin']} I_LOAD={e['iload']}")
+                for line in e["sources"].values():
+                    print(f"    source (request netlist): {line}")
+                for c in e["cards"]:
+                    print(f"    card : {c}")
         if is_cold_start_crossing(exp):
             ad = cold_start_adapter_info(exp)
             print(f"\n-- batch adapter {ad['name']} (issue #374) --")
@@ -2295,6 +2567,8 @@ def main(argv: list[str]) -> int:
         record["execution"] = {"requested_backend": "batch", **execution}
         if is_cold_start_crossing(exp):
             record["execution"]["adapter"] = cold_start_adapter_info(exp)
+        if is_endpoint_adapter(exp):
+            record["execution"]["adapter"] = endpoint_adapter_info(exp)
         record["links"].update(
             {"klt_requests": link_reqs, "klt_responses": link_resps, "request_netlists": link_nets}
         )
