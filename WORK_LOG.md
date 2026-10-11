@@ -4,6 +4,30 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 
 ### 2026-10-10
 
+- **PR #317**: layout: PDK-free verdict tests for cap-rail, folded-res, trivial-cell and official-DRC scripts
+- **PR #316**: layout: refresh erc-supply-spec.json; mint ERC record 20261010-225954-95dca45
+- **PR #315**: sim/thermal: deduplicate trip-search helpers and add PDK-free tests (#297)
+- **PR #312**: sim: atomically reserve evidence record IDs before concurrent runs
+- **PR #311**: startup: measure ramp monotonicity per cold-enable leg (#309)
+- **PR #308**: PEX: retain batch-mismatch evidence for 45-corner schematic leg (Part of #277)
+- **PR #307**: sim: opt-in klt sim batch backend for corner-run.py (smoke-only)
+- **PR #305**: measurements: verify DRC freshness against the checked GDS bytes (#304)
+- **PR #303**: spec: decision-record status index and CI consistency lint
+- **PR #302**: sim: fix PEX schematic-side xschem expr() drift; retain failed-run evidence (#277)
+- **PR #300**: sim: PDK-free unit tests for PEX bench generator and record renderer
+- **PR #299**: ci: pinned ruff F-class lint gate for tracked Python (#293)
+- **PR #295**: ci: pin and gate the ngspice/xschem versions the way the PDK is pinned
+- **Issue #306** (closed): layout: PDK-free verdict tests for the cap-rail, folded-resistor and trivial-cell evidence scripts
+- **Issue #276** (closed): layout: refresh erc-supply-spec.json so run-ldo-erc-flow.sh pre-flight matches the current layout
+- **Issue #297** (closed): sim/thermal: deduplicate the copy-pasted trip-search helpers and add PDK-free tests
+- **Issue #310** (closed): sim: atomically reserve evidence record IDs before concurrent runs
+- **Issue #309** (closed): startup: measure ramp monotonicity instead of relying on peak and settled floor
+- **Issue #298** (closed): sim: add an opt-in klt sim batch backend to corner-run.py for PVT grids
+- **Issue #304** (closed): Characterization: verify DRC geometry against the cited input hash
+- **Issue #292** (closed): spec: add a decision-record status index and CI consistency lint
+- **Issue #296** (closed): sim: PDK-free unit tests for the post-layout PEX bench generator and record renderer
+- **Issue #293** (closed): ci: add a pyflakes-class static lint to check:ci (py_compile misses dead imports and unused locals)
+- **Issue #291** (closed): ci: pin and gate the ngspice/xschem versions the way the PDK is pinned
 - **PR #290**: fix(sim): pdk-smoke fails on xschem 3.4.4 expr() params; retain diagnostics (#288)
 - **PR #289**: report: content-based GDS freshness for LVS and dependent PEX
 - **PR #286**: docs: split sim/README.md into harness reference plus sim/docs (#284)
