@@ -269,6 +269,21 @@ largest observed 1 ms-window artifact (1.75 mV at `fs_125c_3.63v`). The
 averages agree to six digits at `tt/27C/3.30V` — but it carries the same
 200 ms window anyway, so both benches share one convention.
 
+**Endpoint validity: average plus tail envelope (issues #364, #369, #377).**
+Each endpoint average is graded against the ratified Output window
+(1.764–1.836 V, inclusive) so two equally out-of-window endpoints cannot pass
+on a zero delta/slope (#364 load, #369 line). An average alone still admits a
+tail that leaves the window and averages back into it (e.g. equal time at
+1.7 V and 1.9 V), so #377 adds `meas tran <endpoint>_min min v(vout)` and
+`..._max max v(vout)` over the **same** 199–200 ms window, in the same `tranN`
+plot, graded minimum ≥ 1.764 V and maximum ≤ 1.836 V. No ripple bound is
+invented and the averages, delta/slope formulas and strict bounds, stimuli,
+cold-start protocol and 200 ms duration are unchanged. The extrema are taken
+over ngspice's own sampled timepoints in that 1 ms window: they bound the
+measured tail, not continuous-time behaviour between samples, and they are
+not a stability or settling-convergence proof. Records cut before #377 keep
+their original verdicts; they carry no extrema and are stale for this gate.
+
 **Errata (issue #184).** The `20260926-010432-228fbc7` (`load-regulation`)
 and `20260926-001833-228fbc7` (`line-regulation`) records below, and this
 section's prose as originally landed by #172, carried the uncorrected
