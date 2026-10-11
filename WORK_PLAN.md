@@ -25,7 +25,9 @@ Human-approved issues ready for implementation (`loom:issue`).
 
 Issues currently being built (`loom:building`).
 
-- **#277**: sim: post-layout PEX schematic-side corners fail with 'Undefined parameter [swx_nrds]'; no PEX evidence for #267 geometry
+- **#314**: PSRR: decide and evidence the binding output-capacitor/ESR condition
+- **#319**: Area: compare capacitor implementations (MiM, vpp, MOS-cap) for the 162 pF compensation/soft-start budget
+- **#323**: Dropout @ 50 mA: establish a current-schematic baseline and attribute the limiting mechanism
 
 ## PRs Awaiting Review
 
@@ -48,16 +50,13 @@ Issues carrying `loom:curated`.
 - **#213**: sim(iq): mint the 45-corner record under #173's seeded deck + #133's regulation gate — deck fixed, matrix not re-run (host contention) *(curated)*
 - **#263**: Qualify folded resistor electrical equivalence across process, temperature and mismatch *(curated)*
 - **#267**: layout: fix locally-routed official-DRC families (via.1a_b, m2.5, via2.5, nwell.9) found by #260 *(curated)*
-- **#277**: sim: post-layout PEX schematic-side corners fail with 'Undefined parameter [swx_nrds]'; no PEX evidence for #267 geometry *(curated)*
-- **#313**: Load transient: qualify the ratified capacitor and ESR window *(curated)*
 - **#314**: PSRR: decide and evidence the binding output-capacitor/ESR condition *(curated)*
+- **#319**: Area: compare capacitor implementations (MiM, vpp, MOS-cap) for the 162 pF compensation/soft-start budget *(curated)*
+- **#323**: Dropout @ 50 mA: establish a current-schematic baseline and attribute the limiting mechanism *(curated)*
 
 ## Proposed (Architect / Hermit)
 
-- **#313**: Load transient: qualify the ratified capacitor and ESR window *(architect)*
-- **#314**: PSRR: decide and evidence the binding output-capacitor/ESR condition *(architect)*
-- **#318**: layout: regenerate ldo_core from the current schematic and re-mint the area record *(architect)*
-- **#319**: Area: compare capacitor implementations (MiM, vpp, MOS-cap) for the 162 pF compensation/soft-start budget *(architect)*
+- **#324**: Stability: evaluate 0 mA phase-margin mitigations against the Iq budget and report numbers for the DR-007 decision *(architect)*
 
 ## Epics
 
@@ -70,10 +69,10 @@ Issues carrying `loom:curated`.
 | Operator merge-risk holds | 0 |
 | Operator priority | 0 |
 | Ready (`loom:issue`) | 1 |
-| In Progress (`loom:building`) | 1 |
+| In Progress (`loom:building`) | 3 |
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 0 |
 | Curated | 8 |
-| Architect / Hermit proposals | 4 |
+| Architect / Hermit proposals | 1 |
 | Active epics | 1 |
 <!-- guide:plan-body:end -->
