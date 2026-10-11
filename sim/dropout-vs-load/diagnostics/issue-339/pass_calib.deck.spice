@@ -1,0 +1,46 @@
+* issue #339 isolated M_PASS calibration: replays saved #323 terminal voltages
+.option wnflag=1
+.temp 27
+.lib "/home/ubuntu/.volare/sky130A/libs.tech/combined/sky130.lib.spice" tt
+VS S 0 2.16
+VG G 0 0.714
+VD D 0 1.77
+XM_PASS D G S S sky130_fd_pr__pfet_g5v0d10v5 L=0.5 W=100 nf=25 ad=15.08
++ as=15.08 pd=111.54 ps=111.54
++ nrd=0.0029 nrs=0.0029 sa=0 sb=0 sd=0 mult=50 m=50
+.control
+save all @m.xm_pass.msky130_fd_pr__pfet_g5v0d10v5[id] @m.xm_pass.msky130_fd_pr__pfet_g5v0d10v5[vgs] @m.xm_pass.msky130_fd_pr__pfet_g5v0d10v5[vds] @m.xm_pass.msky130_fd_pr__pfet_g5v0d10v5[vdsat] @m.xm_pass.msky130_fd_pr__pfet_g5v0d10v5[gm]
+alter VS dc = 3.3
+alter VG dc = 1.93853751
+alter VD dc = 1.79883165
+op
+wrdata pass_calib.dat v(g) v(d) v(s) i(vd) i(vs) @m.xm_pass.msky130_fd_pr__pfet_g5v0d10v5[id] @m.xm_pass.msky130_fd_pr__pfet_g5v0d10v5[vgs] @m.xm_pass.msky130_fd_pr__pfet_g5v0d10v5[vds] @m.xm_pass.msky130_fd_pr__pfet_g5v0d10v5[vdsat] @m.xm_pass.msky130_fd_pr__pfet_g5v0d10v5[gm]
+set appendwrite
+alter VS dc = 2.89929375
+alter VG dc = 1.51855335
+alter VD dc = 1.79510641
+op
+wrdata pass_calib.dat v(g) v(d) v(s) i(vd) i(vs) @m.xm_pass.msky130_fd_pr__pfet_g5v0d10v5[id] @m.xm_pass.msky130_fd_pr__pfet_g5v0d10v5[vgs] @m.xm_pass.msky130_fd_pr__pfet_g5v0d10v5[vds] @m.xm_pass.msky130_fd_pr__pfet_g5v0d10v5[vdsat] @m.xm_pass.msky130_fd_pr__pfet_g5v0d10v5[gm]
+alter VS dc = 2.49991875
+alter VG dc = 1.09218434
+alter VD dc = 1.79399905
+op
+wrdata pass_calib.dat v(g) v(d) v(s) i(vd) i(vs) @m.xm_pass.msky130_fd_pr__pfet_g5v0d10v5[id] @m.xm_pass.msky130_fd_pr__pfet_g5v0d10v5[vgs] @m.xm_pass.msky130_fd_pr__pfet_g5v0d10v5[vds] @m.xm_pass.msky130_fd_pr__pfet_g5v0d10v5[vdsat] @m.xm_pass.msky130_fd_pr__pfet_g5v0d10v5[gm]
+alter VS dc = 2.29756875
+alter VG dc = 0.867943603
+alter VD dc = 1.7914136
+op
+wrdata pass_calib.dat v(g) v(d) v(s) i(vd) i(vs) @m.xm_pass.msky130_fd_pr__pfet_g5v0d10v5[id] @m.xm_pass.msky130_fd_pr__pfet_g5v0d10v5[vgs] @m.xm_pass.msky130_fd_pr__pfet_g5v0d10v5[vds] @m.xm_pass.msky130_fd_pr__pfet_g5v0d10v5[vdsat] @m.xm_pass.msky130_fd_pr__pfet_g5v0d10v5[gm]
+alter VS dc = 2.19905625
+alter VG dc = 0.752690391
+alter VD dc = 1.78249808
+op
+wrdata pass_calib.dat v(g) v(d) v(s) i(vd) i(vs) @m.xm_pass.msky130_fd_pr__pfet_g5v0d10v5[id] @m.xm_pass.msky130_fd_pr__pfet_g5v0d10v5[vgs] @m.xm_pass.msky130_fd_pr__pfet_g5v0d10v5[vds] @m.xm_pass.msky130_fd_pr__pfet_g5v0d10v5[vdsat] @m.xm_pass.msky130_fd_pr__pfet_g5v0d10v5[gm]
+alter VS dc = 2.16178125
+alter VG dc = 0.711484963
+alter VD dc = 1.7641209
+op
+wrdata pass_calib.dat v(g) v(d) v(s) i(vd) i(vs) @m.xm_pass.msky130_fd_pr__pfet_g5v0d10v5[id] @m.xm_pass.msky130_fd_pr__pfet_g5v0d10v5[vgs] @m.xm_pass.msky130_fd_pr__pfet_g5v0d10v5[vds] @m.xm_pass.msky130_fd_pr__pfet_g5v0d10v5[vdsat] @m.xm_pass.msky130_fd_pr__pfet_g5v0d10v5[gm]
+quit
+.endc
+.end

@@ -1,0 +1,17 @@
+* issue #339 isolated M_PASS DC bench: source=body=2.16 V, tt / 27 C
+.option wnflag=1
+.temp 27
+.lib "/home/ubuntu/.volare/sky130A/libs.tech/combined/sky130.lib.spice" tt
+VS S 0 2.16
+VG G 0 0.714
+VD D 0 2.16
+XM_PASS D G S S sky130_fd_pr__pfet_g5v0d10v5 L=0.5 W=100 nf=25 ad=15.08
++ as=15.08 pd=111.54 ps=111.54
++ nrd=0.0029 nrs=0.0029 sa=0 sb=0 sd=0 mult=50 m=50
+.control
+save all @m.xm_pass.msky130_fd_pr__pfet_g5v0d10v5[id] @m.xm_pass.msky130_fd_pr__pfet_g5v0d10v5[vgs] @m.xm_pass.msky130_fd_pr__pfet_g5v0d10v5[vds] @m.xm_pass.msky130_fd_pr__pfet_g5v0d10v5[vdsat] @m.xm_pass.msky130_fd_pr__pfet_g5v0d10v5[gm]
+dc VD 2.16 1.660000 -0.0005 VG 0.714 0.0 -0.357
+wrdata pass_refine_2p160.dat v(g) v(d) v(s) i(vd) i(vs) @m.xm_pass.msky130_fd_pr__pfet_g5v0d10v5[id] @m.xm_pass.msky130_fd_pr__pfet_g5v0d10v5[vgs] @m.xm_pass.msky130_fd_pr__pfet_g5v0d10v5[vds] @m.xm_pass.msky130_fd_pr__pfet_g5v0d10v5[vdsat] @m.xm_pass.msky130_fd_pr__pfet_g5v0d10v5[gm]
+quit
+.endc
+.end
