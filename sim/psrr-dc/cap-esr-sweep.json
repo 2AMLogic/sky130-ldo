@@ -1,0 +1,22 @@
+{
+  "slug": "psrr-dc-cap-esr-sweep",
+  "issue": 314,
+  "phase": 1,
+  "title": "PSRR reduced C_eff x ESR characterization sweep manifest (Phase 1 of #314)",
+  "note": "Separate from experiment.json on purpose: the 45-corner psrr-dc manifest and its records stay unchanged (Phase 3 of #314 decides whether the binding point becomes a leg there). This manifest is a SAMPLED grid: 3 corners x 3 C_eff x 3 ESR. It cannot prove the continuous-window or all-45-corner worst case. No threshold lives here; bounds stay in experiment.json / spec/target-spec.md.",
+  "experiment": "sim/psrr-dc/experiment.json",
+  "corners": [["tt", 27, 3.3], ["ss", -40, 2.97], ["ff", 125, 3.63]],
+  "corners_source": "identical to experiment.json quick_subset (verified by sim/tests/test_psrr_cap_sweep.py)",
+  "c_eff_uf": [0.33, 1.0, 4.7],
+  "esr_ohm": [0.0, 0.01, 0.5],
+  "esr_zero_topology": "ESR 0 is NOT a small-resistance stand-in: RESR is removed and COUT's bottom plate goes straight to node 0. The nominal point is C_eff 1 uF / ESR 10 mOhm (DR-002 proposed nominal; spot-check against record 20260926-033606-4a9ec09 at tt/27C/3.3V).",
+  "seeding": "Each (corner, point) is its own ngspice process built from the testbench netlist, so the .nodeset seed of #171/#179 applies fresh to both load points of every point; no state carries between points.",
+  "loads": ["1ma", "50ma"],
+  "metrics": [
+    "psrr_1khz_1ma_db",
+    "psrr_100khz_1ma_db",
+    "psrr_1khz_50ma_db",
+    "psrr_100khz_50ma_db"
+  ],
+  "selection_rule": "Per sub-metric: a point's value is the minimum over the 3 corners; the worst sampled point is the minimum of that over points; ties (|delta| <= 1e-6 dB) go to the lower C_eff, then the lower ESR. Any missing or non-finite cell for the metric yields NO finding (reported, never dropped)."
+}
