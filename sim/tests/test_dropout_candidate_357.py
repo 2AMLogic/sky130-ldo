@@ -411,6 +411,31 @@ class ThermalTraceValidity(unittest.TestCase):
         self.assertIn("malformed columns", r["invalid_reason"])
         self.assertFalse(s["valid"])
 
+    def test_single_row_and_late_start_invalid(self):
+        one = " ".join(repr(x) for x in [x for v in [3.3] + [0.0] * (self.NK - 1) for x in (170e-6, v)]) + "\n"
+        r, s = self._run(one)
+        self.assertIn("too few rows", r["invalid_reason"])
+        self.assertFalse(s["valid"])
+
+        def m(rows):
+            del rows[:100]  # begins at 100 us, after the 19 us cold-start sample
+        r, s = self._run(self._dat(mutate=m))
+        self.assertIn("late-start", r["invalid_reason"])
+        self.assertFalse(s["valid"])
+
+    def test_thermal_table_renders_invalid_among_valid(self):
+        good = {"ngspice_exit": 0, "solver_diagnostic": None,
+                "thermal": self._run(self._dat())[0]}
+        bad = {"ngspice_exit": 0, "solver_diagnostic": None,
+               "thermal": self._run(self._dat(stop_us=40.0))[0]}
+        runs = {"th_base_3p3_027_cold": good, "th_cand_r0_3p3_027_cold": bad,
+                "th_cand_r1_3p3_027_cold": good}
+        text = "\n".join(summ.thermal_table(load=runs.get))
+        self.assertIn("INVALID", text)
+        self.assertIn("truncated trace", text)
+        self.assertIn("th_cand_r0_3p3_027_cold", text)
+        self.assertIn("identical to the paired baseline: False", text)
+
     def test_non_numeric_and_empty_invalid(self):
         def m(rows):
             rows[2][3] = "abc"

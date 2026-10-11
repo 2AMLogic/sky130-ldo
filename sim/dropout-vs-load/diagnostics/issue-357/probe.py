@@ -187,6 +187,11 @@ def thermal_trace_invalid_reason(path):
         return None, None, "time not strictly increasing"
     if any(not math.isfinite(x) for k in TH_KEYS for x in v[k]):
         return None, None, "nonfinite vector value"
+    if len(t) < 2:
+        return None, None, f"too few rows: {len(t)} (need >= 2 to interpolate)"
+    if t[0] > T_COLD * 1e-6:
+        return None, None, (f"late-start trace: begins at {t[0] * 1e6:.3f} us, after the first "
+                            f"sample time {T_COLD} us")
     if t[-1] < (T_STOP_US - T_STOP_TOL_US) * 1e-6:
         return None, None, f"truncated trace: ends at {t[-1] * 1e6:.3f} us, declared stop {T_STOP_US} us"
     return t, v, None

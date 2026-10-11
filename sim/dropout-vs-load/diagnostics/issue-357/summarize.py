@@ -105,7 +105,7 @@ def thermal_state(r):
             "ipass_165_ua": th["ipass_ua"][T_REEN]}
 
 
-def thermal_table():
+def thermal_table(load=load):
     L = ["### thermal two-state (run_hysteresis.py stimulus); electrical tt, imposed device temperature",
          "  state = forced/hold/end-of-run tripped (T=tripped, u=untripped); pass-off = |Id(M_PASS)| < 1 uA "
          "while tripped (declared at 90 us; supplementary at 165 us, see README)",
@@ -127,10 +127,13 @@ def thermal_table():
             tags = [s(x) for x in st]
             same = len(set(tags)) == 1 and "INVALID" not in tags and "missing" not in tags
             allsame &= same
-            po = "/".join("-" if x is None or x["pass_off_165"] is None else ("ok" if x["pass_off_165"] else "NO") for x in st)
-            ip = "/".join("n/a" if x is None else f"{x['ipass_165_ua']:.3g}" for x in st)
+            po = "/".join("-" if x is None or not x["valid"] or x["pass_off_165"] is None else ("ok" if x["pass_off_165"] else "NO") for x in st)
+            ip = "/".join("n/a" if x is None or not x["valid"] else f"{x['ipass_165_ua']:.3g}" for x in st)
             L.append(f"  {sup.replace('p', '.'):>6s} {int(temp):5d} {scen:>9s} {tags[0]:>9s} {tags[1]:>9s} {tags[2]:>9s}  "
                      f"{'yes' if same else 'NO':>6s}  {po:>24s}   {ip}")
+            for i, x in zip(ids, st):
+                if x is not None and not x["valid"] and x.get("invalid_reason"):
+                    L.append(f"    INVALID {i}: {x['invalid_reason']}")
     L.append(f"  all candidate states identical to the paired baseline: {allsame}")
     return L
 
