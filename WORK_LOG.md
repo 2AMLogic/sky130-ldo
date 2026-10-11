@@ -2,6 +2,21 @@
 
 Chronological record of merged pull requests and closed issues. Maintained by the Loom Guide role.
 
+### 2026-10-11
+
+- **PR #333**: docs: archive design/README.md investigation log, fix stale Freshness (#332)
+- **PR #331**: layout: refresh current-core area evidence and reconcile floorplan docs (#318)
+- **PR #330**: sim: PSRR C_eff x ESR sweep via klt sim analysis_steps (Part of #314; fleet run blocked)
+- **PR #329**: spec: defer row status counts to generated report; guard against reintroduction (#325)
+- **PR #328**: sim(pex): retain measured swx_nrds diagnosis + xschem 3.4.4 fixture regression (#277)
+- **PR #322**: sim: load-transient COUT/ESR window grid, conservative aggregation, coverage disclosure (Phase A of #313)
+- **PR #321**: sim: PSRR C_eff x ESR reduced-sweep tooling + selection tests (Phase 1 of #314)
+- **Issue #332** (closed): Simplify design/README.md: move ~3000-line investigation log out, fix stale 'entirely DRAFT' Freshness claim
+- **Issue #325** (closed): spec: stop hand-copying corner counts into target-spec status prose; lint against reintroduction
+- **Issue #318** (closed): layout: refresh current-core area evidence and reconcile stale floorplan documentation
+- **Issue #313** (closed): Load transient: qualify the ratified capacitor and ESR window
+- **Issue #277** (closed): sim: post-layout PEX schematic-side corners fail with 'Undefined parameter [swx_nrds]'; no PEX evidence for #267 geometry
+
 ### 2026-10-10
 
 - **PR #317**: layout: PDK-free verdict tests for cap-rail, folded-res, trivial-cell and official-DRC scripts
