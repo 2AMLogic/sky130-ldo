@@ -431,9 +431,10 @@ def cmd_compare(names):
             tail = abs(a["xm_tail.id"]) * 1e6 if "xm_tail.id" in a else float("nan")
             ivina = (f"{abs(p.get('i(vvina)', 0))*1e6:.2f}/{abs(a.get('i(vvina)', 0))*1e6:.2f}"
                      if "i(vvina)" in a else "-")
+            tail_s = f"{tail:.3f}" if tail == tail else "ideal"
             L.append(f"{nm:8s} {str(r['valid']):6s} {fmt(r['dropout_v'], '.4f'):>10s} {r['vin_cross']:8.4f} "
                      f"{a['v(xldo.ea_out)']:8.3f} {abs(a['xm_pass.vds']):7.3f}/{abs(a['xm_pass.vdsat']):.3f}   "
-                     f"{(f"{tail:.3f}" if tail == tail else "ideal"):>12s} {abs(a['xm_clim.id'])*1e9:12.3f} "
+                     f"{tail_s:>12s} {abs(a['xm_clim.id'])*1e9:12.3f} "
                      f"{abs(p['i(vvin)'])*1e3:7.3f}/{abs(a['i(vvin)'])*1e3:.3f}  {ivina:>16s}")
         else:
             L.append(f"{nm:8s} {str(r['valid']):6s} {'n/a':>10s}  reasons: {'; '.join(r['reasons'])}")

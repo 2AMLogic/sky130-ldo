@@ -4,10 +4,11 @@
  "ngspice": "ngspice-42 (KLU)",
  "pdk": "sky130A open_pdks c6d73a35f524070e85faff4a6a9eef49553ebc2b (sim/pdk.json pin)",
  "pdk_lib_sha256": "48de7c677e2c6e7d09b2559279de9f818be71010a4aa933d728eb4db3b133c84",
+ "post_run_edits": "analyze.py was edited after the run for a Python 3.11 syntax fix only (a nested same-quote f-string in cmd_compare was hoisted into a variable; PR #350 review). Analysis logic is unchanged; the sha256 above is of the edited file. compare.table.txt was regenerated with the edited script under Python 3.11.17 and 3.12.3 and is byte-identical to the original output. No simulation was re-run.",
  "python": "Python 3.12.3",
  "sha256_raw_files": {
   ".spiceinit": "3cf811e1ae5fc75dd0bbe56205016c387c3538304be0cbdab7cb658fb9adf960",
-  "analyze.py": "2e5a48a7e15acb76db30249e2cb8d96f6160afdee6cc8baf71487b79cce297c8",
+  "analyze.py": "231fd9bd6cdde094b6502e247c187fb97e303c33f0a877dbfb899db00c66ec92",
   "baseline.deck.spice": "e2cb918841804929bc18bed89fd24bfafc52f43dd44f9e6c26d6990134d19152",
   "commands.sh": "9991d77338638b9340602988b56af1e3d66a3767982763e9e76c2779dff9487a",
   "make_probe_deck.py": "eb9fa123884f66c63f0ea5e3620e6d5e106b2b8ca16d88757abbeb42527985df",
@@ -32,5 +33,6 @@
   "probeB.dat": "7a0da43b14b4233b152b91d87988beee87c6bb24959ae4040a93228601bfe871",
   "probeB.deck.spice": "230e3413adbc72622543485b603e295061f1981de82d5127a7914fccb27e37b7"
  },
- "source_commit_at_run": "807c4450723de1994d7323fc39779e206421fb52"
+ "source_commit_at_run": "807c4450723de1994d7323fc39779e206421fb52",
+ "source_commit_note": "source_commit_at_run is the base commit; the issue-339 scripts and decks were uncommitted at run time and are covered by the sha256 entries."
 }
