@@ -1269,6 +1269,7 @@ class TestBoundInclusivity(BatchHarness):
             "psrr-dc": {n: "min_inclusive" for n in (
                 "psrr_1khz_1ma_db", "psrr_100khz_1ma_db", "psrr_1khz_50ma_db", "psrr_100khz_50ma_db")},
             "iq": {"iq_no_load_ua": "max_inclusive", "iq_full_load_ua": "max_inclusive"},
+            "load-regulation": {"load_reg_v": "max_inclusive", "load_reg_pct": "max_inclusive"},
             "enable-shutdown": {"iq_shutdown_static_ua": "max_inclusive",
                                 "iq_shutdown_after_edge_ua": "max_inclusive"},
         }
@@ -1278,6 +1279,72 @@ class TestBoundInclusivity(BatchHarness):
                 for flag in ("min_inclusive", "max_inclusive"):
                     self.assertEqual(m.get(flag) is False, strict.get(m["name"]) == flag, (slug, m["name"], flag))
             corner_run.load_experiment(SIM_DIR / slug)
+
+
+class TestLoadRegulationManifestGate(unittest.TestCase):
+    """Issue #364: the ACTUAL load-regulation manifest, graded by the shared
+    grade_bounds, must gate both settled endpoints on the Output window and
+    treat the ratified delta maxima as strict."""
+
+    @classmethod
+    def setUpClass(cls):
+        exp = corner_run.load_experiment(SIM_DIR / "load-regulation")
+        cls.ms = {m.name: m for m in exp.measurements}
+
+    def grade(self, v0, v50):
+        """Derive each manifest measurement from the endpoints exactly as its
+        expr does (delta = abs difference), then grade via grade_bounds."""
+        vals = {"vout_0ma_v": v0, "vout_50ma_v": v50}
+        ok = all(isinstance(v, float) for v in (v0, v50))
+        if ok and all(v == v for v in (v0, v50)) and abs(v0) != float("inf") and abs(v50) != float("inf"):
+            d = abs(v50 - v0)
+            vals["load_reg_v"] = d
+            vals["load_reg_pct"] = 100 * d / 1.8
+        else:
+            vals["load_reg_v"] = vals["load_reg_pct"] = None
+        return {n: corner_run.grade_bounds(self.ms[n], vals[n])[0] for n in vals}
+
+    def test_manifest_shape(self):
+        for n in ("vout_0ma_v", "vout_50ma_v"):
+            self.assertEqual((self.ms[n].min, self.ms[n].max), (1.764, 1.836))
+            self.assertTrue(self.ms[n].min_inclusive and self.ms[n].max_inclusive)
+        self.assertEqual(self.ms["vout_0ma_v"].expr, "tran1.vout_0ma")
+        self.assertEqual(self.ms["vout_50ma_v"].expr, "tran2.vout_50ma")
+        self.assertEqual((self.ms["load_reg_v"].max, self.ms["load_reg_pct"].max), (0.018, 1))
+        for n in ("load_reg_v", "load_reg_pct"):
+            self.assertFalse(self.ms[n].max_inclusive)
+
+    def test_equal_out_of_window_endpoints_fail_with_zero_delta(self):
+        for v in (1.9, 1.7):
+            r = self.grade(v, v)
+            self.assertTrue(r["load_reg_v"] and r["load_reg_pct"])  # the old hole
+            self.assertFalse(r["vout_0ma_v"])
+            self.assertFalse(r["vout_50ma_v"])
+
+    def test_one_invalid_endpoint_fails(self):
+        r = self.grade(1.80, 1.837)
+        self.assertTrue(r["vout_0ma_v"])
+        self.assertFalse(r["vout_50ma_v"])
+        r = self.grade(1.763, 1.80)
+        self.assertFalse(r["vout_0ma_v"])
+        self.assertTrue(r["vout_50ma_v"])
+
+    def test_window_edges_pass(self):
+        r = self.grade(1.764, 1.836)
+        self.assertTrue(r["vout_0ma_v"] and r["vout_50ma_v"])
+
+    def test_missing_and_nonfinite_endpoints_fail(self):
+        for bad in (None, float("nan"), float("inf"), float("-inf")):
+            self.assertFalse(corner_run.grade_bounds(self.ms["vout_0ma_v"], bad)[0], bad)
+            self.assertFalse(corner_run.grade_bounds(self.ms["vout_50ma_v"], bad)[0], bad)
+
+    def test_delta_equal_to_limit_fails_smaller_passes(self):
+        self.assertFalse(corner_run.grade_bounds(self.ms["load_reg_v"], 0.018)[0])
+        self.assertFalse(corner_run.grade_bounds(self.ms["load_reg_pct"], 1)[0])
+        self.assertFalse(corner_run.grade_bounds(self.ms["load_reg_pct"], 1.0)[0])
+        r = self.grade(1.80, 1.80 + 0.017)
+        self.assertTrue(all(r.values()), r)
+        self.assertFalse(corner_run.grade_bounds(self.ms["load_reg_v"], 0.018001)[0])
 
 
 # --------------------------------------------------------------------------
