@@ -164,6 +164,14 @@ class TestRequestShape(unittest.TestCase):
         res, rep = s.parse_corner(MANIFEST, "tt_27c_3.30v", None)
         self.assertTrue(res and not any(r["ok"] for r in res))
 
+    def test_job_that_never_ran_is_infrastructure_failure(self):
+        refused = {"status": "error", "diagnostics": [
+            {"code": "batch_job_failed", "message": "runner version mismatch -- the request was not run"}]}
+        self.assertIn("batch_job_failed", s.job_not_run_reason(refused, has_engine_log=False))
+        self.assertIn("no engine log", s.job_not_run_reason({"status": "error"}, has_engine_log=False))
+        # a corner that ran (log present) is graded cell by cell, not aborted
+        self.assertIsNone(s.job_not_run_reason(refused, has_engine_log=True))
+
     def test_independence_report(self):
         res = [{"corner_id": "a", "c_uf": 1.0, "esr_ohm": 0.01, "metrics": {M: 10.0}}]
         same = [{"corner_id": "a", "c_uf": 1.0, "esr_ohm": 0.01, "metrics": {M: 10.0}}]

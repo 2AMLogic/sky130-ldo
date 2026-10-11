@@ -235,6 +235,21 @@ def parse_corner(manifest: dict, corner_id: str, rc: dict | None) -> tuple[list[
     return results, repeats
 
 
+def job_not_run_reason(rc: dict, has_engine_log: bool) -> str | None:
+    """Why a response corner reflects a simulation that never ran, or None.
+
+    A corner with no engine log was never simulated (e.g. a batch job refused
+    by the fleet runner, or a launch failure).  That is an infrastructure
+    failure: no measurement exists, so it must abort the run without a record
+    rather than be minted as an all-missing grid.  A corner that ran but whose
+    steps failed has a log and goes through as not-ok cells instead."""
+    if has_engine_log:
+        return None
+    diags = rc.get("diagnostics") if isinstance(rc, dict) else None
+    msgs = [f"{d.get('code')}: {d.get('message')}" for d in diags or [] if isinstance(d, dict)]
+    return "; ".join(msgs)[:1000] or f"no engine log (klt corner status {rc.get('status')!r})"
+
+
 def independence_report(results: list[dict], repeats: list[dict], tol_db: float) -> list[dict]:
     """Compare each repeat-run cell against the first run of the same point."""
     first = {(r["corner_id"], r["c_uf"], r["esr_ohm"]): r for r in results}

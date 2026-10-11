@@ -281,6 +281,12 @@ def main(argv: list[str]) -> int:
         if len(rcs) != 1 or rcs[0].get("process") != c[0] or float(rcs[0].get("temperature_c", "nan")) != float(c[1]):
             raise HarnessError(f"{cid}: response does not hold exactly the requested corner; no record")
         rc = rcs[0]
+        not_run = pcs.job_not_run_reason(rc, engine_log(rc, outdir) is not None)
+        if not_run:
+            raise HarnessError(
+                f"{cid}: the simulation did not run ({not_run}); job "
+                f"{cr.batch_remote_info(response).get('job_id')}. NO record written, NO local "
+                f"fallback; response kept in {outdir / 'response.json'}")
         res, rep = pcs.parse_corner(manifest, cid, rc)
         results += res
         repeats += rep
