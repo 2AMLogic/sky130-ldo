@@ -391,8 +391,11 @@ class ProvenanceManifestTracked(unittest.TestCase):
     def test_provenance_manifest_paths_are_tracked(self):
         import hashlib
         import subprocess
-        out = subprocess.run(["git", "ls-files", "-z", "--", str(DIAG)], capture_output=True,
-                             check=True, cwd=DIAG).stdout.decode().split("\0")
+        try:
+            out = subprocess.run(["git", "ls-files", "-z", "--", str(DIAG)], capture_output=True,
+                                 check=True, cwd=DIAG).stdout.decode().split("\0")
+        except (OSError, subprocess.CalledProcessError):
+            self.skipTest("not a git checkout")
         tracked = {str((DIAG / p).resolve()) for p in out if p}
         if not tracked:
             self.skipTest("not a git checkout")
