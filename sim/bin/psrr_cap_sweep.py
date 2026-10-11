@@ -71,7 +71,7 @@ def apply_cap_point(body: list[str], c_uf: float, esr_ohm: float) -> list[str]:
             out.append(f"COUT {m.group(2)} {bottom} {c_uf:g}u{m.group(5)}")
         elif _RESR_RE.match(ln):
             if esr_ohm == 0:
-                out.append(f"* RESR removed: zero-ESR topology (#314)")
+                out.append("* RESR removed: zero-ESR topology (#314)")
             else:
                 parts = ln.split()
                 out.append(f"RESR {parts[1]} {parts[2]} {esr_ohm:g}" + (" " + " ".join(parts[4:]) if len(parts) > 4 else ""))
