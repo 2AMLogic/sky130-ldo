@@ -307,7 +307,7 @@ def check_netlist(body: list[str], stimulus: list[str]) -> None:
         for card in FORBIDDEN_NETLIST_CARDS:
             if low == card or low.startswith(card + " ") or low.startswith(card + "\t"):
                 raise EndpointTranslationError(
-                    f"netlist carries `{ln}`: {card} is not allowed in a line-regulation endpoint request"
+                    f"netlist carries `{ln}`: {card} is not allowed in an endpoint request"
                 )
     for want in stimulus:
         elem = want.split()[0].lower()

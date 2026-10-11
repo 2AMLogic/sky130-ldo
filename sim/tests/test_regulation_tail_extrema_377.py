@@ -17,8 +17,8 @@ grade_bounds inside run_corner):
 - a PDK-free toy deck (skipped when ngspice is not on PATH) that runs the
   production deck's own analysis cards through real ngspice, proving the plot
   association and the min/max card syntax end to end;
-- the batch backend still refuses both manifests (neither is allowlisted, so
-  there is no batch translation to keep in step).
+- the batch backend admits both manifests only at their pinned endpoint-adapter
+  shape (#379 line, #381 load), and still refuses the sibling regulation benches.
 
 The extrema are SAMPLED over the simulator's own timepoints in the window: they
 bound the measured tail, not continuous-time behaviour between samples.
@@ -184,11 +184,15 @@ class TestManifestCards(unittest.TestCase):
             last_meas = max(i for i, ln in enumerate(lines) if ln.startswith("meas tran "))
             self.assertLess(last_meas, first_let, slug)
 
-    def test_batch_backend_refuses_load_regulation_and_admits_line_regulation_strictly(self):
-        # issue #379 admits sim/line-regulation (pinned shape, see
-        # test_batch_line_regulation_379.py); load-regulation stays local-only.
-        corner_run.check_batch_supported(corner_run.load_experiment(SIM_DIR / "line-regulation"))
-        for slug in ("load-regulation",):
+    def test_batch_backend_admits_line_and_load_regulation_strictly(self):
+        # issue #379 admits sim/line-regulation and issue #381 admits
+        # sim/load-regulation, each only at its pinned endpoint-adapter shape
+        # (see test_batch_line_regulation_379.py / test_batch_load_regulation_381.py);
+        # the sibling regulation benches stay local-only.
+        for slug in ENDPOINTS:
+            self.assertTrue(corner_run.BATCH_ALLOWLIST[slug].get("endpoint_adapter"), slug)
+            corner_run.check_batch_supported(corner_run.load_experiment(SIM_DIR / slug))
+        for slug in ("iq", "psrr-dc", "startup"):
             exp = corner_run.load_experiment(SIM_DIR / slug)
             with self.assertRaises(corner_run.HarnessError) as cm:
                 corner_run.check_batch_supported(exp)
