@@ -575,12 +575,13 @@ grid to `klt sim --backend batch` instead of running ngspice here. It is
 single `op` analysis and two scalar measurements (`vgs`, `isup`),
 `sim/load-transient`'s COUT/ESR window grid (issue #326, below) and
 `sim/dropout-vs-load`'s cold-start crossing in its validated shape (issue
-#374, below). Every other manifest — `current-limit`, `enable-shutdown`,
-`ic-screen-125c-*`, `iq`, `line-regulation`, `load-regulation`, `loop-gain`,
+#374, below) and `sim/line-regulation`'s four cold-start endpoints in their
+validated shape (issue #379, below). Every other manifest — `current-limit`,
+`enable-shutdown`, `ic-screen-125c-*`, `iq`, `load-regulation`, `loop-gain`,
 `psrr-dc`, `startup`, `thermal`, and the `mc-*` experiments (which have their
 own runner, `mc-run.py`) — and any edited smoke, window-grid or dropout shape
-is **refused before netlisting, submission or local ngspice**. The wider
-regulation grids stay deferred on translating their measurement cards.
+is **refused before netlisting, submission or local ngspice**. `load-regulation` and the
+other regulation grids stay deferred on translating their measurement cards.
 
 - **Requests.** The supply is the netlist's `.param vsup`, not a klt corner
   axis (klt's supply override alters sources, which is not this harness's
@@ -768,6 +769,95 @@ After a passing paired check, the full campaign is
 `python3 sim/bin/corner-run.py sim/dropout-vs-load --backend batch`. That is
 the batch command above without `--process/--temp/--supply`,
 `--subset-reason` or `--no-write`.
+
+#### Line regulation endpoints on the batch backend (issue #379)
+
+`python3 sim/bin/corner-run.py sim/line-regulation --backend batch` is
+**opt-in** (local stays the default). `sim/bin/batch_line_regulation.py`
+(PDK-free) translates the deck's four independent cold-start points into
+**one single-step `klt sim` request per supply group x endpoint**. The step is
+named `tran<N>` after the local plot it replaces, so klt returns
+`tran<N>.<card>`, the same plot-qualified identity the manifest's expressions
+use.
+
+| local deck | klt request |
+|---|---|
+| `set vinpt` / `alter vvin` / `alter @ven[pwl]` / `alter iload` | that endpoint's **complete source state in the request netlist**: `VVIN VIN 0 <vin>`, `VEN EN 0 dc 0 pwl(0 0 100u 0 101u <vin> 10 <vin>)`, `ILOAD VOUT 0 <iload>` (EN's high level is the same literal as VIN, full rail, issue #196) |
+| `tran 10u 200m uic` | the step's `analysis` verbatim (cold start, no operating-point solve) |
+| `meas tran ... avg\|min\|max v(vout) from=199m to=200m` | a step measurement with the card as `spice` (windows unchanged) |
+| `abs(1000*(tran2.x - tran1.y)/(3.63-2.97))` and the `tranN.card` identities | **not sent**: graded locally from the raw card values by `batch_line_regulation.evaluate`, with the manifest's own bounds and `grade_bounds` (slope < 5 mV/V strict; endpoint averages and tail min/max inside 1.764-1.836 V inclusive) |
+
+Endpoint states (VIN / load): `tran1` 2.97 V / 1 mA, `tran2` 3.63 V / 1 mA,
+`tran3` 2.97 V / 50 mA, `tran4` 3.63 V / 50 mA. The `alter iload = 50m`
+carries into points 3 and 4 exactly as in the local deck; points 1 and 2 keep
+the pinned netlist default (1 mA), so no request inherits another's load.
+
+- **Why one request per endpoint, not four steps.** klt refuses a step
+  `alter` on a source declared with an explicit PWL waveform and has no step
+  field for `alter @ven[pwl]` (friction reported as
+  2AMLogic/klayout-tools#3117), and steps have no `reset` between them
+  (#3103). The per-point state therefore travels in the netlist. Each
+  `uic` endpoint is independent by construction.
+- **Requests.** Full matrix: 3 supply labels x 4 endpoints = **12 requests**
+  of 15 points (5 process x 3 temperatures). The supply label is unused by
+  this deck's stimulus, but its multiplicity is kept (the three supply
+  columns are expected identical, a harness reproducibility check).
+  `--quick`: each explicit tuple is a singleton request per endpoint (3 x 4 =
+  12), never a Cartesian expansion. Keys are `<supply group>-tran<N>`.
+- **Shape gate (before netlisting).** The deck must be exactly four points of
+  the vocabulary above (EN's pwl tokens must be the pinned
+  `0 0 100u 0 101u $vinpt 10 $vinpt`, so EN can never differ from VIN),
+  each with a cold-start `tran ... uic` and `avg|min|max` cards with explicit
+  windows; every graded expression must parse over `tran<N>.<card>`
+  references, numbers, `abs`, `+ - * / ( )`. `window_grid`, `per_leg` and
+  `spread_checks` are refused. This is not a general SPICE translator.
+- **Renewal pin.** `BATCH_ALLOWLIST["line-regulation"]["manifest_sections"]`
+  pins the `analyses`, `measurements` (bounds and inclusivity) and `matrix`
+  digests, as for dropout; any intentional change refuses the batch backend
+  until re-validated and re-pinned
+  (`test_pins_equal_the_committed_manifest` fails at the same moment).
+- **Netlist gate (before any request is written).** The baseline `VVIN`,
+  `VEN` and `ILOAD` lines must equal the pinned ones (one definition each),
+  and `.ic`, `.nodeset`, `.control`, `.tran`/`.dc`/`.ac`/`.op`, `.meas` and
+  `.temp` cards are refused.
+- **Response gate.** An unfinished/incompatible remote job, a malformed,
+  missing, duplicate or unexpected corner, or an error envelope aborts with no
+  record and no fallback. Per corner, an errored status, a klt error/
+  `step_failed` diagnostic, a missing/duplicate/errored/non-finite endpoint
+  value, an unexpected result identity, a missing log or a solver diagnostic
+  in any endpoint's log is a recorded FAIL. The corner's log is the four
+  endpoint logs concatenated under `line-regulation endpoint tran<N>` headers.
+- **Provenance.** A batch record's `execution.adapter` is
+  `line-regulation-endpoints` (issue 379) with each endpoint's VIN, load,
+  source lines and cards, and the validated digests.
+- **Offline vs paired validation.** `sim/tests/test_batch_line_regulation_379.py`
+  is headless and PDK-free: four endpoint states, VIN/EN coherence, 50 mA
+  load handling, windows, slope mapping, inclusive window and strict slope
+  bounds, negative controls, request-matrix preservation and unchanged local
+  behaviour. It proves translation and grading only. **No paired local/fleet
+  comparison has been performed**, so remote equivalence is **unqualified**.
+  After `python3 sim/bin/batch-preflight.py` exits `0`, run one corner both
+  ways at the same commit and compare the raw endpoint values and both slopes:
+
+  ```bash
+  python3 sim/bin/batch-preflight.py                       # must exit 0 first
+  python3 sim/bin/corner-run.py sim/line-regulation --backend batch \
+      --process tt --temp 27 --supply 3.3 \
+      --subset-reason "issue #379 paired local/remote baseline check" --no-write
+  python3 sim/bin/corner-run.py sim/line-regulation \
+      --process tt --temp 27 --supply 3.3 \
+      --subset-reason "issue #379 paired local/remote baseline check" --no-write
+  ```
+
+  Comparison tolerance (an equivalence check, never a spec limit): when the
+  remote `engine_version` equals the local ngspice, every endpoint average,
+  min and max must agree to |Δ| <= 1 uV and both slopes to |Δ| <= 0.01 mV/V
+  (1 uV over 0.66 V is 1.5e-3 mV/V per endpoint pair, so the slope bound is
+  the propagated endpoint tolerance, rounded up). If the engine versions
+  differ, report Δ with both versions and the request netlist sha256 and do
+  not claim equivalence. A blocked preflight only defers the check; it does
+  not permit a local multi-corner campaign. The full 45-point refresh belongs
+  to #231 after equivalence is evidenced.
 
 #### Runner preflight (issue #356)
 
