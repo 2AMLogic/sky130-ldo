@@ -29,6 +29,7 @@ import argparse
 import difflib
 import gzip
 import json
+import math
 import re
 import shutil
 import sys
@@ -159,8 +160,42 @@ def thermal_deck(body, pdk, supply, temp_c, scenario, dat="data.dat"):
     return "\n".join(head + body + ctl)
 
 
+T_STOP_US, T_STOP_TOL_US = 170, 0.5  # declared .tran stop (thermal_deck) and one-step slack
+
+
+def thermal_trace_invalid_reason(path):
+    """Fail-closed trace check, run before any sampling (rc.at() clamps out-of-range
+    targets to an endpoint, so a truncated trace would otherwise yield usable labels).
+    Returns (t, v, None) for a usable trace, else (None, None, named reason)."""
+    try:
+        rows = [ln.split() for ln in Path(path).read_text().splitlines() if ln.strip()]
+    except (OSError, UnicodeDecodeError) as e:
+        return None, None, f"unreadable data: {e}"
+    if not rows:
+        return None, None, "empty data"
+    width = 2 * len(TH_KEYS)
+    bad = [i for i, r in enumerate(rows) if len(r) != width]
+    if bad:
+        return None, None, f"malformed columns: row {bad[0]} has {len(rows[bad[0]])} of {width} columns"
+    try:
+        t, v = rc.read_dat(Path(path), TH_KEYS)
+    except ValueError as e:
+        return None, None, f"malformed columns: {e}"
+    if any(not math.isfinite(x) for x in t):
+        return None, None, "nonfinite time"
+    if any(b <= a for a, b in zip(t, t[1:])):
+        return None, None, "time not strictly increasing"
+    if any(not math.isfinite(x) for k in TH_KEYS for x in v[k]):
+        return None, None, "nonfinite vector value"
+    if t[-1] < (T_STOP_US - T_STOP_TOL_US) * 1e-6:
+        return None, None, f"truncated trace: ends at {t[-1] * 1e6:.3f} us, declared stop {T_STOP_US} us"
+    return t, v, None
+
+
 def thermal_result(run, supply):
-    t, v = rc.read_dat(run / "data.dat", TH_KEYS)
+    t, v, why = thermal_trace_invalid_reason(run / "data.dat")
+    if why:
+        return {"invalid_reason": why, "nonfinite": "nonfinite" in why}
     at = lambda k, x: rc.at(t, v[k], x)  # noqa: E731
     trip = lambda x: rc.tripped(at("ts_cmp", x), supply)  # noqa: E731
     r = {"cold_start_tripped": trip(T_COLD), "forced_tripped": trip(T_FORCED),
@@ -294,6 +329,9 @@ def main(argv=None):
             print(f"  {k} = {g['value']}  [{g['min']}, {g['max']}]  {'pass' if g['pass'] else 'FAIL'}")
     if "thermal" in rec:
         th = rec["thermal"]
+        if th.get("invalid_reason"):
+            print(f"  thermal INVALID: {th['invalid_reason']}")
+            return
         print(f"  forced={th['forced_tripped']} hold={th['hold_tripped']} cold={th['cold_start_tripped']} "
               f"reen={th['after_en_reenable_tripped']} ipass@hold={th['ipass_ua'][T_HOLD]}uA ea_out@hold={th['ea_out_v'][T_HOLD]}")
 

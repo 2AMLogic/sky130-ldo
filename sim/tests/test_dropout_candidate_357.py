@@ -348,6 +348,79 @@ class RepeatAndClassification(unittest.TestCase):
         self.assertFalse(summ.thermal_state(dict(r, thermal=dict(th, nonfinite=True)))["valid"])
 
 
+class ThermalTraceValidity(unittest.TestCase):
+    """Real thermal_result() extraction on wrdata-shaped fixtures (fail closed)."""
+
+    NK = len(probe.TH_KEYS)
+
+    def _dat(self, stop_us=170.0, step_us=1.0, mutate=None):
+        n = int(round(stop_us / step_us))
+        rows = []
+        for i in range(n + 1):
+            t = i * step_us * 1e-6
+            vals = [0.0] * self.NK
+            vals[0] = 3.3  # ts_cmp untripped
+            rows.append([x for v in vals for x in (t, v)])
+        if mutate:
+            mutate(rows)
+        return "\n".join(" ".join(repr(x) if isinstance(x, float) else str(x) for x in r) for r in rows) + "\n"
+
+    def _run(self, text):
+        with tempfile.TemporaryDirectory() as d:
+            (Path(d) / "data.dat").write_text(text)
+            r = json.loads(json.dumps(probe.thermal_result(Path(d), 3.3)))  # as committed result.json
+        return r, summ.thermal_state({"ngspice_exit": 0, "solver_diagnostic": None, "thermal": r})
+
+    def test_complete_trace_is_valid(self):
+        r, s = self._run(self._dat())
+        self.assertNotIn("invalid_reason", r)
+        self.assertTrue(s["valid"])
+        self.assertFalse(s["hold"])
+
+    def test_truncated_trace_invalid(self):
+        r, s = self._run(self._dat(stop_us=40.0))
+        self.assertIn("truncated", r["invalid_reason"])
+        self.assertFalse(s["valid"])
+        self.assertIn("truncated", s["invalid_reason"])
+
+    def test_nonfinite_time_invalid(self):
+        def m(rows):
+            rows[5][0] = "nan"
+        r, s = self._run(self._dat(mutate=m))
+        self.assertIn("nonfinite time", r["invalid_reason"])
+        self.assertFalse(s["valid"])
+
+    def test_nonmonotonic_time_invalid(self):
+        def m(rows):
+            rows[5][0] = rows[3][0]
+        r, s = self._run(self._dat(mutate=m))
+        self.assertIn("strictly increasing", r["invalid_reason"])
+        self.assertFalse(s["valid"])
+
+    def test_nonfinite_vector_invalid(self):
+        def m(rows):
+            rows[5][1] = "inf"
+        r, s = self._run(self._dat(mutate=m))
+        self.assertIn("nonfinite vector", r["invalid_reason"])
+        self.assertFalse(s["valid"])
+
+    def test_missing_columns_invalid(self):
+        def m(rows):
+            del rows[7][-2:]
+        r, s = self._run(self._dat(mutate=m))
+        self.assertIn("malformed columns", r["invalid_reason"])
+        self.assertFalse(s["valid"])
+
+    def test_non_numeric_and_empty_invalid(self):
+        def m(rows):
+            rows[2][3] = "abc"
+        r, _ = self._run(self._dat(mutate=m))
+        self.assertIn("malformed columns", r["invalid_reason"])
+        r, s = self._run("")
+        self.assertIn("empty", r["invalid_reason"])
+        self.assertFalse(s["valid"])
+
+
 class CommittedEvidence(unittest.TestCase):
     def test_committed_edited_netlists_regenerate_byte_identically(self):
         runs = sorted((DIAG / "runs").glob("*/result.json"))

@@ -94,6 +94,8 @@ def thermal_state(r):
     if r is None or "thermal" not in r:
         return None
     th = r["thermal"]
+    if th.get("invalid_reason"):
+        return {"valid": False, "invalid_reason": th["invalid_reason"]}
     ok = r["ngspice_exit"] == 0 and not r["solver_diagnostic"] and not th["nonfinite"]
     tripped_end = th["after_en_reenable_tripped"]
     return {"valid": ok, "forced": th["forced_tripped"], "hold": th["hold_tripped"],
