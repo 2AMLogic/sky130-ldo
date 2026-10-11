@@ -79,7 +79,8 @@
       "unit": "V",
       "min": null,
       "max": 0.018,
-      "note": "abs(vout@50mA - vout@0mA), the ratified row's own two endpoints, each the settled 199ms-200ms tail average of that point's own cold-start `uic` transient (issue #172; the `tranN.` plot prefixes replace the pre-#172 `opN.` ones). Ratified bound: spec/target-spec.md \"Load regulation (0-50mA)\" row, < 1% (18mV), counted inside the +-2% Output window."
+      "max_inclusive": false,
+      "note": "abs(vout@50mA - vout@0mA), the ratified row's own two endpoints, each the settled 199ms-200ms tail average of that point's own cold-start `uic` transient (issue #172; the `tranN.` plot prefixes replace the pre-#172 `opN.` ones). Ratified bound: spec/target-spec.md \"Load regulation (0-50mA)\" row, < 1% (18mV), counted inside the +-2% Output window. Strict bound (max_inclusive=false, issue #364): the row ratifies < 18mV, so exactly 18mV fails."
     },
     {
       "name": "load_reg_pct",
@@ -87,7 +88,24 @@
       "unit": "%",
       "min": null,
       "max": 1,
-      "note": "Same delta as load_reg_v, expressed as a percentage of the 1.8V ratified Output target -- the same convention design/README.md's own load-regulation screening numbers use. Ratified bound: < 1%."
+      "max_inclusive": false,
+      "note": "Same delta as load_reg_v, expressed as a percentage of the 1.8V ratified Output target -- the same convention design/README.md's own load-regulation screening numbers use. Ratified bound: < 1%. Strict bound (max_inclusive=false, issue #364): exactly 1% fails."
+    },
+    {
+      "name": "vout_0ma_v",
+      "expr": "tran1.vout_0ma",
+      "unit": "V",
+      "min": 1.764,
+      "max": 1.836,
+      "note": "Regulation gate (issue #364): the no-load endpoint is bounded to the ratified Output row's +-2% window (1.764-1.836V, inclusive), mirroring sim/iq/experiment.json's vout_no_load_v pattern. Without it, two identical out-of-window endpoints give a zero delta and pass both load-regulation checks. Same settled 199ms-200ms cold-start `uic` average as the delta checks; no stimulus or threshold change."
+    },
+    {
+      "name": "vout_50ma_v",
+      "expr": "tran2.vout_50ma",
+      "unit": "V",
+      "min": 1.764,
+      "max": 1.836,
+      "note": "Same regulation gate as vout_0ma_v (issue #364), at the full-load (50mA) endpoint."
     }
   ],
   "spread_checks": []
