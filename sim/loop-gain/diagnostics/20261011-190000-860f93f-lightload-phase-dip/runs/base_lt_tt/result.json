@@ -1,0 +1,90 @@
+{
+  "run_id": "base_lt_tt",
+  "issue": 365,
+  "bench": "load-transient",
+  "condition": {
+    "process": "tt",
+    "temp_c": 27.0,
+    "supply_v": 3.3
+  },
+  "edits": {
+    "ccomp_scale": 1.0,
+    "rcz_scale": 1.0,
+    "tail_scale": 1.0,
+    "notes": []
+  },
+  "stimulus": "verbatim from sim/load-transient/experiment.json (see deck.spice)",
+  "provenance": {
+    "source_commit": "860f93fd2bf9674d60594ff7cdc9bbe3bf5889f8",
+    "driver_sha256": "5442a12cb233add23390f171facfc20b297b3673fc5663d03639cc2067d46cab",
+    "extract_sha256": "787166afd02c8c5b9a2f7b5a4945348f03dbc51ff5db79faf3a5f8edd606dd9c",
+    "experiment_json_sha256": "1cc6846ee58c4cfd9ea503b48d603d52134f8947d71b5b2f6e7bfff8936c15cf",
+    "testbench_sha256": "ac3a18dd6b62a97a9a175374c236518ad129d1b59a5dee68f6838d606ab724e8",
+    "dut_sha256": "1378c2d440e6ffc2224091972a162357c2634600e6e56cb51e4d6f96159fd2e3",
+    "netlist_raw_sha256": "2df3948633bd5842f6b9074ca2593e10b7c95c88181cbf661b97a3e9fd896933",
+    "netlist_edited_sha256": "2df3948633bd5842f6b9074ca2593e10b7c95c88181cbf661b97a3e9fd896933",
+    "deck_sha256": "bb2775743e3e1669ecd92c69a027f58bd3c09b56cca20b51e11b4940c121b4c3",
+    "pdk": {
+      "open_pdks_commit": "c6d73a35f524070e85faff4a6a9eef49553ebc2b",
+      "matches_pin": true
+    },
+    "tools": {
+      "ngspice": "ngspice-46 : Circuit level simulation program",
+      "xschem": "XSCHEM V3.4.7",
+      "platform": "Linux 7.0.0-1014-aws x86_64",
+      "python": "3.12.3",
+      "declared": {
+        "ngspice": "42",
+        "xschem": "3.4.4"
+      },
+      "on_baseline": false
+    }
+  },
+  "ngspice_exit": 0,
+  "elapsed_s": 242.91,
+  "solver_diagnostic": null,
+  "meas": {
+    "undershoot_rise_v__c330n_esr0": 0.191981,
+    "overshoot_rise_v__c330n_esr0": 0.0,
+    "undershoot_fall_v__c330n_esr0": 0.001764,
+    "overshoot_fall_v__c330n_esr0": 0.142068,
+    "recovery_rise_us__c330n_esr0": 96.7,
+    "recovery_fall_us__c330n_esr0": 71.7,
+    "settle_err_50ma_pct__c330n_esr0": -0.0979676,
+    "undershoot_rise_v__c330n_esr10m": 0.191559,
+    "overshoot_rise_v__c330n_esr10m": 0.0,
+    "undershoot_fall_v__c330n_esr10m": 0.001764,
+    "overshoot_fall_v__c330n_esr10m": 0.141784,
+    "recovery_rise_us__c330n_esr10m": 96.7,
+    "recovery_fall_us__c330n_esr10m": 71.9,
+    "settle_err_50ma_pct__c330n_esr10m": -0.0979676,
+    "undershoot_rise_v__c330n_esr500m": 0.176499,
+    "overshoot_rise_v__c330n_esr500m": 0.0,
+    "undershoot_fall_v__c330n_esr500m": 0.001764,
+    "overshoot_fall_v__c330n_esr500m": 0.129486,
+    "recovery_rise_us__c330n_esr500m": 96.5,
+    "recovery_fall_us__c330n_esr500m": 79.9,
+    "settle_err_50ma_pct__c330n_esr500m": -0.0979676,
+    "undershoot_rise_v__c4u7_esr0": 0.084677,
+    "overshoot_rise_v__c4u7_esr0": 0.0,
+    "undershoot_fall_v__c4u7_esr0": 0.038289,
+    "overshoot_fall_v__c4u7_esr0": 0.065593,
+    "recovery_rise_us__c4u7_esr0": 99.5,
+    "recovery_fall_us__c4u7_esr0": 607.1,
+    "settle_err_50ma_pct__c4u7_esr0": -0.0979676,
+    "undershoot_rise_v__c4u7_esr10m": 0.08447,
+    "overshoot_rise_v__c4u7_esr10m": 0.0,
+    "undershoot_fall_v__c4u7_esr10m": 0.038182,
+    "overshoot_fall_v__c4u7_esr10m": 0.065478,
+    "recovery_rise_us__c4u7_esr10m": 99.5,
+    "recovery_fall_us__c4u7_esr10m": 606.1,
+    "settle_err_50ma_pct__c4u7_esr10m": -0.0979676,
+    "undershoot_rise_v__c4u7_esr500m": 0.077279,
+    "overshoot_rise_v__c4u7_esr500m": 0.0,
+    "undershoot_fall_v__c4u7_esr500m": 0.033684,
+    "overshoot_fall_v__c4u7_esr500m": 0.06095,
+    "recovery_rise_us__c4u7_esr500m": 99.1,
+    "recovery_fall_us__c4u7_esr500m": 566.9,
+    "settle_err_50ma_pct__c4u7_esr500m": -0.0979676
+  }
+}
