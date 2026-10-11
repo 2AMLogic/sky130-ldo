@@ -438,6 +438,7 @@ were bypassed. The existing "already exists -- append-only" check stays.
 | `--process tt,ss` / `--temp 27` / `--supply 1.8` | override a matrix axis (marks the run a subset) |
 | `--quick` | run the manifest's `quick_subset` only |
 | `--subset-reason "…"` | **required** for any subset; recorded verbatim |
+| `--leg-order a,b,…` | for an experiment with a `window_grid`: run the legs in this order (must be a permutation of the declared legs) — the leg-order independence smoke check, "COUT/ESR window grid" below |
 | `--supersedes <record-id>` | record which prior record this replaces |
 | `--author`, `--timeout` | record author (default `git config user.email`), per-corner ngspice timeout |
 | `--allow-pdk-mismatch` | run against a non-pinned PDK; the record flags it |
@@ -448,6 +449,50 @@ were bypassed. The existing "already exists -- append-only" check stays.
 Exit status: `0` all checks passed, `2` a record was written (or would have
 been, under `--no-write`) but something failed, `1` harness/setup error (no
 record written).
+
+### COUT/ESR window grid (issue #313)
+
+An experiment may declare a `window_grid` in `experiment.json` to walk a
+finite grid of an external-network window *inside one deck, per PVT corner*.
+`sim/load-transient` does, for DR-002's ratified window (0.33-4.7 µF,
+0-500 mΩ, no minimum ESR):
+
+- **Grid.** COUT ∈ {0.33 µF, 4.7 µF} × ESR ∈ {0, 10 mΩ, 500 mΩ} = six legs,
+  including the 4.7 µF / 10 mΩ reference point of #119. `window_grid.justification`
+  says why these points; `window_grid.sampling_statement` says what they are
+  not: the grid **samples** the window, it is not a continuous proof, and a
+  passing grid cannot rule out an interior worst case.
+- **Legs are independent.** For each leg the runner emits `reset`, `save all`,
+  *all* of the leg's `alter` cards, its own `tran` (which re-solves the
+  `.ic`-seeded operating point of the #171/#180 contract) and its own
+  measurements. Nothing carries over between legs; `--leg-order` re-runs the
+  same legs in another order so that independence can be checked (identical
+  values required).
+- **Zero ESR** is an electrically equivalent topology, not a tiny resistor: the
+  testbench has a second capacitor `CDIR` wired straight from VOUT to ground. An
+  ESR = 0 leg sets `CDIR` to the full COUT and the series `COUT`+`RESR` branch to
+  0 F (open); ESR > 0 legs do the reverse.
+- **Result naming.** A `per_leg` measurement template in `measurements` is
+  expanded per leg to `<name>__<leg>` (e.g. `recovery_fall_us__c330n_esr500m`);
+  each result row carries `leg`, `cout_f`, `esr_ohm` and `direction`
+  (`rise` = 1→50 mA edge, `fall` = 50→1 mA edge) alongside the corner's
+  process/temperature/supply. The 150 mV and 20 µs bounds are unchanged.
+- **Aggregation is conservative** (`grid_coverage` in `corner-run.py`). The
+  expected set is derived from the manifest and the corner matrix, not from the
+  results: the grid PASSes only if every declared (corner × COUT × ESR ×
+  direction) measurement is present, finite, inside its bounds and flagged
+  passing. A missing leg or corner, a NaN/unparsable value, or one failed
+  condition ⇒ FAIL. The verdict is stored as the record's `window_grid` block and
+  folded into `overall_pass`.
+- **Two coverage axes.** The characterization report keeps PVT coverage (subset
+  flag/reason) apart from COUT/ESR coverage. A record with no `window_grid`
+  block — every record minted before #313 — is reported as "grid declared but
+  not yet evidenced", with no claim of window qualification.
+- **Scope.** Phase A (#313) is the harness, reporting and PDK-free tests plus a
+  single-corner local smoke; no full-grid × PVT campaign is minted by it. The
+  campaign (Phase B) is separate: `load-transient` stays refused by the batch
+  backend (`BATCH_ALLOWLIST` is untouched), and a full grid × 45 PVT is not run
+  on the dispatch worker.
 
 ### Startup ramp monotonicity (issue #309)
 

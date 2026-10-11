@@ -354,6 +354,56 @@ def sim_failing_measurements(record: dict) -> str | None:
     return "; ".join(parts)
 
 
+def sim_window_grid_disclosure(slug: str, record: dict) -> str | None:
+    """Coverage disclosure for an experiment whose manifest declares a COUT/ESR
+    `window_grid` (issue #313), or None when it declares none.
+
+    Keeps the two coverage axes apart: PVT coverage (the `is_subset` flag /
+    subset reason, reported elsewhere on the row) and COUT/ESR window coverage
+    (this clause). It never claims window qualification: a record without a
+    `window_grid` block is "declared but not yet evidenced", an incomplete or
+    failing block says so, and even a complete passing one is described as a
+    finite sample of the ratified window, not a continuous proof.
+    """
+    manifest = SIM_DIR / slug / "experiment.json"
+    try:
+        declared = json.loads(manifest.read_text()).get("window_grid")
+    except (OSError, ValueError):
+        return None
+    if not isinstance(declared, dict):
+        return None
+    legs = declared.get("legs") or []
+    leg_txt = ", ".join(
+        f"{leg.get('cout_f'):g} F / {leg.get('esr_ohm'):g} ohm" for leg in legs
+    )
+    head = (
+        "COUT/ESR window coverage (separate from the PVT coverage above): the manifest "
+        f"declares a finite {len(legs)}-leg grid ({leg_txt}) that samples the ratified "
+        "window; it is not a continuous-window proof."
+    )
+    grid = record.get("window_grid")
+    if not isinstance(grid, dict):
+        return (
+            head
+            + " **This record carries no window-grid result: the grid is declared but not "
+            "yet evidenced (the record measured only the single pre-grid COUT/ESR point), "
+            "so no claim of COUT/ESR window qualification is made.**"
+        )
+    done = (
+        f"{grid.get('conditions_passing')}/{grid.get('conditions_expected')} declared "
+        "(corner x COUT x ESR x direction) conditions present and passing"
+    )
+    if grid.get("complete") and grid.get("pass"):
+        return head + f" Completed grid: {done}; every declared leg passed, but a finite " \
+            "grid cannot rule out an interior worst case."
+    state = "complete but failing" if grid.get("complete") else "INCOMPLETE"
+    return (
+        head
+        + f" **Grid {state}: {done}; the window is NOT qualified.** Missing, non-finite "
+        "or failing conditions are itemised in the record."
+    )
+
+
 def sim_mc_sample_tally(record: dict) -> str | None:
     resp = record.get("klt_response")
     if not isinstance(resp, dict):
@@ -1002,6 +1052,9 @@ def build_spec_row_table(
         failing = sim_failing_measurements(record)
         if failing:
             detail_line += f" Failing measurement(s), per the record: {failing}."
+        grid_note = sim_window_grid_disclosure(slug, record)
+        if grid_note:
+            detail_line += " " + grid_note
         if subset_reason:
             detail_line += (
                 " **PVT subset, not the full matrix this experiment declares** — "

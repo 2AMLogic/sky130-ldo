@@ -23,20 +23,33 @@ v {xschem version=3.4.7 file_version=1.2
 * yet.
 *
 * I_LOAD steps 1mA -> 50mA -> 1mA (PULSE, 1us edges) at VOUT, modelling the
-* ratified spec's load-transient stimulus literally. C_OUT (4.7uF, issue
-* #119) + R_ESR (10mOhm, a ceramic-representative point inside DR-002's
-* ratified 0-500mOhm window, not a sweep of that window -- full C_out/ESR
-* corner-sweep is follow-on scope, e.g. #19) sit at VOUT as the external
-* output network. C_out moved from the superseded record's 1uF (DR-002's
-* recommended nominal) to 4.7uF (DR-002's own ratified window ceiling,
-* still 0-500mOhm ESR -- not a new number, not outside the window) in
-* issue #119, specifically to address the row's peak-excursion clause:
-* undershoot_v/overshoot_v are charge-limited (Q=C*dV against the loop's
-* finite large-signal response time), so a larger in-window C_out reduces
-* peak excursion roughly in proportion. See design/README.md's "#119"
-* section and spec/decision-records/DR-002's append for the full
-* per-corner evidence and for the row's OTHER clause (recovery time),
-* which this C_out choice does not and cannot fix -- see that writeup.
+* ratified spec's load-transient stimulus literally. The output network is
+* walked over a finite grid of DR-002's ratified window (issue #313, Phase A):
+* C_OUT in {0.33uF, 4.7uF} x R_ESR in {0, 10mOhm, 500mOhm}, six legs that
+* include the 4.7uF / 10mOhm reference point of #119. The netlist below holds
+* that reference point (COUT 4.7u, RESR 10m, CDIR 0); experiment.json's
+* `window_grid` makes corner-run.py emit, per leg, `reset` + `save all` + the
+* leg's own `alter` cards + its own `tran` and measurements, so no leg inherits
+* charge, solver state or parameter values from another (each `tran` re-solves
+* the `.ic`-seeded operating point of IC_SEED, below). The grid SAMPLES the
+* window; it is not a continuous proof (see experiment.json).
+*
+* Zero-ESR boundary (DR-002 has NO minimum ESR): ngspice cannot take a 0 ohm
+* series resistor and a tiny stand-in resistor would silently replace the
+* boundary. Instead the bench carries two capacitor branches at VOUT: COUT in
+* series with RESR (the ESR > 0 legs), and CDIR wired directly from VOUT to
+* ground with NO series element. In an ESR = 0 leg CDIR carries the full C_out
+* and COUT is set to 0 F (an open circuit: RESR, parked at its netlist 10mOhm,
+* then carries no current); in every ESR > 0 leg CDIR is 0 F. Electrically the
+* ESR = 0 leg is exactly an ideal capacitor on VOUT.
+*
+* History: C_out moved from the superseded record's 1uF to 4.7uF (DR-002's
+* window ceiling) in issue #119 to address the row's peak-excursion clause:
+* undershoot/overshoot are charge-limited (Q=C*dV against the loop's finite
+* large-signal response time). See design/README.md's "#119" section and
+* spec/decision-records/DR-002's append for the per-corner evidence and for the
+* row's OTHER clause (recovery time), whose relationship to C_out runs the
+* opposite way.
 *
 * Known-immature-design caveat (see design/README.md "Known gaps"): this
 * schematic's compensation (C_COMP/C_CL) remains an unsized placeholder,
@@ -107,7 +120,7 @@ T {load-transient testbench -- exercises design/ldo_3v3in_1v8out.sch (#14)
 via its companion subcircuit symbol design/ldo_3v3in_1v8out.sym
 VIN/EN = 'vsup' (corner runner); VREF = 1.2V placeholder (see design/README.md)
 I_LOAD: PULSE 1mA<->50mA, 1us edges (spec/target-spec.md ratified "Load transient" row)
-C_OUT/R_ESR: DR-002 ratified window's 4.7uF ceiling / representative ESR point (issue #119; see design/README.md)} -700 -650 0 0 0.3 0.3 {}
+C_OUT/R_ESR/C_DIR: netlist holds the 4.7uF / 10mOhm reference; experiment.json window_grid walks DR-002's window (issue #313)} -700 -650 0 0 0.3 0.3 {}
 
 * ---- VIN / EN (tied to the corner runner's supply) ----
 C {devices/vsource.sym} -600 -300 0 0 {name=VVIN value='vsup' savecurrent=true}
@@ -138,8 +151,11 @@ C {devices/lab_pin.sym} 600 -370 0 0 {name=p12 lab=VESR}
 C {devices/res.sym} 600 -250 0 0 {name=RESR value=10m m=1}
 C {devices/lab_pin.sym} 600 -280 0 0 {name=p13 lab=VESR}
 C {devices/lab_pin.sym} 600 -220 0 0 {name=p14 lab=0}
-T {R_ESR: 10mOhm -- a representative point inside DR-002's ratified
-0-500mOhm window (no minimum ESR); not a sweep of the window itself} 640 -300 0 0 0.2 0.2 {}
+C {devices/capa.sym} 480 -400 0 0 {name=CDIR m=1 value=0 footprint=1210 device="zero-ESR boundary branch (0 F except in the ESR=0 legs; see header)"}
+C {devices/lab_pin.sym} 480 -430 0 0 {name=p17 lab=VOUT}
+C {devices/lab_pin.sym} 480 -370 0 0 {name=p18 lab=0}
+T {R_ESR: 10mOhm reference ESR in the netlist; the deck walks 0 / 10m / 500mOhm
+(DR-002: 0-500mOhm, no minimum ESR). CDIR (0 F here) is the ESR=0 boundary branch} 640 -300 0 0 0.2 0.2 {}
 
 * ---- load: I_LOAD steps 1mA -> 50mA -> 1mA, 1us edges ----
 C {devices/isource.sym} 900 -300 0 0 {name=ILOAD value="PULSE(1m 50m 1m 1u 1u 1m 4m)"}

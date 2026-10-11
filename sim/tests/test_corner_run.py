@@ -981,5 +981,169 @@ class TestLocalPathUnchangedByBatchWork(BatchHarness):
 
 
 
+class TestWindowGrid(unittest.TestCase):
+    """Issue #313: COUT/ESR window-grid expansion, deck walk and conservative aggregation.
+
+    PDK-free: reads the real sim/load-transient manifest, builds decks and
+    results by hand, and never invokes ngspice.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        cls.exp = corner_run.load_experiment(SIM_DIR / "load-transient")
+        cls.corners = [
+            corner_run.Corner("tt", 27, 3.3),
+            corner_run.Corner("ss", -40, 2.97),
+        ]
+
+    def good_results(self):
+        """One fully present, passing result per corner (values well inside bounds)."""
+        out = []
+        for corner in self.corners:
+            checks = []
+            for m in self.exp.measurements:
+                checks.append(
+                    {"name": m.name, "value": 0.001, "min": m.min, "max": m.max,
+                     "pass": True, "reason": ""}
+                )
+            out.append({"corner_id": corner.id, "pass": True, "measurements": checks})
+        return out
+
+    def cov(self, results):
+        return corner_run.grid_coverage(self.exp, results, self.corners)
+
+    def test_grid_is_declared_and_covers_dr002_corners_and_reference(self):
+        legs = {(l["cout_f"], l["esr_ohm"]) for l in corner_run.window_legs(self.exp.raw)}
+        self.assertEqual(legs, {(c, e) for c in (0.33e-6, 4.7e-6) for e in (0, 0.01, 0.5)})
+        self.assertIn((4.7e-6, 0.01), legs)  # the pre-#313 reference point
+        self.assertIn("NOT a continuous-window proof", self.exp.raw["window_grid"]["sampling_statement"])
+
+    def test_bounds_unchanged_by_the_grid(self):
+        bounded = {m.name.split("__")[0]: (m.max) for m in self.exp.measurements if m.max is not None}
+        self.assertEqual(bounded["undershoot_rise_v"], 0.15)
+        self.assertEqual(bounded["overshoot_fall_v"], 0.15)
+        self.assertEqual(bounded["recovery_rise_us"], 20)
+        self.assertEqual(bounded["recovery_fall_us"], 20)
+
+    def test_measurements_carry_coordinates_and_both_directions(self):
+        n_legs = len(corner_run.window_legs(self.exp.raw))
+        leg_ms = [m for m in self.exp.measurements if m.leg]
+        self.assertEqual(len(leg_ms), 7 * n_legs)
+        self.assertEqual({m.direction for m in leg_ms}, {"rise", "fall"})
+        zero = [m for m in leg_ms if m.esr_ohm == 0 and m.cout_f == 0.33e-6]
+        self.assertTrue(zero and all(m.name.endswith("__c330n_esr0") for m in zero))
+
+    def test_deck_walks_every_leg_with_independent_reset_and_alters(self):
+        pdk = mock.Mock(lib_file="/x/sky130.lib.spice")
+        deck = corner_run.build_deck(self.exp, pdk, self.corners[0], ["* body"])
+        lines = deck.splitlines()
+        n_legs = len(corner_run.window_legs(self.exp.raw))
+        self.assertEqual(lines.count("reset"), n_legs)
+        self.assertEqual(lines.count("tran 200n 3m"), n_legs)
+        self.assertEqual(sum(1 for l in lines if l.startswith("alter cdir")), n_legs)
+        # every leg re-applies ALL three alters between its reset and its tran
+        for i, l in enumerate(lines):
+            if l == "reset":
+                self.assertEqual(
+                    [x.split("=")[0].strip() for x in lines[i + 2 : i + 5]],
+                    ["alter cout", "alter resr", "alter cdir"],
+                )
+
+    def test_zero_esr_leg_uses_direct_capacitor_not_a_resistor(self):
+        lines = corner_run.window_leg_lines(self.exp, ["c4u7_esr0"])
+        self.assertIn("alter cdir = 4.7e-06", lines)
+        self.assertIn("alter cout = 0.0", lines)  # series branch open
+        nonzero = corner_run.window_leg_lines(self.exp, ["c4u7_esr500m"])
+        self.assertIn("alter cdir = 0.0", nonzero)
+        self.assertIn("alter cout = 4.7e-06", nonzero)
+        self.assertIn("alter resr = 0.5", nonzero)
+
+    def test_leg_order_override_reorders_blocks_only(self):
+        ids = [l["id"] for l in corner_run.window_legs(self.exp.raw)]
+        fwd = corner_run.window_leg_lines(self.exp, ids)
+        rev = corner_run.window_leg_lines(self.exp, ids[::-1])
+        self.assertNotEqual(fwd, rev)
+        self.assertEqual(sorted(fwd), sorted(rev))
+
+    def test_full_grid_passes(self):
+        cov = self.cov(self.good_results())
+        self.assertTrue(cov["complete"])
+        self.assertTrue(cov["pass"])
+        self.assertEqual(cov["conditions_passing"], cov["conditions_expected"])
+        self.assertEqual(cov["conditions_expected"], 2 * 7 * 6)
+
+    def test_missing_leg_is_not_a_pass(self):
+        results = self.good_results()
+        results[0]["measurements"] = [
+            c for c in results[0]["measurements"] if not c["name"].endswith("__c330n_esr0")
+        ]
+        cov = self.cov(results)
+        self.assertFalse(cov["pass"])
+        self.assertFalse(cov["complete"])
+        self.assertEqual({f["status"] for f in cov["failures"]}, {"missing"})
+        self.assertEqual({f["leg"] for f in cov["failures"]}, {"c330n_esr0"})
+
+    def test_missing_corner_is_not_a_pass(self):
+        cov = self.cov(self.good_results()[:1])
+        self.assertFalse(cov["pass"])
+        self.assertEqual({f["corner_id"] for f in cov["failures"]}, {self.corners[1].id})
+
+    def test_one_failed_condition_is_not_a_pass(self):
+        results = self.good_results()
+        bad = next(c for c in results[1]["measurements"] if c["name"] == "recovery_fall_us__c4u7_esr10m")
+        bad.update(value=25.0, **{"pass": False, "reason": "above max 20"})
+        cov = self.cov(results)
+        self.assertFalse(cov["pass"])
+        self.assertTrue(cov["complete"])  # present and finite, but failing
+        self.assertEqual(cov["conditions_passing"], cov["conditions_expected"] - 1)
+        (f,) = cov["failures"]
+        self.assertEqual((f["leg"], f["direction"], f["cout_f"], f["esr_ohm"]), ("c4u7_esr10m", "fall", 4.7e-6, 0.01))
+
+    def test_stale_pass_flag_cannot_hide_an_out_of_bound_value(self):
+        results = self.good_results()
+        bad = next(c for c in results[0]["measurements"] if c["name"] == "undershoot_rise_v__c330n_esr10m")
+        bad["value"] = 0.2  # still flagged pass=True
+        self.assertFalse(self.cov(results)["pass"])
+
+    def test_nan_and_unparsable_values_are_not_a_pass(self):
+        for value in (float("nan"), float("inf"), None):
+            results = self.good_results()
+            bad = next(c for c in results[0]["measurements"] if c["name"] == "overshoot_fall_v__c4u7_esr0")
+            bad["value"] = value  # a NaN compares False to every bound
+            cov = self.cov(results)
+            self.assertFalse(cov["pass"], value)
+            self.assertFalse(cov["complete"], value)
+
+    def test_run_corner_flags_nan_measurement(self):
+        stdout = "meas_undershoot_rise_v__c330n_esr0 = nan\n"
+        proc = subprocess.CompletedProcess([], 0, stdout=stdout, stderr="")
+        pdk = mock.Mock(lib_file="/x/l")
+        with tempfile.TemporaryDirectory() as td, \
+             mock.patch.object(corner_run.subprocess, "run", return_value=proc):
+            res = corner_run.run_corner(self.exp, pdk, self.corners[0], ["* b"], Path(td), None, 5)
+        self.assertFalse(res["pass"])
+        chk = next(c for c in res["measurements"] if c["name"] == "undershoot_rise_v__c330n_esr0")
+        self.assertFalse(chk["pass"])
+        self.assertEqual((chk["leg"], chk["direction"]), ("c330n_esr0", "rise"))
+
+    def test_non_finite_value_fails_even_without_bounds(self):
+        self.assertFalse(corner_run._finite_number(float("nan")))
+
+    def test_record_markdown_discloses_incomplete_coverage(self):
+        results = self.good_results()
+        results[0]["measurements"] = results[0]["measurements"][:-1]
+        text = "\n".join(corner_run.render_window_grid(self.cov(results)))
+        self.assertIn("INCOMPLETE", text)
+        self.assertIn("grid verdict **FAIL**", text)
+        self.assertIn("finite sample", text)
+        self.assertIn("PVT coverage and COUT/ESR coverage are separate axes", text)
+        self.assertIn("COUT=", text)
+
+    def test_experiments_without_a_grid_are_unaffected(self):
+        exp = corner_run.load_experiment(SIM_DIR / "pdk-smoke")
+        self.assertIsNone(corner_run.grid_coverage(exp, [], self.corners))
+        self.assertEqual(corner_run.window_leg_lines(exp), [])
+
+
 if __name__ == "__main__":
     unittest.main()
