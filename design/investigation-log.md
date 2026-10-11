@@ -3140,3 +3140,42 @@ ngspice -b probeA.deck.spice                    # then: python3 analyze.py probe
 
 Each is one local ngspice run (3 s); no grid. Follow-up and campaign
 requirements: #339 (linked from #114).
+
+### #339: dropout screening (tt / 27 C / 3.30 V / 50 mA) — pass-device capability is not the limit; ideal tail + no clamps together give a valid 0.164 V (measured, single condition, 2026-10-11)
+
+**Scope.** One condition only (tt / 27 C / VIN start 3.30 V / 50 mA ideal sink), local sequential
+single-run probes, same deck/stimulus/solver/crossing as #323 (baseline deck byte-identical; DUT,
+testbench and manifest unchanged since). Ideal sources and disabled protection are causal diagnostics,
+not adoptable circuits. No spec, DR, production or record change; the ratified `< 300 mV` row, the PVT
+gap (#114) and the unchanged FAIL verdict stand. Evidence and scripts:
+`sim/dropout-vs-load/diagnostics/issue-339/` (README, `commands.sh`, `provenance.json`).
+
+**Findings.**
+
+- *Isolated M_PASS bench (validated).* Replay of six saved #323 terminal triples reproduces Id and
+  model Vds to ~1e-8 relative (declared tolerance 2e-3 / 1 mV) and the rounded 1.446 V / 0.389 V /
+  ~49.7 mA figures within the predeclared 0.145 mA half-LSB tolerance. (#323's "Vsg 1.446" is
+  model-internal; terminal Vsg is 1.4503 V; the 49.7 mA is 50 mA less ~0.27 mA from COUT on the ramp.)
+  The 50 mA contour (source 2.16 V): Vsd = 0.419 V at Vg 0.714 V, 0.291 V at Vg 0.646 V, 0.168 V at Vg
+  0.357 V, 0.122 V at Vg 0 V; terminal vs model-internal Vds differ by a constant 9.2 mV (series
+  resistance ~0.184 ohm), which explains the known ~9 mV gap. Ample gate drive attains < 300 mV with
+  the existing pass device (no resizing); at VIN = 2.064 V it needs Vsg >~ 1.51 V (gate <~ 0.55 V).
+- *Interventions (all valid, all gates pass).* baseline 0.397658 V; ideal tail 0.381108 V; no clamps
+  0.362555 V (A and B reproduce #323 exactly); **both: 0.164028 V** (-233.6 mV vs -52 mV additive), with
+  EA_OUT at 0.107 V and M_MIR2 entering triode at the crossing. The effects are strongly non-additive:
+  each failure mode (tail headroom collapse; clamp pull-up on EA_OUT) masks the other. Cross-check: the
+  contour at the A+B terminal Vsg (1.821 V) gives 0.165 V vs measured 0.164 V. Auxiliary rail consumption
+  (separate from VIN): 3.2744 uA (the ideal tail), reported, not excludable from Iq.
+- *Probe C (frozen bias)* was conditional on a valid residual >= 0.300 V; not triggered, not run.
+- Reproduction: baseline and combined re-runs byte-identical; A/B/baseline match #323 to printed digits.
+
+**Hypothesis status.** Pass-device capability as the floor: rejected at tt / 27 C. Either single
+intervention sufficing: rejected. Combined tail-headroom + clamp lever: advanced (screen only).
+
+**Remaining before any claim.** (1) A realizable candidate (tail surviving VIN ~1.9 V; clamp trip not
+tied to the VIN-scaled bias at low VIN, current limiting preserved); (2) separate human-approved
+production adoption, and a new decision record for any DR-011 sizing departure (none evidenced);
+(3) a dropout-vs-load off-host adapter qualified by a small probe with retained runner evidence
+(current `BATCH_ALLOWLIST`: `pdk-smoke`, `load-transient`; failed submits are recorded, no local-grid
+fallback); (4) paired 45-point baseline/candidate PVT with regenerated characterization and disclosed
+freshness/coverage/solver failures. ss/125 C and all other corners remain unmeasured.
