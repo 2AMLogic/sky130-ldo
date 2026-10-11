@@ -97,7 +97,7 @@ def parse_points(log: str) -> dict:
     segs = re.split(r"^PT(\d+)_(OP|AC)\s*$", log, flags=re.M)
     # segs: [pre, n, kind, body, n, kind, body ...]
     for i in range(1, len(segs), 3):
-        n, kind, body = int(segs[i]), segs[i + 1], segs[i + 2]
+        n, _kind, body = int(segs[i]), segs[i + 1], segs[i + 2]
         d = res.setdefault(n, {})
         for name in ("vseed", "ivin", "fc", "phc", "gmdb", "dcg"):
             m = re.search(rf"^{name}\s*=\s*({NUM})\s*$", body, flags=re.M)

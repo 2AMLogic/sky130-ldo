@@ -44,6 +44,7 @@ the full per-point tables (PM / GM / crossover for every run) are in [`tables.md
   other early loop-gain runs) and the `repro_*` runs solely because of the later iq-bench-only fix; the
   loop-gain code path is unchanged and `repro_*` reproduce `base_tt` / `rcz0p5_tt` bit-for-bit on every
   PM, GM, crossover, VOUT and Iq value with identical deck and netlist hashes.
+- Lint-only edit (review fix, PR #344): `_kind` rename at line 100 to satisfy ruff F841 changes the driver SHA-256 to `71d58d8aa70e65bb63c0d556cf6a77314104aab54b8f5d652dfb9dc9410498b2`; the loop-gain code path is unchanged and no run was repeated, so all recorded `result.json` driver hashes (earlier driver) are left as-is.
 
 ## Sampled coverage (what was and was not run)
 
