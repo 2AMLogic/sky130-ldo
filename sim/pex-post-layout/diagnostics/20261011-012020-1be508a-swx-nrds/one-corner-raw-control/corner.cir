@@ -1,0 +1,14 @@
+* klt sim -- generated corner deck, do not edit
+.lib /home/ubuntu/.volare/sky130A/libs.tech/combined/sky130.lib.spice tt
+.include /home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-277/sim/build/pex-1corner-x344-raw/tb_pex_post_layout.spice
+.temp 27
+.meas dc vout_light_load_v FIND V(VOUT) AT=1m
+.meas dc vout_full_load_v FIND V(VOUT) AT=50m
+.meas dc vin_minus_vout_full_load_v FIND PAR('V(VIN)-V(VOUT)') AT=50m
+.control
+save all
+alter vvin=3.3
+dc Iload 1m 50m 49m
+quit
+.endc
+.end

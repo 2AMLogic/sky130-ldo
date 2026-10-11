@@ -8,6 +8,7 @@ render-pex-record.py. Both files are hyphenated, so they are loaded by path
 from __future__ import annotations
 
 import importlib.util
+import re
 import sys
 import unittest
 from pathlib import Path
@@ -89,6 +90,88 @@ class SchematicDeviceBodyExprTests(unittest.TestCase):
     def test_comment_mentioning_expr_is_not_a_failure(self):
         out = gen.schematic_device_body("* note expr('x') in a comment\nR1 a b 1\n.end\n")
         self.assertIn("R1 a b 1", out)
+
+
+def _statements(text: str) -> list[list]:
+    """Non-comment SPICE statements, continuations joined, `k=v` numerics as floats."""
+    joined = re.sub(r"\n\+", " ", text)
+    out = []
+    for line in joined.splitlines():
+        if not line.strip() or line.lstrip().startswith("*"):
+            continue
+        toks: list = []
+        for tok in line.split():
+            if "=" in tok:
+                k, v = tok.split("=", 1)
+                try:
+                    toks.append((k.lower(), float(v)))
+                except ValueError:
+                    toks.append((k.lower(), v))
+            else:
+                toks.append(tok)
+        out.append(toks)
+    return out
+
+
+def _close(a, b) -> bool:
+    if isinstance(a, tuple) and isinstance(b, tuple) and isinstance(a[1], float) and isinstance(b[1], float):
+        return a[0] == b[0] and abs(a[1] - b[1]) <= 1e-5 * max(1.0, abs(b[1]))
+    return a == b
+
+
+class Xschem344FixtureTests(unittest.TestCase):
+    """The design's real xschem 3.4.4 netlist (the `swx_nrds` failure input, #277).
+
+    Fixtures are the append-only diagnosis evidence: the same schematic
+    netlisted by xschem 3.4.4 (raw `expr('...')` geometry) and 3.4.7 (numbers).
+    Normalizing the 3.4.4 body must reproduce the 3.4.7 body exactly.
+    """
+
+    DIAG = SIM_DIR / "pex-post-layout" / "diagnostics" / "20261011-012020-1be508a-swx-nrds" / "xschem-netlists"
+
+    def setUp(self):
+        self.raw = (self.DIAG / "xschem-3.4.4.ldo_3v3in_1v8out.spice").read_text()
+        self.ref = (self.DIAG / "xschem-3.4.7.ldo_3v3in_1v8out.spice").read_text()
+
+    def test_fixture_has_the_failing_shape(self):
+        self.assertGreater(len(gen.find_unresolved_exprs(self.raw)), 0)
+        self.assertEqual(gen.find_unresolved_exprs(self.ref), [])
+
+    def test_normalized_344_body_equals_347_body(self):
+        got = _statements(gen.schematic_device_body(self.raw))
+        want = _statements(gen.schematic_device_body(self.ref))
+        self.assertEqual(len(got), len(want))
+        for g, w in zip(got, want):
+            self.assertEqual(len(g), len(w), f"{g} != {w}")
+            self.assertTrue(all(_close(x, y) for x, y in zip(g, w)), f"{g} != {w}")
+
+    def test_347_body_is_noop(self):
+        body, n = gen.eval_xschem_exprs(self.ref)
+        self.assertEqual(n, 0)
+        self.assertEqual(body, self.ref)
+
+    def test_multi_finger_device_values(self):
+        # nf=2, W=10: the formulae's int((nf+1)/2) vs int((nf+2)/2) asymmetry.
+        raw = (
+            "XM1 a b c 0 sky130_fd_pr__nfet_g5v0d10v5 L=2 W=10 nf=2 "
+            "ad=expr('int((@nf + 1)/2) * @W / @nf * 0.29')\n"
+            "+ as=expr('int((@nf + 2)/2) * @W / @nf * 0.29') "
+            "pd=expr('2*int((@nf + 1)/2) * (@W / @nf + 0.29)') "
+            "ps=expr('2*int((@nf + 2)/2) * (@W / @nf + 0.29)')\n"
+            "+ nrd=expr('0.29 / @W ') nrs=expr('0.29 / @W ') sa=0 sb=0 sd=0 mult=1 m=1\n"
+            ".end\n"
+        )
+        out = gen.schematic_device_body(raw)
+        for frag in ("ad=1.45", "as=2.9", "pd=10.58", "ps=21.16", "nrd=0.029", "nrs=0.029"):
+            self.assertIn(frag, out)
+
+    def test_one_unresolvable_device_fails_whole_body(self):
+        # A single unknown @param among otherwise-resolvable devices must not be
+        # silently dropped or partially emitted.
+        bad = self.raw.replace("@W / @nf * 0.29')", "@W / @nf * @bogus')", 1)
+        with self.assertRaises(SystemExit) as ctx:
+            gen.schematic_device_body(bad)
+        self.assertIn("unresolved xschem expr", str(ctx.exception))
 
 
 class WrapPinsTests(unittest.TestCase):
