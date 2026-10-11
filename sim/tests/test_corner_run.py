@@ -14,6 +14,7 @@ from __future__ import annotations
 import datetime
 import hashlib
 import importlib.util
+import math
 import re
 import subprocess
 import sys
@@ -1009,7 +1010,7 @@ class TestWindowGrid(unittest.TestCase):
             checks = []
             for m in self.exp.measurements:
                 checks.append(
-                    {"name": m.name, "value": 0.001, "min": m.min, "max": m.max,
+                    {"name": m.name, "value": 1.8 if m.name.startswith("vout_pre_v") else 0.001, "min": m.min, "max": m.max,
                      "pass": True, "reason": ""}
                 )
             out.append({"corner_id": corner.id, "pass": True, "measurements": checks})
@@ -1034,8 +1035,8 @@ class TestWindowGrid(unittest.TestCase):
     def test_measurements_carry_coordinates_and_both_directions(self):
         n_legs = len(corner_run.window_legs(self.exp.raw))
         leg_ms = [m for m in self.exp.measurements if m.leg]
-        self.assertEqual(len(leg_ms), 7 * n_legs)
-        self.assertEqual({m.direction for m in leg_ms}, {"rise", "fall"})
+        self.assertEqual(len(leg_ms), 8 * n_legs)
+        self.assertEqual({m.direction for m in leg_ms}, {"rise", "fall", "pre"})
         zero = [m for m in leg_ms if m.esr_ohm == 0 and m.cout_f == 0.33e-6]
         self.assertTrue(zero and all(m.name.endswith("__c330n_esr0") for m in zero))
 
@@ -1076,7 +1077,7 @@ class TestWindowGrid(unittest.TestCase):
         self.assertTrue(cov["complete"])
         self.assertTrue(cov["pass"])
         self.assertEqual(cov["conditions_passing"], cov["conditions_expected"])
-        self.assertEqual(cov["conditions_expected"], 2 * 7 * 6)
+        self.assertEqual(cov["conditions_expected"], 2 * 8 * 6)
 
     def test_missing_leg_is_not_a_pass(self):
         results = self.good_results()
@@ -1446,7 +1447,7 @@ class FakeStepKlt(FakeKlt):
 
     def __init__(self, test, pin, value_of=None, **kw):
         super().__init__(test, pin, **kw)
-        self.value_of = value_of or (lambda step, name, p, t: 0.01)
+        self.value_of = value_of or (lambda step, name, p, t: 1.8 if name == "vout_pre_v" else 0.01)
 
     def __call__(self, cmd, **kw):
         self.calls.append((cmd, kw))
@@ -1531,7 +1532,7 @@ class TestBatchWindowGrid(BatchHarness):
         self.assertTrue(all(m["spice"].startswith(".meas tran ") for m in esr0["measurements"][:6]))
         exprs = {m["name"]: m["expr"] for m in esr0["measurements"][6:]}
         self.assertEqual(sorted(exprs), sorted(
-            ["undershoot_rise_v", "overshoot_rise_v", "undershoot_fall_v", "overshoot_fall_v",
+            ["vout_pre_v", "undershoot_rise_v", "overshoot_rise_v", "undershoot_fall_v", "overshoot_fall_v",
              "recovery_rise_us", "recovery_fall_us", "settle_err_50ma_pct"]))
         for helper in ("outband", "w_rise", "w_fall", "vpre", "dev", "band"):
             for e in exprs.values():
@@ -1559,7 +1560,7 @@ class TestBatchWindowGrid(BatchHarness):
             self.assertTrue(all(c.get("leg") and c.get("direction") for c in res["measurements"]))
         g = rec["window_grid"]
         self.assertTrue(g["complete"] and g["pass"])
-        self.assertEqual(g["conditions_expected"], 45 * 7 * 6)
+        self.assertEqual(g["conditions_expected"], 45 * 8 * 6)
         log = (self.exp_dir / "corners" / rec["record_id"] / "tt_27c_3.30v.log").read_text()
         for leg in self.legs():
             self.assertIn(f"window leg {leg}", log)
@@ -1571,7 +1572,7 @@ class TestBatchWindowGrid(BatchHarness):
         def value_of(step, name, p, t):
             if step == "c330n_esr0" and name == "undershoot_rise_v":
                 return 0.19  # above the ratified 150 mV
-            return 0.01
+            return 1.8 if name == "vout_pre_v" else 0.01
 
         def drop(resp, req):
             if req["analysis_steps"][0]["name"] == "c4u7_esr500m":
@@ -1630,6 +1631,80 @@ class TestBatchWindowGrid(BatchHarness):
         exp = corner_run.load_experiment(self.exp_dir)
         deck = corner_run.build_deck(exp, mock.Mock(lib_file="/x/l"), corner_run.Corner("tt", 27, 3.3), ["* b"])
         self.assertEqual(deck.splitlines().count("reset"), 6)
+
+
+class TestLoadTransientBaselineGate(BatchHarness):
+    """Issue #372: every COUT/ESR leg must show an in-window absolute pre-step
+    output; the relative measurements alone cannot validate the baseline."""
+
+    SLUG = "load-transient"
+    NETLIST = LT_NETLIST
+
+    def make_fake(self, **kw):
+        return FakeStepKlt(self, self.pin, **kw)
+
+    @classmethod
+    def setUpClass(cls):
+        cls.exp = corner_run.load_experiment(SIM_DIR / "load-transient")
+        cls.base = [m for m in cls.exp.measurements if m.name.startswith("vout_pre_v__")]
+
+    def grade_leg(self, v_pre, rel=0.0):
+        """Grade one leg: baseline = v_pre; every relative measurement = rel."""
+        out = {}
+        for m in self.exp.measurements:
+            if m.leg != "c4u7_esr10m":
+                continue
+            v = v_pre if m.name.startswith("vout_pre_v__") else rel
+            out[m.name.split("__")[0]] = corner_run.grade_bounds(m, v)[0]
+        return out
+
+    def test_every_leg_carries_exact_inclusive_bounds(self):
+        legs = [l["id"] for l in corner_run.window_legs(self.exp.raw)]
+        self.assertEqual([m.leg for m in self.base], legs)
+        for m in self.base:
+            self.assertEqual((m.min, m.max, m.expr), (1.764, 1.836, "v_pre"))
+            self.assertTrue(m.min_inclusive and m.max_inclusive)
+
+    def test_flat_3v3_cannot_pass_though_relative_checks_do(self):
+        res = self.grade_leg(3.3)
+        self.assertFalse(res.pop("vout_pre_v"))
+        self.assertTrue(res and all(res.values()))  # zero-deviation waveform passes every relative check
+
+    def test_undervoltage_baseline_fails(self):
+        self.assertFalse(self.grade_leg(1.0)["vout_pre_v"])
+
+    def test_endpoints_pass_and_just_outside_fails(self):
+        for v in (1.764, 1.8, 1.836):
+            self.assertTrue(self.grade_leg(v)["vout_pre_v"], v)
+        for v in (math.nextafter(1.764, 0), math.nextafter(1.836, 9), float("nan"), None):
+            self.assertFalse(self.grade_leg(v)["vout_pre_v"], v)
+
+    def test_local_deck_measures_v_pre_for_every_leg(self):
+        deck = corner_run.build_deck(self.exp, mock.Mock(lib_file="/x/l"), corner_run.Corner("tt", 27, 3.3), ["* b"])
+        n = len(self.base)
+        self.assertEqual(deck.count("meas tran v_pre AVG v(vout) FROM=0.800m TO=0.999m"), n)
+
+    def test_batch_requests_carry_per_leg_baseline_and_bounds(self):
+        rc, _, _ = self.run_main("--backend", "batch", *QUICK, "--no-write")
+        reqs = [json.loads(Path(c[0][2]).read_text()) for c in self.klt_calls()]
+        self.assertEqual(len(reqs), 18)
+        for r in reqs:
+            (step,) = r["analysis_steps"]
+            ms = {m["name"]: m for m in step["measurements"]}
+            self.assertIn("v_pre", ms)
+            self.assertEqual(ms["vout_pre_v"]["expr"], "v_pre")
+
+    def test_failed_baseline_is_retained_in_import_and_grid_accounting(self):
+        def value_of(step, name, p, t):
+            if name == "vout_pre_v":
+                return 3.3 if step == "c330n_esr0" else 1.8
+            return 0.0  # every relative measurement "passes"
+
+        self.fake = FakeStepKlt(self, self.pin, value_of=value_of)
+        rc, out, _ = self.run_main("--backend", "batch", *QUICK, "--no-write")
+        self.assertEqual(rc, 2)
+        self.assertIn("overall  : FAIL", out)
+        self.assertIn("vout_pre_v__c330n_esr0", out)
 
 
 class TestBatchWindowGridTranslator(unittest.TestCase):
