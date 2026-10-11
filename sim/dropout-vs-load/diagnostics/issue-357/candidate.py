@@ -32,6 +32,9 @@ Candidate (joint change, both halves always applied together):
      XM_PBR is a copy of XM_BIASP1's geometry, so at 3.3 V the reference current
      is set to ~XM_BIASP1's baseline current (the 3.3 V trip point is preserved,
      not re-targeted).
+  C. (rev 1 only) EN-low pull-ups XM_ENP6 (PBR) and XM_ENP7 (ND2), copies of XM_ENP5,
+     so every new PMOS gate node is defined when disabled -- the committed design's own
+     pattern (XM_ENP2/ENP3/ENP4/ENP5/ENP). See REV for the rev1 bias re-sizing.
 
 Untouched (verified by check_candidate): XM_PASS (geometry and connections), every
 external port, R_BIAS/NB/BIASP chain, XM_SENSE/XM_CLN1/XM_CLN2/XM_CLIM/XM_ENP3/C_CL,

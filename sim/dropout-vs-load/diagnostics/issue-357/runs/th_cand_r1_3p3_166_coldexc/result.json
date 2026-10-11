@@ -1,0 +1,120 @@
+{
+ "bench": "thermal",
+ "candidate_invariant_problems": [],
+ "candidate_rev": 1,
+ "command": "python3 -B probe.py --bench thermal --variant cand --rev 1 --supply 3.3 --temp 166 --scenario cold_exc --run-id th_cand_r1_3p3_166_coldexc",
+ "condition": {
+  "device_temp_imposed_c": 166.0,
+  "electrical_temp_c": 27.0,
+  "process": "tt",
+  "scenario": "cold_exc",
+  "supply_v": 3.3
+ },
+ "data_sha256": "93c8963de76e9f2118eba310816590a909e1778a7b758eae1f36d5237ee6063c",
+ "edit_notes": [
+  "removed XM_IN2S",
+  "removed XM_MIRP2",
+  "removed XM_MIRP1",
+  "removed XM_MIR4",
+  "removed XM_MIR3",
+  "removed XM_MIR2",
+  "removed XM_MIR1",
+  "removed XM_IN2",
+  "removed XM_IN1",
+  "removed XM_TAIL",
+  "rewired XM_ENP5: 'XM_ENP5 PB EN VIN VIN' -> 'XM_ENP5 ND1 EN VIN VIN'",
+  "rewired XM_CLP: 'XM_CLP CL_CMP BIASP VIN VIN' -> 'XM_CLP CL_CMP PBR VIN VIN'",
+  "added XM_VRF",
+  "added XR_VR",
+  "added XM_PBR",
+  "added XM_PBN",
+  "added XM_NBR",
+  "added XM_NTAIL",
+  "added XM_NIN1",
+  "added XM_NIN1C",
+  "added XM_NIN2",
+  "added XM_NIN2S",
+  "added XM_PD1",
+  "added XM_PO1",
+  "added XM_PD2",
+  "added XM_PO2",
+  "added XM_NMD",
+  "added XM_NMO",
+  "added XM_ENP6",
+  "added XM_ENP7"
+ ],
+ "elapsed_s": 16.61,
+ "issue": 357,
+ "ngspice_exit": 0,
+ "provenance": {
+  "candidate_py_sha256": "62eb999cacc647a83ff0931272d6424a1c53c915879b370dbdd94f2303209581",
+  "deck_sha256": "c9367cb7bed8a117e9c2e2ae0ac87b20bd02cb3f7ad0719fd5afcb4333831651",
+  "driver_sha256": "6e74a95f970ac4b83122da96a949b0ed3f3127ff04422a5e462e1f26724dc6c2",
+  "dut_sch_sha256": "1378c2d440e6ffc2224091972a162357c2634600e6e56cb51e4d6f96159fd2e3",
+  "experiment_json_sha256": "1300f814d87a9c3c412f99eed7f0950006312f12f6883b205951f9a12549d37a",
+  "netlist_edited_sha256": "c248398838b77a02890c089d53e2aace24ef2c4f62e5a4fab763f4294f839ad2",
+  "netlist_raw_sha256": "df78e054e429b23e609de809883d636d273b7060c9ba37ce2f019f3d6cdfd768",
+  "pdk": {
+   "lib_sha256": "48de7c677e2c6e7d09b2559279de9f818be71010a4aa933d728eb4db3b133c84",
+   "matches_pin": true,
+   "open_pdks_commit": "c6d73a35f524070e85faff4a6a9eef49553ebc2b"
+  },
+  "probe_common_sha256": "937335c680578f53b559640237647cbb6f8e6873b6c7310b3dcf0f96481467cd",
+  "source_commit": "ddc570514708935b323988a6cdf4d23550b82761",
+  "spiceinit_sha256": "3cf811e1ae5fc75dd0bbe56205016c387c3538304be0cbdab7cb658fb9adf960",
+  "testbench_sha256": "138f832a42b41064db6c75816ad5a6db7904e162ea793e5588be4503b4143ea1",
+  "tools": {
+   "declared": {
+    "ngspice": "42",
+    "xschem": "3.4.4"
+   },
+   "ngspice": "ngspice-46 : Circuit level simulation program",
+   "on_baseline": false,
+   "platform": "Linux 7.0.0-1014-aws x86_64",
+   "python": "3.12.3",
+   "xschem": "XSCHEM V3.4.7"
+  }
+ },
+ "run_id": "th_cand_r1_3p3_166_coldexc",
+ "solver_diagnostic": null,
+ "thermal": {
+  "after_en_reenable_tripped": false,
+  "cold_start_tripped": true,
+  "ea_out_v": {
+   "19": 3.296,
+   "39": 2.5123,
+   "90": 2.9698,
+   "165": 3.2157
+  },
+  "forced_tripped": false,
+  "hold_tripped": false,
+  "ipass_ua": {
+   "19": 0.1341,
+   "39": 5359.0386,
+   "90": 16.0984,
+   "165": 0.4428
+  },
+  "ivin_ua": {
+   "19": 14.8823,
+   "90": 27.1658
+  },
+  "nonfinite": false,
+  "pass_off_at_hold": false,
+  "sns_minus_ref_mv_at_hold": -1.65,
+  "t_end_us": 170.0,
+  "ts_cmp_v": {
+   "19": 1.2426,
+   "39": 3.2578,
+   "90": 3.2217,
+   "108": 3.2216,
+   "165": 3.2216
+  },
+  "vout_v": {
+   "19": 0.9821,
+   "39": 1.0396,
+   "90": 1.0408,
+   "165": 0.9986
+  }
+ },
+ "variant": "cand"
+}

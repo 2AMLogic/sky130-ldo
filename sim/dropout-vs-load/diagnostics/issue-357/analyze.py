@@ -75,7 +75,9 @@ def load(run_dir: Path):
         names = json.loads((run_dir / "data.columns.json").read_text())
         text = read_maybe_gz(run_dir / "data.dat")
     except (OSError, ValueError) as ex:
-        return None, None, log, meta, f"data unavailable: {ex}"
+        fn = getattr(ex, "filename", None)
+        what = f"{type(ex).__name__}: {Path(fn).name}" if fn else f"{type(ex).__name__}: {ex}"
+        return None, None, log, meta, f"data unavailable: {what}"
     scale, cols = a339.parse_wrdata(text, len(names))
     if scale is None:
         return None, None, log, meta, f"malformed data: {cols}"
