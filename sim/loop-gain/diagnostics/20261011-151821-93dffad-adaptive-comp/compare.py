@@ -151,7 +151,6 @@ def main(d):
             def g(t, key):
                 x = t["legs"][k] if t else None
                 return x
-            cells = []
             if not bl["valid"]:
                 print(f"| {bl['load_nominal_a']*1e3:g} | INVALID |")
                 continue
