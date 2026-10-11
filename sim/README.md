@@ -488,6 +488,13 @@ finite grid of an external-network window *inside one deck, per PVT corner*.
   each result row carries `leg`, `cout_f`, `esr_ohm` and `direction`
   (`rise` = 1→50 mA edge, `fall` = 50→1 mA edge) alongside the corner's
   process/temperature/supply. The 150 mV and 20 µs bounds are unchanged.
+- **Baseline gate (issue #372).** The peak/recovery measurements are relative
+  to the pre-step output, so each leg also carries `vout_pre_v__<leg>`
+  (`direction: pre`), the absolute pre-step output bounded inclusively to the
+  Output window, 1.764-1.836 V; a failing baseline fails the leg and corner.
+  This adds a measurement per leg (8 per leg, 48 per corner), so grid counts
+  and input fingerprints change: records made before #372 predate the gate and
+  are stale for it; a new campaign mints new evidence.
 - **Aggregation is conservative** (`grid_coverage` in `corner-run.py`). The
   expected set is derived from the manifest and the corner matrix, not from the
   results: the grid PASSes only if every declared (corner × COUT × ESR ×
