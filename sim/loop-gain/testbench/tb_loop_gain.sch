@@ -49,14 +49,19 @@ v {xschem version=3.4.7 file_version=1.2
 * interface and therefore out of this issue's scope.
 *
 * ---------------------------------------------------------------------
-* Why one testbench covers seven (C_out, ESR, load) points
+* Why one testbench covers eighteen (C_out, ESR, load) points
 * ---------------------------------------------------------------------
 * The DR-002 window is a *window*, not a point, and the whole question the
 * record leaves open is whether phase margin holds across it. The corner
 * runner already owns the process/temperature/supply axes, so this
 * experiment's deck walks the C_out/ESR/load axis itself, inside one deck,
 * with ngspice `alter` between AC sweeps (see experiment.json "analyses").
-* The seven points are the window's corners plus its nominal:
+* #338 extended the original seven points to the full 18-leg finite
+* boundary grid C_eff {0.33, 4.7 uF} x ESR {0, 10, 500 mOhm} x load
+* {50, 1, 0 mA} (ESR is a CCVS so 0 Ohm is an exact short -- see the
+* HESR note below). It is a finite endpoint grid, NOT a continuous-window
+* claim and NOT PVT coverage. The original seven points, kept as legs 1-7
+* in the same order, were:
 *
 *   1. C_out 0.33 uF, ESR 10 mOhm, 50 mA  <- DR-002's low-C_eff corner;
 *                                            the one that broke the
@@ -67,6 +72,9 @@ v {xschem version=3.4.7 file_version=1.2
 *   5. C_out 4.7 uF,  ESR 10 mOhm,  1 mA
 *   6. C_out 4.7 uF,  ESR 10 mOhm,  0 mA
 *   7. C_out 0.33 uF, ESR 500 mOhm, 50 mA <- the window's ESR ceiling
+*
+* Legs 8-18 add the remaining ESR-ceiling combinations (500 mOhm) and the
+* zero-ESR boundary (see experiment.json "analyses"/"ac_leg_grid").
 *
 * ESR sits at 10 mOhm for points 1-6 on purpose: DR-002 takes a
 * "no minimum ESR, ceramic-stable" posture, so the low-ESR end is the
@@ -206,9 +214,16 @@ measurement in experiment.json.} 240 -300 0 0 0.2 0.2 {}
 C {devices/capa.sym} 600 -400 0 0 {name=COUT m=1 value=0.33u footprint=1206 device="ceramic capacitor (DR-002 low-C_eff corner)"}
 C {devices/lab_pin.sym} 600 -430 0 0 {name=p11 lab=VOUT}
 C {devices/lab_pin.sym} 600 -370 0 0 {name=p12 lab=VESR}
-C {devices/res.sym} 600 -250 0 0 {name=RESR value=10m m=1}
-C {devices/lab_pin.sym} 600 -280 0 0 {name=p13 lab=VESR}
+C {devices/vsource.sym} 500 -250 0 0 {name=VESRSENSE value=0}
+C {devices/lab_pin.sym} 500 -280 0 0 {name=p17 lab=VESR}
+C {devices/lab_pin.sym} 500 -220 0 0 {name=p18 lab=VESRS}
+C {devices/ccvs.sym} 600 -250 0 0 {name=HESR vnam=VESRSENSE value=10m}
+C {devices/lab_pin.sym} 600 -280 0 0 {name=p13 lab=VESRS}
 C {devices/lab_pin.sym} 600 -220 0 0 {name=p14 lab=0}
+T {ESR (#338): a current-controlled voltage source HESR, V = gain * I(VESRSENSE),
+in series with C_OUT. Walked with `alter hesr gain = ...`. Gain 0 is an exact
+short; a 0-ohm resistor is NOT usable because ngspice silently floors it to
+~1 mOhm, which would be a hidden positive ESR.} 440 -190 0 0 0.2 0.2 {}
 T {C_OUT / R_ESR start at DR-002's low-C_eff, low-ESR corner (0.33uF, 10mOhm)
 -- the corner DR-002 itself flags as the risky one and the corner the
 candidate fix screened during #22 oscillated at. The deck then `alter`s both
