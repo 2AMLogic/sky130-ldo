@@ -21,6 +21,13 @@ Benches
                    (`cold` / `hot` / `cold_exc` / `en`) at one EXTERNALLY IMPOSED device
                    temperature (--temp); the electrical condition is still tt + --supply
 
+  thermal-settled  (rework of the pass-off witness) the same thermal testbench, but the 170 us
+                   window is extended (S_STOP_US) so the loaded (RLOAD 1.8 k) regulator settles,
+                   and the 20..40 us TS_SNS disturbance is moved to S_PULSE_ON_US..S_PULSE_OFF_US. Scenarios:
+                   `ctl` (no disturbance: settled, conducting, untripped control) and `trip`
+                   (+0.5 uA sink at 800..840 us, sampled inside the pulse). Same temperature,
+                   supply and variant for the pair; the pair differs only in the IX amplitude.
+
 Strictly one run per call; commands.sh calls it sequentially. No grid, no pool.
 """
 from __future__ import annotations
@@ -48,7 +55,7 @@ import candidate as cand  # noqa: E402
 cr = pc.load_corner_run()
 
 BENCH_DIR = {"dropout": "dropout-vs-load", "current-limit": "current-limit", "iq": "iq",
-             "enable-shutdown": "enable-shutdown", "thermal": "thermal"}
+             "enable-shutdown": "enable-shutdown", "thermal": "thermal", "thermal-settled": "thermal"}
 
 # ---------------------------------------------------------------- dropout columns
 P = "@m.xldo.{n}.msky130_fd_pr__{t}[{p}]"
@@ -140,8 +147,25 @@ TH_VECTORS = ["xldo.ts_cmp", "xldo.rc_a", "xldo.rc_b", "xldo.ea_out", "vout", "e
               "xldo.ts_sns", "xldo.ts_ref"]
 TH_KEYS = ["ts_cmp", "rc_a", "rc_b", "ea_out", "vout", "en", "ts_sns", "ts_ref", "ipass", "ivin"]
 T_COLD, T_FORCED, T_HOLD, T_EN_LOW, T_REEN = 19, 39, 90, 108, 165  # us, run_hysteresis.py
-IX = {"cold": 0.0, "hot": +0.5e-6, "cold_exc": -0.5e-6, "en": +0.5e-6}
-EN_DIP = {"cold": "vsup", "hot": "vsup", "cold_exc": "vsup", "en": "0"}
+IX = {"cold": 0.0, "hot": +0.5e-6, "cold_exc": -0.5e-6, "en": +0.5e-6, "ctl": 0.0, "trip": +0.5e-6}
+EN_DIP = {"cold": "vsup", "hot": "vsup", "cold_exc": "vsup", "en": "0", "ctl": "vsup", "trip": "vsup"}
+SETTLED_SCENARIOS = ("ctl", "trip")
+# thermal-settled timing (us): tran stop, disturbance window, settle-reference and sample instants
+S_STOP_US, S_PULSE_ON_US, S_PULSE_OFF_US = 1500, 1300, 1340  # attempt 1 (runs ths_*) used 1000/800/840
+T_S_REF, T_S_SAMPLE = 1285, 1335  # attempt 1 used 785/835  # VOUT settle reference (control) / sample inside the pulse
+S_MIN_ROWS = 100
+
+
+IX_PWL = "PWL(0 0 20u 0 21u 'ix_amp' 40u 'ix_amp' 41u 0)"
+
+
+def shift_disturbance(body):
+    """thermal-settled: move the IX pulse from 20..40 us to S_PULSE_ON_US..S_PULSE_OFF_US."""
+    new = (f"PWL(0 0 {S_PULSE_ON_US}u 0 {S_PULSE_ON_US + 1}u 'ix_amp' "
+           f"{S_PULSE_OFF_US}u 'ix_amp' {S_PULSE_OFF_US + 1}u 0)")
+    if sum(IX_PWL in ln for ln in body) != 1:
+        raise ValueError("thermal netlist does not carry exactly one IX 20..40 us PWL source")
+    return [ln.replace(IX_PWL, new) for ln in body]
 
 
 def thermal_deck(body, pdk, supply, temp_c, scenario, dat="data.dat"):
@@ -154,7 +178,10 @@ def thermal_deck(body, pdk, supply, temp_c, scenario, dat="data.dat"):
         ".option wnflag=1", f".temp {temp_c}", f'.lib "{pdk.lib_file}" tt',
     ]
     ipass = P.format(n="xm_pass", t=PF, p="id")
-    ctl = [".control", "save all " + ipass, "tran 400n 170u uic",
+    stop = S_STOP_US if scenario in SETTLED_SCENARIOS else T_STOP_US
+    if scenario in SETTLED_SCENARIOS:
+        body = shift_disturbance(body)
+    ctl = [".control", "save all " + ipass, f"tran 400n {stop}u uic",
            f"wrdata {dat} " + " ".join(f"v({v})" for v in TH_VECTORS) + f" {ipass} i(vvin)",
            "quit", ".endc", ".end", ""]
     return "\n".join(head + body + ctl)
@@ -163,7 +190,7 @@ def thermal_deck(body, pdk, supply, temp_c, scenario, dat="data.dat"):
 T_STOP_US, T_STOP_TOL_US = 170, 0.5  # declared .tran stop (thermal_deck) and one-step slack
 
 
-def thermal_trace_invalid_reason(path):
+def thermal_trace_invalid_reason(path, stop_us=T_STOP_US, first_us=T_COLD, min_rows=2):
     """Fail-closed trace check, run before any sampling (rc.at() clamps out-of-range
     targets to an endpoint, so a truncated trace would otherwise yield usable labels).
     Returns (t, v, None) for a usable trace, else (None, None, named reason)."""
@@ -187,13 +214,13 @@ def thermal_trace_invalid_reason(path):
         return None, None, "time not strictly increasing"
     if any(not math.isfinite(x) for k in TH_KEYS for x in v[k]):
         return None, None, "nonfinite vector value"
-    if len(t) < 2:
-        return None, None, f"too few rows: {len(t)} (need >= 2 to interpolate)"
-    if t[0] > T_COLD * 1e-6:
+    if len(t) < min_rows:
+        return None, None, f"too few rows: {len(t)} (need >= {min_rows} to interpolate)"
+    if t[0] > first_us * 1e-6:
         return None, None, (f"late-start trace: begins at {t[0] * 1e6:.3f} us, after the first "
-                            f"sample time {T_COLD} us")
-    if t[-1] < (T_STOP_US - T_STOP_TOL_US) * 1e-6:
-        return None, None, f"truncated trace: ends at {t[-1] * 1e6:.3f} us, declared stop {T_STOP_US} us"
+                            f"sample time {first_us} us")
+    if t[-1] < (stop_us - T_STOP_TOL_US) * 1e-6:
+        return None, None, f"truncated trace: ends at {t[-1] * 1e6:.3f} us, declared stop {stop_us} us"
     return t, v, None
 
 
@@ -218,12 +245,30 @@ def thermal_result(run, supply):
     return r
 
 
+def settled_result(run, supply):
+    """thermal-settled extraction: state, pass current and VOUT at the sample instant inside the
+    (possibly absent) disturbance window, plus the VOUT movement over the preceding settle window."""
+    t, v, why = thermal_trace_invalid_reason(run / "data.dat", S_STOP_US, T_S_REF, S_MIN_ROWS)
+    if why:
+        return {"invalid_reason": why, "nonfinite": "nonfinite" in why}
+    at = lambda k, x: rc.at(t, v[k], x)  # noqa: E731
+    return {"sample_us": T_S_SAMPLE, "settle_ref_us": T_S_REF,
+            "tripped": rc.tripped(at("ts_cmp", T_S_SAMPLE), supply),
+            "ts_cmp_v": round(at("ts_cmp", T_S_SAMPLE), 4),
+            "ipass_ua": round(abs(at("ipass", T_S_SAMPLE)) * 1e6, 4),
+            "vout_v": round(at("vout", T_S_SAMPLE), 4),
+            "vout_ref_v": round(at("vout", T_S_REF), 4),
+            "vout_settle_delta_mv": round(1e3 * (at("vout", T_S_SAMPLE) - at("vout", T_S_REF)), 3),
+            "ea_out_v": round(at("ea_out", T_S_SAMPLE), 4),
+            "nonfinite": False, "t_end_us": t[-1] * 1e6}
+
+
 # ---------------------------------------------------------------- main
 def make_netlist(bench, pdk):
     exp = cr.load_experiment(SIM / BENCH_DIR[bench])
     with tempfile.TemporaryDirectory(prefix="i357-nl-") as nl:
         net = cr.netlist_with_xschem(exp.schematic, Path(nl), pdk)
-        if bench == "thermal":
+        if bench.startswith("thermal"):
             text, _n = cr.eval_xschem_exprs("\n".join(cr.netlist_body(net, eval_exprs=False)) + "\n")
             # as run_hysteresis.py: drop the dc-temp IC_SEED .nodeset so `uic` is a true cold start
             stmts = [x for x in re.split(r"\n(?!\+)", text.rstrip("\n"))
@@ -245,8 +290,10 @@ def main(argv=None):
     ap.add_argument("--run-id", required=True)
     ap.add_argument("--timeout", type=int, default=1800)
     a = ap.parse_args(argv)
-    if (a.bench == "thermal") != (a.scenario is not None):
-        sys.exit("--scenario is required for, and only for, --bench thermal")
+    if (a.bench in ("thermal", "thermal-settled")) != (a.scenario is not None):
+        sys.exit("--scenario is required for, and only for, --bench thermal / thermal-settled")
+    if a.scenario is not None and (a.scenario in SETTLED_SCENARIOS) != (a.bench == "thermal-settled"):
+        sys.exit("scenarios ctl/trip belong to --bench thermal-settled; the others to --bench thermal")
 
     run = HERE / "runs" / a.run_id
     if run.exists():
@@ -271,7 +318,7 @@ def main(argv=None):
     (run / "netlist.diff").write_text(diff)
 
     cols = None
-    if a.bench == "thermal":
+    if a.bench.startswith("thermal"):
         deck = thermal_deck(edited.splitlines(), pdk, a.supply, a.temp, a.scenario)
     else:
         corner = cr.Corner("tt", a.temp, a.supply)
@@ -287,8 +334,8 @@ def main(argv=None):
     rec = {
         "run_id": a.run_id, "issue": 357, "bench": a.bench, "variant": a.variant,
         "candidate_rev": a.rev if a.variant == "cand" else None,
-        "condition": {"process": "tt", "electrical_temp_c": a.temp if a.bench != "thermal" else 27.0,
-                      "device_temp_imposed_c": a.temp if a.bench == "thermal" else None,
+        "condition": {"process": "tt", "electrical_temp_c": 27.0 if a.bench.startswith("thermal") else a.temp,
+                      "device_temp_imposed_c": a.temp if a.bench.startswith("thermal") else None,
                       "supply_v": a.supply, "scenario": a.scenario},
         "edit_notes": notes, "candidate_invariant_problems": problems,
         "ngspice_exit": rcode, "elapsed_s": round(elapsed, 2), "solver_diagnostic": diag,
@@ -311,9 +358,9 @@ def main(argv=None):
         },
     }
     dat = run / "data.dat"
-    if a.bench == "thermal":
+    if a.bench.startswith("thermal"):
         if dat.is_file():
-            rec["thermal"] = thermal_result(run, a.supply)
+            rec["thermal"] = (settled_result if a.bench == "thermal-settled" else thermal_result)(run, a.supply)
     elif a.bench != "dropout":
         meas = cr.parse_measurements(log)
         rec["meas"] = meas
@@ -336,6 +383,10 @@ def main(argv=None):
         th = rec["thermal"]
         if th.get("invalid_reason"):
             print(f"  thermal INVALID: {th['invalid_reason']}")
+            return
+        if a.bench == "thermal-settled":
+            print(f"  tripped={th['tripped']} ipass@{T_S_SAMPLE}us={th['ipass_ua']}uA vout={th['vout_v']} "
+                  f"settle_delta={th['vout_settle_delta_mv']}mV")
             return
         print(f"  forced={th['forced_tripped']} hold={th['hold_tripped']} cold={th['cold_start_tripped']} "
               f"reen={th['after_en_reenable_tripped']} ipass@hold={th['ipass_ua'][T_HOLD]}uA ea_out@hold={th['ea_out_v'][T_HOLD]}")

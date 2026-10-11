@@ -504,5 +504,80 @@ class ProvenanceManifestTracked(unittest.TestCase):
             self.assertEqual(hashlib.sha256(path.read_bytes()).hexdigest(), digest, rel)
 
 
+class ThermalSettledActuatorWitness(unittest.TestCase):
+    """thermal-settled extraction and the actuator gate: a pass-off that is also off in the
+    untripped control (or whose control is unsettled/invalid) must never read as DEMONSTRATED."""
+
+    NK = len(probe.TH_KEYS)
+    IDX = {k: i for i, k in enumerate(probe.TH_KEYS)}
+
+    def _dat(self, tripped, ipass_a, vout=1.8, vout_ref=None, stop_us=None, step_us=5.0):
+        stop = stop_us or float(probe.S_STOP_US)
+        rows = []
+        for i in range(int(round(stop / step_us)) + 1):
+            tus = i * step_us
+            vals = [0.0] * self.NK
+            vals[self.IDX["ts_cmp"]] = 0.0 if tripped else 3.3
+            ref = tus <= probe.T_S_REF + 2.5 and vout_ref is not None
+            vals[self.IDX["vout"]] = vout_ref if ref else vout
+            vals[self.IDX["ipass"]] = ipass_a
+            rows.append([x for v in vals for x in (tus * 1e-6, v)])
+        return "\n".join(" ".join(repr(x) for x in r) for r in rows) + "\n"
+
+    def _state(self, text):
+        with tempfile.TemporaryDirectory() as d:
+            (Path(d) / "data.dat").write_text(text)
+            r = json.loads(json.dumps(probe.settled_result(Path(d), 3.3)))
+        return summ.settled_state({"ngspice_exit": 0, "solver_diagnostic": None, "thermal": r})
+
+    def test_conducting_control_and_pass_off_trip_demonstrated(self):
+        ctl = self._state(self._dat(False, 1.0e-3))
+        trip = self._state(self._dat(True, 4e-8))
+        self.assertEqual(summ.actuator_verdict(ctl, trip), ("DEMONSTRATED", []))
+
+    def test_off_in_both_states_rejected(self):
+        ctl = self._state(self._dat(False, 0.0))  # untripped control that conducts nothing
+        trip = self._state(self._dat(True, 4e-8))
+        verdict, why = summ.actuator_verdict(ctl, trip)
+        self.assertEqual(verdict, "NOT DEMONSTRATED")
+        self.assertTrue(any("not conducting" in w for w in why))
+
+    def test_unsettled_or_tripped_control_rejected(self):
+        trip = self._state(self._dat(True, 4e-8))
+        unsettled = self._state(self._dat(False, 1.0e-3, vout=1.8, vout_ref=1.75))
+        self.assertEqual(summ.actuator_verdict(unsettled, trip)[0], "NOT DEMONSTRATED")
+        self.assertEqual(summ.actuator_verdict(self._state(self._dat(True, 1.0e-3)), trip)[0],
+                         "NOT DEMONSTRATED")
+
+    def test_tripped_but_conducting_fails_and_untripped_trip_not_demonstrated(self):
+        ctl = self._state(self._dat(False, 1.0e-3))
+        self.assertEqual(summ.actuator_verdict(ctl, self._state(self._dat(True, 2e-6)))[0], "FAILED")
+        self.assertEqual(summ.actuator_verdict(ctl, self._state(self._dat(False, 1.0e-3)))[0],
+                         "NOT DEMONSTRATED")
+
+    def test_truncated_or_missing_run_invalid(self):
+        ctl = self._state(self._dat(False, 1.0e-3))
+        short = self._state(self._dat(True, 4e-8, stop_us=400.0))
+        self.assertFalse(short["valid"])
+        self.assertEqual(summ.actuator_verdict(ctl, short)[0], "INVALID")
+        self.assertEqual(summ.actuator_verdict(ctl, None)[0], "INVALID")
+
+    def test_disturbance_shift_requires_exactly_one_ix_source(self):
+        body = ["VEN EN 0 dc 1", "IX xldo.TS_SNS 0 " + probe.IX_PWL, "RLOAD VOUT 0 1.8k"]
+        out = probe.shift_disturbance(body)
+        self.assertIn(f"{probe.S_PULSE_ON_US}u", out[1])
+        self.assertNotIn("20u", out[1])
+        with self.assertRaises(ValueError):
+            probe.shift_disturbance(body[:1])
+        with self.assertRaises(ValueError):
+            probe.shift_disturbance(body + [body[1]])
+
+    def test_committed_thl_runs_demonstrate_candidate(self):
+        for sup in ("3p3", "2p1"):
+            ctl = summ.settled_state(summ.load(f"thl_cand_r1_{sup}_150_ctl"))
+            trip = summ.settled_state(summ.load(f"thl_cand_r1_{sup}_150_trip"))
+            self.assertEqual(summ.actuator_verdict(ctl, trip)[0], "DEMONSTRATED", sup)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=1)

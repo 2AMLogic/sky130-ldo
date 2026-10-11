@@ -101,4 +101,18 @@
      2.1   185        en       TTT       TTT       TTT     yes                  ok/ok/ok   0.246/0.218/0.219
   all candidate states identical to the paired baseline: True
 
+### thermal actuator witness: settled, loaded (RLOAD 1.8 k) untripped control vs forced trip
+  150 C device temperature, tt. ctl = no disturbance; trip = +0.5 uA TS_SNS sink for 40 us, sampled
+  inside the pulse. Gate (declared): control untripped, Ipass >= 100 uA, VOUT >= 1.5 V, |settle| <= 10 mV;
+  tripped run: tripped and Ipass < 1 uA.  ths_* = attempt 1 (800 us), thl_* = attempt 2 (1300 us).
+  family variant  supply  ctl Ipass[uA]  ctl VOUT ctl settle[mV] trip Ipass[uA]  verdict
+  ths    base        3.3         1001.1    1.8011         -0.009         0.0421  DEMONSTRATED
+  ths    base        2.1           1946    1.7240        +60.241         0.0252  NOT DEMONSTRATED (control not settled (+60.24 mV over the settle window))
+  ths    cand_r1     3.3         1007.6    1.8052         +0.223         0.0421  DEMONSTRATED
+  ths    cand_r1     2.1         1621.9    1.7661        +44.357         0.0248  NOT DEMONSTRATED (control not settled (+44.36 mV over the settle window))
+  thl    base        3.3         1001.2    1.8011         +0.000         0.0421  DEMONSTRATED
+  thl    base        2.1         1000.6    1.8003         -0.022         0.0236  DEMONSTRATED
+  thl    cand_r1     3.3         1004.2    1.8064         +0.010         0.0421  DEMONSTRATED
+  thl    cand_r1     2.1         1005.1    1.8021         +0.185          0.024  DEMONSTRATED
+
 ('*' marks a value that fails its manifest bound or comes from an invalid run; 2.10 V is outside the ratified 2.97-3.63 V input range -- graded against the same manifest bounds for the paired comparison only, not as a spec claim.)

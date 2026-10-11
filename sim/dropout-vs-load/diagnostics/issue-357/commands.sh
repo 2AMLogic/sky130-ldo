@@ -116,5 +116,22 @@ $P --bench thermal --variant cand --rev 1 --supply 2.1 --temp 185 --scenario col
 $P --bench thermal --variant cand --rev 1 --supply 2.1 --temp 185 --scenario hot      --run-id th_cand_r1_2p1_185_hot
 $P --bench thermal --variant cand --rev 1 --supply 2.1 --temp 185 --scenario en       --run-id th_cand_r1_2p1_185_en
 
+# --- 5b. thermal actuator witness (review rework of the pass-off witness; README section 4) ---
+#   thermal-settled bench: same testbench, loaded (RLOAD 1.8 k), 150 C, tt. `ctl` = no disturbance
+#   (settled, conducting, untripped control); `trip` = +0.5 uA TS_SNS sink, sampled inside the pulse.
+#   Attempt 1 (ths_*): stop 1000 us, pulse 800..840 us, sample 835 us (settle ref 785 us). The 2.1 V
+#   controls were still starting up (VOUT +44 / +60 mV over the settle window) -> NOT DEMONSTRATED
+#   at 2.1 V; retained. Attempt 2 (thl_*): stop 1500 us, pulse 1300..1340 us, sample 1335 us (ref 1285 us).
+#   Attempt 1 was run with S_STOP_US/S_PULSE_*/T_S_* = 1000/800/840/785/835 (the previous probe.py constants).
+for v in "cand --rev 1:cand_r1" "base:base"; do
+  var=${v%%:*}; tag=${v##*:}
+  for s in 3.3 2.1; do
+    q=$(echo $s | tr . p)
+    for sc in ctl trip; do
+      $P --bench thermal-settled --variant $var --supply $s --temp 150 --scenario $sc --run-id thl_${tag}_${q}_150_$sc
+    done
+  done
+done
+
 # --- 6. tables ---
 python3 -B summarize.py > summary.txt

@@ -138,6 +138,77 @@ def thermal_table(load=load):
     return L
 
 
+# Actuator gate (README section 4, "Thermal actuator witness"), declared before the thl_* runs:
+# the pass-off witness only counts when the paired UNTRIPPED control at the same variant / supply /
+# temperature / timing is settled, loaded and actively conducting.
+CTL_MIN_IPASS_UA = 100.0   # >> the 1 uA pass-off witness (RLOAD 1.8 k loads about 1 mA at 1.8 V)
+CTL_MIN_VOUT_V = 1.5
+CTL_MAX_SETTLE_MV = 10.0   # |VOUT(sample) - VOUT(sample - 50 us)|
+
+
+def settled_state(r):
+    if r is None or "thermal" not in r:
+        return None
+    th = r["thermal"]
+    if th.get("invalid_reason"):
+        return {"valid": False, "invalid_reason": th["invalid_reason"]}
+    ok = r["ngspice_exit"] == 0 and not r["solver_diagnostic"] and not th["nonfinite"]
+    return {"valid": ok, "tripped": th["tripped"], "ipass_ua": th["ipass_ua"], "vout_v": th["vout_v"],
+            "settle_mv": th["vout_settle_delta_mv"]}
+
+
+def actuator_verdict(ctl, trip):
+    """(verdict, reasons) for one paired (control, tripped) pair of settled_state() dicts.
+    DEMONSTRATED only when the control is a meaningful conducting reference AND the tripped
+    run is pass-off; a witness that is off in both states can never reach it."""
+    why = []
+    for name, s in (("control", ctl), ("tripped", trip)):
+        if s is None:
+            why.append(f"{name} run missing")
+        elif not s["valid"]:
+            why.append(f"{name} INVALID: {s.get('invalid_reason', 'run flagged invalid')}")
+    if why:
+        return "INVALID", why
+    if ctl["tripped"]:
+        why.append("control is tripped")
+    if ctl["ipass_ua"] < CTL_MIN_IPASS_UA:
+        why.append(f"control not conducting ({ctl['ipass_ua']:.4g} uA < {CTL_MIN_IPASS_UA:g} uA)")
+    if ctl["vout_v"] < CTL_MIN_VOUT_V:
+        why.append(f"control VOUT {ctl['vout_v']:.4g} V < {CTL_MIN_VOUT_V} V")
+    if abs(ctl["settle_mv"]) > CTL_MAX_SETTLE_MV:
+        why.append(f"control not settled ({ctl['settle_mv']:+.4g} mV over the settle window)")
+    if why:
+        return "NOT DEMONSTRATED", why
+    if not trip["tripped"]:
+        return "NOT DEMONSTRATED", ["forced trip did not trip"]
+    if trip["ipass_ua"] >= PASS_OFF_A:
+        return "FAILED", [f"tripped but pass still conducts ({trip['ipass_ua']:.4g} uA >= {PASS_OFF_A:g} uA)"]
+    return "DEMONSTRATED", []
+
+
+def settled_table(load=load):
+    L = ["### thermal actuator witness: settled, loaded (RLOAD 1.8 k) untripped control vs forced trip",
+         "  150 C device temperature, tt. ctl = no disturbance; trip = +0.5 uA TS_SNS sink for 40 us, sampled",
+         "  inside the pulse. Gate (declared): control untripped, Ipass >= "
+         f"{CTL_MIN_IPASS_UA:g} uA, VOUT >= {CTL_MIN_VOUT_V} V, |settle| <= {CTL_MAX_SETTLE_MV:g} mV;",
+         f"  tripped run: tripped and Ipass < {PASS_OFF_A:g} uA.  ths_* = attempt 1 (800 us), thl_* = attempt 2 (1300 us).",
+         f"  {'family':6s} {'variant':8s} {'supply':>6s} {'ctl Ipass[uA]':>14s} {'ctl VOUT':>9s} {'ctl settle[mV]':>14s} "
+         f"{'trip Ipass[uA]':>14s}  verdict"]
+    for fam in ("ths", "thl"):
+        for var in ("base", "cand_r1"):
+            for sup in ("3p3", "2p1"):
+                c = settled_state(load(f"{fam}_{var}_{sup}_150_ctl"))
+                t = settled_state(load(f"{fam}_{var}_{sup}_150_trip"))
+                if c is None and t is None:
+                    continue
+                v, why = actuator_verdict(c, t)
+                f = lambda s, k, fmt: "n/a" if s is None or not s["valid"] else format(s[k], fmt)  # noqa: E731
+                L.append(f"  {fam:6s} {var:8s} {sup.replace('p', '.'):>6s} {f(c, 'ipass_ua', '.5g'):>14s} "
+                         f"{f(c, 'vout_v', '.4f'):>9s} {f(c, 'settle_mv', '+.3f'):>14s} "
+                         f"{f(t, 'ipass_ua', '.5g'):>14s}  {v}" + (f" ({'; '.join(why)})" if why else ""))
+    return L
+
+
 def dropout_table():
     L = ["### dropout (dropout-vs-load manifest deck, tt / 27 C, VIN 3.3 V -> 1.17 V ramp, 50 mA)"]
     r = load("d00_replay339_probe0")
@@ -171,7 +242,8 @@ def main():
                 continue
             cands = [c for c in (f"{pre}_cand_r0_{sup}", f"{pre}_cand_r1_{sup}") if load(c) is not None]
             out += bench_table(bench, sup.replace("p", "."), base, cands) + [""]
-    out += thermal_table()
+    out += thermal_table() + [""]
+    out += settled_table()
     out += ["", "('*' marks a value that fails its manifest bound or comes from an invalid run;"
             " 2.10 V is outside the ratified 2.97-3.63 V input range -- graded against the same"
             " manifest bounds for the paired comparison only, not as a spec claim.)"]
