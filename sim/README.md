@@ -586,3 +586,15 @@ neither implements nor revisits it.
 Keep it green: it is the first thing to run when a testbench misbehaves, to
 tell "my circuit is wrong" apart from "my harness is broken".
 
+
+## PSRR C_eff x ESR reduced sweep (issue #314, Phase 1 -- tooling only)
+
+`sim/psrr-dc/cap-esr-sweep.json` declares a sampled grid (3 corners = the
+`psrr-dc` `quick_subset`, C_eff {0.33, 1, 4.7} uF, ESR {0, 10 m, 500 m} ohm, both
+load points). `sim/bin/psrr_cap_sweep.py` rewrites the testbench netlist per point
+(ESR 0 removes RESR, a real zero-ESR topology) and selects the worst sampled point
+per sub-metric (min over corners, ties -> lower C_eff then lower ESR; any missing or
+non-finite cell -> no finding, listed). Tests: `sim/tests/test_psrr_cap_sweep.py`.
+No evidence record exists yet: `psrr-dc` is refused by `--backend batch` (see "Batch
+backend"), and a local 27-deck grid is not allowed on the dispatch worker. The grid
+samples the window; it cannot prove the continuous-window or 45-corner worst case.
