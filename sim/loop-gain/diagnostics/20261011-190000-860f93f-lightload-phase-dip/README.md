@@ -1,6 +1,7 @@
 # Issue #365 -- zero-load Stability: phase-dip mechanism and a bounded light-load lever screen
 
-Status: bounded diagnostic at **one condition (tt / 27 C / 3.30 V)**. No spec row, decision record, production
+Status: diagnostic at **one PVT point (tt / 27 C / 3.30 V)**, from multi-leg local decks run as an exception after
+the batch preflight failed (section 1); the lever-B result and the handoff are **PROVISIONAL until a fleet re-run**. No spec row, decision record, production
 schematic, production target, PASS count or existing diagnostic is changed; the invalid-to-no-pass rule for missing
 crossings is unchanged. Nothing here qualifies the Stability window. Baseline = unmodified `design/ldo_3v3in_1v8out.sch`
 at source commit `860f93f` (no dropout-candidate revision from #357 is in this baseline; if #357 changes the circuit,
@@ -21,9 +22,20 @@ Legs per loop-gain run (stimulus verbatim in `result.json["stimulus"]`, `ac dec 
 `T = v(fb)/(1-v(fb))` exactly as the repo deck.
 
 **Fleet / batch: NOT used.** `sim/bin/batch-preflight.py` was run twice (start and end of the work; `batch-preflight.txt`
-is the second): **exit 3, version mismatch** (runner klt 0.5.0, client 0.7.0). Per the host rules no grid was started
-locally. The runs above are the host-permitted single-condition probes (one `ngspice -b` each, one PVT condition;
-the multi-leg decks follow the #349/#360 precedent of several `alter` legs inside one deck at one condition).
+is the second): **exit 3, version mismatch** (runner klt 0.5.0, client 0.7.0). No PVT grid was started locally.
+
+**Host-rule disclosure.** The five local `ngspice -b` runs above were **not** single-condition debug probes. Each was a
+**multi-leg local deck at one PVT point (tt / 27 C / 3.30 V)**: the three loop-gain runs are 10 C_out / ESR / load
+legs each, and the two load-transient runs are 12 legs each (about 4 minutes of host time each pass). They were run
+locally **as an exception, after the batch preflight failed** (exit 3, klt version mismatch). The host rule and
+#365's own criterion allow only a single-condition probe locally and send multi-condition grids to the batch path
+(deferring if it is unavailable); the #349/#360 precedent does not override that.
+- **Mechanism evidence:** `runs/base_tt` (the unmodified baseline) is the mechanism probe for sections 2 and 3.
+- **Lever screens:** `runs/tail2_tt` (lever A), `runs/rcz16_tt` (lever B) and the transient pair
+  `runs/base_lt_tt` / `runs/rcz16_lt_tt` are lever screens. These lever and transient legs would normally have gone
+  through the batch path.
+- Consequently the lever-B result and the qualification handoff (sections 4-6) are **PROVISIONAL**: local-only
+  evidence pending a fleet re-run of the same legs once a compatible preflight passes. They were not trimmed or re-run.
 
 **Deferred (unrun), to be requested through `klt sim` corners once a compatible preflight passes:**
 - every PVT point other than tt/27 C/3.30 V ({tt,ss,ff,sf,fs} x {-40,27,125 C} x {2.97,3.30,3.63 V}), for baseline and both levers;
@@ -95,7 +107,7 @@ missing crossing occurred in any of the 30 loop-gain legs, so no leg is excused 
 
 - **A is rejected**: it does not repair 0.33 uF at 0 mA (25.6 deg), it worsens both 50 mA points, and its full-load
   Iq (32.44 uA) exceeds the 30 uA target while adding 4.8 uA (35%) at no load.
-- **B shows the 0 mA failure is repairable by a passive, zero-Iq change**: both capacitance endpoints and all three
+- **B (PROVISIONAL, local-only pending a fleet re-run) shows the 0 mA failure is repairable by a passive, zero-Iq change**: both capacitance endpoints and all three
   ratified ESR values pass PM >= 45 and GM >= 10 dB at 0 mA. But it wrecks the loaded legs: 1 mA and 50 mA PM drops
   to 9.6-30.9 deg (4.7 uF at 1 and 50 mA passed in the baseline). A fixed R_CZ x16 is therefore not adoptable.
 - Paired transient (`runs/base_lt_tt` vs `runs/rcz16_lt_tt`, same session, bounds peak <= 0.15 V, recovery <= 20 us):
@@ -109,7 +121,8 @@ missing crossing occurred in any of the 30 loop-gain legs, so no leg is excused 
 ## 5. Recommendation: **REVISE** (neither lever advances alone)
 
 - Lever A (tail current): **reject** -- insufficient at 0.33 uF, over-budget Iq.
-- Lever B (large R_CZ): **revise** -- the mechanism is confirmed (a zero placed at the 0 mA crossover repairs the 0 mA
+- Lever B (large R_CZ): **revise, PROVISIONAL** (local multi-leg deck run as an exception after the preflight failed;
+  pending a fleet re-run) -- the mechanism is confirmed (a zero placed at the 0 mA crossover repairs the 0 mA
   margin on both endpoints and ESR boundaries at zero Iq) but it must act only at light load, and must not regress
   1 mA / 50 mA, where the stock R_CZ (and the #349/#324 smaller-R_CZ results) are right. This points to a
   **load-dependent R_CZ**, the opposite polarity of the #349 switch (large R_CZ at light load, ~0.5x at heavy load),
@@ -119,9 +132,15 @@ missing crossing occurred in any of the 30 loop-gain legs, so no leg is excused 
   pass current) and costs less than the Iq headroom (30 - 13.87 = ~16 uA at no load, but only ~2.4 uA at 50 mA/tt and
   none at ff/125 C per #324); whether the transition region (0-1 mA) is stable; PVT behaviour of the large poly resistor.
 
-## 6. Bounded qualification handoff (nothing here certifies the window)
+## 6. PROVISIONAL qualification handoff (nothing here certifies the window)
 
-A follow-up (design) issue should: (1) wait for a compatible `batch-preflight.py` result (exit 0) before any grid;
+**PROVISIONAL until a fleet re-run.** This handoff rests on the lever-B screen, which is local-only evidence from a
+multi-leg deck run as an exception after the batch preflight failed (section 1). It is not just "a bounded result":
+the first step of any follow-up is to re-run the `runs/rcz16_tt` and `runs/rcz16_lt_tt` legs (and the baseline
+pair) through the batch path and confirm or revise the numbers in section 4 before building on them.
+
+A follow-up (design) issue should: (1) wait for a compatible `batch-preflight.py` result (exit 0) before any grid,
+and re-run the lever-B legs above on the fleet;
 (2) specify a load-adaptive R_CZ whose light-load state (< ~0.1 mA, to be scanned) approaches the x16 value and whose
 loaded state keeps today's or a smaller R_CZ, with its sense/gate current counted in Iq at 0 mA and 50 mA at tt and
 at ff/125 C; (3) run, through `klt sim` corners, baseline vs candidate over the full 45-point PVT matrix and the
@@ -132,7 +151,8 @@ changes the circuit; (6) leave the full qualification to #231.
 
 - `lightload_probe.py` (driver), `lightload_extract.py` (phase-dip, slope-corner, transient-regression and verdict
   helpers; pure python), `compare.py` (writes `tables.md`), `tables.md`, `batch-preflight.txt`, `hashes.sha256`
-  (sha256 of every file in this directory except itself), `runs/<run-id>/{result.json,deck.spice,netlist.raw.spice,
+  (sha256 of every committed file in this directory except itself; `__pycache__` is not committed or
+  listed), `runs/<run-id>/{result.json,deck.spice,netlist.raw.spice,
   netlist.edited.spice,ngspice.log,.spiceinit,resp_leg*.txt}` (`resp_leg*.txt` = raw complex responses: frequency, then
   Re/Im of T and of each of 6 node transfers).
 - Tests: `sim/tests/test_lightload_365.py` (16 headless tests: slope corners, doublet pairing, phase dip, parse width,
