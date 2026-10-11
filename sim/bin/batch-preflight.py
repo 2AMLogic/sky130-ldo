@@ -9,12 +9,18 @@ request (the smallest allowlisted batch shape, tt / 27 C / 1.8 V) through
 then reads `environment.remote` from the response.
 
 Exit codes:
-  0  accepted: the runner took the job (compatibility not "mismatch", no
-     batch failure)
+  0  accepted: the runner ran the job to a usable completed result -- a
+     remote job id, a terminal successful remote state, exactly one corner
+     and it is the requested smoke corner (tt / 27 C), that corner completed
+     (status pass or fail), and no error-severity diagnostic or runner code
+     anywhere (issue #359). A completed measurement FAIL is still accepted:
+     this is a compatibility probe, not an electrical grade
   3  version mismatch: runner_compatibility == "mismatch" or a corner carries
-     runner_code batch_runner_version_mismatch. Reported, never worked around
-  1  any other failure (klt missing, no/garbled response, job failed for
-     another reason, xschem/PDK problem)
+     runner_code batch_runner_version_mismatch. Reported, never worked
+     around; takes precedence over every other finding
+  1  any other failure (klt missing, no/garbled/malformed response, job not
+     finished or failed for another reason, missing/duplicate/unexpected or
+     incomplete smoke corner, error diagnostics, xschem/PDK problem)
 
 This is a probe, not evidence: it writes nothing under any `sim/<experiment>/`
 directory (scratch lives in a temp dir, removed on exit unless --keep). No
@@ -40,14 +46,118 @@ EXPERIMENT = "pdk-smoke"
 POINT = ("tt", 27.0, 1.8)
 
 
+# klt's batch backend (klt 0.7.0 sim_batch): status.json state "done" is a
+# clean finish; the fleet harness marks any non-zero `klt sim` exit "failed",
+# but exit 0/3/4 still means the sweep ran and wrote a report (3 = measurement
+# failure, 4 = corner error -- the latter is rejected below by corner status).
+REMOTE_DONE = "done"
+REMOTE_RAN_EXIT_CODES = (0, 3, 4)
+# Corner statuses that are a completed result (mirrors corner-run.py's
+# normalize_batch_response); "error"/"inconclusive"/anything else is not.
+COMPLETED_STATUSES = ("pass", "fail")
+REASON_MAX = 500
+
+
 def remote_of(response: dict) -> dict:
     env = response.get("environment") if isinstance(response, dict) else None
     remote = env.get("remote") if isinstance(env, dict) else None
     return remote if isinstance(remote, dict) else {}
 
 
+def _finite_number(value) -> bool:
+    return (
+        isinstance(value, (int, float))
+        and not isinstance(value, bool)
+        and value == value
+        and value not in (float("inf"), float("-inf"))
+    )
+
+
+def _exit_code(value):
+    """status.json writes exit_code as a string ("" when the job never ran)."""
+    if isinstance(value, bool):
+        return None
+    try:
+        return int(str(value).strip())
+    except (TypeError, ValueError):
+        return None
+
+
+def _scan_diagnostics(corners: list, info: dict) -> tuple[set, list, list]:
+    """Defensively walk every corner's diagnostics.
+
+    Returns (runner codes, error messages, malformed-shape problems). Never
+    raises on odd shapes: a non-list container, a non-dict entry or a
+    non-string runner_code is reported as a problem instead.
+    """
+    codes, errors, malformed = set(), [], []
+    for i, corner in enumerate(corners):
+        if not isinstance(corner, dict):
+            continue  # reported by the corner-shape check
+        diags = corner.get("diagnostics")
+        if diags is None:
+            continue
+        if not isinstance(diags, list):
+            malformed.append(f"corner #{i} diagnostics is not a list ({type(diags).__name__})")
+            continue
+        for j, d in enumerate(diags):
+            if not isinstance(d, dict):
+                malformed.append(f"corner #{i} diagnostic #{j} is not an object ({type(d).__name__})")
+                continue
+            rc = d.get("runner_code")
+            if rc is not None and rc != "":
+                if isinstance(rc, str):
+                    codes.add(rc)
+                else:
+                    malformed.append(f"corner #{i} diagnostic #{j} runner_code is not a string ({rc!r:.80})")
+            for k in ("runner_klt_version", "client_klt_version"):
+                if isinstance(d.get(k), str) and d[k] and not info[k]:
+                    info[k] = d[k]
+            if d.get("severity") == "error":
+                msg = d.get("message")
+                label = msg if isinstance(msg, str) and msg else (
+                    d.get("code") if isinstance(d.get("code"), str) and d.get("code") else None)
+                errors.append(str(label) if label else f"corner #{i} error diagnostic with no message")
+    return codes, errors, malformed
+
+
+def _smoke_corner_problems(corners: list) -> list[str]:
+    """Exactly one corner, well-formed, identified as the smoke point, completed."""
+    want = (POINT[0], float(POINT[1]))
+    if not corners:
+        return [f"response has no corners (expected exactly the smoke corner {want})"]
+    problems, matches = [], []
+    for i, c in enumerate(corners):
+        if (
+            not isinstance(c, dict)
+            or not isinstance(c.get("process"), str)
+            or not _finite_number(c.get("temperature_c"))
+            or not isinstance(c.get("status"), str)
+        ):
+            problems.append(f"malformed corner entry #{i}: {c!r:.200}")
+            continue
+        key = (c["process"], float(c["temperature_c"]))
+        if key != want:
+            problems.append(f"unexpected corner {key} in response (expected {want})")
+            continue
+        matches.append(c)
+    if len(matches) > 1:
+        problems.append(f"smoke corner {want} reported {len(matches)} times")
+    elif not matches:
+        problems.append(f"response is missing the smoke corner {want}")
+    elif matches[0]["status"] not in COMPLETED_STATUSES:
+        problems.append(
+            f"smoke corner status {matches[0]['status']!r} is not a completed result"
+        )
+    return problems
+
+
 def classify(response) -> tuple[int, dict]:
-    """Pure: (exit code, info) for a klt batch response (or None)."""
+    """Pure: (exit code, info) for a klt batch response (or None).
+
+    ACCEPTED only for a completed, usable one-unit smoke response; see the
+    module docstring. Version mismatch (exit 3) wins over any other finding.
+    """
     remote = remote_of(response) if isinstance(response, dict) else {}
     info = {
         "job_id": remote.get("job_id"),
@@ -57,34 +167,38 @@ def classify(response) -> tuple[int, dict]:
         "job_state": remote.get("state"),
         "reason": "",
     }
-    if not isinstance(response, dict) or not isinstance(response.get("corners"), list):
+    if not isinstance(response, dict):
         info["reason"] = "no usable klt sim response"
         return EXIT_OTHER, info
-    codes, msgs = set(), []
-    for corner in response["corners"]:
-        for d in (corner.get("diagnostics") or []) if isinstance(corner, dict) else []:
-            if isinstance(d, dict):
-                if d.get("runner_code"):
-                    codes.add(d["runner_code"])
-                for k in ("runner_klt_version", "client_klt_version"):
-                    if d.get(k) and not info[k]:
-                        info[k] = d[k]
-                if d.get("severity") == "error" and d.get("message"):
-                    msgs.append(str(d["message"]))
+    corners = response.get("corners")
+    codes, errors, malformed = _scan_diagnostics(corners if isinstance(corners, list) else [], info)
     if info["runner_compatibility"] == "mismatch" or MISMATCH_CODE in codes:
-        info["reason"] = remote.get("runner_compatibility_warning") or MISMATCH_CODE
+        warning = remote.get("runner_compatibility_warning")
+        info["reason"] = (warning if isinstance(warning, str) and warning else MISMATCH_CODE)[:REASON_MAX]
         return EXIT_MISMATCH, info
-    failed = (
-        info["job_state"] == "failed"
-        or response.get("status") == "error"
-        or bool(response.get("errored"))
-        or bool(codes)
-    )
-    if failed:
-        info["reason"] = (msgs[0] if msgs else f"batch job state {info['job_state']!r}")[:500]
+    if not isinstance(corners, list):
+        info["reason"] = "no usable klt sim response"
         return EXIT_OTHER, info
+
+    # Most actionable first: the runner's own error messages.
+    problems = list(errors)
+    problems += [f"runner_code {c}" for c in sorted(codes)]
+    problems += malformed
+    if response.get("status") == "error" or bool(response.get("errored")):
+        problems.append(
+            f"klt sim status {response.get('status')!r}, errored {response.get('errored')!r}"
+        )
+    state, rc = info["job_state"], _exit_code(remote.get("exit_code"))
+    if not (state == REMOTE_DONE or (state == "failed" and rc in REMOTE_RAN_EXIT_CODES)):
+        problems.append(
+            f"batch job state {state!r} (exit_code {remote.get('exit_code')!r}) "
+            "is not a terminal successful execution"
+        )
     if not info["job_id"]:
-        info["reason"] = "response names no remote job id; not a batch run"
+        problems.append("response names no remote job id; not a batch run")
+    problems += _smoke_corner_problems(corners)
+    if problems:
+        info["reason"] = "; ".join(problems)[:REASON_MAX]
         return EXIT_OTHER, info
     return EXIT_ACCEPTED, info
 
