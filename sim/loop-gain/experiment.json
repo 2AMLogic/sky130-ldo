@@ -7,17 +7,45 @@
   "schematic": "testbench/tb_loop_gain.sch",
   "statistical_convention": "N/A (corner-matrix check, not a distribution claim)",
   "corners": {
-    "process": ["tt", "ss", "ff", "sf", "fs"],
-    "temperature_c": [-40, 27, 125],
-    "supply_v": [2.97, 3.3, 3.63]
+    "process": [
+      "tt",
+      "ss",
+      "ff",
+      "sf",
+      "fs"
+    ],
+    "temperature_c": [
+      -40,
+      27,
+      125
+    ],
+    "supply_v": [
+      2.97,
+      3.3,
+      3.63
+    ]
   },
   "quick_subset": [
-    ["tt", 27, 3.3],
-    ["ss", -40, 2.97],
-    ["ff", 125, 3.63]
+    [
+      "tt",
+      27,
+      3.3
+    ],
+    [
+      "ss",
+      -40,
+      2.97
+    ],
+    [
+      "ff",
+      125,
+      3.63
+    ]
   ],
   "deck": {
-    "options": ["wnflag=1"],
+    "options": [
+      "wnflag=1"
+    ],
     "params": {},
     "analyses": [
       "* Initial-condition contract (sim/README.md, issue #171; converted by #179):",
@@ -25,7 +53,7 @@
       "* (VOUT=1.8, FB=1.2, N_FBB=0.6), so EVERY operating-point solve this deck performs",
       "* -- including the one each `ac` command performs for itself before linearizing --",
       "* is released from that seed instead of from ngspice's unconstrained Newton start.",
-      "* One card covers all seven points: ngspice recomputes the linearization point",
+      "* One card covers all eighteen points: ngspice recomputes the linearization point",
       "* from scratch for each `ac` command, so a per-point seed is neither possible via",
       "* .ic nor needed via .nodeset. `.ic` would be inert here -- ngspice honours it",
       "* only for the TRANSIENT operating point. Only the branch-defining nodes are",
@@ -33,10 +61,15 @@
       "* eleven-node variant was measured to push ss/-40C/3.63V's 1mA point onto a",
       "* non-regulating branch. The `op` before each `ac` is the same solve the `ac`",
       "* then repeats (same circuit state, same seed, same solver), recorded as",
-      "* vout_seed_* so the record itself evidences which branch each of the seven",
+      "* vout_seed_* so the record itself evidences which branch each of the eighteen",
       "* points linearized around.",
       "set units=degrees",
-      "* --- point 1: C_out 0.33uF / ESR 10mOhm / 50mA (DR-002 low-C_eff corner) ---",
+      "* #338: the grid is now 18 legs = C_eff {0.33,4.7uF} x ESR {0,10m,500m} x load {50mA,1mA,0mA}.",
+      "* ESR is the CCVS HESR (V = gain * I(VESRSENSE)), walked with `alter hesr gain = ...`.",
+      "* A resistor cannot represent ESR = 0 here: ngspice silently replaces a 0-ohm resistor",
+      "* with a ~1 mOhm floor (measured), whereas a CCVS with gain exactly 0 is an exact short.",
+      "* Legs 1-7 keep their original order and identities (ac1..ac7 / op1..op7).",
+      "* --- leg 1: C_out 0.33uF / ESR 10mOhm / 50 mA ---",
       "op",
       "let vseed = v(vout)",
       "ac dec 30 1e-2 1e9",
@@ -47,7 +80,7 @@
       "meas ac phc find lgph when lgdb=0 cross=1",
       "meas ac gmdb find lgdb when lgph=-180 cross=1",
       "let dcg = lgdb[0]",
-      "* --- point 2: C_out 0.33uF / ESR 10mOhm / 1mA ---",
+      "* --- leg 2: C_out 0.33uF / ESR 10mOhm / 1 mA ---",
       "alter rload = 1.8k",
       "op",
       "let vseed = v(vout)",
@@ -58,7 +91,7 @@
       "meas ac fc when lgdb=0 cross=1",
       "meas ac phc find lgph when lgdb=0 cross=1",
       "meas ac gmdb find lgdb when lgph=-180 cross=1",
-      "* --- point 3: C_out 0.33uF / ESR 10mOhm / 0mA (divider preload only) ---",
+      "* --- leg 3: C_out 0.33uF / ESR 10mOhm / 0 mA ---",
       "alter rload = 1e12",
       "op",
       "let vseed = v(vout)",
@@ -69,7 +102,7 @@
       "meas ac fc when lgdb=0 cross=1",
       "meas ac phc find lgph when lgdb=0 cross=1",
       "meas ac gmdb find lgdb when lgph=-180 cross=1",
-      "* --- point 4: C_out 4.7uF / ESR 10mOhm / 50mA ---",
+      "* --- leg 4: C_out 4.7uF / ESR 10mOhm / 50 mA ---",
       "alter cout = 4.7u",
       "alter rload = 36",
       "op",
@@ -81,7 +114,7 @@
       "meas ac fc when lgdb=0 cross=1",
       "meas ac phc find lgph when lgdb=0 cross=1",
       "meas ac gmdb find lgdb when lgph=-180 cross=1",
-      "* --- point 5: C_out 4.7uF / ESR 10mOhm / 1mA ---",
+      "* --- leg 5: C_out 4.7uF / ESR 10mOhm / 1 mA ---",
       "alter rload = 1.8k",
       "op",
       "let vseed = v(vout)",
@@ -92,7 +125,7 @@
       "meas ac fc when lgdb=0 cross=1",
       "meas ac phc find lgph when lgdb=0 cross=1",
       "meas ac gmdb find lgdb when lgph=-180 cross=1",
-      "* --- point 6: C_out 4.7uF / ESR 10mOhm / 0mA ---",
+      "* --- leg 6: C_out 4.7uF / ESR 10mOhm / 0 mA ---",
       "alter rload = 1e12",
       "op",
       "let vseed = v(vout)",
@@ -103,9 +136,132 @@
       "meas ac fc when lgdb=0 cross=1",
       "meas ac phc find lgph when lgdb=0 cross=1",
       "meas ac gmdb find lgdb when lgph=-180 cross=1",
-      "* --- point 7: C_out 0.33uF / ESR 500mOhm / 50mA (window ESR ceiling) ---",
+      "* --- leg 7: C_out 0.33uF / ESR 500mOhm / 50 mA ---",
       "alter cout = 0.33u",
-      "alter resr = 500m",
+      "alter hesr gain = 500m",
+      "alter rload = 36",
+      "op",
+      "let vseed = v(vout)",
+      "ac dec 30 1e-2 1e9",
+      "let lg = v(xldo.fb)/(1-v(xldo.fb))",
+      "let lgdb = db(lg)",
+      "let lgph = cph(lg)",
+      "meas ac fc when lgdb=0 cross=1",
+      "meas ac phc find lgph when lgdb=0 cross=1",
+      "meas ac gmdb find lgdb when lgph=-180 cross=1",
+      "* --- leg 8: C_out 0.33uF / ESR 500mOhm / 1 mA ---",
+      "alter rload = 1.8k",
+      "op",
+      "let vseed = v(vout)",
+      "ac dec 30 1e-2 1e9",
+      "let lg = v(xldo.fb)/(1-v(xldo.fb))",
+      "let lgdb = db(lg)",
+      "let lgph = cph(lg)",
+      "meas ac fc when lgdb=0 cross=1",
+      "meas ac phc find lgph when lgdb=0 cross=1",
+      "meas ac gmdb find lgdb when lgph=-180 cross=1",
+      "* --- leg 9: C_out 0.33uF / ESR 500mOhm / 0 mA ---",
+      "alter rload = 1e12",
+      "op",
+      "let vseed = v(vout)",
+      "ac dec 30 1e-2 1e9",
+      "let lg = v(xldo.fb)/(1-v(xldo.fb))",
+      "let lgdb = db(lg)",
+      "let lgph = cph(lg)",
+      "meas ac fc when lgdb=0 cross=1",
+      "meas ac phc find lgph when lgdb=0 cross=1",
+      "meas ac gmdb find lgdb when lgph=-180 cross=1",
+      "* --- leg 10: C_out 4.7uF / ESR 500mOhm / 50 mA ---",
+      "alter cout = 4.7u",
+      "alter rload = 36",
+      "op",
+      "let vseed = v(vout)",
+      "ac dec 30 1e-2 1e9",
+      "let lg = v(xldo.fb)/(1-v(xldo.fb))",
+      "let lgdb = db(lg)",
+      "let lgph = cph(lg)",
+      "meas ac fc when lgdb=0 cross=1",
+      "meas ac phc find lgph when lgdb=0 cross=1",
+      "meas ac gmdb find lgdb when lgph=-180 cross=1",
+      "* --- leg 11: C_out 4.7uF / ESR 500mOhm / 1 mA ---",
+      "alter rload = 1.8k",
+      "op",
+      "let vseed = v(vout)",
+      "ac dec 30 1e-2 1e9",
+      "let lg = v(xldo.fb)/(1-v(xldo.fb))",
+      "let lgdb = db(lg)",
+      "let lgph = cph(lg)",
+      "meas ac fc when lgdb=0 cross=1",
+      "meas ac phc find lgph when lgdb=0 cross=1",
+      "meas ac gmdb find lgdb when lgph=-180 cross=1",
+      "* --- leg 12: C_out 4.7uF / ESR 500mOhm / 0 mA ---",
+      "alter rload = 1e12",
+      "op",
+      "let vseed = v(vout)",
+      "ac dec 30 1e-2 1e9",
+      "let lg = v(xldo.fb)/(1-v(xldo.fb))",
+      "let lgdb = db(lg)",
+      "let lgph = cph(lg)",
+      "meas ac fc when lgdb=0 cross=1",
+      "meas ac phc find lgph when lgdb=0 cross=1",
+      "meas ac gmdb find lgdb when lgph=-180 cross=1",
+      "* --- leg 13: C_out 4.7uF / ESR 0 Ohm (exact short) / 50 mA ---",
+      "alter hesr gain = 0",
+      "alter rload = 36",
+      "op",
+      "let vseed = v(vout)",
+      "ac dec 30 1e-2 1e9",
+      "let lg = v(xldo.fb)/(1-v(xldo.fb))",
+      "let lgdb = db(lg)",
+      "let lgph = cph(lg)",
+      "meas ac fc when lgdb=0 cross=1",
+      "meas ac phc find lgph when lgdb=0 cross=1",
+      "meas ac gmdb find lgdb when lgph=-180 cross=1",
+      "* --- leg 14: C_out 4.7uF / ESR 0 Ohm (exact short) / 1 mA ---",
+      "alter rload = 1.8k",
+      "op",
+      "let vseed = v(vout)",
+      "ac dec 30 1e-2 1e9",
+      "let lg = v(xldo.fb)/(1-v(xldo.fb))",
+      "let lgdb = db(lg)",
+      "let lgph = cph(lg)",
+      "meas ac fc when lgdb=0 cross=1",
+      "meas ac phc find lgph when lgdb=0 cross=1",
+      "meas ac gmdb find lgdb when lgph=-180 cross=1",
+      "* --- leg 15: C_out 4.7uF / ESR 0 Ohm (exact short) / 0 mA ---",
+      "alter rload = 1e12",
+      "op",
+      "let vseed = v(vout)",
+      "ac dec 30 1e-2 1e9",
+      "let lg = v(xldo.fb)/(1-v(xldo.fb))",
+      "let lgdb = db(lg)",
+      "let lgph = cph(lg)",
+      "meas ac fc when lgdb=0 cross=1",
+      "meas ac phc find lgph when lgdb=0 cross=1",
+      "meas ac gmdb find lgdb when lgph=-180 cross=1",
+      "* --- leg 16: C_out 0.33uF / ESR 0 Ohm (exact short) / 0 mA ---",
+      "alter cout = 0.33u",
+      "op",
+      "let vseed = v(vout)",
+      "ac dec 30 1e-2 1e9",
+      "let lg = v(xldo.fb)/(1-v(xldo.fb))",
+      "let lgdb = db(lg)",
+      "let lgph = cph(lg)",
+      "meas ac fc when lgdb=0 cross=1",
+      "meas ac phc find lgph when lgdb=0 cross=1",
+      "meas ac gmdb find lgdb when lgph=-180 cross=1",
+      "* --- leg 17: C_out 0.33uF / ESR 0 Ohm (exact short) / 1 mA ---",
+      "alter rload = 1.8k",
+      "op",
+      "let vseed = v(vout)",
+      "ac dec 30 1e-2 1e9",
+      "let lg = v(xldo.fb)/(1-v(xldo.fb))",
+      "let lgdb = db(lg)",
+      "let lgph = cph(lg)",
+      "meas ac fc when lgdb=0 cross=1",
+      "meas ac phc find lgph when lgdb=0 cross=1",
+      "meas ac gmdb find lgdb when lgph=-180 cross=1",
+      "* --- leg 18: C_out 0.33uF / ESR 0 Ohm (exact short) / 50 mA ---",
       "alter rload = 36",
       "op",
       "let vseed = v(vout)",
@@ -160,6 +316,14 @@
       "note": "Phase margin at C_out 0.33uF, ESR 10mOhm, 1mA. Ratified bound: \"Stability\" row, PM >= 45 deg."
     },
     {
+      "name": "gm_c033_1ma_db",
+      "expr": "-ac2.gmdb",
+      "unit": "dB",
+      "min": 10,
+      "max": null,
+      "note": "Gain margin at leg 2 (C_out 0.33uF, ESR 10 mOhm, 1 mA). Ratified bound: \"Stability\" row, GM >= 10 dB. Added by #338 (boundary-grid expansion)."
+    },
+    {
       "name": "pm_c033_0ma_deg",
       "expr": "180 + ac3.phc",
       "unit": "deg",
@@ -184,12 +348,28 @@
       "note": "Phase margin at C_out 4.7uF (DR-002's C_eff ceiling), ESR 10mOhm, 50mA. Ratified bound: \"Stability\" row, PM >= 45 deg."
     },
     {
+      "name": "gm_c47_50ma_db",
+      "expr": "-ac4.gmdb",
+      "unit": "dB",
+      "min": 10,
+      "max": null,
+      "note": "Gain margin at leg 4 (C_out 4.7uF, ESR 10 mOhm, 50 mA). Ratified bound: \"Stability\" row, GM >= 10 dB. Added by #338 (boundary-grid expansion)."
+    },
+    {
       "name": "pm_c47_1ma_deg",
       "expr": "180 + ac5.phc",
       "unit": "deg",
       "min": 45,
       "max": null,
       "note": "Phase margin at C_out 4.7uF, ESR 10mOhm, 1mA. Ratified bound: \"Stability\" row, PM >= 45 deg."
+    },
+    {
+      "name": "gm_c47_1ma_db",
+      "expr": "-ac5.gmdb",
+      "unit": "dB",
+      "min": 10,
+      "max": null,
+      "note": "Gain margin at leg 5 (C_out 4.7uF, ESR 10 mOhm, 1 mA). Ratified bound: \"Stability\" row, GM >= 10 dB. Added by #338 (boundary-grid expansion)."
     },
     {
       "name": "pm_c47_0ma_deg",
@@ -200,6 +380,14 @@
       "note": "Phase margin at C_out 4.7uF, ESR 10mOhm, 0mA. Ratified bound: \"Stability\" row, PM >= 45 deg."
     },
     {
+      "name": "gm_c47_0ma_db",
+      "expr": "-ac6.gmdb",
+      "unit": "dB",
+      "min": 10,
+      "max": null,
+      "note": "Gain margin at leg 6 (C_out 4.7uF, ESR 10 mOhm, 0 mA). Ratified bound: \"Stability\" row, GM >= 10 dB. Added by #338 (boundary-grid expansion)."
+    },
+    {
       "name": "pm_c033_esr500m_50ma_deg",
       "expr": "180 + ac7.phc",
       "unit": "deg",
@@ -208,61 +396,541 @@
       "note": "Phase margin at DR-002's ESR ceiling: C_out 0.33uF, ESR 500mOhm, 50mA. Included to show which end of the ESR range is the stressing one -- DR-002's posture is 'no minimum ESR', so the low-ESR end (points 1-6) is where the loop has no ESR zero to lean on. Ratified bound: \"Stability\" row, PM >= 45 deg."
     },
     {
+      "name": "gm_c033_esr500m_50ma_db",
+      "expr": "-ac7.gmdb",
+      "unit": "dB",
+      "min": 10,
+      "max": null,
+      "note": "Gain margin at leg 7 (C_out 0.33uF, ESR 500 mOhm, 50 mA). Ratified bound: \"Stability\" row, GM >= 10 dB. Added by #338 (boundary-grid expansion)."
+    },
+    {
+      "name": "pm_c033_esr500m_1ma_deg",
+      "expr": "180 + ac8.phc",
+      "unit": "deg",
+      "min": 45,
+      "max": null,
+      "note": "Phase margin at leg 8 (C_out 0.33uF, ESR 500 mOhm, 1 mA). Ratified bound: \"Stability\" row, PM >= 45 deg. Added by #338 (boundary-grid expansion)."
+    },
+    {
+      "name": "gm_c033_esr500m_1ma_db",
+      "expr": "-ac8.gmdb",
+      "unit": "dB",
+      "min": 10,
+      "max": null,
+      "note": "Gain margin at leg 8 (C_out 0.33uF, ESR 500 mOhm, 1 mA). Ratified bound: \"Stability\" row, GM >= 10 dB. Added by #338 (boundary-grid expansion)."
+    },
+    {
+      "name": "pm_c033_esr500m_0ma_deg",
+      "expr": "180 + ac9.phc",
+      "unit": "deg",
+      "min": 45,
+      "max": null,
+      "note": "Phase margin at leg 9 (C_out 0.33uF, ESR 500 mOhm, 0 mA). Ratified bound: \"Stability\" row, PM >= 45 deg. Added by #338 (boundary-grid expansion)."
+    },
+    {
+      "name": "gm_c033_esr500m_0ma_db",
+      "expr": "-ac9.gmdb",
+      "unit": "dB",
+      "min": 10,
+      "max": null,
+      "note": "Gain margin at leg 9 (C_out 0.33uF, ESR 500 mOhm, 0 mA). Ratified bound: \"Stability\" row, GM >= 10 dB. Added by #338 (boundary-grid expansion)."
+    },
+    {
+      "name": "pm_c47_esr500m_50ma_deg",
+      "expr": "180 + ac10.phc",
+      "unit": "deg",
+      "min": 45,
+      "max": null,
+      "note": "Phase margin at leg 10 (C_out 4.7uF, ESR 500 mOhm, 50 mA). Ratified bound: \"Stability\" row, PM >= 45 deg. Added by #338 (boundary-grid expansion)."
+    },
+    {
+      "name": "gm_c47_esr500m_50ma_db",
+      "expr": "-ac10.gmdb",
+      "unit": "dB",
+      "min": 10,
+      "max": null,
+      "note": "Gain margin at leg 10 (C_out 4.7uF, ESR 500 mOhm, 50 mA). Ratified bound: \"Stability\" row, GM >= 10 dB. Added by #338 (boundary-grid expansion)."
+    },
+    {
+      "name": "pm_c47_esr500m_1ma_deg",
+      "expr": "180 + ac11.phc",
+      "unit": "deg",
+      "min": 45,
+      "max": null,
+      "note": "Phase margin at leg 11 (C_out 4.7uF, ESR 500 mOhm, 1 mA). Ratified bound: \"Stability\" row, PM >= 45 deg. Added by #338 (boundary-grid expansion)."
+    },
+    {
+      "name": "gm_c47_esr500m_1ma_db",
+      "expr": "-ac11.gmdb",
+      "unit": "dB",
+      "min": 10,
+      "max": null,
+      "note": "Gain margin at leg 11 (C_out 4.7uF, ESR 500 mOhm, 1 mA). Ratified bound: \"Stability\" row, GM >= 10 dB. Added by #338 (boundary-grid expansion)."
+    },
+    {
+      "name": "pm_c47_esr500m_0ma_deg",
+      "expr": "180 + ac12.phc",
+      "unit": "deg",
+      "min": 45,
+      "max": null,
+      "note": "Phase margin at leg 12 (C_out 4.7uF, ESR 500 mOhm, 0 mA). Ratified bound: \"Stability\" row, PM >= 45 deg. Added by #338 (boundary-grid expansion)."
+    },
+    {
+      "name": "gm_c47_esr500m_0ma_db",
+      "expr": "-ac12.gmdb",
+      "unit": "dB",
+      "min": 10,
+      "max": null,
+      "note": "Gain margin at leg 12 (C_out 4.7uF, ESR 500 mOhm, 0 mA). Ratified bound: \"Stability\" row, GM >= 10 dB. Added by #338 (boundary-grid expansion)."
+    },
+    {
+      "name": "pm_c47_esr0_50ma_deg",
+      "expr": "180 + ac13.phc",
+      "unit": "deg",
+      "min": 45,
+      "max": null,
+      "note": "Phase margin at leg 13 (C_out 4.7uF, ESR 0 (exact short, CCVS gain 0) Ohm, 50 mA). Ratified bound: \"Stability\" row, PM >= 45 deg. Added by #338 (boundary-grid expansion)."
+    },
+    {
+      "name": "gm_c47_esr0_50ma_db",
+      "expr": "-ac13.gmdb",
+      "unit": "dB",
+      "min": 10,
+      "max": null,
+      "note": "Gain margin at leg 13 (C_out 4.7uF, ESR 0 (exact short, CCVS gain 0) Ohm, 50 mA). Ratified bound: \"Stability\" row, GM >= 10 dB. Added by #338 (boundary-grid expansion)."
+    },
+    {
+      "name": "pm_c47_esr0_1ma_deg",
+      "expr": "180 + ac14.phc",
+      "unit": "deg",
+      "min": 45,
+      "max": null,
+      "note": "Phase margin at leg 14 (C_out 4.7uF, ESR 0 (exact short, CCVS gain 0) Ohm, 1 mA). Ratified bound: \"Stability\" row, PM >= 45 deg. Added by #338 (boundary-grid expansion)."
+    },
+    {
+      "name": "gm_c47_esr0_1ma_db",
+      "expr": "-ac14.gmdb",
+      "unit": "dB",
+      "min": 10,
+      "max": null,
+      "note": "Gain margin at leg 14 (C_out 4.7uF, ESR 0 (exact short, CCVS gain 0) Ohm, 1 mA). Ratified bound: \"Stability\" row, GM >= 10 dB. Added by #338 (boundary-grid expansion)."
+    },
+    {
+      "name": "pm_c47_esr0_0ma_deg",
+      "expr": "180 + ac15.phc",
+      "unit": "deg",
+      "min": 45,
+      "max": null,
+      "note": "Phase margin at leg 15 (C_out 4.7uF, ESR 0 (exact short, CCVS gain 0) Ohm, 0 mA). Ratified bound: \"Stability\" row, PM >= 45 deg. Added by #338 (boundary-grid expansion)."
+    },
+    {
+      "name": "gm_c47_esr0_0ma_db",
+      "expr": "-ac15.gmdb",
+      "unit": "dB",
+      "min": 10,
+      "max": null,
+      "note": "Gain margin at leg 15 (C_out 4.7uF, ESR 0 (exact short, CCVS gain 0) Ohm, 0 mA). Ratified bound: \"Stability\" row, GM >= 10 dB. Added by #338 (boundary-grid expansion)."
+    },
+    {
+      "name": "pm_c033_esr0_0ma_deg",
+      "expr": "180 + ac16.phc",
+      "unit": "deg",
+      "min": 45,
+      "max": null,
+      "note": "Phase margin at leg 16 (C_out 0.33uF, ESR 0 (exact short, CCVS gain 0) Ohm, 0 mA). Ratified bound: \"Stability\" row, PM >= 45 deg. Added by #338 (boundary-grid expansion)."
+    },
+    {
+      "name": "gm_c033_esr0_0ma_db",
+      "expr": "-ac16.gmdb",
+      "unit": "dB",
+      "min": 10,
+      "max": null,
+      "note": "Gain margin at leg 16 (C_out 0.33uF, ESR 0 (exact short, CCVS gain 0) Ohm, 0 mA). Ratified bound: \"Stability\" row, GM >= 10 dB. Added by #338 (boundary-grid expansion)."
+    },
+    {
+      "name": "pm_c033_esr0_1ma_deg",
+      "expr": "180 + ac17.phc",
+      "unit": "deg",
+      "min": 45,
+      "max": null,
+      "note": "Phase margin at leg 17 (C_out 0.33uF, ESR 0 (exact short, CCVS gain 0) Ohm, 1 mA). Ratified bound: \"Stability\" row, PM >= 45 deg. Added by #338 (boundary-grid expansion)."
+    },
+    {
+      "name": "gm_c033_esr0_1ma_db",
+      "expr": "-ac17.gmdb",
+      "unit": "dB",
+      "min": 10,
+      "max": null,
+      "note": "Gain margin at leg 17 (C_out 0.33uF, ESR 0 (exact short, CCVS gain 0) Ohm, 1 mA). Ratified bound: \"Stability\" row, GM >= 10 dB. Added by #338 (boundary-grid expansion)."
+    },
+    {
+      "name": "pm_c033_esr0_50ma_deg",
+      "expr": "180 + ac18.phc",
+      "unit": "deg",
+      "min": 45,
+      "max": null,
+      "note": "Phase margin at leg 18 (C_out 0.33uF, ESR 0 (exact short, CCVS gain 0) Ohm, 50 mA). Ratified bound: \"Stability\" row, PM >= 45 deg. Added by #338 (boundary-grid expansion)."
+    },
+    {
+      "name": "gm_c033_esr0_50ma_db",
+      "expr": "-ac18.gmdb",
+      "unit": "dB",
+      "min": 10,
+      "max": null,
+      "note": "Gain margin at leg 18 (C_out 0.33uF, ESR 0 (exact short, CCVS gain 0) Ohm, 50 mA). Ratified bound: \"Stability\" row, GM >= 10 dB. Added by #338 (boundary-grid expansion)."
+    },
+    {
       "name": "vout_seed_p1_v",
       "expr": "op1.vseed",
       "unit": "V",
-      "min": null,
-      "max": null,
-      "note": "Initial-condition evidence (#179), not a spec bound: v(vout) of the seeded operating-point solve at point 1 (C_out 0.33uF / ESR 10mOhm / 50mA, DR-002's low-C_eff corner) -- the same solve the following `ac` linearizes around (same circuit state, same .nodeset seed, same solver). A value near 1.8V means that point's linearization was taken about the regulating branch. Reported, not bounded: the ratified Output row belongs to other benches; these seven numbers exist so the record shows the seed held at EVERY point, not just the first, which is what #179 asked to be confirmed."
+      "min": 1.62,
+      "max": 1.98,
+      "note": "Operating-point validity gate for leg 1 (#338; evidence role from #179): v(vout) of the seeded operating-point solve that the following `ac` linearizes around. Bounded to 1.62-1.98 V (1.8 V +/- 10%) so that a leg that linearized around a non-regulating branch (e.g. VOUT = VIN or ~0) FAILS the grid instead of yielding a meaningless phase margin. This is a branch-discrimination gate, NOT the ratified Output-accuracy row (other benches own it) and not a relaxation of any spec line."
     },
     {
       "name": "vout_seed_p2_v",
       "expr": "op2.vseed",
       "unit": "V",
-      "min": null,
-      "max": null,
-      "note": "Initial-condition evidence (#179), not a spec bound: v(vout) of the seeded operating-point solve at point 2 (C_out 0.33uF / ESR 10mOhm / 1mA) -- the same solve the following `ac` linearizes around (same circuit state, same .nodeset seed, same solver). A value near 1.8V means that point's linearization was taken about the regulating branch. Reported, not bounded: the ratified Output row belongs to other benches; these seven numbers exist so the record shows the seed held at EVERY point, not just the first, which is what #179 asked to be confirmed."
+      "min": 1.62,
+      "max": 1.98,
+      "note": "Operating-point validity gate for leg 2 (#338; evidence role from #179): v(vout) of the seeded operating-point solve that the following `ac` linearizes around. Bounded to 1.62-1.98 V (1.8 V +/- 10%) so that a leg that linearized around a non-regulating branch (e.g. VOUT = VIN or ~0) FAILS the grid instead of yielding a meaningless phase margin. This is a branch-discrimination gate, NOT the ratified Output-accuracy row (other benches own it) and not a relaxation of any spec line."
     },
     {
       "name": "vout_seed_p3_v",
       "expr": "op3.vseed",
       "unit": "V",
-      "min": null,
-      "max": null,
-      "note": "Initial-condition evidence (#179), not a spec bound: v(vout) of the seeded operating-point solve at point 3 (C_out 0.33uF / ESR 10mOhm / 0mA, divider preload only) -- the same solve the following `ac` linearizes around (same circuit state, same .nodeset seed, same solver). A value near 1.8V means that point's linearization was taken about the regulating branch. Reported, not bounded: the ratified Output row belongs to other benches; these seven numbers exist so the record shows the seed held at EVERY point, not just the first, which is what #179 asked to be confirmed."
+      "min": 1.62,
+      "max": 1.98,
+      "note": "Operating-point validity gate for leg 3 (#338; evidence role from #179): v(vout) of the seeded operating-point solve that the following `ac` linearizes around. Bounded to 1.62-1.98 V (1.8 V +/- 10%) so that a leg that linearized around a non-regulating branch (e.g. VOUT = VIN or ~0) FAILS the grid instead of yielding a meaningless phase margin. This is a branch-discrimination gate, NOT the ratified Output-accuracy row (other benches own it) and not a relaxation of any spec line."
     },
     {
       "name": "vout_seed_p4_v",
       "expr": "op4.vseed",
       "unit": "V",
-      "min": null,
-      "max": null,
-      "note": "Initial-condition evidence (#179), not a spec bound: v(vout) of the seeded operating-point solve at point 4 (C_out 4.7uF / ESR 10mOhm / 50mA) -- the same solve the following `ac` linearizes around (same circuit state, same .nodeset seed, same solver). A value near 1.8V means that point's linearization was taken about the regulating branch. Reported, not bounded: the ratified Output row belongs to other benches; these seven numbers exist so the record shows the seed held at EVERY point, not just the first, which is what #179 asked to be confirmed."
+      "min": 1.62,
+      "max": 1.98,
+      "note": "Operating-point validity gate for leg 4 (#338; evidence role from #179): v(vout) of the seeded operating-point solve that the following `ac` linearizes around. Bounded to 1.62-1.98 V (1.8 V +/- 10%) so that a leg that linearized around a non-regulating branch (e.g. VOUT = VIN or ~0) FAILS the grid instead of yielding a meaningless phase margin. This is a branch-discrimination gate, NOT the ratified Output-accuracy row (other benches own it) and not a relaxation of any spec line."
     },
     {
       "name": "vout_seed_p5_v",
       "expr": "op5.vseed",
       "unit": "V",
-      "min": null,
-      "max": null,
-      "note": "Initial-condition evidence (#179), not a spec bound: v(vout) of the seeded operating-point solve at point 5 (C_out 4.7uF / ESR 10mOhm / 1mA) -- the same solve the following `ac` linearizes around (same circuit state, same .nodeset seed, same solver). A value near 1.8V means that point's linearization was taken about the regulating branch. Reported, not bounded: the ratified Output row belongs to other benches; these seven numbers exist so the record shows the seed held at EVERY point, not just the first, which is what #179 asked to be confirmed."
+      "min": 1.62,
+      "max": 1.98,
+      "note": "Operating-point validity gate for leg 5 (#338; evidence role from #179): v(vout) of the seeded operating-point solve that the following `ac` linearizes around. Bounded to 1.62-1.98 V (1.8 V +/- 10%) so that a leg that linearized around a non-regulating branch (e.g. VOUT = VIN or ~0) FAILS the grid instead of yielding a meaningless phase margin. This is a branch-discrimination gate, NOT the ratified Output-accuracy row (other benches own it) and not a relaxation of any spec line."
     },
     {
       "name": "vout_seed_p6_v",
       "expr": "op6.vseed",
       "unit": "V",
-      "min": null,
-      "max": null,
-      "note": "Initial-condition evidence (#179), not a spec bound: v(vout) of the seeded operating-point solve at point 6 (C_out 4.7uF / ESR 10mOhm / 0mA) -- the same solve the following `ac` linearizes around (same circuit state, same .nodeset seed, same solver). A value near 1.8V means that point's linearization was taken about the regulating branch. Reported, not bounded: the ratified Output row belongs to other benches; these seven numbers exist so the record shows the seed held at EVERY point, not just the first, which is what #179 asked to be confirmed."
+      "min": 1.62,
+      "max": 1.98,
+      "note": "Operating-point validity gate for leg 6 (#338; evidence role from #179): v(vout) of the seeded operating-point solve that the following `ac` linearizes around. Bounded to 1.62-1.98 V (1.8 V +/- 10%) so that a leg that linearized around a non-regulating branch (e.g. VOUT = VIN or ~0) FAILS the grid instead of yielding a meaningless phase margin. This is a branch-discrimination gate, NOT the ratified Output-accuracy row (other benches own it) and not a relaxation of any spec line."
     },
     {
       "name": "vout_seed_p7_v",
       "expr": "op7.vseed",
       "unit": "V",
-      "min": null,
-      "max": null,
-      "note": "Initial-condition evidence (#179), not a spec bound: v(vout) of the seeded operating-point solve at point 7 (C_out 0.33uF / ESR 500mOhm / 50mA, the window's ESR ceiling) -- the same solve the following `ac` linearizes around (same circuit state, same .nodeset seed, same solver). A value near 1.8V means that point's linearization was taken about the regulating branch. Reported, not bounded: the ratified Output row belongs to other benches; these seven numbers exist so the record shows the seed held at EVERY point, not just the first, which is what #179 asked to be confirmed."
+      "min": 1.62,
+      "max": 1.98,
+      "note": "Operating-point validity gate for leg 7 (#338; evidence role from #179): v(vout) of the seeded operating-point solve that the following `ac` linearizes around. Bounded to 1.62-1.98 V (1.8 V +/- 10%) so that a leg that linearized around a non-regulating branch (e.g. VOUT = VIN or ~0) FAILS the grid instead of yielding a meaningless phase margin. This is a branch-discrimination gate, NOT the ratified Output-accuracy row (other benches own it) and not a relaxation of any spec line."
+    },
+    {
+      "name": "vout_seed_p8_v",
+      "expr": "op8.vseed",
+      "unit": "V",
+      "min": 1.62,
+      "max": 1.98,
+      "note": "Operating-point validity gate for leg 8 (#338; evidence role from #179): v(vout) of the seeded operating-point solve that the following `ac` linearizes around. Bounded to 1.62-1.98 V (1.8 V +/- 10%) so that a leg that linearized around a non-regulating branch (e.g. VOUT = VIN or ~0) FAILS the grid instead of yielding a meaningless phase margin. This is a branch-discrimination gate, NOT the ratified Output-accuracy row (other benches own it) and not a relaxation of any spec line."
+    },
+    {
+      "name": "vout_seed_p9_v",
+      "expr": "op9.vseed",
+      "unit": "V",
+      "min": 1.62,
+      "max": 1.98,
+      "note": "Operating-point validity gate for leg 9 (#338; evidence role from #179): v(vout) of the seeded operating-point solve that the following `ac` linearizes around. Bounded to 1.62-1.98 V (1.8 V +/- 10%) so that a leg that linearized around a non-regulating branch (e.g. VOUT = VIN or ~0) FAILS the grid instead of yielding a meaningless phase margin. This is a branch-discrimination gate, NOT the ratified Output-accuracy row (other benches own it) and not a relaxation of any spec line."
+    },
+    {
+      "name": "vout_seed_p10_v",
+      "expr": "op10.vseed",
+      "unit": "V",
+      "min": 1.62,
+      "max": 1.98,
+      "note": "Operating-point validity gate for leg 10 (#338; evidence role from #179): v(vout) of the seeded operating-point solve that the following `ac` linearizes around. Bounded to 1.62-1.98 V (1.8 V +/- 10%) so that a leg that linearized around a non-regulating branch (e.g. VOUT = VIN or ~0) FAILS the grid instead of yielding a meaningless phase margin. This is a branch-discrimination gate, NOT the ratified Output-accuracy row (other benches own it) and not a relaxation of any spec line."
+    },
+    {
+      "name": "vout_seed_p11_v",
+      "expr": "op11.vseed",
+      "unit": "V",
+      "min": 1.62,
+      "max": 1.98,
+      "note": "Operating-point validity gate for leg 11 (#338; evidence role from #179): v(vout) of the seeded operating-point solve that the following `ac` linearizes around. Bounded to 1.62-1.98 V (1.8 V +/- 10%) so that a leg that linearized around a non-regulating branch (e.g. VOUT = VIN or ~0) FAILS the grid instead of yielding a meaningless phase margin. This is a branch-discrimination gate, NOT the ratified Output-accuracy row (other benches own it) and not a relaxation of any spec line."
+    },
+    {
+      "name": "vout_seed_p12_v",
+      "expr": "op12.vseed",
+      "unit": "V",
+      "min": 1.62,
+      "max": 1.98,
+      "note": "Operating-point validity gate for leg 12 (#338; evidence role from #179): v(vout) of the seeded operating-point solve that the following `ac` linearizes around. Bounded to 1.62-1.98 V (1.8 V +/- 10%) so that a leg that linearized around a non-regulating branch (e.g. VOUT = VIN or ~0) FAILS the grid instead of yielding a meaningless phase margin. This is a branch-discrimination gate, NOT the ratified Output-accuracy row (other benches own it) and not a relaxation of any spec line."
+    },
+    {
+      "name": "vout_seed_p13_v",
+      "expr": "op13.vseed",
+      "unit": "V",
+      "min": 1.62,
+      "max": 1.98,
+      "note": "Operating-point validity gate for leg 13 (#338; evidence role from #179): v(vout) of the seeded operating-point solve that the following `ac` linearizes around. Bounded to 1.62-1.98 V (1.8 V +/- 10%) so that a leg that linearized around a non-regulating branch (e.g. VOUT = VIN or ~0) FAILS the grid instead of yielding a meaningless phase margin. This is a branch-discrimination gate, NOT the ratified Output-accuracy row (other benches own it) and not a relaxation of any spec line."
+    },
+    {
+      "name": "vout_seed_p14_v",
+      "expr": "op14.vseed",
+      "unit": "V",
+      "min": 1.62,
+      "max": 1.98,
+      "note": "Operating-point validity gate for leg 14 (#338; evidence role from #179): v(vout) of the seeded operating-point solve that the following `ac` linearizes around. Bounded to 1.62-1.98 V (1.8 V +/- 10%) so that a leg that linearized around a non-regulating branch (e.g. VOUT = VIN or ~0) FAILS the grid instead of yielding a meaningless phase margin. This is a branch-discrimination gate, NOT the ratified Output-accuracy row (other benches own it) and not a relaxation of any spec line."
+    },
+    {
+      "name": "vout_seed_p15_v",
+      "expr": "op15.vseed",
+      "unit": "V",
+      "min": 1.62,
+      "max": 1.98,
+      "note": "Operating-point validity gate for leg 15 (#338; evidence role from #179): v(vout) of the seeded operating-point solve that the following `ac` linearizes around. Bounded to 1.62-1.98 V (1.8 V +/- 10%) so that a leg that linearized around a non-regulating branch (e.g. VOUT = VIN or ~0) FAILS the grid instead of yielding a meaningless phase margin. This is a branch-discrimination gate, NOT the ratified Output-accuracy row (other benches own it) and not a relaxation of any spec line."
+    },
+    {
+      "name": "vout_seed_p16_v",
+      "expr": "op16.vseed",
+      "unit": "V",
+      "min": 1.62,
+      "max": 1.98,
+      "note": "Operating-point validity gate for leg 16 (#338; evidence role from #179): v(vout) of the seeded operating-point solve that the following `ac` linearizes around. Bounded to 1.62-1.98 V (1.8 V +/- 10%) so that a leg that linearized around a non-regulating branch (e.g. VOUT = VIN or ~0) FAILS the grid instead of yielding a meaningless phase margin. This is a branch-discrimination gate, NOT the ratified Output-accuracy row (other benches own it) and not a relaxation of any spec line."
+    },
+    {
+      "name": "vout_seed_p17_v",
+      "expr": "op17.vseed",
+      "unit": "V",
+      "min": 1.62,
+      "max": 1.98,
+      "note": "Operating-point validity gate for leg 17 (#338; evidence role from #179): v(vout) of the seeded operating-point solve that the following `ac` linearizes around. Bounded to 1.62-1.98 V (1.8 V +/- 10%) so that a leg that linearized around a non-regulating branch (e.g. VOUT = VIN or ~0) FAILS the grid instead of yielding a meaningless phase margin. This is a branch-discrimination gate, NOT the ratified Output-accuracy row (other benches own it) and not a relaxation of any spec line."
+    },
+    {
+      "name": "vout_seed_p18_v",
+      "expr": "op18.vseed",
+      "unit": "V",
+      "min": 1.62,
+      "max": 1.98,
+      "note": "Operating-point validity gate for leg 18 (#338; evidence role from #179): v(vout) of the seeded operating-point solve that the following `ac` linearizes around. Bounded to 1.62-1.98 V (1.8 V +/- 10%) so that a leg that linearized around a non-regulating branch (e.g. VOUT = VIN or ~0) FAILS the grid instead of yielding a meaningless phase margin. This is a branch-discrimination gate, NOT the ratified Output-accuracy row (other benches own it) and not a relaxation of any spec line."
     }
   ],
-  "spread_checks": []
+  "spread_checks": [],
+  "ac_leg_grid": {
+    "issue": 338,
+    "esr_representation": "CCVS HESR (gain = ESR in ohms, controlled by the 0 V sense source VESRSENSE in series with C_OUT). ESR = 0 is `alter hesr gain = 0`, an exact short; a 0-ohm resistor is NOT used because ngspice silently floors it to ~1 mOhm.",
+    "axes": {
+      "cout_f": [
+        3.3e-07,
+        4.7e-06
+      ],
+      "esr_ohm": [
+        0,
+        0.01,
+        0.5
+      ],
+      "load_a": [
+        0,
+        0.001,
+        0.05
+      ]
+    },
+    "load_resistor_ohm": {
+      "50ma": 36,
+      "1ma": 1800,
+      "0ma": 1000000000000.0
+    },
+    "legs": [
+      {
+        "id": "c033_esr10m_50ma",
+        "ac_index": 1,
+        "cout_f": 3.3e-07,
+        "esr_ohm": 0.01,
+        "load": "50ma",
+        "pm_measurement": "pm_c033_50ma_deg",
+        "gm_measurement": "gm_c033_50ma_db",
+        "validity_measurement": "vout_seed_p1_v"
+      },
+      {
+        "id": "c033_esr10m_1ma",
+        "ac_index": 2,
+        "cout_f": 3.3e-07,
+        "esr_ohm": 0.01,
+        "load": "1ma",
+        "pm_measurement": "pm_c033_1ma_deg",
+        "gm_measurement": "gm_c033_1ma_db",
+        "validity_measurement": "vout_seed_p2_v"
+      },
+      {
+        "id": "c033_esr10m_0ma",
+        "ac_index": 3,
+        "cout_f": 3.3e-07,
+        "esr_ohm": 0.01,
+        "load": "0ma",
+        "pm_measurement": "pm_c033_0ma_deg",
+        "gm_measurement": "gm_c033_0ma_db",
+        "validity_measurement": "vout_seed_p3_v"
+      },
+      {
+        "id": "c47_esr10m_50ma",
+        "ac_index": 4,
+        "cout_f": 4.7e-06,
+        "esr_ohm": 0.01,
+        "load": "50ma",
+        "pm_measurement": "pm_c47_50ma_deg",
+        "gm_measurement": "gm_c47_50ma_db",
+        "validity_measurement": "vout_seed_p4_v"
+      },
+      {
+        "id": "c47_esr10m_1ma",
+        "ac_index": 5,
+        "cout_f": 4.7e-06,
+        "esr_ohm": 0.01,
+        "load": "1ma",
+        "pm_measurement": "pm_c47_1ma_deg",
+        "gm_measurement": "gm_c47_1ma_db",
+        "validity_measurement": "vout_seed_p5_v"
+      },
+      {
+        "id": "c47_esr10m_0ma",
+        "ac_index": 6,
+        "cout_f": 4.7e-06,
+        "esr_ohm": 0.01,
+        "load": "0ma",
+        "pm_measurement": "pm_c47_0ma_deg",
+        "gm_measurement": "gm_c47_0ma_db",
+        "validity_measurement": "vout_seed_p6_v"
+      },
+      {
+        "id": "c033_esr500m_50ma",
+        "ac_index": 7,
+        "cout_f": 3.3e-07,
+        "esr_ohm": 0.5,
+        "load": "50ma",
+        "pm_measurement": "pm_c033_esr500m_50ma_deg",
+        "gm_measurement": "gm_c033_esr500m_50ma_db",
+        "validity_measurement": "vout_seed_p7_v"
+      },
+      {
+        "id": "c033_esr500m_1ma",
+        "ac_index": 8,
+        "cout_f": 3.3e-07,
+        "esr_ohm": 0.5,
+        "load": "1ma",
+        "pm_measurement": "pm_c033_esr500m_1ma_deg",
+        "gm_measurement": "gm_c033_esr500m_1ma_db",
+        "validity_measurement": "vout_seed_p8_v"
+      },
+      {
+        "id": "c033_esr500m_0ma",
+        "ac_index": 9,
+        "cout_f": 3.3e-07,
+        "esr_ohm": 0.5,
+        "load": "0ma",
+        "pm_measurement": "pm_c033_esr500m_0ma_deg",
+        "gm_measurement": "gm_c033_esr500m_0ma_db",
+        "validity_measurement": "vout_seed_p9_v"
+      },
+      {
+        "id": "c47_esr500m_50ma",
+        "ac_index": 10,
+        "cout_f": 4.7e-06,
+        "esr_ohm": 0.5,
+        "load": "50ma",
+        "pm_measurement": "pm_c47_esr500m_50ma_deg",
+        "gm_measurement": "gm_c47_esr500m_50ma_db",
+        "validity_measurement": "vout_seed_p10_v"
+      },
+      {
+        "id": "c47_esr500m_1ma",
+        "ac_index": 11,
+        "cout_f": 4.7e-06,
+        "esr_ohm": 0.5,
+        "load": "1ma",
+        "pm_measurement": "pm_c47_esr500m_1ma_deg",
+        "gm_measurement": "gm_c47_esr500m_1ma_db",
+        "validity_measurement": "vout_seed_p11_v"
+      },
+      {
+        "id": "c47_esr500m_0ma",
+        "ac_index": 12,
+        "cout_f": 4.7e-06,
+        "esr_ohm": 0.5,
+        "load": "0ma",
+        "pm_measurement": "pm_c47_esr500m_0ma_deg",
+        "gm_measurement": "gm_c47_esr500m_0ma_db",
+        "validity_measurement": "vout_seed_p12_v"
+      },
+      {
+        "id": "c47_esr0_50ma",
+        "ac_index": 13,
+        "cout_f": 4.7e-06,
+        "esr_ohm": 0,
+        "load": "50ma",
+        "pm_measurement": "pm_c47_esr0_50ma_deg",
+        "gm_measurement": "gm_c47_esr0_50ma_db",
+        "validity_measurement": "vout_seed_p13_v"
+      },
+      {
+        "id": "c47_esr0_1ma",
+        "ac_index": 14,
+        "cout_f": 4.7e-06,
+        "esr_ohm": 0,
+        "load": "1ma",
+        "pm_measurement": "pm_c47_esr0_1ma_deg",
+        "gm_measurement": "gm_c47_esr0_1ma_db",
+        "validity_measurement": "vout_seed_p14_v"
+      },
+      {
+        "id": "c47_esr0_0ma",
+        "ac_index": 15,
+        "cout_f": 4.7e-06,
+        "esr_ohm": 0,
+        "load": "0ma",
+        "pm_measurement": "pm_c47_esr0_0ma_deg",
+        "gm_measurement": "gm_c47_esr0_0ma_db",
+        "validity_measurement": "vout_seed_p15_v"
+      },
+      {
+        "id": "c033_esr0_0ma",
+        "ac_index": 16,
+        "cout_f": 3.3e-07,
+        "esr_ohm": 0,
+        "load": "0ma",
+        "pm_measurement": "pm_c033_esr0_0ma_deg",
+        "gm_measurement": "gm_c033_esr0_0ma_db",
+        "validity_measurement": "vout_seed_p16_v"
+      },
+      {
+        "id": "c033_esr0_1ma",
+        "ac_index": 17,
+        "cout_f": 3.3e-07,
+        "esr_ohm": 0,
+        "load": "1ma",
+        "pm_measurement": "pm_c033_esr0_1ma_deg",
+        "gm_measurement": "gm_c033_esr0_1ma_db",
+        "validity_measurement": "vout_seed_p17_v"
+      },
+      {
+        "id": "c033_esr0_50ma",
+        "ac_index": 18,
+        "cout_f": 3.3e-07,
+        "esr_ohm": 0,
+        "load": "50ma",
+        "pm_measurement": "pm_c033_esr0_50ma_deg",
+        "gm_measurement": "gm_c033_esr0_50ma_db",
+        "validity_measurement": "vout_seed_p18_v"
+      }
+    ],
+    "coverage_disclosure": "Finite 18-point boundary grid at each PVT corner. Grid coverage (C_eff x ESR x load endpoints) is a different axis from PVT coverage (process/temperature/supply, owned by the corner runner) and neither is a continuous-window qualification: no interior C_eff/ESR/load points are sampled, so endpoint passes do not prove stability over the whole window. Records minted before #338 contain only the original 7 legs and lack the 11 added legs."
+  }
 }

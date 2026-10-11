@@ -128,7 +128,7 @@ section is a map, not a duplicate of that detail.
 - **`loop-gain/`** (issue #25) — AC loop gain, phase margin and gain margin
   against `spec/target-spec.md`'s ratified "Stability" row (PM ≥ 45°, GM ≥ 10 dB
   worst corner). Unlike the three above it walks its own second axis: each
-  PVT point runs **seven** AC sweeps, `alter`-ing `C_OUT`/`R_ESR`/`R_LOAD`
+  PVT point ran **seven** AC sweeps (extended to 18 by #338, see below), `alter`-ing `C_OUT`/`R_ESR`/`R_LOAD`
   across DR-002's ratified window (`C_eff` ∈ {0.33 µF, 4.7 µF} × load ∈
   {0, 1, 50 mA} at 10 mΩ, plus the 500 mΩ ESR ceiling), so the C_out/ESR axis
   is complete even in a `--quick` record. Because the block's feedback
@@ -154,6 +154,40 @@ section is a map, not a duplicate of that detail.
   on a different seven corners — `#179` was this bench's first run against
   the post-`#116`/`#139` pass device, and it seeded all seven `ac` points per
   the initial-condition contract. See "#179" above.
+
+  **#338 boundary-grid expansion (deck prepared, NOT yet executed).** The deck
+  now declares an 18-leg finite grid: C_eff {0.33, 4.7 uF} x ESR {0, 10, 500
+  mOhm} x load {50, 1, 0 mA}, in `experiment.json`'s `ac_leg_grid`. Legs 1-7
+  keep their original order and `pm_*`/`gm_*`/`vout_seed_*` identities; legs
+  8-18 are new. Every leg has a PM (>= 45 deg), a GM (>= 10 dB) and an
+  operating-point validity gate (`vout_seed_pN_v` bounded to 1.62-1.98 V, a
+  branch-discrimination check, not the Output spec row); a missing or
+  non-regulating leg fails the corner and so the grid.
+  *Zero ESR*: ESR is now a CCVS (`HESR`, V = gain x I through the 0 V sense
+  source `VESRSENSE`) walked with `alter hesr gain = ...`. A 0 ohm resistor is
+  not usable: ngspice silently floors it to about 1 mOhm (measured), which
+  would be a hidden positive ESR. Gain 0 is an exact short. At tt/27C/3.30V the
+  CCVS reproduces the legs 1-7 numbers of record `20260926-040338-4a9ec09`
+  (e.g. 40.477 deg / 17.51 dB at leg 1, 19.658 deg at leg 3).
+  *Three different coverage statements, kept apart*: (1) **grid coverage** is
+  the 18 endpoint combinations above; (2) **PVT coverage** is the 45-corner
+  process/temperature/supply matrix the runner applies to each leg and is
+  unrelated to the grid; (3) **continuous-window qualification** would need
+  interior C_eff/ESR/load points and is NOT claimed - endpoint passes do not
+  prove the whole DR-002 window.
+  *Historical records*: the four existing `sim/loop-gain/records/` (all 7-leg)
+  stay as append-only evidence and lack the 11 added legs, including every
+  zero-ESR leg; they must not be read as boundary-complete or qualified.
+  *Known open item*: a leg whose phase never reaches -180 deg has no gain
+  margin crossing, so `gm` reads n/a and the harness grades it missing (FAIL).
+  A single-corner smoke at tt/27C/3.30V showed this at leg 11 (4.7 uF /
+  500 mOhm / 1 mA). It fails safe; a fallback treating "no crossing" as
+  unbounded margin is a follow-up, not done here.
+  *Execution handoff for #231*: its Stability rerun must run the expanded
+  deck, `sim/loop-gain` at the full 45-corner matrix (18 legs x 45 corners =
+  810 AC points), through a `klt sim` batch request (`--backend batch`); a
+  `--quick` subset needs a `--subset-reason`. No results of the expanded deck
+  beyond one local tt/27C/3.30V smoke (not recorded) exist, and none are claimed.
 
 - **`thermal/`** (issue #66) — trip/reset temperature and hysteresis for the
   thermal-shutdown circuit (#29/DR-005) against the spec's ratified "Thermal"
