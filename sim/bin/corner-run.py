@@ -42,6 +42,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 
+import batch_dropout
 from batch_window_grid import TranslationError, leg_step, parse_leg_template
 from ramp_monotonicity import evaluate_legs
 from xschem_exprs import eval_xschem_exprs  # noqa: F401  (re-exported; tests call corner_run.eval_xschem_exprs)
@@ -1066,9 +1067,11 @@ def spread_checks(exp: Experiment, results: list[dict]) -> list[dict]:
 # --------------------------------------------------------------------------
 #
 # BOUNDED on purpose: only the unchanged `pdk-smoke` shape (one `op` analysis,
-# two scalar measurements) and the `load-transient` COUT/ESR window grid
+# two scalar measurements), the `load-transient` COUT/ESR window grid
 # (issue #326: one single-step `tran` request per supply x leg, see
-# sim/bin/batch_window_grid.py) may use it. Every other manifest is refused
+# sim/bin/batch_window_grid.py) and the `dropout-vs-load` cold-start crossing
+# (issue #374: one single-step `tran ... uic` request per supply, see
+# sim/bin/batch_dropout.py) may use it. Every other manifest is refused
 # before any netlisting, submission or local ngspice -- see sim/README.md
 # "Batch backend". The local path above is untouched; this section only adds a
 # second way to obtain the same per-corner result dicts.
@@ -1081,15 +1084,81 @@ BATCH_ALLOWLIST = {
     # Shape: a `window_grid` whose leg_analyses translate to a klt step, every
     # measurement per-leg, and no deck-level analysis (comments only).
     "load-transient": {"window_grid": True},
+    # Shape (issue #374): one cold-start `tran ... uic`, td-delayed crossing /
+    # window-avg `meas tran` cards, graded expressions over those cards, and
+    # the stimulus below sent verbatim in the netlist. RENEWAL: the manifest
+    # is pinned by the record input-fingerprint digests of its execution
+    # sections (analyses, measurements incl. bounds/inclusivity, matrix), so
+    # ANY intentional change to them refuses the batch backend until the
+    # translation is re-validated (sim/tests/test_batch_dropout_374.py) and
+    # these digests are updated deliberately.
+    "dropout-vs-load": {
+        "cold_start_crossing": True,
+        "manifest_sections": {
+            "analyses": "bce00b423fb13bf2c527284fcf14780e6bcbfbc0417eaf652f54f538407a71c8",
+            "measurements": "9c84c875c74b59ddf3bd20af49497817d30c0c250ade790ca1778949f22d7b19",
+            "matrix": "639e50d5a920cef70120de11fefa3ffc5bf53f0446c56a853f87c39e95976b21",
+        },
+        "stimulus": [
+            "VVIN VIN 0 PWL(0 0 100u 'vsup' 6m 'vsup' 14m 'vsup-2.13')",
+            "VEN EN 0 PULSE(0 'vsup' 100u 1u 1u 100 200)",
+            "ILOAD VOUT 0 PWL(0 0 2.5m 0 2.6m 50m)",
+        ],
+    },
 }
 
 BATCH_REFUSAL_HINT = (
     "the batch backend is bounded to the unchanged sim/pdk-smoke shape (one `op` "
-    "analysis, scalar measurements) and the sim/load-transient COUT/ESR window "
-    "grid (one `tran` step per leg); every other experiment, including the other "
-    "transient/AC/DC-sweep and mc-* manifests, stays on the local backend "
-    "(see sim/README.md, \"Batch backend\")"
+    "analysis, scalar measurements), the sim/load-transient COUT/ESR window "
+    "grid (one `tran` step per leg) and the validated sim/dropout-vs-load "
+    "cold-start crossing (one `tran ... uic` step per supply); every other "
+    "experiment, including the other transient/AC/DC-sweep and mc-* manifests, "
+    "stays on the local backend (see sim/README.md, \"Batch backend\")"
 )
+
+
+def is_cold_start_crossing(exp: Experiment) -> bool:
+    """Whether the experiment runs through the issue #374 dropout adapter."""
+    return bool(BATCH_ALLOWLIST.get(exp.slug, {}).get("cold_start_crossing"))
+
+
+def cold_start_step(exp: Experiment) -> dict:
+    """The klt `analysis_steps[]` entry for the cold-start crossing deck."""
+    deck = batch_dropout.parse_deck((exp.raw.get("deck") or {}).get("analyses") or [])
+    return batch_dropout.dropout_step(deck, [(m.name, m.expr, m.unit) for m in exp.measurements])
+
+
+def check_cold_start_batch_shape(exp: Experiment) -> None:
+    """Refuse a dropout manifest whose shape is not the validated one: the
+    structural translation must succeed AND the execution sections must still
+    digest to the pinned values (issue #374: an intentional manifest change
+    requires renewed validation, never a silent pass-through)."""
+    allowed = BATCH_ALLOWLIST[exp.slug]
+    why = None
+    if exp.raw.get("window_grid") or any(m.leg is not None for m in exp.measurements):
+        why = "a window_grid / per_leg measurement is not part of the cold-start shape"
+    elif exp.raw.get("spread_checks"):
+        why = "spread_checks are not part of the validated cold-start shape"
+    else:
+        try:
+            cold_start_step(exp)
+        except batch_dropout.DropoutTranslationError as exc:
+            why = f"deck does not translate to a cold-start klt step ({exc})"
+    if why is None:
+        got = pvt_input_sections(exp.raw, None)
+        changed = [k for k, v in allowed["manifest_sections"].items() if got.get(k) != v]
+        extra = sorted(set(got) - set(allowed["manifest_sections"]))
+        if changed or extra:
+            why = (
+                f"manifest section(s) {changed + extra} changed since the adapter was validated "
+                "(pinned digests in BATCH_ALLOWLIST); re-validate the translation and update "
+                "the pins deliberately"
+            )
+    if why:
+        raise HarnessError(
+            f"--backend batch: {exp.slug!r} no longer has the validated cold-start crossing "
+            f"shape ({why}): {BATCH_REFUSAL_HINT}"
+        )
 
 
 def batch_legs(exp: Experiment) -> list[str] | None:
@@ -1161,6 +1230,9 @@ def check_batch_supported(exp: Experiment) -> None:
         )
     if allowed.get("window_grid"):
         check_window_grid_batch_shape(exp)
+        return
+    if allowed.get("cold_start_crossing"):
+        check_cold_start_batch_shape(exp)
         return
     analyses = list(deck.get("analyses") or ["op"])
     meas = [(m.name, m.expr) for m in exp.measurements]
@@ -1247,6 +1319,9 @@ def build_batch_request(
     if group.leg is not None:
         # One single-step request per window-grid leg (issue #326).
         shape = {"analysis_steps": [window_grid_step(exp, group.leg)]}
+    elif is_cold_start_crossing(exp):
+        # One single-step cold-start request per supply group (issue #374).
+        shape = {"analysis_steps": [cold_start_step(exp)]}
     else:
         shape = {
             "analysis": {"kind": "op", "args": ""},
@@ -1273,6 +1348,16 @@ def prepare_batch_requests(
     run_dir: Path, timeout: int,
 ) -> list[tuple[BatchGroup, Path, dict]]:
     """Write each request's netlist + request JSON under the scratch run dir."""
+    if is_cold_start_crossing(exp):
+        # The stimulus travels in the netlist: refuse before any request is
+        # written (and so before any submission) if it is not the validated one.
+        try:
+            batch_dropout.check_netlist(body, BATCH_ALLOWLIST[exp.slug]["stimulus"])
+        except batch_dropout.DropoutTranslationError as exc:
+            raise HarnessError(
+                f"--backend batch: {exp.slug!r} netlist is not the validated cold-start "
+                f"shape ({exc}): {BATCH_REFUSAL_HINT}"
+            ) from exc
     req_dir = run_dir / "klt-requests"
     req_dir.mkdir(parents=True, exist_ok=True)
     out = []
@@ -1384,6 +1469,13 @@ def normalize_batch_response(
     limits, spread and the solver-diagnostic gate are the harness's own.
     Returns (results in request point order, {corner id: engine log text}).
     """
+    cold_start = group.leg is None and is_cold_start_crossing(exp)
+    if cold_start:
+        # An unfinished / incompatible / unidentified remote job is never a
+        # result (issue #374): abort, no record, no fallback.
+        problem = batch_dropout.remote_completion_problem(response)
+        if problem:
+            raise HarnessError(f"request {group.key}: {problem}")
     want = {(c.process, c.temp_c): c for c in group.corners}
     seen: dict[tuple[str, float], dict] = {}
     for i, rc in enumerate(response["corners"]):
@@ -1405,7 +1497,9 @@ def normalize_batch_response(
     if missing:
         raise HarnessError(f"request {group.key}: response is missing corner(s) {missing}")
 
-    if group.leg is None:
+    if cold_start:
+        wanted = [(m, batch_dropout.klt_result_name(m.name)) for m in exp.measurements]
+    elif group.leg is None:
         wanted = [(m, f"meas_{m.name}") for m in exp.measurements]
     else:
         # klt names a step-scoped result `<step>.<name>`; the step is the leg.
@@ -1420,6 +1514,8 @@ def normalize_batch_response(
         status = rc["status"]
         if status not in ("pass", "fail"):
             reasons.append(f"{tag}klt sim corner status {status!r} (not a completed result)")
+        if cold_start:
+            reasons.extend(batch_dropout.corner_diagnostic_problems(rc))
         by_name: dict[str, list] = {}
         for rm in rc["measurements"]:
             if isinstance(rm, dict) and isinstance(rm.get("name"), str):
@@ -1597,6 +1693,22 @@ def batch_tools(base: dict, execution: dict) -> dict:
 # --------------------------------------------------------------------------
 
 
+def cold_start_adapter_info(exp: Experiment) -> dict:
+    """Provenance of the issue #374 adapter for a batch record / dry run."""
+    allowed = BATCH_ALLOWLIST[exp.slug]
+    step = cold_start_step(exp)
+    return {
+        "name": "cold-start-crossing",
+        "issue": 374,
+        "step": step["name"],
+        "analysis": f"{step['analysis']['kind']} {step['analysis']['args']}",
+        "cards": [m["spice"] for m in step["measurements"] if "spice" in m],
+        "graded": [m.name for m in exp.measurements],
+        "validated_manifest_sections": dict(allowed["manifest_sections"]),
+        "validated_stimulus": list(allowed["stimulus"]),
+    }
+
+
 def render_batch_execution(record: dict) -> list[str]:
     """Requested vs klt-reported execution environment of a batch record."""
     ex = record["execution"]
@@ -1625,6 +1737,15 @@ def render_batch_execution(record: dict) -> list[str]:
             f"    - klt provenance.pdk.version `{rq.get('pdk_version') or 'not reported'}` — "
             + ("names" if rq.get("klt_pdk_names_pin") else "**does NOT name**")
             + " the pinned open_pdks commit"
+        )
+    if ex.get("adapter"):
+        ad = ex["adapter"]
+        lines.append(
+            f"- **Batch adapter**: `{ad['name']}` (issue #{ad['issue']}): one `analysis_steps` "
+            f"step `{ad['step']}` running `{ad['analysis']}` (no operating-point solve), cards "
+            + ", ".join(f"`{c}`" for c in ad["cards"])
+            + "; stimulus sent verbatim in the request netlist and checked against the "
+            "validated lines; graded locally with the manifest's own bounds"
         )
     lines.append(
         f"- **ngspice init settings**: `{record['tools'].get('spiceinit_file', 'sim/spiceinit')}` "
@@ -1864,8 +1985,9 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         help="execution backend. `local` (default) runs ngspice here, one process per "
         "corner. `batch` hands the grid to `klt sim --backend batch` (one request per "
         "supply value, and per window-grid leg); opt-in and bounded to the unchanged "
-        "sim/pdk-smoke shape and the sim/load-transient window grid -- every other "
-        "experiment is refused (see sim/README.md, \"Batch backend\")",
+        "sim/pdk-smoke shape, the sim/load-transient window grid and the validated "
+        "sim/dropout-vs-load cold-start crossing -- every other experiment is "
+        "refused (see sim/README.md, \"Batch backend\")",
     )
     p.add_argument(
         "--allow-pdk-mismatch",
@@ -2001,6 +2123,14 @@ def main(argv: list[str]) -> int:
         print(f"backend         : batch ({len(prepared)} klt sim request(s))")
 
     if args.dry_run and batch:
+        if is_cold_start_crossing(exp):
+            ad = cold_start_adapter_info(exp)
+            print(f"\n-- batch adapter {ad['name']} (issue #374) --")
+            print(f"  step {ad['step']}: {ad['analysis']}")
+            for c in ad["cards"]:
+                print(f"  card : {c}")
+            for ln in ad["validated_stimulus"]:
+                print(f"  stimulus (verified in each request netlist): {ln}")
         print("\n-- corner list --")
         for corner in matrix:
             print(f"  {corner.id}")
@@ -2163,6 +2293,8 @@ def main(argv: list[str]) -> int:
             rq["request_file"] = link_reqs[rq["key"]]
             rq["response_file"] = link_resps[rq["key"]]
         record["execution"] = {"requested_backend": "batch", **execution}
+        if is_cold_start_crossing(exp):
+            record["execution"]["adapter"] = cold_start_adapter_info(exp)
         record["links"].update(
             {"klt_requests": link_reqs, "klt_responses": link_resps, "request_netlists": link_nets}
         )

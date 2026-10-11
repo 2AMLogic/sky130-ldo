@@ -572,13 +572,14 @@ for each of the four independent cold-enable legs (`c033_0ma`, `c033_50ma`,
 `python3 sim/bin/corner-run.py sim/pdk-smoke --backend batch` sends the PVT
 grid to `klt sim --backend batch` instead of running ngspice here. It is
 **opt-in and deliberately bounded**: the allowlist is `sim/pdk-smoke` with its
-single `op` analysis and two scalar measurements (`vgs`, `isup`), and
-`sim/load-transient`'s COUT/ESR window grid (issue #326, below). Every other
-manifest — `current-limit`, `dropout-vs-load`, `enable-shutdown`,
+single `op` analysis and two scalar measurements (`vgs`, `isup`),
+`sim/load-transient`'s COUT/ESR window grid (issue #326, below) and
+`sim/dropout-vs-load`'s cold-start crossing in its validated shape (issue
+#374, below). Every other manifest — `current-limit`, `enable-shutdown`,
 `ic-screen-125c-*`, `iq`, `line-regulation`, `load-regulation`, `loop-gain`,
 `psrr-dc`, `startup`, `thermal`, and the `mc-*` experiments (which have their
-own runner, `mc-run.py`) — and any edited smoke or window-grid shape is
-**refused before netlisting, submission or local ngspice**. The wider
+own runner, `mc-run.py`) — and any edited smoke, window-grid or dropout shape
+is **refused before netlisting, submission or local ngspice**. The wider
 regulation grids stay deferred on translating their measurement cards.
 
 - **Requests.** The supply is the netlist's `.param vsup`, not a klt corner
@@ -655,6 +656,118 @@ request (klt >= 0.7) with exactly one step per leg:
   by the fleet runner** (`batch_runner_version_mismatch`, runner klt 0.5.0 vs
   client 0.7.0; 2AMLogic/klayout-tools#2948). Until the runner image is
   updated, the Phase B campaign cannot run; it is not run locally instead.
+
+#### Dropout cold-start crossing on the batch backend (issue #374)
+
+`python3 sim/bin/corner-run.py sim/dropout-vs-load --backend batch` runs the
+dropout matrix off-host. `sim/bin/batch_dropout.py` (PDK-free) translates the
+manifest's deck into a klt **`analysis_steps`** request with **one step**,
+`dropout`, per fixed supply (default run: 3 requests of 5 process × 3
+temperatures; `--quick`: 3 singletons). klt renders that step back into the
+same control commands the local deck runs, in the same order:
+
+| local deck (`deck.analyses`) | klt request |
+|---|---|
+| `tran 10u 14m uic` | the step's `analysis` (`kind: tran`, `args` verbatim): the `uic` cold start, no operating-point solve |
+| `meas tran dropout_vin_x find v(vin) when v(vout)=1.764 fall=1 td=6m` | a step measurement with the card as `spice` (klt emits `meas tran ...` against the step's own plot) |
+| `meas tran vout_at_max_vin_v avg v(vout) from=5.5m to=6m` | likewise; graded directly, since the measurement's `expr` is the card |
+| `let meas_dropout_v = dropout_vin_x - 1.764` | a step `expr` measurement `dropout_v` (klt emits `let dropout_v = dropout_vin_x - 1.764`) |
+| VIN ramp, EN edge, 50 mA load step | the netlist, sent verbatim (`.param vsup=<supply>` first) |
+
+Results come back as `dropout.<name>` and are graded **locally** with the
+manifest's own bounds (`dropout_v < 0.3` strict, `max_inclusive: false`, so
+exactly 0.300 V fails; issue #335). Grading uses the same `grade_bounds` as
+the local path.
+
+- **Shape gate (before netlisting).** The deck must be one
+  `tran <tstep> <tstop> uic` followed only by `meas tran` cards of two forms:
+  a crossing `find v(a) when v(b)=X fall|rise|cross=N td=T` (at least one)
+  or a window `avg v(a) from=T1 to=T2`. Each graded measurement is either a
+  card (identity) or an expression over card names, numbers and `+ - * / ( )`.
+  `window_grid`, `per_leg` and `spread_checks` are refused. This is not a
+  general SPICE translator.
+- **Renewal pin.** `BATCH_ALLOWLIST["dropout-vs-load"]["manifest_sections"]`
+  pins the record input-fingerprint digests of the manifest's execution
+  sections: `analyses` (deck options, params and commands; comments ignored),
+  `measurements` (names, expressions, bounds and inclusivity) and `matrix`
+  (axes and `quick_subset`). **Any** intentional change to them (a bound, the
+  threshold, the time grid, an option, a corner) refuses the batch backend
+  until someone re-validates the translation and updates the pins.
+  `TestDropoutShapeGate.test_pins_equal_the_committed_manifest` fails at the
+  same moment, so the change cannot land unnoticed. Edits to prose (`claim`,
+  `note`, comment lines) do not affect the pin.
+- **Netlist gate (before any request is written).** The VIN/EN/load stimulus
+  lines must equal the validated ones exactly (one definition each), and the
+  netlist may not carry `.ic`, `.nodeset`, `.control`/`.endc`, analysis
+  cards, `.meas`/`.measure` or `.temp`, because each would change the cold
+  start or conflict with klt's control block. A testbench stimulus change
+  therefore also needs renewed validation.
+- **Never PASS without a completed, compatible remote run.** In addition to
+  the general batch rules above: the response must name a remote job whose
+  state is `done` (or `failed` with a ran-to-report exit 0/3/4), and
+  `runner_compatibility` must be `match`. `mismatch` or `unknown` means klt
+  could not confirm that the runner honoured `options.ngspice_init` (the
+  solver settings) and `expr` measurements (2AMLogic/klayout-tools#2917).
+  Otherwise the run aborts with exit 1, writes no record and does not fall
+  back. A missing crossing (klt: `value: null`, `status: "error"`, an
+  error-severity diagnostic), any error-severity or `step_failed` klt
+  diagnostic, a solver-diagnostic marker in the retained engine log, a
+  missing log, or a missing, duplicate or non-finite value is a recorded
+  FAIL.
+- **Provenance.** Records carry the usual batch `execution` block plus
+  `execution.adapter` (step, analysis, cards, graded names, the pinned
+  digests and the stimulus lines) and a "Batch adapter" line. The input
+  fingerprint, subset disclosure (`--subset-reason`), PDK/tool provenance
+  and append-only handling are the same as for any other record.
+- **Fixtures.** `sim/tests/test_batch_dropout_374.py` is headless. It covers
+  the dry-run content, translation, the strict 0.300 V boundary, no
+  crossing, solver/step diagnostics, missing and duplicate corners, remote
+  error envelopes, unfinished or incompatible jobs, and the shape, pin and
+  netlist gates. It also includes two **real** klt 0.7.0 responses captured
+  with `klt sim --backend local` under `sim/tests/fixtures/issue-374/`: the
+  harness-generated tt / 27 °C / 3.30 V request (`dropout_v` 0.397658 V,
+  `vout_at_max_vin_v` 1.798832 V) and a PDK-free RC deck whose crossing
+  never fires.
+
+**Client-side parity (2026-10-11, single corner, host ngspice-46).** The
+harness-generated request for tt / 27 °C / 3.30 V was run once through
+`klt sim --backend local`. It reproduced the local harness on the same
+netlist exactly: `dropout_v` = 0.397658 V and `vout_at_max_vin_v` =
+1.798832 V. These match record `20261011-092557-7a4e0cc`. The klt engine log
+shows "Operating point simulation skipped by 'uic'" and no solver
+diagnostic. This validates the translation on this host. **It is not a
+remote result.**
+
+**Live fleet qualification: NOT performed (blocked).** `batch-preflight.py`
+was run twice on 2026-10-11 (shortly after 22:06 UTC and at 22:16 UTC). Both times it exited
+`1` before any job existed:
+`batch-fleet-provision.sh launch failed (exit 1): error: 12 instance(s)
+already running + 1 requested exceeds BATCH_MAX_CONCURRENT_INSTANCES=8`
+(fleet concurrency cap, 2AMLogic/klayout-tools#2917). The runner/client
+version question (2AMLogic/klayout-tools#2948) was therefore not reached.
+The paired check is tracked in #375 and runs after the preflight exits `0`:
+
+```bash
+python3 sim/bin/batch-preflight.py                       # must exit 0 first
+python3 sim/bin/corner-run.py sim/dropout-vs-load --backend batch \
+    --process tt --temp 27 --supply 3.3 \
+    --subset-reason "issue #374 paired local/remote baseline check" --no-write
+python3 sim/bin/corner-run.py sim/dropout-vs-load \
+    --process tt --temp 27 --supply 3.3 \
+    --subset-reason "issue #374 paired local/remote baseline check" --no-write
+```
+
+Run both at the same commit. **Comparison tolerance:** equal at the printed
+precision, |Δ| ≤ 1 µV on `dropout_v` and `vout_at_max_vin_v`, when the
+remote `engine_version` equals the local ngspice. If the engine versions
+differ, report Δ together with both versions and the request netlist sha256
+(klt `environment.netlist_sha256`), and do not claim equivalence. Do not
+widen the tolerance to absorb tool drift. A failed or incompatible preflight
+only defers this check. It does not permit a local multi-corner campaign.
+After a passing paired check, the full campaign is
+`python3 sim/bin/corner-run.py sim/dropout-vs-load --backend batch`. That is
+the batch command above without `--process/--temp/--supply`,
+`--subset-reason` or `--no-write`.
 
 #### Runner preflight (issue #356)
 
