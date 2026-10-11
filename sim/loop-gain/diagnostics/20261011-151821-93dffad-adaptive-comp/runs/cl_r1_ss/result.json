@@ -1,0 +1,78 @@
+{
+  "run_id": "cl_r1_ss",
+  "bench": "current-limit",
+  "issue": 349,
+  "condition": {
+    "process": "ss",
+    "temp_c": -40.0,
+    "supply_v": 2.97
+  },
+  "edits": {
+    "ra_frac": 0.5,
+    "sw_w_um": 2.0,
+    "tap_w_um": 6.0,
+    "ccomp_scale": 1.0,
+    "notes": [
+      "R_CZ split: R_a L=26 um, R_b L=26 um (W=0.42), XM_CZSW W=2 across R_b",
+      "control tap: XM_CLN3 W=6 (gate CL_SNS) + XM_ADPU W=1.25 (gate BIASP) -> ADAPT_G"
+    ]
+  },
+  "stimulus": {
+    "analyses": "verbatim from sim/current-limit/experiment.json (see deck.spice)"
+  },
+  "provenance": {
+    "source_commit": "93dffada0b8670fd6bc3c0a39660627b06e5b098",
+    "driver_sha256": "90c2870976a8c876b5ab021013485d5a3f3ac913f7ad5b1223ccd6cf98f8ea0c",
+    "experiment_json_sha256": "3bf0ac6cd1d2bfd03e3b4105927652001faefba58ce44f842460fe1ccaeb9eb1",
+    "testbench_sha256": "78b754001fd739b1d207ef846d643f9be3052512ce3f5e7e21bdae4c47fa24c4",
+    "dut_sha256": "1378c2d440e6ffc2224091972a162357c2634600e6e56cb51e4d6f96159fd2e3",
+    "netlist_raw_sha256": "1cc64c5899ac009ab58bea2fe05903a19a9f45a2fbdb9ecf4eeaed97875919cf",
+    "netlist_edited_sha256": "190ec220067bbdd22b725aaf5336efae10e9ef832c3cc56f871dc81a07ed900e",
+    "deck_sha256": "af7b0d50fc2e46dd649075261e2869996facbadd9353dbccdefada2dca2d06b5",
+    "spiceinit_sha256": "3cf811e1ae5fc75dd0bbe56205016c387c3538304be0cbdab7cb658fb9adf960",
+    "pdk": {
+      "open_pdks_commit": "c6d73a35f524070e85faff4a6a9eef49553ebc2b",
+      "matches_pin": true
+    },
+    "tools": {
+      "ngspice": "ngspice-42 : Circuit level simulation program",
+      "xschem": "XSCHEM V3.4.4",
+      "platform": "Linux 7.0.0-1013-aws x86_64",
+      "python": "3.12.3",
+      "declared": {
+        "ngspice": "42",
+        "xschem": "3.4.4"
+      },
+      "on_baseline": true
+    }
+  },
+  "ngspice_exit": 0,
+  "elapsed_s": 4.28,
+  "solver_diagnostic": null,
+  "meas": {
+    "vout_50ma_v": 1.798821,
+    "vout_50ma_span_v": 0.0,
+    "cl_margin_50ma_v": 0.029148,
+    "ilim_short_ma": 171.6094,
+    "ilim_knee_ma": 140.3236,
+    "ilim_droop_pct": -22.2955,
+    "ishort_sustained_ma": 171.651,
+    "ishort_ripple_pct": 0.02173014,
+    "vout_short_mv": 0.1716417,
+    "isup_pre_short_ma": 0.01119636
+  },
+  "missing_measurements": [],
+  "valid": true,
+  "grading_vs_manifest_bounds": {
+    "vout_50ma_v": true,
+    "vout_50ma_span_v": true,
+    "cl_margin_50ma_v": true,
+    "ilim_short_ma": true,
+    "ilim_knee_ma": true,
+    "ilim_droop_pct": true,
+    "ishort_sustained_ma": true,
+    "ishort_ripple_pct": true,
+    "vout_short_mv": true,
+    "isup_pre_short_ma": true
+  }
+}
