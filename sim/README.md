@@ -649,6 +649,29 @@ request (klt >= 0.7) with exactly one step per leg:
   client 0.7.0; 2AMLogic/klayout-tools#2948). Until the runner image is
   updated, the Phase B campaign cannot run; it is not run locally instead.
 
+#### Runner preflight (issue #356)
+
+`python3 sim/bin/batch-preflight.py` is the one shared check for "does the
+fleet runner accept this client yet?" (`batch_runner_version_mismatch`,
+2AMLogic/klayout-tools#2948). It submits **one** single-unit `sim/pdk-smoke`
+request (tt / 27 C / 1.8 V, built by `corner-run.py`'s own batch request
+builder and runner) and reads `environment.remote`. klt 0.7.0's `klt sim` has
+no compatibility-only check, so a single-unit submit is the cheapest probe;
+run it once per re-check, never in a loop. Issues #345, #341 and #327 cite it
+as their unblock check.
+
+| exit | meaning |
+|---|---|
+| `0` | accepted: the runner took the job |
+| `3` | version mismatch (`runner_compatibility: mismatch` / `batch_runner_version_mismatch`); reported, never worked around |
+| `1` | any other failure (no response, other job failure, missing klt/xschem/PDK) |
+
+It prints the job id and the runner/client klt versions (`--json` adds a
+machine-readable line, `--keep` retains the scratch dir). It is a probe, not
+evidence: scratch lives in a temp dir and nothing is written under any
+`sim/<experiment>/` directory. Unit tests (canned responses only) are in
+`sim/tests/test_batch_preflight.py`.
+
 ### Writing a new Monte Carlo experiment
 
 Same testbench-authoring rule as above (no corner include, no numeric supply,
