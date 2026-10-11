@@ -4,6 +4,35 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 
 ### 2026-10-11
 
+- **PR #363**: Stability: diagnose missing phase crossings before interpreting gain margin (#360)
+- **PR #362**: sim: batch preflight accepts only a completed usable smoke response
+- **PR #358**: sim: shared batch-runner preflight probe (#356)
+- **PR #355**: sim: shared _probe_common helper for ngspice diagnostic probes
+- **PR #354**: test(layout): PDK-free unit coverage for cap-study orchestrator (#351)
+- **PR #352**: sim: load-adaptive compensation prototype screening (REVISE) (#349)
+- **PR #350**: sim: dropout screening - isolated pass bench + combined ideal-tail/no-clamps probe (#339)
+- **PR #348**: docs: finding for #347 (pinned lint handoff), no enforcement change
+- **PR #346**: feat(sim): klt batch path for the load-transient COUT/ESR window grid
+- **PR #344**: sim: 0 mA phase-margin mitigation screen with Iq accounting (#324)
+- **PR #343**: sim/loop-gain: 18-leg boundary grid incl. exact-zero ESR (#338)
+- **PR #342**: Area: compare capacitor implementations for the 162 pF budget (study, outcome c) (#319)
+- **PR #340**: sim+design: dropout attribution study at tt/27C/3.30V/50mA (#323)
+- **PR #337**: sim: explicit bound inclusivity in corner-run grader (#335)
+- **Issue #360** (closed): Stability: diagnose missing phase crossings before interpreting gain margin
+- **Issue #359** (closed): Batch preflight: reject incomplete or errored smoke responses
+- **Issue #356** (closed): Sim: one shared batch-runner preflight probe for the issues blocked on the fleet runner
+- **Issue #353** (closed): Sim: share the ngspice diagnostic-probe scaffolding in one helper module
+- **Issue #351** (closed): Tests: add PDK-free unit coverage for the cap-study orchestrator (run-cap-study.py)
+- **Issue #349** (closed): Stability: prototype load-adaptive compensation and measure sense-path loading
+- **Issue #339** (closed): Dropout: screen isolated pass capability and combined amplifier/clamp interventions
+- **Issue #347** (closed): Auditor: require pinned Python lint before handing diagnostic scripts to Judge
+- **Issue #326** (closed): Load transient: run the COUT/ESR window grid campaign over the 45-point PVT matrix (Phase B of #313)
+- **Issue #324** (closed): Stability: evaluate 0 mA phase-margin mitigations against the Iq budget and report numbers for the DR-007 decision
+- **Issue #338** (closed): Stability: extend loop-gain coverage to zero ESR and all boundary load combinations
+- **Issue #319** (closed): Area: compare capacitor implementations (MiM, vpp, MOS-cap) for the 162 pF compensation/soft-start budget
+- **Issue #323** (closed): Dropout @ 50 mA: establish a current-schematic baseline and attribute the limiting mechanism
+- **Issue #335** (closed): Simulation grading: represent strict ratified inequalities explicitly
+
 - **PR #333**: docs: archive design/README.md investigation log, fix stale Freshness (#332)
 - **PR #331**: layout: refresh current-core area evidence and reconcile floorplan docs (#318)
 - **PR #330**: sim: PSRR C_eff x ESR sweep via klt sim analysis_steps (Part of #314; fleet run blocked)

@@ -20,20 +20,19 @@ _None._
 Human-approved issues ready for implementation (`loom:issue`).
 
 - **#263**: Qualify folded resistor electrical equivalence across process, temperature and mismatch
+- **#357**: Dropout: screen a physical low-headroom amplifier and re-referenced clamp candidate
 
 ## In Progress
 
 Issues currently being built (`loom:building`).
 
-- **#314**: PSRR: decide and evidence the binding output-capacitor/ESR condition
-- **#319**: Area: compare capacitor implementations (MiM, vpp, MOS-cap) for the 162 pF compensation/soft-start budget
-- **#323**: Dropout @ 50 mA: establish a current-schematic baseline and attribute the limiting mechanism
+_None._
 
 ## PRs Awaiting Review
 
 PRs waiting on Judge (`loom:review-requested`).
 
-_None._
+- **#361**: sim(#357): screen physical low-headroom amplifier + re-referenced clamp dropout candidate
 
 ## Approved (Awaiting Merge)
 
@@ -51,12 +50,13 @@ Issues carrying `loom:curated`.
 - **#263**: Qualify folded resistor electrical equivalence across process, temperature and mismatch *(curated)*
 - **#267**: layout: fix locally-routed official-DRC families (via.1a_b, m2.5, via2.5, nwell.9) found by #260 *(curated)*
 - **#314**: PSRR: decide and evidence the binding output-capacitor/ESR condition *(curated)*
-- **#319**: Area: compare capacitor implementations (MiM, vpp, MOS-cap) for the 162 pF compensation/soft-start budget *(curated)*
-- **#323**: Dropout @ 50 mA: establish a current-schematic baseline and attribute the limiting mechanism *(curated)*
+- **#357**: Dropout: screen a physical low-headroom amplifier and re-referenced clamp candidate *(curated)*
 
 ## Proposed (Architect / Hermit)
 
-- **#324**: Stability: evaluate 0 mA phase-margin mitigations against the Iq budget and report numbers for the DR-007 decision *(architect)*
+- **#336**: Startup: extend cold-enable coverage to the ratified ESR boundaries *(architect)*
+- **#364**: Load regulation: gate settled endpoints on the ratified output window *(architect)*
+- **#365**: Stability: isolate the zero-load phase dip and screen a bounded light-load lever *(architect)*
 
 ## Epics
 
@@ -68,11 +68,11 @@ Issues carrying `loom:curated`.
 |------|-------|
 | Operator merge-risk holds | 0 |
 | Operator priority | 0 |
-| Ready (`loom:issue`) | 1 |
-| In Progress (`loom:building`) | 3 |
-| PRs awaiting review | 0 |
+| Ready (`loom:issue`) | 2 |
+| In Progress (`loom:building`) | 0 |
+| PRs awaiting review | 1 |
 | Approved PRs awaiting merge | 0 |
-| Curated | 8 |
-| Architect / Hermit proposals | 1 |
+| Curated | 7 |
+| Architect / Hermit proposals | 3 |
 | Active epics | 1 |
 <!-- guide:plan-body:end -->
