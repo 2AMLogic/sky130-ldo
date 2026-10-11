@@ -563,15 +563,21 @@ class FakeKlt:
 
 
 class BatchHarness(unittest.TestCase):
-    """A scratch repo root holding a copy of sim/pdk-smoke, with the PDK, xschem,
-    git and tool-version lookups mocked."""
+    """A scratch repo root holding a copy of sim/pdk-smoke (or SLUG), with the PDK,
+    xschem, git and tool-version lookups mocked."""
+
+    SLUG = "pdk-smoke"
+    NETLIST = SMOKE_NETLIST
+
+    def make_fake(self, **kw):
+        return FakeKlt(self, self.pin, **kw)
 
     def setUp(self):
         self.tmp = Path(tempfile.mkdtemp())
         self.addCleanup(shutil.rmtree, self.tmp, True)
         sim = self.tmp / "sim"
         sim.mkdir()
-        shutil.copytree(SIM_DIR / "pdk-smoke", sim / "pdk-smoke",
+        shutil.copytree(SIM_DIR / self.SLUG, sim / self.SLUG,
                         ignore=shutil.ignore_patterns("records", "corners", "netlist-snapshots"))
         shutil.copyfile(SIM_DIR / "spiceinit", sim / "spiceinit")
         self.pin = corner_run.load_pin()
@@ -581,13 +587,13 @@ class BatchHarness(unittest.TestCase):
         lib.write_text("* lib\n")
         self.pdk = corner_run.Pdk(self.pin, self.tmp / "pdkroot", "sky130A", pdk_dir,
                                   self.pin["open_pdks_commit"], lib)
-        self.fake = FakeKlt(self, self.pin)
-        self.exp_dir = sim / "pdk-smoke"
+        self.fake = self.make_fake()
+        self.exp_dir = sim / self.SLUG
 
         def fake_netlist(schematic, out_dir, pdk):
             out_dir.mkdir(parents=True, exist_ok=True)
             p = out_dir / (schematic.stem + ".spice")
-            p.write_text(SMOKE_NETLIST)
+            p.write_text(self.NETLIST)
             return p
 
         tools = {"ngspice": "ngspice-42 : x", "xschem": "XSCHEM V3.4.4", "platform": "p", "python": "3",
@@ -1272,6 +1278,250 @@ class TestBoundInclusivity(BatchHarness):
                 for flag in ("min_inclusive", "max_inclusive"):
                     self.assertEqual(m.get(flag) is False, strict.get(m["name"]) == flag, (slug, m["name"], flag))
             corner_run.load_experiment(SIM_DIR / slug)
+
+
+# --------------------------------------------------------------------------
+# issue #326: load-transient window grid on the klt batch backend, all mocked
+# --------------------------------------------------------------------------
+
+LT_NETLIST = (
+    "** sch_path: x\nVVIN VIN 0 'vsup'\nCOUT VOUT VESR 4.7u m=1\nRESR VESR 0 10m m=1\n"
+    "CDIR VOUT 0 0 m=1\nILOAD VOUT 0 PULSE(1m 50m 1m 1u 1u 1m 4m)\n.end\n"
+)
+
+
+class FakeStepKlt(FakeKlt):
+    """Answers a single-step (`analysis_steps`) request: every step measurement
+    is reported as `<step>.<name>` with `value_of(step, name, process, temp)`."""
+
+    def __init__(self, test, pin, value_of=None, **kw):
+        super().__init__(test, pin, **kw)
+        self.value_of = value_of or (lambda step, name, p, t: 0.01)
+
+    def __call__(self, cmd, **kw):
+        self.calls.append((cmd, kw))
+        if cmd[0] != "/fake/klt":
+            self.test.fail(f"unexpected launch: {cmd}")
+        req = json.loads(Path(cmd[2]).read_text())
+        self.test.assertNotIn("analysis", req)
+        (step,) = req["analysis_steps"]
+        outdir = Path(cmd[cmd.index("-o") + 1])
+        outdir.mkdir(parents=True, exist_ok=True)
+        corners = []
+        for p in req["corners"]["process"]:
+            for t in req["corners"]["temperature_c"]:
+                logp = outdir / f"{p}_{t}.log"
+                logp.write_text(f"ngspice log {step['name']} {p} {t}\n")
+                corners.append({
+                    "corner_id": f"{p}/{t:g}C", "process": p, "temperature_c": t, "status": "pass",
+                    "runtime_s": 40.0, "diagnostics": [], "artifacts": {"log": str(logp)},
+                    "measurements": [
+                        {"name": f"{step['name']}.{m['name']}", "status": "pass",
+                         "value": self.value_of(step["name"], m["name"], p, t)}
+                        for m in step["measurements"]
+                    ],
+                })
+        resp = {
+            "status": "pass", "corners": corners,
+            "environment": {"engine": "ngspice", "engine_version": "42",
+                            "remote": {"provider": "aws-batch-fleet", "job_id": "klt-sim-0000aa"}},
+            "provenance": {"klt_version": "0.7.0", "pdk": {"version": self.pin["open_pdks_commit"]}},
+        }
+        if self.mutate:
+            self.mutate(resp, req)
+        return subprocess.CompletedProcess(cmd, self.rc, stdout=json.dumps(resp), stderr="")
+
+
+class TestBatchWindowGrid(BatchHarness):
+    SLUG = "load-transient"
+    NETLIST = LT_NETLIST
+
+    def make_fake(self, **kw):
+        return FakeStepKlt(self, self.pin, **kw)
+
+    def legs(self):
+        return [leg["id"] for leg in corner_run.window_legs(json.loads((SIM_DIR / self.SLUG / "experiment.json").read_text()))]
+
+    def requests(self):
+        return [json.loads(Path(c[0][2]).read_text()) for c in self.klt_calls()]
+
+    def test_full_matrix_is_one_request_per_supply_and_leg(self):
+        rc, out, _ = self.run_main("--backend", "batch", "--dry-run")
+        self.assertEqual(rc, 0)
+        self.assertEqual(self.fake.calls, [])
+        n_legs = len(self.legs())
+        self.assertEqual(n_legs, 6)
+        self.assertEqual(out.count('"analysis_steps"'), 3 * n_legs)
+        self.assertIn("backend         : batch (18 klt sim request(s))", out)
+        self.assertFalse((self.exp_dir / "records").exists())
+
+    def test_quick_is_singletons_times_legs(self):
+        exp = corner_run.load_experiment(self.exp_dir)
+        args = corner_run.parse_args([str(self.exp_dir), "--quick"])
+        matrix, _ = corner_run.build_matrix(exp, args, self.pin)
+        groups = corner_run.group_batch_requests(matrix, True, corner_run.batch_legs(exp))
+        self.assertEqual(len(groups), 3 * 6)
+        self.assertTrue(all(len(g.corners) == 1 and g.leg for g in groups))
+        self.assertEqual(len({g.key for g in groups}), 18)
+
+    def test_step_request_content_matches_the_local_leg_block(self):
+        rc, _, _ = self.run_main("--backend", "batch", *QUICK, "--no-write")
+        reqs = self.requests()
+        self.assertEqual(len(reqs), 18)
+        by_leg = {r["analysis_steps"][0]["name"]: r for r in reqs[:6]}
+        self.assertEqual(sorted(by_leg), sorted(self.legs()))
+        esr0 = by_leg["c4u7_esr0"]["analysis_steps"][0]
+        self.assertEqual(esr0["analysis"], {"kind": "tran", "args": "200n 3m"})
+        # same numbers the local deck substitutes: series branch open, CDIR full, RESR parked
+        self.assertEqual(esr0["alter"], {"cout": 0.0, "resr": 0.01, "cdir": 4.7e-06})
+        self.assertEqual(by_leg["c330n_esr500m"]["analysis_steps"][0]["alter"],
+                         {"cout": 3.3e-07, "resr": 0.5, "cdir": 0.0})
+        names = [m["name"] for m in esr0["measurements"]]
+        self.assertEqual(names[:6], ["v_pre", "v_rise_min", "v_rise_max", "v_fall_min", "v_fall_max", "v_50ma"])
+        self.assertTrue(all(m["spice"].startswith(".meas tran ") for m in esr0["measurements"][:6]))
+        exprs = {m["name"]: m["expr"] for m in esr0["measurements"][6:]}
+        self.assertEqual(sorted(exprs), sorted(
+            ["undershoot_rise_v", "overshoot_rise_v", "undershoot_fall_v", "overshoot_fall_v",
+             "recovery_rise_us", "recovery_fall_us", "settle_err_50ma_pct"]))
+        for helper in ("outband", "w_rise", "w_fall", "vpre", "dev", "band"):
+            for e in exprs.values():
+                self.assertIsNone(re.search(rf"(?<![\w.])\b{helper}\b(?!\()", e), (helper, e))
+        self.assertIn("v(vout)", exprs["recovery_fall_us"])
+        self.assertTrue(exprs["recovery_rise_us"].startswith("vecmax("))
+        body = Path(reqs[0]["netlist"]).read_text().splitlines()
+        self.assertEqual(body[0], ".param vsup=3.3")
+        self.assertNotIn("reset", "\n".join(json.dumps(r) for r in reqs))
+
+    def test_legs_merge_into_one_complete_result_per_corner(self):
+        rc, out, _ = self.run_main("--backend", "batch")
+        self.assertEqual(rc, 0, out)
+        (rec_path,) = self.records()
+        rec = json.loads(rec_path.read_text())
+        self.assertEqual(len(rec["corners"]), 45)
+        self.assertEqual(len(rec["execution"]["requests"]), 18)
+        self.assertEqual({r["leg"] for r in rec["execution"]["requests"]}, set(self.legs()))
+        exp = corner_run.load_experiment(self.exp_dir)
+        want = [m.name for m in exp.measurements]
+        for res in rec["corners"]:
+            self.assertEqual([c["name"] for c in res["measurements"]], want)
+            self.assertEqual(len(res["klt_request"]), 6)
+            self.assertEqual(res["elapsed_s"], 240.0)
+            self.assertTrue(all(c.get("leg") and c.get("direction") for c in res["measurements"]))
+        g = rec["window_grid"]
+        self.assertTrue(g["complete"] and g["pass"])
+        self.assertEqual(g["conditions_expected"], 45 * 7 * 6)
+        log = (self.exp_dir / "corners" / rec["record_id"] / "tt_27c_3.30v.log").read_text()
+        for leg in self.legs():
+            self.assertIn(f"window leg {leg}", log)
+        md = rec_path.with_suffix(".md").read_text()
+        self.assertIn("one per COUT/ESR window-grid leg", md)
+        self.assertIn("COMPLETE", md)
+
+    def test_bound_miss_and_missing_leg_value_are_conservative(self):
+        def value_of(step, name, p, t):
+            if step == "c330n_esr0" and name == "undershoot_rise_v":
+                return 0.19  # above the ratified 150 mV
+            return 0.01
+
+        def drop(resp, req):
+            if req["analysis_steps"][0]["name"] == "c4u7_esr500m":
+                for c in resp["corners"]:
+                    c["measurements"] = [m for m in c["measurements"] if not m["name"].endswith("recovery_fall_us")]
+
+        self.fake = FakeStepKlt(self, self.pin, value_of=value_of, mutate=drop)
+        rc, out, _ = self.run_main("--backend", "batch", *QUICK, "--no-write")
+        self.assertEqual(rc, 2)
+        self.assertIn("INCOMPLETE", out)
+        self.assertIn("overall  : FAIL", out)
+
+    def test_one_failed_leg_request_aborts_without_evidence_or_fallback(self):
+        def boom(resp, req):
+            if req["analysis_steps"][0]["name"] == "c330n_esr10m":
+                resp["corners"].clear()
+        self.fake = FakeStepKlt(self, self.pin, mutate=boom)
+        err, _, _ = self.run_main("--backend", "batch", *QUICK, expect_exit=HarnessErr)
+        self.assertIn("no local fallback", str(err))
+        self.assertFalse((self.exp_dir / "records").exists())
+        self.assertEqual(len(self.klt_calls()), 2)  # stopped at the failing leg, no retry
+
+    def test_leg_order_is_refused_under_batch(self):
+        err, _, _ = self.run_main("--backend", "batch", *QUICK, "--leg-order",
+                                  ",".join(reversed(self.legs())), expect_exit=HarnessErr)
+        self.assertIn("local-only", str(err))
+        self.assertEqual(self.fake.calls, [])
+
+    def test_edited_window_grid_shape_is_refused_before_netlisting(self):
+        edits = {
+            "deck analysis": lambda r: r["deck"]["analyses"].append("op"),
+            "unknown leg card": lambda r: r["window_grid"]["leg_analyses"].insert(6, "ac dec 10 1 1meg"),
+            "second tran": lambda r: r["window_grid"]["leg_analyses"].append("tran 1n 1u"),
+            "no reset": lambda r: r["window_grid"]["leg_analyses"].pop(0),
+            "non-leg measurement": lambda r: r["measurements"].append({"name": "x", "expr": "1", "unit": "V"}),
+        }
+        for name, edit in edits.items():
+            raw = json.loads((SIM_DIR / self.SLUG / "experiment.json").read_text())
+            edit(raw)
+            (self.exp_dir / "experiment.json").write_text(json.dumps(raw))
+            err, _, _ = self.run_main("--backend", "batch", *QUICK, expect_exit=HarnessErr)
+            self.assertIn("window-grid", str(err), name)
+        self.assertEqual(self.fake.calls, [])
+        corner_run.netlist_with_xschem.assert_not_called()
+
+    def test_other_transient_slugs_stay_refused(self):
+        for slug in ("startup", "load-regulation", "dropout-vs-load"):
+            raw = json.loads((SIM_DIR / self.SLUG / "experiment.json").read_text())
+            raw["slug"] = slug
+            (self.exp_dir / "experiment.json").write_text(json.dumps(raw))
+            err, _, _ = self.run_main("--backend", "batch", *QUICK, expect_exit=HarnessErr)
+            self.assertIn("bounded", str(err), slug)
+        self.assertEqual(self.fake.calls, [])
+
+    def test_local_deck_still_uses_reset_per_leg(self):
+        exp = corner_run.load_experiment(self.exp_dir)
+        deck = corner_run.build_deck(exp, mock.Mock(lib_file="/x/l"), corner_run.Corner("tt", 27, 3.3), ["* b"])
+        self.assertEqual(deck.splitlines().count("reset"), 6)
+
+
+class TestBatchWindowGridTranslator(unittest.TestCase):
+    """sim/bin/batch_window_grid.py, PDK-free."""
+
+    @classmethod
+    def setUpClass(cls):
+        sys.path.insert(0, str(SIM_DIR / "bin"))
+        import batch_window_grid as bwg
+        cls.bwg = bwg
+
+    def test_inline_skips_signal_arguments_numbers_and_functions(self):
+        lets = {"band": "0.01*x", "m": "BAD"}
+        out = self.bwg._inline("vecmax(v(band)-band)*1.0m+1e-18+abs(band)", lets)
+        self.assertEqual(out, "vecmax(v(band)-(0.01*x))*1.0m+1e-18+abs((0.01*x))")
+
+    def test_lets_inline_transitively_in_declaration_order(self):
+        t = self.bwg.parse_leg_template([
+            "reset", "save all", "alter c1 = {a}", "tran 1n 1u",
+            "meas tran v0 AVG v(o) FROM=0 TO=1n", "let p = v0", "let q = 2*p",
+        ])
+        self.assertEqual(t.lets["q"], "2*(v0)")
+        step = self.bwg.leg_step(t, "L1", {"a": 1e-6}, [("r", "q+p", "V")])
+        self.assertEqual(step["measurements"][-1], {"name": "r", "expr": "(2*(v0))+(v0)", "unit": "V"})
+        self.assertEqual(step["alter"], {"c1": 1e-6})
+        self.assertEqual(step["measurements"][0]["spice"], ".meas tran v0 AVG v(o) FROM=0 TO=1n")
+
+    def test_refusals(self):
+        bad = [
+            ["save all", "alter c1 = {a}", "tran 1n 1u"],
+            ["reset", "save all", "tran 1n 1u"],
+            ["reset", "save all", "alter c1 = 1u", "tran 1n 1u"],
+            ["reset", "save all", "alter c1 = {a}", "meas tran x AVG v(o)", "tran 1n 1u"],
+            ["reset", "save all", "alter c1 = {a}", "tran 1n 1u", "print v(o)"],
+            ["reset", "save all", "alter c1 = {a}"],
+        ]
+        for lines in bad:
+            with self.assertRaises(self.bwg.TranslationError, msg=lines):
+                self.bwg.parse_leg_template(lines)
+        t = self.bwg.parse_leg_template(["reset", "save all", "alter c1 = {a}", "tran 1n 1u"])
+        with self.assertRaises(self.bwg.TranslationError):
+            self.bwg.leg_step(t, "L", {}, [])
 
 
 if __name__ == "__main__":

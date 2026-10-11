@@ -442,7 +442,7 @@ were bypassed. The existing "already exists -- append-only" check stays.
 | `--supersedes <record-id>` | record which prior record this replaces |
 | `--author`, `--timeout` | record author (default `git config user.email`), per-corner ngspice timeout |
 | `--allow-pdk-mismatch` | run against a non-pinned PDK; the record flags it |
-| `--backend {local,batch}` | `local` (default) runs ngspice here. `batch` is the opt-in `klt sim` batch backend, **`sim/pdk-smoke` only** — see "Batch backend" below |
+| `--backend {local,batch}` | `local` (default) runs ngspice here. `batch` is the opt-in `klt sim` batch backend, **`sim/pdk-smoke` and the `sim/load-transient` window grid only** — see "Batch backend" below |
 | `--dry-run` | netlist, print the corner list and one deck, run nothing, write nothing (with `--backend batch`: print the `klt sim` requests, submit nothing) |
 | `--no-write` | run every corner for real (ngspice included) but skip writing an evidence record — for CI/selftest liveness runs that should not mint new evidence on every push |
 
@@ -490,9 +490,10 @@ finite grid of an external-network window *inside one deck, per PVT corner*.
   not yet evidenced", with no claim of window qualification.
 - **Scope.** Phase A (#313) is the harness, reporting and PDK-free tests plus a
   single-corner local smoke; no full-grid × PVT campaign is minted by it. The
-  campaign (Phase B) is separate: `load-transient` stays refused by the batch
-  backend (`BATCH_ALLOWLIST` is untouched), and a full grid × 45 PVT is not run
-  on the dispatch worker.
+  campaign (Phase B, #326) is separate and is never run as a local 45-corner
+  grid on the dispatch worker: #326 added the batch path for it (see "Window
+  grid on the batch backend (issue #326)"), and the campaign is minted only once
+  the fleet runner accepts the job.
 
 ### Startup ramp monotonicity (issue #309)
 
@@ -552,15 +553,15 @@ for each of the four independent cold-enable legs (`c033_0ma`, `c033_50ma`,
 
 `python3 sim/bin/corner-run.py sim/pdk-smoke --backend batch` sends the PVT
 grid to `klt sim --backend batch` instead of running ngspice here. It is
-**opt-in and deliberately bounded**: the allowlist is only `sim/pdk-smoke`
-with its single `op` analysis and two scalar measurements (`vgs`, `isup`).
-Every other manifest — `current-limit`, `dropout-vs-load`, `enable-shutdown`,
-`ic-screen-125c-*`, `iq`, `line-regulation`, `load-regulation`,
-`load-transient`, `loop-gain`, `psrr-dc`, `startup`, `thermal`, and the `mc-*`
-experiments (which have their own runner, `mc-run.py`) — and any edited smoke
-shape is **refused before netlisting, submission or local ngspice**. The
-wider regulation grids stay deferred on `klt sim` request-shape work
-(2AMLogic/klayout-tools#2482) and on translating their measurement cards.
+**opt-in and deliberately bounded**: the allowlist is `sim/pdk-smoke` with its
+single `op` analysis and two scalar measurements (`vgs`, `isup`), and
+`sim/load-transient`'s COUT/ESR window grid (issue #326, below). Every other
+manifest — `current-limit`, `dropout-vs-load`, `enable-shutdown`,
+`ic-screen-125c-*`, `iq`, `line-regulation`, `load-regulation`, `loop-gain`,
+`psrr-dc`, `startup`, `thermal`, and the `mc-*` experiments (which have their
+own runner, `mc-run.py`) — and any edited smoke or window-grid shape is
+**refused before netlisting, submission or local ngspice**. The wider
+regulation grids stay deferred on translating their measurement cards.
 
 - **Requests.** The supply is the netlist's `.param vsup`, not a klt corner
   axis (klt's supply override alters sources, which is not this harness's
@@ -596,6 +597,46 @@ wider regulation grids stay deferred on `klt sim` request-shape work
   executor's, and no local ngspice exit code is recorded for these corners.
   Local records are unchanged. The same append-only overwrite refusal,
   `--dry-run` and `--no-write` rules apply.
+
+#### Window grid on the batch backend (issue #326)
+
+`python3 sim/bin/corner-run.py sim/load-transient --backend batch` runs the
+COUT/ESR window grid off-host. `sim/bin/batch_window_grid.py` (PDK-free)
+translates `window_grid.leg_analyses` into a `klt sim` **`analysis_steps`**
+request (klt >= 0.7) with exactly one step per leg:
+
+| local leg block | klt request |
+|---|---|
+| `reset` | **one request per supply × leg**: every (corner, leg) is its own ngspice process, so nothing carries over between legs (klt's step sequence has no `reset`, 2AMLogic/klayout-tools#3103, so legs are never packed as several steps of one request) |
+| `save all` | klt's control block already saves all |
+| `alter <elem> = {placeholder}` | the step's `alter` map, same numbers as the local deck (`leg_values`, shared by both paths) |
+| `tran 200n 3m` | the step's `analysis` (exactly one) |
+| `meas tran <name> ...` | a step measurement with the card as `spice` |
+| `let <name> = <expr>` | inlined, parenthesised, into each graded expression (a klt step measurement must be a scalar, so the vector helpers `outband`/`w_rise`/`w_fall` cannot be declared on their own; see 2AMLogic/klayout-tools#3055) |
+
+- **Shape guard.** The leg block must be exactly that vocabulary (`reset`,
+  `save all`, alters with a `{placeholder}`, one `tran`, then `meas tran`/`let`),
+  every measurement must be `per_leg`, `deck.analyses` must be comments only and
+  there must be no `spread_checks`; anything else is refused before netlisting.
+  `--leg-order` is refused under `--backend batch` (no in-deck order exists).
+- **Requests.** Full matrix: 3 supplies × 6 legs = **18 requests** of 15 points
+  (5 process × 3 temperatures); `--quick`: 3 points × 6 legs = 18 singletons.
+  Keys are `<supply group>-<leg>`, e.g. `v3.30-c330n_esr0`.
+- **Reassembly.** klt reports `<leg>.<template name>`; the harness maps that
+  back to `<template name>__<leg>`, merges the six leg parts of each corner into
+  one result (manifest order; the corner passes only if every leg part passed;
+  each leg's engine log is concatenated into the corner log under a
+  `window leg <id>` header), then grades and aggregates (`grid_coverage`)
+  exactly as for a local run. A failing leg request aborts the run with no
+  record and no fallback, like any other batch request.
+- **Parity probe (2026-10-11, recorded in #326's PR).** One leg at one corner
+  (tt / 27 °C / 3.30 V) was run through `klt sim --backend local` (single unit)
+  and reproduced the local harness's values for that corner exactly
+  (`c4u7_esr10m` hand-built, and the harness-generated `c330n_esr0` request).
+  The same single-unit request submitted with `--backend batch` was **refused
+  by the fleet runner** (`batch_runner_version_mismatch`, runner klt 0.5.0 vs
+  client 0.7.0; 2AMLogic/klayout-tools#2948). Until the runner image is
+  updated, the Phase B campaign cannot run; it is not run locally instead.
 
 ### Writing a new Monte Carlo experiment
 

@@ -42,6 +42,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 
+from batch_window_grid import TranslationError, leg_step, parse_leg_template
 from ramp_monotonicity import evaluate_legs
 from xschem_exprs import eval_xschem_exprs  # noqa: F401  (re-exported; tests call corner_run.eval_xschem_exprs)
 from _record_common import (
@@ -602,6 +603,20 @@ def fmt_spice_value(value: float) -> str:
     return repr(float(value))
 
 
+def leg_values(grid: dict, leg: dict) -> dict[str, float]:
+    """Numeric values of a leg's `{placeholder}`s in `leg_analyses`, shared by
+    the local deck walk and the klt-batch step request (issue #326) so the two
+    paths cannot drift."""
+    cout, esr = float(leg["cout_f"]), float(leg["esr_ohm"])
+    return {
+        "cout_esr_f": cout if esr > 0 else 0.0,
+        "cout_dir_f": cout if esr == 0 else 0.0,
+        # RESR is parked at its netlist value in the ESR=0 leg (it sits in
+        # series with a 0 F capacitor and carries no current).
+        "resr_f": esr if esr > 0 else float(grid.get("resr_park_ohm", 0.01)),
+    }
+
+
 def window_leg_lines(exp: Experiment, leg_ids: list[str] | None = None) -> list[str]:
     """The in-deck COUT/ESR window walk (issue #313): one independent block per
     declared leg -- `reset`, that leg's own `alter` cards, its own `tran` and
@@ -622,13 +637,7 @@ def window_leg_lines(exp: Experiment, leg_ids: list[str] | None = None) -> list[
     for leg_id in order:
         leg = by_id[leg_id]
         cout, esr = float(leg["cout_f"]), float(leg["esr_ohm"])
-        subs = {
-            "cout_esr_f": fmt_spice_value(cout if esr > 0 else 0.0),
-            "cout_dir_f": fmt_spice_value(cout if esr == 0 else 0.0),
-            # RESR is parked at its netlist value in the ESR=0 leg (it sits in
-            # series with a 0 F capacitor and carries no current).
-            "resr_f": fmt_spice_value(esr if esr > 0 else float(grid.get("resr_park_ohm", 0.01))),
-        }
+        subs = {k: fmt_spice_value(v) for k, v in leg_values(grid, leg).items()}
         lines.append(
             f"* --- window leg {leg_id}: COUT={cout:g} F, ESR={esr:g} ohm "
             "(independent reset/seed/tran) ---"
@@ -1057,24 +1066,80 @@ def spread_checks(exp: Experiment, results: list[dict]) -> list[dict]:
 # --------------------------------------------------------------------------
 #
 # BOUNDED on purpose: only the unchanged `pdk-smoke` shape (one `op` analysis,
-# two scalar measurements) may use it. Every other manifest is refused before
-# any netlisting, submission or local ngspice -- see sim/README.md "Batch
-# backend". The local path above is untouched; this section only adds a second
-# way to obtain the same per-corner result dicts.
+# two scalar measurements) and the `load-transient` COUT/ESR window grid
+# (issue #326: one single-step `tran` request per supply x leg, see
+# sim/bin/batch_window_grid.py) may use it. Every other manifest is refused
+# before any netlisting, submission or local ngspice -- see sim/README.md
+# "Batch backend". The local path above is untouched; this section only adds a
+# second way to obtain the same per-corner result dicts.
 
 BATCH_ALLOWLIST = {
     "pdk-smoke": {
         "analyses": ["op"],
         "measurements": [("vgs", "v(vg)"), ("isup", "-i(v1)")],
     },
+    # Shape: a `window_grid` whose leg_analyses translate to a klt step, every
+    # measurement per-leg, and no deck-level analysis (comments only).
+    "load-transient": {"window_grid": True},
 }
 
 BATCH_REFUSAL_HINT = (
     "the batch backend is bounded to the unchanged sim/pdk-smoke shape (one `op` "
-    "analysis, scalar measurements); every other experiment, including all "
+    "analysis, scalar measurements) and the sim/load-transient COUT/ESR window "
+    "grid (one `tran` step per leg); every other experiment, including the other "
     "transient/AC/DC-sweep and mc-* manifests, stays on the local backend "
     "(see sim/README.md, \"Batch backend\")"
 )
+
+
+def batch_legs(exp: Experiment) -> list[str] | None:
+    """Window-grid leg ids a batch run splits into per-leg requests, or None
+    for an allowlisted experiment that is not a window-grid shape."""
+    if not BATCH_ALLOWLIST.get(exp.slug, {}).get("window_grid"):
+        return None
+    return [leg["id"] for leg in window_legs(exp.raw)]
+
+
+def leg_template_name(m: Measurement) -> str:
+    """The manifest template name of an expanded per-leg measurement."""
+    suffix = "__" + str(m.leg)
+    return m.name[: -len(suffix)] if m.name.endswith(suffix) else m.name
+
+
+def window_grid_step(exp: Experiment, leg_id: str) -> dict:
+    """The klt `analysis_steps[]` entry for one window-grid leg (issue #326)."""
+    grid = exp.raw["window_grid"]
+    leg = next(x for x in grid["legs"] if x["id"] == leg_id)
+    template = parse_leg_template(grid["leg_analyses"])
+    meas = [(leg_template_name(m), m.expr, m.unit) for m in exp.measurements if m.leg == leg_id]
+    return leg_step(template, leg_id, leg_values(grid, leg), meas)
+
+
+def check_window_grid_batch_shape(exp: Experiment) -> None:
+    grid = exp.raw.get("window_grid")
+    why = None
+    if not grid or not window_legs(exp.raw):
+        why = "no window_grid legs declared"
+    elif any(
+        ln.strip() and not ln.strip().startswith("*")
+        for ln in (exp.raw.get("deck") or {}).get("analyses") or []
+    ):
+        why = "deck.analyses carries commands outside the leg block"
+    elif any(m.leg is None for m in exp.measurements):
+        why = "a measurement is not per-leg (it would need a deck-level analysis)"
+    elif exp.raw.get("spread_checks"):
+        why = "spread_checks are not defined for per-leg batch requests"
+    else:
+        try:
+            for leg in window_legs(exp.raw):
+                window_grid_step(exp, leg["id"])
+        except (TranslationError, KeyError, StopIteration) as exc:
+            why = f"window_grid leg block does not translate to a klt step ({exc})"
+    if why:
+        raise HarnessError(
+            f"--backend batch: {exp.slug!r} no longer has the supported window-grid "
+            f"shape ({why}): {BATCH_REFUSAL_HINT}"
+        )
 
 
 def klt_binary() -> str:
@@ -1094,6 +1159,9 @@ def check_batch_supported(exp: Experiment) -> None:
             f"--backend batch does not support {exp.slug!r}: waveform post-processing "
             f"(ramp_monotonicity) is local-only: {BATCH_REFUSAL_HINT}"
         )
+    if allowed.get("window_grid"):
+        check_window_grid_batch_shape(exp)
+        return
     analyses = list(deck.get("analyses") or ["op"])
     meas = [(m.name, m.expr) for m in exp.measurements]
     if analyses != allowed["analyses"] or meas != allowed["measurements"]:
@@ -1116,16 +1184,32 @@ class BatchGroup:
     corners: list[Corner]  # the selected points this request covers
     process: list[str]
     temperature_c: list[float]
+    leg: str | None = None  # window-grid leg this request runs (issue #326)
 
 
-def group_batch_requests(matrix: list[Corner], quick: bool) -> list[BatchGroup]:
+def group_batch_requests(
+    matrix: list[Corner], quick: bool, legs: list[str] | None = None
+) -> list[BatchGroup]:
     """Partition the selected points into `klt sim` requests.
 
     A supply is a netlist `.param`, not a klt corner axis, so each request has
     ONE fixed supply. The full/overridden Cartesian matrix becomes one request
     per supply (process x temperature grid); `--quick` tuples are explicit
     points and each is its own singleton request, never a Cartesian expansion.
+    With window-grid `legs`, every such request is further split into one
+    request per leg (supply-major, then declared leg order).
     """
+    base = _group_by_supply(matrix, quick)
+    if legs is None:
+        return base
+    return [
+        BatchGroup(f"{g.key}-{leg}", g.supply_v, g.corners, g.process, g.temperature_c, leg)
+        for g in base
+        for leg in legs
+    ]
+
+
+def _group_by_supply(matrix: list[Corner], quick: bool) -> list[BatchGroup]:
     groups: list[BatchGroup] = []
     if quick:
         for i, c in enumerate(matrix, start=1):
@@ -1160,15 +1244,22 @@ def build_batch_netlist(exp: Experiment, group: BatchGroup, body: list[str]) -> 
 def build_batch_request(
     exp: Experiment, pdk: Pdk, group: BatchGroup, netlist_path: Path, timeout: int
 ) -> dict:
+    if group.leg is not None:
+        # One single-step request per window-grid leg (issue #326).
+        shape = {"analysis_steps": [window_grid_step(exp, group.leg)]}
+    else:
+        shape = {
+            "analysis": {"kind": "op", "args": ""},
+            "measurements": [
+                {"name": f"meas_{m.name}", "expr": m.expr, "unit": m.unit} for m in exp.measurements
+            ],
+        }
     return {
         "netlist": str(netlist_path),
         "engine": "ngspice",
         "models": {"pdk": pdk.variant, "lib": str(pdk.lib_file.relative_to(pdk.dir))},
         "corners": {"process": list(group.process), "temperature_c": list(group.temperature_c)},
-        "analysis": {"kind": "op", "args": ""},
-        "measurements": [
-            {"name": f"meas_{m.name}", "expr": m.expr, "unit": m.unit} for m in exp.measurements
-        ],
+        **shape,
         "options": {
             "timeout_s": timeout,
             "keep_artifacts": True,
@@ -1185,7 +1276,7 @@ def prepare_batch_requests(
     req_dir = run_dir / "klt-requests"
     req_dir.mkdir(parents=True, exist_ok=True)
     out = []
-    for group in group_batch_requests(matrix, is_quick):
+    for group in group_batch_requests(matrix, is_quick, batch_legs(exp)):
         netlist_path = (req_dir / f"{group.key}.spice").resolve()
         netlist_path.write_text("\n".join(build_batch_netlist(exp, group, body)) + "\n")
         request = build_batch_request(exp, pdk, group, netlist_path, timeout)
@@ -1314,20 +1405,28 @@ def normalize_batch_response(
     if missing:
         raise HarnessError(f"request {group.key}: response is missing corner(s) {missing}")
 
+    if group.leg is None:
+        wanted = [(m, f"meas_{m.name}") for m in exp.measurements]
+    else:
+        # klt names a step-scoped result `<step>.<name>`; the step is the leg.
+        wanted = [(m, f"{group.leg}.{leg_template_name(m)}") for m in exp.measurements
+                  if m.leg == group.leg]
+    tag = "" if group.leg is None else f"[leg {group.leg}] "
+
     results, logs = [], {}
     for key, corner in want.items():
         rc = seen[key]
         reasons: list[str] = []
         status = rc["status"]
         if status not in ("pass", "fail"):
-            reasons.append(f"klt sim corner status {status!r} (not a completed result)")
+            reasons.append(f"{tag}klt sim corner status {status!r} (not a completed result)")
         by_name: dict[str, list] = {}
         for rm in rc["measurements"]:
             if isinstance(rm, dict) and isinstance(rm.get("name"), str):
                 by_name.setdefault(rm["name"], []).append(rm)
         checks = []
-        for m in exp.measurements:
-            entries = by_name.get(f"meas_{m.name}", [])
+        for m, klt_name in wanted:
+            entries = by_name.get(klt_name, [])
             value, reason = None, ""
             if len(entries) != 1:
                 reason = ("measurement not found in klt sim response" if not entries
@@ -1345,6 +1444,8 @@ def normalize_batch_response(
                 "min": m.min, "max": m.max,
                 "min_inclusive": m.min_inclusive, "max_inclusive": m.max_inclusive,
                 "pass": passed, "reason": reason,
+                **({"leg": m.leg, "cout_f": m.cout_f, "esr_ohm": m.esr_ohm, "direction": m.direction}
+                   if m.leg is not None else {}),
             })
 
         solver_diagnostic, log_text, log_note = None, None, None
@@ -1357,16 +1458,16 @@ def normalize_batch_response(
             try:
                 log_text = lp.read_text(errors="replace")
             except OSError as exc:
-                log_note = f"engine log unreadable ({lp}: {exc})"
+                log_note = f"{tag}engine log unreadable ({lp}: {exc})"
         else:
-            log_note = "engine log not retained in klt sim response (artifacts.log absent)"
+            log_note = f"{tag}engine log not retained in klt sim response (artifacts.log absent)"
         if log_text is not None:
             solver_diagnostic = detect_solver_diagnostic(log_text)
             logs[corner.id] = log_text
         else:
             reasons.append(log_note)
         if solver_diagnostic is not None:
-            reasons.append(f"solver diagnostic: {solver_diagnostic}")
+            reasons.append(f"{tag}solver diagnostic: {solver_diagnostic}")
 
         runtime = rc.get("runtime_s")
         ok = (not reasons) and all(c["pass"] for c in checks)
@@ -1392,6 +1493,35 @@ def normalize_batch_response(
             "batch_reasons": reasons,
         })
     return results, logs
+
+
+def merge_leg_parts(exp: Experiment, acc: dict | None, part: dict) -> dict:
+    """Fold one window-grid leg's batch result for a corner into that corner's
+    single result dict (issue #326). Checks are kept in manifest order; the
+    corner passes only if every leg part passed; reasons, requests and klt
+    statuses accumulate, and runtime sums only while every part reported one."""
+    if acc is None:
+        merged = dict(part)
+        merged["klt_request"] = [part["klt_request"]]
+        merged["klt_corner_id"] = [part["klt_corner_id"]]
+        merged["klt_status"] = [part["klt_status"]]
+        merged["batch_reasons"] = list(part["batch_reasons"])
+        return merged
+    order = {m.name: i for i, m in enumerate(exp.measurements)}
+    merged = dict(acc)
+    merged["measurements"] = sorted(
+        acc["measurements"] + part["measurements"], key=lambda c: order.get(c["name"], len(order))
+    )
+    merged["pass"] = acc["pass"] and part["pass"]
+    merged["batch_reasons"] = acc["batch_reasons"] + part["batch_reasons"]
+    merged["klt_request"] = acc["klt_request"] + [part["klt_request"]]
+    merged["klt_corner_id"] = acc["klt_corner_id"] + [part["klt_corner_id"]]
+    merged["klt_status"] = acc["klt_status"] + [part["klt_status"]]
+    diags = [d for d in (acc["solver_diagnostic"], part["solver_diagnostic"]) if d]
+    merged["solver_diagnostic"] = "; ".join(diags) if diags else None
+    a, b = acc["elapsed_s"], part["elapsed_s"]
+    merged["elapsed_s"] = a + b if _finite_number(a) and _finite_number(b) else None
+    return merged
 
 
 def run_batch(
@@ -1420,10 +1550,18 @@ def run_batch(
                 f"{', '.join(jobs) if jobs else 'none'}"
             ) from exc
         for r in res:
-            by_id[r["corner_id"]] = r
-        logs.update(lg)
+            cid = r["corner_id"]
+            by_id[cid] = r if group.leg is None else merge_leg_parts(exp, by_id.get(cid), r)
+        for cid, text in lg.items():
+            if group.leg is None:
+                logs[cid] = text
+            else:
+                logs[cid] = logs.get(cid, "") + (
+                    f"***** window leg {group.leg} (klt sim request {group.key}) *****\n{text}\n"
+                )
         requests_meta.append({
             "key": group.key,
+            **({"leg": group.leg} if group.leg is not None else {}),
             "supply_v": group.supply_v,
             "n_points": len(group.corners),
             "returncode": meta["returncode"],
@@ -1464,7 +1602,8 @@ def render_batch_execution(record: dict) -> list[str]:
     ex = record["execution"]
     lines = [
         f"- **Execution backend**: requested `{ex['requested_backend']}` via `klt sim` "
-        f"({len(ex['requests'])} request(s), one per fixed supply value unless `--quick`); "
+        f"({len(ex['requests'])} request(s), one per fixed supply value unless `--quick`, "
+        "and one per COUT/ESR window-grid leg where the manifest declares a grid); "
         "ngspice ran **on the remote executor, not this machine** and no local ngspice "
         "exit code exists for these corners"
     ]
@@ -1724,8 +1863,9 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         default="local",
         help="execution backend. `local` (default) runs ngspice here, one process per "
         "corner. `batch` hands the grid to `klt sim --backend batch` (one request per "
-        "supply value); opt-in and bounded to the unchanged sim/pdk-smoke shape -- "
-        "every other experiment is refused (see sim/README.md, \"Batch backend\")",
+        "supply value, and per window-grid leg); opt-in and bounded to the unchanged "
+        "sim/pdk-smoke shape and the sim/load-transient window grid -- every other "
+        "experiment is refused (see sim/README.md, \"Batch backend\")",
     )
     p.add_argument(
         "--allow-pdk-mismatch",
@@ -1786,6 +1926,12 @@ def main(argv: list[str]) -> int:
     if batch:
         # Refuse before netlisting, submission or any local ngspice.
         check_batch_supported(exp)
+        if args.leg_order:
+            raise HarnessError(
+                "--leg-order is local-only: under --backend batch every window-grid leg is "
+                "its own klt sim request (its own ngspice process), so there is no in-deck "
+                "leg order to permute"
+            )
         if not args.dry_run:
             klt_binary()  # fail fast if klt is missing
     matrix, is_subset = build_matrix(exp, args, pin)
