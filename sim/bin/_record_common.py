@@ -122,14 +122,24 @@ def pvt_input_sections(raw: dict, spiceinit_text: str | None) -> dict[str, str]:
     inputs, plus the `sim/spiceinit` solver settings ngspice reads."""
     deck = raw.get("deck") or {}
     corners = raw.get("corners") or {}
+    analyses = {
+        "options": list(deck.get("options") or []),
+        "params": deck.get("params") or {},
+        "analyses": _code_lines(deck.get("analyses") or ["op"]),
+    }
+    grid = raw.get("window_grid")
+    if grid:
+        # issue #313: the COUT/ESR legs and their per-leg deck template are
+        # execution input. Added only when declared, so every other
+        # experiment's digest is unchanged.
+        analyses["window_grid"] = {
+            "legs": grid.get("legs"),
+            "directions": grid.get("directions"),
+            "leg_analyses": _code_lines(grid.get("leg_analyses")),
+            "resr_park_ohm": grid.get("resr_park_ohm"),
+        }
     sections = {
-        "analyses": canonical_digest(
-            {
-                "options": list(deck.get("options") or []),
-                "params": deck.get("params") or {},
-                "analyses": _code_lines(deck.get("analyses") or ["op"]),
-            }
-        ),
+        "analyses": canonical_digest(analyses),
         "measurements": canonical_digest(
             {
                 "measurements": [

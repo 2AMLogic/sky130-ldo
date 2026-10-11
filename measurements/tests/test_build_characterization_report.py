@@ -1512,5 +1512,42 @@ class TestMalformedCampaignVerdict(unittest.TestCase):
         self.assertEqual(out.read_text(), "x")
 
 
+class TestWindowGridDisclosure(unittest.TestCase):
+    """Issue #313: the report keeps PVT coverage and COUT/ESR coverage apart and
+    never claims window qualification from a record that did not evidence it."""
+
+    def test_record_without_grid_is_declared_not_evidenced(self):
+        text = bcr.sim_window_grid_disclosure("load-transient", {"record_id": "old"})
+        self.assertIn("declared but not", text)
+        self.assertIn("no claim of COUT/ESR window qualification", text)
+        self.assertIn("not a continuous-window proof", text)
+        self.assertIn("separate from the PVT coverage", text)
+
+    def test_incomplete_grid_is_disclosed_and_not_qualified(self):
+        rec = {"window_grid": {"complete": False, "pass": False,
+                               "conditions_passing": 10, "conditions_expected": 42}}
+        text = bcr.sim_window_grid_disclosure("load-transient", rec)
+        self.assertIn("INCOMPLETE", text)
+        self.assertIn("10/42", text)
+        self.assertIn("NOT qualified", text)
+
+    def test_complete_failing_grid_is_not_qualified(self):
+        rec = {"window_grid": {"complete": True, "pass": False,
+                               "conditions_passing": 41, "conditions_expected": 42}}
+        text = bcr.sim_window_grid_disclosure("load-transient", rec)
+        self.assertIn("complete but failing", text)
+        self.assertIn("NOT qualified", text)
+
+    def test_passing_grid_still_states_finite_sample(self):
+        rec = {"window_grid": {"complete": True, "pass": True,
+                               "conditions_passing": 42, "conditions_expected": 42}}
+        text = bcr.sim_window_grid_disclosure("load-transient", rec)
+        self.assertIn("interior worst case", text)
+
+    def test_experiment_without_grid_gets_no_clause(self):
+        self.assertIsNone(bcr.sim_window_grid_disclosure("pdk-smoke", {}))
+        self.assertIsNone(bcr.sim_window_grid_disclosure("no-such-experiment", {}))
+
+
 if __name__ == "__main__":
     unittest.main()

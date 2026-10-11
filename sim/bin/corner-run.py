@@ -358,6 +358,15 @@ class Measurement:
     min: float | None = None
     max: float | None = None
     note: str = ""
+    # Window-grid support (issue #313). A manifest measurement with
+    # `per_leg: true` is a TEMPLATE that load_experiment() expands once per
+    # declared `window_grid` leg; the expanded copies carry `leg`/`cout_f`/
+    # `esr_ohm` and are evaluated inside that leg's own deck block.
+    per_leg: bool = False
+    direction: str | None = None
+    leg: str | None = None
+    cout_f: float | None = None
+    esr_ohm: float | None = None
 
 
 @dataclass
@@ -365,6 +374,9 @@ class Experiment:
     dir: Path
     raw: dict
     measurements: list[Measurement] = field(default_factory=list)
+    # Window-grid leg execution order override (issue #313 smoke check); None
+    # means the declared order. Always a permutation of the declared legs.
+    leg_order: list[str] | None = None
 
     @property
     def slug(self) -> str:
@@ -373,6 +385,44 @@ class Experiment:
     @property
     def schematic(self) -> Path:
         return (self.dir / self.raw["schematic"]).resolve()
+
+
+def window_legs(raw: dict) -> list[dict]:
+    """The declared COUT/ESR legs of a manifest's `window_grid` (issue #313),
+    or [] for an experiment that does not declare one."""
+    return list((raw.get("window_grid") or {}).get("legs") or [])
+
+
+def leg_measurement_name(template: str, leg_id: str) -> str:
+    """Name of a per-leg measurement. The leg id (which carries the COUT/ESR
+    coordinates) is part of the name so every result row is self-describing."""
+    return f"{template}__{leg_id}"
+
+
+def expand_measurements(raw: dict) -> list[Measurement]:
+    """Manifest measurements -> concrete Measurements. A `per_leg` template
+    becomes one measurement per declared window_grid leg (template order, then
+    leg order); everything else passes through unchanged."""
+    legs = window_legs(raw)
+    out: list[Measurement] = []
+    for m in raw["measurements"]:
+        if not m.get("per_leg"):
+            out.append(Measurement(**m))
+            continue
+        if not legs:
+            raise HarnessError(
+                f"measurement {m['name']!r} is per_leg but the manifest declares no window_grid legs"
+            )
+        for leg in legs:
+            fields = {k: v for k, v in m.items() if k != "per_leg"}
+            fields.update(
+                name=leg_measurement_name(m["name"], leg["id"]),
+                leg=leg["id"],
+                cout_f=leg["cout_f"],
+                esr_ohm=leg["esr_ohm"],
+            )
+            out.append(Measurement(**fields))
+    return out
 
 
 def load_experiment(path: Path) -> Experiment:
@@ -385,7 +435,7 @@ def load_experiment(path: Path) -> Experiment:
         if key not in raw:
             raise HarnessError(f"{manifest}: missing required key {key!r}")
     exp = Experiment(dir=exp_dir, raw=raw)
-    exp.measurements = [Measurement(**m) for m in raw["measurements"]]
+    exp.measurements = expand_measurements(raw)
     if not exp.schematic.is_file():
         raise HarnessError(f"{manifest}: schematic not found: {exp.schematic}")
     return exp
@@ -517,6 +567,52 @@ def netlist_body(netlist: Path, eval_exprs: bool = True) -> list[str]:
 # --------------------------------------------------------------------------
 
 
+def fmt_spice_value(value: float) -> str:
+    return repr(float(value))
+
+
+def window_leg_lines(exp: Experiment, leg_ids: list[str] | None = None) -> list[str]:
+    """The in-deck COUT/ESR window walk (issue #313): one independent block per
+    declared leg -- `reset`, that leg's own `alter` cards, its own `tran` and
+    measurements. `leg_ids` selects/reorders legs (used by the leg-order
+    independence smoke check); the default is the declared order.
+
+    ESR = 0 is realised electrically, not with a stand-in resistor: COUT moves
+    to the direct VOUT-to-ground branch (`cdir`) and the series COUT+RESR branch
+    is set to 0 F (open); every ESR > 0 leg does the reverse.
+    """
+    grid = exp.raw.get("window_grid")
+    if not grid:
+        return []
+    by_id = {leg["id"]: leg for leg in grid["legs"]}
+    order = leg_ids or exp.leg_order or [leg["id"] for leg in grid["legs"]]
+    template = grid["leg_analyses"]
+    lines: list[str] = []
+    for leg_id in order:
+        leg = by_id[leg_id]
+        cout, esr = float(leg["cout_f"]), float(leg["esr_ohm"])
+        subs = {
+            "cout_esr_f": fmt_spice_value(cout if esr > 0 else 0.0),
+            "cout_dir_f": fmt_spice_value(cout if esr == 0 else 0.0),
+            # RESR is parked at its netlist value in the ESR=0 leg (it sits in
+            # series with a 0 F capacitor and carries no current).
+            "resr_f": fmt_spice_value(esr if esr > 0 else float(grid.get("resr_park_ohm", 0.01))),
+        }
+        lines.append(
+            f"* --- window leg {leg_id}: COUT={cout:g} F, ESR={esr:g} ohm "
+            "(independent reset/seed/tran) ---"
+        )
+        for ln in template:
+            for key, val in subs.items():
+                ln = ln.replace("{" + key + "}", val)
+            lines.append(ln)
+        for m in exp.measurements:
+            if m.leg == leg_id:
+                lines.append(f"let meas_{m.name} = {m.expr}")
+                lines.append(f"print meas_{m.name}")
+    return lines
+
+
 def build_deck(exp: Experiment, pdk: Pdk, corner: Corner, body: list[str]) -> str:
     deck = exp.raw.get("deck", {})
     head = [
@@ -534,10 +630,15 @@ def build_deck(exp: Experiment, pdk: Pdk, corner: Corner, body: list[str]) -> st
     control = [".control", "save all"]
     # `{corner_id}` lets a manifest write a per-corner trace file (issue #309).
     control += [ln.replace("{corner_id}", corner.id) for ln in (deck.get("analyses") or ["op"])]
+    control += window_leg_lines(exp)
+    # Per-leg measurements are evaluated inside their own leg block (each leg's
+    # tran is its own plot, so a trailing `let` could not see them).
     for m in exp.measurements:
-        control.append(f"let meas_{m.name} = {m.expr}")
+        if m.leg is None:
+            control.append(f"let meas_{m.name} = {m.expr}")
     for m in exp.measurements:
-        control.append(f"print meas_{m.name}")
+        if m.leg is None:
+            control.append(f"print meas_{m.name}")
     control += ["quit", ".endc", ".end", ""]
 
     return "\n".join(head + body + control)
@@ -665,6 +766,8 @@ def run_corner(
         value = values.get(m.name)
         passed = value is not None
         reason = "" if passed else "measurement not found in ngspice output"
+        if passed and not _finite_number(value):
+            passed, reason = False, "non-finite measurement value"
         if passed and m.min is not None and value < m.min:
             passed, reason = False, f"below min {m.min:g}"
         if passed and m.max is not None and value > m.max:
@@ -679,6 +782,16 @@ def run_corner(
                 "max": m.max,
                 "pass": passed,
                 "reason": reason,
+                **(
+                    {
+                        "leg": m.leg,
+                        "cout_f": m.cout_f,
+                        "esr_ohm": m.esr_ohm,
+                        "direction": m.direction,
+                    }
+                    if m.leg is not None
+                    else {}
+                ),
             }
         )
         ok = ok and passed
@@ -776,6 +889,101 @@ def run_corner(
         "solver_diagnostic": solver_diagnostic,
         "pass": ok,
         "log": str(log_path.relative_to(REPO_ROOT)) if log_path is not None else None,
+    }
+
+
+# --------------------------------------------------------------------------
+# window-grid aggregation (issue #313)
+# --------------------------------------------------------------------------
+
+GRID_FAILURE_CAP = 200  # failing conditions itemised in the record (count is exact)
+
+
+def grid_coverage(exp: Experiment, results: list[dict], corners: list[Corner]) -> dict | None:
+    """Conservative campaign-level verdict for a manifest's COUT/ESR window grid.
+
+    The grid PASSes only if EVERY declared (corner x COUT x ESR x direction)
+    measurement is present, finite, within its manifest bounds AND flagged
+    passing by the per-corner run. The expected set is derived from the manifest
+    and the corner matrix, never from what the results happen to contain, so a
+    missing leg, a missing corner, a NaN/unparsable value, or one failed
+    condition can only lower the verdict. Returns None for an experiment with no
+    `window_grid`.
+    """
+    grid = exp.raw.get("window_grid")
+    if not grid:
+        return None
+    by_corner = {r.get("corner_id"): r for r in results}
+    leg_ms = [m for m in exp.measurements if m.leg is not None]
+    expected = evaluated = passing = 0
+    failures: list[dict] = []
+    n_failures = 0
+    for corner in corners:
+        res = by_corner.get(corner.id)
+        present = {c.get("name"): c for c in (res or {}).get("measurements") or []}
+        for m in leg_ms:
+            expected += 1
+            check = present.get(m.name)
+            value = None if check is None else check.get("value")
+            if check is None or value is None:
+                status, reason = "missing", "no result for this condition"
+            elif not _finite_number(value):
+                status, reason = "non-finite", "value is NaN/inf"
+            else:
+                evaluated += 1
+                if m.min is not None and value < m.min:
+                    status, reason = "fail", f"below min {m.min:g}"
+                elif m.max is not None and value > m.max:
+                    status, reason = "fail", f"above max {m.max:g}"
+                elif check.get("pass") is not True:
+                    status, reason = "fail", check.get("reason") or "flagged failing"
+                else:
+                    status, reason = "pass", ""
+            if status == "pass":
+                passing += 1
+                continue
+            n_failures += 1
+            if len(failures) < GRID_FAILURE_CAP:
+                failures.append(
+                    {
+                        "corner_id": corner.id,
+                        "process": corner.process,
+                        "temperature_c": corner.temp_c,
+                        "supply_v": corner.supply_v,
+                        "leg": m.leg,
+                        "cout_f": m.cout_f,
+                        "esr_ohm": m.esr_ohm,
+                        "direction": m.direction,
+                        "measurement": m.name,
+                        "status": status,
+                        "value": value if _finite_number(value) else None,
+                        "reason": reason,
+                    }
+                )
+    complete = expected > 0 and evaluated == expected
+    return {
+        "title": grid.get("title", ""),
+        "legs": [
+            {"id": leg["id"], "cout_f": leg["cout_f"], "esr_ohm": leg["esr_ohm"]}
+            for leg in grid["legs"]
+        ],
+        "directions": list(grid.get("directions") or []),
+        "leg_order": list(exp.leg_order or [leg["id"] for leg in grid["legs"]]),
+        "pvt_points": len(corners),
+        "conditions_expected": expected,
+        "conditions_evaluated": evaluated,
+        "conditions_passing": passing,
+        "complete": complete,
+        "pass": complete and passing == expected,
+        "n_failing_or_missing": n_failures,
+        "failures": failures,
+        "failures_truncated": max(0, n_failures - len(failures)),
+        "sampling_statement": grid.get("sampling_statement", ""),
+        "coverage_note": (
+            "PVT coverage and COUT/ESR coverage are separate axes: this record ran "
+            f"{len(corners)} PVT point(s) x {len(grid['legs'])} declared COUT/ESR leg(s); "
+            "the legs are a finite sample of the DR-002 window, not a continuous proof."
+        ),
     }
 
 
@@ -1260,6 +1468,50 @@ def render_batch_execution(record: dict) -> list[str]:
     return lines
 
 
+def render_window_grid(g: dict) -> list[str]:
+    """Markdown block for a record's COUT/ESR window-grid verdict (issue #313)."""
+
+    def eng(v: float) -> str:
+        return f"{v:g}"
+
+    out = [
+        "- **COUT/ESR window grid** (separate from the PVT matrix above): "
+        + ("COMPLETE" if g["complete"] else "INCOMPLETE")
+        + f" -- {g['conditions_passing']}/{g['conditions_expected']} declared "
+        "(corner x COUT x ESR x direction) conditions present, finite and passing; "
+        f"grid verdict **{'PASS' if g['pass'] else 'FAIL'}**.",
+        "  - Declared legs (COUT F / ESR ohm): "
+        + ", ".join(f"`{x['id']}` ({eng(x['cout_f'])} / {eng(x['esr_ohm'])})" for x in g["legs"])
+        + "; directions: "
+        + ", ".join(g["directions"])
+        + ".",
+        f"  - {g['coverage_note']}",
+        f"  - {g['sampling_statement']}",
+    ]
+    if not g["pass"]:
+        out.append(
+            f"  - A missing leg, an unparsable/NaN value or any failed condition makes the "
+            f"grid FAIL: {g['n_failing_or_missing']} condition(s) failed or are missing"
+            + (
+                f" (first {len(g['failures'])} itemised; the rest are in the JSON record's "
+                "per-corner measurements)"
+                if g["failures_truncated"]
+                else ""
+            )
+            + "."
+        )
+        for f in g["failures"][:20]:
+            val = "n/a" if f["value"] is None else f"{f['value']:.6g}"
+            out.append(
+                f"    - {f['corner_id']} (process {f['process']}, {fmt_temp(f['temperature_c'])} C, "
+                f"{f['supply_v']:.2f} V) COUT={eng(f['cout_f'])} F ESR={eng(f['esr_ohm'])} ohm "
+                f"{f['direction']}: `{f['measurement']}` {f['status']} ({val}"
+                + (f"; {f['reason']}" if f["reason"] else "")
+                + ")"
+            )
+    return out
+
+
 def render_record(record: dict) -> str:
     r = record
     tools = r["tools"]
@@ -1311,6 +1563,8 @@ def render_record(record: dict) -> str:
             "(−40/27/125 °C × supply corners × process corners)"
         )
     lines.append(f"- **Statistical convention**: {r['experiment']['statistical_convention']}")
+    if r.get("window_grid"):
+        lines.extend(render_window_grid(r["window_grid"]))
 
     lines.append("- **Result**:")
     for res in r["corners"]:
@@ -1428,6 +1682,12 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         default="",
         help="why a subset of the full PVT matrix is acceptable (required for subsets)",
     )
+    p.add_argument(
+        "--leg-order",
+        type=csv_list,
+        help="window_grid leg execution order (a permutation of the declared legs); "
+        "leg-order independence smoke check, issue #313",
+    )
     p.add_argument("--supersedes", default="", help="record id this run supersedes")
     p.add_argument("--author", default="", help="record author (default: git user.email)")
     p.add_argument("--timeout", type=int, default=300, help="per-corner ngspice timeout (s)")
@@ -1488,6 +1748,13 @@ def main(argv: list[str]) -> int:
         )
 
     exp = load_experiment(Path(args.experiment))
+    if args.leg_order:
+        declared = [leg["id"] for leg in window_legs(exp.raw)]
+        if sorted(args.leg_order) != sorted(declared):
+            raise HarnessError(
+                f"--leg-order must be a permutation of the declared window_grid legs: {declared}"
+            )
+        exp.leg_order = list(args.leg_order)
     batch = args.backend == "batch"
     if batch:
         # Refuse before netlisting, submission or any local ngspice.
@@ -1614,7 +1881,18 @@ def main(argv: list[str]) -> int:
                 print(f"      {why}", file=sys.stderr)
 
     spreads = spread_checks(exp, results)
-    overall = all(r["pass"] for r in results) and all(s["pass"] for s in spreads)
+    grid = grid_coverage(exp, results, matrix)
+    overall = (
+        all(r["pass"] for r in results)
+        and all(s["pass"] for s in spreads)
+        and (grid is None or grid["pass"])
+    )
+    if grid is not None:
+        print(
+            f"window grid     : {grid['conditions_passing']}/{grid['conditions_expected']} "
+            f"conditions passing ({'complete' if grid['complete'] else 'INCOMPLETE'}) -> "
+            f"{'PASS' if grid['pass'] else 'FAIL'}"
+        )
 
     if args.no_write:
         print()
@@ -1675,6 +1953,7 @@ def main(argv: list[str]) -> int:
             else {}
         ),
         "spread_checks": spreads,
+        **({"window_grid": grid} if grid is not None else {}),
         "overall_pass": overall,
         "links": {
             "testbench": str(exp.schematic.relative_to(REPO_ROOT)),
