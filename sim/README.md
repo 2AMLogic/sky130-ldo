@@ -576,12 +576,14 @@ single `op` analysis and two scalar measurements (`vgs`, `isup`),
 `sim/load-transient`'s COUT/ESR window grid (issue #326, below) and
 `sim/dropout-vs-load`'s cold-start crossing in its validated shape (issue
 #374, below) and `sim/line-regulation`'s four cold-start endpoints in their
-validated shape (issue #379, below). Every other manifest — `current-limit`,
-`enable-shutdown`, `ic-screen-125c-*`, `iq`, `load-regulation`, `loop-gain`,
+validated shape (issue #379, below) and `sim/load-regulation`'s two
+cold-start endpoints in their validated shape (issue #381, below). Every other
+manifest — `current-limit`,
+`enable-shutdown`, `ic-screen-125c-*`, `iq`, `loop-gain`,
 `psrr-dc`, `startup`, `thermal`, and the `mc-*` experiments (which have their
 own runner, `mc-run.py`) — and any edited smoke, window-grid or dropout shape
-is **refused before netlisting, submission or local ngspice**. `load-regulation` and the
-other regulation grids stay deferred on translating their measurement cards.
+is **refused before netlisting, submission or local ngspice**. The other
+regulation grids stay deferred on translating their measurement cards.
 
 - **Requests.** The supply is the netlist's `.param vsup`, not a klt corner
   axis (klt's supply override alters sources, which is not this harness's
@@ -858,6 +860,83 @@ the pinned netlist default (1 mA), so no request inherits another's load.
   not claim equivalence. A blocked preflight only defers the check; it does
   not permit a local multi-corner campaign. The full 45-point refresh belongs
   to #231 after equivalence is evidenced.
+
+#### Load regulation endpoints on the batch backend (issue #381)
+
+`python3 sim/bin/corner-run.py sim/load-regulation --backend batch` is
+**opt-in** (local stays the default). `sim/bin/batch_load_regulation.py`
+(PDK-free) translates the deck's two independent cold-start points into
+**one single-step `klt sim` request per supply group x endpoint** (`tran1` =
+0 A, `tran2` = 50 mA), reusing the line-regulation request, preflight,
+response-validation, provenance and record plumbing and its small shared
+helpers (expression evaluator, measurement check, response extraction,
+netlist forbidden-card/one-definition check). Admission rules are separate and
+stricter-by-shape: exactly two endpoints, each `tran <tstep> <tstop> uic`
+followed by exactly one `avg`, one `min` and one `max` `meas tran` card with an
+explicit window; point 1 runs at the netlist's own load and point 2 carries
+exactly one `alter iload = <amps>` to a different load; any other card
+(`set`, `alter` of VIN/EN, `op`, `ic`, `reset`, ...) is refused. This is not a
+general SPICE translator.
+
+| local deck | klt request |
+|---|---|
+| (no VIN/EN `alter`) VIN = `'vsup'`, EN = `dc 0 pwl(0 0 100u 0 101u 'vsup' 10 'vsup')` | unchanged baseline lines in **every** request netlist: VIN and full-rail EN stay the corner supply (`.param vsup=<supply>` opens each request), not a copied number |
+| point 1 at the netlist load; `alter iload = 50m` before point 2 | that endpoint's **complete load in the request netlist**: `ILOAD VOUT 0 0` (`tran1`) or `ILOAD VOUT 0 50m` (`tran2`), so no request inherits another's state |
+| `tran 10u 200m uic` | the step's `analysis` verbatim (cold start, no operating-point solve; the 200 ms settling period is a documented method choice and is not shortened) |
+| `meas tran ... avg\|min\|max v(vout) from=199m to=200m` (six cards) | six step measurements with the card as `spice`, windows unchanged, returned as `tran1.vout_0ma[_min\|_max]` and `tran2.vout_50ma[_min\|_max]` |
+| `abs(tran2.vout_50ma - tran1.vout_0ma)`, `100*abs(...)/1.8` and the `tranN.card` identities | **not sent**: graded locally from the raw values with the manifest's own expressions and bounds (`load_reg_v` < 18 mV and `load_reg_pct` < 1 %, both strict so exactly 18 mV / 1 % FAIL; endpoint averages and tail min/max inside the 1.764-1.836 V Output window, inclusive) |
+
+- **Renewal pin.** `BATCH_ALLOWLIST["load-regulation"]["manifest_sections"]`
+  pins the `analyses`, `measurements` (bounds and inclusivity) and `matrix`
+  digests; any intentional change refuses the batch backend until
+  re-validated and re-pinned (`test_pins_equal_the_committed_manifest` fails
+  at the same moment). `window_grid`, `per_leg` and `spread_checks` are refused.
+- **Netlist gate (before any request is written).** One definition each of
+  `VVIN`, `VEN` and `ILOAD`, equal to the pinned baseline (`'vsup'`-linked VIN
+  and EN, `ILOAD VOUT 0 0`); `.ic`, `.nodeset`, `.control`, `.tran`/`.dc`/
+  `.ac`/`.op`, `.meas` and `.temp` cards are refused.
+- **Requests.** Full matrix: 3 supply values x 2 endpoints = **6 requests** of
+  15 points, together preserving all 45 declared corner identities. `--quick`:
+  each explicit tuple is a singleton request per endpoint (3 x 2 = 6), never a
+  Cartesian expansion. Keys are `<supply group>-tran<N>`.
+- **Response gate / provenance.** As for line regulation: any missing,
+  duplicate, unexpected, errored or non-finite value, missing log or solver
+  diagnostic is a recorded FAIL; structural problems abort with no record and
+  no fallback. A batch record's `execution.adapter` is
+  `load-regulation-endpoints` (issue 381) with each endpoint's state, source
+  lines and cards, and the validated digests; the log is the two endpoint logs
+  concatenated under `load-regulation endpoint tran<N>` headers.
+- **Offline vs paired validation.** `sim/tests/test_batch_load_regulation_381.py`
+  is headless and PDK-free: independent 0 A / 50 mA states, supply-linked
+  VIN/EN, unchanged duration/windows, all six raw cards, plot-qualified
+  mapping, both derived differences, strict delta bounds, inclusive window,
+  negative controls (equal out-of-window endpoints, in-window averages with
+  out-of-window extrema) and request-matrix preservation. It proves
+  translation and grading only and does **not** establish local/fleet
+  numerical equivalence. **No paired local/fleet comparison has been
+  performed**, so remote equivalence is **unqualified**. After
+  `python3 sim/bin/batch-preflight.py` exits `0`, run one corner both ways at
+  the same commit and compare:
+
+  ```bash
+  python3 sim/bin/batch-preflight.py                       # must exit 0 first
+  python3 sim/bin/corner-run.py sim/load-regulation --backend batch \
+      --process tt --temp 27 --supply 3.3 \
+      --subset-reason "issue #381 paired local/remote baseline check" --no-write
+  python3 sim/bin/corner-run.py sim/load-regulation \
+      --process tt --temp 27 --supply 3.3 \
+      --subset-reason "issue #381 paired local/remote baseline check" --no-write
+  ```
+
+  Comparison tolerance (an equivalence check, never a spec limit): when the
+  remote `engine_version` equals the local ngspice, every endpoint average,
+  min and max must agree to |Δ| <= 1 uV and both derived differences to
+  |Δ| <= 2 uV / 1.2e-4 % (the propagated endpoint tolerance, rounded up). If
+  the engine versions differ, report Δ with both versions and the request
+  netlist sha256 and do not claim equivalence. Retain the raw logs. A blocked
+  preflight only defers the check; it does not permit a local multi-corner
+  campaign. The full 45-point refresh belongs to #231 after equivalence is
+  evidenced.
 
 #### Runner preflight (issue #356)
 

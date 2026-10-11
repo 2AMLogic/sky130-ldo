@@ -44,6 +44,7 @@ from pathlib import Path
 
 import batch_dropout
 import batch_line_regulation as blr
+import batch_load_regulation as bld
 from batch_window_grid import TranslationError, leg_step, parse_leg_template
 from ramp_monotonicity import evaluate_legs
 from xschem_exprs import eval_xschem_exprs  # noqa: F401  (re-exported; tests call corner_run.eval_xschem_exprs)
@@ -1126,6 +1127,28 @@ BATCH_ALLOWLIST = {
         ],
         "baseline_iload": "1m",
     },
+    # Shape (issue #381): TWO independent cold-start endpoints (no load, then
+    # 50 mA), each its own single-step `tran ... uic` request. VIN and full-rail
+    # EN stay the corner supply (`'vsup'`); only the load differs per request
+    # (see sim/bin/batch_load_regulation.py). RENEWAL: pinned like
+    # line-regulation, by the record input-fingerprint digests
+    # (sim/tests/test_batch_load_regulation_381.py).
+    "load-regulation": {
+        "endpoint_adapter": True,
+        "adapter_kind": "load-regulation",
+        "manifest_sections": {
+            "analyses": "e9064e2b26967ccb49de8a1b37e684c2a3cc4c44b0f83d12f01559ad04f7cfdb",
+            "measurements": "1637b3f8f570b4f7cc458b2d82d3cdb8268cf1fea8f7db7a3dbbccf64ef25f76",
+            "matrix": "639e50d5a920cef70120de11fefa3ffc5bf53f0446c56a853f87c39e95976b21",
+        },
+        # the baseline (pre-`alter`) source lines each request rewrites
+        "stimulus": [
+            "VVIN VIN 0 'vsup'",
+            "VEN EN 0 dc 0 pwl(0 0 100u 0 101u 'vsup' 10 'vsup')",
+            "ILOAD VOUT 0 0",
+        ],
+        "baseline_iload": "0",
+    },
 }
 
 BATCH_REFUSAL_HINT = (
@@ -1134,7 +1157,8 @@ BATCH_REFUSAL_HINT = (
     "grid (one `tran` step per leg) and the validated sim/dropout-vs-load "
     "cold-start crossing (one `tran ... uic` step per supply) and the validated "
     "sim/line-regulation endpoints (four single-step `tran ... uic` requests per "
-    "supply); every other "
+    "supply) and the validated sim/load-regulation endpoints (two single-step "
+    "`tran ... uic` requests per supply); every other "
     "experiment, including the other transient/AC/DC-sweep and mc-* manifests, "
     "stays on the local backend (see sim/README.md, \"Batch backend\")"
 )
@@ -1190,10 +1214,19 @@ def is_endpoint_adapter(exp: Experiment) -> bool:
     return bool(BATCH_ALLOWLIST.get(exp.slug, {}).get("endpoint_adapter"))
 
 
+def endpoint_module(exp: Experiment):
+    """The endpoint-adapter module for the experiment: load-regulation (issue
+    #381) or, by default, line-regulation (issue #379). Both raise
+    blr.EndpointTranslationError."""
+    kind = BATCH_ALLOWLIST.get(exp.slug, {}).get("adapter_kind")
+    return bld if kind == "load-regulation" else blr
+
+
 def endpoint_deck(exp: Experiment) -> list[blr.Endpoint]:
-    """The four endpoints of the deck, parsed and with every graded
-    expression checked against them (raises EndpointTranslationError)."""
-    endpoints = blr.parse_deck(
+    """The endpoints of the deck (four line-regulation, two load-regulation),
+    parsed and with every graded expression checked against them (raises
+    EndpointTranslationError)."""
+    endpoints = endpoint_module(exp).parse_deck(
         (exp.raw.get("deck") or {}).get("analyses") or [], BATCH_ALLOWLIST[exp.slug]["baseline_iload"]
     )
     blr.check_measurements(endpoints, [(m.name, m.expr, m.unit) for m in exp.measurements])
@@ -1235,7 +1268,7 @@ def check_endpoint_batch_shape(exp: Experiment) -> None:
             )
     if why:
         raise HarnessError(
-            f"--backend batch: {exp.slug!r} no longer has the validated line-regulation "
+            f"--backend batch: {exp.slug!r} no longer has the validated {exp.slug} "
             f"endpoint shape ({why}): {BATCH_REFUSAL_HINT}"
         )
 
@@ -1398,7 +1431,7 @@ def build_batch_netlist(exp: Experiment, group: BatchGroup, body: list[str]) -> 
         # Each endpoint request carries that point's complete source state
         # (VIN, EN's PWL high level, load) in the netlist (issue #379).
         ep = next(e for e in endpoint_deck(exp) if e.step_name == group.leg)
-        body = blr.endpoint_body(body, ep)
+        body = endpoint_module(exp).endpoint_body(body, ep)
     return head + body
 
 
@@ -1455,7 +1488,7 @@ def prepare_batch_requests(
             blr.check_netlist(body, BATCH_ALLOWLIST[exp.slug]["stimulus"])
         except blr.EndpointTranslationError as exc:
             raise HarnessError(
-                f"--backend batch: {exp.slug!r} netlist is not the validated line-regulation "
+                f"--backend batch: {exp.slug!r} netlist is not the validated {exp.slug} "
                 f"endpoint baseline ({exc}): {BATCH_REFUSAL_HINT}"
             ) from exc
     req_dir = run_dir / "klt-requests"
@@ -1871,7 +1904,7 @@ def run_batch(
         for cid, text in lg.items():
             if endpoint_mode:
                 logs[cid] = logs.get(cid, "") + (
-                    f"***** line-regulation endpoint {group.leg} (klt sim request {group.key}) *****\n{text}\n"
+                    f"***** {exp.slug} endpoint {group.leg} (klt sim request {group.key}) *****\n{text}\n"
                 )
             elif group.leg is None:
                 logs[cid] = text
@@ -1940,14 +1973,15 @@ def endpoint_adapter_info(exp: Experiment) -> dict:
     """Provenance of the issue #379 adapter for a batch record / dry run."""
     allowed = BATCH_ALLOWLIST[exp.slug]
     endpoints = endpoint_deck(exp)
+    load = endpoint_module(exp) is bld
     return {
-        "name": "line-regulation-endpoints",
-        "issue": 379,
+        "name": "load-regulation-endpoints" if load else "line-regulation-endpoints",
+        "issue": 381 if load else 379,
         "endpoints": [
             {
                 "step": e.step_name, "vin": e.vin, "iload": e.iload,
                 "analysis": f"tran {e.tran_args}",
-                "sources": blr.endpoint_source_lines(e),
+                "sources": endpoint_module(exp).endpoint_source_lines(e),
                 "cards": [text for _, _, text in e.cards],
             }
             for e in endpoints
@@ -1956,6 +1990,12 @@ def endpoint_adapter_info(exp: Experiment) -> dict:
         "validated_manifest_sections": dict(allowed["manifest_sections"]),
         "validated_baseline_stimulus": list(allowed["stimulus"]),
     }
+
+
+def _vin_label(vin) -> str:
+    """A fixed VIN literal gets a unit; the load-regulation corner-supply
+    parameter (`'vsup'`) is shown as is."""
+    return str(vin) if str(vin).startswith("'") else f"{vin} V"
 
 
 def render_batch_execution(record: dict) -> list[str]:
@@ -1987,19 +2027,22 @@ def render_batch_execution(record: dict) -> list[str]:
             + ("names" if rq.get("klt_pdk_names_pin") else "**does NOT name**")
             + " the pinned open_pdks commit"
         )
-    if ex.get("adapter") and ex["adapter"].get("name") == "line-regulation-endpoints":
+    if ex.get("adapter") and ex["adapter"].get("name") in (
+        "line-regulation-endpoints", "load-regulation-endpoints",
+    ):
         ad = ex["adapter"]
         lines.append(
             f"- **Batch adapter**: `{ad['name']}` (issue #{ad['issue']}): one single-step "
             "`analysis_steps` request per supply group x endpoint ("
             + "; ".join(
-                f"`{e['step']}` = `tran {e['analysis'].split(' ', 1)[1]}` at VIN {e['vin']} V, "
+                f"`{e['step']}` = `tran {e['analysis'].split(' ', 1)[1]}` at VIN {_vin_label(e['vin'])}, "
                 f"I_LOAD {e['iload']}"
                 for e in ad["endpoints"]
             )
             + "); each request's netlist carries that endpoint's complete VIN / EN-PWL / load "
             "state, EN's high level equal to VIN; raw endpoint values come back as "
-            "`tran<N>.<card>` and the slopes, windows and bounds are graded locally"
+            "`tran<N>.<card>` and the slopes/deltas, windows and bounds are graded locally "
+            "(offline translation checks do not establish local/fleet numerical equivalence)"
         )
     elif ex.get("adapter"):
         ad = ex["adapter"]
@@ -2388,7 +2431,7 @@ def main(argv: list[str]) -> int:
     if args.dry_run and batch:
         if is_endpoint_adapter(exp):
             ad = endpoint_adapter_info(exp)
-            print(f"\n-- batch adapter {ad['name']} (issue #379) --")
+            print(f"\n-- batch adapter {ad['name']} (issue #{ad['issue']}) --")
             for e in ad["endpoints"]:
                 print(f"  {e['step']}: {e['analysis']}; VIN={e['vin']} I_LOAD={e['iload']}")
                 for line in e["sources"].values():
