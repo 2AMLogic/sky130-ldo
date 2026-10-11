@@ -662,9 +662,13 @@ as their unblock check.
 
 | exit | meaning |
 |---|---|
-| `0` | accepted: the runner took the job |
-| `3` | version mismatch (`runner_compatibility: mismatch` / `batch_runner_version_mismatch`); reported, never worked around |
-| `1` | any other failure (no response, other job failure, missing klt/xschem/PDK) |
+| `0` | accepted: the runner ran the job to a completed, usable result (issue #359) — a remote job id, a terminal successful remote state (`done`, or `failed` with a ran-to-report `exit_code` 0/3/4), exactly one corner and it is the tt / 27 C smoke corner, that corner `pass` or `fail`, and no error-severity diagnostic or runner code |
+| `3` | version mismatch (`runner_compatibility: mismatch` / `batch_runner_version_mismatch`); reported, never worked around; wins over any other finding |
+| `1` | any other failure (no/malformed response, job still running or failed for another reason, missing/duplicate/unexpected or incomplete smoke corner, error diagnostics, missing klt/xschem/PDK), with the reason printed |
+
+A completed measurement FAIL on the smoke corner still exits `0`: the probe
+answers "does the fleet run this client to completion?", not "does the
+circuit pass?" — electrical grading stays with `corner-run.py`.
 
 It prints the job id and the runner/client klt versions (`--json` adds a
 machine-readable line, `--keep` retains the scratch dir). It is a probe, not
