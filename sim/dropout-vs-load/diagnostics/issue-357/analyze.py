@@ -47,6 +47,7 @@ VREF_DC_CURRENT_MAX_A = 1e-9
 EDGE_VIN_V = 2.064
 SPEC_DROPOUT_MAX_V = 0.300  # dropout-vs-load/experiment.json dropout_v: max 0.3, max_inclusive false
 PRE_T = a339.PRE_T
+LOAD_A = a339.LOAD_A
 
 # role -> device per variant (role names are what the tables report)
 ROLES = {
@@ -96,7 +97,7 @@ def derived(t, cols, variant, res):
         return None, ["run invalid: " + "; ".join(res["reasons"])]
     reasons = []
     roles = ROLES[variant]
-    need = ["xldo.ea_out", "i(vvin)", "i(vvref)", "i(iload)"]
+    need = ["xldo.ea_out", "i(vvin)", "i(vvref)"]
     need = [f"v({n})" if n.startswith("xldo") else n for n in need]
     for r in roles.values():
         need += [f"{r}.id"]
@@ -119,7 +120,8 @@ def derived(t, cols, variant, res):
             "pass_id_a": abs(o["xm_pass.id"]), "pass_vds_v": abs(o["xm_pass.vds"]),
             "pass_vdsat_v": abs(o["xm_pass.vdsat"]),
             "supply_current_a": -o["i(vvin)"],
-            "iq_vs_load_a": -o["i(vvin)"] - o["i(iload)"],
+            # ILOAD is PWL(0 0 2.5m 0 2.6m 50m): exactly LOAD_A at every sample used here
+            "iq_vs_load_a": -o["i(vvin)"] - LOAD_A,
             "iq_internal_a": -o["i(vvin)"] - abs(o["xm_pass.id"]),
             "vref_current_a": o["i(vvref)"],
             "clamp_clim_id_a": abs(o["xm_clim.id"]), "tshut_id_a": abs(o["xm_tshut.id"]),

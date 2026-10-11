@@ -89,9 +89,9 @@ PRESERVED = ["XM_PASS", "XM_SENSE", "XM_CLN1", "XM_CLN2", "XM_CLIM", "XM_ENP3", 
 # Nodes the candidate may introduce (all internal to the subcircuit).
 NEW_NODES = {"PBR", "NVR", "NBR", "NTAIL", "NX1", "NX2", "ND1", "ND2", "NM"}
 # Nodes allowed on the terminals of a new card besides NEW_NODES.
-ALLOWED_EXISTING = {"VIN", "VREF", "FB", "SS", "EA_OUT", "AMP_ENN", "0"}
+ALLOWED_EXISTING = {"VIN", "VREF", "FB", "SS", "EN", "EA_OUT", "AMP_ENN", "0"}
 # Gate-only nodes: they may appear only on a new device's gate terminal.
-GATE_ONLY = {"VREF", "FB", "SS"}
+GATE_ONLY = {"VREF", "FB", "SS", "EN"}
 
 
 def geom(w: float, nf: int, l: float) -> str:
@@ -110,12 +110,35 @@ def geom(w: float, nf: int, l: float) -> str:
 NFET_GEOM = {"L1W10": geom(10, 2, 1)}
 PFET_GEOM = {"L1W10": geom(10, 2, 1)}
 
-# Revision table: rev 0 is the derived candidate; rev 1 (if any) is the single
+# Revision table: rev 0 is the derived candidate; rev 1 is the single
 # evidence-driven revision the issue permits. Values are per-revision, explicit.
 REV = {
     0: {"xr_vr_l": 169.0,  # from runs/sz01_vref_vi: Vs(2.1 uA)=0.288 V -> 137 kohm at ~810 ohm/um
-        "pbn_w": 5.0, "nbr_w": 4.0, "ntail_w": 12.0, "ntail_nf": 3},
+        "pbr_w": 10.0, "pbr_nf": 2, "pbn_w": 5.0, "nbr_w": 4.0, "ntail_w": 12.0, "ntail_nf": 3,
+        "en_pullups": False},
+    # rev 1 -- driven by rev0 evidence only (README section 5):
+    #  * iq_cand_r0_3p3: iq_full_load_ua = 30.86 uA > 30 uA (baseline 27.61 uA) -> cut the bias
+    #    overhead (I_R + XM_PBN branch) from ~3.2 uA to ~1.3 uA. XM_PBR W 10 -> 2.5 so that the
+    #    unchanged XM_CLP (W=10) mirrors I_R up (measured ratio ~3.0, runs/sz03_headroom_rev1,
+    #    not the nominal 4) and keeps rev0's ~2.3 uA clamp reference; I_R 2.13 -> ~0.77 uA
+    #    (R_VR from runs/sz01_vref_vi: Vs(0.773 uA)=0.3275 V -> 424 kohm at the 771 ohm/um
+    #    measured in sz03 -> L=550 um). XM_PBN W 5 -> 1.75 (measured ~0.68 uA in sz04) into
+    #    XM_NBR W=2.5, XM_NTAIL unchanged (4.8:1 -> ~3.26 uA tail, rev0 had 3.28 uA).
+    #    Derivation (DC sizing benches only, all retained, none graded): sz03 (L=805: CLP
+    #    1.65 uA, too low), sz04 (L=550, PBN 1.75 / NBR 2: CLP 2.37 uA ok, tail 4.10 uA too
+    #    high), sz05 (PBN 1.0 / NBR 1.5: narrow-width PMOS carried 0.59 uA, tail 4.85 uA ->
+    #    rejected), sz06 = confirmation of this sizing, computed from the MEASURED sz04 ratios
+    #    (the NMOS tail/NBR ratio tracked W exactly in rev0, sz04 and sz05). Then locked.
+    #  * en_cand_r0_3p3: singular-matrix diagnostic in the disabled (EN=0) state -> give the two
+    #    new PMOS gate nodes that float when disabled (PBR, ND2) the same EN-low pull-up every
+    #    PMOS gate node of the committed design has (copies of XM_ENP5's geometry).
+    1: {"xr_vr_l": 550.0,
+        "pbr_w": 2.5, "pbr_nf": 1, "pbn_w": 1.75, "nbr_w": 2.5, "ntail_w": 12.0, "ntail_nf": 3,
+        "en_pullups": True},
 }
+ENP5_GEOM = "L=0.5 W=2 nf=1 ad=0.58\n+ as=0.58 pd=4.58 ps=4.58\n+ nrd=0.145 nrs=0.145 sa=0 sb=0 sd=0 mult=1 m=1"
+
+
 def _rev(rev):
     if rev not in REV:
         raise ValueError(f"unknown candidate revision {rev}")
@@ -136,7 +159,7 @@ def bias_cards(rev: int) -> list[str]:
     return [
         f"XM_VRF PBR VREF NVR 0 {NF} " + geom(10, 2, 1),
         f"XR_VR NVR AMP_ENN 0 sky130_fd_pr__res_high_po W=0.42 L={r['xr_vr_l']:g} mult=1 m=1",
-        f"XM_PBR PBR PBR VIN VIN {PF} " + geom(10, 2, 1),
+        f"XM_PBR PBR PBR VIN VIN {PF} " + geom(r["pbr_w"], r["pbr_nf"], 1),
         f"XM_PBN NBR PBR VIN VIN {PF} " + geom(r["pbn_w"], 1, 1),
         f"XM_NBR NBR NBR AMP_ENN 0 {NF} " + geom(r["nbr_w"], 1, 2),
     ]
@@ -159,8 +182,15 @@ def amp_cards(rev: int) -> list[str]:
     ]
 
 
+def enable_cards(rev: int) -> list[str]:
+    if not _rev(rev)["en_pullups"]:
+        return []
+    return [f"XM_ENP6 PBR EN VIN VIN {PF} " + ENP5_GEOM,
+            f"XM_ENP7 ND2 EN VIN VIN {PF} " + ENP5_GEOM]
+
+
 def new_cards(rev: int) -> list[str]:
-    return bias_cards(rev) + amp_cards(rev)
+    return bias_cards(rev) + amp_cards(rev) + enable_cards(rev)
 
 
 # ------------------------------------------------------------- transformation

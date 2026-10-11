@@ -94,7 +94,7 @@ NODES_COMMON = ["vin", "vout", "en", "xldo.ea_out", "xldo.biasp", "xldo.cl_cmp",
 NODES_BASE = ["xldo.ea_tail", "xldo.ea_d1", "xldo.ea_d2", "xldo.pb"]
 NODES_CAND = ["xldo.ntail", "xldo.nx1", "xldo.nx2", "xldo.nd1", "xldo.nd2", "xldo.nm",
               "xldo.pbr", "xldo.nbr", "xldo.nvr"]
-CURRENTS = ["i(vvin)", "i(vvref)", "i(iload)"]
+CURRENTS = ["i(vvin)", "i(vvref)"]  # i(iload) is not a valid ngspice vector (attempt d01_base)
 
 
 def devices(variant):
