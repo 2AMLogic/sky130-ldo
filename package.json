@@ -4,8 +4,9 @@
   "private": true,
   "scripts": {
     "worktree:return": "./.loom/scripts/worktree-return.sh",
-    "check:ci": "npm run lint && npm run test && ./.loom/scripts/check-xschem-embedded-quotes.sh && ./.loom/scripts/check-xschem-duplicate-instance-names.sh && ./.loom/scripts/check-dr-numbering.sh --self-test && ./.loom/scripts/check-dr-numbering.sh && ./.loom/scripts/check-evidence-append-only.sh --self-test && ./.loom/scripts/check-evidence-append-only.sh && npm run check:characterization",
+    "check:ci": "npm run lint && npm run test && ./.loom/scripts/check-xschem-embedded-quotes.sh && ./.loom/scripts/check-xschem-duplicate-instance-names.sh && ./.loom/scripts/check-dr-numbering.sh --self-test && ./.loom/scripts/check-dr-numbering.sh && ./.loom/scripts/check-evidence-append-only.sh --self-test && ./.loom/scripts/check-evidence-append-only.sh && npm run check:characterization && npm run check:spec-status",
     "check:characterization": "python3 measurements/build_characterization_report.py --check --ignore-sim-freshness",
+    "check:spec-status": "python3 measurements/check_spec_status_counts.py",
     "check:all": "npm run check:ci",
     "test": "npm run test:compile && npm run test:lint-py && npm run test:unit",
     "test:lint-py": "git ls-files -z -- '*.py' ':!.loom' ':!.claude' | xargs -0 uvx --from ruff==0.17.0 ruff check --isolated --no-cache --select F",
