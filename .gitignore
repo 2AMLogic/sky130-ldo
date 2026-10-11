@@ -1,6 +1,10 @@
 *.raw
 *.log
 !sim/loop-gain/diagnostics/*/runs/*/ngspice.log
+# dropout-vs-load/ diagnostics (issue #357): the raw per-run solver logs (incl. failed/invalid
+# attempts and the merged investigation log) are committed evidence behind provenance.json.
+!sim/dropout-vs-load/diagnostics/*/runs/*/ngspice.log
+!sim/dropout-vs-load/diagnostics/*/runs/*/ngspice.merged.log
 __pycache__/
 .DS_Store
 

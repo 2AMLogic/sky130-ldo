@@ -1,0 +1,89 @@
+{
+ "bench": "thermal",
+ "candidate_invariant_problems": [],
+ "candidate_rev": null,
+ "command": "python3 -B probe.py --bench thermal --variant base --supply 2.1 --temp 150 --scenario hot --run-id th_base_2p1_150_hot",
+ "condition": {
+  "device_temp_imposed_c": 150.0,
+  "electrical_temp_c": 27.0,
+  "process": "tt",
+  "scenario": "hot",
+  "supply_v": 2.1
+ },
+ "data_sha256": "a6b1bfcd9a1fa1240de9f38821c1cd323e2e1b9aa5968a86018cd70627deee06",
+ "edit_notes": [],
+ "elapsed_s": 14.97,
+ "issue": 357,
+ "ngspice_exit": 0,
+ "provenance": {
+  "candidate_py_sha256": "4ed614f88a808ac4135698618b1c773e8c3815f607c9f2b281bdaf27105d2743",
+  "deck_sha256": "1aba28b07b6b8d900d759b7b2d2e202f78db56b9b1fdf9e6261ba33b4cbbbe79",
+  "driver_sha256": "6e74a95f970ac4b83122da96a949b0ed3f3127ff04422a5e462e1f26724dc6c2",
+  "dut_sch_sha256": "1378c2d440e6ffc2224091972a162357c2634600e6e56cb51e4d6f96159fd2e3",
+  "experiment_json_sha256": "1300f814d87a9c3c412f99eed7f0950006312f12f6883b205951f9a12549d37a",
+  "netlist_edited_sha256": "df78e054e429b23e609de809883d636d273b7060c9ba37ce2f019f3d6cdfd768",
+  "netlist_raw_sha256": "df78e054e429b23e609de809883d636d273b7060c9ba37ce2f019f3d6cdfd768",
+  "pdk": {
+   "lib_sha256": "48de7c677e2c6e7d09b2559279de9f818be71010a4aa933d728eb4db3b133c84",
+   "matches_pin": true,
+   "open_pdks_commit": "c6d73a35f524070e85faff4a6a9eef49553ebc2b"
+  },
+  "probe_common_sha256": "937335c680578f53b559640237647cbb6f8e6873b6c7310b3dcf0f96481467cd",
+  "source_commit": "c2ecfeb1eb9e87d2b28bf5ef92741eeac90d8869",
+  "spiceinit_sha256": "3cf811e1ae5fc75dd0bbe56205016c387c3538304be0cbdab7cb658fb9adf960",
+  "testbench_sha256": "138f832a42b41064db6c75816ad5a6db7904e162ea793e5588be4503b4143ea1",
+  "tools": {
+   "declared": {
+    "ngspice": "42",
+    "xschem": "3.4.4"
+   },
+   "ngspice": "ngspice-46 : Circuit level simulation program",
+   "on_baseline": false,
+   "platform": "Linux 7.0.0-1014-aws x86_64",
+   "python": "3.12.3",
+   "xschem": "XSCHEM V3.4.7"
+  }
+ },
+ "run_id": "th_base_2p1_150_hot",
+ "solver_diagnostic": null,
+ "thermal": {
+  "after_en_reenable_tripped": false,
+  "cold_start_tripped": false,
+  "ea_out_v": {
+   "19": 1.2716,
+   "39": 2.0962,
+   "90": 2.0151,
+   "165": 2.0399
+  },
+  "forced_tripped": true,
+  "hold_tripped": false,
+  "ipass_ua": {
+   "19": 5249.0317,
+   "39": 0.0445,
+   "90": 0.158,
+   "165": 0.1085
+  },
+  "ivin_ua": {
+   "19": 5259.5008,
+   "90": 8.0608
+  },
+  "nonfinite": false,
+  "pass_off_at_hold": true,
+  "sns_minus_ref_mv_at_hold": 103.55,
+  "t_end_us": 170.0,
+  "ts_cmp_v": {
+   "19": 2.0638,
+   "39": 0.6877,
+   "90": 2.0634,
+   "108": 2.0634,
+   "165": 2.0634
+  },
+  "vout_v": {
+   "19": 0.5092,
+   "39": 0.5276,
+   "90": 0.513,
+   "165": 0.4921
+  }
+ },
+ "variant": "base"
+}

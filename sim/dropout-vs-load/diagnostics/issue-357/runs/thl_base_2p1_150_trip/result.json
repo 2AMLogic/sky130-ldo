@@ -1,0 +1,63 @@
+{
+ "bench": "thermal-settled",
+ "candidate_invariant_problems": [],
+ "candidate_rev": null,
+ "command": "python3 -B probe.py --bench thermal-settled --variant base --supply 2.1 --temp 150 --scenario trip --run-id thl_base_2p1_150_trip",
+ "condition": {
+  "device_temp_imposed_c": 150.0,
+  "electrical_temp_c": 27.0,
+  "process": "tt",
+  "scenario": "trip",
+  "supply_v": 2.1
+ },
+ "data_sha256": "6af554f522a07aa81ca8c20599dd967f421cd7f0b5ad4186b2eb2a85757359d0",
+ "edit_notes": [],
+ "elapsed_s": 19.14,
+ "issue": 357,
+ "ngspice_exit": 0,
+ "provenance": {
+  "candidate_py_sha256": "89ff4550264fe9bc7d8e11b352dbb393f110d68051bee7c876d32903807f3304",
+  "deck_sha256": "729838c0d16389fc074bf88310ffe1cd6b24f9d5a8bc1dbbbc043ab1d43b81f9",
+  "driver_sha256": "f763e0d72e0899152a4ab8bafce6f59120fac8588e75989c21573bb526a1283e",
+  "dut_sch_sha256": "1378c2d440e6ffc2224091972a162357c2634600e6e56cb51e4d6f96159fd2e3",
+  "experiment_json_sha256": "1300f814d87a9c3c412f99eed7f0950006312f12f6883b205951f9a12549d37a",
+  "netlist_edited_sha256": "df78e054e429b23e609de809883d636d273b7060c9ba37ce2f019f3d6cdfd768",
+  "netlist_raw_sha256": "df78e054e429b23e609de809883d636d273b7060c9ba37ce2f019f3d6cdfd768",
+  "pdk": {
+   "lib_sha256": "48de7c677e2c6e7d09b2559279de9f818be71010a4aa933d728eb4db3b133c84",
+   "matches_pin": true,
+   "open_pdks_commit": "c6d73a35f524070e85faff4a6a9eef49553ebc2b"
+  },
+  "probe_common_sha256": "937335c680578f53b559640237647cbb6f8e6873b6c7310b3dcf0f96481467cd",
+  "source_commit": "e7f01f00f743a63a80a115af0978c60515e854aa",
+  "spiceinit_sha256": "3cf811e1ae5fc75dd0bbe56205016c387c3538304be0cbdab7cb658fb9adf960",
+  "testbench_sha256": "138f832a42b41064db6c75816ad5a6db7904e162ea793e5588be4503b4143ea1",
+  "tools": {
+   "declared": {
+    "ngspice": "42",
+    "xschem": "3.4.4"
+   },
+   "ngspice": "ngspice-46 : Circuit level simulation program",
+   "on_baseline": false,
+   "platform": "Linux 7.0.0-1014-aws x86_64",
+   "python": "3.12.3",
+   "xschem": "XSCHEM V3.4.7"
+  }
+ },
+ "run_id": "thl_base_2p1_150_trip",
+ "solver_diagnostic": null,
+ "thermal": {
+  "ea_out_v": 2.0985,
+  "ipass_ua": 0.0236,
+  "nonfinite": false,
+  "sample_us": 1335,
+  "settle_ref_us": 1285,
+  "t_end_us": 1500.0,
+  "tripped": true,
+  "ts_cmp_v": 0.0017,
+  "vout_ref_v": 1.8003,
+  "vout_settle_delta_mv": -27.386,
+  "vout_v": 1.773
+ },
+ "variant": "base"
+}
