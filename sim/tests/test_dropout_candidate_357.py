@@ -383,5 +383,25 @@ class Instrumentation(unittest.TestCase):
             probe.instrument_dropout(BASE.replace("save all\n", ""), "base")
 
 
+
+
+class ProvenanceManifestTracked(unittest.TestCase):
+    """Ignored local files (e.g. *.log, __pycache__) must not hide missing evidence."""
+
+    def test_provenance_manifest_paths_are_tracked(self):
+        import hashlib
+        import subprocess
+        out = subprocess.run(["git", "ls-files", "-z", "--", str(DIAG)], capture_output=True,
+                             check=True, cwd=DIAG).stdout.decode().split("\0")
+        tracked = {str((DIAG / p).resolve()) for p in out if p}
+        if not tracked:
+            self.skipTest("not a git checkout")
+        manifest = json.loads((DIAG / "provenance.json").read_text())["sha256"]
+        for rel, digest in manifest.items():
+            path = (DIAG / rel).resolve()
+            self.assertIn(str(path), tracked, f"manifest entry not git-tracked: {rel}")
+            self.assertEqual(hashlib.sha256(path.read_bytes()).hexdigest(), digest, rel)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=1)
