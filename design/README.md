@@ -476,8 +476,7 @@ Issue #116 was filed because `Dropout @ 50 mA` (ratified, `< 300 mV`) failed
 — where the same block in a different PDK shipped a pass device at half the
 width its own sizing review assumed — asking this port to run the same check
 first. **Outcome, from the real full-matrix record: 0/45 → 6/45 PASS** — real
-progress, not a clean closure; see "Dropout: 0/45 → 6/45" in the campaign
-dated campaign section in `investigation-log.md` for the corner-by-corner picture and DR-011 for the corrected
+progress, not a clean closure; see "Dropout: 0/45 → 6/45" in `investigation-log.md` for the corner-by-corner picture and DR-011 for the corrected
 evidence.
 
 **That check comes back negative.** The committed instance was `W_total` =
