@@ -152,6 +152,86 @@ class AreaVerdictTests(unittest.TestCase):
         m = self.measurement()
         self.assertFalse(area.bbox_agrees(Decimal("1"), Decimal("2.003"), m))
 
+    def test_unavailable_crosscheck_asserts_no_agreement(self):
+        note = area._crosscheck_note({"status": "unavailable", "detail": "x"})
+        self.assertIn("no independent agreement is asserted", note)
+        self.assertEqual(area._crosscheck_note({"status": "agrees"}), "")
+        self.assertIn("DISAGREES", area._crosscheck_note({"status": "DISAGREES"}))
+
+
+class AreaCoverageTests(unittest.TestCase):
+    """Issue #318: every area record discloses what its footprint does not
+    cover -- undrawn capacitors, the official-DRC result for that exact
+    layout record, LVS freshness against the measured bytes, and the
+    standalone capacitor demonstrator cited separately."""
+
+    SHA = "a" * 64
+
+    def setUp(self):
+        self.tmp = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, self.tmp)
+        self.reports = self.tmp / "reports"
+        self.layout_dir = self.reports / "L1"
+        self.layout_dir.mkdir(parents=True)
+        self.demo = self.tmp / "demo"
+        (self.demo / "D1").mkdir(parents=True)
+        (self.demo / "LATEST").write_text("D1\n")
+        (self.layout_dir / "floorplan.json").write_text(json.dumps({
+            "mos_count": 2, "res_count": 1, "block_count": 3,
+            "undrawn_elements": ["C_A X Y 1p m=1", "C_B X 0 2p m=1"],
+            "devices": [
+                {"name": "M_SMALL", "kind": "mos", "w_total_um": 10.0, "units": 1, "unit_w_um": 10.0, "l_um": 1},
+                {"name": "M_BIG", "kind": "mos", "w_total_um": 400.0, "units": 4, "unit_w_um": 100.0, "l_um": 0.5},
+                {"name": "R_X", "kind": "res", "w_total_um": None},
+            ],
+        }))
+        lvs_dir = self.reports / "V1"
+        lvs_dir.mkdir()
+        (lvs_dir / "lvs.json").write_text(json.dumps({"status": "match", "environment": {"layout_sha256": "b" * 64}}))
+        (self.reports / "LATEST-LVS").write_text("V1\n")
+
+    def cov(self):
+        return area.coverage_disclosure(
+            self.layout_dir, self.SHA, "ldo_core", reports=self.reports,
+            cap_demo_reports=self.demo, root=self.tmp,
+        )
+
+    def test_undrawn_capacitors_and_inventory_are_read_from_floorplan(self):
+        c = self.cov()
+        self.assertEqual(c["undrawn_elements"], ["C_A", "C_B"])
+        self.assertIn("not evidence that a complete, capacitor-inclusive core", c["statement"])
+        self.assertEqual((c["inventory"]["mos_count"], c["inventory"]["res_count"]), (2, 1))
+        self.assertEqual(c["inventory"]["widest_mos"]["name"], "M_BIG")
+        self.assertEqual(c["inventory"]["widest_mos"]["units"], 4)
+
+    def test_lvs_of_other_bytes_is_stale_even_when_it_matched(self):
+        c = self.cov()
+        self.assertEqual(c["lvs"]["freshness"], "STALE")
+        self.assertIn("**STALE**", area.coverage_markdown(c))
+
+    def test_lvs_of_the_same_bytes_is_fresh(self):
+        (self.reports / "V1" / "lvs.json").write_text(
+            json.dumps({"status": "match", "environment": {"layout_sha256": "sha256:" + self.SHA}}))
+        self.assertEqual(self.cov()["lvs"]["freshness"], "fresh")
+
+    def test_missing_official_run_is_not_clean(self):
+        c = self.cov()
+        self.assertEqual(c["official_drc"]["state"], "not run")
+        (self.layout_dir / "mr-drc.run.json").write_text(json.dumps(
+            {"deck_present": True, "klayout_found": True, "exit_code": 0}))
+        self.assertEqual(self.cov()["official_drc"]["state"], "error")  # no lyrdb: fail closed
+
+    def test_demonstrator_cited_separately_and_not_as_core_evidence(self):
+        c = self.cov()
+        self.assertFalse(c["capacitor_demonstrator"]["certifies_core"])
+        self.assertIn("do not certify this core", area.coverage_markdown(c))
+
+    def test_missing_floorplan_is_never_read_as_complete(self):
+        (self.layout_dir / "floorplan.json").unlink()
+        c = self.cov()
+        self.assertEqual(c["inventory"]["status"], "unavailable")
+        self.assertIn("could not be read", c["statement"])
+
 
 # --- issue #306: cap-rail demonstrator ---------------------------------------
 

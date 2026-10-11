@@ -16,6 +16,16 @@ freshness; it never recomputes the verdict.
 Optionally cross-checks the bounding box against `klt stats` (an independent
 implementation); a disagreement is recorded, not hidden.
 
+Every record also carries a `coverage` disclosure (issue #318), read from the
+measured layout record's own files rather than restated: the drawn MOS /
+resistor inventory and pass-device width (`floorplan.json`), the schematic
+elements that are NOT drawn (the capacitors), the official-deck DRC result for
+that exact layout record (fail-closed reader `_official_drc.py`), whether the
+`LATEST-LVS` record checked these exact GDS bytes, and the standalone
+capacitor/rail demonstrator cited separately. A footprint measured without the
+capacitors is not evidence that a complete, capacitor-inclusive core meets the
+Area row, and the record says so.
+
 Standard library only. Usage:
     python3 layout/bin/render-ldo-area-record.py [--gds PATH] [--klt klt]
 """
@@ -33,10 +43,12 @@ from pathlib import Path
 BIN_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(BIN_DIR))
 import _gds_area as ga  # noqa: E402
+from _official_drc import official_result  # noqa: E402
 from _record_common import git as _repo_git  # noqa: E402
 
 REPO_ROOT = BIN_DIR.parent.parent
 REPORTS = REPO_ROOT / "layout" / "ldo-core" / "reports"
+CAP_DEMO_REPORTS = REPO_ROOT / "layout" / "cap-rail-demo" / "reports"
 SCHEMA_VERSION = 1
 
 
@@ -72,6 +84,183 @@ def klt_crosscheck(klt: str, gds: Path, m: ga.AreaMeasurement) -> dict:
     }
 
 
+def _crosscheck_note(cross: dict) -> str:
+    status = cross.get("status")
+    if status == "agrees":
+        return ""
+    if status == "DISAGREES":
+        return "\n**The independent bbox cross-check DISAGREES with this measurement**; the verdict above is this script's own measurement and the disagreement is recorded, not resolved.\n"
+    return (
+        f"\nThe independent `klt stats` cross-check was {status}; no independent agreement is "
+        f"asserted for this record.\n"
+    )
+
+
+def _read_json(path: Path) -> dict | None:
+    try:
+        data = json.loads(path.read_text())
+    except (OSError, ValueError):
+        return None
+    return data if isinstance(data, dict) else None
+
+
+def _rel(path: Path, root: Path) -> str:
+    try:
+        return path.resolve().relative_to(root.resolve()).as_posix()
+    except ValueError:
+        return str(path)
+
+
+def coverage_disclosure(
+    layout_dir: Path, gds_sha: str, cell: str, reports: Path = REPORTS,
+    cap_demo_reports: Path = CAP_DEMO_REPORTS, root: Path = REPO_ROOT,
+) -> dict:
+    """What the measured footprint does and does not cover (issue #318).
+
+    Everything is read from files next to the measured GDS (or from the
+    `LATEST-LVS` / cap-demo `LATEST` pointers), never restated: a missing or
+    unreadable source is reported as unavailable, never as a clean result.
+    """
+    cov: dict = {}
+
+    fp = _read_json(layout_dir / "floorplan.json")
+    if fp is None:
+        cov["inventory"] = {"status": "unavailable", "detail": "no readable floorplan.json beside the measured GDS"}
+        cov["undrawn_elements"] = None
+    else:
+        mos = [d for d in fp.get("devices", []) if d.get("kind") == "mos"]
+        widest = max(mos, key=lambda d: d.get("w_total_um") or 0, default=None)
+        cov["inventory"] = {
+            "source": _rel(layout_dir / "floorplan.json", root),
+            "mos_count": fp.get("mos_count"),
+            "res_count": fp.get("res_count"),
+            "block_count": fp.get("block_count"),
+            "widest_mos": None if widest is None else {
+                "name": widest.get("name"),
+                "w_total_um": widest.get("w_total_um"),
+                "units": widest.get("units"),
+                "unit_w_um": widest.get("unit_w_um"),
+                "l_um": widest.get("l_um"),
+            },
+        }
+        cov["undrawn_elements"] = [str(e).split()[0] for e in fp.get("undrawn_elements") or []]
+
+    if not (layout_dir / "mr-drc.run.json").is_file():
+        cov["official_drc"] = {"state": "not run", "detail": "no official-deck run in the measured layout record"}
+    else:
+        off = official_result(layout_dir, cell)
+        cov["official_drc"] = {
+            "record": _rel(layout_dir / "record.md", root),
+            "state": off.state,
+            "detail": off.detail,
+            "total": off.total,
+            "rule_counts": dict(off.counts),
+        }
+
+    lvs_id = None
+    try:
+        lvs_id = (reports / "LATEST-LVS").read_text().strip() or None
+    except OSError:
+        pass
+    if lvs_id is None:
+        cov["lvs"] = {"freshness": "unavailable", "detail": "no LATEST-LVS pointer"}
+    else:
+        lvs_json = _read_json(reports / lvs_id / "lvs.json")
+        if lvs_json is None:
+            cov["lvs"] = {"record": lvs_id, "freshness": "unavailable", "detail": "LATEST-LVS record has no readable lvs.json"}
+        else:
+            checked = str((lvs_json.get("environment") or {}).get("layout_sha256") or "")
+            checked = checked.removeprefix("sha256:")
+            fresh = checked == gds_sha
+            cov["lvs"] = {
+                "record": lvs_id,
+                "status": lvs_json.get("status"),
+                "checked_layout_sha256": checked or None,
+                "freshness": "fresh" if fresh else "STALE",
+                "detail": (
+                    "LATEST-LVS checked these exact GDS bytes" if fresh else
+                    "LATEST-LVS checked a different GDS; its verdict does not cover the measured layout"
+                ),
+            }
+
+    demo_id = None
+    try:
+        demo_id = (cap_demo_reports / "LATEST").read_text().strip() or None
+    except OSError:
+        pass
+    if demo_id is None:
+        cov["capacitor_demonstrator"] = None
+    else:
+        cov["capacitor_demonstrator"] = {
+            "record": _rel(cap_demo_reports / demo_id / "record.md", root),
+            "scope": "standalone MiM-capacitor + supply-rail overlay; no MOS device, resistor or signal route drawn",
+            "certifies_core": False,
+        }
+
+    undrawn = cov.get("undrawn_elements")
+    if undrawn:
+        cov["statement"] = (
+            f"The measured footprint omits {len(undrawn)} schematic element(s) that are not drawn in this "
+            f"layout ({', '.join(undrawn)}). It is not evidence that a complete, capacitor-inclusive core "
+            f"meets the Area row."
+        )
+    elif undrawn == []:
+        cov["statement"] = "floorplan.json lists no undrawn schematic elements."
+    else:
+        cov["statement"] = "Undrawn-element coverage could not be read; do not treat this footprint as complete-core."
+    return cov
+
+
+def coverage_markdown(cov: dict) -> str:
+    lines = ["## Coverage limitations (issue #318)", "", cov["statement"], ""]
+    inv = cov.get("inventory") or {}
+    if inv.get("status") == "unavailable":
+        lines.append(f"- Drawn inventory: unavailable ({inv.get('detail')})")
+    else:
+        w = inv.get("widest_mos") or {}
+        lines.append(
+            f"- Drawn inventory (from `{inv.get('source')}`): {inv.get('mos_count')} MOS + "
+            f"{inv.get('res_count')} resistor blocks ({inv.get('block_count')} blocks)"
+        )
+        if w:
+            lines.append(
+                f"- Widest MOS (the pass device): `{w.get('name')}` W_total {w.get('w_total_um')} um drawn as "
+                f"{w.get('units')} x {w.get('unit_w_um')} um parallel units, L {w.get('l_um')} um"
+            )
+    undrawn = cov.get("undrawn_elements")
+    if undrawn:
+        lines.append(f"- Not drawn: {', '.join(f'`{e}`' for e in undrawn)} -- absent from both the layout and the LVS reference")
+    off = cov.get("official_drc") or {}
+    if off.get("state") == "violations":
+        lines.append(
+            f"- Official-deck DRC (`sky130A_mr.drc`) for this exact layout record (`{off.get('record')}`): "
+            f"**FAIL** -- {off.get('detail')}; attribution is in that record. This area record does not change it."
+        )
+    elif off.get("state") == "clean":
+        lines.append(f"- Official-deck DRC for this exact layout record (`{off.get('record')}`): clean -- {off.get('detail')}")
+    else:
+        lines.append(f"- Official-deck DRC for this layout record: {off.get('state', 'unavailable')} -- {off.get('detail')}")
+    lvs = cov.get("lvs") or {}
+    if lvs.get("freshness") == "fresh":
+        lines.append(f"- LVS: `LATEST-LVS` record `{lvs.get('record')}` (status `{lvs.get('status')}`) checked these exact GDS bytes")
+    elif lvs.get("freshness") == "STALE":
+        lines.append(
+            f"- LVS: **STALE** -- `LATEST-LVS` record `{lvs.get('record')}` (status `{lvs.get('status')}`) checked "
+            f"layout sha256 `{lvs.get('checked_layout_sha256')}`, not the measured GDS. No LVS result covers this layout; "
+            f"its earlier verdict must not be read as current coverage."
+        )
+    else:
+        lines.append(f"- LVS: unavailable -- {lvs.get('detail')}")
+    demo = cov.get("capacitor_demonstrator")
+    if demo:
+        lines.append(
+            f"- Standalone capacitor/rail demonstrator, cited separately: [`{demo.get('record')}`]"
+            f"(../../../../{demo.get('record')}) -- {demo.get('scope')}. Its results are about that "
+            f"demonstrator only and do not certify this core."
+        )
+    return "\n".join(lines) + "\n"
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--gds", type=Path, help="routed GDS; default: LATEST record's ldo_core.gds")
@@ -94,6 +283,8 @@ def main() -> int:
     out_dir.mkdir(parents=True, exist_ok=False)  # never overwrite a record
 
     cross = klt_crosscheck(args.klt, gds, m) if args.klt else {"status": "skipped"}
+    coverage = coverage_disclosure(gds.parent, sha, m.cell)
+    is_latest = layout_record == latest
     x0, y0, x1, y1 = m.bbox_dbu
     record = {
         "schema_version": SCHEMA_VERSION,
@@ -102,6 +293,7 @@ def main() -> int:
         "spec_row": "Area",
         "target": "< 0.1 mm^2 total core area, pass FET included, excluding pads and sealring",
         "layout_record": layout_record,
+        "layout_record_was_latest": is_latest,
         "gds": {"path": rel_gds, "sha256": sha, "bytes": gds.stat().st_size},
         "cell": m.cell,
         "convention": ga.CONVENTION,
@@ -116,6 +308,7 @@ def main() -> int:
         "comparison": "area_mm2 < limit_mm2 (strict; exactly the limit FAILS)",
         "verdict": m.verdict,
         "crosscheck": cross,
+        "coverage": coverage,
         "provenance": {"git_sha": _repo_git(REPO_ROOT, "rev-parse", "HEAD"), "tool": "layout/bin/render-ldo-area-record.py"},
     }
     (out_dir / "area.json").write_text(json.dumps(record, indent=2) + "\n")
@@ -132,7 +325,7 @@ Measures the routed `{m.cell}` layout against the ratified Area row (`spec/targe
 
 ## Measured artifact (content-pinned)
 
-- Routed GDS: `{rel_gds}` (layout record `{layout_record}`, the `LATEST` DRC record when this was minted)
+- Routed GDS: `{rel_gds}` (layout record `{layout_record}`, {"the" if is_latest else "NOT the"} `LATEST` layout record when this was minted)
 - SHA-256: `{sha}`
 - Cell: `{m.cell}`; database unit {m.dbu_um} um (from the stream's UNITS record)
 - Bounding box (um): ({_fmt(Decimal(x0) * m.dbu_um, 3)}, {_fmt(Decimal(y0) * m.dbu_um, 3)}) to ({_fmt(Decimal(x1) * m.dbu_um, 3)}, {_fmt(Decimal(y1) * m.dbu_um, 3)})
@@ -146,7 +339,8 @@ Details: the whole instantiated hierarchy counts (routing, rails, taps, well and
 ## Independent cross-check
 
 `{json.dumps(cross)}`
-
+{_crosscheck_note(cross)}
+{coverage_markdown(coverage)}
 ## Freshness
 
 `measurements/build_characterization_report.py` compares this record's GDS SHA-256 with the current routed GDS named by `layout/ldo-core/reports/LATEST`. A re-routed layout makes this record STALE until a new area record is minted (this one is never edited).
@@ -154,7 +348,7 @@ Details: the whole instantiated hierarchy counts (routing, rails, taps, well and
 ## Reproduce
 
 ```bash
-python3 layout/bin/render-ldo-area-record.py
+python3 layout/bin/render-ldo-area-record.py --gds {rel_gds}
 ```
 
 Provenance: repo state `{record['provenance']['git_sha']}`.
