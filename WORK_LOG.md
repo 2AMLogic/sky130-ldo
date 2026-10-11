@@ -4,6 +4,22 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 
 ### 2026-10-11
 
+- **PR #380**: Sim: bounded batch adapter for line-regulation cold-start endpoints (#379)
+- **PR #378**: sim: grade settled tail extrema alongside regulation endpoint averages (#377)
+- **PR #376**: sim: admit dropout-vs-load cold-start crossing to the klt batch backend
+- **PR #373**: sim: require in-window pre-step output for every load-transient COUT/ESR leg
+- **PR #371**: sim: gate line-regulation endpoints on Output window; strict slope maxima (#369)
+- **PR #361**: sim(#357): screen physical low-headroom amplifier + re-referenced clamp dropout candidate
+- **PR #368**: Load regulation: gate settled endpoints on the Output window (#364)
+- **PR #367**: sim: zero-load phase-dip mechanism and bounded light-load lever screen (#365)
+- **Issue #379** (closed): Sim: qualify a bounded batch adapter for the line-regulation cold-start endpoints
+- **Issue #377** (closed): Regulation: grade settled tail extrema alongside endpoint averages
+- **Issue #374** (closed): Dropout: qualify a bounded fleet adapter for the existing cold-start ramp
+- **Issue #372** (closed): Load transient: require an in-window pre-step output for every COUT/ESR leg
+- **Issue #369** (closed): Line regulation: gate all settled endpoints and enforce strict slope bounds
+- **Issue #357** (closed): Dropout: screen a physical low-headroom amplifier and re-referenced clamp candidate
+- **Issue #364** (closed): Load regulation: gate settled endpoints on the ratified output window
+- **Issue #365** (closed): Stability: isolate the zero-load phase dip and screen a bounded light-load lever
 - **PR #363**: Stability: diagnose missing phase crossings before interpreting gain margin (#360)
 - **PR #362**: sim: batch preflight accepts only a completed usable smoke response
 - **PR #358**: sim: shared batch-runner preflight probe (#356)
