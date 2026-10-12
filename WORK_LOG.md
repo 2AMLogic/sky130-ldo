@@ -4,6 +4,7 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 
 ### 2026-10-11
 
+- **PR #383**: sim: opt-in batch adapter for load-regulation cold-start endpoints (#381)
 - **PR #380**: Sim: bounded batch adapter for line-regulation cold-start endpoints (#379)
 - **PR #378**: sim: grade settled tail extrema alongside regulation endpoint averages (#377)
 - **PR #376**: sim: admit dropout-vs-load cold-start crossing to the klt batch backend
