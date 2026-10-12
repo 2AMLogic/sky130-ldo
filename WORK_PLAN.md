@@ -20,12 +20,13 @@ _None._
 Human-approved issues ready for implementation (`loom:issue`).
 
 - **#263**: Qualify folded resistor electrical equivalence across process, temperature and mismatch
+- **#381**: Sim: admit load-regulation cold-start endpoints to the batch backend
 
 ## In Progress
 
 Issues currently being built (`loom:building`).
 
-- **#381**: Sim: admit load-regulation cold-start endpoints to the batch backend
+_None._
 
 ## PRs Awaiting Review
 
@@ -49,11 +50,13 @@ Issues carrying `loom:curated`.
 - **#263**: Qualify folded resistor electrical equivalence across process, temperature and mismatch *(curated)*
 - **#267**: layout: fix locally-routed official-DRC families (via.1a_b, m2.5, via2.5, nwell.9) found by #260 *(curated)*
 - **#314**: PSRR: decide and evidence the binding output-capacitor/ESR condition *(curated)*
+- **#381**: Sim: admit load-regulation cold-start endpoints to the batch backend *(curated)*
 
 ## Proposed (Architect / Hermit)
 
 - **#336**: Startup: extend cold-enable coverage to the ratified ESR boundaries *(architect)*
 - **#370**: Stability: confirm zero-load lever on fleet and screen sub-mA adaptive resistance *(architect)*
+- **#384**: Line regulation: complete the unperformed numerical-equivalence handoff *(architect)*
 
 ## Epics
 
@@ -65,11 +68,11 @@ Issues carrying `loom:curated`.
 |------|-------|
 | Operator merge-risk holds | 0 |
 | Operator priority | 0 |
-| Ready (`loom:issue`) | 1 |
-| In Progress (`loom:building`) | 1 |
+| Ready (`loom:issue`) | 2 |
+| In Progress (`loom:building`) | 0 |
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 0 |
-| Curated | 6 |
-| Architect / Hermit proposals | 2 |
+| Curated | 7 |
+| Architect / Hermit proposals | 3 |
 | Active epics | 1 |
 <!-- guide:plan-body:end -->
