@@ -577,9 +577,10 @@ single `op` analysis and two scalar measurements (`vgs`, `isup`),
 `sim/dropout-vs-load`'s cold-start crossing in its validated shape (issue
 #374, below) and `sim/line-regulation`'s four cold-start endpoints in their
 validated shape (issue #379, below) and `sim/load-regulation`'s two
-cold-start endpoints in their validated shape (issue #381, below). Every other
+cold-start endpoints in their validated shape (issue #381, below) and `sim/iq`'s
+two cold-start endpoints (issue #213, below). Every other
 manifest — `current-limit`,
-`enable-shutdown`, `ic-screen-125c-*`, `iq`, `loop-gain`,
+`enable-shutdown`, `ic-screen-125c-*`, `loop-gain`,
 `psrr-dc`, `startup`, `thermal`, and the `mc-*` experiments (which have their
 own runner, `mc-run.py`) — and any edited smoke, window-grid or dropout shape
 is **refused before netlisting, submission or local ngspice**. The other
@@ -1052,6 +1053,29 @@ shape cannot run on the fleet until the runner image is updated. Because of that
 failed run, the runner now refuses to mint a record when any corner comes back
 without an engine log, i.e. when the simulation never ran. Single-corner spot-check
 numbers are not evidence records and are not cited as the binding-condition finding.
+
+#### iq endpoints on the batch backend (issue #213)
+
+`python3 sim/bin/corner-run.py sim/iq --backend batch` is **opt-in**.
+`sim/bin/batch_iq.py` (PDK-free) translates the deck's two cold-start points
+(no load, then `alter iload = 50m`) into **one single-step `klt sim` request per
+supply group x endpoint** (6 requests for the full 45-point matrix), exactly the
+load-regulation shape (issue #381): VIN and full-rail EN stay the corner supply
+`'vsup'`, only the load differs per request. Each endpoint carries an
+`avg v(vout)` and an `avg i(vvin)` card over 199 ms-200 ms; the affine Iq
+expressions and the `min: 0` / Output-window gates are graded locally from the
+raw `tran<N>.<card>` values. The manifest is pinned by digest in
+`BATCH_ALLOWLIST["iq"]` and `sim/tests/test_batch_iq_213.py` is headless.
+
+**Status (2026-10-14): no record.** The submit was accepted
+(`batch-preflight.py` exit 0, runner klt 0.7.0) but the first job
+(`klt-sim-d3e081d972dd`) failed in about 5 s with "request is missing required
+field: analysis" on all 15 points: the fleet runner is the 0.7.0 release, which
+predates `analysis_steps[]` (landed after the tag). The run aborted with no
+record and no local fallback, and no result of any kind is claimed. Tracked
+upstream as klayout-tools#3249. The 45-corner re-run (`--supersedes
+20260910-034648-6c0436d`) still has to be done once the runner image carries
+`analysis_steps`.
 
 ## Bound inclusivity (issue #335)
 
