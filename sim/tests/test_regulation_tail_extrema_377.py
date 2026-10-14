@@ -192,7 +192,7 @@ class TestManifestCards(unittest.TestCase):
         for slug in ENDPOINTS:
             self.assertTrue(corner_run.BATCH_ALLOWLIST[slug].get("endpoint_adapter"), slug)
             corner_run.check_batch_supported(corner_run.load_experiment(SIM_DIR / slug))
-        for slug in ("iq", "psrr-dc", "startup"):
+        for slug in ("psrr-dc", "startup"):
             exp = corner_run.load_experiment(SIM_DIR / slug)
             with self.assertRaises(corner_run.HarnessError) as cm:
                 corner_run.check_batch_supported(exp)

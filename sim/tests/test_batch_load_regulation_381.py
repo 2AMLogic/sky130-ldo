@@ -430,7 +430,7 @@ class TestEndpointShapeGate(LoadRegHarness):
         self.assertEqual(pvt_input_sections(manifest(), None), want)
 
     def test_sibling_regulation_benches_stay_refused(self):
-        for slug in ("iq", "psrr-dc", "startup"):
+        for slug in ("psrr-dc", "startup"):
             self.assertNotIn(slug, corner_run.BATCH_ALLOWLIST)
 
 

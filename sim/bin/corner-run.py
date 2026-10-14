@@ -45,6 +45,7 @@ from pathlib import Path
 import batch_dropout
 import batch_line_regulation as blr
 import batch_load_regulation as bld
+import batch_iq as biq
 from batch_window_grid import TranslationError, leg_step, parse_leg_template
 from ramp_monotonicity import evaluate_legs
 from xschem_exprs import eval_xschem_exprs  # noqa: F401  (re-exported; tests call corner_run.eval_xschem_exprs)
@@ -1149,6 +1150,25 @@ BATCH_ALLOWLIST = {
         ],
         "baseline_iload": "0",
     },
+    # Shape (issue #213): the same TWO cold-start endpoints as load-regulation
+    # (no load, then 50 mA; VIN and full-rail EN on the corner supply), each
+    # with an `avg v(vout)` and an `avg i(vvin)` card (sim/bin/batch_iq.py).
+    # RENEWAL: pinned like load-regulation (sim/tests/test_batch_iq_213.py).
+    "iq": {
+        "endpoint_adapter": True,
+        "adapter_kind": "iq",
+        "manifest_sections": {
+            "analyses": "f3dba2c7ad5486123fbfddb60fcc5d731eb31a72dc4545cbbd699c239c3a263a",
+            "measurements": "b9fb2b2a0068ef936c8b669deb20ec0ce4878f51fffcd8aefb766aa0d1fe2dc1",
+            "matrix": "639e50d5a920cef70120de11fefa3ffc5bf53f0446c56a853f87c39e95976b21",
+        },
+        "stimulus": [
+            "VVIN VIN 0 'vsup'",
+            "VEN EN 0 dc 0 pwl(0 0 100u 0 101u 'vsup' 10 'vsup')",
+            "ILOAD VOUT 0 0",
+        ],
+        "baseline_iload": "0",
+    },
 }
 
 BATCH_REFUSAL_HINT = (
@@ -1219,6 +1239,8 @@ def endpoint_module(exp: Experiment):
     #381) or, by default, line-regulation (issue #379). Both raise
     blr.EndpointTranslationError."""
     kind = BATCH_ALLOWLIST.get(exp.slug, {}).get("adapter_kind")
+    if kind == "iq":
+        return biq
     return bld if kind == "load-regulation" else blr
 
 
@@ -1973,10 +1995,13 @@ def endpoint_adapter_info(exp: Experiment) -> dict:
     """Provenance of the issue #379 adapter for a batch record / dry run."""
     allowed = BATCH_ALLOWLIST[exp.slug]
     endpoints = endpoint_deck(exp)
-    load = endpoint_module(exp) is bld
+    mod = endpoint_module(exp)
+    name, issue = {
+        biq: ("iq-endpoints", 213), bld: ("load-regulation-endpoints", 381),
+    }.get(mod, ("line-regulation-endpoints", 379))
     return {
-        "name": "load-regulation-endpoints" if load else "line-regulation-endpoints",
-        "issue": 381 if load else 379,
+        "name": name,
+        "issue": issue,
         "endpoints": [
             {
                 "step": e.step_name, "vin": e.vin, "iload": e.iload,
@@ -2028,7 +2053,7 @@ def render_batch_execution(record: dict) -> list[str]:
             + " the pinned open_pdks commit"
         )
     if ex.get("adapter") and ex["adapter"].get("name") in (
-        "line-regulation-endpoints", "load-regulation-endpoints",
+        "line-regulation-endpoints", "load-regulation-endpoints", "iq-endpoints",
     ):
         ad = ex["adapter"]
         lines.append(
