@@ -26,6 +26,8 @@ _None._
 Human-approved issues ready for implementation (`loom:issue`).
 
 - **#263**: Qualify folded resistor electrical equivalence across process, temperature and mismatch
+- **#370**: Stability: confirm zero-load lever on fleet and screen sub-mA adaptive resistance
+- **#384**: Line regulation: complete the unperformed numerical-equivalence handoff
 
 ## In Progress
 
@@ -60,8 +62,6 @@ Issues carrying `loom:curated`.
 ## Proposed (Architect / Hermit)
 
 - **#336**: Startup: extend cold-enable coverage to the ratified ESR boundaries *(architect)*
-- **#370**: Stability: confirm zero-load lever on fleet and screen sub-mA adaptive resistance *(architect)*
-- **#384**: Line regulation: complete the unperformed numerical-equivalence handoff *(architect)*
 
 ## Epics
 
@@ -74,11 +74,11 @@ Issues carrying `loom:curated`.
 | Operator merge-risk holds | 0 |
 | Very important | 0 |
 | Important | 1 |
-| Ready (`loom:issue`) | 1 |
+| Ready (`loom:issue`) | 3 |
 | In Progress (`loom:building`) | 0 |
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 0 |
 | Curated | 7 |
-| Architect / Hermit proposals | 3 |
+| Architect / Hermit proposals | 1 |
 | Active epics | 1 |
 <!-- guide:plan-body:end -->
