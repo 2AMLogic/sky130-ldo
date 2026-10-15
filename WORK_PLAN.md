@@ -26,8 +26,6 @@ _None._
 Human-approved issues ready for implementation (`loom:issue`).
 
 - **#263**: Qualify folded resistor electrical equivalence across process, temperature and mismatch
-- **#370**: Stability: confirm zero-load lever on fleet and screen sub-mA adaptive resistance
-- **#384**: Line regulation: complete the unperformed numerical-equivalence handoff
 
 ## In Progress
 
@@ -74,7 +72,7 @@ Issues carrying `loom:curated`.
 | Operator merge-risk holds | 0 |
 | Very important | 0 |
 | Important | 1 |
-| Ready (`loom:issue`) | 3 |
+| Ready (`loom:issue`) | 1 |
 | In Progress (`loom:building`) | 0 |
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 0 |
