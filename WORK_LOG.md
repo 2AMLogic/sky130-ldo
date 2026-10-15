@@ -2,6 +2,10 @@
 
 Chronological record of merged pull requests and closed issues. Maintained by the Loom Guide role.
 
+### 2026-10-15
+
+- **PR #387**: Bump Repo Skills 0.19.5 -> 0.24.1
+
 ### 2026-10-14
 
 - **PR #386**: sim(iq): batch adapter for the iq endpoints (Part of #213; matrix blocked on fleet runner)

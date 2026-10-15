@@ -5,22 +5,27 @@ Current roadmap derived from GitHub lifecycle labels. Maintained by the Loom Gui
 <!-- guide:plan-body:start -->
 ## Operator Attention: Merge-Risk-Hold Pileup
 
-Judge-approved PRs stuck under a `loom:operator` merge-risk hold — implementation work is done, only a human merge decision is missing.
+Judge-approved PRs under a hold (`loom:blocked` or `loom:operator`) — only a human merge decision is missing.
 
 _None._
 
-## Operator Priority
+## Very Important
 
-Issues the operator starred (`loom:operator-priority`); land these first.
+`loom:very-important` (one counts per workspace); every stage takes these first.
 
 _None._
+
+## Important
+
+`loom:important`; taken before unlabelled work.
+
+- **#263**: Qualify folded resistor electrical equivalence across process, temperature and mismatch
 
 ## Ready
 
 Human-approved issues ready for implementation (`loom:issue`).
 
 - **#263**: Qualify folded resistor electrical equivalence across process, temperature and mismatch
-- **#381**: Sim: admit load-regulation cold-start endpoints to the batch backend
 
 ## In Progress
 
@@ -64,11 +69,12 @@ Issues carrying `loom:curated`.
 
 ## Backlog Balance
 
-| Tier | Count |
+| Bucket | Count |
 |------|-------|
 | Operator merge-risk holds | 0 |
-| Operator priority | 0 |
-| Ready (`loom:issue`) | 2 |
+| Very important | 0 |
+| Important | 1 |
+| Ready (`loom:issue`) | 1 |
 | In Progress (`loom:building`) | 0 |
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 0 |
