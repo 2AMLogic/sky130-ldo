@@ -2,6 +2,10 @@
 
 Chronological record of merged pull requests and closed issues. Maintained by the Loom Guide role.
 
+### 2026-10-14
+
+- **PR #386**: sim(iq): batch adapter for the iq endpoints (Part of #213; matrix blocked on fleet runner)
+
 ### 2026-10-11
 
 - **PR #383**: sim: opt-in batch adapter for load-regulation cold-start endpoints (#381)
