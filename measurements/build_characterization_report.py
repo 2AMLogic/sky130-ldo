@@ -374,7 +374,9 @@ def sim_window_grid_disclosure(slug: str, record: dict) -> str | None:
         return None
     legs = declared.get("legs") or []
     leg_txt = ", ".join(
-        f"{leg.get('cout_f'):g} F / {leg.get('esr_ohm'):g} ohm" for leg in legs
+        f"{leg.get('cout_f'):g} F / {leg.get('esr_ohm'):g} ohm"
+        + (f" / {leg['rload_ohm']:g} ohm load" if "rload_ohm" in leg else "")
+        for leg in legs
     )
     head = (
         "COUT/ESR window coverage (separate from the PVT coverage above): the manifest "
@@ -1421,7 +1423,7 @@ _TABLE_FRESHNESS_RE = re.compile(rf"^(\|[^\n]*\| ){_FRESHNESS_TOKENS}( \|)$", re
 # of those continuations -- never at a period *inside* the freshness prose
 # (a PDK error string can contain one).
 _DETAIL_FRESHNESS_RE = re.compile(
-    rf"(Freshness: ){_FRESHNESS_TOKENS}.*?\.(?=$| Failing measurement\(s\)| \*\*PVT subset)",
+    rf"(Freshness: ){_FRESHNESS_TOKENS}.*?\.(?=$| Failing measurement\(s\)| \*\*PVT subset| COUT/ESR window coverage)",
     re.MULTILINE,
 )
 

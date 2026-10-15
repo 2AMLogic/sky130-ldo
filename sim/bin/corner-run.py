@@ -612,16 +612,22 @@ def leg_values(grid: dict, leg: dict) -> dict[str, float]:
     the local deck walk and the klt-batch step request (issue #326) so the two
     paths cannot drift."""
     cout, esr = float(leg["cout_f"]), float(leg["esr_ohm"])
-    return {
+    values = {
         "cout_esr_f": cout if esr > 0 else 0.0,
         "cout_dir_f": cout if esr == 0 else 0.0,
         # RESR is parked at its netlist value in the ESR=0 leg (it sits in
         # series with a 0 F capacitor and carries no current).
         "resr_f": esr if esr > 0 else float(grid.get("resr_park_ohm", 0.01)),
     }
+    if "rload_ohm" in leg:
+        # A leg that also walks the DC load (issue #336 startup grid) names it.
+        values["rload_f"] = float(leg["rload_ohm"])
+    return values
 
 
-def window_leg_lines(exp: Experiment, leg_ids: list[str] | None = None) -> list[str]:
+def window_leg_lines(
+    exp: Experiment, leg_ids: list[str] | None = None, corner_id: str = "{corner_id}"
+) -> list[str]:
     """The in-deck COUT/ESR window walk (issue #313): one independent block per
     declared leg -- `reset`, that leg's own `alter` cards, its own `tran` and
     measurements. `leg_ids` selects/reorders legs (used by the leg-order
@@ -649,7 +655,8 @@ def window_leg_lines(exp: Experiment, leg_ids: list[str] | None = None) -> list[
         for ln in template:
             for key, val in subs.items():
                 ln = ln.replace("{" + key + "}", val)
-            lines.append(ln)
+            # `{leg_id}`/`{corner_id}` name a per-leg trace file (issue #336).
+            lines.append(ln.replace("{leg_id}", leg_id).replace("{corner_id}", corner_id))
         for m in exp.measurements:
             if m.leg == leg_id:
                 lines.append(f"let meas_{m.name} = {m.expr}")
@@ -674,7 +681,7 @@ def build_deck(exp: Experiment, pdk: Pdk, corner: Corner, body: list[str]) -> st
     control = [".control", "save all"]
     # `{corner_id}` lets a manifest write a per-corner trace file (issue #309).
     control += [ln.replace("{corner_id}", corner.id) for ln in (deck.get("analyses") or ["op"])]
-    control += window_leg_lines(exp)
+    control += window_leg_lines(exp, corner_id=corner.id)
     # Per-leg measurements are evaluated inside their own leg block (each leg's
     # tran is its own plot, so a trailing `let` could not see them).
     for m in exp.measurements:
@@ -994,6 +1001,45 @@ def grid_coverage(exp: Experiment, results: list[dict], corners: list[Corner]) -
                         "esr_ohm": m.esr_ohm,
                         "direction": m.direction,
                         "measurement": m.name,
+                        "status": status,
+                        "value": value if _finite_number(value) else None,
+                        "reason": reason,
+                    }
+                )
+        # Issue #336: a grid leg whose startup ramp-monotonicity trace is
+        # missing/INVALID/failing must lower the grid verdict, not only the
+        # corner's, so the ramp verdict of every declared leg is a condition.
+        ramp_cfg = exp.raw.get("ramp_monotonicity") or {}
+        by_leg = {leg["id"]: leg for leg in grid["legs"]}
+        for rleg in ramp_cfg.get("legs") or []:
+            expected += 1
+            name = f"ramp_drawdown_{rleg['id']}_v"
+            check = present.get(name)
+            value = None if check is None else check.get("value")
+            if check is None or value is None:
+                status, reason = "missing", "no valid ramp-monotonicity trace for this condition"
+            elif not _finite_number(value):
+                status, reason = "non-finite", "value is NaN/inf"
+            else:
+                evaluated += 1
+                if check.get("pass") is True:
+                    passing += 1
+                    continue
+                status, reason = "fail", check.get("reason") or "flagged failing"
+            n_failures += 1
+            if len(failures) < GRID_FAILURE_CAP:
+                gl = by_leg.get(rleg["id"], {})
+                failures.append(
+                    {
+                        "corner_id": corner.id,
+                        "process": corner.process,
+                        "temperature_c": corner.temp_c,
+                        "supply_v": corner.supply_v,
+                        "leg": rleg["id"],
+                        "cout_f": gl.get("cout_f"),
+                        "esr_ohm": gl.get("esr_ohm"),
+                        "direction": "ramp",
+                        "measurement": name,
                         "status": status,
                         "value": value if _finite_number(value) else None,
                         "reason": reason,

@@ -123,15 +123,15 @@ class TestWiring(unittest.TestCase):
         spec.loader.exec_module(cls.cr)
         cls.manifest = json.loads((BIN.parents[0] / "startup/experiment.json").read_text())
 
-    def test_manifest_has_four_legs_and_trace_per_tran(self):
+    def test_manifest_has_twelve_grid_legs_and_trace_per_tran(self):
         cfg = self.manifest["ramp_monotonicity"]
         ids = [leg["id"] for leg in cfg["legs"]]
-        self.assertEqual(len(set(ids)), 4)
-        an = self.manifest["deck"]["analyses"]
-        wr = [ln for ln in an if ln.startswith("wrdata ")]
-        self.assertEqual(len(wr), 4)
-        for leg, ln in zip(ids, wr):
-            self.assertEqual(ln, f"wrdata {{corner_id}}.{leg}.trace.dat v(vout)")
+        self.assertEqual(len(set(ids)), 12)
+        # one ramp leg per declared window_grid leg (issue #336)
+        self.assertEqual(ids, [leg["id"] for leg in self.manifest["window_grid"]["legs"]])
+        template = self.manifest["window_grid"]["leg_analyses"]
+        self.assertEqual(template.count("wrdata {corner_id}.{leg_id}.trace.dat v(vout)"), 1)
+        self.assertEqual(sum(1 for ln in template if ln.startswith("tran ")), 1)
         self.assertEqual(cfg["tolerance_v"], 0.0)
         self.assertEqual(cfg["v_low"], 1.764)
 
@@ -141,7 +141,7 @@ class TestWiring(unittest.TestCase):
         corner = self.cr.Corner("tt", 27.0, 3.3)
         pdk = type("P", (), {"lib_file": "x.lib"})()
         deck = self.cr.build_deck(exp, pdk, corner, [])
-        self.assertIn("wrdata tt_27c_3.30v.c47_50ma.trace.dat v(vout)", deck)
+        self.assertIn("wrdata tt_27c_3.30v.c4u7_50ma_esr500m.trace.dat v(vout)", deck)
         self.assertNotIn("{corner_id}", deck)
 
     def test_batch_refuses_ramp_manifest(self):

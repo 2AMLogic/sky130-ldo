@@ -1,151 +1,93 @@
 {
   "slug": "startup",
-  "title": "Startup / soft-start: cold enable into 0mA and 50mA across the DR-002 C_out window",
-  "claim": "Substantiates spec/target-spec.md's ratified \"Startup / soft-start\" row (monotonic into any load 0-50 mA and any C_out in the stability window; controlled ramp; inside +-2% within a few ms of enable; overshoot <= +2%) against the current-starved soft-start ramp issue #22 added to design/ldo_3v3in_1v8out.sch (M_SSCHG / C_SS / M_SSDIS feeding the M_IN2S min-select input -- see design/README.md's \"Soft start (#22)\"). The row is ratified by issue #1 / DR-006, and the stability window it quantifies over is DR-002's (C_eff 0.33-4.7 uF), ratified by the same act, so the bounds below cite those numbers verbatim rather than an invented final limit. Each of the four legs is an independent COLD enable: EN sits at 0 V until t = 100 us and ngspice computes each transient's own t = 0 operating point from the source's time-zero value, so every leg starts from a disabled, fully discharged block rather than from a settled solution. Two readings of the row are made explicit rather than left implicit. (1) \"inside +-2% within a few ms of enable\": this testbench reads \"a few ms\" as 3 ms after the enable edge and checks the output is inside the ratified Output row's 1.764-1.836 V window continuously from there to the end of the run -- 3 ms is this testbench's stated interpretation of a phrase the ratified row leaves unquantified -- the 3 ms itself is not a ratified number, and it is the one thing here that would need revisiting if a later decision record quantifies the phrase differently. (2) \"monotonic ... controlled ramp\": since issue #309 a direct predicate IS computed for each leg by sim/bin/ramp_monotonicity.py -- the maximum drawdown from the running maximum between the enable edge (100 us) and the first sample at or above 1.764 V, with the worst drawdown's time interval and the worst sample gap reported, and the raw V(VOUT) trace retained per corner and leg (ramp_drawdown_<leg>_v). The numerical tolerance is 0 V (strict) and the claim covers only the SAMPLED trace (dips shorter than the reported sample gap are not resolvable); see sim/README.md \"Startup ramp monotonicity\". Whether the ratified row implies a physical dip tolerance is an open decision-record question, not chosen here. vpk_* and vmin_* (floor over the settled window) continue to bound overshoot and the settled window, and the 10-90% ramp time is still reported as the \"controlled ramp\" witness. Records minted before #309 did not measure monotonicity and are not retroactively presented as having done so.",
+  "title": "Startup / soft-start: cold enable into 0mA and 50mA across the DR-002 C_out and ESR window (12-leg sampled grid)",
+  "claim": "Substantiates spec/target-spec.md's ratified \"Startup / soft-start\" row (monotonic into any load 0-50 mA and any C_out in the stability window; controlled ramp; inside +-2% within a few ms of enable; overshoot <= +2%) against the current-starved soft-start ramp issue #22 added to design/ldo_3v3in_1v8out.sch (M_SSCHG / C_SS / M_SSDIS feeding the M_IN2S min-select input -- see design/README.md's \"Soft start (#22)\"). The row is ratified by issue #1 / DR-006, and the stability window it quantifies over is DR-002's (C_eff 0.33-4.7 uF), ratified by the same act, so the bounds below cite those numbers verbatim rather than an invented final limit. Each of the four legs is an independent COLD enable: EN sits at 0 V until t = 100 us and ngspice computes each transient's own t = 0 operating point from the source's time-zero value, so every leg starts from a disabled, fully discharged block rather than from a settled solution. Two readings of the row are made explicit rather than left implicit. (1) \"inside +-2% within a few ms of enable\": this testbench reads \"a few ms\" as 3 ms after the enable edge and checks the output is inside the ratified Output row's 1.764-1.836 V window continuously from there to the end of the run -- 3 ms is this testbench's stated interpretation of a phrase the ratified row leaves unquantified -- the 3 ms itself is not a ratified number, and it is the one thing here that would need revisiting if a later decision record quantifies the phrase differently. (2) \"monotonic ... controlled ramp\": since issue #309 a direct predicate IS computed for each leg by sim/bin/ramp_monotonicity.py -- the maximum drawdown from the running maximum between the enable edge (100 us) and the first sample at or above 1.764 V, with the worst drawdown's time interval and the worst sample gap reported, and the raw V(VOUT) trace retained per corner and leg (ramp_drawdown_<leg>_v). The numerical tolerance is 0 V (strict) and the claim covers only the SAMPLED trace (dips shorter than the reported sample gap are not resolvable); see sim/README.md \"Startup ramp monotonicity\". Whether the ratified row implies a physical dip tolerance is an open decision-record question, not chosen here. vpk_* and vmin_* (floor over the settled window) continue to bound overshoot and the settled window, and the 10-90% ramp time is still reported as the \"controlled ramp\" witness. Records minted before #309 did not measure monotonicity and are not retroactively presented as having done so. Issue #336 (operator-authorised 2026-10-15) extends the method from the four (C_out, load) points at the fixed 10 mOhm ESR to the declared `window_grid` below: C_out {0.33uF, 4.7uF} x load {0 mA, 50 mA} x ESR {0, 10 mOhm, 500 mOhm}, twelve independent cold enables per PVT corner (the 10 mOhm legs are the pre-#336 four points). The stricter policy is a measurement-coverage change only: DR-002, the ratified Startup row, the 3 ms reading of \"a few ms\", the strict 0 V monotonicity tolerance and the sampled-trace scope are unchanged. The grid SAMPLES DR-002's window at its corners and its reference ESR; it is not a continuous proof, and a leg that is declared but has no result (or no valid trace) can only lower the grid verdict, never qualify it. Records minted before #336 measured ESR = 10 mOhm only and are not retroactively presented as covering the ESR boundaries.",
   "provenance": "schematic",
   "provenance_source": "sim/startup/testbench/tb_startup.sch",
   "schematic": "testbench/tb_startup.sch",
   "statistical_convention": "N/A (corner-matrix check, not a distribution claim)",
   "corners": {
-    "process": ["tt", "ss", "ff", "sf", "fs"],
-    "temperature_c": [-40, 27, 125],
-    "supply_v": [2.97, 3.3, 3.63]
+    "process": [
+      "tt",
+      "ss",
+      "ff",
+      "sf",
+      "fs"
+    ],
+    "temperature_c": [
+      -40,
+      27,
+      125
+    ],
+    "supply_v": [
+      2.97,
+      3.3,
+      3.63
+    ]
   },
   "quick_subset": [
-    ["tt", 27, 3.3],
-    ["ss", -40, 2.97],
-    ["ff", 125, 3.63]
+    [
+      "tt",
+      27,
+      3.3
+    ],
+    [
+      "ss",
+      -40,
+      2.97
+    ],
+    [
+      "ff",
+      125,
+      3.63
+    ]
   ],
   "deck": {
-    "options": ["wnflag=1"],
+    "options": [
+      "wnflag=1"
+    ],
     "params": {},
     "analyses": [
-      "* --- leg 1: C_out 0.33uF, 0 mA (feedback divider is the only preload) ---",
-      "tran 10u 4m",
-      "wrdata {corner_id}.c033_0ma.trace.dat v(vout)",
-      "meas tran vpk max v(vout) from=100u to=4m",
-      "meas tran vfloor min v(vout) from=3.1m to=4m",
-      "meas tran tset when v(vout)=1.764 rise=1",
-      "* --- leg 2: C_out 0.33uF, 50 mA ---",
-      "alter rload = 36",
-      "tran 10u 4m",
-      "wrdata {corner_id}.c033_50ma.trace.dat v(vout)",
-      "meas tran vpk max v(vout) from=100u to=4m",
-      "meas tran vfloor min v(vout) from=3.1m to=4m",
-      "meas tran tset when v(vout)=1.764 rise=1",
-      "* --- leg 3: C_out 4.7uF, 0 mA ---",
-      "alter cout = 4.7u",
-      "alter rload = 1e12",
-      "tran 10u 4m",
-      "wrdata {corner_id}.c47_0ma.trace.dat v(vout)",
-      "meas tran vpk max v(vout) from=100u to=4m",
-      "meas tran vfloor min v(vout) from=3.1m to=4m",
-      "meas tran tset when v(vout)=1.764 rise=1",
-      "* --- leg 4: C_out 4.7uF, 50 mA ---",
-      "alter rload = 36",
-      "tran 10u 4m",
-      "wrdata {corner_id}.c47_50ma.trace.dat v(vout)",
-      "meas tran vpk max v(vout) from=100u to=4m",
-      "meas tran vfloor min v(vout) from=3.1m to=4m",
-      "meas tran tset when v(vout)=1.764 rise=1"
+      "* --- window grid (issue #336) ---",
+      "* The tran, trace dump and every .meas/let for this bench live in",
+      "* `window_grid.leg_analyses`, which corner-run.py instantiates once per declared",
+      "* (C_out, load, ESR) leg: `reset`, `save all`, that leg's own `alter` cards, its own",
+      "* cold-enable `tran` (EN at 0 V until t = 100 us, so each leg computes its own",
+      "* disabled/discharged t = 0 operating point), its `wrdata` trace and measurements.",
+      "* No leg inherits charge, solver state or parameter values from another, so the",
+      "* result is independent of leg order (see sim/README.md, \"Startup ESR grid\")."
     ]
   },
   "measurements": [
     {
-      "name": "vpk_c033_0ma_v",
-      "expr": "tran1.vpk",
+      "name": "vpk_v",
+      "expr": "vpk",
       "unit": "V",
       "min": null,
       "max": 1.836,
-      "note": "Peak VOUT over the whole post-enable run (t = 100 us to 4 ms) at C_out 0.33 uF / 0 mA. Ratified bound: spec/target-spec.md's \"Startup / soft-start\" row, overshoot <= +2%, i.e. the peak must not leave the ratified Output row's 1.836 V ceiling. This is the binding overshoot leg by construction: at 0 mA the only discharge path for an overshoot is the block's own ~3.1 MOhm feedback divider."
+      "per_leg": true,
+      "direction": "cold-enable",
+      "note": "Peak VOUT over the whole post-enable run (t = 100 us to 4 ms) for this (C_out, load, ESR) leg. Ratified bound: spec/target-spec.md's \"Startup / soft-start\" row, overshoot <= +2%, i.e. the peak must not leave the ratified Output row's 1.836 V ceiling. The 0.33 uF / 0 mA legs are the binding overshoot legs by construction (the only discharge path for an overshoot is the block's own ~3.1 MOhm feedback divider). Bound unchanged by issue #336."
     },
     {
-      "name": "vfloor_c033_0ma_v",
-      "expr": "tran1.vfloor",
+      "name": "vfloor_v",
+      "expr": "vfloor",
       "unit": "V",
       "min": 1.764,
       "max": null,
-      "note": "Lowest VOUT anywhere in the settled window (3.1 ms to 4 ms, i.e. from 3 ms after the enable edge onward) at C_out 0.33 uF / 0 mA. Ratified bound: the row's \"inside +-2% within a few ms of enable\", with \"a few ms\" read as 3 ms (this testbench's stated interpretation -- see the claim field). Taking the MINIMUM over the window rather than one sample means a ramp that reaches the window and then sags back out of it fails, which is the numeric consequence of the row's \"monotonic / controlled ramp\" clause."
+      "per_leg": true,
+      "direction": "cold-enable",
+      "note": "Lowest VOUT in the settled window (3.1 ms to 4 ms, i.e. from 3 ms after the enable edge onward) for this leg. Ratified bound: the row's \"inside +-2% within a few ms of enable\", with \"a few ms\" read as 3 ms (this testbench's stated interpretation -- see the claim field). The minimum over the window rather than one sample means a ramp that reaches the window and then sags back out of it fails. The 4.7 uF / 0 mA legs are the slowest to settle. Bound unchanged by issue #336."
     },
     {
-      "name": "tramp_c033_0ma_ms",
-      "expr": "1000*(tran1.tset - 100u)",
+      "name": "tramp_ms",
+      "expr": "1000*(tset - 100u)",
       "unit": "ms",
       "min": null,
       "max": null,
-      "note": "Time from the enable edge until VOUT first enters the +-2% window (first rising crossing of 1.764 V) at C_out 0.33 uF / 0 mA. Reported, not bounded: it is the \"controlled ramp\" witness, and the row's only timing number (\"within a few ms\") is already enforced by vfloor_*. design/README.md's screening puts the soft-start ramp at ~290 us 10-90%, deliberately fast relative to the row so that settling has margin while inrush stays under the current limit."
-    },
-    {
-      "name": "vpk_c033_50ma_v",
-      "expr": "tran2.vpk",
-      "unit": "V",
-      "min": null,
-      "max": 1.836,
-      "note": "Peak VOUT over the whole post-enable run at C_out 0.33 uF / 50 mA (the ratified Load row's ceiling). Same ratified overshoot <= +2% bound as vpk_c033_0ma_v."
-    },
-    {
-      "name": "vfloor_c033_50ma_v",
-      "expr": "tran2.vfloor",
-      "unit": "V",
-      "min": 1.764,
-      "max": null,
-      "note": "Lowest VOUT in the settled window at C_out 0.33 uF / 50 mA. Same ratified +-2%-within-3 ms bound as vfloor_c033_0ma_v."
-    },
-    {
-      "name": "tramp_c033_50ma_ms",
-      "expr": "1000*(tran2.tset - 100u)",
-      "unit": "ms",
-      "min": null,
-      "max": null,
-      "note": "Ramp time to the +-2% window at C_out 0.33 uF / 50 mA. Reported, not bounded."
-    },
-    {
-      "name": "vpk_c47_0ma_v",
-      "expr": "tran3.vpk",
-      "unit": "V",
-      "min": null,
-      "max": 1.836,
-      "note": "Peak VOUT over the whole post-enable run at C_out 4.7 uF (DR-002's ratified C_eff ceiling) / 0 mA. Same ratified overshoot <= +2% bound."
-    },
-    {
-      "name": "vfloor_c47_0ma_v",
-      "expr": "tran3.vfloor",
-      "unit": "V",
-      "min": 1.764,
-      "max": null,
-      "note": "Lowest VOUT in the settled window at C_out 4.7 uF / 0 mA -- the slowest-settling of the four points, so the leg where the row's \"within a few ms\" clause bites hardest. Same ratified +-2%-within-3 ms bound."
-    },
-    {
-      "name": "tramp_c47_0ma_ms",
-      "expr": "1000*(tran3.tset - 100u)",
-      "unit": "ms",
-      "min": null,
-      "max": null,
-      "note": "Ramp time to the +-2% window at C_out 4.7 uF / 0 mA. Reported, not bounded."
-    },
-    {
-      "name": "vpk_c47_50ma_v",
-      "expr": "tran4.vpk",
-      "unit": "V",
-      "min": null,
-      "max": 1.836,
-      "note": "Peak VOUT over the whole post-enable run at C_out 4.7 uF / 50 mA -- the largest-inrush point of the four (charging DR-002's biggest ratified C_eff while also feeding the ratified Load row's full 50 mA). Same ratified overshoot <= +2% bound."
-    },
-    {
-      "name": "vfloor_c47_50ma_v",
-      "expr": "tran4.vfloor",
-      "unit": "V",
-      "min": 1.764,
-      "max": null,
-      "note": "Lowest VOUT in the settled window at C_out 4.7 uF / 50 mA. Same ratified +-2%-within-3 ms bound."
-    },
-    {
-      "name": "tramp_c47_50ma_ms",
-      "expr": "1000*(tran4.tset - 100u)",
-      "unit": "ms",
-      "min": null,
-      "max": null,
-      "note": "Ramp time to the +-2% window at C_out 4.7 uF / 50 mA. Reported, not bounded: this is also the leg where a soft-start ramp fast enough to demand more than the current limit would show up, as a ramp time longer than the other three legs' (the clamp, not the ramp, would then be setting dV/dt)."
+      "per_leg": true,
+      "direction": "cold-enable",
+      "note": "Time from the enable edge until VOUT first enters the +-2% window (first rising crossing of 1.764 V) for this leg. Reported, not bounded: it is the \"controlled ramp\" witness, and the row's only timing number (\"within a few ms\") is already enforced by vfloor_v. The 4.7 uF / 50 mA legs are also where a soft-start ramp demanding more than the current limit would show up as a longer ramp time."
     }
   ],
   "spread_checks": [],
@@ -157,10 +99,139 @@
     "min_samples": 20,
     "tolerance_v": 0.0,
     "legs": [
-      {"id": "c033_0ma"},
-      {"id": "c033_50ma"},
-      {"id": "c47_0ma"},
-      {"id": "c47_50ma"}
+      {
+        "id": "c330n_0ma_esr0"
+      },
+      {
+        "id": "c330n_0ma_esr10m"
+      },
+      {
+        "id": "c330n_0ma_esr500m"
+      },
+      {
+        "id": "c330n_50ma_esr0"
+      },
+      {
+        "id": "c330n_50ma_esr10m"
+      },
+      {
+        "id": "c330n_50ma_esr500m"
+      },
+      {
+        "id": "c4u7_0ma_esr0"
+      },
+      {
+        "id": "c4u7_0ma_esr10m"
+      },
+      {
+        "id": "c4u7_0ma_esr500m"
+      },
+      {
+        "id": "c4u7_50ma_esr0"
+      },
+      {
+        "id": "c4u7_50ma_esr10m"
+      },
+      {
+        "id": "c4u7_50ma_esr500m"
+      }
+    ]
+  },
+  "window_grid": {
+    "title": "Finite C_out x load x ESR startup qualification grid (issue #336)",
+    "justification": "spec/decision-records/DR-002 ratifies the window 0.33-4.7 uF with 0-500 mOhm ESR and NO minimum ESR, and the ratified Startup row is quantified over any load 0-50 mA. The grid is the full cross product of both C_out endpoints, both load endpoints (R_LOAD 1e12 = the 0 mA endpoint with the feedback divider as the only preload; 36 ohm ~ 50 mA at the 1.8 V target) and the three ESR points {0 (the no-minimum-ESR boundary), 10 mOhm (the pre-#336 reference ESR), 500 mOhm (the window's ESR ceiling)}: twelve legs. The 10 mOhm legs are exactly the four pre-#336 legs. Small-signal loop-gain evidence cannot establish nonlinear startup overshoot or ramp monotonicity at the ESR boundaries, which is why the ESR axis is sampled here even though sim/loop-gain owns the small-signal ESR view.",
+    "sampling_statement": "This is a finite grid that SAMPLES the DR-002 window and the 0-50 mA load range. It is NOT a continuous-window proof: endpoint and reference legs cannot rule out an interior worst case (e.g. an ESR-zero / soft-start interaction at an intermediate C and ESR). The monotonicity claim additionally covers only the SAMPLED trace (see ramp_monotonicity). If a worst case sits away from the grid corners, refine the grid with interior points before any window-qualification claim.",
+    "zero_esr_topology": "ESR = 0 is realised with C_out wired directly from VOUT to ground (the testbench's CDIR branch, no series element), with the series COUT+RESR branch set to 0 F (an open circuit, so RESR carries no current; it is parked at its 10 mOhm netlist value). No nonzero stand-in resistor replaces the boundary. In every ESR > 0 leg CDIR is 0 F and the series branch carries the full COUT.",
+    "reset_policy": "Each leg begins with `reset` (re-parses the circuit, discarding the previous leg's state), re-issues `save all`, then re-applies ALL of its own `alter` cards (cout, resr, cdir, rload), then runs its own cold-enable `tran`: EN sits at 0 V until t = 100 us, so ngspice computes that tran's own t = 0 operating point from the sources' time-zero values (a disabled, fully discharged block). No leg inherits charge, solver state or parameter values from another.",
+    "directions": [
+      "cold-enable"
+    ],
+    "legs": [
+      {
+        "id": "c330n_0ma_esr0",
+        "cout_f": 3.3e-07,
+        "esr_ohm": 0,
+        "rload_ohm": 1000000000000.0
+      },
+      {
+        "id": "c330n_0ma_esr10m",
+        "cout_f": 3.3e-07,
+        "esr_ohm": 0.01,
+        "rload_ohm": 1000000000000.0
+      },
+      {
+        "id": "c330n_0ma_esr500m",
+        "cout_f": 3.3e-07,
+        "esr_ohm": 0.5,
+        "rload_ohm": 1000000000000.0
+      },
+      {
+        "id": "c330n_50ma_esr0",
+        "cout_f": 3.3e-07,
+        "esr_ohm": 0,
+        "rload_ohm": 36
+      },
+      {
+        "id": "c330n_50ma_esr10m",
+        "cout_f": 3.3e-07,
+        "esr_ohm": 0.01,
+        "rload_ohm": 36
+      },
+      {
+        "id": "c330n_50ma_esr500m",
+        "cout_f": 3.3e-07,
+        "esr_ohm": 0.5,
+        "rload_ohm": 36
+      },
+      {
+        "id": "c4u7_0ma_esr0",
+        "cout_f": 4.7e-06,
+        "esr_ohm": 0,
+        "rload_ohm": 1000000000000.0
+      },
+      {
+        "id": "c4u7_0ma_esr10m",
+        "cout_f": 4.7e-06,
+        "esr_ohm": 0.01,
+        "rload_ohm": 1000000000000.0
+      },
+      {
+        "id": "c4u7_0ma_esr500m",
+        "cout_f": 4.7e-06,
+        "esr_ohm": 0.5,
+        "rload_ohm": 1000000000000.0
+      },
+      {
+        "id": "c4u7_50ma_esr0",
+        "cout_f": 4.7e-06,
+        "esr_ohm": 0,
+        "rload_ohm": 36
+      },
+      {
+        "id": "c4u7_50ma_esr10m",
+        "cout_f": 4.7e-06,
+        "esr_ohm": 0.01,
+        "rload_ohm": 36
+      },
+      {
+        "id": "c4u7_50ma_esr500m",
+        "cout_f": 4.7e-06,
+        "esr_ohm": 0.5,
+        "rload_ohm": 36
+      }
+    ],
+    "leg_analyses": [
+      "reset",
+      "save all",
+      "alter cout = {cout_esr_f}",
+      "alter resr = {resr_f}",
+      "alter cdir = {cout_dir_f}",
+      "alter rload = {rload_f}",
+      "tran 10u 4m",
+      "wrdata {corner_id}.{leg_id}.trace.dat v(vout)",
+      "meas tran vpk max v(vout) from=100u to=4m",
+      "meas tran vfloor min v(vout) from=3.1m to=4m",
+      "meas tran tset when v(vout)=1.764 rise=1"
     ]
   }
 }
