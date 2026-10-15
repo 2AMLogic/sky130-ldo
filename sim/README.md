@@ -517,13 +517,14 @@ finite grid of an external-network window *inside one deck, per PVT corner*.
 
 `sim/startup` declares a `ramp_monotonicity` block in `experiment.json`;
 `sim/bin/ramp_monotonicity.py` (standard library only, PDK-free) evaluates it
-for each of the four independent cold-enable legs (`c033_0ma`, `c033_50ma`,
-`c47_0ma`, `c47_50ma`) of every corner. This is local-only post-processing:
+for each independent cold-enable leg of every corner: the four 10 mOhm legs
+before issue #336, the twelve `window_grid` legs since (see "Startup ESR grid"
+below; leg ids are `<cout>_<load>_<esr>`, e.g. `c4u7_50ma_esr500m`). This is local-only post-processing:
 `--backend batch` refuses any manifest carrying the block.
 
 - **Trace.** After each leg's `tran`, the deck runs
-  `wrdata {corner_id}.<leg>.trace.dat v(vout)` (`{corner_id}` is substituted by
-  the runner). Writing a record copies the raw files next to the corner logs
+  `wrdata {corner_id}.{leg_id}.trace.dat v(vout)` (`{corner_id}`/`{leg_id}` are
+  substituted by the runner). Writing a record copies the raw files next to the corner logs
   in `corners/<record id>/`; the per-leg sha256 is in the JSON record. Under
   `--no-write` the trace is graded but not retained.
 - **Measurement window.** From the first sample at or after the enable instant
@@ -566,6 +567,46 @@ for each of the four independent cold-enable legs (`c033_0ma`, `c033_50ma`,
   checker settings are part of the input fingerprint, the report marks them
   STALE rather than presenting them as having measured it. Full-matrix
   refresh remains #231.
+
+### Startup ESR grid (issue #336)
+
+`sim/startup` previously fixed R_ESR at 10 mOhm and left the ESR axis to
+`sim/loop-gain`, which is a small-signal view and cannot show nonlinear startup
+overshoot or ramp monotonicity at the DR-002 ESR boundaries. The operator
+authorised sampling it (issue #336, 2026-10-15). The manifest now declares a
+`window_grid` (the #313 mechanism) of **twelve legs**: C_out {0.33 uF, 4.7 uF}
+x load {0 mA, 50 mA} x ESR {0, 10 mOhm, 500 mOhm}. The 10 mOhm legs are the
+pre-#336 four points. Ratified targets, DR-002, the 3 ms reading of "a few ms",
+the strict 0 V monotonicity tolerance and the sampled-trace scope are unchanged.
+
+- **Independent cold starts.** Each leg is `reset`, `save all`, its own
+  `alter cout/resr/cdir/rload`, then its own `tran` from the disabled
+  (EN = 0 V until 100 us) t = 0 operating point; no leg inherits state. ESR = 0
+  uses the testbench's `CDIR` direct-to-ground branch exactly as `sim/load-transient`
+  does (no stand-in resistor). `--leg-order` permutes the blocks; the headless
+  tests (`sim/tests/test_startup_esr_grid_336.py`) check leg expansion,
+  coordinate identity, per-leg `alter` cards and that reordering changes order only.
+- **Every leg retains** its `V(VOUT)` trace, `vpk_v`, `vfloor_v`, `tramp_ms`
+  (names carry the leg id, `vpk_v__<leg>`) and the ramp drawdown / worst sample
+  gap / window-sample count. A missing, unparsable or insufficiently sampled trace
+  is INVALID and never qualifies.
+- **Grid verdict.** `grid_coverage` counts the 36 per-leg measurements **and** the 12
+  per-leg ramp verdicts per corner as declared conditions; a missing or failing one
+  can only lower the verdict. A declared grid without results cannot qualify.
+- **Sampling, not proof.** Twelve points sample the window; an interior worst case is
+  not excluded. Characterization must disclose the grid actually evidenced.
+- **Pilot (step 1, done).** `sim/startup/pilots/20261015-336-cold-start-pilot.md` is a
+  single-corner (tt/27 C/3.30 V) independence pilot, **not** an evidence record:
+  forward and reversed leg order give identical measurements and byte-identical
+  traces. It also shows strict monotonicity FAILing on all twelve legs at 2-32 uV
+  (the open decision-record question in "Startup ramp monotonicity" above).
+- **Campaign (step 2, NOT done).** The append-only 45-point PVT record has not been
+  minted. `--backend batch` still refuses `ramp_monotonicity` (it needs the raw
+  `V(VOUT)` traces back, which the batch path does not hand back in the
+  `wrdata` form the checker reads; klt can retain rawfiles but the converter is
+  tracked upstream as 2AMLogic/klayout-tools#3360), and a 540-transient
+  grid must not be hand-launched on a shared worker. Run it on an authorised capable
+  runner once trace-returning execution exists; coordinate the rerun with #231.
 
 ### Batch backend (issue #298)
 
