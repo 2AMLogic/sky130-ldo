@@ -4,6 +4,7 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 
 ### 2026-10-16
 
+- **PR #395**: Bump Repo Skills 0.24.1 -> 0.24.3
 - **PR #399**: study: cap-study probe finds one settled state at ff/27C/2.97V/50mA
 - **Issue #398** (closed): study: re-run ff/27C/2.97V/50mA op point; settled state differs between cap-study records
 - **PR #397**: study: complete capacitor op-point and C(V) grids on the batch fleet
