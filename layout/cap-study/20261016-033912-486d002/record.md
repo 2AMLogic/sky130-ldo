@@ -9,7 +9,7 @@ Issue #398. **Measurement probe only.** Nothing in `spec/`, `design/` or any pri
 - Minted 2026-10-16 on top of `486d002`. Deck: `op/requests/v2.97_50ma.spice` of `20261016-004951-5125358` (byte-identical copy at `probe/v2.97_50ma.spice`). Request: that record's `v2.97_50ma.json` narrowed to `ff` / 27 C, same measurements, same `.spiceinit` text, `tran 10u 200m uic`.
 - Both batch records ran this deck through the same `ngspice-46` and runner klt `0.7.0`. Their generated `corner.cir` files differ only in the include path (checked with `diff`).
 - Local probe: `klt sim --backend local`, one corner per run, `ngspice-42`, `PDK_ROOT=$HOME/.volare` (sky130A). klt warned that a second sky130A install exists under `~/.ciel`; it read `$PDK_ROOT`, as the warning says.
-- No grid was run. Nine single-corner local runs in total.
+- No grid was run. Eight single-corner local runs in total.
 
 ## Result
 
@@ -28,7 +28,7 @@ Plate voltages are `C_CL = VIN - CL_CMP`, `C_COMP = VOUT - EA_CZ` (the `terminal
 | local `.ic v(vout)=0.5` | 1.798794 | 1.659172 | 2.890772 | 0.07923 | 0.13962 |
 | local `.ic` set to the earlier record's state (VOUT, EA_CZ, CL_CMP, TS_CMP, SS) | 1.798794 | 1.659172 | 2.890772 | 0.07923 | 0.13962 |
 
-All nine local runs agree to the printed precision. Starting the transient from the earlier record's state still settles to the later one. The other probe nodes (`v_ss`, `v_ts_cmp`) agree as well; see each `ngspice.log`.
+All eight local runs agree to the printed precision. Starting the transient from the earlier record's state still settles to the later one. The other probe nodes (`v_ss`, `v_ts_cmp`) agree as well; see each `ngspice.log`.
 
 At the other two temperatures of `ff / 2.97 V / 50 mA` the earlier record has `v_vout` = 1.79846 V (125 C) and 1.79895 V (-40 C), the regulated value. The 2.717 V reading at 27 C is the odd one out in its own row of corners.
 

@@ -24,7 +24,7 @@ Records are append-only: a new measurement mints a new directory.
 | [`20261011-094917-7a4e0cc`](20261011-094917-7a4e0cc/record.md) | (c) inconclusive/unmeasured | Operating-point matrix 2/126 measured. The batch runner refuses this client (klayout-tools#2948). Completion is tracked in #341 |
 | [`20261015-195114-5a3705a`](20261015-195114-5a3705a/record.md) | (c) inconclusive/unmeasured | Operating-point matrix 105/126 measured on the batch fleet. `v3.63_50ma` and the C(V) grid were refused by the fleet instance cap. Completion is tracked in #341 |
 | [`20261016-004951-5125358`](20261016-004951-5125358/record.md) | (c) inconclusive/unmeasured | Operating-point matrix 126/126 and varactor C(V) 21/21 measured on the batch fleet. Open: one-level MiM mixed placement, varactor footprint, C_SS outside the varactor SOA. Completes the measurement runs tracked in #341 |
-| [`20261016-033912-486d002`](20261016-033912-486d002/record.md) | (c) not resolved (probe) | Single-corner local probe of the `ff / 27 C / 2.97 V / 50 mA` point that differed between the two batch records. Nine local runs settle to one state, the later record's. The earlier value is not reproduced and its cause is not found (#398) |
+| [`20261016-033912-486d002`](20261016-033912-486d002/record.md) | (c) not resolved (probe) | Single-corner local probe of the `ff / 27 C / 2.97 V / 50 mA` point that differed between the two batch records. Eight local runs settle to one state, the later record's. The earlier value is not reproduced and its cause is not found (#398) |
 
 ## Rules the study follows
 
