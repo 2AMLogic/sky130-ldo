@@ -187,13 +187,14 @@ class ViaEnclosureArithmeticTest(unittest.TestCase):
         self.assertAlmostEqual(GEN.VIA1_UM, 0.15)
 
     def test_extended_ends_meet_the_adjacent_edge_enclosure(self) -> None:
-        # A 0.30 wide strap encloses a via by (0.30 - via) / 2 on its sides;
-        # when that is below the adjacent-edge figure, the ends must carry it.
+        # A POWER_VIA_PAD_UM-wide strap encloses a via by (pad - via) / 2 on its
+        # sides, which falls short of the adjacent-edge figure, so the ends
+        # must carry it: the end extension is what satisfies the rule.
         for via in (GEN.VIA1_UM, GEN.VIA2_UM):
             side = (GEN.POWER_VIA_PAD_UM - via) / 2.0
-            end = GEN.ADJ_ENCLOSURE_UM
-            self.assertTrue(side >= end or end >= 0.085 - 1e-9)
-        self.assertGreaterEqual(GEN.ADJ_ENCLOSURE_UM, 0.085)
+            self.assertLess(side, 0.085 - 1e-9, "sides alone must not suffice")
+            end_half = via / 2.0 + GEN.ADJ_ENCLOSURE_UM
+            self.assertGreaterEqual(end_half - via / 2.0, 0.085 - 1e-9)
 
 
 if __name__ == "__main__":
