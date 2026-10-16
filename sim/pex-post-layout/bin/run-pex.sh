@@ -10,7 +10,7 @@
 # `layout/requirements.txt`'s pinned `layout/.venv/bin/klt` predates this
 # verb (no `pex` in its `<command>` list as of this experiment; see
 # README.md), so this defaults to the ambient `klt` on PATH unless
-# --klt overrides it. `xschem` on PATH with the pinned sky130A PDK
+# --klt overrides it. `klt netlist` (xschem installed) with the pinned sky130A PDK
 # resolvable (same pin as sim/pdk.json).
 set -euo pipefail
 
@@ -36,13 +36,8 @@ if ! "$KLT" pex --help >/dev/null 2>&1; then
   exit 1
 fi
 
-if ! command -v xschem >/dev/null 2>&1; then
-  echo "run-pex.sh: xschem not found on PATH -- needed to netlist the schematic" >&2
-  exit 1
-fi
-
-# Export PDK_ROOT/PDK so the request's `models.lib: "$PDK_ROOT/..."` (see
-# README.md's "models.lib bug" note) resolves the same pinned sky130.lib.spice
+# Export PDK_ROOT/PDK so the request's PDK-relative `models` block (see
+# README.md's "models.lib" note) resolves the same pinned sky130.lib.spice
 # this repo's other sim/ testbenches use.
 # shellcheck disable=SC1091
 source "$REPO_ROOT/sim/bin/pdk-env.sh"
@@ -106,7 +101,7 @@ retain_failure() {  # retain_failure <stage> <exit-code> [file ...]
     echo "gds_sha256: $(sha256sum "$GDS" | cut -d' ' -f1)"
     echo "klt: $("$KLT" --version 2>&1 | head -1)"
     echo "ngspice: $(ngspice -v 2>&1 | grep -m1 -i 'ngspice-' || echo unknown)"
-    echo "xschem: $(xschem --version 2>&1 | grep -m1 -i xschem || echo unknown)"
+    echo "xschem: netlisted via klt netlist (no raw xschem on this host)"
     echo "KLT_SIM_BACKEND: ${KLT_SIM_BACKEND:-unset}"
     echo "PDK_ROOT: ${PDK_ROOT:-unset}"
   } >> "$FAIL_DIR/provenance.txt"

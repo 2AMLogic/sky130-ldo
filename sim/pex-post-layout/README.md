@@ -721,21 +721,17 @@ forces them to stay equal, so a future bump on either side must re-check the
 other rather than assume. `layout/` remains a read-only dependency of this
 experiment.
 
-**Note on `tb_pex_post_layout.request.json`'s `models.lib`.** Uses the
-literal `"$PDK_ROOT/sky130A/libs.tech/combined/sky130.lib.spice"` shape
-(env-var-expanded, no `models.pdk` alongside it) rather than the
-`{"pdk": "sky130A", "lib": "<relative path>"}` shape `docs/cli/sim.md`
-otherwise favors. Confirmed by direct trial: combining both shapes in one
-request breaks specifically on `klt pex`'s extracted-side leg -- it
-re-resolves the already-relative `lib` a second time against the wrong base
-directory (`model library not found:
-<request-dir>/libs.tech/combined/sky130.lib.spice`), and using
-`{"pdk": ..., "lib": "$PDK_ROOT/..."}` together instead double-joins the
-env-expanded absolute path onto the resolved PDK variant directory
-(`.../sky130A/$PDK_ROOT/sky130A/...`). Using `models.lib` alone (no
-`models.pdk`) sidesteps both -- not filed upstream (a usage pitfall from
-combining two independently-documented shapes, not a single clearly-wrong
-behavior in either shape alone).
+**Note on `tb_pex_post_layout.request.json`'s `models`.** Uses the
+PDK-relative shape `{"pdk": "sky130A", "lib": "libs.tech/combined/sky130.lib.spice"}`
+(2AMLogic/klayout-tools#3296; issue #267 / PR #275). Records up to
+`20261016-030826-f604ae0` used the literal `"$PDK_ROOT/sky130A/libs.tech/combined/sky130.lib.spice"`
+shape (`models.lib` alone), which expands to the *submitting host's* absolute
+path; the batch runner has no such path, so every extracted-leg unit failed with
+`model library not found` (see `failures/20261016-030826-f604ae0/`). A 2-corner
+batch probe of the PDK-relative form with the current `klt` (`klt pex ... --backend batch`)
+produced real extracted-side numbers (no `unavailable_comparison` rows), so the
+request now uses it. The model identity is unchanged: both forms resolve to the
+same `combined/sky130.lib.spice` under the pinned `sky130A` PDK.
 
 ## `klt` pin used for the recorded runs
 
