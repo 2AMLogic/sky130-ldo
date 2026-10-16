@@ -649,7 +649,11 @@ regulation grids stay deferred on translating their measurement cards.
   provenance that does not name the pin (the shared check `mc-run.py` uses),
   aborts with exit `1`, **no record**, the klt stdout/stderr and any remote
   job ids kept in the scratch run dir (`sim/build/...`) and printed. There is
-  no local fallback and no resubmission after an ambiguous timeout. An
+  no local fallback and no resubmission after an ambiguous timeout. The one
+  retried failure is a fleet-capacity refusal (`exceeds
+  BATCH_MAX_CONCURRENT_INSTANCES`) with no job id seen: it is resubmitted every
+  90 s for at most 3 h, then aborts. Requests also carry
+  `batch.capacity_wait_s` for a klt that waits on its own. An
   errored/inconclusive corner, an absent or non-finite value, or an out-of-
   limits value is a recorded FAIL (exit `2`) with its reason.
 - **Evidence.** A batch record adds `klt-requests/`, `klt-responses/` (raw)
