@@ -1533,6 +1533,9 @@ def build_batch_request(
             "keep_artifacts": True,
             "ngspice_init": spiceinit_lines(),
         },
+        # A klt that classifies the fleet-cap refusal waits on its own (issue #345);
+        # run_klt_batch's caller-side retry covers a klt that does not.
+        "batch": {"capacity_wait_s": CAPACITY_RETRY_BUDGET_S},
     }
 
 
@@ -1574,10 +1577,19 @@ def prepare_batch_requests(
 
 _JOB_ID_RE = re.compile(r"klt-sim-[0-9a-f]+")
 
+# Shared-fleet saturation (issue #345): the only failure retried. The refusal
+# happens at launch, before a job exists, so a resubmit cannot double-run.
+CAPACITY_REFUSAL_TEXT = "exceeds BATCH_MAX_CONCURRENT_INSTANCES"
+CAPACITY_RETRY_BACKOFF_S = 90
+CAPACITY_RETRY_BUDGET_S = 3 * 3600
+
 
 def run_klt_batch(request_path: Path, outdir: Path, pdk_root: Path) -> tuple[dict, dict]:
-    """Invoke `klt sim --backend batch` once (never retried, never replaced by a
-    local run). Returns (response, meta); raises HarnessError, keeping whatever
+    """Invoke `klt sim --backend batch` (never replaced by a local run). The one
+    retried failure is a fleet-cap refusal (`CAPACITY_REFUSAL_TEXT`) with no job
+    id seen, resubmitted every `CAPACITY_RETRY_BACKOFF_S` for at most
+    `CAPACITY_RETRY_BUDGET_S`; any other failure is fatal and unretried.
+    Returns (response, meta); raises HarnessError, keeping whatever
     stdout/stderr/job ids exist, if no usable JSON object came back."""
     cmd = [
         klt_binary(), "sim", str(request_path), "-o", str(outdir),
@@ -1599,11 +1611,34 @@ def run_klt_batch(request_path: Path, outdir: Path, pdk_root: Path) -> tuple[dic
             f"  diagnostics kept in {outdir}"
         )
 
-    try:
-        proc = subprocess.run(
+    def launch() -> subprocess.CompletedProcess:
+        return subprocess.run(
             cmd, capture_output=True, text=True, timeout=None, env=env,
             stdin=subprocess.DEVNULL,
         )
+
+    def capacity_refused(p: subprocess.CompletedProcess) -> bool:
+        text = (p.stdout or "") + "\n" + (p.stderr or "")
+        return (
+            p.returncode != 0
+            and CAPACITY_REFUSAL_TEXT in text
+            and not _JOB_ID_RE.search(text)
+        )
+
+    try:
+        proc = launch()
+        attempts, waited = 1, 0
+        while capacity_refused(proc):
+            if waited + CAPACITY_RETRY_BACKOFF_S > CAPACITY_RETRY_BUDGET_S:
+                raise HarnessError(
+                    f"klt sim (batch) refused for fleet capacity on all {attempts} "
+                    f"attempt(s) over {waited} s (budget {CAPACITY_RETRY_BUDGET_S} s); "
+                    "NOT falling back to a local run\n" + diag(proc.stdout, proc.stderr)
+                )
+            time.sleep(CAPACITY_RETRY_BACKOFF_S)
+            waited += CAPACITY_RETRY_BACKOFF_S
+            attempts += 1
+            proc = launch()
     except subprocess.TimeoutExpired as exc:
         def _s(v):
             return v.decode(errors="replace") if isinstance(v, bytes) else (v or "")
