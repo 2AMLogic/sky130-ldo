@@ -1,0 +1,261 @@
+{
+  "engine": "ngspice",
+  "netlist": "deck.cir",
+  "analysis": {
+    "kind": "dc",
+    "args": "Vsweep_idle 0 1 1"
+  },
+  "models": {
+    "pdk": "sky130A",
+    "lib": "libs.tech/combined/sky130.lib.spice"
+  },
+  "corners": {
+    "process": [
+      "tt_mm",
+      "ss_mm",
+      "ff_mm",
+      "ll_mm",
+      "hh_mm"
+    ],
+    "temperature_c": [
+      -40,
+      27,
+      125
+    ]
+  },
+  "measurements": [
+    {
+      "name": "r_r_bias_n1_noj",
+      "spice": ".meas dc r_r_bias_n1_noj FIND v(m_r_r_bias_n1_noj) AT=0",
+      "unit": "ohm"
+    },
+    {
+      "name": "r_r_bias_n2_noj",
+      "spice": ".meas dc r_r_bias_n2_noj FIND v(m_r_r_bias_n2_noj) AT=0",
+      "unit": "ohm"
+    },
+    {
+      "name": "r_r_bias_n2_j1",
+      "spice": ".meas dc r_r_bias_n2_j1 FIND v(m_r_r_bias_n2_j1) AT=0",
+      "unit": "ohm"
+    },
+    {
+      "name": "r_r_bias_n2_j4",
+      "spice": ".meas dc r_r_bias_n2_j4 FIND v(m_r_r_bias_n2_j4) AT=0",
+      "unit": "ohm"
+    },
+    {
+      "name": "r_r_bias_n3_noj",
+      "spice": ".meas dc r_r_bias_n3_noj FIND v(m_r_r_bias_n3_noj) AT=0",
+      "unit": "ohm"
+    },
+    {
+      "name": "r_r_bias_n3_j1",
+      "spice": ".meas dc r_r_bias_n3_j1 FIND v(m_r_r_bias_n3_j1) AT=0",
+      "unit": "ohm"
+    },
+    {
+      "name": "r_r_bias_n3_j4",
+      "spice": ".meas dc r_r_bias_n3_j4 FIND v(m_r_r_bias_n3_j4) AT=0",
+      "unit": "ohm"
+    },
+    {
+      "name": "r_r_bias_n4_noj",
+      "spice": ".meas dc r_r_bias_n4_noj FIND v(m_r_r_bias_n4_noj) AT=0",
+      "unit": "ohm"
+    },
+    {
+      "name": "r_r_bias_n4_j1",
+      "spice": ".meas dc r_r_bias_n4_j1 FIND v(m_r_r_bias_n4_j1) AT=0",
+      "unit": "ohm"
+    },
+    {
+      "name": "r_r_bias_n4_j4",
+      "spice": ".meas dc r_r_bias_n4_j4 FIND v(m_r_r_bias_n4_j4) AT=0",
+      "unit": "ohm"
+    },
+    {
+      "name": "r_r_bias_n5_noj",
+      "spice": ".meas dc r_r_bias_n5_noj FIND v(m_r_r_bias_n5_noj) AT=0",
+      "unit": "ohm"
+    },
+    {
+      "name": "r_r_bias_n5_j1",
+      "spice": ".meas dc r_r_bias_n5_j1 FIND v(m_r_r_bias_n5_j1) AT=0",
+      "unit": "ohm"
+    },
+    {
+      "name": "r_r_bias_n5_j4",
+      "spice": ".meas dc r_r_bias_n5_j4 FIND v(m_r_r_bias_n5_j4) AT=0",
+      "unit": "ohm"
+    },
+    {
+      "name": "r_r_bias_n6_noj",
+      "spice": ".meas dc r_r_bias_n6_noj FIND v(m_r_r_bias_n6_noj) AT=0",
+      "unit": "ohm"
+    },
+    {
+      "name": "r_r_bias_n6_j1",
+      "spice": ".meas dc r_r_bias_n6_j1 FIND v(m_r_r_bias_n6_j1) AT=0",
+      "unit": "ohm"
+    },
+    {
+      "name": "r_r_bias_n6_j4",
+      "spice": ".meas dc r_r_bias_n6_j4 FIND v(m_r_r_bias_n6_j4) AT=0",
+      "unit": "ohm"
+    },
+    {
+      "name": "r_r_bias_n8_noj",
+      "spice": ".meas dc r_r_bias_n8_noj FIND v(m_r_r_bias_n8_noj) AT=0",
+      "unit": "ohm"
+    },
+    {
+      "name": "r_r_bias_n8_j1",
+      "spice": ".meas dc r_r_bias_n8_j1 FIND v(m_r_r_bias_n8_j1) AT=0",
+      "unit": "ohm"
+    },
+    {
+      "name": "r_r_bias_n8_j4",
+      "spice": ".meas dc r_r_bias_n8_j4 FIND v(m_r_r_bias_n8_j4) AT=0",
+      "unit": "ohm"
+    },
+    {
+      "name": "r_r_bias_n10_noj",
+      "spice": ".meas dc r_r_bias_n10_noj FIND v(m_r_r_bias_n10_noj) AT=0",
+      "unit": "ohm"
+    },
+    {
+      "name": "r_r_bias_n10_j1",
+      "spice": ".meas dc r_r_bias_n10_j1 FIND v(m_r_r_bias_n10_j1) AT=0",
+      "unit": "ohm"
+    },
+    {
+      "name": "r_r_bias_n10_j4",
+      "spice": ".meas dc r_r_bias_n10_j4 FIND v(m_r_r_bias_n10_j4) AT=0",
+      "unit": "ohm"
+    },
+    {
+      "name": "r_r_bias_n12_noj",
+      "spice": ".meas dc r_r_bias_n12_noj FIND v(m_r_r_bias_n12_noj) AT=0",
+      "unit": "ohm"
+    },
+    {
+      "name": "r_r_bias_n12_j1",
+      "spice": ".meas dc r_r_bias_n12_j1 FIND v(m_r_r_bias_n12_j1) AT=0",
+      "unit": "ohm"
+    },
+    {
+      "name": "r_r_bias_n12_j4",
+      "spice": ".meas dc r_r_bias_n12_j4 FIND v(m_r_r_bias_n12_j4) AT=0",
+      "unit": "ohm"
+    },
+    {
+      "name": "r_r_bias_n16_noj",
+      "spice": ".meas dc r_r_bias_n16_noj FIND v(m_r_r_bias_n16_noj) AT=0",
+      "unit": "ohm"
+    },
+    {
+      "name": "r_r_bias_n16_j1",
+      "spice": ".meas dc r_r_bias_n16_j1 FIND v(m_r_r_bias_n16_j1) AT=0",
+      "unit": "ohm"
+    },
+    {
+      "name": "r_r_bias_n16_j4",
+      "spice": ".meas dc r_r_bias_n16_j4 FIND v(m_r_r_bias_n16_j4) AT=0",
+      "unit": "ohm"
+    },
+    {
+      "name": "r_r_fb_a_n1_noj",
+      "spice": ".meas dc r_r_fb_a_n1_noj FIND v(m_r_r_fb_a_n1_noj) AT=0",
+      "unit": "ohm"
+    },
+    {
+      "name": "r_r_fb_a_n2_noj",
+      "spice": ".meas dc r_r_fb_a_n2_noj FIND v(m_r_r_fb_a_n2_noj) AT=0",
+      "unit": "ohm"
+    },
+    {
+      "name": "r_r_fb_a_n2_j1",
+      "spice": ".meas dc r_r_fb_a_n2_j1 FIND v(m_r_r_fb_a_n2_j1) AT=0",
+      "unit": "ohm"
+    },
+    {
+      "name": "r_r_fb_a_n2_j4",
+      "spice": ".meas dc r_r_fb_a_n2_j4 FIND v(m_r_r_fb_a_n2_j4) AT=0",
+      "unit": "ohm"
+    },
+    {
+      "name": "r_r_fb_a_n3_noj",
+      "spice": ".meas dc r_r_fb_a_n3_noj FIND v(m_r_r_fb_a_n3_noj) AT=0",
+      "unit": "ohm"
+    },
+    {
+      "name": "r_r_fb_a_n3_j1",
+      "spice": ".meas dc r_r_fb_a_n3_j1 FIND v(m_r_r_fb_a_n3_j1) AT=0",
+      "unit": "ohm"
+    },
+    {
+      "name": "r_r_fb_a_n3_j4",
+      "spice": ".meas dc r_r_fb_a_n3_j4 FIND v(m_r_r_fb_a_n3_j4) AT=0",
+      "unit": "ohm"
+    },
+    {
+      "name": "r_r_fb_a_n4_noj",
+      "spice": ".meas dc r_r_fb_a_n4_noj FIND v(m_r_r_fb_a_n4_noj) AT=0",
+      "unit": "ohm"
+    },
+    {
+      "name": "r_r_fb_a_n4_j1",
+      "spice": ".meas dc r_r_fb_a_n4_j1 FIND v(m_r_r_fb_a_n4_j1) AT=0",
+      "unit": "ohm"
+    },
+    {
+      "name": "r_r_fb_a_n4_j4",
+      "spice": ".meas dc r_r_fb_a_n4_j4 FIND v(m_r_r_fb_a_n4_j4) AT=0",
+      "unit": "ohm"
+    },
+    {
+      "name": "r_r_fb_a_n5_noj",
+      "spice": ".meas dc r_r_fb_a_n5_noj FIND v(m_r_r_fb_a_n5_noj) AT=0",
+      "unit": "ohm"
+    },
+    {
+      "name": "r_r_fb_a_n5_j1",
+      "spice": ".meas dc r_r_fb_a_n5_j1 FIND v(m_r_r_fb_a_n5_j1) AT=0",
+      "unit": "ohm"
+    },
+    {
+      "name": "r_r_fb_a_n5_j4",
+      "spice": ".meas dc r_r_fb_a_n5_j4 FIND v(m_r_r_fb_a_n5_j4) AT=0",
+      "unit": "ohm"
+    },
+    {
+      "name": "r_r_fb_a_n6_noj",
+      "spice": ".meas dc r_r_fb_a_n6_noj FIND v(m_r_r_fb_a_n6_noj) AT=0",
+      "unit": "ohm"
+    },
+    {
+      "name": "r_r_fb_a_n6_j1",
+      "spice": ".meas dc r_r_fb_a_n6_j1 FIND v(m_r_r_fb_a_n6_j1) AT=0",
+      "unit": "ohm"
+    },
+    {
+      "name": "r_r_fb_a_n6_j4",
+      "spice": ".meas dc r_r_fb_a_n6_j4 FIND v(m_r_r_fb_a_n6_j4) AT=0",
+      "unit": "ohm"
+    }
+  ],
+  "monte_carlo": {
+    "n": 200,
+    "seed": 263001,
+    "vary": "mismatch",
+    "k_sigma": 3
+  },
+  "options": {
+    "keep_artifacts": false,
+    "timeout_s": 120,
+    "ngspice_init": [
+      "set numdgt=12"
+    ]
+  }
+}
