@@ -33,6 +33,23 @@ def drawn_row(summary: dict[str, Any], case: dict[str, Any]) -> dict[str, Any] |
     return None
 
 
+def displayed_verdict(row: dict[str, Any] | None) -> str:
+    """The electrical verdict shown for a drawn case (issue #306): the matching
+    electrical row's own `verdict`, copied verbatim, or `n/a` when no
+    electrical row matches the case."""
+    return row["verdict"] if row else "n/a"
+
+
+def electrical_cells(row: dict[str, Any] | None) -> tuple[str, str, str]:
+    """(R_eff shift, tolerance, verdict) cells of the drawn-configuration
+    verdict table. A case with no matching electrical row renders `n/a` in
+    all three rather than borrowing another row's numbers."""
+    if not row:
+        return "n/a", "n/a", displayed_verdict(row)
+    return (f"{pct(row['delta_frac'])} ({row['delta_ohm']:+.1f} ohm)",
+            f"{row['tolerance_frac'] * 100:.3f}%", displayed_verdict(row))
+
+
 def render(summary: dict[str, Any]) -> str:
     p = summary["provenance"]
     e = summary["electrical"]
@@ -85,7 +102,7 @@ def render(summary: dict[str, Any]) -> str:
       "R_eff shift (model + li1 joints) | tolerance | electrical verdict |")
     w("|---|---|---|---|---|---|---|---|---|")
     for cs in summary["cases"]:
-        r = drawn_row(summary, cs)
+        shift, tol, verdict = electrical_cells(drawn_row(summary, cs))
         drc = "clean" if all(v["klt_status"] == "clean" for k, v in cs["drc"].items()
                              if k != "unmerged") else "VIOLATIONS"
         neg = []
@@ -94,8 +111,7 @@ def render(summary: dict[str, Any]) -> str:
                 neg.append(f"{k}: {cs['lvs'][k]['status']}")
         w(f"| `{cs['case']}` | {cs['schematic_device']} ({cs['class']}) | {cs['segments']} x {cs['segment_l_um']:g} um | "
           f"{drc} | {cs['lvs']['folded']['status']} | {'; '.join(neg)} | "
-          f"{pct(r['delta_frac']) if r else 'n/a'} ({r['delta_ohm']:+.1f} ohm) | "
-          f"{r['tolerance_frac'] * 100:.3f}% | **{r['verdict'] if r else 'n/a'}** |")
+          f"{shift} | {tol} | **{verdict}** |")
     w("")
     if summary.get("flow_failures"):
         w("**Flow failures** (an expected DRC/LVS outcome did not hold):")

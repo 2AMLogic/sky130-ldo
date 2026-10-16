@@ -1,0 +1,118 @@
+{
+ "bench": "iq",
+ "candidate_invariant_problems": [],
+ "candidate_rev": 1,
+ "command": "python3 -B probe.py --bench iq --variant cand --rev 1 --supply 3.3 --run-id iq_cand_r1_3p3",
+ "condition": {
+  "device_temp_imposed_c": null,
+  "electrical_temp_c": 27.0,
+  "process": "tt",
+  "scenario": null,
+  "supply_v": 3.3
+ },
+ "data_sha256": null,
+ "edit_notes": [
+  "removed XM_IN2S",
+  "removed XM_MIRP2",
+  "removed XM_MIRP1",
+  "removed XM_MIR4",
+  "removed XM_MIR3",
+  "removed XM_MIR2",
+  "removed XM_MIR1",
+  "removed XM_IN2",
+  "removed XM_IN1",
+  "removed XM_TAIL",
+  "rewired XM_ENP5: 'XM_ENP5 PB EN VIN VIN' -> 'XM_ENP5 ND1 EN VIN VIN'",
+  "rewired XM_CLP: 'XM_CLP CL_CMP BIASP VIN VIN' -> 'XM_CLP CL_CMP PBR VIN VIN'",
+  "added XM_VRF",
+  "added XR_VR",
+  "added XM_PBR",
+  "added XM_PBN",
+  "added XM_NBR",
+  "added XM_NTAIL",
+  "added XM_NIN1",
+  "added XM_NIN1C",
+  "added XM_NIN2",
+  "added XM_NIN2S",
+  "added XM_PD1",
+  "added XM_PO1",
+  "added XM_PD2",
+  "added XM_PO2",
+  "added XM_NMD",
+  "added XM_NMO",
+  "added XM_ENP6",
+  "added XM_ENP7"
+ ],
+ "elapsed_s": 84.87,
+ "grading_vs_manifest_bounds": {
+  "iq_full_load_ua": {
+   "detail": "",
+   "max": 30,
+   "min": 0,
+   "pass": true,
+   "value": 28.82
+  },
+  "iq_no_load_ua": {
+   "detail": "",
+   "max": 30,
+   "min": 0,
+   "pass": true,
+   "value": 15.09246
+  },
+  "vout_full_load_v": {
+   "detail": "",
+   "max": 1.836,
+   "min": 1.764,
+   "pass": true,
+   "value": 1.802573
+  },
+  "vout_no_load_v": {
+   "detail": "",
+   "max": 1.836,
+   "min": 1.764,
+   "pass": true,
+   "value": 1.805211
+  }
+ },
+ "issue": 357,
+ "meas": {
+  "iq_full_load_ua": 28.82,
+  "iq_no_load_ua": 15.09246,
+  "vout_full_load_v": 1.802573,
+  "vout_no_load_v": 1.805211
+ },
+ "missing_measurements": [],
+ "ngspice_exit": 0,
+ "provenance": {
+  "candidate_py_sha256": "62eb999cacc647a83ff0931272d6424a1c53c915879b370dbdd94f2303209581",
+  "deck_sha256": "d579f38f43a47bab9faa389fc68c536d59f833c3bfc3e10edb0774968f1c0bf9",
+  "driver_sha256": "6e74a95f970ac4b83122da96a949b0ed3f3127ff04422a5e462e1f26724dc6c2",
+  "dut_sch_sha256": "1378c2d440e6ffc2224091972a162357c2634600e6e56cb51e4d6f96159fd2e3",
+  "experiment_json_sha256": "2303eccc827d7750e03b74517a7ccdbbd1d6f312d603e39b2607141369d65807",
+  "netlist_edited_sha256": "686097a731b8f8ff489719c317c01a0b4b74b5d2a94243a1ed55c61efa11c3c0",
+  "netlist_raw_sha256": "77a5dc28199cb9ffd0a1fbf7911e4d04ed8f579a0a66ac08e5c5ff4ee0fb15c3",
+  "pdk": {
+   "lib_sha256": "48de7c677e2c6e7d09b2559279de9f818be71010a4aa933d728eb4db3b133c84",
+   "matches_pin": true,
+   "open_pdks_commit": "c6d73a35f524070e85faff4a6a9eef49553ebc2b"
+  },
+  "probe_common_sha256": "937335c680578f53b559640237647cbb6f8e6873b6c7310b3dcf0f96481467cd",
+  "source_commit": "ddc570514708935b323988a6cdf4d23550b82761",
+  "spiceinit_sha256": "3cf811e1ae5fc75dd0bbe56205016c387c3538304be0cbdab7cb658fb9adf960",
+  "testbench_sha256": "b04bb670ff9515bbf1130750f20299c533c66492ffb402cb25f32fc4d31ebaca",
+  "tools": {
+   "declared": {
+    "ngspice": "42",
+    "xschem": "3.4.4"
+   },
+   "ngspice": "ngspice-46 : Circuit level simulation program",
+   "on_baseline": false,
+   "platform": "Linux 7.0.0-1014-aws x86_64",
+   "python": "3.12.3",
+   "xschem": "XSCHEM V3.4.7"
+  }
+ },
+ "run_id": "iq_cand_r1_3p3",
+ "solver_diagnostic": null,
+ "variant": "cand"
+}

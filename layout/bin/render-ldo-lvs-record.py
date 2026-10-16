@@ -38,6 +38,16 @@ CAPS_NOT_DRAWN_REASON = (
 )
 
 
+def lvs_is_match(status: object) -> bool:
+    """The LVS verdict: only the exact status `match` is clean."""
+    return status == "match"
+
+
+def verdict_heading(is_match: bool) -> str:
+    """The `## Overall verdict:` heading line."""
+    return "## Overall verdict: " + ("MATCH" if is_match else "MISMATCH -- not LVS-clean")
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--out-dir", required=True, type=Path)
@@ -60,7 +70,7 @@ def main() -> int:
     klt_version, pdk_info = prov.klt_version, prov.pdk_info
 
     status = lvs.get("status")
-    is_match = status == "match"
+    is_match = lvs_is_match(status)
 
     lines: list[str] = []
     a = lines.append
@@ -78,7 +88,7 @@ def main() -> int:
         "silently describe a different circuit than the schematic."
     )
     a("")
-    a("## Overall verdict: " + ("MATCH" if is_match else "MISMATCH -- not LVS-clean"))
+    a(verdict_heading(is_match))
     a("")
     a(f"- [{'x' if is_match else ' '}] `klt lvs` reports `status: match`")
     a("")

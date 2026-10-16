@@ -51,10 +51,13 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _record_common import (
     build_input_fingerprint,
     mc_input_sections,
+    assert_klt_read_the_pinned_pdk as _shared_assert_pdk,
     klt_binary as _shared_klt_binary,
     load_corner_run_module,
     render_record_footer,
     render_record_header,
+    reserve_record_id,
+    write_new_text,
 )
 
 corner_run = load_corner_run_module(Path(__file__).resolve().parent)
@@ -92,33 +95,10 @@ def load_mc_experiment(path: Path) -> dict:
 def assert_klt_read_the_pinned_pdk(
     response: dict, pdk, pin: dict, allow_mismatch: bool
 ) -> None:
-    """Check `klt sim`'s OWN provenance names the PDK this harness pinned.
-
-    The pre-run `resolve_pdk()`/`matches_pin` check (issue #2) verifies the
-    install *this harness* resolved. It says nothing about the one `klt`
-    resolved, and before issue #211 nothing did: `run_klt_sim` passed no
-    `PDK_ROOT`, the request's `models.lib` is relative, and on a host with two
-    sky130A installs `klt` read the other one -- so a record could name the
-    pinned open_pdks commit while the simulation behind it read a different
-    build's FET cards. Passing `PDK_ROOT` fixes the cause; this asserts the
-    effect, because a provenance claim nothing checks is the kind that rots
-    silently. `--allow-pdk-mismatch` downgrades it to a warning, the same
-    escape hatch the pre-run check offers.
-    """
-    claimed = ((response.get("provenance") or {}).get("pdk") or {}).get("version") or ""
-    if pin["open_pdks_commit"] in claimed:
-        return
-    message = (
-        f"klt sim's own provenance.pdk.version is {claimed!r}, which does not name "
-        f"sim/pdk.json's pinned open_pdks commit {pin['open_pdks_commit']}\n"
-        f"  this harness resolved: {pdk.dir}\n"
-        "  klt resolved something else -- the record's `pdk` block would name the "
-        "pin while the simulation read a different model build. Set PDK_ROOT "
-        "explicitly, or remove the competing install"
-    )
-    if not allow_mismatch:
-        raise HarnessError(message)
-    print(f"WARNING: {message}", file=sys.stderr)
+    """Check `klt sim`'s OWN provenance names the PDK this harness pinned
+    (issue #211). The implementation is shared with `corner-run.py --backend
+    batch` and lives in `_record_common.py`; see its docstring."""
+    _shared_assert_pdk(response, pdk, pin, allow_mismatch, error_cls=HarnessError)
 
 
 # --------------------------------------------------------------------------
@@ -719,6 +699,8 @@ def main(argv: list[str]) -> int:
     response_file = responses_dir / f"{record_id}.json"
 
     if not args.dry_run:
+        # Atomic claim BEFORE any scratch dir/evidence is written (issue #310).
+        reserve_record_id(BUILD_DIR, exp["_dir"].name, record_id, HarnessError)
         for path in (record_md, record_json, snapshot, request_file, response_file):
             if path.exists():
                 raise HarnessError(
@@ -726,6 +708,9 @@ def main(argv: list[str]) -> int:
                 )
 
     run_dir = BUILD_DIR / exp["slug"] / record_id
+    if args.dry_run:
+        # dry-run holds no reservation, so keep its scratch off any real run's dir
+        run_dir = BUILD_DIR / exp["slug"] / f"{record_id}.dry-{os.getpid()}"
     run_dir.mkdir(parents=True, exist_ok=True)
 
     netlist = corner_run.netlist_with_xschem(exp["_schematic"], run_dir, pdk)
@@ -763,13 +748,13 @@ def main(argv: list[str]) -> int:
         return 0
 
     snapshot.parent.mkdir(parents=True, exist_ok=True)
-    snapshot.write_text(prepped_netlist_text)
+    write_new_text(snapshot, prepped_netlist_text)
 
     request = build_klt_request(
         exp, pdk, snapshot.resolve(), n, args.seed, vary, k_sigma, args.timeout, args.keep_logs
     )
     requests_dir.mkdir(parents=True, exist_ok=True)
-    request_file.write_text(json.dumps(request, indent=2, sort_keys=True) + "\n")
+    write_new_text(request_file, json.dumps(request, indent=2, sort_keys=True) + "\n")
 
     klt_outdir = run_dir / "klt-out"
     response = run_klt_sim(
@@ -779,7 +764,7 @@ def main(argv: list[str]) -> int:
     assert_klt_read_the_pinned_pdk(response, pdk, pin, args.allow_pdk_mismatch)
 
     responses_dir.mkdir(parents=True, exist_ok=True)
-    response_file.write_text(json.dumps(response, indent=2, sort_keys=True) + "\n")
+    write_new_text(response_file, json.dumps(response, indent=2, sort_keys=True) + "\n")
 
     overall_pass = response.get("status") == "pass"
 
@@ -831,8 +816,8 @@ def main(argv: list[str]) -> int:
     }
 
     records_dir.mkdir(parents=True, exist_ok=True)
-    record_json.write_text(json.dumps(record, indent=2, sort_keys=True) + "\n")
-    record_md.write_text(render_record(record))
+    write_new_text(record_json, json.dumps(record, indent=2, sort_keys=True) + "\n")
+    write_new_text(record_md, render_record(record))
 
     print()
     print(f"record   : {record_md.relative_to(REPO_ROOT)}")

@@ -115,9 +115,20 @@ STUB
 chmod +x "$STUB_DIR/gh"
 export PATH="$STUB_DIR:$PATH"
 
-# The comment itself goes over the gh ladder (pinned by test-post-verdict.sh);
-# the gate and label verbs are the real binary's, through LOOM_DAEMON_BIN.
-printf '#!/usr/bin/env bash\nexit 127\n' > "$STUB_DIR/self-daemon"
+# The comment goes through the daemon chokepoint (#9865: the only comment
+# path); this self-daemon lands it on the stub gh as `issue comment`. The gate
+# and label verbs are the real binary's, through LOOM_DAEMON_BIN.
+cat > "$STUB_DIR/self-daemon" <<'SELF'
+#!/usr/bin/env bash
+if [[ "${1:-} ${2:-}" == "forge comment" ]]; then
+  _n="$3"; shift 3; _repo=""; _body=""
+  while [[ $# -gt 0 ]]; do
+    case "$1" in --repo) _repo="$2"; shift 2 ;; --body) _body="$2"; shift 2 ;; *) shift ;; esac
+  done
+  exec gh issue comment "$_n" --repo "$_repo" --body "$_body"
+fi
+exit 127
+SELF
 chmod +x "$STUB_DIR/self-daemon"
 export LOOM_DAEMON_SELF_BIN="$STUB_DIR/self-daemon"
 # #10485: approvals also pass the exact-head CI gate. Its reader is not under
@@ -177,10 +188,10 @@ contains "names the label" "$OUT" "loom:ci-failure"
 check "nothing posted" "" "$POSTED"
 
 echo "== a moved head approves normally; approve is exclusive =="
-state "$(cr_at "$MOVED" 60)" loom:changes-requested loom:reviewing loom:review-requested loom:operator-priority
+state "$(cr_at "$MOVED" 60)" loom:changes-requested loom:reviewing loom:review-requested loom:important
 pv 10580 approved "$HEAD" --body "Approved: covered by the new tests."
 check "exit 0" 0 "$RC"
-check "loom:pr only, unrelated labels kept" "loom:operator-priority loom:pr " "$LABELS"
+check "loom:pr only, unrelated labels kept" "loom:important loom:pr " "$LABELS"
 
 echo "== changes-requested is exclusive, keeps loom:ci-failure =="
 state "[]" loom:pr loom:reviewing loom:ci-failure

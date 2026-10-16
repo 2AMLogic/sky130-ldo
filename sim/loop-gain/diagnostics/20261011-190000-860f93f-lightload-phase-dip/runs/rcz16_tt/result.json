@@ -1,0 +1,1875 @@
+{
+  "run_id": "rcz16_tt",
+  "issue": 365,
+  "bench": "loop-gain",
+  "condition": {
+    "process": "tt",
+    "temp_c": 27.0,
+    "supply_v": 3.3
+  },
+  "edits": {
+    "ccomp_scale": 1.0,
+    "rcz_scale": 16.0,
+    "tail_scale": 1.0,
+    "notes": [
+      "R_CZ L 52 -> 832 (W=0.42)"
+    ]
+  },
+  "stimulus": [
+    "set numdgt=10",
+    "set units=degrees",
+    "set wr_vecnames",
+    "set wr_singlescale",
+    "* --- leg 1: 0.33u/10m/0mA ---",
+    "alter cout = 3.3e-07",
+    "alter hesr gain = 0.01",
+    "alter rload = 1e+12",
+    "op",
+    "let vseed = v(vout)",
+    "let ivin = -i(vvin)",
+    "echo PT1_OP",
+    "print vseed ivin",
+    "ac dec 30 1e-2 1e+09",
+    "let lg = v(xldo.fb)/(1-v(xldo.fb))",
+    "let lgdb = db(lg)",
+    "let lgph = cph(lg)",
+    "wrdata resp_leg1.txt lg v(xldo.ea_out) v(xldo.ea_cz) v(vout) v(xldo.fb) v(xldo.ea_d1) v(xldo.ea_tail)",
+    "meas ac fc when lgdb=0 cross=1",
+    "meas ac phc find lgph when lgdb=0 cross=1",
+    "meas ac gmdb find lgdb when lgph=-180 cross=1",
+    "let dcg = lgdb[0]",
+    "echo PT1_AC",
+    "print fc",
+    "print phc",
+    "print gmdb",
+    "print dcg",
+    "* --- leg 2: 4.7u/10m/0mA ---",
+    "alter cout = 4.7e-06",
+    "alter hesr gain = 0.01",
+    "alter rload = 1e+12",
+    "op",
+    "let vseed = v(vout)",
+    "let ivin = -i(vvin)",
+    "echo PT2_OP",
+    "print vseed ivin",
+    "ac dec 30 1e-2 1e+09",
+    "let lg = v(xldo.fb)/(1-v(xldo.fb))",
+    "let lgdb = db(lg)",
+    "let lgph = cph(lg)",
+    "wrdata resp_leg2.txt lg v(xldo.ea_out) v(xldo.ea_cz) v(vout) v(xldo.fb) v(xldo.ea_d1) v(xldo.ea_tail)",
+    "meas ac fc when lgdb=0 cross=1",
+    "meas ac phc find lgph when lgdb=0 cross=1",
+    "meas ac gmdb find lgdb when lgph=-180 cross=1",
+    "let dcg = lgdb[0]",
+    "echo PT2_AC",
+    "print fc",
+    "print phc",
+    "print gmdb",
+    "print dcg",
+    "* --- leg 3: 0.33u/0/0mA ---",
+    "alter cout = 3.3e-07",
+    "alter hesr gain = 0",
+    "alter rload = 1e+12",
+    "op",
+    "let vseed = v(vout)",
+    "let ivin = -i(vvin)",
+    "echo PT3_OP",
+    "print vseed ivin",
+    "ac dec 30 1e-2 1e+09",
+    "let lg = v(xldo.fb)/(1-v(xldo.fb))",
+    "let lgdb = db(lg)",
+    "let lgph = cph(lg)",
+    "wrdata resp_leg3.txt lg v(xldo.ea_out) v(xldo.ea_cz) v(vout) v(xldo.fb) v(xldo.ea_d1) v(xldo.ea_tail)",
+    "meas ac fc when lgdb=0 cross=1",
+    "meas ac phc find lgph when lgdb=0 cross=1",
+    "meas ac gmdb find lgdb when lgph=-180 cross=1",
+    "let dcg = lgdb[0]",
+    "echo PT3_AC",
+    "print fc",
+    "print phc",
+    "print gmdb",
+    "print dcg",
+    "* --- leg 4: 4.7u/0/0mA ---",
+    "alter cout = 4.7e-06",
+    "alter hesr gain = 0",
+    "alter rload = 1e+12",
+    "op",
+    "let vseed = v(vout)",
+    "let ivin = -i(vvin)",
+    "echo PT4_OP",
+    "print vseed ivin",
+    "ac dec 30 1e-2 1e+09",
+    "let lg = v(xldo.fb)/(1-v(xldo.fb))",
+    "let lgdb = db(lg)",
+    "let lgph = cph(lg)",
+    "wrdata resp_leg4.txt lg v(xldo.ea_out) v(xldo.ea_cz) v(vout) v(xldo.fb) v(xldo.ea_d1) v(xldo.ea_tail)",
+    "meas ac fc when lgdb=0 cross=1",
+    "meas ac phc find lgph when lgdb=0 cross=1",
+    "meas ac gmdb find lgdb when lgph=-180 cross=1",
+    "let dcg = lgdb[0]",
+    "echo PT4_AC",
+    "print fc",
+    "print phc",
+    "print gmdb",
+    "print dcg",
+    "* --- leg 5: 0.33u/500m/0mA ---",
+    "alter cout = 3.3e-07",
+    "alter hesr gain = 0.5",
+    "alter rload = 1e+12",
+    "op",
+    "let vseed = v(vout)",
+    "let ivin = -i(vvin)",
+    "echo PT5_OP",
+    "print vseed ivin",
+    "ac dec 30 1e-2 1e+09",
+    "let lg = v(xldo.fb)/(1-v(xldo.fb))",
+    "let lgdb = db(lg)",
+    "let lgph = cph(lg)",
+    "wrdata resp_leg5.txt lg v(xldo.ea_out) v(xldo.ea_cz) v(vout) v(xldo.fb) v(xldo.ea_d1) v(xldo.ea_tail)",
+    "meas ac fc when lgdb=0 cross=1",
+    "meas ac phc find lgph when lgdb=0 cross=1",
+    "meas ac gmdb find lgdb when lgph=-180 cross=1",
+    "let dcg = lgdb[0]",
+    "echo PT5_AC",
+    "print fc",
+    "print phc",
+    "print gmdb",
+    "print dcg",
+    "* --- leg 6: 4.7u/500m/0mA ---",
+    "alter cout = 4.7e-06",
+    "alter hesr gain = 0.5",
+    "alter rload = 1e+12",
+    "op",
+    "let vseed = v(vout)",
+    "let ivin = -i(vvin)",
+    "echo PT6_OP",
+    "print vseed ivin",
+    "ac dec 30 1e-2 1e+09",
+    "let lg = v(xldo.fb)/(1-v(xldo.fb))",
+    "let lgdb = db(lg)",
+    "let lgph = cph(lg)",
+    "wrdata resp_leg6.txt lg v(xldo.ea_out) v(xldo.ea_cz) v(vout) v(xldo.fb) v(xldo.ea_d1) v(xldo.ea_tail)",
+    "meas ac fc when lgdb=0 cross=1",
+    "meas ac phc find lgph when lgdb=0 cross=1",
+    "meas ac gmdb find lgdb when lgph=-180 cross=1",
+    "let dcg = lgdb[0]",
+    "echo PT6_AC",
+    "print fc",
+    "print phc",
+    "print gmdb",
+    "print dcg",
+    "* --- leg 7: 0.33u/10m/1mA ---",
+    "alter cout = 3.3e-07",
+    "alter hesr gain = 0.01",
+    "alter rload = 1800",
+    "op",
+    "let vseed = v(vout)",
+    "let ivin = -i(vvin)",
+    "echo PT7_OP",
+    "print vseed ivin",
+    "ac dec 30 1e-2 1e+09",
+    "let lg = v(xldo.fb)/(1-v(xldo.fb))",
+    "let lgdb = db(lg)",
+    "let lgph = cph(lg)",
+    "wrdata resp_leg7.txt lg v(xldo.ea_out) v(xldo.ea_cz) v(vout) v(xldo.fb) v(xldo.ea_d1) v(xldo.ea_tail)",
+    "meas ac fc when lgdb=0 cross=1",
+    "meas ac phc find lgph when lgdb=0 cross=1",
+    "meas ac gmdb find lgdb when lgph=-180 cross=1",
+    "let dcg = lgdb[0]",
+    "echo PT7_AC",
+    "print fc",
+    "print phc",
+    "print gmdb",
+    "print dcg",
+    "* --- leg 8: 4.7u/10m/1mA ---",
+    "alter cout = 4.7e-06",
+    "alter hesr gain = 0.01",
+    "alter rload = 1800",
+    "op",
+    "let vseed = v(vout)",
+    "let ivin = -i(vvin)",
+    "echo PT8_OP",
+    "print vseed ivin",
+    "ac dec 30 1e-2 1e+09",
+    "let lg = v(xldo.fb)/(1-v(xldo.fb))",
+    "let lgdb = db(lg)",
+    "let lgph = cph(lg)",
+    "wrdata resp_leg8.txt lg v(xldo.ea_out) v(xldo.ea_cz) v(vout) v(xldo.fb) v(xldo.ea_d1) v(xldo.ea_tail)",
+    "meas ac fc when lgdb=0 cross=1",
+    "meas ac phc find lgph when lgdb=0 cross=1",
+    "meas ac gmdb find lgdb when lgph=-180 cross=1",
+    "let dcg = lgdb[0]",
+    "echo PT8_AC",
+    "print fc",
+    "print phc",
+    "print gmdb",
+    "print dcg",
+    "* --- leg 9: 0.33u/10m/50mA ---",
+    "alter cout = 3.3e-07",
+    "alter hesr gain = 0.01",
+    "alter rload = 36",
+    "op",
+    "let vseed = v(vout)",
+    "let ivin = -i(vvin)",
+    "echo PT9_OP",
+    "print vseed ivin",
+    "ac dec 30 1e-2 1e+09",
+    "let lg = v(xldo.fb)/(1-v(xldo.fb))",
+    "let lgdb = db(lg)",
+    "let lgph = cph(lg)",
+    "wrdata resp_leg9.txt lg v(xldo.ea_out) v(xldo.ea_cz) v(vout) v(xldo.fb) v(xldo.ea_d1) v(xldo.ea_tail)",
+    "meas ac fc when lgdb=0 cross=1",
+    "meas ac phc find lgph when lgdb=0 cross=1",
+    "meas ac gmdb find lgdb when lgph=-180 cross=1",
+    "let dcg = lgdb[0]",
+    "echo PT9_AC",
+    "print fc",
+    "print phc",
+    "print gmdb",
+    "print dcg",
+    "* --- leg 10: 4.7u/10m/50mA ---",
+    "alter cout = 4.7e-06",
+    "alter hesr gain = 0.01",
+    "alter rload = 36",
+    "op",
+    "let vseed = v(vout)",
+    "let ivin = -i(vvin)",
+    "echo PT10_OP",
+    "print vseed ivin",
+    "ac dec 30 1e-2 1e+09",
+    "let lg = v(xldo.fb)/(1-v(xldo.fb))",
+    "let lgdb = db(lg)",
+    "let lgph = cph(lg)",
+    "wrdata resp_leg10.txt lg v(xldo.ea_out) v(xldo.ea_cz) v(vout) v(xldo.fb) v(xldo.ea_d1) v(xldo.ea_tail)",
+    "meas ac fc when lgdb=0 cross=1",
+    "meas ac phc find lgph when lgdb=0 cross=1",
+    "meas ac gmdb find lgdb when lgph=-180 cross=1",
+    "let dcg = lgdb[0]",
+    "echo PT10_AC",
+    "print fc",
+    "print phc",
+    "print gmdb",
+    "print dcg"
+  ],
+  "provenance": {
+    "source_commit": "860f93fd2bf9674d60594ff7cdc9bbe3bf5889f8",
+    "driver_sha256": "5442a12cb233add23390f171facfc20b297b3673fc5663d03639cc2067d46cab",
+    "extract_sha256": "787166afd02c8c5b9a2f7b5a4945348f03dbc51ff5db79faf3a5f8edd606dd9c",
+    "experiment_json_sha256": "18dabae83e7400021909c952c429b7685f69e32a8bbdb2e53834690fbeb3107b",
+    "testbench_sha256": "7d1d760bbd3ab3366e1577f4b1e30fb4369067692c8b997fb3e1e286f65f3794",
+    "dut_sha256": "1378c2d440e6ffc2224091972a162357c2634600e6e56cb51e4d6f96159fd2e3",
+    "netlist_raw_sha256": "4523fc0a3813a1b09fc204e7e224df45938917cf1f5cf06c6d2bc5dd5981cd44",
+    "netlist_edited_sha256": "4e37da0a4efe3533317c920f0a941df74fa9c4e535548fbe9f7d5f53b0bd111e",
+    "deck_sha256": "b3b6b3e3e47a2a9387f27c7c158f344560c75f936850743e7a87cc8c501269f5",
+    "pdk": {
+      "open_pdks_commit": "c6d73a35f524070e85faff4a6a9eef49553ebc2b",
+      "matches_pin": true
+    },
+    "tools": {
+      "ngspice": "ngspice-46 : Circuit level simulation program",
+      "xschem": "XSCHEM V3.4.7",
+      "platform": "Linux 7.0.0-1014-aws x86_64",
+      "python": "3.12.3",
+      "declared": {
+        "ngspice": "42",
+        "xschem": "3.4.4"
+      },
+      "on_baseline": false
+    }
+  },
+  "ngspice_exit": 0,
+  "elapsed_s": 17.02,
+  "solver_diagnostic": null,
+  "points": [
+    {
+      "leg": 1,
+      "label": "0.33u/10m/0mA",
+      "cout_f": 3.3e-07,
+      "esr_ohm": 0.01,
+      "rload_ohm": 1000000000000.0,
+      "vout_v": 1.8023851698,
+      "vin_current_a": 1.3871218247e-05,
+      "iq_a": 1.387121644461483e-05,
+      "response": {
+        "n_points": 331,
+        "f_min_hz": 0.01,
+        "f_max_hz": 1000000000.0,
+        "phase_convention": "arg(T) deg, continuous (unwrapped) in f, first sample in (-180,180]; PM = 180 + phase at unity gain; GM = -|T|dB at the -180 crossing",
+        "dc_gain_db": 70.06178883223798,
+        "dc_phase_deg": -1.829599911222484,
+        "end_gain_db": -13.52363441154119,
+        "end_phase_deg": -366.6586654287167,
+        "min_phase_deg": -379.7774233545788,
+        "f_at_min_phase_hz": 171132830.42,
+        "max_gain_db": 70.06178883223798,
+        "principal_phase_wraps": 1,
+        "unity_crossings": [
+          {
+            "f_hz": 331.8942168584502,
+            "direction": -1,
+            "phase_deg": -115.02204835516005,
+            "pm_deg": 64.97795164483995
+          }
+        ],
+        "pm_deg": 64.97795164483995,
+        "crossover_hz": 331.8942168584502,
+        "legacy_phase_crossings": [
+          {
+            "f_hz": 27781.907167239195,
+            "direction": -1,
+            "gain_db": -48.999088501860896,
+            "gm_db": 48.999088501860896
+          }
+        ],
+        "legacy_gm_db": 48.999088501860896,
+        "negative_axis_crossings": [
+          {
+            "f_hz": 27843.634795871894,
+            "direction": 1,
+            "gain_db": -49.0273568131931,
+            "gm_db": 49.0273568131931,
+            "max_adjacent_phase_step_deg": 7.368913298413531,
+            "notch_like": false,
+            "min_gain_db_within_2_samples": -51.641864170198986
+          }
+        ],
+        "gm_db": 49.0273568131931,
+        "gm_crossing_hz": 27843.634795871894,
+        "worst_gm_db": 49.0273568131931,
+        "legacy_agrees": true,
+        "any_notch_like_crossing": false,
+        "max_gain_above_crossover_db": -0.3167497229214595,
+        "gm_lower_bound_above_crossover_db": 0.3167497229214595,
+        "status": "finite",
+        "gm_supported": true,
+        "pm_ge_45": true,
+        "gm_ge_10": true
+      },
+      "phase_dip": {
+        "min_phase_deg": -379.7774233545788,
+        "f_at_min_phase_hz": 171132830.42,
+        "recovery_after_min_deg": 13.118757925862099,
+        "fc_hz": 331.8942168584502,
+        "phase_at_fc_deg": -115.02204835516005,
+        "dip_present": false
+      },
+      "corners": [
+        {
+          "f_hz": 0.31622776602,
+          "slope_step_db_dec": -11.63725338981842,
+          "kind": "pole-like"
+        },
+        {
+          "f_hz": 5843.414133699999,
+          "slope_step_db_dec": -9.266555324237899,
+          "kind": "pole-like"
+        },
+        {
+          "f_hz": 39810.71705500001,
+          "slope_step_db_dec": 45.31285250416454,
+          "kind": "zero-like"
+        },
+        {
+          "f_hz": 125892.54118000003,
+          "slope_step_db_dec": 13.486495277237893,
+          "kind": "zero-like"
+        },
+        {
+          "f_hz": 11659144.01200001,
+          "slope_step_db_dec": -13.917739931887262,
+          "kind": "pole-like"
+        },
+        {
+          "f_hz": 39810717.05500001,
+          "slope_step_db_dec": -9.889396874921433,
+          "kind": "pole-like"
+        }
+      ],
+      "doublet_candidates": [
+        {
+          "pole_like_hz": 5843.414133699999,
+          "zero_like_hz": 39810.71705500001
+        }
+      ],
+      "nodes": {
+        "xldo.ea_out": {
+          "mag_db_at_fc": 37.82358412856856,
+          "phase_deg_at_fc": -148.5450708233352,
+          "phase_deg_at_fmin": -178.14465814858286,
+          "phase_change_to_fc_deg": 29.599587325247654
+        },
+        "xldo.ea_cz": {
+          "mag_db_at_fc": 32.28253297162456,
+          "phase_deg_at_fc": -205.6410960891783,
+          "phase_deg_at_fmin": -178.19801040812365,
+          "phase_change_to_fc_deg": -27.44308568105464
+        },
+        "vout": {
+          "mag_db_at_fc": 2.685110404802746,
+          "phase_deg_at_fc": -58.93165327067954,
+          "phase_deg_at_fmin": -0.0005741393085956605,
+          "phase_change_to_fc_deg": -58.93107913137094
+        },
+        "xldo.fb": {
+          "mag_db_at_fc": -0.8340719174020789,
+          "phase_deg_at_fc": -58.93383134944498,
+          "phase_deg_at_fmin": -0.0005741912993246045,
+          "phase_change_to_fc_deg": -58.93325715814566
+        },
+        "xldo.ea_d1": {
+          "mag_db_at_fc": -7.376142427132002,
+          "phase_deg_at_fc": 56.21298866054865,
+          "phase_deg_at_fmin": 179.94627608184916,
+          "phase_change_to_fc_deg": -123.7332874213005
+        },
+        "xldo.ea_tail": {
+          "mag_db_at_fc": -3.647068235817744,
+          "phase_deg_at_fc": -27.66832341383153,
+          "phase_deg_at_fmin": -0.00028486216384062703,
+          "phase_change_to_fc_deg": -27.66803855166769
+        }
+      },
+      "scalar_meas": {
+        "fc": 332.121,
+        "phc": -115.022,
+        "gmdb": -48.9991,
+        "dcg": 70.061788832
+      },
+      "classification": {
+        "valid": true,
+        "reasons": [],
+        "pm_pass": true,
+        "gm_pass": true
+      }
+    },
+    {
+      "leg": 2,
+      "label": "4.7u/10m/0mA",
+      "cout_f": 4.7e-06,
+      "esr_ohm": 0.01,
+      "rload_ohm": 1000000000000.0,
+      "vout_v": 1.8023851698,
+      "vin_current_a": 1.3871218247e-05,
+      "iq_a": 1.387121644461483e-05,
+      "response": {
+        "n_points": 331,
+        "f_min_hz": 0.01,
+        "f_max_hz": 1000000000.0,
+        "phase_convention": "arg(T) deg, continuous (unwrapped) in f, first sample in (-180,180]; PM = 180 + phase at unity gain; GM = -|T|dB at the -180 crossing",
+        "dc_gain_db": 69.349476278496,
+        "dc_phase_deg": -22.964200415379704,
+        "end_gain_db": -13.52363441154119,
+        "end_phase_deg": -366.6586654287162,
+        "min_phase_deg": -379.7774233566041,
+        "f_at_min_phase_hz": 171132830.42,
+        "max_gain_db": 69.349476278496,
+        "principal_phase_wraps": 1,
+        "unity_crossings": [
+          {
+            "f_hz": 56.035464013662995,
+            "direction": -1,
+            "phase_deg": -119.94489935582685,
+            "pm_deg": 60.05510064417315
+          }
+        ],
+        "pm_deg": 60.05510064417315,
+        "crossover_hz": 56.035464013662995,
+        "legacy_phase_crossings": [
+          {
+            "f_hz": 13087.146886157994,
+            "direction": -1,
+            "gain_db": -62.419283014744344,
+            "gm_db": 62.419283014744344
+          }
+        ],
+        "legacy_gm_db": 62.419283014744344,
+        "negative_axis_crossings": [
+          {
+            "f_hz": 13109.765164249618,
+            "direction": 1,
+            "gain_db": -62.471804502768464,
+            "gm_db": 62.471804502768464,
+            "max_adjacent_phase_step_deg": 12.438011946588034,
+            "notch_like": false,
+            "min_gain_db_within_2_samples": -63.26002189610713
+          }
+        ],
+        "gm_db": 62.471804502768464,
+        "gm_crossing_hz": 13109.765164249618,
+        "worst_gm_db": 62.471804502768464,
+        "legacy_agrees": true,
+        "any_notch_like_crossing": false,
+        "max_gain_above_crossover_db": -0.5170177505037393,
+        "gm_lower_bound_above_crossover_db": 0.5170177505037393,
+        "status": "finite",
+        "gm_supported": true,
+        "pm_ge_45": true,
+        "gm_ge_10": true
+      },
+      "phase_dip": {
+        "min_phase_deg": -379.7774233566041,
+        "f_at_min_phase_hz": 171132830.42,
+        "recovery_after_min_deg": 13.118757927887941,
+        "fc_hz": 56.035464013662995,
+        "phase_at_fc_deg": -119.94489935582685,
+        "dip_present": false
+      },
+      "corners": [
+        {
+          "f_hz": 0.031622776602000004,
+          "slope_step_db_dec": -8.428166474535358,
+          "kind": "pole-like"
+        },
+        {
+          "f_hz": 15848.931924999997,
+          "slope_step_db_dec": 43.93699014215133,
+          "kind": "zero-like"
+        },
+        {
+          "f_hz": 11659144.01200001,
+          "slope_step_db_dec": -13.917839255700716,
+          "kind": "pole-like"
+        },
+        {
+          "f_hz": 39810717.05500001,
+          "slope_step_db_dec": -9.889403660075015,
+          "kind": "pole-like"
+        }
+      ],
+      "doublet_candidates": [],
+      "nodes": {
+        "xldo.ea_out": {
+          "mag_db_at_fc": 45.7614857973865,
+          "phase_deg_at_fc": -147.08200164832843,
+          "phase_deg_at_fmin": -155.24410112820374,
+          "phase_change_to_fc_deg": 8.162099479875309
+        },
+        "xldo.ea_cz": {
+          "mag_db_at_fc": 45.49152455058717,
+          "phase_deg_at_fc": -160.8506639065442,
+          "phase_deg_at_fmin": -155.28860455004684,
+          "phase_change_to_fc_deg": -5.562059356497372
+        },
+        "vout": {
+          "mag_db_at_fc": 3.6461709931956188,
+          "phase_deg_at_fc": -57.27962969269909,
+          "phase_deg_at_fmin": -0.007616365329948915,
+          "phase_change_to_fc_deg": -57.27201332736914
+        },
+        "xldo.fb": {
+          "mag_db_at_fc": 0.12710333648060693,
+          "phase_deg_at_fc": -57.27998012309492,
+          "phase_deg_at_fmin": -0.007616417320359883,
+          "phase_change_to_fc_deg": -57.272363705774566
+        },
+        "xldo.ea_d1": {
+          "mag_db_at_fc": -7.141415325688154,
+          "phase_deg_at_fc": 62.649209925252045,
+          "phase_deg_at_fmin": 179.2872731179069,
+          "phase_change_to_fc_deg": -116.63806319265484
+        },
+        "xldo.ea_tail": {
+          "mag_db_at_fc": -3.1145414037637797,
+          "phase_deg_at_fc": -28.630210856795326,
+          "phase_deg_at_fmin": -0.003778542785077239,
+          "phase_change_to_fc_deg": -28.62643231401025
+        }
+      },
+      "scalar_meas": {
+        "fc": 56.0765,
+        "phc": -119.945,
+        "gmdb": -62.4193,
+        "dcg": 69.349476279
+      },
+      "classification": {
+        "valid": true,
+        "reasons": [],
+        "pm_pass": true,
+        "gm_pass": true
+      }
+    },
+    {
+      "leg": 3,
+      "label": "0.33u/0/0mA",
+      "cout_f": 3.3e-07,
+      "esr_ohm": 0.0,
+      "rload_ohm": 1000000000000.0,
+      "vout_v": 1.8023851698,
+      "vin_current_a": 1.3871218247e-05,
+      "iq_a": 1.387121644461483e-05,
+      "response": {
+        "n_points": 331,
+        "f_min_hz": 0.01,
+        "f_max_hz": 1000000000.0,
+        "phase_convention": "arg(T) deg, continuous (unwrapped) in f, first sample in (-180,180]; PM = 180 + phase at unity gain; GM = -|T|dB at the -180 crossing",
+        "dc_gain_db": 70.06178883223798,
+        "dc_phase_deg": -1.829599911222484,
+        "end_gain_db": -13.523634411636758,
+        "end_phase_deg": -366.6586654233163,
+        "min_phase_deg": -379.77742331330296,
+        "f_at_min_phase_hz": 171132830.42,
+        "max_gain_db": 70.06178883223798,
+        "principal_phase_wraps": 1,
+        "unity_crossings": [
+          {
+            "f_hz": 331.89424149415163,
+            "direction": -1,
+            "phase_deg": -115.0224409808361,
+            "pm_deg": 64.9775590191639
+          }
+        ],
+        "pm_deg": 64.9775590191639,
+        "crossover_hz": 331.89424149415163,
+        "legacy_phase_crossings": [
+          {
+            "f_hz": 27771.0354812868,
+            "direction": -1,
+            "gain_db": -48.99142797615489,
+            "gm_db": 48.99142797615489
+          }
+        ],
+        "legacy_gm_db": 48.99142797615489,
+        "negative_axis_crossings": [
+          {
+            "f_hz": 27832.205032994254,
+            "direction": 1,
+            "gain_db": -49.01944258964451,
+            "gm_db": 49.01944258964451,
+            "max_adjacent_phase_step_deg": 7.368850713953748,
+            "notch_like": false,
+            "min_gain_db_within_2_samples": -51.638272189545724
+          }
+        ],
+        "gm_db": 49.01944258964451,
+        "gm_crossing_hz": 27832.205032994254,
+        "worst_gm_db": 49.01944258964451,
+        "legacy_agrees": true,
+        "any_notch_like_crossing": false,
+        "max_gain_above_crossover_db": -0.31674889352746033,
+        "gm_lower_bound_above_crossover_db": 0.31674889352746033,
+        "status": "finite",
+        "gm_supported": true,
+        "pm_ge_45": true,
+        "gm_ge_10": true
+      },
+      "phase_dip": {
+        "min_phase_deg": -379.77742331330296,
+        "f_at_min_phase_hz": 171132830.42,
+        "recovery_after_min_deg": 13.118757889986682,
+        "fc_hz": 331.89424149415163,
+        "phase_at_fc_deg": -115.0224409808361,
+        "dip_present": false
+      },
+      "corners": [
+        {
+          "f_hz": 0.31622776602,
+          "slope_step_db_dec": -11.63725339252219,
+          "kind": "pole-like"
+        },
+        {
+          "f_hz": 5843.414133699999,
+          "slope_step_db_dec": -9.262977693617728,
+          "kind": "pole-like"
+        },
+        {
+          "f_hz": 39810.71705500001,
+          "slope_step_db_dec": 45.302747866447916,
+          "kind": "zero-like"
+        },
+        {
+          "f_hz": 125892.54118000003,
+          "slope_step_db_dec": 13.48717003955824,
+          "kind": "zero-like"
+        },
+        {
+          "f_hz": 11659144.01200001,
+          "slope_step_db_dec": -13.91773653360395,
+          "kind": "pole-like"
+        },
+        {
+          "f_hz": 39810717.05500001,
+          "slope_step_db_dec": -9.889397178319733,
+          "kind": "pole-like"
+        }
+      ],
+      "doublet_candidates": [
+        {
+          "pole_like_hz": 5843.414133699999,
+          "zero_like_hz": 39810.71705500001
+        }
+      ],
+      "nodes": {
+        "xldo.ea_out": {
+          "mag_db_at_fc": 37.82363225431436,
+          "phase_deg_at_fc": -148.54487601204755,
+          "phase_deg_at_fmin": -178.14465814858286,
+          "phase_change_to_fc_deg": 29.59978213653531
+        },
+        "xldo.ea_cz": {
+          "mag_db_at_fc": 32.282581107248646,
+          "phase_deg_at_fc": -205.64088999860033,
+          "phase_deg_at_fmin": -178.19801040812365,
+          "phase_change_to_fc_deg": -27.44287959047668
+        },
+        "vout": {
+          "mag_db_at_fc": 2.685158598450696,
+          "phase_deg_at_fc": -58.93186404988652,
+          "phase_deg_at_fmin": -0.0005741393085956605,
+          "phase_change_to_fc_deg": -58.931289910577924
+        },
+        "xldo.fb": {
+          "mag_db_at_fc": -0.8340237231276841,
+          "phase_deg_at_fc": -58.93404213586294,
+          "phase_deg_at_fmin": -0.0005741912993246045,
+          "phase_change_to_fc_deg": -58.93346794456362
+        },
+        "xldo.ea_d1": {
+          "mag_db_at_fc": -7.376094463786668,
+          "phase_deg_at_fc": 56.213180899160314,
+          "phase_deg_at_fmin": 179.94627608184916,
+          "phase_change_to_fc_deg": -123.73309518268886
+        },
+        "xldo.ea_tail": {
+          "mag_db_at_fc": -3.647054894305424,
+          "phase_deg_at_fc": -27.6685105328284,
+          "phase_deg_at_fmin": -0.00028486216384062703,
+          "phase_change_to_fc_deg": -27.668225670664558
+        }
+      },
+      "scalar_meas": {
+        "fc": 332.121,
+        "phc": -115.022,
+        "gmdb": -48.9914,
+        "dcg": 70.061788832
+      },
+      "classification": {
+        "valid": true,
+        "reasons": [],
+        "pm_pass": true,
+        "gm_pass": true
+      }
+    },
+    {
+      "leg": 4,
+      "label": "4.7u/0/0mA",
+      "cout_f": 4.7e-06,
+      "esr_ohm": 0.0,
+      "rload_ohm": 1000000000000.0,
+      "vout_v": 1.8023851698,
+      "vin_current_a": 1.3871218247e-05,
+      "iq_a": 1.387121644461483e-05,
+      "response": {
+        "n_points": 331,
+        "f_min_hz": 0.01,
+        "f_max_hz": 1000000000.0,
+        "phase_convention": "arg(T) deg, continuous (unwrapped) in f, first sample in (-180,180]; PM = 180 + phase at unity gain; GM = -|T|dB at the -180 crossing",
+        "dc_gain_db": 69.34947630395163,
+        "dc_phase_deg": -22.964200486323534,
+        "end_gain_db": -13.523634411636758,
+        "end_phase_deg": -366.6586654233162,
+        "min_phase_deg": -379.7774233158058,
+        "f_at_min_phase_hz": 171132830.42,
+        "max_gain_db": 69.34947630395163,
+        "principal_phase_wraps": 1,
+        "unity_crossings": [
+          {
+            "f_hz": 56.035466007446765,
+            "direction": -1,
+            "phase_deg": -119.94584611860259,
+            "pm_deg": 60.05415388139741
+          }
+        ],
+        "pm_deg": 60.05415388139741,
+        "crossover_hz": 56.035466007446765,
+        "legacy_phase_crossings": [
+          {
+            "f_hz": 13067.922925660647,
+            "direction": -1,
+            "gain_db": -62.37680332600366,
+            "gm_db": 62.37680332600366
+          }
+        ],
+        "legacy_gm_db": 62.37680332600366,
+        "negative_axis_crossings": [
+          {
+            "f_hz": 13090.403153724788,
+            "direction": 1,
+            "gain_db": -62.4290522202397,
+            "gm_db": 62.4290522202397,
+            "max_adjacent_phase_step_deg": 12.39866519547931,
+            "notch_like": false,
+            "min_gain_db_within_2_samples": -63.22165415062835
+          }
+        ],
+        "gm_db": 62.4290522202397,
+        "gm_crossing_hz": 13090.403153724788,
+        "worst_gm_db": 62.4290522202397,
+        "legacy_agrees": true,
+        "any_notch_like_crossing": false,
+        "max_gain_above_crossover_db": -0.5170172950678138,
+        "gm_lower_bound_above_crossover_db": 0.5170172950678138,
+        "status": "finite",
+        "gm_supported": true,
+        "pm_ge_45": true,
+        "gm_ge_10": true
+      },
+      "phase_dip": {
+        "min_phase_deg": -379.7774233158058,
+        "f_at_min_phase_hz": 171132830.42,
+        "recovery_after_min_deg": 13.118757892489555,
+        "fc_hz": 56.035466007446765,
+        "phase_at_fc_deg": -119.94584611860259,
+        "dip_present": false
+      },
+      "corners": [
+        {
+          "f_hz": 0.031622776602000004,
+          "slope_step_db_dec": -8.428166501498644,
+          "kind": "pole-like"
+        },
+        {
+          "f_hz": 15848.931924999997,
+          "slope_step_db_dec": 43.85788726365507,
+          "kind": "zero-like"
+        },
+        {
+          "f_hz": 11659144.01200001,
+          "slope_step_db_dec": -13.917835857076296,
+          "kind": "pole-like"
+        },
+        {
+          "f_hz": 39810717.05500001,
+          "slope_step_db_dec": -9.889403963490516,
+          "kind": "pole-like"
+        }
+      ],
+      "doublet_candidates": [],
+      "nodes": {
+        "xldo.ea_out": {
+          "mag_db_at_fc": 45.761604104980435,
+          "phase_deg_at_fc": -147.08149586678707,
+          "phase_deg_at_fmin": -155.24410104593835,
+          "phase_change_to_fc_deg": 8.162605179151285
+        },
+        "xldo.ea_cz": {
+          "mag_db_at_fc": 45.491642859186754,
+          "phase_deg_at_fc": -160.85015636227396,
+          "phase_deg_at_fmin": -155.28860446760805,
+          "phase_change_to_fc_deg": -5.561551894665911
+        },
+        "vout": {
+          "mag_db_at_fc": 3.6462893564498904,
+          "phase_deg_at_fc": -57.28003954075995,
+          "phase_deg_at_fmin": -0.007616365329948915,
+          "phase_change_to_fc_deg": -57.27242317543
+        },
+        "xldo.fb": {
+          "mag_db_at_fc": 0.12722169998349836,
+          "phase_deg_at_fc": -57.28038997348304,
+          "phase_deg_at_fmin": -0.007616417320359883,
+          "phase_change_to_fc_deg": -57.27277355616268
+        },
+        "xldo.ea_d1": {
+          "mag_db_at_fc": -7.1412959890998255,
+          "phase_deg_at_fc": 62.64970787059688,
+          "phase_deg_at_fmin": 179.28727311797974,
+          "phase_change_to_fc_deg": -116.63756524738287
+        },
+        "xldo.ea_tail": {
+          "mag_db_at_fc": -3.114499211619876,
+          "phase_deg_at_fc": -28.630628897705414,
+          "phase_deg_at_fmin": -0.003778542785077239,
+          "phase_change_to_fc_deg": -28.626850354920336
+        }
+      },
+      "scalar_meas": {
+        "fc": 56.0765,
+        "phc": -119.946,
+        "gmdb": -62.3768,
+        "dcg": 69.349476304
+      },
+      "classification": {
+        "valid": true,
+        "reasons": [],
+        "pm_pass": true,
+        "gm_pass": true
+      }
+    },
+    {
+      "leg": 5,
+      "label": "0.33u/500m/0mA",
+      "cout_f": 3.3e-07,
+      "esr_ohm": 0.5,
+      "rload_ohm": 1000000000000.0,
+      "vout_v": 1.8023851698,
+      "vin_current_a": 1.3871218247e-05,
+      "iq_a": 1.387121644461483e-05,
+      "response": {
+        "n_points": 331,
+        "f_min_hz": 0.01,
+        "f_max_hz": 1000000000.0,
+        "phase_convention": "arg(T) deg, continuous (unwrapped) in f, first sample in (-180,180]; PM = 180 + phase at unity gain; GM = -|T|dB at the -180 crossing",
+        "dc_gain_db": 70.06178883223798,
+        "dc_phase_deg": -1.829599911222484,
+        "end_gain_db": -13.52363440733457,
+        "end_phase_deg": -366.65866568985234,
+        "min_phase_deg": -379.77742537127784,
+        "f_at_min_phase_hz": 171132830.42,
+        "max_gain_db": 70.06178883223798,
+        "principal_phase_wraps": 1,
+        "unity_crossings": [
+          {
+            "f_hz": 331.8930246880397,
+            "direction": -1,
+            "phase_deg": -115.00280912127906,
+            "pm_deg": 64.99719087872094
+          }
+        ],
+        "pm_deg": 64.99719087872094,
+        "crossover_hz": 331.8930246880397,
+        "legacy_phase_crossings": [
+          {
+            "f_hz": 28330.566100956177,
+            "direction": -1,
+            "gain_db": -49.38403890225064,
+            "gm_db": 49.38403890225064
+          }
+        ],
+        "legacy_gm_db": 49.38403890225064,
+        "negative_axis_crossings": [
+          {
+            "f_hz": 28401.133779345335,
+            "direction": 1,
+            "gain_db": -49.41623673921394,
+            "gm_db": 49.41623673921394,
+            "max_adjacent_phase_step_deg": 7.36567180177741,
+            "notch_like": false,
+            "min_gain_db_within_2_samples": -51.816253864215625
+          }
+        ],
+        "gm_db": 49.41623673921394,
+        "gm_crossing_hz": 28401.133779345335,
+        "worst_gm_db": 49.41623673921394,
+        "legacy_agrees": true,
+        "any_notch_like_crossing": false,
+        "max_gain_above_crossover_db": -0.31678983408851924,
+        "gm_lower_bound_above_crossover_db": 0.31678983408851924,
+        "status": "finite",
+        "gm_supported": true,
+        "pm_ge_45": true,
+        "gm_ge_10": true
+      },
+      "phase_dip": {
+        "min_phase_deg": -379.77742537127784,
+        "f_at_min_phase_hz": 171132830.42,
+        "recovery_after_min_deg": 13.118759681425502,
+        "fc_hz": 331.8930246880397,
+        "phase_at_fc_deg": -115.00280912127906,
+        "dip_present": false
+      },
+      "corners": [
+        {
+          "f_hz": 0.31622776602,
+          "slope_step_db_dec": -11.637253419586973,
+          "kind": "pole-like"
+        },
+        {
+          "f_hz": 5843.414133699999,
+          "slope_step_db_dec": -9.439887200729462,
+          "kind": "pole-like"
+        },
+        {
+          "f_hz": 39810.71705500001,
+          "slope_step_db_dec": 45.80870447909044,
+          "kind": "zero-like"
+        },
+        {
+          "f_hz": 125892.54118000003,
+          "slope_step_db_dec": 13.456405553849237,
+          "kind": "zero-like"
+        },
+        {
+          "f_hz": 11659144.01200001,
+          "slope_step_db_dec": -13.917906455623296,
+          "kind": "pole-like"
+        },
+        {
+          "f_hz": 39810717.05500001,
+          "slope_step_db_dec": -9.889382005703379,
+          "kind": "pole-like"
+        }
+      ],
+      "doublet_candidates": [
+        {
+          "pole_like_hz": 5843.414133699999,
+          "zero_like_hz": 39810.71705500001
+        }
+      ],
+      "nodes": {
+        "xldo.ea_out": {
+          "mag_db_at_fc": 37.82122617206782,
+          "phase_deg_at_fc": -148.55461391113394,
+          "phase_deg_at_fmin": -178.14465814858286,
+          "phase_change_to_fc_deg": 29.59004423744892
+        },
+        "xldo.ea_cz": {
+          "mag_db_at_fc": 32.280174526886405,
+          "phase_deg_at_fc": -205.65119186006086,
+          "phase_deg_at_fmin": -178.19801040812365,
+          "phase_change_to_fc_deg": -27.453181451937212
+        },
+        "vout": {
+          "mag_db_at_fc": 2.6827496437621052,
+          "phase_deg_at_fc": -58.92132239724744,
+          "phase_deg_at_fmin": -0.0005741393085956605,
+          "phase_change_to_fc_deg": -58.92074825793884
+        },
+        "xldo.fb": {
+          "mag_db_at_fc": -0.836432700014238,
+          "phase_deg_at_fc": -58.92350017460202,
+          "phase_deg_at_fmin": -0.0005741912993246045,
+          "phase_change_to_fc_deg": -58.9229259833027
+        },
+        "xldo.ea_d1": {
+          "mag_db_at_fc": -7.37849242398177,
+          "phase_deg_at_fc": 56.20357161922599,
+          "phase_deg_at_fmin": 179.94627608184916,
+          "phase_change_to_fc_deg": -123.74270446262318
+        },
+        "xldo.ea_tail": {
+          "mag_db_at_fc": -3.647721460958377,
+          "phase_deg_at_fc": -27.65915571207065,
+          "phase_deg_at_fmin": -0.00028486216384062703,
+          "phase_change_to_fc_deg": -27.65887084990681
+        }
+      },
+      "scalar_meas": {
+        "fc": 332.119,
+        "phc": -115.003,
+        "gmdb": -49.384,
+        "dcg": 70.061788832
+      },
+      "classification": {
+        "valid": true,
+        "reasons": [],
+        "pm_pass": true,
+        "gm_pass": true
+      }
+    },
+    {
+      "leg": 6,
+      "label": "4.7u/500m/0mA",
+      "cout_f": 4.7e-06,
+      "esr_ohm": 0.5,
+      "rload_ohm": 1000000000000.0,
+      "vout_v": 1.8023851698,
+      "vin_current_a": 1.3871218247e-05,
+      "iq_a": 1.387121644461483e-05,
+      "response": {
+        "n_points": 331,
+        "f_min_hz": 0.01,
+        "f_max_hz": 1000000000.0,
+        "phase_convention": "arg(T) deg, continuous (unwrapped) in f, first sample in (-180,180]; PM = 180 + phase at unity gain; GM = -|T|dB at the -180 crossing",
+        "dc_gain_db": 69.34947584551915,
+        "dc_phase_deg": -22.964199205738463,
+        "end_gain_db": -13.52363440733457,
+        "end_phase_deg": -366.65866568985234,
+        "min_phase_deg": -379.7774253731198,
+        "f_at_min_phase_hz": 171132830.42,
+        "max_gain_db": 69.34947584551915,
+        "principal_phase_wraps": 1,
+        "unity_crossings": [
+          {
+            "f_hz": 56.03537958909744,
+            "direction": -1,
+            "phase_deg": -119.89851172231522,
+            "pm_deg": 60.10148827768478
+          }
+        ],
+        "pm_deg": 60.10148827768478,
+        "crossover_hz": 56.03537958909744,
+        "legacy_phase_crossings": [
+          {
+            "f_hz": 14085.614817648644,
+            "direction": -1,
+            "gain_db": -64.64376711937041,
+            "gm_db": 64.64376711937041
+          }
+        ],
+        "legacy_gm_db": 64.64376711937041,
+        "negative_axis_crossings": [
+          {
+            "f_hz": 14110.941480093865,
+            "direction": 1,
+            "gain_db": -64.72089843764286,
+            "gm_db": 64.72089843764286,
+            "max_adjacent_phase_step_deg": 15.362870463229683,
+            "notch_like": false,
+            "min_gain_db_within_2_samples": -65.30864805110068
+          }
+        ],
+        "gm_db": 64.72089843764286,
+        "gm_crossing_hz": 14110.941480093865,
+        "worst_gm_db": 64.72089843764286,
+        "legacy_agrees": true,
+        "any_notch_like_crossing": false,
+        "max_gain_above_crossover_db": -0.5170368997216722,
+        "gm_lower_bound_above_crossover_db": 0.5170368997216722,
+        "status": "finite",
+        "gm_supported": true,
+        "pm_ge_45": true,
+        "gm_ge_10": true
+      },
+      "phase_dip": {
+        "min_phase_deg": -379.7774253731198,
+        "f_at_min_phase_hz": 171132830.42,
+        "recovery_after_min_deg": 13.118759683267456,
+        "fc_hz": 56.03537958909744,
+        "phase_at_fc_deg": -119.89851172231522,
+        "dip_present": false
+      },
+      "corners": [
+        {
+          "f_hz": 0.031622776602000004,
+          "slope_step_db_dec": -8.428164865925462,
+          "kind": "pole-like"
+        },
+        {
+          "f_hz": 15848.931924999997,
+          "slope_step_db_dec": 47.955593210103444,
+          "kind": "zero-like"
+        },
+        {
+          "f_hz": 11659144.01200001,
+          "slope_step_db_dec": -13.918005783247484,
+          "kind": "pole-like"
+        },
+        {
+          "f_hz": 39810717.05500001,
+          "slope_step_db_dec": -9.889388790623965,
+          "kind": "pole-like"
+        }
+      ],
+      "doublet_candidates": [],
+      "nodes": {
+        "xldo.ea_out": {
+          "mag_db_at_fc": 45.75568985916658,
+          "phase_deg_at_fc": -147.10676810220798,
+          "phase_deg_at_fmin": -155.2441025310334,
+          "phase_change_to_fc_deg": 8.137334428825426
+        },
+        "xldo.ea_cz": {
+          "mag_db_at_fc": 45.48572857211788,
+          "phase_deg_at_fc": -160.87551669520502,
+          "phase_deg_at_fmin": -155.28860595132,
+          "phase_change_to_fc_deg": -5.586910743885028
+        },
+        "vout": {
+          "mag_db_at_fc": 3.6403750521865303,
+          "phase_deg_at_fc": -57.25953024985133,
+          "phase_deg_at_fmin": -0.007616365329948915,
+          "phase_change_to_fc_deg": -57.25191388452138
+        },
+        "xldo.fb": {
+          "mag_db_at_fc": 0.12130738725713193,
+          "phase_deg_at_fc": -57.259880584834136,
+          "phase_deg_at_fmin": -0.0076164173205122586,
+          "phase_change_to_fc_deg": -57.25226416751362
+        },
+        "xldo.ea_d1": {
+          "mag_db_at_fc": -7.1472616716280495,
+          "phase_deg_at_fc": 62.62482747292581,
+          "phase_deg_at_fmin": 179.2872731166802,
+          "phase_change_to_fc_deg": -116.66244564375441
+        },
+        "xldo.ea_tail": {
+          "mag_db_at_fc": -3.116605727283945,
+          "phase_deg_at_fc": -28.609729808010382,
+          "phase_deg_at_fmin": -0.003778542785052548,
+          "phase_change_to_fc_deg": -28.60595126522533
+        }
+      },
+      "scalar_meas": {
+        "fc": 56.0764,
+        "phc": -119.899,
+        "gmdb": -64.6438,
+        "dcg": 69.349475845
+      },
+      "classification": {
+        "valid": true,
+        "reasons": [],
+        "pm_pass": true,
+        "gm_pass": true
+      }
+    },
+    {
+      "leg": 7,
+      "label": "0.33u/10m/1mA",
+      "cout_f": 3.3e-07,
+      "esr_ohm": 0.01,
+      "rload_ohm": 1800.0,
+      "vout_v": 1.8005960365,
+      "vin_current_a": 0.0010148823922,
+      "iq_a": 1.4551260811111223e-05,
+      "response": {
+        "n_points": 331,
+        "f_min_hz": 0.01,
+        "f_max_hz": 1000000000.0,
+        "phase_convention": "arg(T) deg, continuous (unwrapped) in f, first sample in (-180,180]; PM = 180 + phase at unity gain; GM = -|T|dB at the -180 crossing",
+        "dc_gain_db": 71.54710897235874,
+        "dc_phase_deg": -0.1609086730762205,
+        "end_gain_db": -13.526555619086567,
+        "end_phase_deg": -366.6167140346201,
+        "min_phase_deg": -379.6851566510495,
+        "f_at_min_phase_hz": 171132830.42,
+        "max_gain_db": 71.54710897235874,
+        "principal_phase_wraps": 1,
+        "unity_crossings": [
+          {
+            "f_hz": 59060.83019344425,
+            "direction": -1,
+            "phase_deg": -170.39009563386108,
+            "pm_deg": 9.60990436613892
+          }
+        ],
+        "pm_deg": 9.60990436613892,
+        "crossover_hz": 59060.83019344425,
+        "legacy_phase_crossings": [
+          {
+            "f_hz": 149814.89587710088,
+            "direction": -1,
+            "gain_db": -16.181365529606634,
+            "gm_db": 16.181365529606634
+          }
+        ],
+        "legacy_gm_db": 16.181365529606634,
+        "negative_axis_crossings": [
+          {
+            "f_hz": 150172.32002745566,
+            "direction": 1,
+            "gain_db": -16.202106687502706,
+            "gm_db": 16.202106687502706,
+            "max_adjacent_phase_step_deg": 1.2071026848757072,
+            "notch_like": false,
+            "min_gain_db_within_2_samples": -19.813740787685077
+          }
+        ],
+        "gm_db": 16.202106687502706,
+        "gm_crossing_hz": 150172.32002745566,
+        "worst_gm_db": 16.202106687502706,
+        "legacy_agrees": true,
+        "any_notch_like_crossing": false,
+        "max_gain_above_crossover_db": -1.1483054081832287,
+        "gm_lower_bound_above_crossover_db": 1.1483054081832287,
+        "status": "finite",
+        "gm_supported": true,
+        "pm_ge_45": false,
+        "gm_ge_10": true
+      },
+      "phase_dip": {
+        "min_phase_deg": -379.6851566510495,
+        "f_at_min_phase_hz": 171132830.42,
+        "recovery_after_min_deg": 13.068442616429422,
+        "fc_hz": 59060.83019344425,
+        "phase_at_fc_deg": -170.39009563386108,
+        "dip_present": false
+      },
+      "corners": [
+        {
+          "f_hz": 3.1622776602,
+          "slope_step_db_dec": -11.548954761569709,
+          "kind": "pole-like"
+        },
+        {
+          "f_hz": 215.44346900000002,
+          "slope_step_db_dec": 11.58500333009382,
+          "kind": "zero-like"
+        },
+        {
+          "f_hz": 7943.2823472,
+          "slope_step_db_dec": -30.09854549895946,
+          "kind": "pole-like"
+        },
+        {
+          "f_hz": 25118.864315000013,
+          "slope_step_db_dec": -10.157301612643742,
+          "kind": "pole-like"
+        },
+        {
+          "f_hz": 398107.17055000004,
+          "slope_step_db_dec": 48.634209824823245,
+          "kind": "zero-like"
+        },
+        {
+          "f_hz": 1258925.4118000004,
+          "slope_step_db_dec": 15.325589404809259,
+          "kind": "zero-like"
+        },
+        {
+          "f_hz": 11659144.01200001,
+          "slope_step_db_dec": -13.906371803442761,
+          "kind": "pole-like"
+        },
+        {
+          "f_hz": 39810717.05500001,
+          "slope_step_db_dec": -9.878013859327488,
+          "kind": "pole-like"
+        }
+      ],
+      "doublet_candidates": [
+        {
+          "pole_like_hz": 11659144.01200001,
+          "zero_like_hz": 1258925.4118000004
+        }
+      ],
+      "nodes": {
+        "xldo.ea_out": {
+          "mag_db_at_fc": 36.17647521062672,
+          "phase_deg_at_fc": -168.06423073367603,
+          "phase_deg_at_fmin": -179.99883141249418,
+          "phase_change_to_fc_deg": 11.934600678818157
+        },
+        "xldo.ea_cz": {
+          "mag_db_at_fc": 18.716128894580905,
+          "phase_deg_at_fc": -77.3013572699007,
+          "phase_deg_at_fmin": 179.95444305568915,
+          "phase_change_to_fc_deg": -257.25580032558986
+        },
+        "vout": {
+          "mag_db_at_fc": 18.958712126001306,
+          "phase_deg_at_fc": -77.53283795325181,
+          "phase_deg_at_fmin": -4.25184899451107e-05,
+          "phase_change_to_fc_deg": -77.53279543476187
+        },
+        "xldo.fb": {
+          "mag_db_at_fc": 15.43523937198948,
+          "phase_deg_at_fc": -77.98973239525859,
+          "phase_deg_at_fmin": -4.257047742945065e-05,
+          "phase_change_to_fc_deg": -77.98968982478115
+        },
+        "xldo.ea_d1": {
+          "mag_db_at_fc": 8.511040584484908,
+          "phase_deg_at_fc": 88.23431686117725,
+          "phase_deg_at_fmin": 179.99578271813797,
+          "phase_change_to_fc_deg": -91.76146585696073
+        },
+        "xldo.ea_tail": {
+          "mag_db_at_fc": 7.760929485421651,
+          "phase_deg_at_fc": -68.86496023435716,
+          "phase_deg_at_fmin": -2.1230205594242208e-05,
+          "phase_change_to_fc_deg": -68.86493900415157
+        }
+      },
+      "scalar_meas": {
+        "fc": 59082.0,
+        "phc": -170.39,
+        "gmdb": -16.1814,
+        "dcg": 71.547108972
+      },
+      "classification": {
+        "valid": true,
+        "reasons": [],
+        "pm_pass": false,
+        "gm_pass": true
+      }
+    },
+    {
+      "leg": 8,
+      "label": "4.7u/10m/1mA",
+      "cout_f": 4.7e-06,
+      "esr_ohm": 0.01,
+      "rload_ohm": 1800.0,
+      "vout_v": 1.8005960365,
+      "vin_current_a": 0.0010148823922,
+      "iq_a": 1.4551260811111223e-05,
+      "response": {
+        "n_points": 331,
+        "f_min_hz": 0.01,
+        "f_max_hz": 1000000000.0,
+        "phase_convention": "arg(T) deg, continuous (unwrapped) in f, first sample in (-180,180]; PM = 180 + phase at unity gain; GM = -|T|dB at the -180 crossing",
+        "dc_gain_db": 71.54710266907492,
+        "dc_phase_deg": -0.17591979897480553,
+        "end_gain_db": -13.526555619086567,
+        "end_phase_deg": -366.61671403461986,
+        "min_phase_deg": -379.6851565939229,
+        "f_at_min_phase_hz": 171132830.42,
+        "max_gain_db": 71.54710266907492,
+        "principal_phase_wraps": 1,
+        "unity_crossings": [
+          {
+            "f_hz": 14593.129289693741,
+            "direction": -1,
+            "phase_deg": -149.12499299415475,
+            "pm_deg": 30.875007005845248
+          }
+        ],
+        "pm_deg": 30.875007005845248,
+        "crossover_hz": 14593.129289693741,
+        "legacy_phase_crossings": [
+          {
+            "f_hz": 83034.53464907574,
+            "direction": -1,
+            "gain_db": -29.09146279512609,
+            "gm_db": 29.09146279512609
+          }
+        ],
+        "legacy_gm_db": 29.09146279512609,
+        "negative_axis_crossings": [
+          {
+            "f_hz": 83268.42200439991,
+            "direction": 1,
+            "gain_db": -29.11694514298449,
+            "gm_db": 29.11694514298449,
+            "max_adjacent_phase_step_deg": 2.203405901927738,
+            "notch_like": false,
+            "min_gain_db_within_2_samples": -32.262395697009254
+          }
+        ],
+        "gm_db": 29.11694514298449,
+        "gm_crossing_hz": 83268.42200439991,
+        "worst_gm_db": 29.11694514298449,
+        "legacy_agrees": true,
+        "any_notch_like_crossing": false,
+        "max_gain_above_crossover_db": -0.08782151675719618,
+        "gm_lower_bound_above_crossover_db": 0.08782151675719618,
+        "status": "finite",
+        "gm_supported": true,
+        "pm_ge_45": false,
+        "gm_ge_10": true
+      },
+      "phase_dip": {
+        "min_phase_deg": -379.6851565939229,
+        "f_at_min_phase_hz": 171132830.42,
+        "recovery_after_min_deg": 13.068442559303037,
+        "fc_hz": 14593.129289693741,
+        "phase_at_fc_deg": -149.12499299415475,
+        "dip_present": false
+      },
+      "corners": [
+        {
+          "f_hz": 3.1622776602,
+          "slope_step_db_dec": -11.604822415436473,
+          "kind": "pole-like"
+        },
+        {
+          "f_hz": 7943.2823472,
+          "slope_step_db_dec": -12.204275162305201,
+          "kind": "pole-like"
+        },
+        {
+          "f_hz": 158489.31924999997,
+          "slope_step_db_dec": 49.06613076204226,
+          "kind": "zero-like"
+        },
+        {
+          "f_hz": 541169.5265499998,
+          "slope_step_db_dec": 14.989116374414646,
+          "kind": "zero-like"
+        },
+        {
+          "f_hz": 11659144.01200001,
+          "slope_step_db_dec": -13.92004486702124,
+          "kind": "pole-like"
+        },
+        {
+          "f_hz": 39810717.05500001,
+          "slope_step_db_dec": -9.879000768932606,
+          "kind": "pole-like"
+        }
+      ],
+      "doublet_candidates": [],
+      "nodes": {
+        "xldo.ea_out": {
+          "mag_db_at_fc": 37.283494496213564,
+          "phase_deg_at_fc": -165.95954131546188,
+          "phase_deg_at_fmin": -179.98280522242996,
+          "phase_change_to_fc_deg": 14.023263906968083
+        },
+        "xldo.ea_cz": {
+          "mag_db_at_fc": 4.6896259730673355,
+          "phase_deg_at_fc": -74.47813109048244,
+          "phase_deg_at_fmin": 179.97046924022035,
+          "phase_change_to_fc_deg": -254.4486003307028
+        },
+        "vout": {
+          "mag_db_at_fc": 8.994440716059222,
+          "phase_deg_at_fc": -75.58200384839337,
+          "phase_deg_at_fmin": -4.6489899916898706e-05,
+          "phase_change_to_fc_deg": -75.58195735849345
+        },
+        "xldo.fb": {
+          "mag_db_at_fc": 5.472109039712361,
+          "phase_deg_at_fc": -75.69293440107671,
+          "phase_deg_at_fmin": -4.6541887401530026e-05,
+          "phase_change_to_fc_deg": -75.69288785918931
+        },
+        "xldo.ea_d1": {
+          "mag_db_at_fc": -0.1323806547395032,
+          "phase_deg_at_fc": 62.986069911497815,
+          "phase_deg_at_fmin": 179.99450507572834,
+          "phase_change_to_fc_deg": -117.00843516423052
+        },
+        "xldo.ea_tail": {
+          "mag_db_at_fc": -0.7050882677379329,
+          "phase_deg_at_fc": -51.03412900191143,
+          "phase_deg_at_fmin": -2.318903565539309e-05,
+          "phase_change_to_fc_deg": -51.03410581287577
+        }
+      },
+      "scalar_meas": {
+        "fc": 14596.1,
+        "phc": -149.125,
+        "gmdb": -29.0915,
+        "dcg": 71.547102669
+      },
+      "classification": {
+        "valid": true,
+        "reasons": [],
+        "pm_pass": false,
+        "gm_pass": true
+      }
+    },
+    {
+      "leg": 9,
+      "label": "0.33u/10m/50mA",
+      "cout_f": 3.3e-07,
+      "esr_ohm": 0.01,
+      "rload_ohm": 36.0,
+      "vout_v": 1.7988322103,
+      "vin_current_a": 0.049995165523,
+      "iq_a": 2.76041257777776e-05,
+      "response": {
+        "n_points": 331,
+        "f_min_hz": 0.01,
+        "f_max_hz": 1000000000.0,
+        "phase_convention": "arg(T) deg, continuous (unwrapped) in f, first sample in (-180,180]; PM = 180 + phase at unity gain; GM = -|T|dB at the -180 crossing",
+        "dc_gain_db": 62.92703384242589,
+        "dc_phase_deg": -0.06661681367884914,
+        "end_gain_db": -13.528477420942231,
+        "end_phase_deg": -366.5726055363774,
+        "min_phase_deg": -379.5864804729237,
+        "f_at_min_phase_hz": 171132830.42,
+        "max_gain_db": 62.92703384242589,
+        "principal_phase_wraps": 1,
+        "unity_crossings": [
+          {
+            "f_hz": 176088.48958168275,
+            "direction": -1,
+            "phase_deg": -169.54388685715054,
+            "pm_deg": 10.45611314284946
+          }
+        ],
+        "pm_deg": 10.45611314284946,
+        "crossover_hz": 176088.48958168275,
+        "legacy_phase_crossings": [
+          {
+            "f_hz": 337684.94261634885,
+            "direction": -1,
+            "gain_db": -11.301089034341908,
+            "gm_db": 11.301089034341908
+          }
+        ],
+        "legacy_gm_db": 11.301089034341908,
+        "negative_axis_crossings": [
+          {
+            "f_hz": 338150.5480657145,
+            "direction": 1,
+            "gain_db": -11.3136160426898,
+            "gm_db": 11.3136160426898,
+            "max_adjacent_phase_step_deg": 1.635561454556779,
+            "notch_like": false,
+            "min_gain_db_within_2_samples": -14.147761620596565
+          }
+        ],
+        "gm_db": 11.3136160426898,
+        "gm_crossing_hz": 338150.5480657145,
+        "worst_gm_db": 11.3136160426898,
+        "legacy_agrees": true,
+        "any_notch_like_crossing": false,
+        "max_gain_above_crossover_db": -0.8345257867683863,
+        "gm_lower_bound_above_crossover_db": 0.8345257867683863,
+        "status": "finite",
+        "gm_supported": true,
+        "pm_ge_45": false,
+        "gm_ge_10": true
+      },
+      "phase_dip": {
+        "min_phase_deg": -379.5864804729237,
+        "f_at_min_phase_hz": 171132830.42,
+        "recovery_after_min_deg": 13.013874936546301,
+        "fc_hz": 176088.48958168275,
+        "phase_at_fc_deg": -169.54388685715054,
+        "dip_present": false
+      },
+      "corners": [
+        {
+          "f_hz": 7.9432823472,
+          "slope_step_db_dec": -11.425380789978169,
+          "kind": "pole-like"
+        },
+        {
+          "f_hz": 215.44346900000002,
+          "slope_step_db_dec": 11.396994054769706,
+          "kind": "zero-like"
+        },
+        {
+          "f_hz": 21544.3469,
+          "slope_step_db_dec": -27.619310793376165,
+          "kind": "pole-like"
+        },
+        {
+          "f_hz": 68129.20690600006,
+          "slope_step_db_dec": -13.471750195136359,
+          "kind": "pole-like"
+        },
+        {
+          "f_hz": 794328.23472,
+          "slope_step_db_dec": 47.73914535283876,
+          "kind": "zero-like"
+        },
+        {
+          "f_hz": 2511886.4315000013,
+          "slope_step_db_dec": 13.642584577664142,
+          "kind": "zero-like"
+        },
+        {
+          "f_hz": 11659144.01200001,
+          "slope_step_db_dec": -13.80171566534213,
+          "kind": "pole-like"
+        },
+        {
+          "f_hz": 39810717.05500001,
+          "slope_step_db_dec": -9.86117552932449,
+          "kind": "pole-like"
+        }
+      ],
+      "doublet_candidates": [
+        {
+          "pole_like_hz": 11659144.01200001,
+          "zero_like_hz": 2511886.4315000013
+        }
+      ],
+      "nodes": {
+        "xldo.ea_out": {
+          "mag_db_at_fc": 23.333796587353515,
+          "phase_deg_at_fc": 197.36618032331356,
+          "phase_deg_at_fmin": 179.99998552913493,
+          "phase_change_to_fc_deg": 17.366194794178625
+        },
+        "xldo.ea_cz": {
+          "mag_db_at_fc": 17.810744807440457,
+          "phase_deg_at_fc": -66.54898742783158,
+          "phase_deg_at_fmin": 179.98374301533582,
+          "phase_change_to_fc_deg": -246.5327304431674
+        },
+        "vout": {
+          "mag_db_at_fc": 17.832702289696535,
+          "phase_deg_at_fc": -66.63747348822608,
+          "phase_deg_at_fmin": -4.7473046749777875e-05,
+          "phase_change_to_fc_deg": -66.63742601517933
+        },
+        "xldo.fb": {
+          "mag_db_at_fc": 14.29823018726466,
+          "phase_deg_at_fc": -67.95482670301456,
+          "phase_deg_at_fmin": -4.7525000105752385e-05,
+          "phase_change_to_fc_deg": -67.95477917801446
+        },
+        "xldo.ea_d1": {
+          "mag_db_at_fc": 7.014245119707077,
+          "phase_deg_at_fc": 95.8689906402461,
+          "phase_deg_at_fmin": 179.9759585707362,
+          "phase_change_to_fc_deg": -84.1069679304901
+        },
+        "xldo.ea_tail": {
+          "mag_db_at_fc": 6.975306881675715,
+          "phase_deg_at_fc": -58.562171082098416,
+          "phase_deg_at_fmin": -2.381649907552128e-05,
+          "phase_change_to_fc_deg": -58.56214726559934
+        }
+      },
+      "scalar_meas": {
+        "fc": 176210.0,
+        "phc": -169.544,
+        "gmdb": -11.3011,
+        "dcg": 62.927033843
+      },
+      "classification": {
+        "valid": true,
+        "reasons": [],
+        "pm_pass": false,
+        "gm_pass": true
+      }
+    },
+    {
+      "leg": 10,
+      "label": "4.7u/10m/50mA",
+      "cout_f": 4.7e-06,
+      "esr_ohm": 0.01,
+      "rload_ohm": 36.0,
+      "vout_v": 1.7988322103,
+      "vin_current_a": 0.049995165523,
+      "iq_a": 2.76041257777776e-05,
+      "response": {
+        "n_points": 331,
+        "f_min_hz": 0.01,
+        "f_max_hz": 1000000000.0,
+        "phase_convention": "arg(T) deg, continuous (unwrapped) in f, first sample in (-180,180]; PM = 180 + phase at unity gain; GM = -|T|dB at the -180 crossing",
+        "dc_gain_db": 62.927033778934415,
+        "dc_phase_deg": -0.06704678607338108,
+        "end_gain_db": -13.528477420970548,
+        "end_phase_deg": -366.57260553475584,
+        "min_phase_deg": -379.58647994536705,
+        "f_at_min_phase_hz": 171132830.42,
+        "max_gain_db": 62.927033778934415,
+        "principal_phase_wraps": 1,
+        "unity_crossings": [
+          {
+            "f_hz": 46835.29313679063,
+            "direction": -1,
+            "phase_deg": -169.07766711341918,
+            "pm_deg": 10.922332886580818
+          }
+        ],
+        "pm_deg": 10.922332886580818,
+        "crossover_hz": 46835.29313679063,
+        "legacy_phase_crossings": [
+          {
+            "f_hz": 150811.55357527072,
+            "direction": -1,
+            "gain_db": -20.348638498356816,
+            "gm_db": 20.348638498356816
+          }
+        ],
+        "legacy_gm_db": 20.348638498356816,
+        "negative_axis_crossings": [
+          {
+            "f_hz": 151226.70550237264,
+            "direction": 1,
+            "gain_db": -20.372800608440066,
+            "gm_db": 20.372800608440066,
+            "max_adjacent_phase_step_deg": 1.4318864724833986,
+            "notch_like": false,
+            "min_gain_db_within_2_samples": -23.865126676164834
+          }
+        ],
+        "gm_db": 20.372800608440066,
+        "gm_crossing_hz": 151226.70550237264,
+        "worst_gm_db": 20.372800608440066,
+        "legacy_agrees": true,
+        "any_notch_like_crossing": false,
+        "max_gain_above_crossover_db": -1.1782516220850083,
+        "gm_lower_bound_above_crossover_db": 1.1782516220850083,
+        "status": "finite",
+        "gm_supported": true,
+        "pm_ge_45": false,
+        "gm_ge_10": true
+      },
+      "phase_dip": {
+        "min_phase_deg": -379.58647994536705,
+        "f_at_min_phase_hz": 171132830.42,
+        "recovery_after_min_deg": 13.013874410611209,
+        "fc_hz": 46835.29313679063,
+        "phase_at_fc_deg": -169.07766711341918,
+        "dip_present": false
+      },
+      "corners": [
+        {
+          "f_hz": 7.9432823472,
+          "slope_step_db_dec": -11.427282871924175,
+          "kind": "pole-like"
+        },
+        {
+          "f_hz": 215.44346900000002,
+          "slope_step_db_dec": 11.415545876777154,
+          "kind": "zero-like"
+        },
+        {
+          "f_hz": 6309.573444800001,
+          "slope_step_db_dec": -30.573500677479313,
+          "kind": "pole-like"
+        },
+        {
+          "f_hz": 21544.3469,
+          "slope_step_db_dec": -11.355609659628211,
+          "kind": "pole-like"
+        },
+        {
+          "f_hz": 398107.17055000004,
+          "slope_step_db_dec": 49.35553139126385,
+          "kind": "zero-like"
+        },
+        {
+          "f_hz": 1258925.4118000004,
+          "slope_step_db_dec": 10.518370598172087,
+          "kind": "zero-like"
+        },
+        {
+          "f_hz": 11659144.01200001,
+          "slope_step_db_dec": -13.941816351022883,
+          "kind": "pole-like"
+        },
+        {
+          "f_hz": 39810717.05500001,
+          "slope_step_db_dec": -9.869943538790157,
+          "kind": "pole-like"
+        }
+      ],
+      "doublet_candidates": [
+        {
+          "pole_like_hz": 11659144.01200001,
+          "zero_like_hz": 1258925.4118000004
+        }
+      ],
+      "nodes": {
+        "xldo.ea_out": {
+          "mag_db_at_fc": 35.09412183525184,
+          "phase_deg_at_fc": -171.0849735888017,
+          "phase_deg_at_fmin": -179.99957798831792,
+          "phase_change_to_fc_deg": 8.914604399516236
+        },
+        "xldo.ea_cz": {
+          "mag_db_at_fc": 17.591754174428655,
+          "phase_deg_at_fc": -78.44109272394701,
+          "phase_deg_at_fmin": 179.9841794978591,
+          "phase_change_to_fc_deg": -258.4252722218061
+        },
+        "vout": {
+          "mag_db_at_fc": 17.896983328118473,
+          "phase_deg_at_fc": -78.79523211637685,
+          "phase_deg_at_fmin": -4.777979291369663e-05,
+          "phase_change_to_fc_deg": -78.79518433658394
+        },
+        "xldo.fb": {
+          "mag_db_at_fc": 14.37360586129107,
+          "phase_deg_at_fc": -79.1575185879963,
+          "phase_deg_at_fmin": -4.7831746269487494e-05,
+          "phase_change_to_fc_deg": -79.15747075625002
+        },
+        "xldo.ea_d1": {
+          "mag_db_at_fc": 8.139520728175956,
+          "phase_deg_at_fc": 72.69030545847828,
+          "phase_deg_at_fmin": 179.97392967232298,
+          "phase_change_to_fc_deg": -107.2836242138447
+        },
+        "xldo.ea_tail": {
+          "mag_db_at_fc": 6.774813906467568,
+          "phase_deg_at_fc": -68.86408540724878,
+          "phase_deg_at_fmin": -2.3961497804163996e-05,
+          "phase_change_to_fc_deg": -68.86406144575098
+        }
+      },
+      "scalar_meas": {
+        "fc": 46849.9,
+        "phc": -169.078,
+        "gmdb": -20.3486,
+        "dcg": 62.927033779
+      },
+      "classification": {
+        "valid": true,
+        "reasons": [],
+        "pm_pass": false,
+        "gm_pass": true
+      }
+    }
+  ]
+}

@@ -55,7 +55,7 @@ The predicate lives once, in `loom-daemon/src/comment_trust.rs`:
 - **Rust readers** filter at fetch. `claim_reconciliation`'s comment fetch
   returns trusted bodies only, so the verdict backstop, the stale-verdict
   dedup, and the base-conflict "is this flag ours?" check never see an
-  untrusted marker. `star_liveness::trust` delegates to the same predicate.
+  untrusted marker.
 - **Shell readers** call `loom-daemon forge trusted-comments`, which reads a
   comment listing on stdin and prints the trusted subset in the same shape.
   `verdict-staleness-guard.sh` and `check-promotion-landed.sh` use it.
@@ -77,7 +77,6 @@ The predicate lives once, in `loom-daemon/src/comment_trust.rs`:
   | Quarantine reconciliation | `Auto-quarantined by loom-daemon (#3939)` | Not the daemon's quarantine; the marker must also *start* the comment. |
   | Dependency classification | `champion:proposal-escalated` / `dep-cycle` / `proposal-unescalated` | Absent. |
   | `premise-check` | `loom:premise-check … verdict=` | Absent (comments; a body counts only when its author is trusted). |
-  | Required-check re-date | `loom:stale-check-redate` / its hold marker | Not attempt state. |
   | Mechanical-capability lane | body `loom:capability=` | No declaration: the park stays. |
   | Role-shard roster | `loom:roster` | Not a ring member. |
   | Open-linked-PR guard | a fork PR's `Closes #N` | Not a linked PR (a same-repo branch always counts). |
@@ -209,12 +208,11 @@ when all three hold:
 Anything unverifiable is a refusal. Reads are never gated.
 
 - **Daemon:** `loom-daemon/src/write_scope.rs`. Claim reconciliation,
-  quarantine reconciliation, star liveness, sweep dispatch and every
+  quarantine reconciliation, sweep dispatch and every
   scheduled role tick skip a refused workspace, logging the reason once. The
   `forge issue|pr` write passthroughs and `forge auto-merge` /
   `disable-auto-merge` vet their target first. The roster heartbeat checks its
-  configured repository; `notify-cleared-blockers` and the stale-check redate
-  take the repository `merge-pr.sh` already vetted; dependency classification
+  configured repository; `notify-cleared-blockers` takes the repository `merge-pr.sh` already vetted; dependency classification
   resolves `origin` (never gh's preference) or takes its caller's explicit
   `--repo`. The structural test
   `write_scope::tests::daemon_write_paths_are_scoped` fails when a new daemon
@@ -229,7 +227,7 @@ Anything unverifiable is a refusal. Reads are never gated.
   writes uses it and then passes `--repo` or `repos/OWNER/REPO` explicitly:
   `post-verdict.sh`, `verdict-staleness-guard.sh --clear/--anchor`,
   `merge-pr.sh`, `create-pr.sh`, `check-promotion-landed.sh --apply`,
-  `check-main-clean.sh`, `claim-staleness.sh`, `classify-capacity-defer.sh`,
+  `check-main-clean.sh`, `claim-staleness.sh`,
   `clean-stale-building-labels.sh`, `rebase-stacked-children.sh`,
   `reconcile-stack.sh`, `sync-labels.sh`, the lease publish/renew scripts,
   and the `forge-helpers.sh` comment, label, reopen, create and merge

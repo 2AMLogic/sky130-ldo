@@ -48,7 +48,8 @@
       "unit": "uA",
       "min": 0,
       "max": 30,
-      "note": "Total VIN supply current (I_LOAD=0, so no subtraction needed), averaged over the no-load point's settled 199ms-200ms tail (issue #173; the `tranN.` plot prefixes replace the pre-#173 `opN.` ones). Bound set by DR-009 ('proposed', not yet ratified): spec/target-spec.md \"Iq (excl. load current)\" row, < 30uA at no load. `min: 0` (issue #133, folded into #173): a genuinely regulating corner cannot draw negative supply current, so a negative reading is itself proof of a non-physical operating point and must fail rather than pass a max-only bound vacuously -- this bench's prior record scored exactly that at ss_-40c_3.30v (-3348.61uA)."
+      "max_inclusive": false,
+      "note": "Total VIN supply current (I_LOAD=0, so no subtraction needed), averaged over the no-load point's settled 199ms-200ms tail (issue #173; the `tranN.` plot prefixes replace the pre-#173 `opN.` ones). Bound set by DR-009 ('proposed', not yet ratified): spec/target-spec.md \"Iq (excl. load current)\" row, < 30uA at no load. `min: 0` (issue #133, folded into #173): a genuinely regulating corner cannot draw negative supply current, so a negative reading is itself proof of a non-physical operating point and must fail rather than pass a max-only bound vacuously -- this bench's prior record scored exactly that at ss_-40c_3.30v (-3348.61uA). Strict bound (max_inclusive=false, issue #335): spec/target-spec.md \"Iq (excl. load current)\" row ratifies < 30 uA at no load, so exactly 30 uA fails."
     },
     {
       "name": "iq_full_load_ua",
@@ -56,7 +57,8 @@
       "unit": "uA",
       "min": 0,
       "max": 30,
-      "note": "Total VIN supply current minus the deck's own known 50mA load constant, averaged over the full-load point's settled 199ms-200ms tail (issue #173; the `tranN.` plot prefixes replace the pre-#173 `opN.` ones). Bound set by DR-009 ('proposed', not yet ratified): spec/target-spec.md \"Iq (excl. load current)\" row, < 30uA at full load. `min: 0` (issue #133, folded into #173): same non-physical-negative-current floor as iq_no_load_ua -- this bench's prior record scored exactly that at ff_-40c_2.97v (-3357.86uA)."
+      "max_inclusive": false,
+      "note": "Total VIN supply current minus the deck's own known 50mA load constant, averaged over the full-load point's settled 199ms-200ms tail (issue #173; the `tranN.` plot prefixes replace the pre-#173 `opN.` ones). Bound set by DR-009 ('proposed', not yet ratified): spec/target-spec.md \"Iq (excl. load current)\" row, < 30uA at full load. `min: 0` (issue #133, folded into #173): same non-physical-negative-current floor as iq_no_load_ua -- this bench's prior record scored exactly that at ff_-40c_2.97v (-3357.86uA). Strict bound (max_inclusive=false, issue #335): spec/target-spec.md \"Iq (excl. load current)\" row ratifies < 30 uA at full load, so exactly 30 uA fails."
     },
     {
       "name": "vout_no_load_v",

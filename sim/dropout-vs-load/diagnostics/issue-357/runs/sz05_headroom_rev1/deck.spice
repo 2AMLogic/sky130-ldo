@@ -1,0 +1,36 @@
+* issue #357 sizing: candidate rev1 bias chain compliance vs VIN (tt / 27 C)
+.option wnflag=1
+.temp 27
+.lib "/home/ubuntu/.volare/sky130A/libs.tech/combined/sky130.lib.spice" tt
+VVIN VIN 0 3.3
+VVREF VREF 0 1.2
+VGND AMP_ENN 0 0
+VTL NTAIL_PROBE 0 0.35
+VTLM NTAIL NTAIL_PROBE 0
+VCLM CL_CMP 0 1.0
+XM_VRF PBR VREF NVR 0 sky130_fd_pr__nfet_g5v0d10v5 L=1 W=10 nf=2 ad=1.45
++ as=2.9 pd=10.58 ps=21.16
++ nrd=0.029 nrs=0.029 sa=0 sb=0 sd=0 mult=1 m=1
+XR_VR NVR AMP_ENN 0 sky130_fd_pr__res_high_po W=0.42 L=550 mult=1 m=1
+XM_PBR PBR PBR VIN VIN sky130_fd_pr__pfet_g5v0d10v5 L=1 W=2.5 nf=1 ad=0.725
++ as=0.725 pd=5.58 ps=5.58
++ nrd=0.116 nrs=0.116 sa=0 sb=0 sd=0 mult=1 m=1
+XM_PBN NBR PBR VIN VIN sky130_fd_pr__pfet_g5v0d10v5 L=1 W=1 nf=1 ad=0.29
++ as=0.29 pd=2.58 ps=2.58
++ nrd=0.29 nrs=0.29 sa=0 sb=0 sd=0 mult=1 m=1
+XM_NBR NBR NBR AMP_ENN 0 sky130_fd_pr__nfet_g5v0d10v5 L=2 W=1.5 nf=1 ad=0.435
++ as=0.435 pd=3.58 ps=3.58
++ nrd=0.193333 nrs=0.193333 sa=0 sb=0 sd=0 mult=1 m=1
+XM_NTAIL NTAIL NBR AMP_ENN 0 sky130_fd_pr__nfet_g5v0d10v5 L=2 W=12 nf=3 ad=2.32
++ as=2.32 pd=17.16 ps=17.16
++ nrd=0.0241667 nrs=0.0241667 sa=0 sb=0 sd=0 mult=1 m=1
+XM_CLP CL_CMP PBR VIN VIN sky130_fd_pr__pfet_g5v0d10v5 L=1 W=10 nf=2 ad=1.45
++ as=2.9 pd=10.58 ps=21.16
++ nrd=0.029 nrs=0.029 sa=0 sb=0 sd=0 mult=1 m=1
+.control
+save all
+dc VVIN 3.63 1.5 -0.01
+wrdata headroom.dat i(vvin) i(vtlm) i(vclm) v(pbr) v(nbr) v(nvr)
+quit
+.endc
+.end

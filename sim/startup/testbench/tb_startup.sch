@@ -32,7 +32,7 @@ v {xschem version=3.4.7 file_version=1.2
 * waveform rather than being inferred from a single point at t = 0.
 *
 * ---------------------------------------------------------------------
-* Why one testbench covers four (load, C_out) points
+* Why one testbench covers four (load, C_out) points (x3 ESR since #336)
 * ---------------------------------------------------------------------
 * The row's claim is quantified over TWO ranges at once ("any load 0-50 mA
 * and any C_out in the stability window"), so a single-point startup
@@ -58,6 +58,25 @@ v {xschem version=3.4.7 file_version=1.2
 * are four independent cold enables, not one run with the load changed
 * underneath it.
 *
+* ---------------------------------------------------------------------
+* ESR axis (issue #336, operator-authorised 2026-10-15)
+* ---------------------------------------------------------------------
+* Until #336 this bench fixed R_ESR at 10 mOhm and left the ESR axis to
+* sim/loop-gain. Small-signal loop gain cannot establish NONLINEAR startup
+* overshoot or monotonicity at the DR-002 ESR boundaries, so the four
+* (C_out, load) points above are now crossed with ESR in {0, 10 mOhm,
+* 500 mOhm}: twelve independent cold enables, declared as experiment.json's
+* `window_grid` and expanded by corner-run.py (reset + the leg's own alters
+* + its own tran, the same mechanism sim/load-transient uses, #313). The
+* 10 mOhm legs are the pre-#336 four points. A finite grid SAMPLES the
+* window; it is not a continuous proof.
+*
+* ESR = 0 is realised exactly as in sim/load-transient: a second capacitor
+* branch CDIR wired VOUT-to-ground with no series element carries the full
+* C_out in the ESR = 0 legs (COUT set to 0 F, so R_ESR carries no current),
+* and is 0 F in every ESR > 0 leg. No stand-in resistor replaces the
+* boundary.
+*
 * VREF is a fixed 1.2 V placeholder per design/README.md's "VREF interface
 * caveat, and the reference common mode" -- matching the 1:2 feedback
 * divider (VOUT = 1.5 x VREF). It is held at 1.2 V from t = 0, i.e. the
@@ -77,7 +96,7 @@ E {}
 T {startup / soft-start testbench -- exercises design/ldo_3v3in_1v8out.sch (#14/#22)
 via its companion subcircuit symbol design/ldo_3v3in_1v8out.sym
 VIN = 'vsup' (already up); EN = PULSE 0 -> 'vsup' at t = 100us (the enable edge)
-VREF = 1.2V placeholder (see design/README.md); C_OUT / R_LOAD walked by `alter`
+VREF = 1.2V placeholder (see design/README.md); C_OUT / R_ESR / R_LOAD walked by `alter`
 ratified "Startup / soft-start" row: monotonic, inside +-2% within a few ms, overshoot <= +2%} -700 -750 0 0 0.3 0.3 {}
 
 * ---- VIN (already up and settled before the enable edge) ----
@@ -113,10 +132,14 @@ C {devices/lab_pin.sym} 600 -370 0 0 {name=p12 lab=VESR}
 C {devices/res.sym} 600 -250 0 0 {name=RESR value=10m m=1}
 C {devices/lab_pin.sym} 600 -280 0 0 {name=p13 lab=VESR}
 C {devices/lab_pin.sym} 600 -220 0 0 {name=p14 lab=0}
-T {C_OUT starts at DR-002's proposed low-C_eff corner (0.33uF) and the deck
-`alter`s it to the 4.7uF ceiling for legs 3 and 4. R_ESR stays at 10mOhm --
-DR-002's posture is "no minimum ESR", so the low-ESR end is the stressing
-one for startup damping; the ESR axis itself is sim/loop-gain's job.} 640 -300 0 0 0.2 0.2 {}
+T {C_OUT starts at DR-002's proposed low-C_eff corner (0.33uF); each window_grid
+leg `alter`s COUT (series branch), RESR and CDIR (ESR=0 boundary branch) to its own
+coordinates: COUT 0.33uF / 4.7uF x ESR 0 / 10mOhm / 500mOhm (DR-002: 0-500mOhm,
+no minimum ESR). The ESR axis is sampled here (issue #336) for NONLINEAR startup;
+sim/loop-gain still owns the small-signal view.} 640 -300 0 0 0.2 0.2 {}
+C {devices/capa.sym} 480 -400 0 0 {name=CDIR m=1 value=0 footprint=1210 device="zero-ESR boundary branch (0 F except in the ESR=0 legs; see header)"}
+C {devices/lab_pin.sym} 480 -430 0 0 {name=p17 lab=VOUT}
+C {devices/lab_pin.sym} 480 -370 0 0 {name=p18 lab=0}
 
 * ---- load: walked 0mA <-> 50mA by `alter` ----
 C {devices/res.sym} 900 -300 0 0 {name=RLOAD value=1e12 m=1}

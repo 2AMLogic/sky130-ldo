@@ -18,8 +18,9 @@ Design rules (see the issue and `sim/README.md`'s own conventions):
   cited, the script re-netlists the current testbench schematic via xschem
   and checks it against the committed netlist snapshot verbatim. For the
   DRC/LVS/PEX layout records, it checks the schematic/layout commit each
-  record itself cites against the current git history / `LATEST*` pointers.
-  A record that no longer matches is flagged `STALE`, not silently reported
+  record itself cites against the current git history / `LATEST*` pointers,
+  and the stored GDS against the input content hash each checker recorded
+  (`check_drc_input_freshness`, `check_lvs_geometry_freshness`). A record that no longer matches is flagged `STALE`, not silently reported
   as current.
 - **Conformance guardrail.** `spec/target-spec.md` is ratified (issue #1,
   DR-006) -- every verdict below is a conformance check against that ratified
@@ -127,7 +128,7 @@ if _SIM_BIN_DIR not in sys.path:
     sys.path.insert(0, _SIM_BIN_DIR)
 from _record_common import (  # shared helpers (issues #51, #96, #237)
     INPUT_FINGERPRINT_VERSION,
-    build_input_fingerprint,
+    build_input_fingerprint,  # noqa: F401 -- re-exported; tests use the module attribute
     git,
     load_corner_run_module,
     mc_input_sections,
@@ -353,6 +354,58 @@ def sim_failing_measurements(record: dict) -> str | None:
     return "; ".join(parts)
 
 
+def sim_window_grid_disclosure(slug: str, record: dict) -> str | None:
+    """Coverage disclosure for an experiment whose manifest declares a COUT/ESR
+    `window_grid` (issue #313), or None when it declares none.
+
+    Keeps the two coverage axes apart: PVT coverage (the `is_subset` flag /
+    subset reason, reported elsewhere on the row) and COUT/ESR window coverage
+    (this clause). It never claims window qualification: a record without a
+    `window_grid` block is "declared but not yet evidenced", an incomplete or
+    failing block says so, and even a complete passing one is described as a
+    finite sample of the ratified window, not a continuous proof.
+    """
+    manifest = SIM_DIR / slug / "experiment.json"
+    try:
+        declared = json.loads(manifest.read_text()).get("window_grid")
+    except (OSError, ValueError):
+        return None
+    if not isinstance(declared, dict):
+        return None
+    legs = declared.get("legs") or []
+    leg_txt = ", ".join(
+        f"{leg.get('cout_f'):g} F / {leg.get('esr_ohm'):g} ohm"
+        + (f" / {leg['rload_ohm']:g} ohm load" if "rload_ohm" in leg else "")
+        for leg in legs
+    )
+    head = (
+        "COUT/ESR window coverage (separate from the PVT coverage above): the manifest "
+        f"declares a finite {len(legs)}-leg grid ({leg_txt}) that samples the ratified "
+        "window; it is not a continuous-window proof."
+    )
+    grid = record.get("window_grid")
+    if not isinstance(grid, dict):
+        return (
+            head
+            + " **This record carries no window-grid result: the grid is declared but not "
+            "yet evidenced (the record measured only the single pre-grid COUT/ESR point), "
+            "so no claim of COUT/ESR window qualification is made.**"
+        )
+    done = (
+        f"{grid.get('conditions_passing')}/{grid.get('conditions_expected')} declared "
+        "(corner x COUT x ESR x direction) conditions present and passing"
+    )
+    if grid.get("complete") and grid.get("pass"):
+        return head + f" Completed grid: {done}; every declared leg passed, but a finite " \
+            "grid cannot rule out an interior worst case."
+    state = "complete but failing" if grid.get("complete") else "INCOMPLETE"
+    return (
+        head
+        + f" **Grid {state}: {done}; the window is NOT qualified.** Missing, non-finite "
+        "or failing conditions are itemised in the record."
+    )
+
+
 def sim_mc_sample_tally(record: dict) -> str | None:
     resp = record.get("klt_response")
     if not isinstance(resp, dict):
@@ -422,6 +475,11 @@ def check_input_freshness(slug: str, record: dict) -> str:
             recorded["solver"] = legacy_solver
 
     dims = list(current) if kind == "mc" else ["analyses", "measurements", "matrix", "solver"]
+    if kind == "pvt" and "ramp_monotonicity" in current:
+        # issue #309: a manifest that declares a ramp-monotonicity checker
+        # makes its settings part of the effective inputs; a record minted
+        # before it carries no such section and is therefore never "fresh".
+        dims.append("ramp_monotonicity")
     stale, unverified, matched = [], [], []
     for dim in dims:
         if dim not in recorded:
@@ -620,6 +678,195 @@ def check_area_freshness(record: dict) -> str:
     )
 
 
+def area_coverage_clause(record: dict) -> str:
+    """The area record's own coverage disclosure (issue #318), quoted -- never
+    recomputed. Records minted before #318 carry none and get no clause, so
+    their detail line is unchanged; a record that does carry one keeps its
+    missing-capacitor statement, official-DRC state and LVS freshness visible
+    next to the Area verdict."""
+    cov = record.get("coverage")
+    if not isinstance(cov, dict):
+        return ""
+    parts = [f" Coverage (from the record): {cov.get('statement', 'unstated')}"]
+    off = cov.get("official_drc") or {}
+    if off:
+        parts.append(f"Official-deck DRC on the same layout record: {off.get('state')} ({off.get('detail')}).")
+    lvs = cov.get("lvs") or {}
+    if lvs:
+        parts.append(
+            f"LVS at mint time: {lvs.get('freshness')} (`LATEST-LVS` `{lvs.get('record')}`: {lvs.get('detail')})."
+        )
+    demo = cov.get("capacitor_demonstrator") or {}
+    if demo:
+        parts.append(f"Standalone capacitor demonstrator `{demo.get('record')}` is cited separately and does not certify the core.")
+    return " ".join(parts)
+
+
+def check_lvs_geometry_freshness(lvs_dir: Path) -> str:
+    """Is the LVS record about the routed GDS that exists now? (issue #287)
+
+    Content-based and toolchain-free, modelled on `check_area_freshness`: (1)
+    the GDS stored in the LVS record dir hashes to the `environment.layout_sha256`
+    its `lvs.json` recorded, and (2) the CURRENT routed GDS in the
+    `layout/ldo-core/reports/LATEST` record hashes to the same value. Identity
+    is bytes, never timestamps, directory names or pointer identity. Every
+    missing input gives a diagnosed `unverified`/`STALE` result.
+    """
+    path = lvs_dir / "lvs.json"
+    try:
+        env = json.loads(path.read_text()).get("environment") or {}
+        recorded = env.get("layout_sha256")
+    except (OSError, ValueError, AttributeError):
+        return "unverified: LVS record has no readable lvs.json"
+    if not isinstance(recorded, str) or not recorded:
+        return "unverified: LVS record carries no environment.layout_sha256"
+    cited_path = lvs_dir / "ldo_core.gds"
+    if not cited_path.is_file():
+        return "STALE (the GDS cited by the LVS record no longer exists)"
+    try:
+        if _sha256_of(cited_path) != recorded:
+            return "STALE (the GDS stored with the LVS record no longer hashes to its recorded layout_sha256)"
+    except OSError:
+        return "unverified: the GDS stored with the LVS record is unreadable"
+    latest = layout_record("LATEST")
+    if latest is None:
+        return "unverified: layout/ldo-core/reports/LATEST pointer is missing"
+    latest_id, latest_dir = latest
+    current = latest_dir / "ldo_core.gds"
+    if not current.is_file():
+        return f"unverified: no routed GDS in the current `LATEST` record `{latest_id}`"
+    try:
+        same = _sha256_of(current) == recorded
+    except OSError:
+        return f"unverified: routed GDS in the current `LATEST` record `{latest_id}` is unreadable"
+    if same:
+        return f"fresh (the routed GDS in the current `LATEST` record `{latest_id}` has the LVS-recorded sha256)"
+    return (
+        f"STALE (the routed GDS in the current `LATEST` record `{latest_id}` differs from "
+        "the one LVS checked; re-run LVS)"
+    )
+
+
+_SHA256_HEX_RE = re.compile(r"^[0-9a-f]{64}$")
+
+
+def normalize_sha256(value: object) -> str | None:
+    """A recorded sha256 reduced to bare lowercase hex, or None if malformed.
+
+    Accepts both spellings this repo's envelopes use -- bare hex
+    (`lvs.json`'s `layout_sha256`) and the `sha256:`-prefixed form (`klt`
+    provenance `content_hash`) -- the same convention as
+    `signoff/verify-pins.py`'s `norm`. Anything else (another algorithm's
+    prefix, a truncated digest, a non-string) is malformed provenance, which a
+    caller must report as unverified, never coerce into a match.
+    """
+    if not isinstance(value, str):
+        return None
+    v = value.strip().lower()
+    if v.startswith("sha256:"):
+        v = v[len("sha256:"):]
+    return v if _SHA256_HEX_RE.match(v) else None
+
+
+def check_drc_input_freshness(drc_dir: Path) -> str:
+    """Are the DRC record's verdicts about the GDS bytes it stores? (issue #304)
+
+    Content-based and toolchain-free, the DRC analogue of
+    `check_lvs_geometry_freshness`. The record dir's GDS is the artifact the
+    report cites; it must hash to what each checker recorded reading:
+
+    1. the curated klt deck: `drc.json` names its input (`file`, resolved by
+       basename inside the record dir, since the absolute path is the flow's
+       out dir at run time) and records its bytes in
+       `provenance.input.content_hash`. Both are required -- a record without
+       them is unverified, never assumed to cover whatever GDS sits in the
+       directory.
+    2. the official deck: when `mr-drc.run.json` exists (dual-deck records,
+       #260), it must carry `input_sha256` for the same bytes. A run record
+       that predates that field leaves the official verdict's input
+       association unproven, so the result is unverified (the verdict itself
+       is untouched). A record with no official run at all (pre-#260) has
+       nothing to associate and is judged on the curated deck alone.
+
+    Only reads; the verdicts are never recomputed here and no record is
+    modified. Every missing or malformed input gives a diagnosed
+    `unverified`/`STALE` result.
+    """
+    try:
+        drc = json.loads((drc_dir / "drc.json").read_text())
+        if not isinstance(drc, dict):
+            raise ValueError("not an object")
+    except (OSError, ValueError):
+        return "unverified: DRC record has no readable drc.json"
+    cited = drc.get("file")
+    if not isinstance(cited, str) or not cited.strip():
+        return "unverified: drc.json records no input file"
+    prov = drc.get("provenance")
+    inp = prov.get("input") if isinstance(prov, dict) else None
+    if not isinstance(inp, dict) or "content_hash" not in inp:
+        return "unverified: drc.json carries no provenance.input.content_hash"
+    role = inp.get("role")
+    if role is not None and role != "layout":
+        return f"unverified: drc.json provenance.input.role is {role!r}, not 'layout'"
+    recorded = normalize_sha256(inp.get("content_hash"))
+    if recorded is None:
+        return "unverified: drc.json provenance.input.content_hash is not a sha256 digest"
+    name = cited.replace("\\", "/").rsplit("/", 1)[-1]
+    gds = drc_dir / name
+    if not gds.is_file():
+        return f"STALE (the GDS `{name}` cited by the DRC record no longer exists)"
+    try:
+        actual = _sha256_of(gds)
+    except OSError:
+        return f"unverified: the GDS `{name}` stored with the DRC record is unreadable"
+    if actual != recorded:
+        return (
+            f"STALE (the GDS `{name}` stored with the DRC record no longer hashes to the "
+            "curated deck's recorded input content_hash; re-run DRC)"
+        )
+    run_path = drc_dir / "mr-drc.run.json"
+    if not run_path.exists():
+        return (
+            f"fresh (`{name}` hashes to the curated deck's recorded input content_hash; "
+            "no official-deck run in this record)"
+        )
+    try:
+        run = json.loads(run_path.read_text())
+        if not isinstance(run, dict):
+            raise ValueError("not an object")
+    except (OSError, ValueError):
+        return "unverified: the official-deck run record mr-drc.run.json is unreadable"
+    if "input_sha256" not in run:
+        return (
+            f"unverified: `{name}` hashes to the curated deck's recorded input, but "
+            "mr-drc.run.json records no input_sha256, so the official-deck verdict's "
+            "input is not bound to these bytes"
+        )
+    official = normalize_sha256(run.get("input_sha256"))
+    if official is None:
+        return "unverified: mr-drc.run.json input_sha256 is not a sha256 digest"
+    if official != actual:
+        return (
+            f"STALE (the GDS `{name}` stored with the DRC record no longer hashes to the "
+            "official deck's recorded input_sha256; re-run DRC)"
+        )
+    return (
+        f"fresh (`{name}` hashes to both the curated deck's recorded input content_hash "
+        "and the official deck's recorded input_sha256)"
+    )
+
+
+def combine_freshness(*parts: str) -> str:
+    """STALE if any part is STALE; fresh only if all are; otherwise unverified."""
+    for p in parts:
+        if p.startswith("STALE"):
+            return p
+    for p in parts:
+        if not p.startswith("fresh"):
+            return p if p.startswith("unverified") else f"unverified: {p}"
+    return "fresh (" + "; ".join(parts) + ")"
+
+
 def read_layout_record_text(record_id: str) -> str | None:
     path = LAYOUT_DIR / "ldo-core" / "reports" / record_id / "record.md"
     try:
@@ -643,7 +890,10 @@ def check_pex_layout_freshness(record_text: str) -> str:
     lvs_text = read_layout_record_text(cited)
     if lvs_text is None:
         return f"unverified: cited LVS record `{cited}` record.md is missing or unreadable"
-    sch = check_schematic_freshness_from_record(lvs_text)
+    sch = combine_freshness(
+        check_schematic_freshness_from_record(lvs_text),
+        check_lvs_geometry_freshness(LAYOUT_DIR / "ldo-core" / "reports" / cited),
+    )
     if sch.startswith("fresh"):
         return f"fresh (cites the current `LATEST-LVS` record `{cited}`; its {sch})"
     if sch.startswith("STALE"):
@@ -752,7 +1002,7 @@ def build_spec_row_table(
                 f"limit (strict). Convention: {arec.get('convention')} "
                 f"GDS `{(arec.get('gds') or {}).get('path')}` "
                 f"(sha256 `{(arec.get('gds') or {}).get('sha256')}`). "
-                f"GDS freshness: {freshness}."
+                f"GDS freshness: {freshness}.{area_coverage_clause(arec)}"
             )
             continue
 
@@ -828,6 +1078,9 @@ def build_spec_row_table(
         failing = sim_failing_measurements(record)
         if failing:
             detail_line += f" Failing measurement(s), per the record: {failing}."
+        grid_note = sim_window_grid_disclosure(slug, record)
+        if grid_note:
+            detail_line += " " + grid_note
         if subset_reason:
             detail_line += (
                 " **PVT subset, not the full matrix this experiment declares** — "
@@ -857,6 +1110,8 @@ def drc_row_detail(d: Path) -> str:
     if drc_json_path.is_file():
         try:
             drc_json = json.loads(drc_json_path.read_text())
+            if not isinstance(drc_json, dict):
+                raise ValueError("not an object")
             parts.append(
                 f"curated deck: status={drc_json.get('status')}, "
                 f"violation_count={drc_json.get('violation_count')}"
@@ -887,15 +1142,25 @@ def build_layout_section() -> list[str]:
     lines.append("| Check | Verdict (record's own) | Record | Freshness |")
     lines.append("|---|---|---|---|")
 
+    notes: list[str] = []
     drc = layout_record("LATEST")
     if drc is not None:
         record_id, d = drc
         record_text = (d / "record.md").read_text() if (d / "record.md").is_file() else ""
         verdict = extract_overall_verdict_md(record_text) or "?"
         detail = drc_row_detail(d)
+        # Schematic history AND the checked bytes (#304): a record whose GDS
+        # no longer matches what the checkers read is STALE however current
+        # the schematic is. The verdict is the record's own, either way.
         freshness = (
-            check_schematic_freshness_from_record(record_text) if record_text else "unverified"
+            combine_freshness(
+                check_schematic_freshness_from_record(record_text),
+                check_drc_input_freshness(d),
+            )
+            if record_text
+            else "unverified: DRC record has no record.md"
         )
+        notes.append(f"DRC freshness detail (record `{record_id}`): {freshness}.")
         freshness_short = "fresh" if freshness.startswith("fresh") else (
             "STALE" if freshness.startswith("STALE") else "unverified"
         )
@@ -919,7 +1184,12 @@ def build_layout_section() -> list[str]:
                 f"status={lvs_json.get('status')}, mismatch_count={lvs_json.get('mismatch_count')}"
             )
         freshness = (
-            check_schematic_freshness_from_record(record_text) if record_text else "unverified"
+            combine_freshness(
+                check_schematic_freshness_from_record(record_text),
+                check_lvs_geometry_freshness(d),
+            )
+            if record_text
+            else "unverified"
         )
         freshness_short = "fresh" if freshness.startswith("fresh") else (
             "STALE" if freshness.startswith("STALE") else "unverified"
@@ -965,6 +1235,9 @@ def build_layout_section() -> list[str]:
             "| Post-layout PEX (issue #20) | **ERROR** | no `sim/pex-post-layout/records/` record | — |"
         )
 
+    for note in notes:
+        lines.append("")
+        lines.append(note)
     return lines
 
 
@@ -1037,8 +1310,12 @@ def generate_report(skip_netlist_freshness: bool = False) -> str:
         "without that provenance as `unverified` rather than guessing. It is "
         "compared even under `--ignore-sim-freshness`. The layout (DRC/LVS/PEX) **Freshness** column instead "
         "compares the schematic/layout commit each record itself cites "
-        "against the current git history / `LATEST*` pointers — no "
-        "toolchain required."
+        "against the current git history / `LATEST*` pointers, and the "
+        "stored GDS bytes against the content hash each checker recorded "
+        "for its input (DRC: the curated deck's `provenance.input."
+        "content_hash` and the official deck's `input_sha256`; LVS: "
+        "`environment.layout_sha256`) — no toolchain required. A record "
+        "missing that provenance is `unverified`, never assumed fresh."
     )
     lines.append("")
     lines.append(
@@ -1146,7 +1423,7 @@ _TABLE_FRESHNESS_RE = re.compile(rf"^(\|[^\n]*\| ){_FRESHNESS_TOKENS}( \|)$", re
 # of those continuations -- never at a period *inside* the freshness prose
 # (a PDK error string can contain one).
 _DETAIL_FRESHNESS_RE = re.compile(
-    rf"(Freshness: ){_FRESHNESS_TOKENS}.*?\.(?=$| Failing measurement\(s\)| \*\*PVT subset)",
+    rf"(Freshness: ){_FRESHNESS_TOKENS}.*?\.(?=$| Failing measurement\(s\)| \*\*PVT subset| COUT/ESR window coverage)",
     re.MULTILINE,
 )
 

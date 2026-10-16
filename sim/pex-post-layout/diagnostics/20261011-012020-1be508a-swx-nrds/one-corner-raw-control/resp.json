@@ -1,0 +1,210 @@
+{
+  "schema_version": 3,
+  "netlist": {
+    "path": "sim/build/pex-1corner-x344-raw/tb_pex_post_layout.spice",
+    "scope": "repo"
+  },
+  "status": "error",
+  "corner_count": 1,
+  "passed": 0,
+  "failed": 0,
+  "errored": 1,
+  "inconclusive": 0,
+  "diagnostic_counts": {
+    "by_code": {
+      "measurement": 3
+    },
+    "by_severity": {
+      "error": 3
+    },
+    "corners_with_diagnostics": 1
+  },
+  "metrics": {
+    "sim__corner__count": 1,
+    "sim__corner__passed_count": 0,
+    "sim__corner__failed_count": 0,
+    "sim__corner__errored_count": 1,
+    "sim__corner__inconclusive_count": 0
+  },
+  "environment": {
+    "engine": "ngspice",
+    "engine_version": "46",
+    "ngspice_binary": "/home/ubuntu/.local/bin/ngspice",
+    "models_lib": {
+      "path": null,
+      "scope": "external"
+    },
+    "models_lib_sha256": "48de7c677e2c6e7d09b2559279de9f818be71010a4aa933d728eb4db3b133c84",
+    "netlist_sha256": "ceb5572f4dd3db8416d73a278a9ae1b1f53f772d3ee0042e913cf2b7ea1138f1",
+    "netlist_closure": [
+      {
+        "path": "sim/build/pex-1corner-x344-raw/tb_pex_post_layout.spice",
+        "scope": "repo",
+        "sha256": "ceb5572f4dd3db8416d73a278a9ae1b1f53f772d3ee0042e913cf2b7ea1138f1"
+      },
+      {
+        "path": "sim/build/pex-1corner-x344-raw/ldo_core_schematic_dut.spice",
+        "scope": "repo",
+        "sha256": "2625e0c2bff1d2c15469aa51b120247dbe7d7fd98fc3de5c13adfa42b287f64c"
+      }
+    ]
+  },
+  "coverage": {
+    "corners_simulated": 1,
+    "measurements_declared": 3,
+    "measurements_with_limits": 3,
+    "unrecognized_limit_keys": [],
+    "schema_version": 1,
+    "known": true,
+    "checked": [],
+    "skipped": [
+      {
+        "id": "limit:[0,\"tt/3.300V/27C\",\"vin_minus_vout_full_load_v\",\"max\"]",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "limit:[0,\"tt/3.300V/27C\",\"vin_minus_vout_full_load_v\",\"min\"]",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "limit:[0,\"tt/3.300V/27C\",\"vout_full_load_v\",\"max\"]",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "limit:[0,\"tt/3.300V/27C\",\"vout_full_load_v\",\"min\"]",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "limit:[0,\"tt/3.300V/27C\",\"vout_light_load_v\",\"max\"]",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "limit:[0,\"tt/3.300V/27C\",\"vout_light_load_v\",\"min\"]",
+        "reason": "unavailable_measurement"
+      }
+    ],
+    "inapplicable": [],
+    "unknown": [],
+    "nothing_checked": true,
+    "nothing_checked_reasons": [
+      "unavailable_measurement"
+    ]
+  },
+  "provenance": {
+    "klt_version": "0.7.0+g39f6da54ae4c",
+    "klayout_version": "0.30.12",
+    "pdk": null,
+    "deck": {
+      "name": "sky130.lib.spice",
+      "content_hash": "sha256:48de7c677e2c6e7d09b2559279de9f818be71010a4aa933d728eb4db3b133c84",
+      "released": false
+    },
+    "input": {
+      "content_hash": "sha256:ceb5572f4dd3db8416d73a278a9ae1b1f53f772d3ee0042e913cf2b7ea1138f1",
+      "role": "netlist"
+    }
+  },
+  "measurements": [
+    {
+      "name": "vout_light_load_v",
+      "unit": "V",
+      "limits": {
+        "min": 1.764,
+        "max": 1.836
+      },
+      "status": "error",
+      "worst_case": {
+        "corner_id": "tt/3.300V/27C",
+        "value": null,
+        "margin": null
+      }
+    },
+    {
+      "name": "vout_full_load_v",
+      "unit": "V",
+      "limits": {
+        "min": 1.764,
+        "max": 1.836
+      },
+      "status": "error",
+      "worst_case": {
+        "corner_id": "tt/3.300V/27C",
+        "value": null,
+        "margin": null
+      }
+    },
+    {
+      "name": "vin_minus_vout_full_load_v",
+      "unit": "V",
+      "limits": {
+        "min": 1.134,
+        "max": 1.866
+      },
+      "status": "error",
+      "worst_case": {
+        "corner_id": "tt/3.300V/27C",
+        "value": null,
+        "margin": null
+      }
+    }
+  ],
+  "corners": [
+    {
+      "corner_id": "tt/3.300V/27C",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 27,
+      "status": "error",
+      "runtime_s": 14.048,
+      "measurements": [
+        {
+          "name": "vout_light_load_v",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        },
+        {
+          "name": "vin_minus_vout_full_load_v",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vout_light_load_v' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vout_full_load_v' produced no value"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'vin_minus_vout_full_load_v' produced no value"
+        }
+      ],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-277/sim/build/pex-1corner-x344-raw/out/tt_3p300V_27C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-277/sim/build/pex-1corner-x344-raw/out/tt_3p300V_27C/corner.cir"
+      },
+      "monte_carlo": null
+    }
+  ]
+}

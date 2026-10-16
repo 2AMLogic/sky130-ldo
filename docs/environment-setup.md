@@ -53,6 +53,14 @@ repo's harness reads back):
   harness), which keeps PVT/model provenance consistent across the 2AM Logic
   canary ports of this block family.
 
+**Pinned tool versions** (`tools` block of the same `sim/pdk.json`, issue #291):
+ngspice `42`, xschem `3.4.4`. `--check-env` prints a named
+`WARN <tool> drifted from declared X to Y` when the installed tool differs;
+`--check-env --require-pdk` (and so `sim/selftest.sh --require-pdk`, as the CI
+`pdk-smoke` job runs it) turns that into a FAIL. Every evidence record's
+`tools` block carries the declared versions and an `on_baseline` flag. Bumping
+the baseline is a deliberate edit to `sim/pdk.json`, never a side effect.
+
 After `volare enable`, confirm the variant resolved:
 
 ```sh

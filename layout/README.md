@@ -368,9 +368,11 @@ re-transcribing the table.
 - It **does** certify that every drawn MOS/resistor device and every drawn
   net corresponds 1:1 with the schematic's, including both body nets (the
   layout draws a real n-well tie and a real substrate tie).
-- It **does not** cover the schematic's four capacitors: `klt gen` has no
-  capacitor generator (klayout-tools#1117), so they are drawn on neither
-  side. The compensation network is exactly what the loop's stability
+- It **does not** cover the schematic's four capacitors: the core flow
+  does not integrate them, so they are drawn on neither side. (This once
+  read "`klt gen` has no capacitor generator"; that tool gap closed with
+  klayout-tools#1117's `cap_array`. The remaining gap is full-core
+  integration -- see `ldo-core/floorplan.md`'s "Known gap".) The compensation network is exactly what the loop's stability
   depends on most, so this is a real coverage gap, not a formality.
 - It **does not** distinguish device voltage flavor: `klt lvs` compares
   `klt extract`'s generic `nfet`/`pfet` classes, which the drawn `hvi`

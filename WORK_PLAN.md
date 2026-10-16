@@ -5,29 +5,33 @@ Current roadmap derived from GitHub lifecycle labels. Maintained by the Loom Gui
 <!-- guide:plan-body:start -->
 ## Operator Attention: Merge-Risk-Hold Pileup
 
-Judge-approved PRs stuck under a `loom:operator` merge-risk hold — implementation work is done, only a human merge decision is missing.
+Judge-approved PRs under a hold (`loom:blocked` or `loom:operator`) — only a human merge decision is missing.
 
 _None._
 
-## Operator Priority
+## Very Important
 
-Issues the operator starred (`loom:operator-priority`); land these first.
+`loom:very-important` (one counts per workspace); every stage takes these first.
 
 _None._
+
+## Important
+
+`loom:important`; taken before unlabelled work.
+
+- **#263**: Qualify folded resistor electrical equivalence across process, temperature and mismatch
 
 ## Ready
 
 Human-approved issues ready for implementation (`loom:issue`).
 
-_None._
+- **#263**: Qualify folded resistor electrical equivalence across process, temperature and mismatch
 
 ## In Progress
 
 Issues currently being built (`loom:building`).
 
-- **#177**: Seed sim/current-limit's leg-1 operating point to conform to the initial-condition contract
-- **#253**: Folded resistors: validate series compaction before changing the LDO floorplan
-- **#254**: Core area: prove a MiM capacitor and supply-rail overlay plan
+_None._
 
 ## PRs Awaiting Review
 
@@ -48,10 +52,14 @@ Issues carrying `loom:curated`.
 - **#131**: Thermal shutdown: track regenerative auto-restart hysteresis design, integration, and qualification *(curated)*
 - **#177**: Seed sim/current-limit's leg-1 operating point to conform to the initial-condition contract *(curated)*
 - **#213**: sim(iq): mint the 45-corner record under #173's seeded deck + #133's regulation gate — deck fixed, matrix not re-run (host contention) *(curated)*
+- **#263**: Qualify folded resistor electrical equivalence across process, temperature and mismatch *(curated)*
+- **#267**: layout: fix locally-routed official-DRC families (via.1a_b, m2.5, via2.5, nwell.9) found by #260 *(curated)*
+- **#314**: PSRR: decide and evidence the binding output-capacitor/ESR condition *(curated)*
+- **#381**: Sim: admit load-regulation cold-start endpoints to the batch backend *(curated)*
 
 ## Proposed (Architect / Hermit)
 
-_None._
+- **#336**: Startup: extend cold-enable coverage to the ratified ESR boundaries *(architect)*
 
 ## Epics
 
@@ -59,15 +67,16 @@ _None._
 
 ## Backlog Balance
 
-| Tier | Count |
+| Bucket | Count |
 |------|-------|
 | Operator merge-risk holds | 0 |
-| Operator priority | 0 |
-| Ready (`loom:issue`) | 0 |
-| In Progress (`loom:building`) | 3 |
+| Very important | 0 |
+| Important | 1 |
+| Ready (`loom:issue`) | 1 |
+| In Progress (`loom:building`) | 0 |
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 0 |
-| Curated | 3 |
-| Architect / Hermit proposals | 0 |
+| Curated | 7 |
+| Architect / Hermit proposals | 1 |
 | Active epics | 1 |
 <!-- guide:plan-body:end -->

@@ -1,5 +1,12 @@
 *.raw
 *.log
+!sim/loop-gain/diagnostics/*/runs/*/ngspice.log
+# dropout-vs-load/ diagnostics (issue #357): the raw per-run solver logs (incl. failed/invalid
+# attempts and the merged investigation log) are committed evidence behind provenance.json.
+!sim/dropout-vs-load/diagnostics/*/runs/*/ngspice.log
+!sim/dropout-vs-load/diagnostics/*/runs/*/ngspice.merged.log
+# issue #374: real klt engine logs captured as dropout batch-adapter test fixtures.
+!sim/tests/fixtures/issue-374/*.ngspice.log
 __pycache__/
 .DS_Store
 
@@ -9,6 +16,9 @@ __pycache__/
 # layout/folded-res-qual/ records (issue #253): the ngspice .op log and the
 # PDK signoff runset logs are committed evidence too.
 !layout/folded-res-qual/reports/**/*.log
+# layout/cap-study/ records (issue #319): the per-run ngspice logs carry the
+# convergence evidence for the operating-point and C(V) runs.
+!layout/cap-study/*/**/*.log
 # harness scratch: regenerated netlists and generated corner decks
 sim/build/
 # ngspice model-check scratch dumps (e.g. bsim4v5.out) from ad hoc ngspice
@@ -53,17 +63,20 @@ layout/.venv-cap/
 .loom/claims/
 .loom/locks/
 .loom/signals/
+.loom/sweep-dispatch-tap/
 .loom/status/
 .loom/retry-state/
 .loom/exit-codes/
 .loom/sweep-checkpoint/
+.loom/private-jobs/
 .loom/sweep-run/
 .loom/targets/
 .loom/target*/
 .cargo-target*/
+.loom-target/
+/target-*/
 .loom/state/*
 !.loom/state/detect-unlabeled-epics-dismissed
-.loom/concierge/
 .loom/stats/
 .loom/diagnostics/
 .loom/guide-docs-state.json

@@ -1,0 +1,97 @@
+{
+  "schema_version": 1,
+  "record_id": "20261011-035237-e9ce4c5",
+  "issue": 236,
+  "spec_row": "Area",
+  "target": "< 0.1 mm^2 total core area, pass FET included, excluding pads and sealring",
+  "layout_record": "20261010-045715-e17e713",
+  "layout_record_was_latest": true,
+  "gds": {
+    "path": "layout/ldo-core/reports/20261010-045715-e17e713/ldo_core.gds",
+    "sha256": "c9d35b881073201286313d4009cf281441bf897085a7cd88d95702c462310a74",
+    "bytes": 807130
+  },
+  "cell": "ldo_core",
+  "convention": "Top-cell flattened bounding rectangle over all layers/datatypes (hierarchy, SREF/AREF transforms and path widths included; TEXT and NODE excluded); area = width x height in um^2 converted to mm^2 from the stream's own UNITS record; PASS iff area < 0.1 mm^2 (strict).",
+  "dbu_um": "0.001",
+  "bbox_dbu": [
+    -190,
+    -23150,
+    2451680,
+    160710
+  ],
+  "bbox_um": [
+    "-0.190",
+    "-23.150",
+    "2451.680",
+    "160.710"
+  ],
+  "width_um": "2451.870",
+  "height_um": "183.860",
+  "area_um2": "450800.818200",
+  "area_mm2": "0.4508008182",
+  "limit_mm2": "0.1",
+  "comparison": "area_mm2 < limit_mm2 (strict; exactly the limit FAILS)",
+  "verdict": "FAIL",
+  "crosscheck": {
+    "tool": "klt 0.7.0+g0d0312b30708",
+    "command": "klt stats <gds> --format json",
+    "bbox_width_um": "2451.87",
+    "bbox_height_um": "183.86",
+    "status": "agrees",
+    "tolerance_um": "0.002"
+  },
+  "coverage": {
+    "inventory": {
+      "source": "layout/ldo-core/reports/20261010-045715-e17e713/floorplan.json",
+      "mos_count": 48,
+      "res_count": 5,
+      "block_count": 53,
+      "widest_mos": {
+        "name": "M_PASS",
+        "w_total_um": 5000.0,
+        "units": 50,
+        "unit_w_um": 100.0,
+        "l_um": 0.5
+      }
+    },
+    "undrawn_elements": [
+      "C_COMP",
+      "C_CL",
+      "C_SS",
+      "C_TS"
+    ],
+    "official_drc": {
+      "record": "layout/ldo-core/reports/20261010-045715-e17e713/record.md",
+      "state": "violations",
+      "detail": "15060 markers in 7 rule families",
+      "total": 15060,
+      "rule_counts": {
+        "licon.1": 1204,
+        "m2.5": 271,
+        "nwell.9": 35,
+        "rpm.1a": 1,
+        "urpm.1a": 4,
+        "via.1a_b": 13468,
+        "via2.5": 77
+      }
+    },
+    "lvs": {
+      "record": "20260924-221912-a947aa8",
+      "status": "match",
+      "checked_layout_sha256": "3e7f504b56ea85cdd733ecf456650b6f08c72540ec4a6ad38b73f3a0369beb9a",
+      "freshness": "STALE",
+      "detail": "LATEST-LVS checked a different GDS; its verdict does not cover the measured layout"
+    },
+    "capacitor_demonstrator": {
+      "record": "layout/cap-rail-demo/reports/20261010-033947-80bc87e/record.md",
+      "scope": "standalone MiM-capacitor + supply-rail overlay; no MOS device, resistor or signal route drawn",
+      "certifies_core": false
+    },
+    "statement": "The measured footprint omits 4 schematic element(s) that are not drawn in this layout (C_COMP, C_CL, C_SS, C_TS). It is not evidence that a complete, capacitor-inclusive core meets the Area row."
+  },
+  "provenance": {
+    "git_sha": "e9ce4c58f0db9b32a0289749130423f9797de18e",
+    "tool": "layout/bin/render-ldo-area-record.py"
+  }
+}

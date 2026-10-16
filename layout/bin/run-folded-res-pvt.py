@@ -30,10 +30,12 @@ import shlex
 import subprocess
 import sys
 from pathlib import Path
+from typing import NamedTuple
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import _folded_res_analysis as fra  # noqa: E402
 import _folded_res_pvt as pvt  # noqa: E402
+from _record_common import git as _repo_git  # noqa: E402
 
 LAYOUT_DIR = Path(__file__).resolve().parent.parent
 REPO_ROOT = LAYOUT_DIR.parent
@@ -42,10 +44,6 @@ QUAL_DIR = LAYOUT_DIR / "folded-res-qual"
 
 def sh(cmd: list[str], **kw) -> subprocess.CompletedProcess:
     return subprocess.run(cmd, capture_output=True, text=True, **kw)
-
-
-def git(*a: str) -> str:
-    return sh(["git", "-C", str(REPO_ROOT), *a]).stdout.strip()
 
 
 def pct(x: float, d: int = 4) -> str:
@@ -68,6 +66,27 @@ def run_sim(klt: str, req: Path, backend: str, env: dict) -> tuple[dict | None, 
             and len(diags) == len(rep.get("corners", [])):
         return None, f"{len(diags)} units failed: {diags[0]['message']}", proc.returncode
     return rep, proc.stderr.strip(), proc.returncode
+
+
+class ControlDecision(NamedTuple):
+    ok: bool
+    message: str
+    exit_code: int
+
+
+def control_decision(quals: list[dict], controls: dict[str, list[int]]) -> ControlDecision:
+    """Study validity from the known nonequivalent controls (issue #306: pure,
+    PDK-free tested). Any qualification row flagged `control` whose
+    deterministic criterion passed (`det_ok`) invalidates the study: exit 1.
+    `controls` maps each device to its declared control segment counts, all
+    named in the message."""
+    ctl_fail = [q for q in quals if q["control"] and q["det_ok"]]
+    control_ok = not ctl_fail
+    message = ("The known nonequivalent control(s) "
+               + ", ".join(f"{d} N={n}" for d, ns in controls.items() for n in ns)
+               + (" FAILED the deterministic criterion as required (study valid)." if control_ok
+                  else " PASSED the deterministic criterion: the study is INVALID."))
+    return ControlDecision(control_ok, message, 0 if control_ok else 1)
 
 
 def render(summary: dict) -> str:
@@ -190,10 +209,10 @@ def main() -> int:
     }
     tol = {k: v["tolerance_frac"] for k, v in tol_info.items()}
 
-    git_sha = git("rev-parse", "HEAD")
-    git_dirty = bool(git("status", "--porcelain", "--", "layout/bin", "layout/folded-res-qual/pvt"))
+    git_sha = _repo_git(REPO_ROOT, "rev-parse", "HEAD")
+    git_dirty = bool(_repo_git(REPO_ROOT, "status", "--porcelain", "--", "layout/bin", "layout/folded-res-qual/pvt"))
     ts = _dt.datetime.now(_dt.timezone.utc).strftime("%Y%m%d-%H%M%S")
-    record_id = f"{ts}-{git('rev-parse', '--short', 'HEAD')}"
+    record_id = f"{ts}-{_repo_git(REPO_ROOT, 'rev-parse', '--short', 'HEAD')}"
     out = args.out_root / record_id
     out.mkdir(parents=True, exist_ok=False)  # append-only: never reuse an id
     print(f"run-folded-res-pvt: record {record_id} -> {out}")
@@ -249,12 +268,8 @@ def main() -> int:
     quals = pvt.qualification(det, agg, matrix)
 
     controls = {d["schematic_device"]: d["control_segments"] for d in matrix["devices"]}
-    ctl_fail = [q for q in quals if q["control"] and q["det_ok"]]
-    control_ok = not ctl_fail
-    control_check = ("The known nonequivalent control(s) "
-                     + ", ".join(f"{d} N={n}" for d, ns in controls.items() for n in ns)
-                     + (" FAILED the deterministic criterion as required (study valid)." if control_ok
-                        else " PASSED the deterministic criterion: the study is INVALID."))
+    decision = control_decision(quals, controls)
+    control_check = decision.message
     divider = []
     for r in det:
         if r["device"] == "R_FB_A" and r["mode"] == "j1" and r["segments"] > 1:
@@ -292,7 +307,7 @@ def main() -> int:
     (out / "record.md").write_text(render(summary))
     (args.out_root / "LATEST").write_text(record_id + "\n")
     print((out / "record.md").read_text().split("## Verdict")[-1][:800])
-    return 0 if control_ok else 1
+    return decision.exit_code
 
 
 if __name__ == "__main__":

@@ -90,6 +90,43 @@ def single_layer_counterfactual(caps: list[dict[str, Any]], area_f: float, perim
     return {"block_area_um2": total, "per_cap": detail}
 
 
+def gate_flags(drc: dict[str, Any], mr: dict[str, int], mr_rules: int, lvs: dict[str, Any],
+               neg_value: dict[str, Any], neg_net: dict[str, Any]) -> dict[str, bool]:
+    """The record's gates (issue #306: pure, PDK-free tested). `gates_ok` is
+    the exit decision: both DRC decks clean, the LVS compare a match, and both
+    negative controls a mismatch."""
+    drc_clean = drc.get("status") == "clean" and drc.get("violation_count", 0) == 0
+    mr_clean = sum(mr.values()) == 0 and mr_rules > 0
+    lvs_match = lvs.get("status") == "match"
+    negs_ok = neg_value.get("status") == "mismatch" and neg_net.get("status") == "mismatch"
+    return {
+        "drc_clean": drc_clean, "mr_clean": mr_clean, "lvs_match": lvs_match, "negs_ok": negs_ok,
+        "gates_ok": drc_clean and mr_clean and lvs_match and negs_ok,
+    }
+
+
+def feasibility_verdict(core: dict[str, Any], totals: dict[str, Any], single_block_area_um2: float,
+                        gates_ok: bool) -> dict[str, Any]:
+    """The `verdict` dictionary of summary.json (issue #306: pure, PDK-free
+    tested). `feasible_geometrically` is the conjunction of the planned core
+    rectangle being below the ratified limit, the capacitor blocks fitting in
+    the overlay area, and every gate holding."""
+    overlay_fits = totals["cap_block_um2"] <= totals["overlay_usable_um2"]
+    return {
+        "core_rectangle_um2": core["area_um2"],
+        "core_rectangle_mm2": core["area_mm2"],
+        "limit_um2": plan.LIMIT_UM2,
+        "below_limit": core["below_limit"],
+        "margin_fraction": core["margin_fraction"],
+        "caps_fit_in_overlay": overlay_fits,
+        "side_by_side_um2": totals["side_by_side_area_um2"],
+        "side_by_side_below_limit": totals["side_by_side_area_um2"] < plan.LIMIT_UM2,
+        "single_mim_level_block_um2": single_block_area_um2,
+        "single_mim_level_fits_overlay": single_block_area_um2 <= totals["overlay_usable_um2"],
+        "feasible_geometrically": core["below_limit"] and overlay_fits and gates_ok,
+    }
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--out-dir", required=True, type=Path)
@@ -119,11 +156,9 @@ def main() -> int:
     pairs = coupling_pairs(pex)
     pex_nets = {n["net"]: n for n in pex["parasitics"]["nets"]}
 
-    drc_clean = drc.get("status") == "clean" and drc.get("violation_count", 0) == 0
-    mr_clean = sum(mr.values()) == 0 and mr_rules > 0
-    lvs_match = lvs.get("status") == "match"
-    negs_ok = neg_value.get("status") == "mismatch" and neg_net.get("status") == "mismatch"
-    gates_ok = drc_clean and mr_clean and lvs_match and negs_ok
+    g = gate_flags(drc, mr, mr_rules, lvs, neg_value, neg_net)
+    drc_clean, mr_clean, lvs_match = g["drc_clean"], g["mr_clean"], g["lvs_match"]
+    gates_ok = g["gates_ok"]
 
     tolerated = [m for m in lvs.get("mismatches", []) if m["category"] == "device.parameter_tolerated"]
     max_tol_pct = 0.0
@@ -175,20 +210,7 @@ def main() -> int:
 
     t = pl["totals"]
     single = single_layer_counterfactual(caps, pl["deck"]["area_f_um2"], pl["deck"]["perim_f_um"])
-    overlay_fits = t["cap_block_um2"] <= t["overlay_usable_um2"]
-    verdict = {
-        "core_rectangle_um2": core["area_um2"],
-        "core_rectangle_mm2": core["area_mm2"],
-        "limit_um2": plan.LIMIT_UM2,
-        "below_limit": core["below_limit"],
-        "margin_fraction": core["margin_fraction"],
-        "caps_fit_in_overlay": overlay_fits,
-        "side_by_side_um2": t["side_by_side_area_um2"],
-        "side_by_side_below_limit": t["side_by_side_area_um2"] < plan.LIMIT_UM2,
-        "single_mim_level_block_um2": single["block_area_um2"],
-        "single_mim_level_fits_overlay": single["block_area_um2"] <= t["overlay_usable_um2"],
-        "feasible_geometrically": core["below_limit"] and overlay_fits and gates_ok,
-    }
+    verdict = feasibility_verdict(core, t, single["block_area_um2"], gates_ok)
     summary = {
         "schema_version": 1, "issue": 254, "record_id": args.record_id,
         "klt_version": kv.get("version"), "klt_pin": args.pin, "klayout_system": klayout_v,

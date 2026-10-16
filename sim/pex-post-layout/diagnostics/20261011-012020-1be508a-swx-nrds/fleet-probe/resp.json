@@ -1,0 +1,196 @@
+{
+  "schema_version": 3,
+  "netlist": {
+    "path": "sim/build/fleet-probe/probe.spice",
+    "scope": "repo"
+  },
+  "status": "error",
+  "corner_count": 2,
+  "passed": 0,
+  "failed": 0,
+  "errored": 2,
+  "inconclusive": 0,
+  "diagnostic_counts": {
+    "by_code": {
+      "batch_job_failed": 2
+    },
+    "by_severity": {
+      "error": 2
+    },
+    "corners_with_diagnostics": 2
+  },
+  "metrics": {
+    "sim__corner__count": 2,
+    "sim__corner__passed_count": 0,
+    "sim__corner__failed_count": 0,
+    "sim__corner__errored_count": 2,
+    "sim__corner__inconclusive_count": 0
+  },
+  "environment": {
+    "engine": "ngspice",
+    "engine_version": null,
+    "ngspice_binary": "/home/ubuntu/.local/bin/ngspice",
+    "models_lib": {
+      "path": null,
+      "scope": "absent"
+    },
+    "models_lib_sha256": null,
+    "netlist_sha256": "9f5c6aac00f7de9aacc6ab3ddac3ca2035ecb94e00ad5b75e4e361dd4365f07a",
+    "netlist_closure": [
+      {
+        "path": "sim/build/fleet-probe/probe.spice",
+        "scope": "repo",
+        "sha256": "9f5c6aac00f7de9aacc6ab3ddac3ca2035ecb94e00ad5b75e4e361dd4365f07a"
+      }
+    ],
+    "remote": {
+      "provider": "aws-batch-fleet",
+      "job_id": "klt-sim-c9ff88880c3e",
+      "bucket": "2am-batch-jobs-221082181346",
+      "region": "us-east-1",
+      "instance_id": "i-0db0a329d44e57aa4",
+      "instance_type": "c7i.4xlarge",
+      "availability_zone": "us-east-1c",
+      "ami_id": "ami-0e40e3245f1923ac8",
+      "lifecycle": "spot",
+      "spot": true,
+      "state": "failed",
+      "exit_code": "87",
+      "concurrency": "1",
+      "physical_cores": "8",
+      "elapsed_seconds": 5,
+      "runner_klt_version": "0.5.0",
+      "client_klt_version": "0.7.0+g39f6da54ae4c",
+      "runner_compatibility": "mismatch",
+      "runner_compatibility_warning": "the fleet runner ran klt 0.5.0 but the submitting client is 0.7.0+g39f6da54ae4c; request options the runner does not know may have been ignored -- update the runner image or use a compatible client"
+    }
+  },
+  "coverage": {
+    "corners_simulated": 2,
+    "measurements_declared": 1,
+    "measurements_with_limits": 0,
+    "unrecognized_limit_keys": [],
+    "schema_version": 1,
+    "known": true,
+    "checked": [],
+    "skipped": [
+      {
+        "id": "measurement:[0,\"default/novdd/27C\",\"vb\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[1,\"default/novdd/85C\",\"vb\"]/observation",
+        "reason": "unavailable_measurement"
+      }
+    ],
+    "inapplicable": [
+      {
+        "id": "measurement:[0,\"default/novdd/27C\",\"vb\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[1,\"default/novdd/85C\",\"vb\"]/limits",
+        "reason": "characterization_without_limits"
+      }
+    ],
+    "unknown": [],
+    "nothing_checked": true,
+    "nothing_checked_reasons": [
+      "characterization_without_limits",
+      "unavailable_measurement"
+    ]
+  },
+  "provenance": {
+    "klt_version": "0.7.0+g39f6da54ae4c",
+    "klayout_version": "0.30.12",
+    "pdk": null,
+    "deck": null,
+    "input": {
+      "content_hash": "sha256:9f5c6aac00f7de9aacc6ab3ddac3ca2035ecb94e00ad5b75e4e361dd4365f07a",
+      "role": "netlist"
+    }
+  },
+  "measurements": [
+    {
+      "name": "vb",
+      "unit": "V",
+      "limits": null,
+      "status": "error",
+      "worst_case": {
+        "corner_id": "default/novdd/27C",
+        "value": null,
+        "margin": null
+      }
+    }
+  ],
+  "corners": [
+    {
+      "corner_id": "default/novdd/27C",
+      "process": null,
+      "supply_v": {},
+      "temperature_c": 27,
+      "status": "error",
+      "runtime_s": 0.0,
+      "measurements": [
+        {
+          "name": "vb",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "error",
+          "code": "batch_job_failed",
+          "message": "batch job klt-sim-c9ff88880c3e finished 'failed' (job command exited 87): the job's klt reported: the fleet runner runs klt 0.5.0 but the submitting client is 0.7.0+g39f6da54ae4c -- the request was not run (update the runner image or use a compatible client)",
+          "runner_code": "batch_runner_version_mismatch",
+          "runner_klt_version": "0.5.0",
+          "client_klt_version": "0.7.0+g39f6da54ae4c"
+        }
+      ],
+      "artifacts": {
+        "log": null,
+        "raw": null,
+        "waveform": null,
+        "deck": null
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "default/novdd/85C",
+      "process": null,
+      "supply_v": {},
+      "temperature_c": 85,
+      "status": "error",
+      "runtime_s": 0.0,
+      "measurements": [
+        {
+          "name": "vb",
+          "value": null,
+          "unit": "V",
+          "status": "error",
+          "margin": null
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "error",
+          "code": "batch_job_failed",
+          "message": "batch job klt-sim-c9ff88880c3e finished 'failed' (job command exited 87): the job's klt reported: the fleet runner runs klt 0.5.0 but the submitting client is 0.7.0+g39f6da54ae4c -- the request was not run (update the runner image or use a compatible client)",
+          "runner_code": "batch_runner_version_mismatch",
+          "runner_klt_version": "0.5.0",
+          "client_klt_version": "0.7.0+g39f6da54ae4c"
+        }
+      ],
+      "artifacts": {
+        "log": null,
+        "raw": null,
+        "waveform": null,
+        "deck": null
+      },
+      "monte_carlo": null
+    }
+  ]
+}

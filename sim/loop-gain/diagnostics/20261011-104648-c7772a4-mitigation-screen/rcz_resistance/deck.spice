@@ -1,0 +1,17 @@
+* R_CZ scale -> resistance (tt, 27C): 1 V across each res_xhigh_po, R = 1/|i|
+.temp 27
+.lib "/home/ubuntu/.volare/sky130A/libs.tech/combined/sky130.lib.spice" tt
+V05 a 0 1
+V10 b 0 1
+V20 c 0 1
+XR05 a 0 0 sky130_fd_pr__res_xhigh_po W=0.42 L=26 mult=1 m=1
+XR10 b 0 0 sky130_fd_pr__res_xhigh_po W=0.42 L=52 mult=1 m=1
+XR20 c 0 0 sky130_fd_pr__res_xhigh_po W=0.42 L=104 mult=1 m=1
+.control
+op
+let r05 = 1/abs(i(v05))
+let r10 = 1/abs(i(v10))
+let r20 = 1/abs(i(v20))
+print r05 r10 r20
+.endc
+.end

@@ -2,8 +2,9 @@
 
 The physical layout of the sky130 LDO's core regulation loop: one `klt gen`
 block per active device in `design/ldo_3v3in_1v8out.sch`, placed by
-`klt gen-compose` and wired net-for-net, DRC-clean and LVS-matched against
-the schematic.
+`klt gen-compose` and wired net-for-net. It is **not** currently DRC-clean
+under the PDK's official deck, and no current LVS record covers it -- see
+"Current layout record" below.
 
 - Issue #15 built the first cut: a **placed floorplan skeleton**, no routing,
   no LVS, sized from a device table transcribed into
@@ -20,7 +21,35 @@ the schematic.
 Read the newest `reports/<record-id>/record.md` for the DRC evidence and the
 newest `reports/<lvs-record-id>/record.md` (pointed to by `reports/LATEST-LVS`)
 for the LVS verdict; `reports/<record-id>/floorplan.json` carries the exact
-per-device sizing, placement, and routed-net table each run produced.
+per-device sizing, placement, and routed-net table each run produced. Those
+files are the authority: every count and dimension quoted in this document is
+a dated reading of one record, not a constant.
+
+## Current layout record (as of 2026-10-11, issue #318)
+
+Read from `reports/20261010-045715-e17e713/` (the record `reports/LATEST`
+names at that date) -- its `floorplan.json` and its own
+`xschem_out/ldo_3v3in_1v8out.spice`:
+
+- **Drawn inventory**: 48 MOS blocks (29 `pfet_g5v0d10v5`, 19
+  `nfet_g5v0d10v5`) + 5 resistor blocks (1 `res_high_po`, 4
+  `res_xhigh_po`) = 53 blocks, one per schematic MOS/resistor instance.
+- **Pass device**: `M_PASS`, schematic `W=100 nf=25 mult=50`, so
+  `W_total` = 5000 um (DR-011, issue #116), drawn as 50 parallel 100 um units
+  at `L` = 0.5 um.
+- **Not drawn**: the four schematic capacitors `C_COMP`, `C_CL`, `C_SS`,
+  `C_TS` (`floorplan.json`'s `undrawn_elements`; see "Known gap" below).
+- **Device row** 2452.68 um x 101.12 um before routing; the routed
+  `ldo_core.gds` measures 2451.87 um x 183.86 um = 0.4508 mm^2 under the area
+  convention, **FAIL** against the unchanged `< 0.1 mm^2` Area row (area record
+  `reports/20261011-035237-e9ce4c5/`, `reports/LATEST-AREA`). That footprint
+  excludes the capacitors, so it is not evidence about a complete core either
+  way.
+- **Official-deck DRC**: FAIL, 15060 markers in seven families (that record's
+  `record.md`; attribution below, fixes tracked in #267).
+- **LVS**: stale. `reports/LATEST-LVS` (`20260924-221912-a947aa8`) checked an
+  earlier GDS (sha256 `3e7f504b...`), not this record's (`c9d35b88...`); its
+  `match` does not cover the current layout.
 
 ## Two-deck DRC gate (issue #260)
 
@@ -87,7 +116,9 @@ schematic commit.
 
 `design/README.md`'s "Pass-device width correction" note is load-bearing:
 the xschem symbol's `W` is a per-`mult`-group width, so a device's real total
-width is `W * mult`. The pass device is `W=100 mult=25` -- 2500um, not 100um.
+width is `W * mult`. The pass device is currently `W=100 mult=50` -- 5000um,
+not 100um. (It was `mult=25`, 2500um, until DR-011 / issue #116 re-sized it;
+records minted before that change draw 25 units.)
 
 Two generator parameters could nominally reach that total, and only one of
 them survives extraction:
@@ -102,11 +133,12 @@ them survives extraction:
   `ceil(W_total / 100)` equal unit devices whose S/D/G terminals the router
   straps together, which is exactly what `mult` means physically. `klt lvs`'s
   `options.combine_devices` folds the strapped units back into one device of
-  the summed width, so the reference's single `W=2500U` element matches. Only
-  the pass device is wide enough to split today (25 x 100um).
+  the summed width, so the reference's single `W_total` element matches. In
+  the current record only the pass device is wide enough to split (50 x
+  100um); `floorplan.json`'s per-device `units` is authoritative.
 
-Drawing the pass device as one 2500um-wide single-finger device would also
-extract with the right width, but it would make the block 2500um tall for no
+Drawing the pass device as one 5000um-wide single-finger device would also
+extract with the right width, but it would make the block 5000um tall for no
 benefit; a parallel-unit array is both the physically sensible construction
 and the smaller one.
 
@@ -128,7 +160,8 @@ through a single n-well drawn across the whole PMOS span, and `klt extract`
 decides a device's flavor by n-well containment (`pfet_active = active &
 nwell`): a well drawn over an interleaved NMOS block would re-type that
 device. Keeping every PMOS contiguous is what makes one shared well -- and
-therefore one drawn `VIN` body tie instead of 25 of them -- possible at all.
+therefore one drawn `VIN` body tie instead of one per PMOS block (29 in the
+current record) -- possible at all.
 The cost is that a function group with both flavors occupies two x ranges;
 `record.md`'s group table shows both.
 
@@ -138,15 +171,17 @@ physically enormous next to any MOS device, a direct consequence of
 `res_high_po`'s sheet resistivity, and `klt gen res_array` draws each unit
 resistor as one straight body (no meander/fold for a single logical resistor
 at this repo's pinned `klt` commit). The result is a deliberately lopsided
-block, ~2382um x ~101um for the device row, dominated by that one resistor.
+block -- 2452.68um x 101.12um for the device row in the current record --
+dominated by that one resistor.
 
 ## Routing
 
 `klt gen-compose`'s own `connectivity[]` router is not used. It draws
 **two-pin** point-to-point nets only, and rejects any route whose backbone
 crosses another block's bounding box; this schematic's nets fan out to
-between 2 and 50 terminals each (`VIN` alone reaches every PMOS source and
-the well tie), across a 2382um-wide row. `layout/bin/gen-ldo-blocks.py`
+between 1 and 76 terminals each in the current record (`VIN` alone reaches
+every PMOS source and the well tie; `EA_OUT` fans out to 57), across a
+~2450um-wide row. `layout/bin/gen-ldo-blocks.py`
 therefore draws the wiring itself, as a single-channel two-layer channel
 route. That gap was already tracked upstream and is cross-confirmed rather
 than re-filed -- see `layout/README.md`'s "What routing the LDO core hit"
@@ -243,27 +278,45 @@ warning that `layout/README.md`'s "no NMOS substrate-tap extraction" note
 predicted: the deck *does* resolve a real drawn tie, and this layout draws
 one.
 
-## Known gap: no `klt gen` capacitor generator
+## Known gap: the schematic's capacitors are not drawn in the core
 
-At this repo's pinned `klt` commit, `klt gen --list` still has no
-capacitor/MiM family member alongside `mos_array`/`res_array`/`diff_pair`/
-`bjt_array`, even though `klt extract` recognises MiM `CapacitorDevice`
-classes. The schematic's four capacitors (`C_COMP`, `C_CL`, `C_SS`, `C_TS`)
-are therefore not drawn. Filed generically per `CLAUDE.md`'s friction
-protocol as
-[`2AMLogic/klayout-tools#1117`](https://github.com/2AMLogic/klayout-tools/issues/1117).
+The schematic's four capacitors (`C_COMP`, `C_CL`, `C_SS`, `C_TS`) are not
+drawn in `ldo_core.gds`: `layout/bin/gen-ldo-blocks.py` and
+`layout/bin/gen-ldo-reference-netlist.py` only handle MOS and resistor
+elements and list the capacitors as `undrawn_elements`.
 
-Issue #254 tested, outside this layout, whether the four capacitors can be
-drawn at all within the area budget: `layout/cap-rail-demo/` realises them as
-stacked MiM arrays over the planned core outline (DRC/LVS/extraction evidence
-and a feasibility verdict there). That demonstrator does not change this
-layout; integrating it is full-core work.
+**Obsolete wording, kept for history.** Earlier versions of this section (and
+the layout records' own "Known gap" paragraph, which is generated text and is
+not rewritten in place) said the pinned `klt` had *no capacitor generator*.
+That tool gap is closed: `klt gen cap_array` landed upstream for
+[`2AMLogic/klayout-tools#1117`](https://github.com/2AMLogic/klayout-tools/issues/1117)
+(closed 2026-08-18), and both pins this repo uses (`layout/requirements.txt`,
+`layout/cap-requirements.txt`) postdate it. `cap_array` draws independent
+single-level units, which is why the demonstrator below draws its own stacked
+MiM structure instead (klayout-tools#3022).
+
+**The remaining gap is full-core integration**, not a missing generator:
+drawing the capacitors inside the routed core, assigning the metal levels they
+share with the supply rails, adding them to the LVS reference, and
+requalifying the loop electrically. That is separately scoped work (#319
+explores the capacitor implementation choices; #231 is thermal qualification,
+not capacitor integration). Until it lands, no core area, DRC or LVS result
+says anything about the capacitors.
+
+**The standalone demonstrator is separate evidence.** Issue #254 tested,
+outside this layout, whether the four capacitors can be drawn at all within
+the area budget: `layout/cap-rail-demo/` (record
+`reports/20261010-033947-80bc87e/`) realises them as stacked MiM arrays plus
+the two load-current rails over the planned core outline, with no MOS device,
+resistor or signal route. Its passing DRC/LVS and feasibility verdict are
+about that demonstrator only; they do not certify this core, and it does not
+change this layout.
 
 `layout/bin/gen-ldo-reference-netlist.py` drops the same four elements from
 the LVS reference, so the compare stays symmetric: their absence is a
 disclosed coverage gap on both sides, not a silent one. It is a real gap
-nonetheless -- an LVS match on this layout says nothing about the
-compensation capacitor, which is the component the loop's stability depends
+nonetheless -- an LVS match on this layout (when a current one exists) says
+nothing about the compensation capacitor, which is the component the loop's stability depends
 on most.
 
 ## Still out of scope here

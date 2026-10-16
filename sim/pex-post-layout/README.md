@@ -584,6 +584,88 @@ That path was abandoned once the 3-terminal resistor incompatibility (above)
 was found to block it regardless -- kept here only as a documented dead end,
 not reused.
 
+## xschem-version compatibility and failed-run retention (issue #277)
+
+**Constraint.** xschem 3.4.4 (Ubuntu apt; CI and the dispatch workers) writes
+the sky130 symbols' raw `expr('...')` geometry templates (`nrd=expr('0.29 / @W ')`
+...) where the pinned 3.4.7 writes numbers. ngspice cannot parse them; the
+failure surfaces as `Undefined parameter [...]` inside the PDK device
+subcircuit. ngspice-46 reports a few `[expr]`/`[ad]` errors and then thousands
+of `[swx_nrds]` errors, a PDK-internal `.param` on the same line as `nrd`; see
+"Diagnosis (2026-10-11)" below.
+`gen-pex-testbench.py` bypassed the normalization `sim/bin/corner-run.py` gained
+in #288/#290. It now calls the same guarded helper (`sim/bin/xschem_exprs.py`,
+shared by both) and **fails closed**: any `expr(` it cannot evaluate safely aborts
+generation instead of emitting an unparseable DUT. No limit or device model is
+changed.
+
+*Measured:* injecting the 3.4.4 `expr` shape into this DUT reproduces an
+ngspice "Undefined parameter" parse failure locally (ngspice 46); the committed
+DUT is already numeric and simulates on one tt corner. *Not measured:* the
+original batch-host deck/log was discarded, so that `[swx_nrds]` is the same
+cause is consistent with, not proven by, this reproduction.
+
+**Diagnosis (2026-10-11, `diagnostics/20261011-012020-1be508a-swx-nrds/`).**
+Retained, one-corner evidence; see that directory's `provenance.txt` for tool
+versions (xschem 3.4.4 and 3.4.7, ngspice-46, klt 0.7.0, open_pdks `c6d73a3`).
+
+- *Measured:* `swx_nrds` is a PDK name, not one from this repo. It is defined on
+  the instance `.param` line of the `sky130_fd_pr__{n,p}fet_g5v0d10v5` subckts
+  (`swx_nrds = {89.1*nf/w+443.5}` / `{361*nf/w+1489}`) and consumed as
+  `rsh = {swx_nrds}` by every binned model card. When an instance passes a raw
+  `expr('...')`, ngspice's numparam rejects that whole `.param` line. So
+  `swx_nrds` is never defined, and every model card that reads it reports
+  `Undefined parameter [swx_nrds]`. On one device this gives 56 `[swx_nrds]`
+  errors against 1 `[expr]`. On the real DUT at one corner (tt / 3.3 V / 27 C)
+  it gives 2485 `[swx_nrds]`, 48 `[expr]` and 48 `[ad]`. The corner errors and
+  every measurement "produced no value", which is the PR #275 symptom.
+- *Measured:* the input is xschem 3.4.4. Netlisting the schematic with
+  `/usr/bin/xschem` (3.4.4) gives 144 `expr(` lines; `/usr/local/bin/xschem`
+  (3.4.7) gives 0. Both are present on the dispatch worker, so which one runs
+  depends on `PATH`. The xschem step runs on the **client** (inside
+  `gen-pex-testbench.py`), not on the batch runner. After normalization, the
+  3.4.4 netlist is numerically identical to the 3.4.7 netlist (288
+  substitutions, 0 unresolved). With 3.4.4 forced first on `PATH`, the current
+  generator's DUT simulates cleanly at the same corner: 0 undefined-parameter
+  errors, and the three measurements equal the 3.4.7 path's values. The test
+  `sim/tests/test_pex_post_layout.py::Xschem344FixtureTests` pins this against
+  the retained 3.4.4/3.4.7 netlists.
+- *Hypothesis:* PR #275's run resolved xschem 3.4.4. That is the only mechanism
+  found that reproduces the exact error class, but the run's own deck/log no
+  longer exist.
+- *Still unverified:* the standalone 45-corner leg. On 2026-10-11 a trivial
+  2-corner batch probe still failed before any simulation ran
+  (`batch_runner_version_mismatch`: runner klt 0.5.0 vs client 0.7.0, job
+  `klt-sim-c9ff88880c3e`). That is the same infrastructure block as the
+  2026-10-10 records below, and per host policy the grid was not run locally.
+
+**Failed-run retention.** If `run-pex.sh` sees a hard failure (any `klt` exit
+other than 0 or 3) or generator failure, it writes
+`failures/<record-id>/` (append-only, never reused): request, testbench + DUT,
+response/error envelope, full stderr logs, per-corner decks/ngspice logs, and
+`provenance.txt` (git HEAD, GDS sha256, klt/ngspice/xschem versions, backend).
+
+**Batch verification status (2026-10-10, record `20261010-193154-0c8ccf6`).**
+The 45-corner schematic leg was re-attempted on `main` @ `0c8ccf6` and again
+failed at batch submit for all 45 corners (`batch_job_failed`; fleet runner
+klt 0.5.0 vs client 0.7.0, `runner_compatibility: mismatch`, job
+`klt-sim-9bedf17191ac`, exit 87, ~4 s). No simulation ran, so this is not a
+design or parse result; no local-grid fallback was used. Evidence is retained in
+`failures/20261010-193154-0c8ccf6/`. The leg stays unverified until the fleet
+runner image is updated (a worker-spec change, not a change in this repo). The
+regeneration also showed the tracked `testbench/ldo_core_schematic_dut.spice`
+is stale vs the current schematic (netlist snapshot
+`netlist-snapshots/20261010-193154-0c8ccf6.schematic-dut.spice`); it was not
+re-committed here. The record stamps `evidence_kind: "batch_submit_failure"`
+and `supersedes: null`. It is not comparable to `20260924-230726-a947aa8`, which
+stays the latest valid baseline. The characterization rollup and `run-pex.sh`'s
+supersede pointer both skip records that carry a non-null `evidence_kind`.
+
+**Handoff to #267 / PR #275.** After this lands, PR #275 rebases, reruns both
+legs against its changed GDS, commits a new append-only record, and compares it
+with `20260924-230726-a947aa8`, separating known baseline failures from new
+regressions.
+
 ## Regenerating
 
 ```bash

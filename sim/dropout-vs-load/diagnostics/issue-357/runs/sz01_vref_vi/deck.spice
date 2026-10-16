@@ -1,0 +1,17 @@
+* issue #357 sizing: XM_VRF source-voltage vs drain current (tt / 27 C)
+.option wnflag=1
+.temp 27
+.lib "/home/ubuntu/.volare/sky130A/libs.tech/combined/sky130.lib.spice" tt
+VD D 0 1.0
+VG G 0 1.2
+VS S 0 0.3
+XM_VRF D G S 0 sky130_fd_pr__nfet_g5v0d10v5 L=1 W=10 nf=2 ad=1.45
++ as=2.9 pd=10.58 ps=21.16
++ nrd=0.029 nrs=0.029 sa=0 sb=0 sd=0 mult=1 m=1
+.control
+save all @m.xm_vrf.msky130_fd_pr__nfet_g5v0d10v5[id] @m.xm_vrf.msky130_fd_pr__nfet_g5v0d10v5[vgs]
+dc VS 0 0.6 0.005
+wrdata vref_vi.dat @m.xm_vrf.msky130_fd_pr__nfet_g5v0d10v5[id] @m.xm_vrf.msky130_fd_pr__nfet_g5v0d10v5[vgs]
+quit
+.endc
+.end

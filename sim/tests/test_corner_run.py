@@ -11,8 +11,10 @@ sibling sky130-bandgap repo's harness.
 
 from __future__ import annotations
 
+import datetime
 import hashlib
 import importlib.util
+import math
 import re
 import subprocess
 import sys
@@ -27,6 +29,53 @@ _spec = importlib.util.spec_from_file_location("corner_run", SIM_DIR / "bin" / "
 corner_run = importlib.util.module_from_spec(_spec)
 sys.modules["corner_run"] = corner_run
 _spec.loader.exec_module(corner_run)
+
+
+class TestToolVersionPin(unittest.TestCase):
+    """Issue #291: ngspice/xschem versions are declared in sim/pdk.json and checked."""
+
+    def test_parse_versions(self):
+        self.assertEqual(
+            corner_run.parse_tool_version("ngspice", "ngspice-42 : Circuit level simulation program"), "42"
+        )
+        self.assertEqual(corner_run.parse_tool_version("xschem", "XSCHEM V3.4.4"), "3.4.4")
+        self.assertIsNone(corner_run.parse_tool_version("xschem", "not found"))
+
+    def test_compare_flags_only_drift(self):
+        declared = {"ngspice": "42", "xschem": "3.4.4"}
+        ok = {"ngspice": "ngspice-42 : x", "xschem": "XSCHEM V3.4.4"}
+        self.assertEqual(corner_run.compare_tool_versions(declared, ok), [])
+        drift = corner_run.compare_tool_versions(declared, {**ok, "xschem": "XSCHEM V3.4.5"})
+        self.assertEqual(drift, [("xschem", "3.4.4", "3.4.5")])
+        gone = corner_run.compare_tool_versions(declared, {"ngspice": "ngspice-42 : x"})
+        self.assertEqual([d[0] for d in gone], ["xschem"])
+
+    def test_pin_declares_tools(self):
+        self.assertEqual(set(corner_run.declared_tool_versions(corner_run.load_pin())), {"ngspice", "xschem"})
+
+    def _check_env(self, require_pdk, xschem_line):
+        lines = {"ngspice": "ngspice-42 : x", "xschem": xschem_line, "volare": "1.0"}
+        pdk = mock.Mock(matches_pin=True, installed_commit="c", dir="d", lib_file="l")
+        with mock.patch.object(corner_run.shutil, "which", return_value="/bin/x"), \
+             mock.patch.object(corner_run, "first_line", side_effect=lambda cmd: lines[cmd[0]]), \
+             mock.patch.object(corner_run, "load_pin", return_value={"tools": {"ngspice": "42", "xschem": "3.4.4"}}), \
+             mock.patch.object(corner_run, "resolve_pdk", return_value=pdk), \
+             mock.patch("builtins.print") as pr:
+            rc = corner_run.check_env(require_pdk=require_pdk)
+        return rc, "\n".join(str(c.args[0]) for c in pr.call_args_list if c.args)
+
+    def test_drift_warns_locally_and_fails_under_require_pdk(self):
+        rc, out = self._check_env(False, "XSCHEM V3.4.5")
+        self.assertEqual(rc, 0)
+        self.assertIn("WARN xschem drifted from declared 3.4.4 to 3.4.5", out)
+        rc, out = self._check_env(True, "XSCHEM V3.4.5")
+        self.assertEqual(rc, 1)
+        self.assertIn("FAIL xschem drifted from declared 3.4.4 to 3.4.5", out)
+
+    def test_baseline_is_clean(self):
+        rc, out = self._check_env(True, "XSCHEM V3.4.4")
+        self.assertEqual(rc, 0)
+        self.assertNotIn("drifted", out)
 
 
 class TestCornerId(unittest.TestCase):
@@ -421,6 +470,1290 @@ def _minimal_record() -> dict:
             "record": "sim/pdk-smoke/records/x.md",
         },
     }
+
+
+class TestEvalXschemExprs(unittest.TestCase):
+    """xschem 3.4.4 writes raw expr('...') templates; ngspice 42 cannot read
+    them (issue #288). They must evaluate to what xschem 3.4.7 writes."""
+
+    RAW = (
+        "XM1 VG VG 0 0 sky130_fd_pr__nfet_01v8 L=0.5 W=2 nf=1 "
+        "ad=expr('int((@nf + 1)/2) * @W / @nf * 0.29') as=expr('int((@nf + 2)/2) * @W / @nf * 0.29')\n"
+        "+ pd=expr('2*int((@nf + 1)/2) * (@W / @nf + 0.29)') ps=expr('2*int((@nf + 2)/2) * (@W / @nf + 0.29)') "
+        "nrd=expr('0.29 / @W ')\n"
+        "+ nrs=expr('0.29 / @W ') sa=0 sb=0 sd=0 mult=1 m=1\n"
+    )
+
+    def test_matches_xschem_347_output(self):
+        text, n = corner_run.eval_xschem_exprs(self.RAW)
+        self.assertEqual(n, 6)
+        self.assertNotIn("expr(", text)
+        for want in ("ad=0.58", "as=0.58", "pd=4.58", "ps=4.58", "nrd=0.145", "nrs=0.145"):
+            self.assertIn(want, text)
+
+    def test_noop_without_expr(self):
+        plain = "R1 VDD VG 1meg m=1\nV1 VDD 0 'vsup'\n"
+        self.assertEqual(corner_run.eval_xschem_exprs(plain), (plain, 0))
+
+    def test_unknown_parameter_left_visible(self):
+        raw = "X1 a b m W=2 ad=expr('@nope * 2')\n"
+        text, n = corner_run.eval_xschem_exprs(raw)
+        self.assertEqual((text, n), (raw, 0))
+
+    def test_refuses_unsafe_expression(self):
+        raw = "X1 a b m W=2 ad=expr('__import__(1)')\n"
+        self.assertEqual(corner_run.eval_xschem_exprs(raw)[1], 0)
+
+
+# --------------------------------------------------------------------------
+# issue #298: opt-in `klt sim` batch backend (smoke-only), all mocked
+# --------------------------------------------------------------------------
+
+import contextlib
+import io
+import json
+import shutil
+
+SMOKE_NETLIST = "** sch_path: x\nV1 VDD 0 'vsup'\nR1 VDD vg 1Meg\nXM1 vg vg 0 0 sky130_fd_pr__nfet_01v8\n.end\n"
+
+
+class FakeKlt:
+    """Stands in for subprocess.run: answers `klt sim` from the request, fails the
+    test if ngspice (or anything else) is launched."""
+
+    def __init__(self, test, pin, mutate=None, rc=0, stdout=None, raise_exc=None):
+        self.test, self.pin, self.mutate, self.rc = test, pin, mutate, rc
+        self.stdout, self.raise_exc = stdout, raise_exc
+        self.calls = []
+
+    def __call__(self, cmd, **kw):
+        self.calls.append((cmd, kw))
+        if cmd[0] != "/fake/klt":
+            self.test.fail(f"unexpected launch: {cmd}")
+        if self.raise_exc:
+            raise self.raise_exc
+        req_path = Path(cmd[2])
+        outdir = Path(cmd[cmd.index("-o") + 1])
+        req = json.loads(req_path.read_text())
+        vsup = float(re.search(r"\.param vsup=(\S+)", Path(req["netlist"]).read_text()).group(1))
+        corners = []
+        for i, (p, t) in enumerate((p, t) for p in req["corners"]["process"] for t in req["corners"]["temperature_c"]):
+            vgs = 0.6 + {"tt": 0, "ss": -0.03, "ff": 0.03, "sf": 0.01, "fs": -0.01}[p] + 0.0004 * t
+            logp = outdir / f"{p}_{t}.log"
+            outdir.mkdir(parents=True, exist_ok=True)
+            logp.write_text(f"ngspice log {p} {t}\nmeas_vgs = {vgs}\n")
+            corners.append({
+                "corner_id": f"{p}/{t:g}C", "process": p, "temperature_c": t, "status": "pass",
+                "runtime_s": 1.5, "diagnostics": [],
+                "artifacts": {"log": str(logp)},
+                "measurements": [
+                    {"name": "meas_vgs", "value": vgs, "unit": "V", "status": "pass"},
+                    {"name": "meas_isup", "value": (vsup - vgs) / 1e6, "unit": "A", "status": "pass"},
+                ],
+            })
+        resp = {
+            "status": "pass", "corners": corners, "corner_count": len(corners),
+            "environment": {"engine": "ngspice", "engine_version": "42",
+                            "remote": {"provider": "aws-batch-fleet", "job_id": f"klt-sim-{abs(hash(str(req_path))) % 10**6:06x}"}},
+            "provenance": {"klt_version": "0.7.0", "pdk": {"version": self.pin["open_pdks_commit"]}},
+        }
+        if self.mutate:
+            self.mutate(resp, req)
+        out = self.stdout if self.stdout is not None else json.dumps(resp)
+        return subprocess.CompletedProcess(cmd, self.rc, stdout=out, stderr="")
+
+
+class BatchHarness(unittest.TestCase):
+    """A scratch repo root holding a copy of sim/pdk-smoke (or SLUG), with the PDK,
+    xschem, git and tool-version lookups mocked."""
+
+    SLUG = "pdk-smoke"
+    NETLIST = SMOKE_NETLIST
+
+    def make_fake(self, **kw):
+        return FakeKlt(self, self.pin, **kw)
+
+    def setUp(self):
+        self.tmp = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, self.tmp, True)
+        sim = self.tmp / "sim"
+        sim.mkdir()
+        shutil.copytree(SIM_DIR / self.SLUG, sim / self.SLUG,
+                        ignore=shutil.ignore_patterns("records", "corners", "netlist-snapshots"))
+        shutil.copyfile(SIM_DIR / "spiceinit", sim / "spiceinit")
+        self.pin = corner_run.load_pin()
+        pdk_dir = self.tmp / "pdkroot" / "sky130A"
+        (pdk_dir / "libs.tech/combined").mkdir(parents=True)
+        lib = pdk_dir / self.pin["ngspice_lib"]
+        lib.write_text("* lib\n")
+        self.pdk = corner_run.Pdk(self.pin, self.tmp / "pdkroot", "sky130A", pdk_dir,
+                                  self.pin["open_pdks_commit"], lib)
+        self.fake = self.make_fake()
+        self.exp_dir = sim / self.SLUG
+
+        def fake_netlist(schematic, out_dir, pdk):
+            out_dir.mkdir(parents=True, exist_ok=True)
+            p = out_dir / (schematic.stem + ".spice")
+            p.write_text(self.NETLIST)
+            return p
+
+        tools = {"ngspice": "ngspice-42 : x", "xschem": "XSCHEM V3.4.4", "platform": "p", "python": "3",
+                 "declared": {"ngspice": "42", "xschem": "3.4.4"}, "on_baseline": True}
+        patches = [
+            mock.patch.object(corner_run, "REPO_ROOT", self.tmp),
+            mock.patch.object(corner_run, "BUILD_DIR", self.tmp / "build"),
+            mock.patch.object(corner_run, "SPICEINIT_FILE", sim / "spiceinit"),
+            mock.patch.object(corner_run, "load_pin", return_value=self.pin),
+            mock.patch.object(corner_run, "resolve_pdk", side_effect=lambda pin: self.pdk),
+            mock.patch.object(corner_run, "netlist_with_xschem", side_effect=fake_netlist),
+            mock.patch.object(corner_run, "git_state", return_value={"sha": "abc1234", "branch": "b", "dirty": False}),
+            mock.patch.object(corner_run, "tool_versions", side_effect=lambda: dict(tools)),
+            mock.patch.object(corner_run, "default_author", return_value="tester"),
+            mock.patch.object(corner_run, "klt_binary", return_value="/fake/klt"),
+            mock.patch.object(corner_run.subprocess, "run", side_effect=lambda *a, **k: self.fake(*a, **k)),
+            # ticking clock: every run mints a fresh record id (a consumed id
+            # stays reserved, issue #310), so repeated main() calls don't collide
+            mock.patch.object(corner_run, "datetime", self._ticking_datetime()),
+        ]
+        for p in patches:
+            p.start()
+            self.addCleanup(p.stop)
+
+    @staticmethod
+    def _ticking_datetime():
+        real = corner_run.datetime
+        ticks = iter(range(10**6))
+        fake = mock.Mock(wraps=real)
+        fake.now.side_effect = lambda tz=None: real(2026, 6, 1, tzinfo=corner_run.timezone.utc) + \
+            datetime.timedelta(seconds=next(ticks))
+        return fake
+
+    def run_main(self, *argv, expect_exit=None):
+        out, err = io.StringIO(), io.StringIO()
+        with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+            if expect_exit is HarnessErr:
+                with self.assertRaises(corner_run.HarnessError) as cm:
+                    corner_run.main([str(self.exp_dir), *argv])
+                return cm.exception, out.getvalue(), err.getvalue()
+            rc = corner_run.main([str(self.exp_dir), *argv])
+        return rc, out.getvalue(), err.getvalue()
+
+    def records(self):
+        return sorted((self.exp_dir / "records").glob("*.json"))
+
+    def klt_calls(self):
+        return [c for c in self.fake.calls if c[0][0] == "/fake/klt"]
+
+
+HarnessErr = object()
+QUICK = ["--quick", "--subset-reason", "test"]
+
+
+class TestBatchGrouping(unittest.TestCase):
+    def test_full_matrix_is_three_supply_requests_of_45_unique_points(self):
+        exp = corner_run.load_experiment(SIM_DIR / "pdk-smoke")
+        args = corner_run.parse_args([str(SIM_DIR / "pdk-smoke")])
+        matrix, _ = corner_run.build_matrix(exp, args, corner_run.load_pin())
+        groups = corner_run.group_batch_requests(matrix, False)
+        self.assertEqual([g.supply_v for g in groups], [1.62, 1.8, 1.98])
+        for g in groups:
+            self.assertEqual(len(g.process), 5)
+            self.assertEqual(g.temperature_c, [-40.0, 27.0, 125.0])
+        pts = {(c.process, c.temp_c, c.supply_v) for g in groups for c in g.corners}
+        self.assertEqual(len(pts), 45)
+        self.assertEqual(sum(len(g.corners) for g in groups), 45)
+
+    def test_quick_is_three_singletons_not_27_points(self):
+        exp = corner_run.load_experiment(SIM_DIR / "pdk-smoke")
+        args = corner_run.parse_args([str(SIM_DIR / "pdk-smoke"), "--quick"])
+        matrix, subset = corner_run.build_matrix(exp, args, corner_run.load_pin())
+        groups = corner_run.group_batch_requests(matrix, True)
+        self.assertTrue(subset)
+        self.assertEqual([(g.process, g.temperature_c, g.supply_v) for g in groups],
+                         [(["tt"], [27.0], 1.8), (["ss"], [-40.0], 1.62), (["ff"], [125.0], 1.98)])
+
+    def test_cartesian_cli_override_groups_by_supply(self):
+        exp = corner_run.load_experiment(SIM_DIR / "pdk-smoke")
+        args = corner_run.parse_args([str(SIM_DIR / "pdk-smoke"), "--process", "tt,ss",
+                                      "--temp", "27", "--supply", "1.8,1.62"])
+        matrix, subset = corner_run.build_matrix(exp, args, corner_run.load_pin())
+        groups = corner_run.group_batch_requests(matrix, False)
+        self.assertTrue(subset)
+        self.assertEqual([g.supply_v for g in groups], [1.8, 1.62])
+        self.assertEqual([g.process for g in groups], [["tt", "ss"]] * 2)
+
+
+class TestBatchRefusals(BatchHarness):
+    def test_other_slug_refused_before_any_launch(self):
+        raw = json.loads((self.exp_dir / "experiment.json").read_text())
+        raw["slug"] = "load-regulation"
+        (self.exp_dir / "experiment.json").write_text(json.dumps(raw))
+        err, _, _ = self.run_main("--backend", "batch", *QUICK, expect_exit=HarnessErr)
+        self.assertIn("bounded", str(err))
+        self.assertEqual(self.fake.calls, [])
+        corner_run.netlist_with_xschem.assert_not_called()
+
+    def test_changed_smoke_shape_refused(self):
+        for edit in (lambda r: r["deck"].update(analyses=["op", "dc"]),
+                     lambda r: r["measurements"][0].update(expr="v(vg)*2")):
+            raw = json.loads((SIM_DIR / "pdk-smoke" / "experiment.json").read_text())
+            edit(raw)
+            (self.exp_dir / "experiment.json").write_text(json.dumps(raw))
+            err, _, _ = self.run_main("--backend", "batch", *QUICK, expect_exit=HarnessErr)
+            self.assertIn("supported smoke shape", str(err))
+        self.assertEqual(self.fake.calls, [])
+        corner_run.netlist_with_xschem.assert_not_called()
+
+    def test_default_backend_is_local(self):
+        self.assertEqual(corner_run.parse_args(["x"]).backend, "local")
+        self.assertEqual(corner_run.parse_args(["x", "--backend", "local"]).backend, "local")
+
+
+class TestBatchRequests(BatchHarness):
+    def test_dry_run_prints_requests_without_submission_or_writes(self):
+        rc, out, _ = self.run_main("--backend", "batch", "--dry-run", "--timeout", "77")
+        self.assertEqual(rc, 0)
+        self.assertEqual(self.fake.calls, [])
+        self.assertEqual(out.count('"analysis"'), 3)
+        self.assertFalse((self.exp_dir / "records").exists())
+        self.assertFalse((self.exp_dir / "klt-requests").exists())
+
+    def test_request_and_netlist_content(self):
+        rc, _, _ = self.run_main("--backend", "batch", "--quick", "--subset-reason", "t", "--no-write")
+        self.assertEqual(rc, 0)
+        self.assertEqual(len(self.klt_calls()), 3)
+        cmd, kw = self.klt_calls()[0]
+        self.assertEqual(cmd[:2], ["/fake/klt", "sim"])
+        self.assertEqual(cmd[cmd.index("--backend") + 1], "batch")
+        self.assertEqual(cmd[cmd.index("--format") + 1], "json")
+        self.assertEqual(kw["env"]["PDK_ROOT"], str(self.pdk.root))
+        req = json.loads(Path(cmd[2]).read_text())
+        self.assertEqual(req["engine"], "ngspice")
+        self.assertEqual(req["models"], {"pdk": "sky130A", "lib": self.pin["ngspice_lib"]})
+        self.assertEqual(req["corners"], {"process": ["tt"], "temperature_c": [27.0]})
+        self.assertEqual(req["analysis"], {"kind": "op", "args": ""})
+        self.assertEqual(req["measurements"], [
+            {"name": "meas_vgs", "expr": "v(vg)", "unit": "V"},
+            {"name": "meas_isup", "expr": "-i(v1)", "unit": "A"}])
+        self.assertEqual(req["options"]["timeout_s"], 300)
+        self.assertTrue(req["options"]["keep_artifacts"])
+        self.assertNotIn("monte_carlo", req)
+        init = [ln for ln in (SIM_DIR / "spiceinit").read_text().splitlines() if ln.strip()]
+        self.assertEqual(req["options"]["ngspice_init"], init)
+        self.assertTrue(any(ln.startswith("*") for ln in init))  # comments retained
+        body = Path(req["netlist"]).read_text().splitlines()
+        self.assertEqual(body[0], ".param vsup=1.8")
+        self.assertIn(".option wnflag=1", body)
+        self.assertIn(".save all", body)
+        self.assertIn("V1 VDD 0 'vsup'", body)
+        self.assertNotIn(".end", [b.lower() for b in body])
+        # supplies of the three singleton requests are exact
+        sup = [re.search(r"vsup=(\S+)", Path(json.loads(Path(c[0][2]).read_text())["netlist"]).read_text()).group(1)
+               for c in self.klt_calls()]
+        self.assertEqual(sup, ["1.8", "1.62", "1.98"])
+
+    def test_full_matrix_makes_three_requests(self):
+        rc, _, _ = self.run_main("--backend", "batch", "--no-write")
+        self.assertEqual(rc, 0)
+        reqs = [json.loads(Path(c[0][2]).read_text()) for c in self.klt_calls()]
+        self.assertEqual(len(reqs), 3)
+        self.assertTrue(all(len(r["corners"]["process"]) == 5 and len(r["corners"]["temperature_c"]) == 3
+                            for r in reqs))
+
+
+class TestBatchRecord(BatchHarness):
+    def test_passing_run_writes_a_record_with_provenance_in_matrix_order(self):
+        rc, out, _ = self.run_main("--backend", "batch")
+        self.assertEqual(rc, 0, out)
+        (rec_path,) = self.records()
+        rec = json.loads(rec_path.read_text())
+        self.assertTrue(rec["overall_pass"])
+        self.assertEqual(rec["backend"], "batch")
+        ids = [r["corner_id"] for r in rec["corners"]]
+        self.assertEqual(ids, rec["matrix"]["point_ids"])
+        self.assertEqual(len(set(ids)), 45)
+        self.assertIsNone(rec["corners"][0]["ngspice_exit"])
+        self.assertEqual(len(rec["execution"]["requests"]), 3)
+        self.assertEqual(rec["execution"]["requested_backend"], "batch")
+        md = rec_path.with_suffix(".md").read_text()
+        self.assertIn("aws-batch-fleet", md)
+        self.assertIn("klt-sim-", md)
+        self.assertIn("remote executor, not this machine", md)
+        self.assertIn("ngspice-42 (remote executor", md)
+        self.assertIn("klt-responses", md)
+        self.assertNotIn("ngspice exit 0", md)
+        self.assertNotIn("clean nonzero exit", md)
+        for sub in ("klt-requests", "klt-responses", "klt-request-netlists"):
+            self.assertEqual(len(list((self.exp_dir / sub).iterdir())), 3)
+        self.assertEqual(len(list((self.exp_dir / "corners" / rec["record_id"]).iterdir())), 45)
+
+    def test_append_only_refusal(self):
+        fixed = mock.patch.object(corner_run, "datetime", wraps=corner_run.datetime)
+        with fixed as dt:
+            dt.now.return_value = corner_run.datetime(2026, 1, 2, 3, 4, 5, tzinfo=corner_run.timezone.utc)
+            self.run_main("--backend", "batch", *QUICK)
+            n = len(self.klt_calls())
+            # Fresh scratch (as in another clone): only the committed-evidence
+            # check can refuse now. The same-scratch case is the reservation's.
+            shutil.rmtree(self.tmp / "build" / ".reservations")
+            err, _, _ = self.run_main("--backend", "batch", *QUICK, expect_exit=HarnessErr)
+        self.assertIn("append-only", str(err))
+        self.assertEqual(len(self.klt_calls()), n)
+
+    def test_same_id_rerun_in_same_scratch_is_refused_by_reservation(self):
+        with mock.patch.object(corner_run, "datetime", wraps=corner_run.datetime) as dt:
+            dt.now.return_value = corner_run.datetime(2026, 1, 2, 3, 4, 5, tzinfo=corner_run.timezone.utc)
+            self.run_main("--backend", "batch", *QUICK)
+            n = len(self.klt_calls())
+            err, _, _ = self.run_main("--backend", "batch", *QUICK, expect_exit=HarnessErr)
+        self.assertIn("already reserved", str(err))
+        self.assertEqual(len(self.klt_calls()), n)
+
+    def test_no_write_creates_no_evidence(self):
+        rc, out, _ = self.run_main("--backend", "batch", *QUICK, "--no-write")
+        self.assertEqual(rc, 0)
+        self.assertFalse((self.exp_dir / "records").exists())
+        self.assertFalse((self.exp_dir / "klt-responses").exists())
+
+
+class TestBatchGrading(BatchHarness):
+    def run_quick(self, mutate=None, **fake_kw):
+        self.fake = FakeKlt(self, self.pin, mutate=mutate, **fake_kw)
+        return self.run_main("--backend", "batch", *QUICK, "--no-write")
+
+    def first(self, resp):
+        return resp["corners"][0]
+
+    def test_min_max_equality_passes_and_each_bound_miss_fails(self):
+        def setv(v, name="meas_vgs"):
+            def m(resp, req):
+                if req["corners"]["process"] != ["tt"]:
+                    return  # alter one request only, so the spread check keeps its range
+                for mm in self.first(resp)["measurements"]:
+                    if mm["name"] == name:
+                        mm["value"] = v
+            return m
+        # smoke vgs window is [0.3, 1.2], inclusive: the limits themselves pass
+        self.assertEqual(self.run_quick(setv(0.3))[0], 0)
+        self.assertEqual(self.run_quick(setv(1.2))[0], 0)
+        for v, name in ((0.2999, "meas_vgs"), (1.2001, "meas_vgs"), (1e-9, "meas_isup"), (2e-3, "meas_isup")):
+            rc, out, err = self.run_quick(setv(v, name))
+            self.assertEqual(rc, 2, (v, name))
+            self.assertIn("FAIL", out)
+
+    def test_boundary_values_pass_grading(self):
+        exp = corner_run.load_experiment(self.exp_dir)
+        group = corner_run.group_batch_requests([corner_run.Corner("tt", 27.0, 1.8)], True)[0]
+        for vgs in (0.3, 1.2):
+            logp = self.tmp / "l.log"
+            logp.write_text("ok\n")
+            resp = {"corners": [{"process": "tt", "temperature_c": 27, "status": "pass",
+                                 "artifacts": {"log": str(logp)},
+                                 "measurements": [{"name": "meas_vgs", "value": vgs},
+                                                  {"name": "meas_isup", "value": 1e-8}]}]}
+            res, _ = corner_run.normalize_batch_response(exp, group, resp, self.tmp, 300)
+            self.assertTrue(res[0]["pass"], vgs)
+            self.assertEqual(res[0]["measurements"][1]["value"], 1e-8)  # isup == min is inclusive
+
+    def test_klt_verdict_is_not_substituted(self):
+        def m(resp, req):
+            resp["status"] = "fail"
+            for c in resp["corners"]:
+                c["status"] = "fail"
+        rc, out, _ = self.run_quick(m)
+        # numerically fine => the harness verdict is its own, not klt's
+        self.assertEqual(rc, 0)
+
+    def test_spread_check_failure_is_recorded(self):
+        def flat(resp, req):
+            for c in resp["corners"]:
+                c["measurements"][0]["value"] = 0.6
+        rc, out, _ = self.run_quick(flat)
+        self.assertEqual(rc, 2)
+        # all per-point results pass; only the corner-sensitivity check fails
+        self.assertIn("PASS  vgs=0.6", out)
+        self.assertIn("overall  : FAIL", out)
+
+    def test_each_solver_marker_fails_even_with_passing_values(self):
+        for marker in corner_run.SOLVER_DIAGNOSTIC_MARKERS:
+            def m(resp, req, marker=marker):
+                Path(resp["corners"][0]["artifacts"]["log"]).write_text(f"warn\n{marker} here\n")
+            rc, out, err = self.run_quick(m)
+            self.assertEqual(rc, 2, marker)
+            self.assertIn("solver diagnostic", err)
+
+    def test_recovered_warning_in_klt_diagnostics_is_not_the_gate(self):
+        def m(resp, req):
+            self.first(resp)["diagnostics"] = [{"code": "recovered_warning", "message": "gmin stepping recovered"}]
+        rc, out, err = self.run_quick(m)
+        self.assertNotIn("solver diagnostic", err)
+
+    def test_absent_or_unreadable_log_cannot_pass(self):
+        for edit in (lambda c: c.pop("artifacts"),
+                     lambda c: c["artifacts"].update(log=None),
+                     lambda c: c["artifacts"].update(log="/nonexistent/x.log")):
+            def m(resp, req, edit=edit):
+                edit(self.first(resp))
+            rc, out, err = self.run_quick(m)
+            self.assertEqual(rc, 2)
+            self.assertIn("engine log", err)
+
+    def test_bad_values_and_statuses_are_recorded_fails(self):
+        for edit in (lambda c: c["measurements"].pop(0),
+                     lambda c: c["measurements"][0].update(value=None),
+                     lambda c: c["measurements"][0].update(value=float("nan")),
+                     lambda c: c["measurements"][0].update(value="0.6"),
+                     lambda c: c.update(status="error"),
+                     lambda c: c.update(status="inconclusive"),
+                     lambda c: c.update(status="timeout")):
+            def m(resp, req, edit=edit):
+                edit(self.first(resp))
+            rc, out, err = self.run_quick(m)
+            self.assertEqual(rc, 2)
+            self.assertIn("FAIL", out)
+
+    def test_structural_response_problems_raise_and_never_fall_back(self):
+        quick_bad = {
+            "missing": lambda r, q: r["corners"].clear(),
+            "duplicate": lambda r, q: r["corners"].append(dict(r["corners"][0])),
+            "extra": lambda r, q: r["corners"].append({**r["corners"][0], "process": "ss"}),
+            "wrong-temp": lambda r, q: r["corners"][0].update(temperature_c=28),
+            "malformed": lambda r, q: r["corners"].__setitem__(0, "junk"),
+            "pdk-missing": lambda r, q: r.pop("provenance"),
+            "pdk-other": lambda r, q: r["provenance"]["pdk"].update(version="deadbeef"),
+        }
+        for name, mut in quick_bad.items():
+            self.fake = FakeKlt(self, self.pin, mutate=mut)
+            err, _, _ = self.run_main("--backend", "batch", *QUICK, "--no-write", expect_exit=HarnessErr)
+            self.assertTrue(str(err), name)
+            self.assertTrue(all(c[0][0] == "/fake/klt" for c in self.fake.calls), name)
+            self.assertEqual(len(self.klt_calls()), 1, name)  # stopped at first request, no retry
+
+    def test_transport_failures_raise_without_evidence_or_fallback(self):
+        cases = {
+            "no stdout": dict(stdout="", rc=1),
+            "non-json": dict(stdout="Traceback...", rc=1),
+            "error envelope": dict(stdout=json.dumps({"error": "boom", "job_id": "klt-sim-abc123"}), rc=3),
+            "not an object": dict(stdout="[1]", rc=0),
+            "timeout": dict(raise_exc=subprocess.TimeoutExpired("klt", 1, output="submitted klt-sim-feed01")),
+        }
+        for name, kw in cases.items():
+            self.fake = FakeKlt(self, self.pin, **kw)
+            err, _, _ = self.run_main("--backend", "batch", *QUICK, expect_exit=HarnessErr)
+            self.assertIn("no evidence record written", str(err), name)
+            self.assertFalse((self.exp_dir / "records").exists(), name)
+            self.assertEqual(len(self.klt_calls()), 1, name)
+        self.assertIn("klt-sim-feed01", str(err))
+
+    def test_nonzero_exit_with_valid_response_is_graded_not_trusted(self):
+        rc, out, _ = self.run_quick(lambda r, q: None, rc=2)
+        self.assertEqual(rc, 0)  # klt's exit status is not the verdict; the graded values are
+        self.assertIn("overall  : PASS", out)
+
+    def test_pdk_mismatch_allowed_is_visible_in_record(self):
+        def m(resp, req):
+            resp["provenance"]["pdk"]["version"] = "other"
+        self.fake = FakeKlt(self, self.pin, mutate=m)
+        rc, _, err = self.run_main("--backend", "batch", *QUICK, "--allow-pdk-mismatch")
+        self.assertIn("WARNING", err)
+        rec = json.loads(self.records()[0].read_text())
+        self.assertFalse(rec["execution"]["requests"][0]["klt_pdk_names_pin"])
+        self.assertIn("does NOT name", self.records()[0].with_suffix(".md").read_text())
+
+
+class TestLocalPathUnchangedByBatchWork(BatchHarness):
+    def test_default_and_explicit_local_use_the_same_ngspice_path(self):
+        launched = []
+
+        def fake_run(cmd, **kw):
+            launched.append(cmd)
+            return subprocess.CompletedProcess(cmd, 0, stdout="meas_vgs = 0.6\nmeas_isup = 1e-5\n", stderr="")
+
+        for extra in ([], ["--backend", "local"]):
+            launched.clear()
+            with mock.patch.object(corner_run.subprocess, "run", side_effect=fake_run):
+                self.run_main(*QUICK, "--no-write", *extra)
+            self.assertEqual([c[0] for c in launched], ["ngspice"] * 3)
+
+    def test_local_record_has_no_batch_fields(self):
+        def fake_run(cmd, **kw):
+            return subprocess.CompletedProcess(cmd, 0, stdout="meas_vgs = 0.6\nmeas_isup = 1e-5\n", stderr="")
+        with mock.patch.object(corner_run.subprocess, "run", side_effect=fake_run):
+            self.run_main(*QUICK)
+        rec = json.loads(self.records()[0].read_text())
+        self.assertNotIn("backend", rec)
+        self.assertNotIn("execution", rec)
+        self.assertNotIn("klt_requests", rec["links"])
+        self.assertNotIn("Execution backend", self.records()[0].with_suffix(".md").read_text())
+
+
+
+class TestWindowGrid(unittest.TestCase):
+    """Issue #313: COUT/ESR window-grid expansion, deck walk and conservative aggregation.
+
+    PDK-free: reads the real sim/load-transient manifest, builds decks and
+    results by hand, and never invokes ngspice.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        cls.exp = corner_run.load_experiment(SIM_DIR / "load-transient")
+        cls.corners = [
+            corner_run.Corner("tt", 27, 3.3),
+            corner_run.Corner("ss", -40, 2.97),
+        ]
+
+    def good_results(self):
+        """One fully present, passing result per corner (values well inside bounds)."""
+        out = []
+        for corner in self.corners:
+            checks = []
+            for m in self.exp.measurements:
+                checks.append(
+                    {"name": m.name, "value": 1.8 if m.name.startswith("vout_pre_v") else 0.001, "min": m.min, "max": m.max,
+                     "pass": True, "reason": ""}
+                )
+            out.append({"corner_id": corner.id, "pass": True, "measurements": checks})
+        return out
+
+    def cov(self, results):
+        return corner_run.grid_coverage(self.exp, results, self.corners)
+
+    def test_grid_is_declared_and_covers_dr002_corners_and_reference(self):
+        legs = {(l["cout_f"], l["esr_ohm"]) for l in corner_run.window_legs(self.exp.raw)}
+        self.assertEqual(legs, {(c, e) for c in (0.33e-6, 4.7e-6) for e in (0, 0.01, 0.5)})
+        self.assertIn((4.7e-6, 0.01), legs)  # the pre-#313 reference point
+        self.assertIn("NOT a continuous-window proof", self.exp.raw["window_grid"]["sampling_statement"])
+
+    def test_bounds_unchanged_by_the_grid(self):
+        bounded = {m.name.split("__")[0]: (m.max) for m in self.exp.measurements if m.max is not None}
+        self.assertEqual(bounded["undershoot_rise_v"], 0.15)
+        self.assertEqual(bounded["overshoot_fall_v"], 0.15)
+        self.assertEqual(bounded["recovery_rise_us"], 20)
+        self.assertEqual(bounded["recovery_fall_us"], 20)
+
+    def test_measurements_carry_coordinates_and_both_directions(self):
+        n_legs = len(corner_run.window_legs(self.exp.raw))
+        leg_ms = [m for m in self.exp.measurements if m.leg]
+        self.assertEqual(len(leg_ms), 8 * n_legs)
+        self.assertEqual({m.direction for m in leg_ms}, {"rise", "fall", "pre"})
+        zero = [m for m in leg_ms if m.esr_ohm == 0 and m.cout_f == 0.33e-6]
+        self.assertTrue(zero and all(m.name.endswith("__c330n_esr0") for m in zero))
+
+    def test_deck_walks_every_leg_with_independent_reset_and_alters(self):
+        pdk = mock.Mock(lib_file="/x/sky130.lib.spice")
+        deck = corner_run.build_deck(self.exp, pdk, self.corners[0], ["* body"])
+        lines = deck.splitlines()
+        n_legs = len(corner_run.window_legs(self.exp.raw))
+        self.assertEqual(lines.count("reset"), n_legs)
+        self.assertEqual(lines.count("tran 200n 3m"), n_legs)
+        self.assertEqual(sum(1 for l in lines if l.startswith("alter cdir")), n_legs)
+        # every leg re-applies ALL three alters between its reset and its tran
+        for i, l in enumerate(lines):
+            if l == "reset":
+                self.assertEqual(
+                    [x.split("=")[0].strip() for x in lines[i + 2 : i + 5]],
+                    ["alter cout", "alter resr", "alter cdir"],
+                )
+
+    def test_zero_esr_leg_uses_direct_capacitor_not_a_resistor(self):
+        lines = corner_run.window_leg_lines(self.exp, ["c4u7_esr0"])
+        self.assertIn("alter cdir = 4.7e-06", lines)
+        self.assertIn("alter cout = 0.0", lines)  # series branch open
+        nonzero = corner_run.window_leg_lines(self.exp, ["c4u7_esr500m"])
+        self.assertIn("alter cdir = 0.0", nonzero)
+        self.assertIn("alter cout = 4.7e-06", nonzero)
+        self.assertIn("alter resr = 0.5", nonzero)
+
+    def test_leg_order_override_reorders_blocks_only(self):
+        ids = [l["id"] for l in corner_run.window_legs(self.exp.raw)]
+        fwd = corner_run.window_leg_lines(self.exp, ids)
+        rev = corner_run.window_leg_lines(self.exp, ids[::-1])
+        self.assertNotEqual(fwd, rev)
+        self.assertEqual(sorted(fwd), sorted(rev))
+
+    def test_full_grid_passes(self):
+        cov = self.cov(self.good_results())
+        self.assertTrue(cov["complete"])
+        self.assertTrue(cov["pass"])
+        self.assertEqual(cov["conditions_passing"], cov["conditions_expected"])
+        self.assertEqual(cov["conditions_expected"], 2 * 8 * 6)
+
+    def test_missing_leg_is_not_a_pass(self):
+        results = self.good_results()
+        results[0]["measurements"] = [
+            c for c in results[0]["measurements"] if not c["name"].endswith("__c330n_esr0")
+        ]
+        cov = self.cov(results)
+        self.assertFalse(cov["pass"])
+        self.assertFalse(cov["complete"])
+        self.assertEqual({f["status"] for f in cov["failures"]}, {"missing"})
+        self.assertEqual({f["leg"] for f in cov["failures"]}, {"c330n_esr0"})
+
+    def test_missing_corner_is_not_a_pass(self):
+        cov = self.cov(self.good_results()[:1])
+        self.assertFalse(cov["pass"])
+        self.assertEqual({f["corner_id"] for f in cov["failures"]}, {self.corners[1].id})
+
+    def test_one_failed_condition_is_not_a_pass(self):
+        results = self.good_results()
+        bad = next(c for c in results[1]["measurements"] if c["name"] == "recovery_fall_us__c4u7_esr10m")
+        bad.update(value=25.0, **{"pass": False, "reason": "above max 20"})
+        cov = self.cov(results)
+        self.assertFalse(cov["pass"])
+        self.assertTrue(cov["complete"])  # present and finite, but failing
+        self.assertEqual(cov["conditions_passing"], cov["conditions_expected"] - 1)
+        (f,) = cov["failures"]
+        self.assertEqual((f["leg"], f["direction"], f["cout_f"], f["esr_ohm"]), ("c4u7_esr10m", "fall", 4.7e-6, 0.01))
+
+    def test_stale_pass_flag_cannot_hide_an_out_of_bound_value(self):
+        results = self.good_results()
+        bad = next(c for c in results[0]["measurements"] if c["name"] == "undershoot_rise_v__c330n_esr10m")
+        bad["value"] = 0.2  # still flagged pass=True
+        self.assertFalse(self.cov(results)["pass"])
+
+    def test_nan_and_unparsable_values_are_not_a_pass(self):
+        for value in (float("nan"), float("inf"), None):
+            results = self.good_results()
+            bad = next(c for c in results[0]["measurements"] if c["name"] == "overshoot_fall_v__c4u7_esr0")
+            bad["value"] = value  # a NaN compares False to every bound
+            cov = self.cov(results)
+            self.assertFalse(cov["pass"], value)
+            self.assertFalse(cov["complete"], value)
+
+    def test_run_corner_flags_nan_measurement(self):
+        stdout = "meas_undershoot_rise_v__c330n_esr0 = nan\n"
+        proc = subprocess.CompletedProcess([], 0, stdout=stdout, stderr="")
+        pdk = mock.Mock(lib_file="/x/l")
+        with tempfile.TemporaryDirectory() as td, \
+             mock.patch.object(corner_run.subprocess, "run", return_value=proc):
+            res = corner_run.run_corner(self.exp, pdk, self.corners[0], ["* b"], Path(td), None, 5)
+        self.assertFalse(res["pass"])
+        chk = next(c for c in res["measurements"] if c["name"] == "undershoot_rise_v__c330n_esr0")
+        self.assertFalse(chk["pass"])
+        self.assertEqual((chk["leg"], chk["direction"]), ("c330n_esr0", "rise"))
+
+    def test_non_finite_value_fails_even_without_bounds(self):
+        self.assertFalse(corner_run._finite_number(float("nan")))
+
+    def test_record_markdown_discloses_incomplete_coverage(self):
+        results = self.good_results()
+        results[0]["measurements"] = results[0]["measurements"][:-1]
+        text = "\n".join(corner_run.render_window_grid(self.cov(results)))
+        self.assertIn("INCOMPLETE", text)
+        self.assertIn("grid verdict **FAIL**", text)
+        self.assertIn("finite sample", text)
+        self.assertIn("PVT coverage and COUT/ESR coverage are separate axes", text)
+        self.assertIn("COUT=", text)
+
+    def test_experiments_without_a_grid_are_unaffected(self):
+        exp = corner_run.load_experiment(SIM_DIR / "pdk-smoke")
+        self.assertIsNone(corner_run.grid_coverage(exp, [], self.corners))
+        self.assertEqual(corner_run.window_leg_lines(exp), [])
+
+
+class TestBoundInclusivity(BatchHarness):
+    """Issue #335: explicit per-bound inclusivity, one grader for every path."""
+
+    @staticmethod
+    def meas(**kw):
+        return corner_run.Measurement(name="x", expr="x", **kw)
+
+    def test_strict_upper_equality_fails_inclusive_passes(self):
+        strict = self.meas(max=0.3, max_inclusive=False)
+        incl = self.meas(max=0.3)
+        self.assertFalse(corner_run.grade_bounds(strict, 0.3)[0])
+        self.assertTrue(corner_run.grade_bounds(strict, 0.2999)[0])
+        self.assertFalse(corner_run.grade_bounds(strict, 0.3001)[0])
+        self.assertTrue(corner_run.grade_bounds(incl, 0.3)[0])
+        self.assertFalse(corner_run.grade_bounds(incl, 0.3001)[0])
+
+    def test_strict_lower_equality_fails_inclusive_passes(self):
+        strict = self.meas(min=50, min_inclusive=False)
+        incl = self.meas(min=50)
+        self.assertFalse(corner_run.grade_bounds(strict, 50.0)[0])
+        self.assertTrue(corner_run.grade_bounds(strict, 50.0001)[0])
+        self.assertFalse(corner_run.grade_bounds(strict, 49.9999)[0])
+        self.assertTrue(corner_run.grade_bounds(incl, 50.0)[0])
+
+    def test_zero_valued_bounds_are_enforced(self):
+        # 0 is a real bound, not "unset"
+        self.assertFalse(corner_run.grade_bounds(self.meas(min=0, min_inclusive=False), 0.0)[0])
+        self.assertTrue(corner_run.grade_bounds(self.meas(min=0), 0.0)[0])
+        self.assertFalse(corner_run.grade_bounds(self.meas(min=0), -1e-12)[0])
+        self.assertFalse(corner_run.grade_bounds(self.meas(max=0, max_inclusive=False), 0.0)[0])
+        self.assertTrue(corner_run.grade_bounds(self.meas(max=0), 0.0)[0])
+        self.assertFalse(corner_run.grade_bounds(self.meas(max=0), 1e-12)[0])
+
+    def test_flags_without_a_bound_are_inert_and_default_is_inclusive(self):
+        m = self.meas()
+        self.assertTrue(m.min_inclusive and m.max_inclusive)
+        self.assertTrue(corner_run.grade_bounds(self.meas(min_inclusive=False), 1.0)[0])
+
+    def test_missing_and_nonfinite_fail(self):
+        m = self.meas(max=1.0, max_inclusive=False)
+        self.assertFalse(corner_run.grade_bounds(m, None)[0])
+        for v in (float("nan"), float("inf"), float("-inf")):
+            self.assertFalse(corner_run.grade_bounds(self.meas(), v)[0], v)
+
+    def test_malformed_policy_fails_clearly(self):
+        for kw in ({"max": 1.0, "max_inclusive": "false"}, {"min": 1.0, "min_inclusive": 0},
+                   {"min": 1.0, "min_inclusive": None}):
+            with self.assertRaisesRegex(corner_run.HarnessError, r"_inclusive must be a JSON boolean"):
+                corner_run.grade_bounds(self.meas(**kw), 1.0)
+        with self.assertRaisesRegex(corner_run.HarnessError, "finite number or null"):
+            corner_run.grade_bounds(self.meas(max="0.3"), 0.1)
+
+    def test_unknown_flag_spelling_is_rejected_at_load(self):
+        with self.assertRaises(TypeError):
+            corner_run.Measurement(name="x", expr="x", max_exclusive=True)
+
+    def test_batch_path_agrees_with_local_grader(self):
+        exp = corner_run.load_experiment(self.exp_dir)
+        group = corner_run.group_batch_requests([corner_run.Corner("tt", 27.0, 1.8)], True)[0]
+        vgs_m = next(m for m in exp.measurements if m.name == "vgs")
+        isup_m = next(m for m in exp.measurements if m.name == "isup")
+        cases = [(True, True), (False, True), (True, False), (False, False)]
+        for lo_i, hi_i in cases:
+            for vgs in (vgs_m.min, vgs_m.max, 0.6, vgs_m.min - 1e-6, vgs_m.max + 1e-6, float("nan"), None):
+                vgs_m.min_inclusive, vgs_m.max_inclusive = lo_i, hi_i
+                logp = self.tmp / "l.log"
+                logp.write_text("ok\n")
+                ms = [{"name": "meas_isup", "value": 1e-8}]
+                if vgs is not None:
+                    ms.append({"name": "meas_vgs", "value": vgs})
+                resp = {"corners": [{"process": "tt", "temperature_c": 27, "status": "pass",
+                                     "artifacts": {"log": str(logp)}, "measurements": ms}]}
+                res, _ = corner_run.normalize_batch_response(exp, group, resp, self.tmp, 300)
+                chk = next(c for c in res[0]["measurements"] if c["name"] == "vgs")
+                self.assertEqual(chk["pass"], corner_run.grade_bounds(vgs_m, vgs)[0], (lo_i, hi_i, vgs))
+                self.assertIs(chk["min_inclusive"], lo_i)  # serialized with the check
+                self.assertIs(chk["max_inclusive"], hi_i)
+        self.assertIsNotNone(isup_m)
+
+    def test_window_grid_expansion_carries_policy(self):
+        raw = {"measurements": [{"name": "t", "expr": "e", "max": 1, "max_inclusive": False,
+                                 "per_leg": True}],
+               "window_grid": {"legs": [{"id": "a", "cout_f": 1e-6, "esr_ohm": 0.0},
+                                        {"id": "b", "cout_f": 2e-6, "esr_ohm": 0.1}]}}
+        ms = corner_run.expand_measurements(raw)
+        self.assertEqual(len(ms), 2)
+        for m in ms:
+            self.assertFalse(corner_run.grade_bounds(m, 1.0)[0])
+            self.assertTrue(corner_run.grade_bounds(m, 0.5)[0])
+
+    def test_policy_only_change_alters_fingerprint_and_legacy_is_stable(self):
+        from _record_common import pvt_input_sections
+        base = {"measurements": [{"name": "d", "expr": "e", "min": None, "max": 0.3}]}
+
+        def sec(m):
+            return pvt_input_sections({"measurements": [m]}, None)["measurements"]
+
+        legacy = sec(base["measurements"][0])
+        # omitted == explicit default: identical to the pre-#335 digest (legacy records stay fresh)
+        self.assertEqual(legacy, sec({**base["measurements"][0], "max_inclusive": True}))
+        strict = sec({**base["measurements"][0], "max_inclusive": False})
+        self.assertNotEqual(legacy, strict)
+        self.assertNotEqual(strict, sec({**base["measurements"][0], "min_inclusive": False}))
+        self.assertNotEqual(legacy, sec({**base["measurements"][0], "max_inclusive": "false"}))
+        # pinned legacy digest: the exact pre-#335 canonicalisation of this entry
+        from _record_common import canonical_digest
+        self.assertEqual(
+            legacy,
+            canonical_digest({"measurements": [{"name": "d", "expr": "e", "min": None, "max": 0.3}],
+                              "spread_checks": []}),
+        )
+
+    def test_shipped_strict_manifests_match_ratified_rows(self):
+        expect = {
+            "dropout-vs-load": {"dropout_v": "max_inclusive"},
+            "psrr-dc": {n: "min_inclusive" for n in (
+                "psrr_1khz_1ma_db", "psrr_100khz_1ma_db", "psrr_1khz_50ma_db", "psrr_100khz_50ma_db")},
+            "iq": {"iq_no_load_ua": "max_inclusive", "iq_full_load_ua": "max_inclusive"},
+            "load-regulation": {"load_reg_v": "max_inclusive", "load_reg_pct": "max_inclusive"},
+            "line-regulation": {"line_reg_1ma_mv_per_v": "max_inclusive",
+                                "line_reg_50ma_mv_per_v": "max_inclusive"},
+            "enable-shutdown": {"iq_shutdown_static_ua": "max_inclusive",
+                                "iq_shutdown_after_edge_ua": "max_inclusive"},
+        }
+        for slug, strict in expect.items():
+            raw = json.loads((SIM_DIR / slug / "experiment.json").read_text())
+            for m in raw["measurements"]:
+                for flag in ("min_inclusive", "max_inclusive"):
+                    self.assertEqual(m.get(flag) is False, strict.get(m["name"]) == flag, (slug, m["name"], flag))
+            corner_run.load_experiment(SIM_DIR / slug)
+
+
+class TestLoadRegulationManifestGate(unittest.TestCase):
+    """Issue #364: the ACTUAL load-regulation manifest, graded by the shared
+    grade_bounds, must gate both settled endpoints on the Output window and
+    treat the ratified delta maxima as strict."""
+
+    @classmethod
+    def setUpClass(cls):
+        exp = corner_run.load_experiment(SIM_DIR / "load-regulation")
+        cls.ms = {m.name: m for m in exp.measurements}
+
+    def grade(self, v0, v50):
+        """Derive each manifest measurement from the endpoints exactly as its
+        expr does (delta = abs difference), then grade via grade_bounds."""
+        vals = {"vout_0ma_v": v0, "vout_50ma_v": v50}
+        ok = all(isinstance(v, float) for v in (v0, v50))
+        if ok and all(v == v for v in (v0, v50)) and abs(v0) != float("inf") and abs(v50) != float("inf"):
+            d = abs(v50 - v0)
+            vals["load_reg_v"] = d
+            vals["load_reg_pct"] = 100 * d / 1.8
+        else:
+            vals["load_reg_v"] = vals["load_reg_pct"] = None
+        return {n: corner_run.grade_bounds(self.ms[n], vals[n])[0] for n in vals}
+
+    def test_manifest_shape(self):
+        for n in ("vout_0ma_v", "vout_50ma_v"):
+            self.assertEqual((self.ms[n].min, self.ms[n].max), (1.764, 1.836))
+            self.assertTrue(self.ms[n].min_inclusive and self.ms[n].max_inclusive)
+        self.assertEqual(self.ms["vout_0ma_v"].expr, "tran1.vout_0ma")
+        self.assertEqual(self.ms["vout_50ma_v"].expr, "tran2.vout_50ma")
+        self.assertEqual((self.ms["load_reg_v"].max, self.ms["load_reg_pct"].max), (0.018, 1))
+        for n in ("load_reg_v", "load_reg_pct"):
+            self.assertFalse(self.ms[n].max_inclusive)
+
+    def test_equal_out_of_window_endpoints_fail_with_zero_delta(self):
+        for v in (1.9, 1.7):
+            r = self.grade(v, v)
+            self.assertTrue(r["load_reg_v"] and r["load_reg_pct"])  # the old hole
+            self.assertFalse(r["vout_0ma_v"])
+            self.assertFalse(r["vout_50ma_v"])
+
+    def test_one_invalid_endpoint_fails(self):
+        r = self.grade(1.80, 1.837)
+        self.assertTrue(r["vout_0ma_v"])
+        self.assertFalse(r["vout_50ma_v"])
+        r = self.grade(1.763, 1.80)
+        self.assertFalse(r["vout_0ma_v"])
+        self.assertTrue(r["vout_50ma_v"])
+
+    def test_window_edges_pass(self):
+        r = self.grade(1.764, 1.836)
+        self.assertTrue(r["vout_0ma_v"] and r["vout_50ma_v"])
+
+    def test_missing_and_nonfinite_endpoints_fail(self):
+        for bad in (None, float("nan"), float("inf"), float("-inf")):
+            self.assertFalse(corner_run.grade_bounds(self.ms["vout_0ma_v"], bad)[0], bad)
+            self.assertFalse(corner_run.grade_bounds(self.ms["vout_50ma_v"], bad)[0], bad)
+
+    def test_delta_equal_to_limit_fails_smaller_passes(self):
+        self.assertFalse(corner_run.grade_bounds(self.ms["load_reg_v"], 0.018)[0])
+        self.assertFalse(corner_run.grade_bounds(self.ms["load_reg_pct"], 1)[0])
+        self.assertFalse(corner_run.grade_bounds(self.ms["load_reg_pct"], 1.0)[0])
+        r = self.grade(1.80, 1.80 + 0.017)
+        self.assertTrue(all(r.values()), r)
+        self.assertFalse(corner_run.grade_bounds(self.ms["load_reg_v"], 0.018001)[0])
+
+
+class TestLineRegulationManifestGate(unittest.TestCase):
+    """Issue #369: the ACTUAL line-regulation manifest, graded by the shared
+    grade_bounds, must gate all four settled endpoints on the Output window
+    and treat the ratified slope maxima as strict."""
+
+    ENDPOINTS = ("vout_1ma_lo", "vout_1ma_hi", "vout_50ma_lo", "vout_50ma_hi")
+    SLOPES = ("line_reg_1ma_mv_per_v", "line_reg_50ma_mv_per_v")
+
+    @classmethod
+    def setUpClass(cls):
+        exp = corner_run.load_experiment(SIM_DIR / "line-regulation")
+        cls.ms = {m.name: m for m in exp.measurements}
+
+    def grade(self, l1, h1, l50, h50):
+        """Derive each slope by evaluating its manifest expr over the endpoint
+        values, then grade everything via grade_bounds."""
+        vals = {"vout_1ma_lo": l1, "vout_1ma_hi": h1,
+                "vout_50ma_lo": l50, "vout_50ma_hi": h50}
+        env = {"abs": abs, "tran1": mock.Mock(vout_1ma_lo=l1), "tran2": mock.Mock(vout_1ma_hi=h1),
+               "tran3": mock.Mock(vout_50ma_lo=l50), "tran4": mock.Mock(vout_50ma_hi=h50)}
+        for n in self.SLOPES:
+            vals[n] = eval(self.ms[n].expr, {"__builtins__": {}}, env)
+        return {n: corner_run.grade_bounds(self.ms[n], v)[0] for n, v in vals.items()}
+
+    def test_manifest_shape(self):
+        exprs = {"vout_1ma_lo": "tran1.vout_1ma_lo", "vout_1ma_hi": "tran2.vout_1ma_hi",
+                 "vout_50ma_lo": "tran3.vout_50ma_lo", "vout_50ma_hi": "tran4.vout_50ma_hi"}
+        for n, e in exprs.items():
+            self.assertEqual(self.ms[n].expr, e)
+            self.assertEqual((self.ms[n].min, self.ms[n].max), (1.764, 1.836))
+            self.assertTrue(self.ms[n].min_inclusive and self.ms[n].max_inclusive)
+        for n in self.SLOPES:
+            self.assertEqual(self.ms[n].max, 5)
+            self.assertFalse(self.ms[n].max_inclusive)
+        self.assertIn("tran1.vout_1ma_lo", self.ms["line_reg_1ma_mv_per_v"].expr)
+        self.assertIn("tran4.vout_50ma_hi", self.ms["line_reg_50ma_mv_per_v"].expr)
+
+    def test_equal_collapsed_endpoints_fail_with_zero_slope(self):
+        r = self.grade(0.0, 0.0, 0.0, 0.0)
+        self.assertTrue(r["line_reg_1ma_mv_per_v"] and r["line_reg_50ma_mv_per_v"])  # the old hole
+        for n in self.ENDPOINTS:
+            self.assertFalse(r[n], n)
+        r = self.grade(1.0, 1.0, 1.0, 1.0)
+        for n in self.ENDPOINTS:
+            self.assertFalse(r[n], n)
+
+    def test_equal_overvoltage_endpoints_fail(self):
+        r = self.grade(1.9, 1.9, 1.9, 1.9)
+        self.assertTrue(r["line_reg_1ma_mv_per_v"] and r["line_reg_50ma_mv_per_v"])
+        for n in self.ENDPOINTS:
+            self.assertFalse(r[n], n)
+
+    def test_valid_regulated_endpoints_pass(self):
+        r = self.grade(1.800, 1.8020, 1.799, 1.8008)  # ~3.0 / ~2.7 mV/V
+        self.assertTrue(all(r.values()), r)
+
+    def test_slope_exactly_five_fails_at_each_load(self):
+        for n in self.SLOPES:
+            self.assertFalse(corner_run.grade_bounds(self.ms[n], 5)[0])
+            self.assertFalse(corner_run.grade_bounds(self.ms[n], 5.0)[0])
+            self.assertTrue(corner_run.grade_bounds(self.ms[n], 4.999)[0])
+            self.assertFalse(corner_run.grade_bounds(self.ms[n], 5.001)[0])
+        # an endpoint pair that really yields a slope above 5 through the expr fails
+        r = self.grade(1.800, 1.804, 1.800, 1.804)
+        self.assertFalse(r["line_reg_1ma_mv_per_v"] or r["line_reg_50ma_mv_per_v"])
+        self.assertTrue(all(r[n] for n in self.ENDPOINTS))
+
+    def test_window_edges_pass(self):
+        r = self.grade(1.764, 1.836, 1.764, 1.836)
+        for n in self.ENDPOINTS:
+            self.assertTrue(r[n], n)
+        r = self.grade(1.7639, 1.8361, 1.7639, 1.8361)
+        for n in self.ENDPOINTS:
+            self.assertFalse(r[n], n)
+
+    def test_missing_and_nonfinite_endpoints_fail(self):
+        for bad in (None, float("nan"), float("inf"), float("-inf")):
+            for n in self.ENDPOINTS + self.SLOPES:
+                self.assertFalse(corner_run.grade_bounds(self.ms[n], bad)[0], (n, bad))
+
+
+# --------------------------------------------------------------------------
+# issue #326: load-transient window grid on the klt batch backend, all mocked
+# --------------------------------------------------------------------------
+
+LT_NETLIST = (
+    "** sch_path: x\nVVIN VIN 0 'vsup'\nCOUT VOUT VESR 4.7u m=1\nRESR VESR 0 10m m=1\n"
+    "CDIR VOUT 0 0 m=1\nILOAD VOUT 0 PULSE(1m 50m 1m 1u 1u 1m 4m)\n.end\n"
+)
+
+
+class FakeStepKlt(FakeKlt):
+    """Answers a single-step (`analysis_steps`) request: every step measurement
+    is reported as `<step>.<name>` with `value_of(step, name, process, temp)`."""
+
+    def __init__(self, test, pin, value_of=None, **kw):
+        super().__init__(test, pin, **kw)
+        self.value_of = value_of or (lambda step, name, p, t: 1.8 if name == "vout_pre_v" else 0.01)
+
+    def __call__(self, cmd, **kw):
+        self.calls.append((cmd, kw))
+        if cmd[0] != "/fake/klt":
+            self.test.fail(f"unexpected launch: {cmd}")
+        req = json.loads(Path(cmd[2]).read_text())
+        self.test.assertNotIn("analysis", req)
+        (step,) = req["analysis_steps"]
+        outdir = Path(cmd[cmd.index("-o") + 1])
+        outdir.mkdir(parents=True, exist_ok=True)
+        corners = []
+        for p in req["corners"]["process"]:
+            for t in req["corners"]["temperature_c"]:
+                logp = outdir / f"{p}_{t}.log"
+                logp.write_text(f"ngspice log {step['name']} {p} {t}\n")
+                corners.append({
+                    "corner_id": f"{p}/{t:g}C", "process": p, "temperature_c": t, "status": "pass",
+                    "runtime_s": 40.0, "diagnostics": [], "artifacts": {"log": str(logp)},
+                    "measurements": [
+                        {"name": f"{step['name']}.{m['name']}", "status": "pass",
+                         "value": self.value_of(step["name"], m["name"], p, t)}
+                        for m in step["measurements"]
+                    ],
+                })
+        resp = {
+            "status": "pass", "corners": corners,
+            "environment": {"engine": "ngspice", "engine_version": "42",
+                            "remote": {"provider": "aws-batch-fleet", "job_id": "klt-sim-0000aa"}},
+            "provenance": {"klt_version": "0.7.0", "pdk": {"version": self.pin["open_pdks_commit"]}},
+        }
+        if self.mutate:
+            self.mutate(resp, req)
+        return subprocess.CompletedProcess(cmd, self.rc, stdout=json.dumps(resp), stderr="")
+
+
+class TestBatchWindowGrid(BatchHarness):
+    SLUG = "load-transient"
+    NETLIST = LT_NETLIST
+
+    def make_fake(self, **kw):
+        return FakeStepKlt(self, self.pin, **kw)
+
+    def legs(self):
+        return [leg["id"] for leg in corner_run.window_legs(json.loads((SIM_DIR / self.SLUG / "experiment.json").read_text()))]
+
+    def requests(self):
+        return [json.loads(Path(c[0][2]).read_text()) for c in self.klt_calls()]
+
+    def test_full_matrix_is_one_request_per_supply_and_leg(self):
+        rc, out, _ = self.run_main("--backend", "batch", "--dry-run")
+        self.assertEqual(rc, 0)
+        self.assertEqual(self.fake.calls, [])
+        n_legs = len(self.legs())
+        self.assertEqual(n_legs, 6)
+        self.assertEqual(out.count('"analysis_steps"'), 3 * n_legs)
+        self.assertIn("backend         : batch (18 klt sim request(s))", out)
+        self.assertFalse((self.exp_dir / "records").exists())
+
+    def test_quick_is_singletons_times_legs(self):
+        exp = corner_run.load_experiment(self.exp_dir)
+        args = corner_run.parse_args([str(self.exp_dir), "--quick"])
+        matrix, _ = corner_run.build_matrix(exp, args, self.pin)
+        groups = corner_run.group_batch_requests(matrix, True, corner_run.batch_legs(exp))
+        self.assertEqual(len(groups), 3 * 6)
+        self.assertTrue(all(len(g.corners) == 1 and g.leg for g in groups))
+        self.assertEqual(len({g.key for g in groups}), 18)
+
+    def test_step_request_content_matches_the_local_leg_block(self):
+        rc, _, _ = self.run_main("--backend", "batch", *QUICK, "--no-write")
+        reqs = self.requests()
+        self.assertEqual(len(reqs), 18)
+        by_leg = {r["analysis_steps"][0]["name"]: r for r in reqs[:6]}
+        self.assertEqual(sorted(by_leg), sorted(self.legs()))
+        esr0 = by_leg["c4u7_esr0"]["analysis_steps"][0]
+        self.assertEqual(esr0["analysis"], {"kind": "tran", "args": "200n 3m"})
+        # same numbers the local deck substitutes: series branch open, CDIR full, RESR parked
+        self.assertEqual(esr0["alter"], {"cout": 0.0, "resr": 0.01, "cdir": 4.7e-06})
+        self.assertEqual(by_leg["c330n_esr500m"]["analysis_steps"][0]["alter"],
+                         {"cout": 3.3e-07, "resr": 0.5, "cdir": 0.0})
+        names = [m["name"] for m in esr0["measurements"]]
+        self.assertEqual(names[:6], ["v_pre", "v_rise_min", "v_rise_max", "v_fall_min", "v_fall_max", "v_50ma"])
+        self.assertTrue(all(m["spice"].startswith(".meas tran ") for m in esr0["measurements"][:6]))
+        exprs = {m["name"]: m["expr"] for m in esr0["measurements"][6:]}
+        self.assertEqual(sorted(exprs), sorted(
+            ["vout_pre_v", "undershoot_rise_v", "overshoot_rise_v", "undershoot_fall_v", "overshoot_fall_v",
+             "recovery_rise_us", "recovery_fall_us", "settle_err_50ma_pct"]))
+        for helper in ("outband", "w_rise", "w_fall", "vpre", "dev", "band"):
+            for e in exprs.values():
+                self.assertIsNone(re.search(rf"(?<![\w.])\b{helper}\b(?!\()", e), (helper, e))
+        self.assertIn("v(vout)", exprs["recovery_fall_us"])
+        self.assertTrue(exprs["recovery_rise_us"].startswith("vecmax("))
+        body = Path(reqs[0]["netlist"]).read_text().splitlines()
+        self.assertEqual(body[0], ".param vsup=3.3")
+        self.assertNotIn("reset", "\n".join(json.dumps(r) for r in reqs))
+
+    def test_legs_merge_into_one_complete_result_per_corner(self):
+        rc, out, _ = self.run_main("--backend", "batch")
+        self.assertEqual(rc, 0, out)
+        (rec_path,) = self.records()
+        rec = json.loads(rec_path.read_text())
+        self.assertEqual(len(rec["corners"]), 45)
+        self.assertEqual(len(rec["execution"]["requests"]), 18)
+        self.assertEqual({r["leg"] for r in rec["execution"]["requests"]}, set(self.legs()))
+        exp = corner_run.load_experiment(self.exp_dir)
+        want = [m.name for m in exp.measurements]
+        for res in rec["corners"]:
+            self.assertEqual([c["name"] for c in res["measurements"]], want)
+            self.assertEqual(len(res["klt_request"]), 6)
+            self.assertEqual(res["elapsed_s"], 240.0)
+            self.assertTrue(all(c.get("leg") and c.get("direction") for c in res["measurements"]))
+        g = rec["window_grid"]
+        self.assertTrue(g["complete"] and g["pass"])
+        self.assertEqual(g["conditions_expected"], 45 * 8 * 6)
+        log = (self.exp_dir / "corners" / rec["record_id"] / "tt_27c_3.30v.log").read_text()
+        for leg in self.legs():
+            self.assertIn(f"window leg {leg}", log)
+        md = rec_path.with_suffix(".md").read_text()
+        self.assertIn("one per COUT/ESR window-grid leg", md)
+        self.assertIn("COMPLETE", md)
+
+    def test_bound_miss_and_missing_leg_value_are_conservative(self):
+        def value_of(step, name, p, t):
+            if step == "c330n_esr0" and name == "undershoot_rise_v":
+                return 0.19  # above the ratified 150 mV
+            return 1.8 if name == "vout_pre_v" else 0.01
+
+        def drop(resp, req):
+            if req["analysis_steps"][0]["name"] == "c4u7_esr500m":
+                for c in resp["corners"]:
+                    c["measurements"] = [m for m in c["measurements"] if not m["name"].endswith("recovery_fall_us")]
+
+        self.fake = FakeStepKlt(self, self.pin, value_of=value_of, mutate=drop)
+        rc, out, _ = self.run_main("--backend", "batch", *QUICK, "--no-write")
+        self.assertEqual(rc, 2)
+        self.assertIn("INCOMPLETE", out)
+        self.assertIn("overall  : FAIL", out)
+
+    def test_one_failed_leg_request_aborts_without_evidence_or_fallback(self):
+        def boom(resp, req):
+            if req["analysis_steps"][0]["name"] == "c330n_esr10m":
+                resp["corners"].clear()
+        self.fake = FakeStepKlt(self, self.pin, mutate=boom)
+        err, _, _ = self.run_main("--backend", "batch", *QUICK, expect_exit=HarnessErr)
+        self.assertIn("no local fallback", str(err))
+        self.assertFalse((self.exp_dir / "records").exists())
+        self.assertEqual(len(self.klt_calls()), 2)  # stopped at the failing leg, no retry
+
+    def test_leg_order_is_refused_under_batch(self):
+        err, _, _ = self.run_main("--backend", "batch", *QUICK, "--leg-order",
+                                  ",".join(reversed(self.legs())), expect_exit=HarnessErr)
+        self.assertIn("local-only", str(err))
+        self.assertEqual(self.fake.calls, [])
+
+    def test_edited_window_grid_shape_is_refused_before_netlisting(self):
+        edits = {
+            "deck analysis": lambda r: r["deck"]["analyses"].append("op"),
+            "unknown leg card": lambda r: r["window_grid"]["leg_analyses"].insert(6, "ac dec 10 1 1meg"),
+            "second tran": lambda r: r["window_grid"]["leg_analyses"].append("tran 1n 1u"),
+            "no reset": lambda r: r["window_grid"]["leg_analyses"].pop(0),
+            "non-leg measurement": lambda r: r["measurements"].append({"name": "x", "expr": "1", "unit": "V"}),
+        }
+        for name, edit in edits.items():
+            raw = json.loads((SIM_DIR / self.SLUG / "experiment.json").read_text())
+            edit(raw)
+            (self.exp_dir / "experiment.json").write_text(json.dumps(raw))
+            err, _, _ = self.run_main("--backend", "batch", *QUICK, expect_exit=HarnessErr)
+            self.assertIn("window-grid", str(err), name)
+        self.assertEqual(self.fake.calls, [])
+        corner_run.netlist_with_xschem.assert_not_called()
+
+    def test_other_transient_slugs_stay_refused(self):
+        for slug in ("startup", "load-regulation"):
+            raw = json.loads((SIM_DIR / self.SLUG / "experiment.json").read_text())
+            raw["slug"] = slug
+            (self.exp_dir / "experiment.json").write_text(json.dumps(raw))
+            err, _, _ = self.run_main("--backend", "batch", *QUICK, expect_exit=HarnessErr)
+            self.assertIn("bounded", str(err), slug)
+        # issue #374: dropout-vs-load is admitted only in its validated
+        # cold-start shape; a foreign manifest under that slug is refused.
+        raw = json.loads((SIM_DIR / self.SLUG / "experiment.json").read_text())
+        raw["slug"] = "dropout-vs-load"
+        (self.exp_dir / "experiment.json").write_text(json.dumps(raw))
+        err, _, _ = self.run_main("--backend", "batch", *QUICK, expect_exit=HarnessErr)
+        self.assertIn("validated cold-start crossing shape", str(err))
+        self.assertEqual(self.fake.calls, [])
+
+    def test_local_deck_still_uses_reset_per_leg(self):
+        exp = corner_run.load_experiment(self.exp_dir)
+        deck = corner_run.build_deck(exp, mock.Mock(lib_file="/x/l"), corner_run.Corner("tt", 27, 3.3), ["* b"])
+        self.assertEqual(deck.splitlines().count("reset"), 6)
+
+
+class TestLoadTransientBaselineGate(BatchHarness):
+    """Issue #372: every COUT/ESR leg must show an in-window absolute pre-step
+    output; the relative measurements alone cannot validate the baseline."""
+
+    SLUG = "load-transient"
+    NETLIST = LT_NETLIST
+
+    def make_fake(self, **kw):
+        return FakeStepKlt(self, self.pin, **kw)
+
+    @classmethod
+    def setUpClass(cls):
+        cls.exp = corner_run.load_experiment(SIM_DIR / "load-transient")
+        cls.base = [m for m in cls.exp.measurements if m.name.startswith("vout_pre_v__")]
+
+    def grade_leg(self, v_pre, rel=0.0):
+        """Grade one leg: baseline = v_pre; every relative measurement = rel."""
+        out = {}
+        for m in self.exp.measurements:
+            if m.leg != "c4u7_esr10m":
+                continue
+            v = v_pre if m.name.startswith("vout_pre_v__") else rel
+            out[m.name.split("__")[0]] = corner_run.grade_bounds(m, v)[0]
+        return out
+
+    def test_every_leg_carries_exact_inclusive_bounds(self):
+        legs = [l["id"] for l in corner_run.window_legs(self.exp.raw)]
+        self.assertEqual([m.leg for m in self.base], legs)
+        for m in self.base:
+            self.assertEqual((m.min, m.max, m.expr), (1.764, 1.836, "v_pre"))
+            self.assertTrue(m.min_inclusive and m.max_inclusive)
+
+    def test_flat_3v3_cannot_pass_though_relative_checks_do(self):
+        res = self.grade_leg(3.3)
+        self.assertFalse(res.pop("vout_pre_v"))
+        self.assertTrue(res and all(res.values()))  # zero-deviation waveform passes every relative check
+
+    def test_undervoltage_baseline_fails(self):
+        self.assertFalse(self.grade_leg(1.0)["vout_pre_v"])
+
+    def test_endpoints_pass_and_just_outside_fails(self):
+        for v in (1.764, 1.8, 1.836):
+            self.assertTrue(self.grade_leg(v)["vout_pre_v"], v)
+        for v in (math.nextafter(1.764, 0), math.nextafter(1.836, 9), float("nan"), None):
+            self.assertFalse(self.grade_leg(v)["vout_pre_v"], v)
+
+    def test_local_deck_measures_v_pre_for_every_leg(self):
+        deck = corner_run.build_deck(self.exp, mock.Mock(lib_file="/x/l"), corner_run.Corner("tt", 27, 3.3), ["* b"])
+        n = len(self.base)
+        self.assertEqual(deck.count("meas tran v_pre AVG v(vout) FROM=0.800m TO=0.999m"), n)
+
+    def test_batch_requests_carry_per_leg_baseline_and_bounds(self):
+        rc, _, _ = self.run_main("--backend", "batch", *QUICK, "--no-write")
+        reqs = [json.loads(Path(c[0][2]).read_text()) for c in self.klt_calls()]
+        self.assertEqual(len(reqs), 18)
+        for r in reqs:
+            (step,) = r["analysis_steps"]
+            ms = {m["name"]: m for m in step["measurements"]}
+            self.assertIn("v_pre", ms)
+            self.assertEqual(ms["vout_pre_v"]["expr"], "v_pre")
+
+    def test_failed_baseline_is_retained_in_import_and_grid_accounting(self):
+        def value_of(step, name, p, t):
+            if name == "vout_pre_v":
+                return 3.3 if step == "c330n_esr0" else 1.8
+            return 0.0  # every relative measurement "passes"
+
+        self.fake = FakeStepKlt(self, self.pin, value_of=value_of)
+        rc, out, _ = self.run_main("--backend", "batch", *QUICK, "--no-write")
+        self.assertEqual(rc, 2)
+        self.assertIn("overall  : FAIL", out)
+        self.assertIn("vout_pre_v__c330n_esr0", out)
+
+
+class TestBatchWindowGridTranslator(unittest.TestCase):
+    """sim/bin/batch_window_grid.py, PDK-free."""
+
+    @classmethod
+    def setUpClass(cls):
+        sys.path.insert(0, str(SIM_DIR / "bin"))
+        import batch_window_grid as bwg
+        cls.bwg = bwg
+
+    def test_inline_skips_signal_arguments_numbers_and_functions(self):
+        lets = {"band": "0.01*x", "m": "BAD"}
+        out = self.bwg._inline("vecmax(v(band)-band)*1.0m+1e-18+abs(band)", lets)
+        self.assertEqual(out, "vecmax(v(band)-(0.01*x))*1.0m+1e-18+abs((0.01*x))")
+
+    def test_lets_inline_transitively_in_declaration_order(self):
+        t = self.bwg.parse_leg_template([
+            "reset", "save all", "alter c1 = {a}", "tran 1n 1u",
+            "meas tran v0 AVG v(o) FROM=0 TO=1n", "let p = v0", "let q = 2*p",
+        ])
+        self.assertEqual(t.lets["q"], "2*(v0)")
+        step = self.bwg.leg_step(t, "L1", {"a": 1e-6}, [("r", "q+p", "V")])
+        self.assertEqual(step["measurements"][-1], {"name": "r", "expr": "(2*(v0))+(v0)", "unit": "V"})
+        self.assertEqual(step["alter"], {"c1": 1e-6})
+        self.assertEqual(step["measurements"][0]["spice"], ".meas tran v0 AVG v(o) FROM=0 TO=1n")
+
+    def test_refusals(self):
+        bad = [
+            ["save all", "alter c1 = {a}", "tran 1n 1u"],
+            ["reset", "save all", "tran 1n 1u"],
+            ["reset", "save all", "alter c1 = 1u", "tran 1n 1u"],
+            ["reset", "save all", "alter c1 = {a}", "meas tran x AVG v(o)", "tran 1n 1u"],
+            ["reset", "save all", "alter c1 = {a}", "tran 1n 1u", "print v(o)"],
+            ["reset", "save all", "alter c1 = {a}"],
+        ]
+        for lines in bad:
+            with self.assertRaises(self.bwg.TranslationError, msg=lines):
+                self.bwg.parse_leg_template(lines)
+        t = self.bwg.parse_leg_template(["reset", "save all", "alter c1 = {a}", "tran 1n 1u"])
+        with self.assertRaises(self.bwg.TranslationError):
+            self.bwg.leg_step(t, "L", {}, [])
 
 
 if __name__ == "__main__":

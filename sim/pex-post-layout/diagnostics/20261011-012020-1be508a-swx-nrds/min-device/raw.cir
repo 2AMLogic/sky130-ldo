@@ -1,0 +1,9 @@
+* one-device repro: xschem 3.4.4 raw expr() geometry shape on a g5v0d10v5 instance
+.lib /home/ubuntu/.volare/sky130A/libs.tech/combined/sky130.lib.spice tt
+VD d 0 1.8
+VG g 0 1.8
+XM1 d g 0 0 sky130_fd_pr__nfet_g5v0d10v5 L=1 W=4 nf=1 ad=expr('int((@nf + 1)/2) * @W / @nf * 0.29') as=expr('int((@nf + 2)/2) * @W / @nf * 0.29')
++ pd=expr('2*int((@nf + 1)/2) * (@W / @nf + 0.29)') ps=expr('2*int((@nf + 2)/2) * (@W / @nf + 0.29)')
++ nrd=expr('0.29 / @W ') nrs=expr('0.29 / @W ') sa=0 sb=0 sd=0 mult=1 m=1
+.op
+.end

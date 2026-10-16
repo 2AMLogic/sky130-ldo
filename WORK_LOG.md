@@ -2,6 +2,129 @@
 
 Chronological record of merged pull requests and closed issues. Maintained by the Loom Guide role.
 
+### 2026-10-15
+
+- **PR #393**: sim: extend startup to a 12-leg C_out x load x ESR cold-enable grid
+- **PR #392**: study: partial capacitor-study record, 105/126 op points on batch fleet
+- **PR #387**: Bump Repo Skills 0.19.5 -> 0.24.1
+
+### 2026-10-14
+
+- **PR #386**: sim(iq): batch adapter for the iq endpoints (Part of #213; matrix blocked on fleet runner)
+
+### 2026-10-11
+
+- **PR #383**: sim: opt-in batch adapter for load-regulation cold-start endpoints (#381)
+- **PR #380**: Sim: bounded batch adapter for line-regulation cold-start endpoints (#379)
+- **PR #378**: sim: grade settled tail extrema alongside regulation endpoint averages (#377)
+- **PR #376**: sim: admit dropout-vs-load cold-start crossing to the klt batch backend
+- **PR #373**: sim: require in-window pre-step output for every load-transient COUT/ESR leg
+- **PR #371**: sim: gate line-regulation endpoints on Output window; strict slope maxima (#369)
+- **PR #361**: sim(#357): screen physical low-headroom amplifier + re-referenced clamp dropout candidate
+- **PR #368**: Load regulation: gate settled endpoints on the Output window (#364)
+- **PR #367**: sim: zero-load phase-dip mechanism and bounded light-load lever screen (#365)
+- **Issue #379** (closed): Sim: qualify a bounded batch adapter for the line-regulation cold-start endpoints
+- **Issue #377** (closed): Regulation: grade settled tail extrema alongside endpoint averages
+- **Issue #374** (closed): Dropout: qualify a bounded fleet adapter for the existing cold-start ramp
+- **Issue #372** (closed): Load transient: require an in-window pre-step output for every COUT/ESR leg
+- **Issue #369** (closed): Line regulation: gate all settled endpoints and enforce strict slope bounds
+- **Issue #357** (closed): Dropout: screen a physical low-headroom amplifier and re-referenced clamp candidate
+- **Issue #364** (closed): Load regulation: gate settled endpoints on the ratified output window
+- **Issue #365** (closed): Stability: isolate the zero-load phase dip and screen a bounded light-load lever
+- **PR #363**: Stability: diagnose missing phase crossings before interpreting gain margin (#360)
+- **PR #362**: sim: batch preflight accepts only a completed usable smoke response
+- **PR #358**: sim: shared batch-runner preflight probe (#356)
+- **PR #355**: sim: shared _probe_common helper for ngspice diagnostic probes
+- **PR #354**: test(layout): PDK-free unit coverage for cap-study orchestrator (#351)
+- **PR #352**: sim: load-adaptive compensation prototype screening (REVISE) (#349)
+- **PR #350**: sim: dropout screening - isolated pass bench + combined ideal-tail/no-clamps probe (#339)
+- **PR #348**: docs: finding for #347 (pinned lint handoff), no enforcement change
+- **PR #346**: feat(sim): klt batch path for the load-transient COUT/ESR window grid
+- **PR #344**: sim: 0 mA phase-margin mitigation screen with Iq accounting (#324)
+- **PR #343**: sim/loop-gain: 18-leg boundary grid incl. exact-zero ESR (#338)
+- **PR #342**: Area: compare capacitor implementations for the 162 pF budget (study, outcome c) (#319)
+- **PR #340**: sim+design: dropout attribution study at tt/27C/3.30V/50mA (#323)
+- **PR #337**: sim: explicit bound inclusivity in corner-run grader (#335)
+- **Issue #360** (closed): Stability: diagnose missing phase crossings before interpreting gain margin
+- **Issue #359** (closed): Batch preflight: reject incomplete or errored smoke responses
+- **Issue #356** (closed): Sim: one shared batch-runner preflight probe for the issues blocked on the fleet runner
+- **Issue #353** (closed): Sim: share the ngspice diagnostic-probe scaffolding in one helper module
+- **Issue #351** (closed): Tests: add PDK-free unit coverage for the cap-study orchestrator (run-cap-study.py)
+- **Issue #349** (closed): Stability: prototype load-adaptive compensation and measure sense-path loading
+- **Issue #339** (closed): Dropout: screen isolated pass capability and combined amplifier/clamp interventions
+- **Issue #347** (closed): Auditor: require pinned Python lint before handing diagnostic scripts to Judge
+- **Issue #326** (closed): Load transient: run the COUT/ESR window grid campaign over the 45-point PVT matrix (Phase B of #313)
+- **Issue #324** (closed): Stability: evaluate 0 mA phase-margin mitigations against the Iq budget and report numbers for the DR-007 decision
+- **Issue #338** (closed): Stability: extend loop-gain coverage to zero ESR and all boundary load combinations
+- **Issue #319** (closed): Area: compare capacitor implementations (MiM, vpp, MOS-cap) for the 162 pF compensation/soft-start budget
+- **Issue #323** (closed): Dropout @ 50 mA: establish a current-schematic baseline and attribute the limiting mechanism
+- **Issue #335** (closed): Simulation grading: represent strict ratified inequalities explicitly
+
+- **PR #333**: docs: archive design/README.md investigation log, fix stale Freshness (#332)
+- **PR #331**: layout: refresh current-core area evidence and reconcile floorplan docs (#318)
+- **PR #330**: sim: PSRR C_eff x ESR sweep via klt sim analysis_steps (Part of #314; fleet run blocked)
+- **PR #329**: spec: defer row status counts to generated report; guard against reintroduction (#325)
+- **PR #328**: sim(pex): retain measured swx_nrds diagnosis + xschem 3.4.4 fixture regression (#277)
+- **PR #322**: sim: load-transient COUT/ESR window grid, conservative aggregation, coverage disclosure (Phase A of #313)
+- **PR #321**: sim: PSRR C_eff x ESR reduced-sweep tooling + selection tests (Phase 1 of #314)
+- **Issue #332** (closed): Simplify design/README.md: move ~3000-line investigation log out, fix stale 'entirely DRAFT' Freshness claim
+- **Issue #325** (closed): spec: stop hand-copying corner counts into target-spec status prose; lint against reintroduction
+- **Issue #318** (closed): layout: refresh current-core area evidence and reconcile stale floorplan documentation
+- **Issue #313** (closed): Load transient: qualify the ratified capacitor and ESR window
+- **Issue #277** (closed): sim: post-layout PEX schematic-side corners fail with 'Undefined parameter [swx_nrds]'; no PEX evidence for #267 geometry
+
+### 2026-10-10
+
+- **PR #317**: layout: PDK-free verdict tests for cap-rail, folded-res, trivial-cell and official-DRC scripts
+- **PR #316**: layout: refresh erc-supply-spec.json; mint ERC record 20261010-225954-95dca45
+- **PR #315**: sim/thermal: deduplicate trip-search helpers and add PDK-free tests (#297)
+- **PR #312**: sim: atomically reserve evidence record IDs before concurrent runs
+- **PR #311**: startup: measure ramp monotonicity per cold-enable leg (#309)
+- **PR #308**: PEX: retain batch-mismatch evidence for 45-corner schematic leg (Part of #277)
+- **PR #307**: sim: opt-in klt sim batch backend for corner-run.py (smoke-only)
+- **PR #305**: measurements: verify DRC freshness against the checked GDS bytes (#304)
+- **PR #303**: spec: decision-record status index and CI consistency lint
+- **PR #302**: sim: fix PEX schematic-side xschem expr() drift; retain failed-run evidence (#277)
+- **PR #300**: sim: PDK-free unit tests for PEX bench generator and record renderer
+- **PR #299**: ci: pinned ruff F-class lint gate for tracked Python (#293)
+- **PR #295**: ci: pin and gate the ngspice/xschem versions the way the PDK is pinned
+- **Issue #306** (closed): layout: PDK-free verdict tests for the cap-rail, folded-resistor and trivial-cell evidence scripts
+- **Issue #276** (closed): layout: refresh erc-supply-spec.json so run-ldo-erc-flow.sh pre-flight matches the current layout
+- **Issue #297** (closed): sim/thermal: deduplicate the copy-pasted trip-search helpers and add PDK-free tests
+- **Issue #310** (closed): sim: atomically reserve evidence record IDs before concurrent runs
+- **Issue #309** (closed): startup: measure ramp monotonicity instead of relying on peak and settled floor
+- **Issue #298** (closed): sim: add an opt-in klt sim batch backend to corner-run.py for PVT grids
+- **Issue #304** (closed): Characterization: verify DRC geometry against the cited input hash
+- **Issue #292** (closed): spec: add a decision-record status index and CI consistency lint
+- **Issue #296** (closed): sim: PDK-free unit tests for the post-layout PEX bench generator and record renderer
+- **Issue #293** (closed): ci: add a pyflakes-class static lint to check:ci (py_compile misses dead imports and unused locals)
+- **Issue #291** (closed): ci: pin and gate the ngspice/xschem versions the way the PDK is pinned
+- **PR #290**: fix(sim): pdk-smoke fails on xschem 3.4.4 expr() params; retain diagnostics (#288)
+- **PR #289**: report: content-based GDS freshness for LVS and dependent PEX
+- **PR #286**: docs: split sim/README.md into harness reference plus sim/docs (#284)
+- **PR #285**: ci: fail PRs that modify/rename/delete committed sim records (#283)
+- **PR #282**: ci: lint every tracked shell script with bash -n
+- **PR #281**: layout: PDK-free verdict tests for ERC/LVS/area renderers
+- **Issue #288** (closed): Build/runtime failure on main: nightly PDK smoke fails all three corners
+- **Issue #287** (closed): Characterization: invalidate LVS and PEX freshness when routed GDS changes
+- **Issue #284** (closed): Split the 3,400-line sim/README.md into a harness reference plus per-experiment docs
+- **Issue #283** (closed): CI guard: fail PRs that modify or delete committed sim records (append-only evidence)
+- **Issue #280** (closed): ci: lint every tracked shell script with bash -n (4 flow scripts are missing from the hardcoded list)
+- **Issue #278** (closed): layout: PDK-free verdict tests for the ERC/LVS/area evidence renderers
+- **PR #274**: layout: consolidate git() and run_klt_json() helpers (#273)
+- **Issue #273** (closed): layout: consolidate duplicated subprocess helpers in record-producing scripts
+- **PR #270**: layout: folded-resistor PVT/mismatch qualification matrix, driver and BLOCKED record (#263)
+- **PR #269**: test(layout): PDK-free unit tests for gen-ldo-blocks placement and track planners
+- **PR #268**: layout: dual-deck (curated + official sky130A_mr) DRC gate and rule-family diagnosis for ldo-core (#260)
+- **PR #266**: docs(readme): remove superseded verdicts and yield-control claim (#264)
+- **PR #262**: Core area: MiM capacitor + supply-rail overlay demonstrator (feasible on plan, 0.0768 mm^2) (#254)
+- **PR #259**: Folded resistors: resistor-only series-compaction qualification (#253)
+- **Issue #265** (closed): layout: PDK-free unit tests for gen-ldo-blocks.py's placement and track planners
+- **Issue #264** (closed): README: remove superseded measurement verdicts and yield-control claims
+- **Issue #260** (closed): Routed ldo_core layout is not clean under the PDK's own sky130A_mr.drc (curated klt deck passes)
+- **Issue #254** (closed): Core area: prove a MiM capacitor and supply-rail overlay plan
+- **Issue #253** (closed): Folded resistors: validate series compaction before changing the LDO floorplan
+
 ### 2026-10-10
 
 - **Issue #255** (closed): Characterization: reject malformed campaign verdicts instead of coercing truthiness

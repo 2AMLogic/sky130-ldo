@@ -1,0 +1,75 @@
+{
+  "run_id": "cl_base_tt",
+  "bench": "current-limit",
+  "issue": 349,
+  "condition": {
+    "process": "tt",
+    "temp_c": 27.0,
+    "supply_v": 3.3
+  },
+  "edits": {
+    "ra_frac": 0.0,
+    "sw_w_um": null,
+    "tap_w_um": 0.0,
+    "ccomp_scale": 1.0,
+    "notes": []
+  },
+  "stimulus": {
+    "analyses": "verbatim from sim/current-limit/experiment.json (see deck.spice)"
+  },
+  "provenance": {
+    "source_commit": "93dffada0b8670fd6bc3c0a39660627b06e5b098",
+    "driver_sha256": "90c2870976a8c876b5ab021013485d5a3f3ac913f7ad5b1223ccd6cf98f8ea0c",
+    "experiment_json_sha256": "3bf0ac6cd1d2bfd03e3b4105927652001faefba58ce44f842460fe1ccaeb9eb1",
+    "testbench_sha256": "78b754001fd739b1d207ef846d643f9be3052512ce3f5e7e21bdae4c47fa24c4",
+    "dut_sha256": "1378c2d440e6ffc2224091972a162357c2634600e6e56cb51e4d6f96159fd2e3",
+    "netlist_raw_sha256": "1cc64c5899ac009ab58bea2fe05903a19a9f45a2fbdb9ecf4eeaed97875919cf",
+    "netlist_edited_sha256": "1cc64c5899ac009ab58bea2fe05903a19a9f45a2fbdb9ecf4eeaed97875919cf",
+    "deck_sha256": "5e77e4169f262bd1a6e13d5d4cac7a9839c73269b2ceb4e3dfe810de914de9ca",
+    "spiceinit_sha256": "3cf811e1ae5fc75dd0bbe56205016c387c3538304be0cbdab7cb658fb9adf960",
+    "pdk": {
+      "open_pdks_commit": "c6d73a35f524070e85faff4a6a9eef49553ebc2b",
+      "matches_pin": true
+    },
+    "tools": {
+      "ngspice": "ngspice-42 : Circuit level simulation program",
+      "xschem": "XSCHEM V3.4.4",
+      "platform": "Linux 7.0.0-1013-aws x86_64",
+      "python": "3.12.3",
+      "declared": {
+        "ngspice": "42",
+        "xschem": "3.4.4"
+      },
+      "on_baseline": true
+    }
+  },
+  "ngspice_exit": 0,
+  "elapsed_s": 4.49,
+  "solver_diagnostic": null,
+  "meas": {
+    "vout_50ma_v": 1.798829,
+    "vout_50ma_span_v": 9e-06,
+    "cl_margin_50ma_v": 0.042219,
+    "ilim_short_ma": 153.3056,
+    "ilim_knee_ma": 123.7023,
+    "ilim_droop_pct": -23.9311,
+    "ishort_sustained_ma": 153.3486,
+    "ishort_ripple_pct": 0.0401047,
+    "vout_short_mv": 0.1533628,
+    "isup_pre_short_ma": 0.01326375
+  },
+  "missing_measurements": [],
+  "valid": true,
+  "grading_vs_manifest_bounds": {
+    "vout_50ma_v": true,
+    "vout_50ma_span_v": true,
+    "cl_margin_50ma_v": true,
+    "ilim_short_ma": true,
+    "ilim_knee_ma": true,
+    "ilim_droop_pct": true,
+    "ishort_sustained_ma": true,
+    "ishort_ripple_pct": true,
+    "vout_short_mv": true,
+    "isup_pre_short_ma": true
+  }
+}

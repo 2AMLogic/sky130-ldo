@@ -100,6 +100,13 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Install uv (runs the pinned ruff lint, test:lint-py)
+        # `check:ci` -> `test` -> `test:lint-py` shells out to
+        # `uvx --from ruff==0.17.0`, so this job needs uv/uvx on PATH (#293).
+        # uv itself is pinned too, so the lint toolchain is reproducible end
+        # to end rather than tracking whatever uv release is newest.
+        run: python3 -m pip install "uv==0.12.23"
+
       - name: npm run check:ci
         run: npm run check:ci
 
@@ -156,6 +163,15 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y ngspice xschem
 
+      # issue #291: the apt package source gives no version choice, so the
+      # install above cannot be pinned. Log what resolved, against what
+      # sim/pdk.json declares; selftest --require-pdk below FAILs on drift.
+      - name: Show resolved toolchain versions vs sim/pdk.json
+        run: |
+          python3 -c "import json;print('declared:', json.load(open('sim/pdk.json')).get('tools'))"
+          ngspice -v | head -n 2
+          xschem --version | head -n 1
+
       - name: Install volare
         run: pip install --user volare
 
@@ -170,6 +186,17 @@ jobs:
         run: |
           export PATH="$HOME/.local/bin:$PATH"
           sim/selftest.sh --quick --require-pdk
+
+      - name: Upload harness diagnostics (scratch netlist, decks, ngspice logs)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pdk-smoke-diagnostics
+          path: |
+            sim/build/
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 14
 
       - name: Byte-exact characterization check (includes the live Freshness column)
         run: |

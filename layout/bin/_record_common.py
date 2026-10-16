@@ -1,7 +1,7 @@
 """Shared helpers for `layout/bin/render-*.py` (issue #41).
 
 Standard library only, matching every `render-*.py` script's own convention.
-`_load()`/`_git()` and the `klt`-version/PDK-info/git-provenance block were
+`_load()`/`git()` and the `klt`-version/PDK-info/git-provenance block were
 byte-identical across `render-record.py`, `render-ldo-record.py`, and
 `render-ldo-lvs-record.py` before this module existed -- pure extraction, no
 behavior change.
@@ -20,13 +20,30 @@ def _load(path: Path) -> dict:
         return json.load(f)
 
 
-def _git(repo_root: Path, *args: str) -> str:
+def git(repo_root: Path, *args: str) -> str:
+    """`git -C <repo_root> <args>`, stripped stdout; raises on non-zero exit."""
     return subprocess.run(
         ["git", "-C", str(repo_root), *args],
         check=True,
         capture_output=True,
         text=True,
     ).stdout.strip()
+
+
+def run_klt_json(
+    klt: str, *args: str, error_cls: type[Exception] = RuntimeError
+) -> dict:
+    """Run `klt <args> --format json` and return the parsed JSON report.
+
+    A non-zero exit raises `error_cls("klt <args> failed: <stderr>")`, so every
+    generator reports a failing `klt` identically (issue #273).
+    """
+    proc = subprocess.run(
+        [klt, *args, "--format", "json"], capture_output=True, text=True
+    )
+    if proc.returncode != 0:
+        raise error_cls(f"klt {' '.join(args)} failed: {proc.stderr.strip()}")
+    return json.loads(proc.stdout)
 
 
 @dataclass(frozen=True)
@@ -50,9 +67,9 @@ def provenance(
     own built-in transcription, not from a local PDK tree), where insisting
     on a resolvable variant would be a fabricated dependency.
     """
-    sha = _git(repo_root, "rev-parse", "HEAD")
-    branch = _git(repo_root, "rev-parse", "--abbrev-ref", "HEAD")
-    dirty = _git(repo_root, "status", "--porcelain") != ""
+    sha = git(repo_root, "rev-parse", "HEAD")
+    branch = git(repo_root, "rev-parse", "--abbrev-ref", "HEAD")
+    dirty = git(repo_root, "status", "--porcelain") != ""
 
     klt_version = subprocess.run(
         [klt, "--version"], check=True, capture_output=True, text=True

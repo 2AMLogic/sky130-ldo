@@ -64,6 +64,29 @@ def _rules(report: dict) -> list[str]:
     return [f.get("rule") for f in report.get("erc_findings") or []]
 
 
+def item_11_met(
+    item_11_findings: list,
+    net_work_checked: list,
+    supplies: list,
+    tie_work_checked: list,
+    ties: list,
+    tie_work_skipped: list,
+) -> bool:
+    """Item 11 verdict (pure; see the comment at the call site).
+
+    Met only when none of the graded rules fired, every declared supply's
+    connectivity work was checked, every declared tie's missing-tie work was
+    checked, no tie work was skipped, and at least one tie is declared.
+    """
+    return (
+        not item_11_findings
+        and len(net_work_checked) == len(supplies)
+        and len(tie_work_checked) == len(ties)
+        and not tie_work_skipped
+        and bool(ties)
+    )
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--out-dir", required=True, type=Path)
@@ -102,12 +125,13 @@ def main() -> int:
     # checked, every declared tie's missing-tie work was actually checked
     # (not skipped-degenerate, not inapplicable), and none of the three
     # rules it grades on fired.
-    met = (
-        not item_11_findings
-        and len(net_work_checked) == len(supplies)
-        and len(tie_work_checked) == len(ties)
-        and not tie_work_skipped
-        and bool(ties)
+    met = item_11_met(
+        item_11_findings,
+        net_work_checked,
+        supplies,
+        tie_work_checked,
+        ties,
+        tie_work_skipped,
     )
 
     controls_ok = True

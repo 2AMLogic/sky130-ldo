@@ -1,0 +1,19 @@
+{
+  "backend": "batch",
+  "cmd": [
+    "klt",
+    "sim",
+    "layout/cap-study/20261015-195114-5a3705a/op/batch/v3.63_50ma/request.json",
+    "-o",
+    "layout/cap-study/20261015-195114-5a3705a/op/batch/v3.63_50ma",
+    "--backend",
+    "batch",
+    "--format",
+    "json"
+  ],
+  "error": "klt sim: warning: batch job bound 37920s (options.timeout_s 1800s x 21 units + 120s; a conservative fully-serial upper bound, not a runtime estimate) exceeds the fleet's whole-job ceiling of 3600s (max_job_seconds from fleet_config); a job still running at the ceiling is killed and every unit is reported batch_job_timeout. Set request.remote.hosts to at least 21 to run one job per shard of at most 1 units, each within the ceiling\n{\n  \"schema_version\": 1,\n  \"error\": {\n    \"command\": \"sim\",\n    \"message\": \"batch backend failed: batch-fleet-provision.sh launch failed (exit 1): error: 9 instance(s) already running + 1 requested exceeds BATCH_MAX_CONCURRENT_INSTANCES=8\"\n  }\n}",
+  "job_ids_seen": [],
+  "response": null,
+  "returncode": 1,
+  "status": "no-response"
+}

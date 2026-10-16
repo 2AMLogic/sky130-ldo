@@ -1,0 +1,186 @@
+{
+  "schema_version": 3,
+  "netlist": {
+    "path": "sim/build/pex-1corner-x344/tb_pex_post_layout.spice",
+    "scope": "repo"
+  },
+  "status": "pass",
+  "corner_count": 1,
+  "passed": 1,
+  "failed": 0,
+  "errored": 0,
+  "inconclusive": 0,
+  "diagnostic_counts": {
+    "by_code": {
+      "singular_matrix": 1,
+      "nonconvergence": 1
+    },
+    "by_severity": {
+      "warning": 2
+    },
+    "corners_with_diagnostics": 1
+  },
+  "metrics": {
+    "sim__corner__count": 1,
+    "sim__corner__passed_count": 1,
+    "sim__corner__failed_count": 0,
+    "sim__corner__errored_count": 0,
+    "sim__corner__inconclusive_count": 0
+  },
+  "environment": {
+    "engine": "ngspice",
+    "engine_version": "46",
+    "ngspice_binary": "/home/ubuntu/.local/bin/ngspice",
+    "models_lib": {
+      "path": null,
+      "scope": "external"
+    },
+    "models_lib_sha256": "48de7c677e2c6e7d09b2559279de9f818be71010a4aa933d728eb4db3b133c84",
+    "netlist_sha256": "ceb5572f4dd3db8416d73a278a9ae1b1f53f772d3ee0042e913cf2b7ea1138f1",
+    "netlist_closure": [
+      {
+        "path": "sim/build/pex-1corner-x344/tb_pex_post_layout.spice",
+        "scope": "repo",
+        "sha256": "ceb5572f4dd3db8416d73a278a9ae1b1f53f772d3ee0042e913cf2b7ea1138f1"
+      },
+      {
+        "path": "sim/build/pex-1corner-x344/ldo_core_schematic_dut.spice",
+        "scope": "repo",
+        "sha256": "41264acf17b7a1953a81ce6a71959c8f087f167ae45817319bd82bb33ef9907b"
+      }
+    ]
+  },
+  "coverage": {
+    "corners_simulated": 1,
+    "measurements_declared": 3,
+    "measurements_with_limits": 3,
+    "unrecognized_limit_keys": [],
+    "schema_version": 1,
+    "known": true,
+    "checked": [
+      "limit:[0,\"tt/3.300V/27C\",\"vin_minus_vout_full_load_v\",\"max\"]",
+      "limit:[0,\"tt/3.300V/27C\",\"vin_minus_vout_full_load_v\",\"min\"]",
+      "limit:[0,\"tt/3.300V/27C\",\"vout_full_load_v\",\"max\"]",
+      "limit:[0,\"tt/3.300V/27C\",\"vout_full_load_v\",\"min\"]",
+      "limit:[0,\"tt/3.300V/27C\",\"vout_light_load_v\",\"max\"]",
+      "limit:[0,\"tt/3.300V/27C\",\"vout_light_load_v\",\"min\"]"
+    ],
+    "skipped": [],
+    "inapplicable": [],
+    "unknown": [],
+    "nothing_checked": false,
+    "nothing_checked_reasons": []
+  },
+  "provenance": {
+    "klt_version": "0.7.0+g39f6da54ae4c",
+    "klayout_version": "0.30.12",
+    "pdk": null,
+    "deck": {
+      "name": "sky130.lib.spice",
+      "content_hash": "sha256:48de7c677e2c6e7d09b2559279de9f818be71010a4aa933d728eb4db3b133c84",
+      "released": false
+    },
+    "input": {
+      "content_hash": "sha256:ceb5572f4dd3db8416d73a278a9ae1b1f53f772d3ee0042e913cf2b7ea1138f1",
+      "role": "netlist"
+    }
+  },
+  "measurements": [
+    {
+      "name": "vout_light_load_v",
+      "unit": "V",
+      "limits": {
+        "min": 1.764,
+        "max": 1.836
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/3.300V/27C",
+        "value": 1.8006,
+        "margin": 0.0354000000000001
+      }
+    },
+    {
+      "name": "vout_full_load_v",
+      "unit": "V",
+      "limits": {
+        "min": 1.764,
+        "max": 1.836
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/3.300V/27C",
+        "value": 1.79883,
+        "margin": 0.03482999999999992
+      }
+    },
+    {
+      "name": "vin_minus_vout_full_load_v",
+      "unit": "V",
+      "limits": {
+        "min": 1.134,
+        "max": 1.866
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/3.300V/27C",
+        "value": 1.50117,
+        "margin": 0.3648300000000002
+      }
+    }
+  ],
+  "corners": [
+    {
+      "corner_id": "tt/3.300V/27C",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 27,
+      "status": "pass",
+      "runtime_s": 14.394,
+      "measurements": [
+        {
+          "name": "vout_light_load_v",
+          "value": 1.8006,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.0354000000000001
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.79883,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.03482999999999992
+        },
+        {
+          "name": "vin_minus_vout_full_load_v",
+          "value": 1.50117,
+          "unit": "V",
+          "status": "pass",
+          "margin": 0.3648300000000002
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "singular_matrix",
+          "message": "Warning: singular matrix:  check nodes xldo.xr_fb_b.t2 and fb"
+        },
+        {
+          "severity": "warning",
+          "code": "nonconvergence",
+          "message": "Warning: Dynamic gmin stepping failed"
+        }
+      ],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-277/sim/build/pex-1corner-x344/out/tt_3p300V_27C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-277/sim/build/pex-1corner-x344/out/tt_3p300V_27C/corner.cir"
+      },
+      "monte_carlo": null
+    }
+  ]
+}

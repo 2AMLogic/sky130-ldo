@@ -19,6 +19,7 @@ Usage
         --subset-reason "harness liveness check"            # 3-point subset
     sim/bin/corner-run.py --print-env                       # PDK env exports
     sim/bin/corner-run.py --check-env                       # toolchain/PDK check
+    sim/bin/corner-run.py --check-env --require-pdk         # ... tool drift is a FAIL
 
 The runner never edits or deletes an existing record: it refuses to start if
 the record id it would mint already exists on disk.
@@ -41,12 +42,24 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 
+import batch_dropout
+import batch_line_regulation as blr
+import batch_load_regulation as bld
+import batch_iq as biq
+from batch_window_grid import TranslationError, leg_step, parse_leg_template
+from ramp_monotonicity import evaluate_legs
+from xschem_exprs import eval_xschem_exprs  # noqa: F401  (re-exported; tests call corner_run.eval_xschem_exprs)
 from _record_common import (
+    assert_klt_read_the_pinned_pdk as _shared_assert_pdk,
     build_input_fingerprint,
+    klt_binary as _shared_klt_binary,
     git,
+    copy_new,
     pvt_input_sections,
+    reserve_record_id,
     render_record_footer,
     render_record_header,
+    write_new_text,
 )
 
 SIM_DIR = Path(__file__).resolve().parent.parent
@@ -165,13 +178,53 @@ def first_line(cmd: list[str]) -> str:
     return "unknown"
 
 
+_VERSION_TOKEN = {
+    # ngspice: "ngspice-42 : Circuit level simulation program"
+    "ngspice": re.compile(r"ngspice-(\d+(?:\.\d+)*)"),
+    # xschem: "XSCHEM V3.4.4"
+    "xschem": re.compile(r"V(\d+(?:\.\d+)*)", re.IGNORECASE),
+}
+
+
+def parse_tool_version(tool: str, line: str) -> str | None:
+    """The bare version token from a tool's first version line, else None."""
+    m = _VERSION_TOKEN[tool].search(line)
+    return m.group(1) if m else None
+
+
+def declared_tool_versions(pin: dict) -> dict:
+    """The `tools` block of sim/pdk.json (empty if the pin does not declare one)."""
+    return dict(pin.get("tools") or {})
+
+
+def compare_tool_versions(declared: dict, versions: dict) -> list[tuple[str, str, str]]:
+    """(tool, declared, actual) for every declared tool not on its declared version."""
+    drift = []
+    for tool, want in declared.items():
+        line = versions.get(tool, "not found")
+        got = parse_tool_version(tool, line) if tool in _VERSION_TOKEN else None
+        if got != want:
+            drift.append((tool, want, got or line))
+    return drift
+
+
 def tool_versions() -> dict:
-    return {
+    versions = {
         "ngspice": first_line(["ngspice", "-v"]),
         "xschem": first_line(["xschem", "--version"]),
         "platform": f"{platform.system()} {platform.release()} {platform.machine()}",
         "python": platform.python_version(),
     }
+    # issue #291: say whether this run is on the declared baseline, so a reader
+    # can tell "recorded on baseline" from "recorded on drifted tools".
+    try:
+        declared = declared_tool_versions(load_pin())
+    except (HarnessError, ValueError):
+        declared = {}
+    if declared:
+        versions["declared"] = declared
+        versions["on_baseline"] = not compare_tool_versions(declared, versions)
+    return versions
 
 
 # --------------------------------------------------------------------------
@@ -231,13 +284,19 @@ TOOL_VERSION_FLAGS = {
 }
 
 
-def check_env() -> int:
-    """Print a short toolchain/PDK liveness report. 0 if everything is usable."""
+def check_env(require_pdk: bool = False) -> int:
+    """Print a short toolchain/PDK liveness report. 0 if everything is usable.
+
+    A tool version that differs from sim/pdk.json's `tools` block is a named
+    WARN (exit unchanged) -- or a FAIL when `require_pdk` is set (issue #291).
+    """
     status = 0
+    versions: dict = {}
     for tool, flag in TOOL_VERSION_FLAGS.items():
         exe = shutil.which(tool)
         if exe:
-            print(f"{tool:<8}: OK   {first_line([tool, flag])}")
+            versions[tool] = first_line([tool, flag])
+            print(f"{tool:<8}: OK   {versions[tool]}")
         else:
             print(f"{tool:<8}: MISSING (not on PATH)")
             status = 1
@@ -246,6 +305,15 @@ def check_env() -> int:
     except HarnessError as exc:
         print(f"PDK     : MISSING\n{exc}")
         return 1
+    declared = declared_tool_versions(pin)
+    for tool, want, got in compare_tool_versions(
+        {t: v for t, v in declared.items() if t in versions}, versions
+    ):
+        level = "FAIL" if require_pdk else "WARN"
+        print(f"{tool:<8}: {level} {tool} drifted from declared {want} to {got} "
+              "(sim/pdk.json tools)")
+        if require_pdk:
+            status = 1
     try:
         pdk = resolve_pdk(pin)
     except HarnessError as exc:
@@ -294,7 +362,21 @@ class Measurement:
     unit: str = ""
     min: float | None = None
     max: float | None = None
+    # Bound inclusivity (issue #335). Default inclusive (value == bound passes);
+    # `false` makes the bound strict (value == bound fails), implementing a
+    # ratified `<` / `>` row. Validated by grade_bounds().
+    min_inclusive: bool = True
+    max_inclusive: bool = True
     note: str = ""
+    # Window-grid support (issue #313). A manifest measurement with
+    # `per_leg: true` is a TEMPLATE that load_experiment() expands once per
+    # declared `window_grid` leg; the expanded copies carry `leg`/`cout_f`/
+    # `esr_ohm` and are evaluated inside that leg's own deck block.
+    per_leg: bool = False
+    direction: str | None = None
+    leg: str | None = None
+    cout_f: float | None = None
+    esr_ohm: float | None = None
 
 
 @dataclass
@@ -302,6 +384,9 @@ class Experiment:
     dir: Path
     raw: dict
     measurements: list[Measurement] = field(default_factory=list)
+    # Window-grid leg execution order override (issue #313 smoke check); None
+    # means the declared order. Always a permutation of the declared legs.
+    leg_order: list[str] | None = None
 
     @property
     def slug(self) -> str:
@@ -310,6 +395,70 @@ class Experiment:
     @property
     def schematic(self) -> Path:
         return (self.dir / self.raw["schematic"]).resolve()
+
+
+def window_legs(raw: dict) -> list[dict]:
+    """The declared COUT/ESR legs of a manifest's `window_grid` (issue #313),
+    or [] for an experiment that does not declare one."""
+    return list((raw.get("window_grid") or {}).get("legs") or [])
+
+
+def grade_bounds(m: Measurement, value: float | None) -> tuple[bool, str]:
+    """Single grader for a measurement's [min, max] window (issue #335), shared
+    by the local, window-grid (local, per-leg) and klt-batch paths so they
+    cannot drift. Missing/non-finite values fail. A bound is inclusive unless
+    its `*_inclusive` flag is exactly False; non-bool flags are malformed.
+    """
+    for flag in ("min_inclusive", "max_inclusive"):
+        if not isinstance(getattr(m, flag), bool):
+            raise HarnessError(
+                f"measurement {m.name!r}: {flag} must be a JSON boolean, got {getattr(m, flag)!r}"
+            )
+    for bound in ("min", "max"):
+        b = getattr(m, bound)
+        if b is not None and (isinstance(b, bool) or not _finite_number(b)):
+            raise HarnessError(f"measurement {m.name!r}: {bound} must be a finite number or null, got {b!r}")
+    if value is None:
+        return False, "measurement not found in ngspice output"
+    if not _finite_number(value):
+        return False, "non-finite measurement value"
+    if m.min is not None and (value < m.min or (value == m.min and not m.min_inclusive)):
+        return False, f"below min {m.min:g}" if value < m.min else f"not above strict min {m.min:g}"
+    if m.max is not None and (value > m.max or (value == m.max and not m.max_inclusive)):
+        return False, f"above max {m.max:g}" if value > m.max else f"not below strict max {m.max:g}"
+    return True, ""
+
+
+def leg_measurement_name(template: str, leg_id: str) -> str:
+    """Name of a per-leg measurement. The leg id (which carries the COUT/ESR
+    coordinates) is part of the name so every result row is self-describing."""
+    return f"{template}__{leg_id}"
+
+
+def expand_measurements(raw: dict) -> list[Measurement]:
+    """Manifest measurements -> concrete Measurements. A `per_leg` template
+    becomes one measurement per declared window_grid leg (template order, then
+    leg order); everything else passes through unchanged."""
+    legs = window_legs(raw)
+    out: list[Measurement] = []
+    for m in raw["measurements"]:
+        if not m.get("per_leg"):
+            out.append(Measurement(**m))
+            continue
+        if not legs:
+            raise HarnessError(
+                f"measurement {m['name']!r} is per_leg but the manifest declares no window_grid legs"
+            )
+        for leg in legs:
+            fields = {k: v for k, v in m.items() if k != "per_leg"}
+            fields.update(
+                name=leg_measurement_name(m["name"], leg["id"]),
+                leg=leg["id"],
+                cout_f=leg["cout_f"],
+                esr_ohm=leg["esr_ohm"],
+            )
+            out.append(Measurement(**fields))
+    return out
 
 
 def load_experiment(path: Path) -> Experiment:
@@ -322,7 +471,7 @@ def load_experiment(path: Path) -> Experiment:
         if key not in raw:
             raise HarnessError(f"{manifest}: missing required key {key!r}")
     exp = Experiment(dir=exp_dir, raw=raw)
-    exp.measurements = [Measurement(**m) for m in raw["measurements"]]
+    exp.measurements = expand_measurements(raw)
     if not exp.schematic.is_file():
         raise HarnessError(f"{manifest}: schematic not found: {exp.schematic}")
     return exp
@@ -435,20 +584,84 @@ def netlist_with_xschem(schematic: Path, out_dir: Path, pdk: Pdk) -> Path:
     return produced
 
 
-def netlist_body(netlist: Path) -> list[str]:
+def netlist_body(netlist: Path, eval_exprs: bool = True) -> list[str]:
     """Strip the trailing .end so the deck can wrap the netlist.
 
     Also rewrites the absolute path xschem stamps into its `** sch_path:`
     comment to a repo-relative one, so netlist snapshots are byte-comparable
-    across machines and checkouts.
+    across machines and checkouts, and (unless eval_exprs=False) evaluates
+    un-evaluated `expr('...')` parameters from older xschem releases.
     """
     text = netlist.read_text().replace(str(REPO_ROOT) + os.sep, "")
+    if eval_exprs:
+        text, _ = eval_xschem_exprs(text)
     return [ln for ln in text.splitlines() if ln.strip().lower() != ".end"]
 
 
 # --------------------------------------------------------------------------
 # deck generation and simulation
 # --------------------------------------------------------------------------
+
+
+def fmt_spice_value(value: float) -> str:
+    return repr(float(value))
+
+
+def leg_values(grid: dict, leg: dict) -> dict[str, float]:
+    """Numeric values of a leg's `{placeholder}`s in `leg_analyses`, shared by
+    the local deck walk and the klt-batch step request (issue #326) so the two
+    paths cannot drift."""
+    cout, esr = float(leg["cout_f"]), float(leg["esr_ohm"])
+    values = {
+        "cout_esr_f": cout if esr > 0 else 0.0,
+        "cout_dir_f": cout if esr == 0 else 0.0,
+        # RESR is parked at its netlist value in the ESR=0 leg (it sits in
+        # series with a 0 F capacitor and carries no current).
+        "resr_f": esr if esr > 0 else float(grid.get("resr_park_ohm", 0.01)),
+    }
+    if "rload_ohm" in leg:
+        # A leg that also walks the DC load (issue #336 startup grid) names it.
+        values["rload_f"] = float(leg["rload_ohm"])
+    return values
+
+
+def window_leg_lines(
+    exp: Experiment, leg_ids: list[str] | None = None, corner_id: str = "{corner_id}"
+) -> list[str]:
+    """The in-deck COUT/ESR window walk (issue #313): one independent block per
+    declared leg -- `reset`, that leg's own `alter` cards, its own `tran` and
+    measurements. `leg_ids` selects/reorders legs (used by the leg-order
+    independence smoke check); the default is the declared order.
+
+    ESR = 0 is realised electrically, not with a stand-in resistor: COUT moves
+    to the direct VOUT-to-ground branch (`cdir`) and the series COUT+RESR branch
+    is set to 0 F (open); every ESR > 0 leg does the reverse.
+    """
+    grid = exp.raw.get("window_grid")
+    if not grid:
+        return []
+    by_id = {leg["id"]: leg for leg in grid["legs"]}
+    order = leg_ids or exp.leg_order or [leg["id"] for leg in grid["legs"]]
+    template = grid["leg_analyses"]
+    lines: list[str] = []
+    for leg_id in order:
+        leg = by_id[leg_id]
+        cout, esr = float(leg["cout_f"]), float(leg["esr_ohm"])
+        subs = {k: fmt_spice_value(v) for k, v in leg_values(grid, leg).items()}
+        lines.append(
+            f"* --- window leg {leg_id}: COUT={cout:g} F, ESR={esr:g} ohm "
+            "(independent reset/seed/tran) ---"
+        )
+        for ln in template:
+            for key, val in subs.items():
+                ln = ln.replace("{" + key + "}", val)
+            # `{leg_id}`/`{corner_id}` name a per-leg trace file (issue #336).
+            lines.append(ln.replace("{leg_id}", leg_id).replace("{corner_id}", corner_id))
+        for m in exp.measurements:
+            if m.leg == leg_id:
+                lines.append(f"let meas_{m.name} = {m.expr}")
+                lines.append(f"print meas_{m.name}")
+    return lines
 
 
 def build_deck(exp: Experiment, pdk: Pdk, corner: Corner, body: list[str]) -> str:
@@ -466,11 +679,17 @@ def build_deck(exp: Experiment, pdk: Pdk, corner: Corner, body: list[str]) -> st
     head.append(f'.lib "{pdk.lib_file}" {corner.process}')
 
     control = [".control", "save all"]
-    control += list(deck.get("analyses") or ["op"])
+    # `{corner_id}` lets a manifest write a per-corner trace file (issue #309).
+    control += [ln.replace("{corner_id}", corner.id) for ln in (deck.get("analyses") or ["op"])]
+    control += window_leg_lines(exp, corner_id=corner.id)
+    # Per-leg measurements are evaluated inside their own leg block (each leg's
+    # tran is its own plot, so a trailing `let` could not see them).
     for m in exp.measurements:
-        control.append(f"let meas_{m.name} = {m.expr}")
+        if m.leg is None:
+            control.append(f"let meas_{m.name} = {m.expr}")
     for m in exp.measurements:
-        control.append(f"print meas_{m.name}")
+        if m.leg is None:
+            control.append(f"print meas_{m.name}")
     control += ["quit", ".endc", ".end", ""]
 
     return "\n".join(head + body + control)
@@ -596,12 +815,7 @@ def run_corner(
     ok = rc == 0 and not timed_out and solver_diagnostic is None
     for m in exp.measurements:
         value = values.get(m.name)
-        passed = value is not None
-        reason = "" if passed else "measurement not found in ngspice output"
-        if passed and m.min is not None and value < m.min:
-            passed, reason = False, f"below min {m.min:g}"
-        if passed and m.max is not None and value > m.max:
-            passed, reason = False, f"above max {m.max:g}"
+        passed, reason = grade_bounds(m, value)
         checks.append(
             {
                 "name": m.name,
@@ -610,11 +824,49 @@ def run_corner(
                 "value": value,
                 "min": m.min,
                 "max": m.max,
+                "min_inclusive": m.min_inclusive,
+                "max_inclusive": m.max_inclusive,
                 "pass": passed,
                 "reason": reason,
+                **(
+                    {
+                        "leg": m.leg,
+                        "cout_f": m.cout_f,
+                        "esr_ohm": m.esr_ohm,
+                        "direction": m.direction,
+                    }
+                    if m.leg is not None
+                    else {}
+                ),
             }
         )
         ok = ok and passed
+
+    ramp_legs = []
+    ramp_cfg = exp.raw.get("ramp_monotonicity")
+    if ramp_cfg:
+        ramp_legs = evaluate_legs(ramp_cfg, run_dir, corner.id)
+        for leg in ramp_legs:
+            passed = leg["pass"]
+            checks.append(
+                {
+                    "name": f"ramp_drawdown_{leg['leg']}_v",
+                    "expr": "ramp_monotonicity.max_drawdown(v(vout))",
+                    "unit": "V",
+                    "value": leg["max_drawdown_v"],
+                    "min": None,
+                    "max": leg["settings"]["tolerance_v"],
+                    "pass": passed,
+                    "reason": "" if passed else f"{leg['status']}: " + "; ".join(leg["reasons"]),
+                }
+            )
+            ok = ok and passed
+        if log_path is not None:
+            for leg in ramp_legs:
+                src = run_dir / leg["trace_file"]
+                if src.is_file():
+                    log_path.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.copyfile(src, log_path.parent / leg["trace_file"])
 
     log_text = "\n".join(
         [
@@ -654,6 +906,16 @@ def run_corner(
     if log_path is not None:
         log_path.parent.mkdir(parents=True, exist_ok=True)
         log_path.write_text(log_text)
+    if not ok:
+        # Failure diagnostics survive --no-write (issue #288): the full
+        # simulator log lands next to the deck in the scratch run dir, which CI
+        # uploads as an artifact on failure.
+        (run_dir / f"{corner.id}.fail.log").write_text(log_text)
+        print(f"  ngspice diagnostics ({corner.id}, exit {rc}):", file=sys.stderr)
+        for ln in (stdout + "\n" + stderr).splitlines():
+            if re.search(r"error|undefined|fatal|cannot|timestep too small", ln, re.I):
+                print(f"    {ln.strip()[:200]}", file=sys.stderr)
+        print(f"  full log: {run_dir / (corner.id + '.fail.log')}", file=sys.stderr)
 
     return {
         "corner_id": corner.id,
@@ -669,9 +931,144 @@ def run_corner(
         "elapsed_s": round(elapsed_s, 3),
         "timeout_s": timeout,
         "measurements": checks,
+        **({"ramp_monotonicity": ramp_legs} if ramp_legs else {}),
         "solver_diagnostic": solver_diagnostic,
         "pass": ok,
         "log": str(log_path.relative_to(REPO_ROOT)) if log_path is not None else None,
+    }
+
+
+# --------------------------------------------------------------------------
+# window-grid aggregation (issue #313)
+# --------------------------------------------------------------------------
+
+GRID_FAILURE_CAP = 200  # failing conditions itemised in the record (count is exact)
+
+
+def grid_coverage(exp: Experiment, results: list[dict], corners: list[Corner]) -> dict | None:
+    """Conservative campaign-level verdict for a manifest's COUT/ESR window grid.
+
+    The grid PASSes only if EVERY declared (corner x COUT x ESR x direction)
+    measurement is present, finite, within its manifest bounds AND flagged
+    passing by the per-corner run. The expected set is derived from the manifest
+    and the corner matrix, never from what the results happen to contain, so a
+    missing leg, a missing corner, a NaN/unparsable value, or one failed
+    condition can only lower the verdict. Returns None for an experiment with no
+    `window_grid`.
+    """
+    grid = exp.raw.get("window_grid")
+    if not grid:
+        return None
+    by_corner = {r.get("corner_id"): r for r in results}
+    leg_ms = [m for m in exp.measurements if m.leg is not None]
+    expected = evaluated = passing = 0
+    failures: list[dict] = []
+    n_failures = 0
+    for corner in corners:
+        res = by_corner.get(corner.id)
+        present = {c.get("name"): c for c in (res or {}).get("measurements") or []}
+        for m in leg_ms:
+            expected += 1
+            check = present.get(m.name)
+            value = None if check is None else check.get("value")
+            if check is None or value is None:
+                status, reason = "missing", "no result for this condition"
+            elif not _finite_number(value):
+                status, reason = "non-finite", "value is NaN/inf"
+            else:
+                evaluated += 1
+                if m.min is not None and value < m.min:
+                    status, reason = "fail", f"below min {m.min:g}"
+                elif m.max is not None and value > m.max:
+                    status, reason = "fail", f"above max {m.max:g}"
+                elif check.get("pass") is not True:
+                    status, reason = "fail", check.get("reason") or "flagged failing"
+                else:
+                    status, reason = "pass", ""
+            if status == "pass":
+                passing += 1
+                continue
+            n_failures += 1
+            if len(failures) < GRID_FAILURE_CAP:
+                failures.append(
+                    {
+                        "corner_id": corner.id,
+                        "process": corner.process,
+                        "temperature_c": corner.temp_c,
+                        "supply_v": corner.supply_v,
+                        "leg": m.leg,
+                        "cout_f": m.cout_f,
+                        "esr_ohm": m.esr_ohm,
+                        "direction": m.direction,
+                        "measurement": m.name,
+                        "status": status,
+                        "value": value if _finite_number(value) else None,
+                        "reason": reason,
+                    }
+                )
+        # Issue #336: a grid leg whose startup ramp-monotonicity trace is
+        # missing/INVALID/failing must lower the grid verdict, not only the
+        # corner's, so the ramp verdict of every declared leg is a condition.
+        ramp_cfg = exp.raw.get("ramp_monotonicity") or {}
+        by_leg = {leg["id"]: leg for leg in grid["legs"]}
+        for rleg in ramp_cfg.get("legs") or []:
+            expected += 1
+            name = f"ramp_drawdown_{rleg['id']}_v"
+            check = present.get(name)
+            value = None if check is None else check.get("value")
+            if check is None or value is None:
+                status, reason = "missing", "no valid ramp-monotonicity trace for this condition"
+            elif not _finite_number(value):
+                status, reason = "non-finite", "value is NaN/inf"
+            else:
+                evaluated += 1
+                if check.get("pass") is True:
+                    passing += 1
+                    continue
+                status, reason = "fail", check.get("reason") or "flagged failing"
+            n_failures += 1
+            if len(failures) < GRID_FAILURE_CAP:
+                gl = by_leg.get(rleg["id"], {})
+                failures.append(
+                    {
+                        "corner_id": corner.id,
+                        "process": corner.process,
+                        "temperature_c": corner.temp_c,
+                        "supply_v": corner.supply_v,
+                        "leg": rleg["id"],
+                        "cout_f": gl.get("cout_f"),
+                        "esr_ohm": gl.get("esr_ohm"),
+                        "direction": "ramp",
+                        "measurement": name,
+                        "status": status,
+                        "value": value if _finite_number(value) else None,
+                        "reason": reason,
+                    }
+                )
+    complete = expected > 0 and evaluated == expected
+    return {
+        "title": grid.get("title", ""),
+        "legs": [
+            {"id": leg["id"], "cout_f": leg["cout_f"], "esr_ohm": leg["esr_ohm"]}
+            for leg in grid["legs"]
+        ],
+        "directions": list(grid.get("directions") or []),
+        "leg_order": list(exp.leg_order or [leg["id"] for leg in grid["legs"]]),
+        "pvt_points": len(corners),
+        "conditions_expected": expected,
+        "conditions_evaluated": evaluated,
+        "conditions_passing": passing,
+        "complete": complete,
+        "pass": complete and passing == expected,
+        "n_failing_or_missing": n_failures,
+        "failures": failures,
+        "failures_truncated": max(0, n_failures - len(failures)),
+        "sampling_statement": grid.get("sampling_statement", ""),
+        "coverage_note": (
+            "PVT coverage and COUT/ESR coverage are separate axes: this record ran "
+            f"{len(corners)} PVT point(s) x {len(grid['legs'])} declared COUT/ESR leg(s); "
+            "the legs are a finite sample of the DR-002 window, not a continuous proof."
+        ),
     }
 
 
@@ -715,8 +1112,1103 @@ def spread_checks(exp: Experiment, results: list[dict]) -> list[dict]:
 
 
 # --------------------------------------------------------------------------
+# opt-in `klt sim` batch backend (issue #298)
+# --------------------------------------------------------------------------
+#
+# BOUNDED on purpose: only the unchanged `pdk-smoke` shape (one `op` analysis,
+# two scalar measurements), the `load-transient` COUT/ESR window grid
+# (issue #326: one single-step `tran` request per supply x leg, see
+# sim/bin/batch_window_grid.py) and the `dropout-vs-load` cold-start crossing
+# (issue #374: one single-step `tran ... uic` request per supply, see
+# sim/bin/batch_dropout.py) may use it. Every other manifest is refused
+# before any netlisting, submission or local ngspice -- see sim/README.md
+# "Batch backend". The local path above is untouched; this section only adds a
+# second way to obtain the same per-corner result dicts.
+
+BATCH_ALLOWLIST = {
+    "pdk-smoke": {
+        "analyses": ["op"],
+        "measurements": [("vgs", "v(vg)"), ("isup", "-i(v1)")],
+    },
+    # Shape: a `window_grid` whose leg_analyses translate to a klt step, every
+    # measurement per-leg, and no deck-level analysis (comments only).
+    "load-transient": {"window_grid": True},
+    # Shape (issue #374): one cold-start `tran ... uic`, td-delayed crossing /
+    # window-avg `meas tran` cards, graded expressions over those cards, and
+    # the stimulus below sent verbatim in the netlist. RENEWAL: the manifest
+    # is pinned by the record input-fingerprint digests of its execution
+    # sections (analyses, measurements incl. bounds/inclusivity, matrix), so
+    # ANY intentional change to them refuses the batch backend until the
+    # translation is re-validated (sim/tests/test_batch_dropout_374.py) and
+    # these digests are updated deliberately.
+    "dropout-vs-load": {
+        "cold_start_crossing": True,
+        "manifest_sections": {
+            "analyses": "bce00b423fb13bf2c527284fcf14780e6bcbfbc0417eaf652f54f538407a71c8",
+            "measurements": "9c84c875c74b59ddf3bd20af49497817d30c0c250ade790ca1778949f22d7b19",
+            "matrix": "639e50d5a920cef70120de11fefa3ffc5bf53f0446c56a853f87c39e95976b21",
+        },
+        "stimulus": [
+            "VVIN VIN 0 PWL(0 0 100u 'vsup' 6m 'vsup' 14m 'vsup-2.13')",
+            "VEN EN 0 PULSE(0 'vsup' 100u 1u 1u 100 200)",
+            "ILOAD VOUT 0 PWL(0 0 2.5m 0 2.6m 50m)",
+        ],
+    },
+    # Shape (issue #379): four independent cold-start endpoint points, each its
+    # own single-step `tran ... uic` request (the per-point VIN / EN PWL / load
+    # state travels in the request netlist; see sim/bin/batch_line_regulation.py).
+    # RENEWAL: pinned exactly like dropout-vs-load, by the record
+    # input-fingerprint digests (sim/tests/test_batch_line_regulation_379.py).
+    "line-regulation": {
+        "endpoint_adapter": True,
+        "manifest_sections": {
+            "analyses": "0cfeeac0f4e21500b2c5cca10b68e5d15ebc0e8a1c70a24fb917bd99d9938c48",
+            "measurements": "6eae44b4f597147dc34d973ba0c061c5418708fef80a14a43d525dac2ed300fb",
+            "matrix": "639e50d5a920cef70120de11fefa3ffc5bf53f0446c56a853f87c39e95976b21",
+        },
+        # the baseline (pre-`alter`) source lines each request rewrites
+        "stimulus": [
+            "VVIN VIN 0 3.3",
+            "VEN EN 0 dc 0 pwl(0 0 100u 0 101u 3.3 10 3.3)",
+            "ILOAD VOUT 0 1m",
+        ],
+        "baseline_iload": "1m",
+    },
+    # Shape (issue #381): TWO independent cold-start endpoints (no load, then
+    # 50 mA), each its own single-step `tran ... uic` request. VIN and full-rail
+    # EN stay the corner supply (`'vsup'`); only the load differs per request
+    # (see sim/bin/batch_load_regulation.py). RENEWAL: pinned like
+    # line-regulation, by the record input-fingerprint digests
+    # (sim/tests/test_batch_load_regulation_381.py).
+    "load-regulation": {
+        "endpoint_adapter": True,
+        "adapter_kind": "load-regulation",
+        "manifest_sections": {
+            "analyses": "e9064e2b26967ccb49de8a1b37e684c2a3cc4c44b0f83d12f01559ad04f7cfdb",
+            "measurements": "1637b3f8f570b4f7cc458b2d82d3cdb8268cf1fea8f7db7a3dbbccf64ef25f76",
+            "matrix": "639e50d5a920cef70120de11fefa3ffc5bf53f0446c56a853f87c39e95976b21",
+        },
+        # the baseline (pre-`alter`) source lines each request rewrites
+        "stimulus": [
+            "VVIN VIN 0 'vsup'",
+            "VEN EN 0 dc 0 pwl(0 0 100u 0 101u 'vsup' 10 'vsup')",
+            "ILOAD VOUT 0 0",
+        ],
+        "baseline_iload": "0",
+    },
+    # Shape (issue #213): the same TWO cold-start endpoints as load-regulation
+    # (no load, then 50 mA; VIN and full-rail EN on the corner supply), each
+    # with an `avg v(vout)` and an `avg i(vvin)` card (sim/bin/batch_iq.py).
+    # RENEWAL: pinned like load-regulation (sim/tests/test_batch_iq_213.py).
+    "iq": {
+        "endpoint_adapter": True,
+        "adapter_kind": "iq",
+        "manifest_sections": {
+            "analyses": "f3dba2c7ad5486123fbfddb60fcc5d731eb31a72dc4545cbbd699c239c3a263a",
+            "measurements": "b9fb2b2a0068ef936c8b669deb20ec0ce4878f51fffcd8aefb766aa0d1fe2dc1",
+            "matrix": "639e50d5a920cef70120de11fefa3ffc5bf53f0446c56a853f87c39e95976b21",
+        },
+        "stimulus": [
+            "VVIN VIN 0 'vsup'",
+            "VEN EN 0 dc 0 pwl(0 0 100u 0 101u 'vsup' 10 'vsup')",
+            "ILOAD VOUT 0 0",
+        ],
+        "baseline_iload": "0",
+    },
+}
+
+BATCH_REFUSAL_HINT = (
+    "the batch backend is bounded to the unchanged sim/pdk-smoke shape (one `op` "
+    "analysis, scalar measurements), the sim/load-transient COUT/ESR window "
+    "grid (one `tran` step per leg) and the validated sim/dropout-vs-load "
+    "cold-start crossing (one `tran ... uic` step per supply) and the validated "
+    "sim/line-regulation endpoints (four single-step `tran ... uic` requests per "
+    "supply) and the validated sim/load-regulation endpoints (two single-step "
+    "`tran ... uic` requests per supply); every other "
+    "experiment, including the other transient/AC/DC-sweep and mc-* manifests, "
+    "stays on the local backend (see sim/README.md, \"Batch backend\")"
+)
+
+
+def is_cold_start_crossing(exp: Experiment) -> bool:
+    """Whether the experiment runs through the issue #374 dropout adapter."""
+    return bool(BATCH_ALLOWLIST.get(exp.slug, {}).get("cold_start_crossing"))
+
+
+def cold_start_step(exp: Experiment) -> dict:
+    """The klt `analysis_steps[]` entry for the cold-start crossing deck."""
+    deck = batch_dropout.parse_deck((exp.raw.get("deck") or {}).get("analyses") or [])
+    return batch_dropout.dropout_step(deck, [(m.name, m.expr, m.unit) for m in exp.measurements])
+
+
+def check_cold_start_batch_shape(exp: Experiment) -> None:
+    """Refuse a dropout manifest whose shape is not the validated one: the
+    structural translation must succeed AND the execution sections must still
+    digest to the pinned values (issue #374: an intentional manifest change
+    requires renewed validation, never a silent pass-through)."""
+    allowed = BATCH_ALLOWLIST[exp.slug]
+    why = None
+    if exp.raw.get("window_grid") or any(m.leg is not None for m in exp.measurements):
+        why = "a window_grid / per_leg measurement is not part of the cold-start shape"
+    elif exp.raw.get("spread_checks"):
+        why = "spread_checks are not part of the validated cold-start shape"
+    else:
+        try:
+            cold_start_step(exp)
+        except batch_dropout.DropoutTranslationError as exc:
+            why = f"deck does not translate to a cold-start klt step ({exc})"
+    if why is None:
+        got = pvt_input_sections(exp.raw, None)
+        changed = [k for k, v in allowed["manifest_sections"].items() if got.get(k) != v]
+        extra = sorted(set(got) - set(allowed["manifest_sections"]))
+        if changed or extra:
+            why = (
+                f"manifest section(s) {changed + extra} changed since the adapter was validated "
+                "(pinned digests in BATCH_ALLOWLIST); re-validate the translation and update "
+                "the pins deliberately"
+            )
+    if why:
+        raise HarnessError(
+            f"--backend batch: {exp.slug!r} no longer has the validated cold-start crossing "
+            f"shape ({why}): {BATCH_REFUSAL_HINT}"
+        )
+
+
+def is_endpoint_adapter(exp: Experiment) -> bool:
+    """Whether the experiment runs through the issue #379 line-regulation
+    endpoint adapter."""
+    return bool(BATCH_ALLOWLIST.get(exp.slug, {}).get("endpoint_adapter"))
+
+
+def endpoint_module(exp: Experiment):
+    """The endpoint-adapter module for the experiment: load-regulation (issue
+    #381) or, by default, line-regulation (issue #379). Both raise
+    blr.EndpointTranslationError."""
+    kind = BATCH_ALLOWLIST.get(exp.slug, {}).get("adapter_kind")
+    if kind == "iq":
+        return biq
+    return bld if kind == "load-regulation" else blr
+
+
+def endpoint_deck(exp: Experiment) -> list[blr.Endpoint]:
+    """The endpoints of the deck (four line-regulation, two load-regulation),
+    parsed and with every graded expression checked against them (raises
+    EndpointTranslationError)."""
+    endpoints = endpoint_module(exp).parse_deck(
+        (exp.raw.get("deck") or {}).get("analyses") or [], BATCH_ALLOWLIST[exp.slug]["baseline_iload"]
+    )
+    blr.check_measurements(endpoints, [(m.name, m.expr, m.unit) for m in exp.measurements])
+    return endpoints
+
+
+def endpoint_step(exp: Experiment, endpoint_id: str) -> dict:
+    """The klt `analysis_steps[]` entry for one endpoint request."""
+    endpoints = endpoint_deck(exp)
+    units = blr.check_measurements(endpoints, [(m.name, m.expr, m.unit) for m in exp.measurements])
+    ep = next(e for e in endpoints if e.step_name == endpoint_id)
+    return blr.endpoint_step(ep, units)
+
+
+def check_endpoint_batch_shape(exp: Experiment) -> None:
+    """Refuse a line-regulation manifest whose shape is not the validated one:
+    the structural translation must succeed AND the execution sections must
+    still digest to the pinned values (issue #379)."""
+    allowed = BATCH_ALLOWLIST[exp.slug]
+    why = None
+    if exp.raw.get("window_grid") or any(m.leg is not None for m in exp.measurements):
+        why = "a window_grid / per_leg measurement is not part of the endpoint shape"
+    elif exp.raw.get("spread_checks"):
+        why = "spread_checks are not part of the validated endpoint shape"
+    else:
+        try:
+            endpoint_deck(exp)
+        except blr.EndpointTranslationError as exc:
+            why = f"deck does not translate to cold-start endpoint steps ({exc})"
+    if why is None:
+        got = pvt_input_sections(exp.raw, None)
+        changed = [k for k, v in allowed["manifest_sections"].items() if got.get(k) != v]
+        extra = sorted(set(got) - set(allowed["manifest_sections"]))
+        if changed or extra:
+            why = (
+                f"manifest section(s) {changed + extra} changed since the adapter was validated "
+                "(pinned digests in BATCH_ALLOWLIST); re-validate the translation and update "
+                "the pins deliberately"
+            )
+    if why:
+        raise HarnessError(
+            f"--backend batch: {exp.slug!r} no longer has the validated {exp.slug} "
+            f"endpoint shape ({why}): {BATCH_REFUSAL_HINT}"
+        )
+
+
+def batch_legs(exp: Experiment) -> list[str] | None:
+    """Per-request leg ids a batch run splits into: window-grid legs, or the
+    line-regulation endpoint ids; None for any other allowlisted experiment."""
+    if is_endpoint_adapter(exp):
+        return [e.step_name for e in endpoint_deck(exp)]
+    if not BATCH_ALLOWLIST.get(exp.slug, {}).get("window_grid"):
+        return None
+    return [leg["id"] for leg in window_legs(exp.raw)]
+
+
+def leg_template_name(m: Measurement) -> str:
+    """The manifest template name of an expanded per-leg measurement."""
+    suffix = "__" + str(m.leg)
+    return m.name[: -len(suffix)] if m.name.endswith(suffix) else m.name
+
+
+def window_grid_step(exp: Experiment, leg_id: str) -> dict:
+    """The klt `analysis_steps[]` entry for one window-grid leg (issue #326)."""
+    grid = exp.raw["window_grid"]
+    leg = next(x for x in grid["legs"] if x["id"] == leg_id)
+    template = parse_leg_template(grid["leg_analyses"])
+    meas = [(leg_template_name(m), m.expr, m.unit) for m in exp.measurements if m.leg == leg_id]
+    return leg_step(template, leg_id, leg_values(grid, leg), meas)
+
+
+def check_window_grid_batch_shape(exp: Experiment) -> None:
+    grid = exp.raw.get("window_grid")
+    why = None
+    if not grid or not window_legs(exp.raw):
+        why = "no window_grid legs declared"
+    elif any(
+        ln.strip() and not ln.strip().startswith("*")
+        for ln in (exp.raw.get("deck") or {}).get("analyses") or []
+    ):
+        why = "deck.analyses carries commands outside the leg block"
+    elif any(m.leg is None for m in exp.measurements):
+        why = "a measurement is not per-leg (it would need a deck-level analysis)"
+    elif exp.raw.get("spread_checks"):
+        why = "spread_checks are not defined for per-leg batch requests"
+    else:
+        try:
+            for leg in window_legs(exp.raw):
+                window_grid_step(exp, leg["id"])
+        except (TranslationError, KeyError, StopIteration) as exc:
+            why = f"window_grid leg block does not translate to a klt step ({exc})"
+    if why:
+        raise HarnessError(
+            f"--backend batch: {exp.slug!r} no longer has the supported window-grid "
+            f"shape ({why}): {BATCH_REFUSAL_HINT}"
+        )
+
+
+def klt_binary() -> str:
+    return _shared_klt_binary("run batch PVT grids", error_cls=HarnessError)
+
+
+def check_batch_supported(exp: Experiment) -> None:
+    """Refuse an experiment outside the batch allowlist, before any work."""
+    allowed = BATCH_ALLOWLIST.get(exp.slug)
+    if allowed is None:
+        raise HarnessError(
+            f"--backend batch does not support experiment {exp.slug!r}: {BATCH_REFUSAL_HINT}"
+        )
+    deck = exp.raw.get("deck") or {}
+    if exp.raw.get("ramp_monotonicity"):
+        raise HarnessError(
+            f"--backend batch does not support {exp.slug!r}: waveform post-processing "
+            f"(ramp_monotonicity) is local-only: {BATCH_REFUSAL_HINT}"
+        )
+    if allowed.get("window_grid"):
+        check_window_grid_batch_shape(exp)
+        return
+    if allowed.get("cold_start_crossing"):
+        check_cold_start_batch_shape(exp)
+        return
+    if allowed.get("endpoint_adapter"):
+        check_endpoint_batch_shape(exp)
+        return
+    analyses = list(deck.get("analyses") or ["op"])
+    meas = [(m.name, m.expr) for m in exp.measurements]
+    if analyses != allowed["analyses"] or meas != allowed["measurements"]:
+        raise HarnessError(
+            f"--backend batch: {exp.slug!r} no longer has the supported smoke shape "
+            f"(analyses {analyses}, measurements {meas}): {BATCH_REFUSAL_HINT}"
+        )
+
+
+def spiceinit_lines() -> list[str]:
+    """`sim/spiceinit` as request `ngspice_init` lines: empty lines dropped,
+    comments, order and command text retained."""
+    return [ln for ln in SPICEINIT_FILE.read_text().splitlines() if ln.strip()]
+
+
+@dataclass
+class BatchGroup:
+    key: str
+    supply_v: float
+    corners: list[Corner]  # the selected points this request covers
+    process: list[str]
+    temperature_c: list[float]
+    leg: str | None = None  # window-grid leg this request runs (issue #326)
+
+
+def group_batch_requests(
+    matrix: list[Corner], quick: bool, legs: list[str] | None = None
+) -> list[BatchGroup]:
+    """Partition the selected points into `klt sim` requests.
+
+    A supply is a netlist `.param`, not a klt corner axis, so each request has
+    ONE fixed supply. The full/overridden Cartesian matrix becomes one request
+    per supply (process x temperature grid); `--quick` tuples are explicit
+    points and each is its own singleton request, never a Cartesian expansion.
+    With window-grid `legs`, every such request is further split into one
+    request per leg (supply-major, then declared leg order).
+    """
+    base = _group_by_supply(matrix, quick)
+    if legs is None:
+        return base
+    return [
+        BatchGroup(f"{g.key}-{leg}", g.supply_v, g.corners, g.process, g.temperature_c, leg)
+        for g in base
+        for leg in legs
+    ]
+
+
+def _group_by_supply(matrix: list[Corner], quick: bool) -> list[BatchGroup]:
+    groups: list[BatchGroup] = []
+    if quick:
+        for i, c in enumerate(matrix, start=1):
+            groups.append(BatchGroup(f"q{i}-{c.id}", c.supply_v, [c], [c.process], [c.temp_c]))
+        return groups
+    for supply in unique_in_order(c.supply_v for c in matrix):
+        pts = [c for c in matrix if c.supply_v == supply]
+        procs = unique_in_order(c.process for c in pts)
+        temps = unique_in_order(c.temp_c for c in pts)
+        if len(pts) != len(procs) * len(temps) or len({(c.process, c.temp_c) for c in pts}) != len(pts):
+            raise HarnessError(
+                f"batch grouping: points at {supply:g} V are not a process x temperature "
+                "grid; refusing to widen the request"
+            )
+        groups.append(BatchGroup(f"v{supply:.2f}", supply, pts, procs, temps))
+    return groups
+
+
+def build_batch_netlist(exp: Experiment, group: BatchGroup, body: list[str]) -> list[str]:
+    """Request netlist body: fixed `.param vsup`, deck params/options, saved
+    vectors, then the circuit body (the same pieces `build_deck` emits)."""
+    deck = exp.raw.get("deck", {})
+    head = [f".param vsup={group.supply_v}"]
+    for name, value in (deck.get("params") or {}).items():
+        head.append(f".param {name}={value}")
+    for opt in deck.get("options") or []:
+        head.append(f".option {opt}")
+    head.append(".save all")
+    if is_endpoint_adapter(exp):
+        # Each endpoint request carries that point's complete source state
+        # (VIN, EN's PWL high level, load) in the netlist (issue #379).
+        ep = next(e for e in endpoint_deck(exp) if e.step_name == group.leg)
+        body = endpoint_module(exp).endpoint_body(body, ep)
+    return head + body
+
+
+def build_batch_request(
+    exp: Experiment, pdk: Pdk, group: BatchGroup, netlist_path: Path, timeout: int
+) -> dict:
+    if is_endpoint_adapter(exp):
+        # One single-step request per supply group x endpoint (issue #379).
+        shape = {"analysis_steps": [endpoint_step(exp, group.leg)]}
+    elif group.leg is not None:
+        # One single-step request per window-grid leg (issue #326).
+        shape = {"analysis_steps": [window_grid_step(exp, group.leg)]}
+    elif is_cold_start_crossing(exp):
+        # One single-step cold-start request per supply group (issue #374).
+        shape = {"analysis_steps": [cold_start_step(exp)]}
+    else:
+        shape = {
+            "analysis": {"kind": "op", "args": ""},
+            "measurements": [
+                {"name": f"meas_{m.name}", "expr": m.expr, "unit": m.unit} for m in exp.measurements
+            ],
+        }
+    return {
+        "netlist": str(netlist_path),
+        "engine": "ngspice",
+        "models": {"pdk": pdk.variant, "lib": str(pdk.lib_file.relative_to(pdk.dir))},
+        "corners": {"process": list(group.process), "temperature_c": list(group.temperature_c)},
+        **shape,
+        "options": {
+            "timeout_s": timeout,
+            "keep_artifacts": True,
+            "ngspice_init": spiceinit_lines(),
+        },
+        # A klt that classifies the fleet-cap refusal waits on its own (issue #345);
+        # run_klt_batch's caller-side retry covers a klt that does not.
+        "batch": {"capacity_wait_s": CAPACITY_RETRY_BUDGET_S},
+    }
+
+
+def prepare_batch_requests(
+    exp: Experiment, pdk: Pdk, matrix: list[Corner], is_quick: bool, body: list[str],
+    run_dir: Path, timeout: int,
+) -> list[tuple[BatchGroup, Path, dict]]:
+    """Write each request's netlist + request JSON under the scratch run dir."""
+    if is_cold_start_crossing(exp):
+        # The stimulus travels in the netlist: refuse before any request is
+        # written (and so before any submission) if it is not the validated one.
+        try:
+            batch_dropout.check_netlist(body, BATCH_ALLOWLIST[exp.slug]["stimulus"])
+        except batch_dropout.DropoutTranslationError as exc:
+            raise HarnessError(
+                f"--backend batch: {exp.slug!r} netlist is not the validated cold-start "
+                f"shape ({exc}): {BATCH_REFUSAL_HINT}"
+            ) from exc
+    if is_endpoint_adapter(exp):
+        try:
+            blr.check_netlist(body, BATCH_ALLOWLIST[exp.slug]["stimulus"])
+        except blr.EndpointTranslationError as exc:
+            raise HarnessError(
+                f"--backend batch: {exp.slug!r} netlist is not the validated {exp.slug} "
+                f"endpoint baseline ({exc}): {BATCH_REFUSAL_HINT}"
+            ) from exc
+    req_dir = run_dir / "klt-requests"
+    req_dir.mkdir(parents=True, exist_ok=True)
+    out = []
+    for group in group_batch_requests(matrix, is_quick, batch_legs(exp)):
+        netlist_path = (req_dir / f"{group.key}.spice").resolve()
+        netlist_path.write_text("\n".join(build_batch_netlist(exp, group, body)) + "\n")
+        request = build_batch_request(exp, pdk, group, netlist_path, timeout)
+        request_path = req_dir / f"{group.key}.json"
+        request_path.write_text(json.dumps(request, indent=2, sort_keys=True) + "\n")
+        out.append((group, request_path, request))
+    return out
+
+
+_JOB_ID_RE = re.compile(r"klt-sim-[0-9a-f]+")
+
+# Shared-fleet saturation (issue #345): the only failure retried. The refusal
+# happens at launch, before a job exists, so a resubmit cannot double-run.
+CAPACITY_REFUSAL_TEXT = "exceeds BATCH_MAX_CONCURRENT_INSTANCES"
+CAPACITY_RETRY_BACKOFF_S = 90
+CAPACITY_RETRY_BUDGET_S = 3 * 3600
+
+
+def run_klt_batch(request_path: Path, outdir: Path, pdk_root: Path) -> tuple[dict, dict]:
+    """Invoke `klt sim --backend batch` (never replaced by a local run). The one
+    retried failure is a fleet-cap refusal (`CAPACITY_REFUSAL_TEXT`) with no job
+    id seen, resubmitted every `CAPACITY_RETRY_BACKOFF_S` for at most
+    `CAPACITY_RETRY_BUDGET_S`; any other failure is fatal and unretried.
+    Returns (response, meta); raises HarnessError, keeping whatever
+    stdout/stderr/job ids exist, if no usable JSON object came back."""
+    cmd = [
+        klt_binary(), "sim", str(request_path), "-o", str(outdir),
+        "--backend", "batch", "--format", "json",
+    ]
+    env = dict(os.environ)
+    env["PDK_ROOT"] = str(pdk_root)
+    outdir.mkdir(parents=True, exist_ok=True)
+
+    def diag(stdout: str, stderr: str) -> str:
+        (outdir / "klt.stdout").write_text(stdout or "")
+        (outdir / "klt.stderr").write_text(stderr or "")
+        ids = unique_in_order(_JOB_ID_RE.findall((stdout or "") + "\n" + (stderr or "")))
+        return (
+            f"  cmd: {' '.join(cmd)}\n"
+            f"  remote job id(s) seen: {', '.join(ids) if ids else 'none'}\n"
+            f"  stdout: {(stdout or '').strip()[:2000]}\n"
+            f"  stderr: {(stderr or '').strip()[:2000]}\n"
+            f"  diagnostics kept in {outdir}"
+        )
+
+    def launch() -> subprocess.CompletedProcess:
+        return subprocess.run(
+            cmd, capture_output=True, text=True, timeout=None, env=env,
+            stdin=subprocess.DEVNULL,
+        )
+
+    def capacity_refused(p: subprocess.CompletedProcess) -> bool:
+        text = (p.stdout or "") + "\n" + (p.stderr or "")
+        return (
+            p.returncode != 0
+            and CAPACITY_REFUSAL_TEXT in text
+            and not _JOB_ID_RE.search(text)
+        )
+
+    try:
+        proc = launch()
+        attempts, waited = 1, 0
+        while capacity_refused(proc):
+            if waited + CAPACITY_RETRY_BACKOFF_S > CAPACITY_RETRY_BUDGET_S:
+                raise HarnessError(
+                    f"klt sim (batch) refused for fleet capacity on all {attempts} "
+                    f"attempt(s) over {waited} s (budget {CAPACITY_RETRY_BUDGET_S} s); "
+                    "NOT falling back to a local run\n" + diag(proc.stdout, proc.stderr)
+                )
+            time.sleep(CAPACITY_RETRY_BACKOFF_S)
+            waited += CAPACITY_RETRY_BACKOFF_S
+            attempts += 1
+            proc = launch()
+    except subprocess.TimeoutExpired as exc:
+        def _s(v):
+            return v.decode(errors="replace") if isinstance(v, bytes) else (v or "")
+        raise HarnessError(
+            "klt sim (batch) timed out; NOT resubmitting and NOT falling back to a "
+            "local run -- the remote job may still be running\n"
+            + diag(_s(exc.stdout), _s(exc.stderr))
+        ) from exc
+    except OSError as exc:
+        raise HarnessError(f"could not launch klt sim: {exc}") from exc
+    if not proc.stdout.strip():
+        raise HarnessError(
+            f"klt sim produced no stdout (rc {proc.returncode})\n" + diag(proc.stdout, proc.stderr)
+        )
+    try:
+        response = json.loads(proc.stdout)
+    except json.JSONDecodeError as exc:
+        raise HarnessError(
+            f"klt sim produced non-JSON stdout ({exc}; rc {proc.returncode})\n"
+            + diag(proc.stdout, proc.stderr)
+        ) from exc
+    diag(proc.stdout, proc.stderr)
+    if not isinstance(response, dict) or not isinstance(response.get("corners"), list):
+        raise HarnessError(
+            f"klt sim returned an error envelope / non-sim response (rc {proc.returncode})\n"
+            + diag(proc.stdout, proc.stderr)
+        )
+    return response, {"returncode": proc.returncode, "cmd": cmd}
+
+
+def _finite_number(value) -> bool:
+    return (
+        isinstance(value, (int, float))
+        and not isinstance(value, bool)
+        and value == value
+        and value not in (float("inf"), float("-inf"))
+    )
+
+
+def batch_remote_info(response: dict) -> dict:
+    env = response.get("environment") if isinstance(response.get("environment"), dict) else {}
+    remote = env.get("remote") if isinstance(env.get("remote"), dict) else {}
+    return {
+        "reported_backend": remote.get("provider"),
+        "job_id": remote.get("job_id"),
+        "remote": remote,
+        "engine": env.get("engine"),
+        "engine_version": env.get("engine_version"),
+        "klt_version": (response.get("provenance") or {}).get("klt_version"),
+        "pdk_version": ((response.get("provenance") or {}).get("pdk") or {}).get("version"),
+        "klt_status": response.get("status"),
+    }
+
+
+def _index_response_corners(
+    group: BatchGroup, response: dict
+) -> tuple[dict[tuple[str, float], Corner], dict[tuple[str, float], dict]]:
+    """Match a response's corners to the request's points: malformed,
+    unexpected, duplicate or missing points raise HarnessError."""
+    want = {(c.process, c.temp_c): c for c in group.corners}
+    seen: dict[tuple[str, float], dict] = {}
+    for i, rc in enumerate(response["corners"]):
+        if (
+            not isinstance(rc, dict)
+            or not isinstance(rc.get("process"), str)
+            or not _finite_number(rc.get("temperature_c"))
+            or not isinstance(rc.get("status"), str)
+            or not isinstance(rc.get("measurements"), list)
+        ):
+            raise HarnessError(f"request {group.key}: malformed corner entry #{i} in response: {rc!r:.300}")
+        key = (rc["process"], float(rc["temperature_c"]))
+        if key not in want:
+            raise HarnessError(f"request {group.key}: unexpected corner {key} in response")
+        if key in seen:
+            raise HarnessError(f"request {group.key}: duplicate corner {key} in response")
+        seen[key] = rc
+    missing = [k for k in want if k not in seen]
+    if missing:
+        raise HarnessError(f"request {group.key}: response is missing corner(s) {missing}")
+    return want, seen
+
+
+def normalize_batch_response(
+    exp: Experiment, group: BatchGroup, response: dict, outdir: Path, timeout: int
+) -> tuple[list[dict], dict[str, str]]:
+    """Validate one response against its request and grade each point locally.
+
+    Structure problems (missing/duplicate/unexpected/malformed points) raise
+    HarnessError -- there is no trustworthy result to record. Per-point
+    problems (errored/inconclusive corner, absent or non-finite value, absent
+    log) become recorded FAIL results. klt's own verdict is never consulted;
+    limits, spread and the solver-diagnostic gate are the harness's own.
+    Returns (results in request point order, {corner id: engine log text}).
+    """
+    cold_start = group.leg is None and is_cold_start_crossing(exp)
+    if cold_start:
+        # An unfinished / incompatible / unidentified remote job is never a
+        # result (issue #374): abort, no record, no fallback.
+        problem = batch_dropout.remote_completion_problem(response)
+        if problem:
+            raise HarnessError(f"request {group.key}: {problem}")
+    want, seen = _index_response_corners(group, response)
+    if cold_start:
+        wanted = [(m, batch_dropout.klt_result_name(m.name)) for m in exp.measurements]
+    elif group.leg is None:
+        wanted = [(m, f"meas_{m.name}") for m in exp.measurements]
+    else:
+        # klt names a step-scoped result `<step>.<name>`; the step is the leg.
+        wanted = [(m, f"{group.leg}.{leg_template_name(m)}") for m in exp.measurements
+                  if m.leg == group.leg]
+    tag = "" if group.leg is None else f"[leg {group.leg}] "
+
+    results, logs = [], {}
+    for key, corner in want.items():
+        rc = seen[key]
+        reasons: list[str] = []
+        status = rc["status"]
+        if status not in ("pass", "fail"):
+            reasons.append(f"{tag}klt sim corner status {status!r} (not a completed result)")
+        if cold_start:
+            reasons.extend(batch_dropout.corner_diagnostic_problems(rc))
+        by_name: dict[str, list] = {}
+        for rm in rc["measurements"]:
+            if isinstance(rm, dict) and isinstance(rm.get("name"), str):
+                by_name.setdefault(rm["name"], []).append(rm)
+        checks = []
+        for m, klt_name in wanted:
+            entries = by_name.get(klt_name, [])
+            value, reason = None, ""
+            if len(entries) != 1:
+                reason = ("measurement not found in klt sim response" if not entries
+                          else "measurement reported more than once in klt sim response")
+            elif not _finite_number(entries[0].get("value")):
+                reason = f"measurement value is missing or non-finite ({entries[0].get('value')!r})"
+            else:
+                value = float(entries[0]["value"])
+            graded, bound_reason = grade_bounds(m, value)
+            passed = graded
+            if value is not None:
+                reason = bound_reason
+            checks.append({
+                "name": m.name, "expr": m.expr, "unit": m.unit, "value": value,
+                "min": m.min, "max": m.max,
+                "min_inclusive": m.min_inclusive, "max_inclusive": m.max_inclusive,
+                "pass": passed, "reason": reason,
+                **({"leg": m.leg, "cout_f": m.cout_f, "esr_ohm": m.esr_ohm, "direction": m.direction}
+                   if m.leg is not None else {}),
+            })
+
+        solver_diagnostic, log_text, log_note = None, None, None
+        art = rc.get("artifacts")
+        log_ref = art.get("log") if isinstance(art, dict) else None
+        if isinstance(log_ref, str) and log_ref:
+            lp = Path(log_ref)
+            if not lp.is_absolute():
+                lp = outdir / lp
+            try:
+                log_text = lp.read_text(errors="replace")
+            except OSError as exc:
+                log_note = f"{tag}engine log unreadable ({lp}: {exc})"
+        else:
+            log_note = f"{tag}engine log not retained in klt sim response (artifacts.log absent)"
+        if log_text is not None:
+            solver_diagnostic = detect_solver_diagnostic(log_text)
+            logs[corner.id] = log_text
+        else:
+            reasons.append(log_note)
+        if solver_diagnostic is not None:
+            reasons.append(f"{tag}solver diagnostic: {solver_diagnostic}")
+
+        runtime = rc.get("runtime_s")
+        ok = (not reasons) and all(c["pass"] for c in checks)
+        results.append({
+            "corner_id": corner.id,
+            "process": corner.process,
+            "temperature_c": corner.temp_c,
+            "supply_v": corner.supply_v,
+            "execution": "batch",
+            "ngspice_exit": None,  # not observable for a remote run; never fabricated
+            "timed_out": False,
+            "killed_by_signal": None,
+            "killed_by_signal_name": None,
+            "elapsed_s": runtime if _finite_number(runtime) else None,
+            "timeout_s": timeout,
+            "measurements": checks,
+            "solver_diagnostic": solver_diagnostic,
+            "pass": ok,
+            "log": None,
+            "klt_request": group.key,
+            "klt_corner_id": rc.get("corner_id"),
+            "klt_status": status,
+            "batch_reasons": reasons,
+        })
+    return results, logs
+
+
+def normalize_endpoint_response(
+    exp: Experiment, group: BatchGroup, response: dict, outdir: Path
+) -> tuple[list[dict], dict[str, str]]:
+    """Validate one line-regulation endpoint response (issue #379) and return,
+    per corner, that endpoint's RAW card values plus the reasons it cannot
+    PASS. Grading happens in `finalize_endpoint_results` once all four
+    endpoints of a corner are in hand (the slopes span two of them).
+
+    Structure problems (and an unfinished/incompatible remote job) raise
+    HarnessError; per-corner problems (errored status, klt error diagnostics,
+    missing/duplicate/non-finite/unexpected results, absent log, solver
+    diagnostic) become reasons.
+    """
+    problem = batch_dropout.remote_completion_problem(response)
+    if problem:
+        raise HarnessError(f"request {group.key}: {problem}")
+    want, seen = _index_response_corners(group, response)
+    ep = next(e for e in endpoint_deck(exp) if e.step_name == group.leg)
+    parts, logs = [], {}
+    for key, corner in want.items():
+        rc = seen[key]
+        reasons: list[str] = []
+        if rc["status"] not in ("pass", "fail"):
+            reasons.append(f"[{ep.step_name}] klt sim corner status {rc['status']!r} (not a completed result)")
+        reasons.extend(f"[{ep.step_name}] {r}" for r in batch_dropout.corner_diagnostic_problems(rc))
+        values, vreasons = blr.extract_endpoint_values(ep, rc["measurements"])
+        reasons.extend(vreasons)
+        log_text, solver_diagnostic = None, None
+        art = rc.get("artifacts")
+        log_ref = art.get("log") if isinstance(art, dict) else None
+        if isinstance(log_ref, str) and log_ref:
+            lp = Path(log_ref)
+            if not lp.is_absolute():
+                lp = outdir / lp
+            try:
+                log_text = lp.read_text(errors="replace")
+            except OSError as exc:
+                reasons.append(f"[{ep.step_name}] engine log unreadable ({lp}: {exc})")
+        else:
+            reasons.append(f"[{ep.step_name}] engine log not retained in klt sim response (artifacts.log absent)")
+        if log_text is not None:
+            solver_diagnostic = detect_solver_diagnostic(log_text)
+            logs[corner.id] = log_text
+        if solver_diagnostic is not None:
+            reasons.append(f"[{ep.step_name}] solver diagnostic: {solver_diagnostic}")
+        runtime = rc.get("runtime_s")
+        parts.append({
+            "corner": corner, "endpoint": ep.step_name, "values": values, "reasons": reasons,
+            "solver_diagnostic": solver_diagnostic,
+            "elapsed_s": runtime if _finite_number(runtime) else None,
+            "klt_request": group.key, "klt_corner_id": rc.get("corner_id"), "klt_status": rc["status"],
+        })
+    return parts, logs
+
+
+def finalize_endpoint_results(
+    exp: Experiment, matrix: list[Corner], parts: dict[str, list[dict]], timeout: int
+) -> list[dict]:
+    """Grade each corner locally from its four endpoints' raw card values, with
+    the manifest's own expressions and `grade_bounds` (identical to the local
+    backend's grading). A corner missing an endpoint part cannot PASS."""
+    endpoints = endpoint_deck(exp)
+    refs = blr.card_refs(endpoints)
+    results = []
+    for corner in matrix:
+        mine = parts.get(corner.id, [])
+        reasons = [r for p in mine for r in p["reasons"]]
+        for ep in endpoints:
+            if not any(p["endpoint"] == ep.step_name for p in mine):
+                reasons.append(f"[{ep.step_name}] no result for this endpoint")
+        values: dict[str, float | None] = {}
+        for p in mine:
+            values.update(p["values"])
+        checks = []
+        for m in exp.measurements:
+            value = blr.evaluate(m.expr, values, refs)
+            passed, why = grade_bounds(m, value)
+            reason = why if value is not None else "measurement not found in endpoint results"
+            checks.append({
+                "name": m.name, "expr": m.expr, "unit": m.unit, "value": value,
+                "min": m.min, "max": m.max,
+                "min_inclusive": m.min_inclusive, "max_inclusive": m.max_inclusive,
+                "pass": passed, "reason": reason,
+            })
+        diags = [p["solver_diagnostic"] for p in mine if p["solver_diagnostic"]]
+        elapsed = [p["elapsed_s"] for p in mine]
+        results.append({
+            "corner_id": corner.id, "process": corner.process, "temperature_c": corner.temp_c,
+            "supply_v": corner.supply_v, "execution": "batch",
+            "ngspice_exit": None, "timed_out": False, "killed_by_signal": None,
+            "killed_by_signal_name": None,
+            "elapsed_s": sum(elapsed) if elapsed and all(_finite_number(e) for e in elapsed) else None,
+            "timeout_s": timeout, "measurements": checks,
+            "solver_diagnostic": "; ".join(diags) if diags else None,
+            "pass": (not reasons) and all(c["pass"] for c in checks),
+            "log": None,
+            "klt_request": [p["klt_request"] for p in mine],
+            "klt_corner_id": [p["klt_corner_id"] for p in mine],
+            "klt_status": [p["klt_status"] for p in mine],
+            "batch_reasons": reasons,
+        })
+    return results
+
+
+def merge_leg_parts(exp: Experiment, acc: dict | None, part: dict) -> dict:
+    """Fold one window-grid leg's batch result for a corner into that corner's
+    single result dict (issue #326). Checks are kept in manifest order; the
+    corner passes only if every leg part passed; reasons, requests and klt
+    statuses accumulate, and runtime sums only while every part reported one."""
+    if acc is None:
+        merged = dict(part)
+        merged["klt_request"] = [part["klt_request"]]
+        merged["klt_corner_id"] = [part["klt_corner_id"]]
+        merged["klt_status"] = [part["klt_status"]]
+        merged["batch_reasons"] = list(part["batch_reasons"])
+        return merged
+    order = {m.name: i for i, m in enumerate(exp.measurements)}
+    merged = dict(acc)
+    merged["measurements"] = sorted(
+        acc["measurements"] + part["measurements"], key=lambda c: order.get(c["name"], len(order))
+    )
+    merged["pass"] = acc["pass"] and part["pass"]
+    merged["batch_reasons"] = acc["batch_reasons"] + part["batch_reasons"]
+    merged["klt_request"] = acc["klt_request"] + [part["klt_request"]]
+    merged["klt_corner_id"] = acc["klt_corner_id"] + [part["klt_corner_id"]]
+    merged["klt_status"] = acc["klt_status"] + [part["klt_status"]]
+    diags = [d for d in (acc["solver_diagnostic"], part["solver_diagnostic"]) if d]
+    merged["solver_diagnostic"] = "; ".join(diags) if diags else None
+    a, b = acc["elapsed_s"], part["elapsed_s"]
+    merged["elapsed_s"] = a + b if _finite_number(a) and _finite_number(b) else None
+    return merged
+
+
+def run_batch(
+    exp: Experiment, pdk: Pdk, pin: dict, prepared: list[tuple[BatchGroup, Path, dict]],
+    matrix: list[Corner], run_dir: Path, timeout: int, allow_mismatch: bool,
+) -> tuple[list[dict], dict[str, str], dict]:
+    """Submit each request in turn and reassemble results in matrix order."""
+    by_id: dict[str, dict] = {}
+    endpoint_parts: dict[str, list[dict]] = {}
+    endpoint_mode = is_endpoint_adapter(exp)
+    logs: dict[str, str] = {}
+    requests_meta = []
+    jobs: list[str] = []
+    for group, request_path, request in prepared:
+        outdir = run_dir / "klt-out" / group.key
+        try:
+            response, meta = run_klt_batch(request_path, outdir, pdk.root)
+            (outdir / "response.json").write_text(json.dumps(response, indent=2, sort_keys=True) + "\n")
+            info = batch_remote_info(response)
+            if info["job_id"]:
+                jobs.append(str(info["job_id"]))
+            _shared_assert_pdk(response, pdk, pin, allow_mismatch, error_cls=HarnessError)
+            if endpoint_mode:
+                res, lg = normalize_endpoint_response(exp, group, response, outdir)
+            else:
+                res, lg = normalize_batch_response(exp, group, response, outdir, timeout)
+        except HarnessError as exc:
+            raise HarnessError(
+                f"{exc}\n  request {group.key} failed; no evidence record written, no local "
+                f"fallback, no resubmission\n  remote job id(s) from earlier requests: "
+                f"{', '.join(jobs) if jobs else 'none'}"
+            ) from exc
+        for r in res:
+            if endpoint_mode:
+                endpoint_parts.setdefault(r["corner"].id, []).append(r)
+                continue
+            cid = r["corner_id"]
+            by_id[cid] = r if group.leg is None else merge_leg_parts(exp, by_id.get(cid), r)
+        for cid, text in lg.items():
+            if endpoint_mode:
+                logs[cid] = logs.get(cid, "") + (
+                    f"***** {exp.slug} endpoint {group.leg} (klt sim request {group.key}) *****\n{text}\n"
+                )
+            elif group.leg is None:
+                logs[cid] = text
+            else:
+                logs[cid] = logs.get(cid, "") + (
+                    f"***** window leg {group.leg} (klt sim request {group.key}) *****\n{text}\n"
+                )
+        requests_meta.append({
+            "key": group.key,
+            **({"endpoint" if endpoint_mode else "leg": group.leg} if group.leg is not None else {}),
+            "supply_v": group.supply_v,
+            "n_points": len(group.corners),
+            "returncode": meta["returncode"],
+            "response_file": str((outdir / "response.json")),
+            "request_file": str(request_path),
+            **info,
+            "klt_pdk_names_pin": pin["open_pdks_commit"] in (info["pdk_version"] or ""),
+        })
+    if endpoint_mode:
+        results = finalize_endpoint_results(exp, matrix, endpoint_parts, timeout)
+    else:
+        results = [by_id[c.id] for c in matrix]
+    return results, logs, {"requests": requests_meta}
+
+
+def batch_tools(base: dict, execution: dict) -> dict:
+    """The record's `tools` block for a batch run: ngspice is the executor's,
+    as klt reported it, not this machine's."""
+    tools = dict(base)
+    engines = unique_in_order(
+        f"{r['engine'] or 'ngspice'}-{r['engine_version']}" if r["engine_version"] else "unreported"
+        for r in execution["requests"]
+    )
+    tools["ngspice"] = (
+        f"{engines[0]} (remote executor, reported by klt sim)"
+        if len(engines) == 1 else f"mixed: {', '.join(engines)} (remote executor, reported by klt sim)"
+    )
+    if tools.get("declared"):
+        versions = {"ngspice": engines[0] if len(engines) == 1 else "mixed", "xschem": tools["xschem"]}
+        tools["on_baseline"] = not compare_tool_versions(tools["declared"], versions)
+    return tools
+
+
+# --------------------------------------------------------------------------
 # record rendering
 # --------------------------------------------------------------------------
+
+
+def cold_start_adapter_info(exp: Experiment) -> dict:
+    """Provenance of the issue #374 adapter for a batch record / dry run."""
+    allowed = BATCH_ALLOWLIST[exp.slug]
+    step = cold_start_step(exp)
+    return {
+        "name": "cold-start-crossing",
+        "issue": 374,
+        "step": step["name"],
+        "analysis": f"{step['analysis']['kind']} {step['analysis']['args']}",
+        "cards": [m["spice"] for m in step["measurements"] if "spice" in m],
+        "graded": [m.name for m in exp.measurements],
+        "validated_manifest_sections": dict(allowed["manifest_sections"]),
+        "validated_stimulus": list(allowed["stimulus"]),
+    }
+
+
+def endpoint_adapter_info(exp: Experiment) -> dict:
+    """Provenance of the issue #379 adapter for a batch record / dry run."""
+    allowed = BATCH_ALLOWLIST[exp.slug]
+    endpoints = endpoint_deck(exp)
+    mod = endpoint_module(exp)
+    name, issue = {
+        biq: ("iq-endpoints", 213), bld: ("load-regulation-endpoints", 381),
+    }.get(mod, ("line-regulation-endpoints", 379))
+    return {
+        "name": name,
+        "issue": issue,
+        "endpoints": [
+            {
+                "step": e.step_name, "vin": e.vin, "iload": e.iload,
+                "analysis": f"tran {e.tran_args}",
+                "sources": endpoint_module(exp).endpoint_source_lines(e),
+                "cards": [text for _, _, text in e.cards],
+            }
+            for e in endpoints
+        ],
+        "graded": [{"name": m.name, "expr": m.expr} for m in exp.measurements],
+        "validated_manifest_sections": dict(allowed["manifest_sections"]),
+        "validated_baseline_stimulus": list(allowed["stimulus"]),
+    }
+
+
+def _vin_label(vin) -> str:
+    """A fixed VIN literal gets a unit; the load-regulation corner-supply
+    parameter (`'vsup'`) is shown as is."""
+    return str(vin) if str(vin).startswith("'") else f"{vin} V"
+
+
+def render_batch_execution(record: dict) -> list[str]:
+    """Requested vs klt-reported execution environment of a batch record."""
+    ex = record["execution"]
+    lines = [
+        f"- **Execution backend**: requested `{ex['requested_backend']}` via `klt sim` "
+        f"({len(ex['requests'])} request(s), one per fixed supply value unless `--quick`, "
+        "and one per COUT/ESR window-grid leg where the manifest declares a grid); "
+        "ngspice ran **on the remote executor, not this machine** and no local ngspice "
+        "exit code exists for these corners"
+    ]
+    for rq in ex["requests"]:
+        remote = rq.get("remote") or {}
+        detail = ", ".join(
+            f"{k}=`{remote[k]}`"
+            for k in ("provider", "job_id", "instance_type", "lifecycle", "region", "elapsed_seconds")
+            if remote.get(k) is not None
+        )
+        lines.append(
+            f"  - request `{rq['key']}` ({rq['supply_v']:g} V, {rq['n_points']} point(s)): "
+            f"reported backend `{rq.get('reported_backend') or 'not reported'}`, "
+            f"engine {rq.get('engine') or '?'} {rq.get('engine_version') or '?'}, "
+            f"klt {rq.get('klt_version') or '?'}, job `{rq.get('job_id') or 'not reported'}`"
+            + (f" ({detail})" if detail else "")
+        )
+        lines.append(
+            f"    - klt provenance.pdk.version `{rq.get('pdk_version') or 'not reported'}` — "
+            + ("names" if rq.get("klt_pdk_names_pin") else "**does NOT name**")
+            + " the pinned open_pdks commit"
+        )
+    if ex.get("adapter") and ex["adapter"].get("name") in (
+        "line-regulation-endpoints", "load-regulation-endpoints", "iq-endpoints",
+    ):
+        ad = ex["adapter"]
+        lines.append(
+            f"- **Batch adapter**: `{ad['name']}` (issue #{ad['issue']}): one single-step "
+            "`analysis_steps` request per supply group x endpoint ("
+            + "; ".join(
+                f"`{e['step']}` = `tran {e['analysis'].split(' ', 1)[1]}` at VIN {_vin_label(e['vin'])}, "
+                f"I_LOAD {e['iload']}"
+                for e in ad["endpoints"]
+            )
+            + "); each request's netlist carries that endpoint's complete VIN / EN-PWL / load "
+            "state, EN's high level equal to VIN; raw endpoint values come back as "
+            "`tran<N>.<card>` and the slopes/deltas, windows and bounds are graded locally "
+            "(offline translation checks do not establish local/fleet numerical equivalence)"
+        )
+    elif ex.get("adapter"):
+        ad = ex["adapter"]
+        lines.append(
+            f"- **Batch adapter**: `{ad['name']}` (issue #{ad['issue']}): one `analysis_steps` "
+            f"step `{ad['step']}` running `{ad['analysis']}` (no operating-point solve), cards "
+            + ", ".join(f"`{c}`" for c in ad["cards"])
+            + "; stimulus sent verbatim in the request netlist and checked against the "
+            "validated lines; graded locally with the manifest's own bounds"
+        )
+    lines.append(
+        f"- **ngspice init settings**: `{record['tools'].get('spiceinit_file', 'sim/spiceinit')}` "
+        f"(sha256 `{record['tools'].get('spiceinit_sha256', '?')}`) sent as the request's "
+        "`options.ngspice_init` lines (empty lines dropped, order kept)"
+    )
+    return lines
+
+
+def render_window_grid(g: dict) -> list[str]:
+    """Markdown block for a record's COUT/ESR window-grid verdict (issue #313)."""
+
+    def eng(v: float) -> str:
+        return f"{v:g}"
+
+    out = [
+        "- **COUT/ESR window grid** (separate from the PVT matrix above): "
+        + ("COMPLETE" if g["complete"] else "INCOMPLETE")
+        + f" -- {g['conditions_passing']}/{g['conditions_expected']} declared "
+        "(corner x COUT x ESR x direction) conditions present, finite and passing; "
+        f"grid verdict **{'PASS' if g['pass'] else 'FAIL'}**.",
+        "  - Declared legs (COUT F / ESR ohm): "
+        + ", ".join(f"`{x['id']}` ({eng(x['cout_f'])} / {eng(x['esr_ohm'])})" for x in g["legs"])
+        + "; directions: "
+        + ", ".join(g["directions"])
+        + ".",
+        f"  - {g['coverage_note']}",
+        f"  - {g['sampling_statement']}",
+    ]
+    if not g["pass"]:
+        out.append(
+            f"  - A missing leg, an unparsable/NaN value or any failed condition makes the "
+            f"grid FAIL: {g['n_failing_or_missing']} condition(s) failed or are missing"
+            + (
+                f" (first {len(g['failures'])} itemised; the rest are in the JSON record's "
+                "per-corner measurements)"
+                if g["failures_truncated"]
+                else ""
+            )
+            + "."
+        )
+        for f in g["failures"][:20]:
+            val = "n/a" if f["value"] is None else f"{f['value']:.6g}"
+            out.append(
+                f"    - {f['corner_id']} (process {f['process']}, {fmt_temp(f['temperature_c'])} C, "
+                f"{f['supply_v']:.2f} V) COUT={eng(f['cout_f'])} F ESR={eng(f['esr_ohm'])} ohm "
+                f"{f['direction']}: `{f['measurement']}` {f['status']} ({val}"
+                + (f"; {f['reason']}" if f["reason"] else "")
+                + ")"
+            )
+    return out
 
 
 def render_record(record: dict) -> str:
@@ -729,7 +2221,15 @@ def render_record(record: dict) -> str:
     # `.spiceinit` that was in force, so the record says which solver
     # configuration produced these numbers. `.get()` because records minted
     # before #190 have no such field.
-    if tools.get("spiceinit_sha256"):
+    if tools.get("declared"):
+        decl = ", ".join(f"{t} {v}" for t, v in tools["declared"].items())
+        lines.append(
+            f"- **toolchain baseline** (`sim/pdk.json` tools): {decl} — "
+            + ("recorded ON baseline" if tools.get("on_baseline") else "recorded on DRIFTED tools")
+        )
+    if r.get("backend") == "batch":
+        lines.extend(render_batch_execution(r))
+    elif tools.get("spiceinit_sha256"):
         lines.append(
             f"- **ngspice init settings**: `{tools.get('spiceinit_file', 'sim/spiceinit')}` "
             f"(sha256 `{tools['spiceinit_sha256']}`), copied into the run directory as "
@@ -762,6 +2262,8 @@ def render_record(record: dict) -> str:
             "(−40/27/125 °C × supply corners × process corners)"
         )
     lines.append(f"- **Statistical convention**: {r['experiment']['statistical_convention']}")
+    if r.get("window_grid"):
+        lines.extend(render_window_grid(r["window_grid"]))
 
     lines.append("- **Result**:")
     for res in r["corners"]:
@@ -775,7 +2277,10 @@ def render_record(record: dict) -> str:
         fails = [c["reason"] for c in res["measurements"] if not c["pass"] and c["reason"]]
         if res.get("solver_diagnostic"):
             fails.append(f"solver diagnostic: {res['solver_diagnostic']}")
-        if res["timed_out"]:
+        if res.get("execution") == "batch":
+            # remote result: no local ngspice exit code exists to report
+            fails.extend(res.get("batch_reasons") or [])
+        elif res["timed_out"]:
             fails.append(
                 "ngspice TIMED OUT — the harness killed it after "
                 f"--timeout {res.get('timeout_s', '?')}s"
@@ -792,6 +2297,25 @@ def render_record(record: dict) -> str:
         if fails:
             why = f" — {'; '.join(fails)}"
         lines.append(f"  - {res['corner_id']}: {verdict} ({detail}){why}")
+    if r.get("ramp_monotonicity_settings"):
+        cfg = r["ramp_monotonicity_settings"]
+        lines.append(
+            "- **Ramp-monotonicity checker settings** (issue #309; `sim/README.md`, "
+            f"\"Startup ramp monotonicity\"): `{json.dumps(cfg, sort_keys=True)}`. Raw "
+            "`<corner>.<leg>.trace.dat` files (time, V(VOUT)) are retained beside the "
+            "per-corner logs; per-leg sha256, drawdown, worst interval and sampling "
+            "resolution are in the machine-readable record."
+        )
+        for res in r["corners"]:
+            for leg in res.get("ramp_monotonicity") or []:
+                iv = leg.get("worst_interval_s")
+                lines.append(
+                    f"  - {res['corner_id']} leg `{leg['leg']}`: {leg['status']}, drawdown "
+                    f"{'n/a' if leg['max_drawdown_v'] is None else format(leg['max_drawdown_v'], '.6g') + ' V'}"
+                    + (f", worst interval {iv[0]:.6g}-{iv[1]:.6g} s" if iv else "")
+                    + ", worst sample gap "
+                    + ("n/a" if leg["resolution_s"] is None else f"{leg['resolution_s']:.3g} s")
+                )
     for sc in r["spread_checks"]:
         verdict = "PASS" if sc["pass"] else "FAIL"
         lines.append(
@@ -806,6 +2330,12 @@ def render_record(record: dict) -> str:
     lines.append(f"  - Testbench: `{r['links']['testbench']}`")
     lines.append(f"  - Netlist snapshot: `{r['links']['netlist_snapshot']}`")
     lines.append(f"  - Raw per-corner logs: `{r['links']['corners_dir']}`")
+    for key, path in (r["links"].get("klt_requests") or {}).items():
+        lines.append(f"  - klt sim request `{key}`: `{path}`")
+    for key, path in (r["links"].get("klt_responses") or {}).items():
+        lines.append(f"  - klt sim response `{key}` (raw): `{path}`")
+    for key, path in (r["links"].get("request_netlists") or {}).items():
+        lines.append(f"  - Request netlist `{key}`: `{path}`")
     lines.append(f"  - Machine-readable record: `{r['links']['json']}`")
     lines.append(f"  - Experiment manifest: `{r['links']['manifest']}`")
     lines.extend(render_record_footer(r, "corner-run.py"))
@@ -836,6 +2366,12 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         action="store_true",
         help="check ngspice/xschem/volare/PDK are usable and exit (0 if all OK)",
     )
+    p.add_argument(
+        "--require-pdk",
+        action="store_true",
+        help="with --check-env: a tool version differing from sim/pdk.json 'tools' "
+        "is a FAIL instead of a WARN",
+    )
     p.add_argument("--process", type=csv_list, help="process corners (default: manifest)")
     p.add_argument("--temp", type=csv_floats, help="temperatures in °C (default: manifest)")
     p.add_argument("--supply", type=csv_floats, help="supply voltages (default: manifest)")
@@ -845,9 +2381,26 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         default="",
         help="why a subset of the full PVT matrix is acceptable (required for subsets)",
     )
+    p.add_argument(
+        "--leg-order",
+        type=csv_list,
+        help="window_grid leg execution order (a permutation of the declared legs); "
+        "leg-order independence smoke check, issue #313",
+    )
     p.add_argument("--supersedes", default="", help="record id this run supersedes")
     p.add_argument("--author", default="", help="record author (default: git user.email)")
     p.add_argument("--timeout", type=int, default=300, help="per-corner ngspice timeout (s)")
+    p.add_argument(
+        "--backend",
+        choices=["local", "batch"],
+        default="local",
+        help="execution backend. `local` (default) runs ngspice here, one process per "
+        "corner. `batch` hands the grid to `klt sim --backend batch` (one request per "
+        "supply value, and per window-grid leg); opt-in and bounded to the unchanged "
+        "sim/pdk-smoke shape, the sim/load-transient window grid and the validated "
+        "sim/dropout-vs-load cold-start crossing -- every other experiment is "
+        "refused (see sim/README.md, \"Batch backend\")",
+    )
     p.add_argument(
         "--allow-pdk-mismatch",
         action="store_true",
@@ -873,7 +2426,7 @@ def main(argv: list[str]) -> int:
     pin = load_pin()
 
     if args.check_env:
-        return check_env()
+        return check_env(require_pdk=args.require_pdk)
 
     pdk = resolve_pdk(pin)
 
@@ -896,6 +2449,25 @@ def main(argv: list[str]) -> int:
         )
 
     exp = load_experiment(Path(args.experiment))
+    if args.leg_order:
+        declared = [leg["id"] for leg in window_legs(exp.raw)]
+        if sorted(args.leg_order) != sorted(declared):
+            raise HarnessError(
+                f"--leg-order must be a permutation of the declared window_grid legs: {declared}"
+            )
+        exp.leg_order = list(args.leg_order)
+    batch = args.backend == "batch"
+    if batch:
+        # Refuse before netlisting, submission or any local ngspice.
+        check_batch_supported(exp)
+        if args.leg_order:
+            raise HarnessError(
+                "--leg-order is local-only: under --backend batch every window-grid leg is "
+                "its own klt sim request (its own ngspice process), so there is no in-deck "
+                "leg order to permute"
+            )
+        if not args.dry_run:
+            klt_binary()  # fail fast if klt is missing
     matrix, is_subset = build_matrix(exp, args, pin)
     if not matrix:
         raise HarnessError("empty corner matrix")
@@ -917,14 +2489,32 @@ def main(argv: list[str]) -> int:
     record_json = records_dir / f"{record_id}.json"
     snapshot = snapshots_dir / f"{record_id}.spice"
 
+    requests_dir = exp.dir / "klt-requests"
+    responses_dir = exp.dir / "klt-responses"
+    request_netlists_dir = exp.dir / "klt-request-netlists"
+
     if not args.dry_run and not args.no_write:
-        for path in (record_md, record_json, snapshot, corners_dir):
+        # Atomic claim BEFORE any scratch dir/evidence is written (issue #310).
+        reserve_record_id(BUILD_DIR, exp.dir.name, record_id, HarnessError)
+
+    if not args.dry_run and not args.no_write:
+        extra = []
+        if batch:
+            extra = [
+                p
+                for d in (requests_dir, responses_dir, request_netlists_dir)
+                for p in (d.glob(f"{record_id}.*") if d.is_dir() else [])
+            ]
+        for path in (record_md, record_json, snapshot, corners_dir, *extra):
             if path.exists():
                 raise HarnessError(
                     f"{path} already exists — sim/ is append-only, refusing to overwrite"
                 )
 
     run_dir = BUILD_DIR / exp.slug / record_id
+    if args.dry_run or args.no_write:
+        # no evidence => no reservation, so keep scratch off any real run's dir
+        run_dir = BUILD_DIR / exp.slug / f"{record_id}.ephemeral-{os.getpid()}"
     run_dir.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(SPICEINIT_FILE, run_dir / ".spiceinit")
 
@@ -938,6 +2528,40 @@ def main(argv: list[str]) -> int:
     print(f"corner points   : {len(matrix)}" + (" (SUBSET)" if is_subset else " (full matrix)"))
     print(f"scratch run dir : {run_dir}")
 
+    if batch:
+        prepared = prepare_batch_requests(
+            exp, pdk, matrix, args.quick, body, run_dir, args.timeout
+        )
+        print(f"backend         : batch ({len(prepared)} klt sim request(s))")
+
+    if args.dry_run and batch:
+        if is_endpoint_adapter(exp):
+            ad = endpoint_adapter_info(exp)
+            print(f"\n-- batch adapter {ad['name']} (issue #{ad['issue']}) --")
+            for e in ad["endpoints"]:
+                print(f"  {e['step']}: {e['analysis']}; VIN={e['vin']} I_LOAD={e['iload']}")
+                for line in e["sources"].values():
+                    print(f"    source (request netlist): {line}")
+                for c in e["cards"]:
+                    print(f"    card : {c}")
+        if is_cold_start_crossing(exp):
+            ad = cold_start_adapter_info(exp)
+            print(f"\n-- batch adapter {ad['name']} (issue #374) --")
+            print(f"  step {ad['step']}: {ad['analysis']}")
+            for c in ad["cards"]:
+                print(f"  card : {c}")
+            for ln in ad["validated_stimulus"]:
+                print(f"  stimulus (verified in each request netlist): {ln}")
+        print("\n-- corner list --")
+        for corner in matrix:
+            print(f"  {corner.id}")
+        for group, request_path, request in prepared:
+            print(f"\n-- klt sim request {group.key} (dry run; netlist: {request['netlist']}) --")
+            print(json.dumps(request, indent=2))
+        print("\n(dry run: klt sim not invoked, nothing submitted, nothing written under "
+              "sim/<experiment>/)")
+        return 0
+
     if args.dry_run:
         print("\n-- corner list --")
         for corner in matrix:
@@ -948,7 +2572,13 @@ def main(argv: list[str]) -> int:
         return 0
 
     results = []
-    for i, corner in enumerate(matrix, start=1):
+    batch_logs: dict[str, str] = {}
+    execution = None
+    if batch:
+        results, batch_logs, execution = run_batch(
+            exp, pdk, pin, prepared, matrix, run_dir, args.timeout, args.allow_pdk_mismatch
+        )
+    for i, corner in enumerate([] if batch else matrix, start=1):
         log_path = None if args.no_write else corners_dir / f"{corner.id}.log"
         res = run_corner(exp, pdk, corner, body, run_dir, log_path, args.timeout)
         results.append(res)
@@ -961,8 +2591,32 @@ def main(argv: list[str]) -> int:
             f"{'PASS' if res['pass'] else 'FAIL'}  {summary}"
         )
 
+    if batch:
+        for i, (corner, res) in enumerate(zip(matrix, results), start=1):
+            summary = ", ".join(
+                f"{c['name']}={'n/a' if c['value'] is None else format(c['value'], '.6g')}"
+                for c in res["measurements"]
+            )
+            print(
+                f"[{i:>3}/{len(matrix)}] {corner.id:<20} "
+                f"{'PASS' if res['pass'] else 'FAIL'}  {summary}"
+            )
+            for why in res["batch_reasons"]:
+                print(f"      {why}", file=sys.stderr)
+
     spreads = spread_checks(exp, results)
-    overall = all(r["pass"] for r in results) and all(s["pass"] for s in spreads)
+    grid = grid_coverage(exp, results, matrix)
+    overall = (
+        all(r["pass"] for r in results)
+        and all(s["pass"] for s in spreads)
+        and (grid is None or grid["pass"])
+    )
+    if grid is not None:
+        print(
+            f"window grid     : {grid['conditions_passing']}/{grid['conditions_expected']} "
+            f"conditions passing ({'complete' if grid['complete'] else 'INCOMPLETE'}) -> "
+            f"{'PASS' if grid['pass'] else 'FAIL'}"
+        )
 
     if args.no_write:
         print()
@@ -971,7 +2625,7 @@ def main(argv: list[str]) -> int:
         return 0 if overall else 2
 
     snapshot.parent.mkdir(parents=True, exist_ok=True)
-    snapshot.write_text("\n".join(body) + "\n.end\n")
+    write_new_text(snapshot, "\n".join(body) + "\n.end\n")
 
     record = {
         "record_id": record_id,
@@ -1017,7 +2671,13 @@ def main(argv: list[str]) -> int:
             "point_ids": [c.id for c in matrix],
         },
         "corners": results,
+        **(
+            {"ramp_monotonicity_settings": exp.raw["ramp_monotonicity"]}
+            if exp.raw.get("ramp_monotonicity")
+            else {}
+        ),
         "spread_checks": spreads,
+        **({"window_grid": grid} if grid is not None else {}),
         "overall_pass": overall,
         "links": {
             "testbench": str(exp.schematic.relative_to(REPO_ROOT)),
@@ -1029,9 +2689,42 @@ def main(argv: list[str]) -> int:
         },
     }
 
+    if batch:
+        record["backend"] = "batch"
+        record["tools"] = batch_tools(record["tools"], execution)
+        link_reqs, link_resps, link_nets = {}, {}, {}
+        for rq in execution["requests"]:
+            key = rq["key"]
+            for d, src, ext, links in (
+                (requests_dir, rq["request_file"], "json", link_reqs),
+                (responses_dir, rq["response_file"], "json", link_resps),
+                (request_netlists_dir, str(Path(rq["request_file"]).with_suffix(".spice")), "spice", link_nets),
+            ):
+                d.mkdir(parents=True, exist_ok=True)
+                dest = d / f"{record_id}.{key}.{ext}"
+                copy_new(src, dest)
+                links[key] = str(dest.relative_to(REPO_ROOT))
+        corners_dir.mkdir(parents=True, exist_ok=True)
+        for cid, text in batch_logs.items():
+            write_new_text(corners_dir / f"{cid}.log", text)
+        for res in results:
+            if res["corner_id"] in batch_logs:
+                res["log"] = str((corners_dir / f"{res['corner_id']}.log").relative_to(REPO_ROOT))
+        for rq in execution["requests"]:
+            rq["request_file"] = link_reqs[rq["key"]]
+            rq["response_file"] = link_resps[rq["key"]]
+        record["execution"] = {"requested_backend": "batch", **execution}
+        if is_cold_start_crossing(exp):
+            record["execution"]["adapter"] = cold_start_adapter_info(exp)
+        if is_endpoint_adapter(exp):
+            record["execution"]["adapter"] = endpoint_adapter_info(exp)
+        record["links"].update(
+            {"klt_requests": link_reqs, "klt_responses": link_resps, "request_netlists": link_nets}
+        )
+
     records_dir.mkdir(parents=True, exist_ok=True)
-    record_json.write_text(json.dumps(record, indent=2, sort_keys=True) + "\n")
-    record_md.write_text(render_record(record))
+    write_new_text(record_json, json.dumps(record, indent=2, sort_keys=True) + "\n")
+    write_new_text(record_md, render_record(record))
 
     print()
     print(f"record  : {record_md.relative_to(REPO_ROOT)}")

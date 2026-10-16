@@ -64,21 +64,68 @@ TESTBENCH_DIR="$EXP_DIR/testbench"
 
 # Append-only evidence: if a prior record already exists, this run
 # supersedes it (record the pointer rather than overwriting).
+# Only a comparable result record is a supersede target: a record stamping a
+# non-null `evidence_kind` (e.g. "batch_submit_failure", PR #308) produced no
+# result and is skipped -- same rule as the characterization rollup's
+# latest_sim_record().
 PRIOR_RECORD_ID=""
 if compgen -G "$EXP_DIR/records/*.json" >/dev/null; then
-  PRIOR_RECORD_ID="$(basename "$(ls -1 "$EXP_DIR"/records/*.json | sort | tail -1)" .json)"
-  echo "run-pex.sh: this run will supersede prior record $PRIOR_RECORD_ID"
+  PRIOR_RECORD_ID="$(python3 -c '
+import json, pathlib, sys
+ids = [p.stem for p in sorted(pathlib.Path(sys.argv[1]).glob("*.json"))
+       if json.loads(p.read_text()).get("evidence_kind") is None]
+print(ids[-1] if ids else "")
+' "$EXP_DIR/records")"
+  [[ -n "$PRIOR_RECORD_ID" ]] && echo "run-pex.sh: this run will supersede prior record $PRIOR_RECORD_ID"
 fi
 
+BUILD_ROOT_TMP="$(mktemp -d)"
 echo "run-pex.sh: regenerating testbench pair against $LATEST_LVS_ID's layout"
-python3 "$SCRIPT_DIR/gen-pex-testbench.py" \
-  --klt "$KLT" --gds "$GDS" --repo-root "$REPO_ROOT" \
-  --outdir "$TESTBENCH_DIR" --pdk "$PDK_VARIANT"
-
 TS_UTC="$(date -u +%Y%m%d-%H%M%S)"
 SHORT_SHA="$(git -C "$REPO_ROOT" rev-parse --short HEAD)"
 RECORD_ID="${TS_UTC}-${SHORT_SHA}"
 echo "run-pex.sh: record $RECORD_ID"
+
+# Failed-run evidence (issue #277): append-only, one directory per RECORD_ID,
+# never reused. Populated only when a stage hard-fails (see retain_failure).
+FAIL_DIR="$EXP_DIR/failures/$RECORD_ID"
+
+retain_failure() {  # retain_failure <stage> <exit-code> [file ...]
+  local stage="$1" code="$2"; shift 2
+  mkdir -p "$FAIL_DIR"
+  local f
+  for f in "$@"; do
+    [[ -e "$f" ]] && cp -r "$f" "$FAIL_DIR/" || true
+  done
+  {
+    echo "--- stage: $stage"
+    echo "exit_code: $code"
+    echo "record_id: $RECORD_ID"
+    echo "git_head: $(git -C "$REPO_ROOT" rev-parse HEAD)"
+    echo "layout_record: ${LATEST_LVS_ID:-unknown}"
+    echo "gds_sha256: $(sha256sum "$GDS" | cut -d' ' -f1)"
+    echo "klt: $("$KLT" --version 2>&1 | head -1)"
+    echo "ngspice: $(ngspice -v 2>&1 | grep -m1 -i 'ngspice-' || echo unknown)"
+    echo "xschem: $(xschem --version 2>&1 | grep -m1 -i xschem || echo unknown)"
+    echo "KLT_SIM_BACKEND: ${KLT_SIM_BACKEND:-unset}"
+    echo "PDK_ROOT: ${PDK_ROOT:-unset}"
+  } >> "$FAIL_DIR/provenance.txt"
+  echo "run-pex.sh: FAILURE evidence retained -> $FAIL_DIR" >&2
+}
+
+mkdir -p "$BUILD_ROOT_TMP"
+GEN_LOG="$BUILD_ROOT_TMP/gen.stderr.log"
+set +e
+python3 "$SCRIPT_DIR/gen-pex-testbench.py" \
+  --klt "$KLT" --gds "$GDS" --repo-root "$REPO_ROOT" \
+  --outdir "$TESTBENCH_DIR" --pdk "$PDK_VARIANT" 2> "$GEN_LOG"
+GEN_EXIT=$?
+set -e
+if [[ $GEN_EXIT -ne 0 ]]; then
+  cat "$GEN_LOG" >&2
+  retain_failure testbench-generation "$GEN_EXIT" "$GEN_LOG"
+  exit "$GEN_EXIT"
+fi
 
 # Same evidence layout as sim/dropout-vs-load, sim/mc-output-accuracy, etc.:
 # flat per-record-id files under purpose-named directories, not a
@@ -126,6 +173,19 @@ echo "run-pex.sh: klt pex exit code $PEX_EXIT (0=all pass, 3=a delta[] row faile
 if [[ ! -s "$RESP_PEX_PATH" && -s "$BUILD_DIR/pex.stderr.log" ]]; then
   cp "$BUILD_DIR/pex.stderr.log" "$RESP_PEX_PATH"
 fi
+
+# A hard failure (anything other than pass=0 / limit-fail=3) of either leg
+# keeps the only diagnostics: request, DUT + testbench, response/error
+# envelope, full stderr and every per-corner deck/ngspice log.
+for leg in "sim-schematic:$SIM_EXIT:$RESP_SIM_PATH:$BUILD_DIR/sim-schematic.stderr.log:$BUILD_DIR/sim" \
+           "pex:$PEX_EXIT:$RESP_PEX_PATH:$BUILD_DIR/pex.stderr.log:$BUILD_DIR/pex"; do
+  IFS=: read -r lname lcode lresp lerr ldir <<< "$leg"
+  if [[ "$lcode" -ne 0 && "$lcode" -ne 3 ]]; then
+    retain_failure "$lname" "$lcode" "$REQ_PATH" "$TESTBENCH_DIR/tb_pex_post_layout.spice" \
+      "$TESTBENCH_DIR/ldo_core_schematic_dut.spice" "$lresp" "$lerr" "$GEN_LOG" "$ldir"
+    mv "$FAIL_DIR/$(basename "$ldir")" "$FAIL_DIR/$lname-artifacts" 2>/dev/null || true
+  fi
+done
 
 python3 "$SCRIPT_DIR/render-pex-record.py" \
   --record-id "$RECORD_ID" --repo-root "$REPO_ROOT" \
