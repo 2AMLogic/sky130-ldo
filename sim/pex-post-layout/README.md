@@ -666,6 +666,31 @@ legs against its changed GDS, commits a new append-only record, and compares it
 with `20260924-230726-a947aa8`, separating known baseline failures from new
 regressions.
 
+**PR #275 / #267 rerun (2026-10-16, record `20261016-030826-f604ae0`).** Both
+legs were rerun through the batch flow (`KLT_SIM_BACKEND=batch`; no local grid)
+against `LATEST-LVS` `20261010-074401-0eb9b4b`, whose GDS (sha256 `80f98681...`)
+is the #267 geometry. Compared with baseline `20260924-230726-a947aa8`:
+
+- **Schematic leg (`klt sim`): 41/45 pass, 4 fail** (baseline 38/45, 7 fail).
+  Failing corners now: `fs/3.300V/125C`, `sf/2.970V/125C`, `ss/2.970V/27C`,
+  `ss/3.300V/27C`. Baseline failures: `ff/3.630V/-40C`, `sf/3.300V/-40C`,
+  `sf/3.630V/125C`, `ss/2.970V/-40C`, `ss/2.970V/27C`, `tt/3.300V/125C`,
+  `tt/3.630V/27C`. This leg simulates the schematic DUT, not the layout, so
+  the change comes from schematic/testbench drift on `main` since the baseline,
+  not from #267's geometry. Only `ss/2.970V/27C` fails in both.
+- **Extracted leg (`klt pex`): not obtained.** All 135 `delta[]` rows are
+  `errored` (`unavailable_comparison`); `klt pex` exits 4. Cause: every one of
+  the 45 batch units of the extracted leg failed on the runner with `model
+  library not found: /home/ubuntu/.volare/sky130A/libs.tech/combined/sky130.lib.spice`
+  (the submitting host's absolute `models.lib` path does not exist on the fleet).
+  This is a tool gap tracked upstream as 2AMLogic/klayout-tools#3296, not a
+  layout result. No extracted-side numbers exist, so **there is no regression
+  comparison against the baseline's 39 pass / 96 fail extracted delta and #267's
+  PEX acceptance criterion remains unmet.** No local-grid fallback was used.
+  Diagnostics are retained in `failures/20261016-030826-f604ae0/`.
+- The record is not a clean comparison baseline; the next rerun should be made
+  once #3296 is resolved.
+
 ## Regenerating
 
 ```bash
