@@ -4,6 +4,8 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 
 ### 2026-10-15
 
+- **PR #393**: sim: extend startup to a 12-leg C_out x load x ESR cold-enable grid
+- **PR #392**: study: partial capacitor-study record, 105/126 op points on batch fleet
 - **PR #387**: Bump Repo Skills 0.19.5 -> 0.24.1
 
 ### 2026-10-14
