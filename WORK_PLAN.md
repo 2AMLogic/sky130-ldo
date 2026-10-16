@@ -7,7 +7,7 @@ Current roadmap derived from GitHub lifecycle labels. Maintained by the Loom Gui
 
 Judge-approved PRs under a hold (`loom:blocked` or `loom:operator`) — only a human merge decision is missing.
 
-_None._
+- **#395**: Bump Repo Skills 0.24.1 -> 0.24.3
 
 ## Very Important
 
@@ -31,20 +31,19 @@ Human-approved issues ready for implementation (`loom:issue`).
 
 Issues currently being built (`loom:building`).
 
-- **#345**: Load transient: mint the COUT/ESR window-grid x 45 PVT campaign via --backend batch (blocked on fleet runner update)
-- **#398**: study: re-run ff/27C/2.97V/50mA op point; settled state differs between cap-study records
+_None._
 
 ## PRs Awaiting Review
 
 PRs waiting on Judge (`loom:review-requested`).
 
-_None._
+- **#275**: layout: fix via.1a_b, m2.5, via2.5, nwell.9 official-DRC families (#267)
 
 ## Approved (Awaiting Merge)
 
 PRs that passed review and are queued for Champion auto-merge (`loom:pr`).
 
-_None._
+- **#395**: Bump Repo Skills 0.24.1 -> 0.24.3
 
 ## Proposed
 
@@ -56,9 +55,7 @@ Issues carrying `loom:curated`.
 - **#263**: Qualify folded resistor electrical equivalence across process, temperature and mismatch *(curated)*
 - **#267**: layout: fix locally-routed official-DRC families (via.1a_b, m2.5, via2.5, nwell.9) found by #260 *(curated)*
 - **#314**: PSRR: decide and evidence the binding output-capacitor/ESR condition *(curated)*
-- **#345**: Load transient: mint the COUT/ESR window-grid x 45 PVT campaign via --backend batch (blocked on fleet runner update) *(curated)*
 - **#381**: Sim: admit load-regulation cold-start endpoints to the batch backend *(curated)*
-- **#398**: study: re-run ff/27C/2.97V/50mA op point; settled state differs between cap-study records *(curated)*
 
 ## Proposed (Architect / Hermit)
 
@@ -72,14 +69,14 @@ _None._
 
 | Bucket | Count |
 |------|-------|
-| Operator merge-risk holds | 0 |
+| Operator merge-risk holds | 1 |
 | Very important | 0 |
 | Important | 1 |
 | Ready (`loom:issue`) | 1 |
-| In Progress (`loom:building`) | 2 |
-| PRs awaiting review | 0 |
-| Approved PRs awaiting merge | 0 |
-| Curated | 9 |
+| In Progress (`loom:building`) | 0 |
+| PRs awaiting review | 1 |
+| Approved PRs awaiting merge | 1 |
+| Curated | 7 |
 | Architect / Hermit proposals | 0 |
 | Active epics | 1 |
 <!-- guide:plan-body:end -->
