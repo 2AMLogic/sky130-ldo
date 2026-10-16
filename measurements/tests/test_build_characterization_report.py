@@ -1085,7 +1085,10 @@ class TestAreaRow(unittest.TestCase):
         self.assertEqual(len(area), 1)
         self.assertIn("C_COMP", area[0])
         self.assertIn("Official-deck DRC on the same layout record: violations", area[0])
-        self.assertIn("LVS at mint time: STALE", area[0])
+        # The LVS freshness verdict is read from the committed record (STALE or
+        # fresh depending on whether LATEST-LVS checked the measured GDS); the
+        # synthetic-record test above pins the STALE rendering.
+        self.assertIn("LVS at mint time: ", area[0])
 
     def test_area_is_no_longer_na_in_the_committed_report(self):
         bcr.REPO_ROOT, bcr.LAYOUT_DIR = self._saved
