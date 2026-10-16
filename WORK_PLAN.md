@@ -37,7 +37,7 @@ _None._
 
 PRs waiting on Judge (`loom:review-requested`).
 
-- **#275**: layout: fix via.1a_b, m2.5, via2.5, nwell.9 official-DRC families (#267)
+_None._
 
 ## Approved (Awaiting Merge)
 
@@ -74,7 +74,7 @@ _None._
 | Important | 1 |
 | Ready (`loom:issue`) | 1 |
 | In Progress (`loom:building`) | 0 |
-| PRs awaiting review | 1 |
+| PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 0 |
 | Curated | 7 |
 | Architect / Hermit proposals | 0 |
