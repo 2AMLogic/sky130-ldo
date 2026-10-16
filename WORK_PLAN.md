@@ -37,7 +37,7 @@ _None._
 
 PRs waiting on Judge (`loom:review-requested`).
 
-_None._
+- **#275**: layout: fix via.1a_b, m2.5, via2.5, nwell.9 official-DRC families (#267)
 
 ## Approved (Awaiting Merge)
 
@@ -59,7 +59,7 @@ Issues carrying `loom:curated`.
 
 ## Proposed (Architect / Hermit)
 
-- **#336**: Startup: extend cold-enable coverage to the ratified ESR boundaries *(architect)*
+_None._
 
 ## Epics
 
@@ -74,9 +74,9 @@ Issues carrying `loom:curated`.
 | Important | 1 |
 | Ready (`loom:issue`) | 1 |
 | In Progress (`loom:building`) | 0 |
-| PRs awaiting review | 0 |
+| PRs awaiting review | 1 |
 | Approved PRs awaiting merge | 0 |
 | Curated | 7 |
-| Architect / Hermit proposals | 1 |
+| Architect / Hermit proposals | 0 |
 | Active epics | 1 |
 <!-- guide:plan-body:end -->

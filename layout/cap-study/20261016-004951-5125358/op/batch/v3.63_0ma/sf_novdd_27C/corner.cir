@@ -1,0 +1,16 @@
+* klt sim -- generated corner deck, do not edit
+.lib /opt/pdk/sky130A/libs.tech/combined/sky130.lib.spice sf
+.include /var/tmp/eda-job-klt-sim-4cd0ff1f5f36/inputs/netlist.cir
+.temp 27.0
+.meas tran v_vout avg v(vout) from=199m to=200m
+.meas tran v_ea_cz avg v(xldo.ea_cz) from=199m to=200m
+.meas tran v_vin avg v(vin) from=199m to=200m
+.meas tran v_cl_cmp avg v(xldo.cl_cmp) from=199m to=200m
+.meas tran v_ss avg v(xldo.ss) from=199m to=200m
+.meas tran v_ts_cmp avg v(xldo.ts_cmp) from=199m to=200m
+.control
+save all
+tran 10u 200m uic
+quit
+.endc
+.end

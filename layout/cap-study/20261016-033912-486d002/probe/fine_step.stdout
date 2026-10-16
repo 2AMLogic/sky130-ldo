@@ -1,0 +1,243 @@
+{
+  "schema_version": 3,
+  "netlist": {
+    "path": "layout/cap-study/20261016-033912-486d002/probe/fine_step.spice",
+    "scope": "repo"
+  },
+  "status": "pass",
+  "corner_count": 1,
+  "passed": 1,
+  "failed": 0,
+  "errored": 0,
+  "inconclusive": 0,
+  "diagnostic_counts": {
+    "by_code": {},
+    "by_severity": {},
+    "corners_with_diagnostics": 0
+  },
+  "metrics": {
+    "sim__corner__count": 1,
+    "sim__corner__passed_count": 1,
+    "sim__corner__failed_count": 0,
+    "sim__corner__errored_count": 0,
+    "sim__corner__inconclusive_count": 0
+  },
+  "environment": {
+    "engine": "ngspice",
+    "engine_version": "42",
+    "ngspice_binary": "/usr/bin/ngspice",
+    "models_lib": {
+      "path": null,
+      "scope": "external"
+    },
+    "models_lib_sha256": "48de7c677e2c6e7d09b2559279de9f818be71010a4aa933d728eb4db3b133c84",
+    "netlist_sha256": "9c40412321104d3fc54d0a5cd60b254eb9b54c52a8263c7f32c069a3aaeeb5f1",
+    "netlist_closure": [
+      {
+        "path": "layout/cap-study/20261016-033912-486d002/probe/fine_step.spice",
+        "scope": "repo",
+        "sha256": "9c40412321104d3fc54d0a5cd60b254eb9b54c52a8263c7f32c069a3aaeeb5f1"
+      }
+    ],
+    "timeout_preflight_warning": "options.timeout_s (1800s) looks implausible for a tran analysis with ~2e+05 timepoints (1u step, 200m window) -- even 50 timepoints/s (a generous floor, not a real engine-rate estimate) would need 4e+03s per corner. This is only a coarse, advisory pre-grid heuristic -- it does not block the sweep, and a plausible-looking budget can still turn out to be too short in practice."
+  },
+  "coverage": {
+    "corners_simulated": 1,
+    "measurements_declared": 6,
+    "measurements_with_limits": 0,
+    "unrecognized_limit_keys": [],
+    "schema_version": 1,
+    "known": true,
+    "checked": [
+      "measurement:[0,\"ff/novdd/27C\",\"v_cl_cmp\"]/observation",
+      "measurement:[0,\"ff/novdd/27C\",\"v_ea_cz\"]/observation",
+      "measurement:[0,\"ff/novdd/27C\",\"v_ss\"]/observation",
+      "measurement:[0,\"ff/novdd/27C\",\"v_ts_cmp\"]/observation",
+      "measurement:[0,\"ff/novdd/27C\",\"v_vin\"]/observation",
+      "measurement:[0,\"ff/novdd/27C\",\"v_vout\"]/observation"
+    ],
+    "skipped": [],
+    "inapplicable": [
+      {
+        "id": "measurement:[0,\"ff/novdd/27C\",\"v_cl_cmp\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"ff/novdd/27C\",\"v_ea_cz\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"ff/novdd/27C\",\"v_ss\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"ff/novdd/27C\",\"v_ts_cmp\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"ff/novdd/27C\",\"v_vin\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"ff/novdd/27C\",\"v_vout\"]/limits",
+        "reason": "characterization_without_limits"
+      }
+    ],
+    "unknown": [],
+    "nothing_checked": false,
+    "nothing_checked_reasons": []
+  },
+  "provenance": {
+    "klt_version": "0.7.1.dev652+gd18be970014d",
+    "klayout_version": "0.30.12",
+    "pdk": {
+      "name": "sky130A",
+      "source": "PDK_ROOT environment variable",
+      "version": "open_pdks c6d73a35f524070e85faff4a6a9eef49553ebc2b",
+      "ambiguous_sources": [
+        "search root: ~/.ciel"
+      ]
+    },
+    "deck": {
+      "name": "sky130.lib.spice",
+      "content_hash": "sha256:48de7c677e2c6e7d09b2559279de9f818be71010a4aa933d728eb4db3b133c84",
+      "released": false
+    },
+    "input": {
+      "content_hash": "sha256:9c40412321104d3fc54d0a5cd60b254eb9b54c52a8263c7f32c069a3aaeeb5f1",
+      "role": "netlist"
+    }
+  },
+  "measurements": [
+    {
+      "name": "v_vout",
+      "unit": "V",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "ff/novdd/27C",
+        "value": 1.798794,
+        "margin": null
+      }
+    },
+    {
+      "name": "v_ea_cz",
+      "unit": "V",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "ff/novdd/27C",
+        "value": 1.659172,
+        "margin": null
+      }
+    },
+    {
+      "name": "v_vin",
+      "unit": "V",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "ff/novdd/27C",
+        "value": 2.97,
+        "margin": null
+      }
+    },
+    {
+      "name": "v_cl_cmp",
+      "unit": "V",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "ff/novdd/27C",
+        "value": 2.890772,
+        "margin": null
+      }
+    },
+    {
+      "name": "v_ss",
+      "unit": "V",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "ff/novdd/27C",
+        "value": 2.969969,
+        "margin": null
+      }
+    },
+    {
+      "name": "v_ts_cmp",
+      "unit": "V",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "ff/novdd/27C",
+        "value": 2.943485,
+        "margin": null
+      }
+    }
+  ],
+  "corners": [
+    {
+      "corner_id": "ff/novdd/27C",
+      "process": "ff",
+      "supply_v": {},
+      "temperature_c": 27.0,
+      "status": "pass",
+      "runtime_s": 34.75,
+      "engine_exit_code": 0,
+      "engine_killed_by_signal": null,
+      "measurements": [
+        {
+          "name": "v_vout",
+          "value": 1.798794,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "v_ea_cz",
+          "value": 1.659172,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "v_vin",
+          "value": 2.97,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "v_cl_cmp",
+          "value": 2.890772,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "v_ss",
+          "value": 2.969969,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "v_ts_cmp",
+          "value": 2.943485,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "<record>/probe/fine_step/ff_novdd_27C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "<record>/probe/fine_step/ff_novdd_27C/corner.cir"
+      },
+      "monte_carlo": null
+    }
+  ]
+}
