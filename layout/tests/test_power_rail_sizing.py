@@ -180,5 +180,22 @@ class DeckConstantsTest(unittest.TestCase):
         self.assertGreater(widths[3], widths[1])
 
 
+class ViaEnclosureArithmeticTest(unittest.TestCase):
+    """Issue #267: official-deck via length and adjacent-edge enclosure."""
+
+    def test_via1_is_the_decks_exact_length(self) -> None:
+        self.assertAlmostEqual(GEN.VIA1_UM, 0.15)
+
+    def test_extended_ends_meet_the_adjacent_edge_enclosure(self) -> None:
+        # A POWER_VIA_PAD_UM-wide strap encloses a via by (pad - via) / 2 on its
+        # sides, which falls short of the adjacent-edge figure, so the ends
+        # must carry it: the end extension is what satisfies the rule.
+        for via in (GEN.VIA1_UM, GEN.VIA2_UM):
+            side = (GEN.POWER_VIA_PAD_UM - via) / 2.0
+            self.assertLess(side, 0.085 - 1e-9, "sides alone must not suffice")
+            end_half = via / 2.0 + GEN.ADJ_ENCLOSURE_UM
+            self.assertGreaterEqual(end_half - via / 2.0, 0.085 - 1e-9)
+
+
 if __name__ == "__main__":
     unittest.main()

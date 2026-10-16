@@ -11,7 +11,7 @@
 * `.lib` (which both this file's `sky130_fd_pr__*_g5v0d10v5` devices and the
 * extracted side's PDK-bound X-cards read from) per-corner. See
 * sim/pex-post-layout/README.md's "models.lib" note for why the request
-* uses `models.lib` alone rather than pairing it with `models.pdk`.
+* uses the PDK-relative `models` form (portable to the batch fleet).
 *
 * Runs `klt pex` with `--pdk sky130A` (unlike a from-scratch pex testbench
 * might default to): the bare, non-PDK `klt extract` device-class output
@@ -50,4 +50,4 @@ Cout   VOUT  VESR 1u
 Resr   VESR  0    10m
 Iload  VOUT  0    DC {iload}
 
-Xldo 0 AMP_ENN BIASP BIAS_ENN CL_CMP CL_SNS EA_CZ EA_D1 EA_D2 EA_OUT EA_TAIL EN ENB FB NB N_FBB PB SS TC_D1 TC_TAIL TS_CMP TS_HYS TS_MID TS_REF TS_SNS VIN VOUT VREF ldo_core
+Xldo 0 AMP_ENN BIASP BIAS_ENN CL_CMP CL_SNS EA_CZ EA_D1 EA_D2 EA_OUT EA_TAIL EN ENB FB NB N_FBB PB RC_A RC_B RC_TAIL SS TS_CMP TS_MID TS_REF TS_SNS VIN VOUT VREF ldo_core

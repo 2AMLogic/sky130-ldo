@@ -162,11 +162,13 @@ def main() -> int:
         #        run-ldo-lvs-flow.sh / design/README.md document) -----------
         xschem_out = tmp / "xschem_out"
         xschem_out.mkdir()
-        run([
-            "xschem", "-n", "-q", "-x", "-s", "-o", str(xschem_out),
-            "--rcfile", str(xschemrc), str(schematic),
-        ])
         schem_netlist = xschem_out / "ldo_3v3in_1v8out.spice"
+        # `klt netlist` owns the headless xschem flags and kills a hung run
+        # (a raw `xschem` can hang in the Tk loop); same verb the layout flow uses.
+        run([
+            args.klt, "netlist", str(schematic),
+            "-o", str(schem_netlist), "--rcfile", str(xschemrc),
+        ])
         if not schem_netlist.is_file():
             raise SystemExit(f"gen-pex-testbench.py: expected {schem_netlist} after xschem netlisting")
         schem_netlist_text = schem_netlist.read_text()
@@ -245,7 +247,7 @@ def main() -> int:
                 "* `.lib` (which both this file's `sky130_fd_pr__*_g5v0d10v5` devices and the",
                 "* extracted side's PDK-bound X-cards read from) per-corner. See",
                 "* sim/pex-post-layout/README.md's \"models.lib\" note for why the request",
-                "* uses `models.lib` alone rather than pairing it with `models.pdk`.",
+                "* uses the PDK-relative `models` form (portable to the batch fleet).",
                 "*",
                 "* Runs `klt pex` with `--pdk sky130A` (unlike a from-scratch pex testbench",
                 "* might default to): the bare, non-PDK `klt extract` device-class output",
