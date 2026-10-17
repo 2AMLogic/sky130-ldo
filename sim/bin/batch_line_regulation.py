@@ -298,24 +298,29 @@ def check_measurements(endpoints: list[Endpoint], measurements: list[tuple[str, 
 
 # ---- netlist ---------------------------------------------------------------------
 
-def check_netlist(body: list[str], stimulus: list[str]) -> None:
-    """Refuse a netlist whose VIN/EN/load sources are not the pinned baseline
-    (one definition each), or that carries a card altering the cold start."""
+def check_netlist(
+    body: list[str],
+    stimulus: list[str],
+    error_cls: type[ValueError] = EndpointTranslationError,
+    context: str = "an endpoint request",
+) -> None:
+    """Refuse a netlist whose pinned stimulus sources are not the validated
+    baseline (one definition each), or that carries a card altering the cold
+    start. Shared by every batch adapter: `error_cls` / `context` only select
+    the exception type and the message's noun."""
     lines = [ln.strip() for ln in body]
     for ln in lines:
         low = ln.lower()
         for card in FORBIDDEN_NETLIST_CARDS:
             if low == card or low.startswith(card + " ") or low.startswith(card + "\t"):
-                raise EndpointTranslationError(
-                    f"netlist carries `{ln}`: {card} is not allowed in an endpoint request"
-                )
+                raise error_cls(f"netlist carries `{ln}`: {card} is not allowed in {context}")
     for want in stimulus:
         elem = want.split()[0].lower()
         defs = [ln for ln in lines if ln.split() and ln.split()[0].lower() == elem]
         if defs != [want]:
-            raise EndpointTranslationError(
+            raise error_cls(
                 f"stimulus element {want.split()[0]} is {defs!r}, expected exactly [{want!r}] "
-                "(the validated baseline; a testbench change needs renewed adapter validation)"
+                "(the validated stimulus; a testbench change needs renewed adapter validation)"
             )
 
 
@@ -329,16 +334,22 @@ def endpoint_source_lines(ep: Endpoint) -> dict[str, str]:
     }
 
 
-def endpoint_body(body: list[str], ep: Endpoint) -> list[str]:
-    """The circuit body with VVIN, VEN and ILOAD replaced by the endpoint's
-    source state (call `check_netlist` first: each is defined exactly once)."""
-    repl = {k.split()[0].lower(): v for k, v in
-            ((v, v) for v in endpoint_source_lines(ep).values())}
+def replace_sources(body: list[str], sources: dict[str, str]) -> list[str]:
+    """The circuit body with every element named in `sources` (element name ->
+    full netlist line) replaced by that line (call `check_netlist` first: each
+    is defined exactly once)."""
+    repl = {v.split()[0].lower(): v for v in sources.values()}
     out = []
     for ln in body:
         parts = ln.split()
         out.append(repl.get(parts[0].lower(), ln) if parts else ln)
     return out
+
+
+def endpoint_body(body: list[str], ep: Endpoint) -> list[str]:
+    """The circuit body with VVIN, VEN and ILOAD replaced by the endpoint's
+    source state."""
+    return replace_sources(body, endpoint_source_lines(ep))
 
 
 # ---- response --------------------------------------------------------------------
