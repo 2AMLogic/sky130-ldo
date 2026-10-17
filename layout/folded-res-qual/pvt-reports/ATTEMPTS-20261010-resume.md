@@ -19,3 +19,9 @@ Re-run `python3 layout/bin/run-folded-res-pvt.py` once the fleet runner matches 
 | record | client | result |
 |---|---|---|
 | 20261016-232214-f75b799 | klt 0.6.0, .meas form | det batch job klt-sim-d2357cebc786: 63/63 pass (raw `det.report.json`, 209 s). MC batch job klt-sim-020e3593f469 (one 3000-unit request): fleet job timeout at 3604 s (`exit_code 124`), all 3000 units errored (`mc.report.json.gz`). No summary.json; no gate evaluated. The timeout implies ~3.3 s per unit per slot, so a single 3000-unit job needs ~2.7 h. Next attempt shards MC per process section (5 x 600 units, each ~35 min); seed and n are unchanged. |
+
+## 2026-10-17 attempt (append-only)
+
+| record | client | result |
+|---|---|---|
+| 20261017-002843-ec09282 | klt 0.6.0, .meas form | det batch job klt-sim-b76e6b9561f9: 63/63 pass (395 s), raw `det.report.json` kept. MC sharded per process section (`mc-{tt,ss,ff,hh,ll}_mm.request.json`, 5 x 600 units). The `tt_mm` shard was submitted to the batch fleet at 00:36 UTC; the driver and its klt client then exited at about 01:15 UTC with no MC report written and no `summary.json` (the previous builder session ended while the client was waiting; no exit code was captured). No gate evaluated; no local fallback was run. Re-run `python3 layout/bin/run-folded-res-pvt.py` from a session that can wait ~3 h for five shards. |
