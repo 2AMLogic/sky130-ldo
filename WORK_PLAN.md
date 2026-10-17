@@ -25,13 +25,13 @@ _None._
 
 Human-approved issues ready for implementation (`loom:issue`).
 
-- **#263**: Qualify folded resistor electrical equivalence across process, temperature and mismatch
+_None._
 
 ## In Progress
 
 Issues currently being built (`loom:building`).
 
-_None._
+- **#263**: Qualify folded resistor electrical equivalence across process, temperature and mismatch
 
 ## PRs Awaiting Review
 
@@ -72,8 +72,8 @@ _None._
 | Operator merge-risk holds | 0 |
 | Very important | 0 |
 | Important | 1 |
-| Ready (`loom:issue`) | 1 |
-| In Progress (`loom:building`) | 0 |
+| Ready (`loom:issue`) | 0 |
+| In Progress (`loom:building`) | 1 |
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 0 |
 | Curated | 7 |
