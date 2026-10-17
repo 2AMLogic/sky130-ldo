@@ -16,13 +16,13 @@ import argparse
 import json
 import math
 import sys
-import xml.etree.ElementTree as ET
 from collections import defaultdict
 from pathlib import Path
 from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import _cap_rail_plan as plan  # noqa: E402
+from _official_drc import OfficialDrcError, parse_lyrdb  # noqa: E402
 
 
 def load(path: Path) -> dict[str, Any]:
@@ -32,21 +32,6 @@ def load(path: Path) -> dict[str, Any]:
         return json.loads(path.read_text())
     except (OSError, json.JSONDecodeError) as exc:
         return {"status": "error", "error": f"{path.name}: {exc}"}
-
-
-def lyrdb_counts(path: Path) -> dict[str, int]:
-    counts: dict[str, int] = defaultdict(int)
-    for item in ET.parse(path).getroot().iter("item"):
-        cat = item.find("category")
-        if cat is not None and cat.text:
-            counts[cat.text.strip("'")] += 1
-    return dict(counts)
-
-
-def lyrdb_rule_count(path: Path) -> int:
-    root = ET.parse(path).getroot()
-    cats = root.find("categories")
-    return 0 if cats is None else len(list(cats.iter("category")))
 
 
 def extracted_by_cap(extract: dict[str, Any], caps: list[dict[str, Any]]) -> dict[str, dict[str, float]]:
@@ -138,8 +123,14 @@ def main() -> int:
 
     pl = load(d / "plan.json")
     drc = load(d / "drc.json")
-    mr = lyrdb_counts(d / "mr-drc.lyrdb")
-    mr_rules = lyrdb_rule_count(d / "mr-drc.lyrdb")
+    # Fail closed (issue #419): a missing, truncated, malformed or wrong-top-cell
+    # report is a gate failure with the reason recorded, never a traceback.
+    mr_error: str | None = None
+    try:
+        mr_report = parse_lyrdb(d / "mr-drc.lyrdb", expect_top_cell="cap_rail_demo")
+        mr, mr_rules = mr_report.counts(), mr_report.rule_count
+    except OfficialDrcError as exc:
+        mr, mr_rules, mr_error = {}, 0, str(exc)
     ex = load(d / "extract.json")
     pex = load(d / "pex.json")
     lvs = load(d / "lvs.json")
@@ -217,6 +208,7 @@ def main() -> int:
         "schematic_sha": args.schematic_sha,
         "gates": {"klt_drc_clean": drc_clean, "official_drc_clean": mr_clean,
                   "official_drc_rule_categories": mr_rules, "official_drc_counts": mr,
+                  **({"official_drc_error": mr_error} if mr_error else {}),
                   "lvs_status": lvs.get("status"), "lvs_counts": lvs.get("counts"),
                   "lvs_max_tolerated_pct": max_tol_pct,
                   "neg_value_status": neg_value.get("status"), "neg_net_status": neg_net.get("status"),
@@ -255,7 +247,7 @@ def main() -> int:
     w.append("| Check | Result |")
     w.append("|---|---|")
     w.append(f"| `klt drc --deck sky130` | {ok(drc_clean)} -- {drc.get('status')}, {drc.get('violation_count')} violations |")
-    w.append(f"| PDK `sky130A_mr.drc` (official) | {ok(mr_clean)} -- {sum(mr.values())} markers{(' ' + json.dumps(mr)) if mr else ''} |")
+    w.append(f"| PDK `sky130A_mr.drc` (official) | {ok(mr_clean)} -- {('report rejected: ' + mr_error) if mr_error else str(sum(mr.values())) + ' markers' + ((' ' + json.dumps(mr)) if mr else '')} |")
     w.append(f"| `klt lvs` extracted netlist vs schematic-derived reference | {ok(lvs_match)} -- `{lvs.get('status')}`; "
              f"devices {lvs['counts']['devices']['matched']}/{lvs['counts']['devices']['reference']}, "
              f"nets {lvs['counts']['nets']['matched']}/{lvs['counts']['nets']['reference']}; "

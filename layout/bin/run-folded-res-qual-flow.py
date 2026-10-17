@@ -40,13 +40,12 @@ import json
 import shutil
 import subprocess
 import sys
-import xml.etree.ElementTree as ET
-from collections import Counter
 from pathlib import Path
 from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import _folded_res_analysis as fra  # noqa: E402
+from _official_drc import OfficialDrcError, parse_lyrdb  # noqa: E402
 from _record_common import git as _repo_git  # noqa: E402
 
 LAYOUT_DIR = Path(__file__).resolve().parent.parent
@@ -71,16 +70,6 @@ def deck_constants() -> dict[str, tuple[float, float]]:
 
     deck = get_extraction_deck("sky130")
     return {r.name: (r.sheet_rho_ohm_sq, r.fixed_offset_ohm) for r in deck.resistors}
-
-
-def pdk_drc_counts(xml_path: Path) -> dict[str, int]:
-    root = ET.parse(xml_path).getroot()
-    return dict(
-        Counter(
-            (item.findtext("category") or "").strip("'")
-            for item in root.iter("item")
-        )
-    )
 
 
 def write_reference(path: Path, top: str, klass: str, r_ohm: float, l_um: float, w_um: float) -> None:
@@ -203,7 +192,11 @@ def main() -> int:
                 for f in (xml, drc_dir / f"{v['top_cell']}.pdk.log"):
                     f.write_text(f.read_text().replace(str(variant_dir), f"$PDK_ROOT/{args.pdk_variant}")
                                  .replace(str(out.resolve()), "<record>"))
-                entry["pdk_signoff_counts"] = pdk_drc_counts(xml)
+                try:
+                    entry["pdk_signoff_counts"] = parse_lyrdb(xml, expect_top_cell=v["top_cell"]).counts()
+                except OfficialDrcError as exc:
+                    entry["pdk_signoff_counts"] = {}
+                    failures.append(f"{name}/{vname}: PDK signoff report unusable: {exc}")
             cs["drc"][vname] = entry
             if vname not in DRC_ONLY and d["status"] != "clean":
                 failures.append(f"{name}/{vname}: klt drc {d['status']}")
