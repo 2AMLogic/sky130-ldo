@@ -4,6 +4,8 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 
 ### 2026-10-17
 
+- **PR #420**: layout: use fail-closed parse_lyrdb in cap-rail and folded-res record scripts
+- **Issue #419** (closed): Consolidate private .lyrdb readers onto fail-closed parse_lyrdb (~25 LOC)
 - **PR #415**: layout: complete folded-resistor PVT/mismatch record; R_FB qualified to N=6, R_BIAS none
 - **PR #412**: refactor(sim): reuse line-regulation endpoint helpers in load-regulation adapter
 - **Issue #411** (closed): Dedupe endpoint_source_lines/endpoint_body and two-point parse_deck across sim/bin batch adapters
