@@ -136,14 +136,19 @@ def det_request(matrix: dict[str, Any], netlist: str, meas_form: str = "expr") -
     }
 
 
-def mc_request(matrix: dict[str, Any], netlist: str, meas_form: str = "expr") -> dict[str, Any]:
+def mc_request(matrix: dict[str, Any], netlist: str, meas_form: str = "expr",
+               processes: list[str] | None = None) -> dict[str, Any]:
+    """`processes` selects a shard of the declared MC process list (default: all).
+    The seed and n are unchanged per shard, so a sharded run draws the same
+    per-sample seeds as one request; sharding only keeps each fleet job under
+    its wall-clock limit (a single 3000-unit job timed out at 3600 s, #263)."""
     mc = matrix["monte_carlo"]
     return {
         "engine": "ngspice",
         "netlist": netlist,
         "analysis": analysis(meas_form),
         "models": {"pdk": "sky130A", "lib": matrix["lib"]},
-        "corners": {"process": mc["process"], "temperature_c": mc["temperature_c"]},
+        "corners": {"process": processes or mc["process"], "temperature_c": mc["temperature_c"]},
         "measurements": measurements(matrix, meas_form),
         "monte_carlo": {"n": mc["n"], "seed": mc["seed"], "vary": mc["vary"], "k_sigma": 3},
         "options": {"keep_artifacts": False, "timeout_s": 120, "ngspice_init": ["set numdgt=12"]},

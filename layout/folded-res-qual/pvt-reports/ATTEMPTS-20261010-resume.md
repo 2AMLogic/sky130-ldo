@@ -13,3 +13,9 @@ The seeded-mismatch (Monte Carlo) request has not completed in any attempt, so g
 are unevaluated and no segment-count recommendation or no-qualified-candidate verdict is made.
 The raw deterministic reports are kept as evidence only; they have not been analysed against the gates.
 Re-run `python3 layout/bin/run-folded-res-pvt.py` once the fleet runner matches the client and has capacity.
+
+## 2026-10-16 attempt (append-only)
+
+| record | client | result |
+|---|---|---|
+| 20261016-232214-f75b799 | klt 0.6.0, .meas form | det batch job klt-sim-d2357cebc786: 63/63 pass (raw `det.report.json`, 209 s). MC batch job klt-sim-020e3593f469 (one 3000-unit request): fleet job timeout at 3604 s (`exit_code 124`), all 3000 units errored (`mc.report.json.gz`). No summary.json; no gate evaluated. The timeout implies ~3.3 s per unit per slot, so a single 3000-unit job needs ~2.7 h. Next attempt shards MC per process section (5 x 600 units, each ~35 min); seed and n are unchanged. |
