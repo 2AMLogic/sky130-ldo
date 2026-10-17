@@ -50,8 +50,10 @@ def pct(x: float, d: int = 4) -> str:
     return f"{x * 100:+.{d}f} %"
 
 
-def run_sim(klt: str, req: Path, backend: str, env: dict) -> tuple[dict | None, str, int]:
+def run_sim(klt: str, req: Path, backend: str, env: dict, attach: str | None = None) -> tuple[dict | None, str, int]:
     cmd = [*shlex.split(klt), "sim", str(req), "--backend", backend, "--format", "json"]
+    if attach:
+        cmd += ["--attach", attach]
     proc = sh(cmd, env=env)
     try:
         rep = json.loads(proc.stdout) if proc.stdout.strip() else None
@@ -189,6 +191,10 @@ def main() -> int:
     ap.add_argument("--pdk-root", type=Path, default=Path(os.environ.get("PDK_ROOT", Path.home() / ".volare")))
     ap.add_argument("--measure-form", choices=("expr", "meas"), default="expr",
                     help="'meas' = `.meas dc` cards, for older klt clients without measurements[].expr")
+    ap.add_argument("--resume-from", type=Path,
+                    help="earlier record dir holding det.report.json, mc-<process>.request.json and mc-jobs.json "
+                         "({process: batch job id}, from `klt sim --submit-only`): mint a NEW record that reuses the "
+                         "raw det report and re-attaches to the already-submitted MC jobs instead of submitting")
     ap.add_argument("--dry-run", action="store_true", help="write deck/requests and exit (no simulation)")
     args = ap.parse_args()
 
@@ -233,13 +239,24 @@ def main() -> int:
     reports = {}
     # MC goes out as one request per process section so each fleet job fits its time limit.
     jobs = [("det", out / "det.request.json")]
+    attach_ids: dict[str, str] = {}
     for p in matrix["monte_carlo"]["process"]:
         req = out / f"mc-{p}.request.json"
         req.write_text(json.dumps(pvt.mc_request(matrix, "deck.cir", args.measure_form, [p]), indent=2) + "\n")
         jobs.append((f"mc-{p}", req))
+    prior_det = None
+    if args.resume_from:
+        prior = args.resume_from
+        if (prior / "deck.cir").read_text() != (out / "deck.cir").read_text():
+            raise SystemExit(f"--resume-from {prior}: deck.cir differs from the one this tooling generates; refusing to mix")
+        attach_ids = json.loads((prior / "mc-jobs.json").read_text())
+        prior_det = json.loads((prior / "det.report.json").read_text())
+        (out / "mc-jobs.json").write_text(json.dumps(attach_ids, indent=2) + "\n")
+        (out / "RESUMED_FROM").write_text(f"{prior.name}\n")
+        jobs = [j for j in jobs if j[0] != "det"]
     shards: list[dict] = []
     for name, req in jobs:
-        rep, msg, rc = run_sim(args.klt, req, args.backend, env)
+        rep, msg, rc = run_sim(args.klt, req, args.backend, env, attach_ids.get(name.removeprefix("mc-")))
         if rep is None:
             summary.update(status="BLOCKED", blocked_reason=f"{name}: klt sim --backend {args.backend} failed (rc {rc}): {msg}",
                            provenance={"klt": klt_ver, "backend": args.backend, "git_sha": git_sha})
@@ -255,6 +272,10 @@ def main() -> int:
             shards.append(rep)
             (out / f"{name}.report.json.gz").write_bytes(gzip.compress(raw))
         print(f"{name}: {rep['corner_count']} units, status {rep['status']}, env.remote={rep['environment'].get('remote')}")
+    if prior_det is not None:
+        reports["det"] = prior_det
+        (out / "det.report.json").write_text(json.dumps(prior_det, indent=1))
+        print(f"det: reused raw report from {args.resume_from.name}")
     reports["mc"] = {**shards[0], "corners": [c for r in shards for c in r["corners"]],
                      "corner_count": sum(r["corner_count"] for r in shards)}
     reports["mc"]["environment"] = {**shards[0]["environment"], "remote": [r["environment"].get("remote") for r in shards]}
