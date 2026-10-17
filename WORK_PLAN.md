@@ -56,6 +56,7 @@ Issues carrying `loom:curated`.
 - **#314**: PSRR: decide and evidence the binding output-capacitor/ESR condition *(curated)*
 - **#381**: Sim: admit load-regulation cold-start endpoints to the batch backend *(curated)*
 - **#416**: Re-run folded-resistor MC at n>=1000 to firm up M2 sigma-ratio gate *(curated)*
+- **#423**: T1 items 1, 2, 9, 10: bump the signoff grading pin and attest with artifact-anchored envelopes (klt signoff --attest) *(curated)*
 
 ## Proposed (Architect / Hermit)
 
@@ -76,7 +77,7 @@ _None._
 | In Progress (`loom:building`) | 0 |
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 0 |
-| Curated | 7 |
+| Curated | 8 |
 | Architect / Hermit proposals | 0 |
 | Active epics | 1 |
 <!-- guide:plan-body:end -->
