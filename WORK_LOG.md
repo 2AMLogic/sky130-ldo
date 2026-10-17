@@ -2,6 +2,12 @@
 
 Chronological record of merged pull requests and closed issues. Maintained by the Loom Guide role.
 
+### 2026-10-17
+
+- **PR #409**: refactor(sim): share netlist gate and source replacement across batch adapters
+- **Issue #408** (closed): Consolidate duplicated helpers across the sim batch endpoint adapters
+- **PR #407**: layout: record 2026-10-17 folded-res PVT attempt; MC shards returned no report (#263)
+
 ### 2026-10-16
 
 - **PR #272**: layout: #263 resume attempts, raw deterministic reports, MC still blocked
