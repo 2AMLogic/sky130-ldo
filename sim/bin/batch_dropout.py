@@ -33,6 +33,8 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
+import batch_line_regulation as blr
+
 STEP_NAME = "dropout"
 
 
@@ -56,14 +58,6 @@ _CROSSING_RE = re.compile(
 _AVG_RE = re.compile(rf"^avg\s+{_NODE}\s+from=\s*{_NUM}\s+to=\s*{_NUM}$", re.IGNORECASE)
 # Expression grammar: card names, numbers, + - * / ( ) and whitespace.
 _EXPR_TOKEN_RE = re.compile(rf"\s*(?:({_IDENT})|({_NUM})|([-+*/()]))")
-
-# Netlist dot-cards that would change the cold-start initial state, add an
-# analysis/measurement outside the step, or collide with klt's own control
-# block / temperature card.
-FORBIDDEN_NETLIST_CARDS = (
-    ".ic", ".nodeset", ".control", ".endc", ".op", ".tran", ".dc", ".ac",
-    ".meas", ".measure", ".temp",
-)
 
 
 @dataclass
@@ -173,22 +167,7 @@ def klt_result_name(name: str) -> str:
 def check_netlist(body: list[str], stimulus: list[str]) -> None:
     """Refuse a request netlist whose stimulus is not the pinned one, or that
     carries a card that would alter the cold start / fight klt's control."""
-    lines = [ln.strip() for ln in body]
-    for ln in lines:
-        low = ln.lower()
-        for card in FORBIDDEN_NETLIST_CARDS:
-            if low == card or low.startswith(card + " ") or low.startswith(card + "\t"):
-                raise DropoutTranslationError(
-                    f"netlist carries `{ln}`: {card} is not allowed in a cold-start crossing request"
-                )
-    for want in stimulus:
-        elem = want.split()[0].lower()
-        defs = [ln for ln in lines if ln.split() and ln.split()[0].lower() == elem]
-        if defs != [want]:
-            raise DropoutTranslationError(
-                f"stimulus element {want.split()[0]} is {defs!r}, expected exactly [{want!r}] "
-                "(the validated stimulus; a testbench change needs renewed adapter validation)"
-            )
+    blr.check_netlist(body, stimulus, DropoutTranslationError, "a cold-start crossing request")
 
 
 # klt's batch backend (klt 0.7 sim_batch): status.json state "done" is a clean

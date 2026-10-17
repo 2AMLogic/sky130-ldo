@@ -128,10 +128,7 @@ def endpoint_source_lines(ep: Endpoint) -> dict[str, str]:
 
 def endpoint_body(body: list[str], ep: Endpoint) -> list[str]:
     """The circuit body with VVIN, VEN and ILOAD replaced by the endpoint's
-    source state (call `check_netlist` first: each is defined exactly once)."""
-    repl = {v.split()[0].lower(): v for v in endpoint_source_lines(ep).values()}
-    out = []
-    for ln in body:
-        parts = ln.split()
-        out.append(repl.get(parts[0].lower(), ln) if parts else ln)
-    return out
+    source state (this module's supply-literal form)."""
+    return blr.replace_sources(body, endpoint_source_lines(ep))
+
+
