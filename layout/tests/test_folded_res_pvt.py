@@ -102,6 +102,48 @@ class MonteCarlo(unittest.TestCase):
         self.assertFalse(q16["qualified"])
         self.assertTrue(q16["control"])
 
+    def test_sigma_ratio_se_and_resolution(self):
+        import math
+        # SE of a ratio of two independent sample sigmas: ratio*sqrt(1/(2(n1-1)) + 1/(2(n2-1)))
+        self.assertAlmostEqual(pvt.sigma_ratio_se(1.0, 201, 201), math.sqrt(2 / 400))
+        self.assertEqual(pvt.m2_resolution(1.00, 0.02, 1.10), "pass")       # 1.04 < 1.10
+        self.assertEqual(pvt.m2_resolution(1.20, 0.02, 1.10), "fail")       # 1.16 > 1.10
+        self.assertEqual(pvt.m2_resolution(1.11, 0.045, 1.10), "ambiguous")  # straddles the gate
+
+    def test_rollup_reports_resolution_per_verdict(self):
+        base = {"device": "D", "segments": 2, "mode": "j1", "mean_shift": 0.0, "m1_pass": True}
+        rows = [
+            {**base, "sigma_ratio": 0.95, "sigma_ratio_se": 0.02, "m2_pass": True, "m2_resolution": "pass"},
+            {**base, "sigma_ratio": 1.08, "sigma_ratio_se": 0.04, "m2_pass": True, "m2_resolution": "ambiguous"},
+        ]
+        a = pvt.mc_rollup(rows)[("D", 2, "j1")]
+        self.assertTrue(a["m2"])
+        self.assertEqual(a["m2_resolution"], "ambiguous")  # one ambiguous point leaves a PASS unresolved
+        self.assertAlmostEqual(a["worst_sigma_ratio_se"], 0.04)
+        # a FAIL is resolved as soon as one failing point is resolved
+        rows = [
+            {**base, "sigma_ratio": 1.30, "sigma_ratio_se": 0.02, "m2_pass": False, "m2_resolution": "fail"},
+            {**base, "sigma_ratio": 1.11, "sigma_ratio_se": 0.04, "m2_pass": False, "m2_resolution": "ambiguous"},
+        ]
+        a = pvt.mc_rollup(rows)[("D", 2, "j1")]
+        self.assertFalse(a["m2"])
+        self.assertEqual(a["m2_resolution"], "resolved")
+        rows = [rows[1]]
+        self.assertEqual(pvt.mc_rollup(rows)[("D", 2, "j1")]["m2_resolution"], "ambiguous")
+
+    def test_compare_records_old_vs_new(self):
+        old = [{"device": "D", "segments": 2, "worst_sigma_ratio": 1.12, "m2": False},
+               {"device": "D", "segments": 3, "worst_sigma_ratio": 0.95, "m2": True}]
+        new = [{"device": "D", "segments": 2, "worst_sigma_ratio": 1.02, "m2": True, "m2_resolution": "resolved"},
+               {"device": "D", "segments": 4, "worst_sigma_ratio": 1.0, "m2": True, "m2_resolution": "resolved"}]
+        cmp = pvt.compare_m2(old, new)
+        self.assertEqual([(c["device"], c["segments"]) for c in cmp], [("D", 2), ("D", 3), ("D", 4)])
+        self.assertEqual(cmp[0]["old_m2"], False)
+        self.assertEqual(cmp[0]["new_m2"], True)
+        self.assertTrue(cmp[0]["flipped"])
+        self.assertIsNone(cmp[1]["new_m2"])  # absent from the new record: reported, not guessed
+        self.assertIsNone(cmp[2]["old_m2"])
+
     def test_recommendation_excludes_controls_and_handles_none(self):
         quals = [
             {"device": "A", "segments": 2, "qualified": True, "control": False},

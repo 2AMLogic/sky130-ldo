@@ -243,6 +243,22 @@ def mc_groups(points: list[tuple[str, dict[str, float]]]) -> dict[tuple[str, str
     return g
 
 
+def sigma_ratio_se(ratio: float, n_base: int, n_chain: int) -> float:
+    """Standard error of sigma_chain/sigma_unsplit from two independent
+    Gaussian samples: each sample sigma has relative SE 1/sqrt(2(n-1))."""
+    return ratio * math.sqrt(1 / (2 * (n_base - 1)) + 1 / (2 * (n_chain - 1)))
+
+
+def m2_resolution(ratio: float, se: float, ratio_max: float, k: float = 2.0) -> str:
+    """'pass' / 'fail' if ratio +- k*SE lies entirely on one side of the M2
+    gate, else 'ambiguous' (the sample cannot settle the verdict)."""
+    if ratio + k * se < ratio_max:
+        return "pass"
+    if ratio - k * se > ratio_max:
+        return "fail"
+    return "ambiguous"
+
+
 def mc_stats(
     groups: dict[tuple[str, str], list[dict[str, float]]],
     matrix: dict[str, Any],
@@ -266,6 +282,7 @@ def mc_stats(
             shift = (mx - mb) / mb
             se = math.sqrt((sb**2 / len(base)) + (sx**2 / len(xs))) / mb
             ratio = sx / sb
+            ratio_se = sigma_ratio_se(ratio, len(base), len(xs))
             t = tol[v["device"]]
             out.append(
                 {
@@ -273,6 +290,7 @@ def mc_stats(
                     "process": proc, "temp": temp, "n_unsplit": len(base), "n_chain": len(xs),
                     "mean_unsplit": mb, "mean_chain": mx, "mean_shift": shift, "mean_shift_se": se,
                     "sigma_rel_unsplit": sb / mb, "sigma_rel_chain": sx / mx, "sigma_ratio": ratio,
+                    "sigma_ratio_se": ratio_se, "m2_resolution": m2_resolution(ratio, ratio_se, ratio_max),
                     "m1_pass": abs(shift) <= t, "m2_pass": ratio <= ratio_max,
                 }
             )
@@ -280,16 +298,47 @@ def mc_stats(
 
 
 def mc_rollup(rows: list[dict[str, Any]]) -> dict[tuple[str, int, str], dict[str, Any]]:
+    """Per (device, N, mode) worst case over MC points. ``m2_resolution``:
+    a PASS is 'resolved' only if every point is resolved-pass; a FAIL is
+    'resolved' once any failing point is resolved-fail; else 'ambiguous'."""
     agg: dict[tuple[str, int, str], dict[str, Any]] = {}
     for r in rows:
         k = (r["device"], r["segments"], r["mode"])
-        a = agg.setdefault(k, {"worst_abs_mean_shift": 0.0, "worst_sigma_ratio": 0.0, "m1": True, "m2": True, "points": 0})
+        a = agg.setdefault(k, {"worst_abs_mean_shift": 0.0, "worst_sigma_ratio": 0.0, "worst_sigma_ratio_se": 0.0,
+                               "m1": True, "m2": True, "points": 0, "_res": []})
         a["points"] += 1
         a["worst_abs_mean_shift"] = max(a["worst_abs_mean_shift"], abs(r["mean_shift"]))
-        a["worst_sigma_ratio"] = max(a["worst_sigma_ratio"], r["sigma_ratio"])
+        if r["sigma_ratio"] >= a["worst_sigma_ratio"]:
+            a["worst_sigma_ratio"] = r["sigma_ratio"]
+            a["worst_sigma_ratio_se"] = r["sigma_ratio_se"]
         a["m1"] &= r["m1_pass"]
         a["m2"] &= r["m2_pass"]
+        a["_res"].append(r["m2_resolution"])
+    for a in agg.values():
+        res = a.pop("_res")
+        settled = all(x == "pass" for x in res) if a["m2"] else "fail" in res
+        a["m2_resolution"] = "resolved" if settled else "ambiguous"
     return agg
+
+
+def compare_m2(old_rollup: list[dict[str, Any]], new_rollup: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Old-vs-new M2 verdict per (device, N). Candidates present in only one
+    record are listed with ``None`` on the other side, never guessed."""
+    old = {(r["device"], r["segments"]): r for r in old_rollup}
+    new = {(r["device"], r["segments"]): r for r in new_rollup}
+    out = []
+    for k in sorted(old.keys() | new.keys()):
+        o, n = old.get(k), new.get(k)
+        out.append(
+            {
+                "device": k[0], "segments": k[1],
+                "old_ratio": o["worst_sigma_ratio"] if o else None, "old_m2": o["m2"] if o else None,
+                "new_ratio": n["worst_sigma_ratio"] if n else None, "new_m2": n["m2"] if n else None,
+                "new_resolution": n.get("m2_resolution") if n else None,
+                "flipped": bool(o and n and o["m2"] != n["m2"]),
+            }
+        )
+    return out
 
 
 def qualification(

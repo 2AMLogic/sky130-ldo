@@ -136,16 +136,21 @@ def render(summary: dict) -> str:
       f"{summary['mc_points']} process x temperature points, joint mode j1)\n")
     a("M1: |mean shift| <= tolerance at every point. M2: sigma_chain/sigma_unsplit <= "
       f"{summary['mc']['sigma_ratio_max']} at every point. Mean-shift standard error is in the JSON.\n")
-    a("| resistor | N | worst abs mean shift | worst sigma ratio | M1 | M2 |\n|---|---|---|---|---|---|")
+    a("Sigma-ratio SE assumes independent Gaussian samples (relative SE of each sample sigma = 1/sqrt(2(n-1))). "
+      "An M2 verdict is *resolved* when ratio +- 2 SE lies entirely on one side of the gate at every point (PASS) "
+      "or at any failing point (FAIL); otherwise it is *ambiguous*. No multiple-comparison correction over the "
+      f"{summary['mc_points']} points is applied.\n")
+    a("| resistor | N | worst abs mean shift | worst sigma ratio +- SE | M1 | M2 | M2 resolution |\n|---|---|---|---|---|---|---|")
     for r in summary["mc_rollup"]:
-        a(f"| {r['device']} | {r['segments']} | {r['worst_abs_mean_shift'] * 100:.4f} % | {r['worst_sigma_ratio']:.4f} "
-          f"| {'pass' if r['m1'] else 'FAIL'} | {'pass' if r['m2'] else 'FAIL'} |")
+        a(f"| {r['device']} | {r['segments']} | {r['worst_abs_mean_shift'] * 100:.4f} % "
+          f"| {r['worst_sigma_ratio']:.4f} +- {r['worst_sigma_ratio_se']:.4f} "
+          f"| {'pass' if r['m1'] else 'FAIL'} | {'pass' if r['m2'] else 'FAIL'} | {r['m2_resolution']} |")
     a("")
     a("### Sigma detail at tt_mm / 27C (relative, j1)\n")
     a("| resistor | N | sigma unsplit | sigma chain | ratio | mean shift +- SE |\n|---|---|---|---|---|---|")
     for r in summary["mc_detail_tt27"]:
         a(f"| {r['device']} | {r['segments']} | {r['sigma_rel_unsplit'] * 100:.4f} % | {r['sigma_rel_chain'] * 100:.4f} % "
-          f"| {r['sigma_ratio']:.3f} | {pct(r['mean_shift'])} +- {r['mean_shift_se'] * 100:.4f} % |")
+          f"| {r['sigma_ratio']:.3f} +- {r['sigma_ratio_se']:.3f} | {pct(r['mean_shift'])} +- {r['mean_shift_se'] * 100:.4f} % |")
     a("")
     a("## Qualification and recommendation\n")
     a("QUALIFIED = deterministic criterion (all points, j1) AND M1 AND M2.\n")
@@ -155,6 +160,17 @@ def render(summary: dict) -> str:
         a(f"| {q['device']} | {q['segments']}{ctl} | {q['det_worst_abs_shift'] * 100:.4f} % | {'ok' if q['det_ok'] else 'FAIL'} "
           f"| {'ok' if q['m1'] else 'FAIL'} | {'ok' if q['m2'] else 'FAIL'} | **{'YES' if q['qualified'] else 'no'}** | {'yes' if q['j4_flips'] else 'no'} |")
     a("")
+    if summary.get("comparison"):
+        cmpd = summary["comparison"]
+        a(f"### Comparison with record {cmpd['against']} (M2 verdicts, old vs new)\n")
+        a("Ratios are the worst over all MC points. `old` = that record, `new` = this one.\n")
+        a("| resistor | N | old ratio | old M2 | new ratio | new M2 | new resolution | verdict flipped |\n|---|---|---|---|---|---|---|---|")
+        fm = lambda v: "-" if v is None else f"{v:.4f}"
+        fv = lambda v: "-" if v is None else ("pass" if v else "FAIL")
+        for c in cmpd["rows"]:
+            a(f"| {c['device']} | {c['segments']} | {fm(c['old_ratio'])} | {fv(c['old_m2'])} | {fm(c['new_ratio'])} "
+              f"| {fv(c['new_m2'])} | {c['new_resolution'] or '-'} | {'yes' if c['flipped'] else 'no'} |")
+        a("")
     a("### Control check\n")
     a(summary["control_check"] + "\n")
     a("### Divider (R_FB) VOUT sensitivity, informational\n")
@@ -195,6 +211,8 @@ def main() -> int:
                     help="earlier record dir holding det.report.json, mc-<process>.request.json and mc-jobs.json "
                          "({process: batch job id}, from `klt sim --submit-only`): mint a NEW record that reuses the "
                          "raw det report and re-attaches to the already-submitted MC jobs instead of submitting")
+    ap.add_argument("--compare-to", type=Path,
+                    help="earlier record dir whose M2 verdicts are tabulated against this run's")
     ap.add_argument("--dry-run", action="store_true", help="write deck/requests and exit (no simulation)")
     args = ap.parse_args()
 
@@ -309,6 +327,12 @@ def main() -> int:
             divider.append({"segments": r["segments"], "shift": s,
                             "vout_only_a": pvt.divider_vout_error(s, 1),
                             "vout_all": pvt.divider_vout_error(s, 3)})
+    comparison = None
+    if args.compare_to:
+        old = json.loads((args.compare_to / "summary.json").read_text())
+        comparison = {"against": args.compare_to.name,
+                      "rows": pvt.compare_m2(old["mc_rollup"],
+                                             [{"device": k[0], "segments": k[1], **v} for k, v in agg.items() if k[2] == "j1"])}
     envs = {k: v["environment"] for k, v in reports.items()}
     summary.update(
         tolerance=tol_info, devices=[d["schematic_device"] for d in matrix["devices"]], controls=controls,
@@ -317,7 +341,7 @@ def main() -> int:
         mc_rollup=[{"device": k[0], "segments": k[1], "mode": k[2], **v} for k, v in sorted(agg.items()) if k[2] == "j1"],
         mc_detail_tt27=[r for r in mc_rows if r["process"] == "tt_mm" and r["temp"] == "27C" and r["mode"] in ("j1", "noj") and
                         (r["mode"] == "j1" or r["segments"] == 1)],
-        qualification=quals, control_check=control_check, divider=divider,
+        comparison=comparison, qualification=quals, control_check=control_check, divider=divider,
         recommendation={d["schematic_device"]: pvt.recommendation(quals, d["schematic_device"]) for d in matrix["devices"]},
         limitations=matrix["limitations_declared_up_front"] + [
             "klt reports resistor mismatch activity as 'not independently verified' for sky130; the nonzero unsplit sigma above is the evidence the draws are live.",
@@ -332,7 +356,7 @@ def main() -> int:
             "models_lib_sha256_det": envs["det"].get("models_lib_sha256"),
             "models_lib_sha256_mc": envs["mc"].get("models_lib_sha256"),
             "joint_source": matrix["tool_pins"]["joint_source_record"],
-            "mc_seed": mcm["seed"], "mc_n": mcm["n"],
+            "mc_seed": mcm["seed"], "mc_n": mcm["n"], "matrix": args.matrix.name,
         },
     )
     (out / "summary.json").write_text(json.dumps(summary, indent=2) + "\n")
