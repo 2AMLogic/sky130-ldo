@@ -4,6 +4,10 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 
 ### 2026-10-17
 
+- **PR #415**: layout: complete folded-resistor PVT/mismatch record; R_FB qualified to N=6, R_BIAS none
+- **PR #412**: refactor(sim): reuse line-regulation endpoint helpers in load-regulation adapter
+- **Issue #411** (closed): Dedupe endpoint_source_lines/endpoint_body and two-point parse_deck across sim/bin batch adapters
+- **Issue #263** (closed): Qualify folded resistor electrical equivalence across process, temperature and mismatch
 - **PR #409**: refactor(sim): share netlist gate and source replacement across batch adapters
 - **Issue #408** (closed): Consolidate duplicated helpers across the sim batch endpoint adapters
 - **PR #407**: layout: record 2026-10-17 folded-res PVT attempt; MC shards returned no report (#263)
