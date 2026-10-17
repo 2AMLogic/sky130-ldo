@@ -36,6 +36,8 @@ from batch_line_regulation import (  # re-exported helpers
     card_refs,
     check_measurements,
     check_netlist,
+    endpoint_body,
+    endpoint_source_lines,
     endpoint_step,
     evaluate,
     extract_endpoint_values,
@@ -114,21 +116,4 @@ def parse_deck(lines: list[str], baseline_iload: str) -> list[Endpoint]:
     if endpoints[0].iload == endpoints[1].iload:
         raise EndpointTranslationError("the two endpoints must have different loads")
     return endpoints
-
-
-def endpoint_source_lines(ep: Endpoint) -> dict[str, str]:
-    """The endpoint's complete source state: element name -> netlist line. VIN
-    and EN's high level are the corner supply; only the load differs."""
-    return {
-        "vvin": f"VVIN VIN 0 {SUPPLY_LITERAL}",
-        "ven": f"VEN EN 0 dc 0 pwl(0 0 100u 0 101u {SUPPLY_LITERAL} 10 {SUPPLY_LITERAL})",
-        "iload": f"{blr.LOAD_ELEMENT} VOUT 0 {ep.iload}",
-    }
-
-
-def endpoint_body(body: list[str], ep: Endpoint) -> list[str]:
-    """The circuit body with VVIN, VEN and ILOAD replaced by the endpoint's
-    source state (this module's supply-literal form)."""
-    return blr.replace_sources(body, endpoint_source_lines(ep))
-
 
