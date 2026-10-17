@@ -231,8 +231,15 @@ def main() -> int:
     klt_ver = sh([*shlex.split(args.klt), "--version"]).stdout.strip()
     summary: dict = {"record_id": record_id, "status": "COMPLETE"}
     reports = {}
-    for name in ("det", "mc"):
-        rep, msg, rc = run_sim(args.klt, out / f"{name}.request.json", args.backend, env)
+    # MC goes out as one request per process section so each fleet job fits its time limit.
+    jobs = [("det", out / "det.request.json")]
+    for p in matrix["monte_carlo"]["process"]:
+        req = out / f"mc-{p}.request.json"
+        req.write_text(json.dumps(pvt.mc_request(matrix, "deck.cir", args.measure_form, [p]), indent=2) + "\n")
+        jobs.append((f"mc-{p}", req))
+    shards: list[dict] = []
+    for name, req in jobs:
+        rep, msg, rc = run_sim(args.klt, req, args.backend, env)
         if rep is None:
             summary.update(status="BLOCKED", blocked_reason=f"{name}: klt sim --backend {args.backend} failed (rc {rc}): {msg}",
                            provenance={"klt": klt_ver, "backend": args.backend, "git_sha": git_sha})
@@ -240,13 +247,17 @@ def main() -> int:
             (out / "record.md").write_text(render(summary))
             print(summary["blocked_reason"], file=sys.stderr)
             return 2
-        reports[name] = rep
         raw = json.dumps(rep, indent=1).encode()
-        if name == "mc":
-            (out / "mc.report.json.gz").write_bytes(gzip.compress(raw))
-        else:
+        if name == "det":
+            reports["det"] = rep
             (out / "det.report.json").write_bytes(raw)
+        else:
+            shards.append(rep)
+            (out / f"{name}.report.json.gz").write_bytes(gzip.compress(raw))
         print(f"{name}: {rep['corner_count']} units, status {rep['status']}, env.remote={rep['environment'].get('remote')}")
+    reports["mc"] = {**shards[0], "corners": [c for r in shards for c in r["corners"]],
+                     "corner_count": sum(r["corner_count"] for r in shards)}
+    reports["mc"]["environment"] = {**shards[0]["environment"], "remote": [r["environment"].get("remote") for r in shards]}
 
     det_pts = pvt.corner_values(reports["det"])
     mc_pts = pvt.corner_values(reports["mc"])
