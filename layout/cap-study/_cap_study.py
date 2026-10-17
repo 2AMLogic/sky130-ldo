@@ -185,40 +185,6 @@ def eval_corner_param(raw: str) -> float:
 
 
 # --------------------------------------------------------------------------
-# The combined model library's section structure
-# --------------------------------------------------------------------------
-
-
-def lib_sections(text: str) -> dict[str, list[str]]:
-    """``.lib <name>`` ... ``.endl`` sections -> their ``.include`` paths."""
-    sections: dict[str, list[str]] = {}
-    cur = None
-    for raw in text.splitlines():
-        s = raw.strip()
-        m = re.match(r"\.lib\s+(\S+)\s*$", s, re.IGNORECASE)
-        if m:
-            cur = m.group(1)
-            sections[cur] = []
-            continue
-        if re.match(r"\.endl\b", s, re.IGNORECASE):
-            cur = None
-            continue
-        m = re.match(r"\.include\s+\"?([^\"\s]+)\"?", s, re.IGNORECASE)
-        if m and cur is not None:
-            sections[cur].append(m.group(1))
-    return sections
-
-
-def includes(text: str) -> list[str]:
-    return [m.group(1) for m in re.finditer(r"^\s*\.include\s+\"?([^\"\s]+)\"?", text, re.IGNORECASE | re.M)]
-
-
-def pick_include(paths: list[str], pattern: str) -> str | None:
-    hits = [p for p in paths if re.search(pattern, p)]
-    return hits[0] if len(hits) == 1 else None
-
-
-# --------------------------------------------------------------------------
 # Devices
 # --------------------------------------------------------------------------
 
@@ -237,23 +203,6 @@ def mim_subckt_formula_ok(models_capacitors_text: str, name: str) -> bool:
 
 def mim_cap_f(ca_f_per_um2: float, dw_um: float, w_um: float, l_um: float) -> float:
     return ca_f_per_um2 * (w_um + dw_um) * (l_um + dw_um)
-
-
-def subckt_header(text: str, name: str) -> tuple[list[str], dict[str, str]] | None:
-    """Pins and header params of ``.subckt <name>`` (continuations joined)."""
-    lines = text.splitlines()
-    for i, raw in enumerate(lines):
-        toks = raw.split()
-        if len(toks) >= 2 and toks[0].lower() == ".subckt" and toks[1].lower() == name.lower():
-            rest = toks[2:]
-            j = i + 1
-            while j < len(lines) and lines[j].lstrip().startswith("+"):
-                rest += lines[j].lstrip()[1:].split()
-                j += 1
-            pins = [t for t in rest if "=" not in t]
-            params = dict(t.split("=", 1) for t in rest if "=" in t)
-            return pins, params
-    return None
 
 
 def vpp_ctot(model_text: str, env: dict[str, float]) -> float | None:
@@ -383,19 +332,6 @@ def set_load(netlist_text: str, value: str) -> str:
     if len(hits) != 1:
         raise ValueError(f"expected exactly one ILOAD line, found {len(hits)}")
     return pat.sub(lambda m: m.group(1) + value + m.group(3), netlist_text)
-
-
-_LOG_VAL_RE = re.compile(r"^([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(-?[0-9]*\.?[0-9]+(?:[eE][-+]?[0-9]+)?)\b")
-
-
-def parse_log_values(text: str) -> dict[str, float]:
-    """``name = value`` lines an ngspice ``print``/``meas`` writes."""
-    out: dict[str, float] = {}
-    for raw in text.splitlines():
-        m = _LOG_VAL_RE.match(raw.strip())
-        if m:
-            out[m.group(1).lower()] = float(m.group(2))
-    return out
 
 
 def node_ident(net: str) -> str:
