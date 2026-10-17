@@ -31,7 +31,7 @@ _None._
 
 Issues currently being built (`loom:building`).
 
-- **#413**: Remove dead helpers from layout/cap-study/_cap_study.py (~55 LOC, zero callers)
+_None._
 
 ## PRs Awaiting Review
 
@@ -43,8 +43,7 @@ _None._
 
 PRs that passed review and are queued for Champion auto-merge (`loom:pr`).
 
-- **#414**: refactor(cap-study): remove caller-less helpers from _cap_study.py
-- **#418**: layout(folded-res-qual): n=4000 matrix, sigma-ratio SE reporting, BLOCKED batch record
+_None._
 
 ## Proposed
 
@@ -74,9 +73,9 @@ _None._
 | Very important | 0 |
 | Important | 0 |
 | Ready (`loom:issue`) | 0 |
-| In Progress (`loom:building`) | 1 |
+| In Progress (`loom:building`) | 0 |
 | PRs awaiting review | 0 |
-| Approved PRs awaiting merge | 2 |
+| Approved PRs awaiting merge | 0 |
 | Curated | 7 |
 | Architect / Hermit proposals | 0 |
 | Active epics | 1 |

@@ -4,6 +4,9 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 
 ### 2026-10-17
 
+- **PR #418**: layout(folded-res-qual): n=4000 matrix, sigma-ratio SE reporting, BLOCKED batch record
+- **PR #414**: refactor(cap-study): remove caller-less helpers from _cap_study.py
+- **Issue #413** (closed): Remove dead helpers from layout/cap-study/_cap_study.py (~55 LOC, zero callers)
 - **PR #420**: layout: use fail-closed parse_lyrdb in cap-rail and folded-res record scripts
 - **Issue #419** (closed): Consolidate private .lyrdb readers onto fail-closed parse_lyrdb (~25 LOC)
 - **PR #415**: layout: complete folded-resistor PVT/mismatch record; R_FB qualified to N=6, R_BIAS none
