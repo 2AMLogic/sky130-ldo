@@ -6,6 +6,12 @@
   circuit change it justifies lands under issue #116 against a DRAFT-free,
   already-ratified spec row (`Dropout @ 50 mA`, `< 300 mV`) — **no spec row is
   edited, relaxed, or proposed for relaxation by this record.**
+- **Ratification path**: fresh ratification required — operator ruling on
+  #301, 2026-10-19 (option 2). The historical merge of #139 (`ad02544`) is cited
+  for context only and is not accepted as this record's ratifying event; the
+  record stays `proposed` until a fresh ratification PR is reviewed and released
+  under the standing process (2AMLogic/2am#357, #372) and merged. This note
+  changes no decision text or target value.
 - **Date**: 2026-09-23
 - **Author**: Builder agent (drafted per #116)
 - **Ratifies against / input to**: #1 (Ratify the target spec — operator-only,
