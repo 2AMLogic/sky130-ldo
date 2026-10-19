@@ -48,7 +48,7 @@ table names a record that does not exist.
 | [DR-005](DR-005-thermal-shutdown-trip.md) | ratified | #1 (DR-006) | thermal-shutdown trip temperature, hysteresis, reference |
 | [DR-006](DR-006-spec-ratification.md) | ratified | operator ruling (Option A), 2026-09-15 | ratification of the target specification |
 | [DR-007](DR-007-psrr-stability-vs-iq.md) | proposed | unresolved — see #301 | PSRR and stability rows vs. the Iq budget |
-| [DR-008](DR-008-thermal-theta-ja-integration-constraint.md) | proposed | unresolved — see #301 | Thermal row: θJA integration constraint on the package |
+| [DR-008](DR-008-thermal-theta-ja-integration-constraint.md) | proposed | fresh ratification required — #301 ruling, 2026-10-19 (historical #132 context only) | Thermal row: θJA integration constraint on the package |
 | [DR-009](DR-009-iq-budget.md) | proposed | unresolved — see #301 | Iq row (< 30 µA, no load and full load) |
 | [DR-010](DR-010-error-amp-stays-in-tree.md) | proposed | unresolved — see #301 | error amplifier stays in-tree (reuse rule 9) |
 | [DR-011](DR-011-pass-device-resize.md) | proposed | unresolved — see #301 | pass-device re-sizing (DR-003 sizing point) |
