@@ -31,13 +31,13 @@ _None._
 
 Issues currently being built (`loom:building`).
 
-_None._
+- **#301**: spec: decide whether DR-008 through DR-012 ratified on merge
 
 ## PRs Awaiting Review
 
 PRs waiting on Judge (`loom:review-requested`).
 
-_None._
+- **#425**: docs(spec): DR-008 stays proposed; point to fresh-ratification path
 
 ## Approved (Awaiting Merge)
 
@@ -53,6 +53,7 @@ Issues carrying `loom:curated`.
 - **#177**: Seed sim/current-limit's leg-1 operating point to conform to the initial-condition contract *(curated)*
 - **#213**: sim(iq): mint the 45-corner record under #173's seeded deck + #133's regulation gate — deck fixed, matrix not re-run (host contention) *(curated)*
 - **#267**: layout: fix locally-routed official-DRC families (via.1a_b, m2.5, via2.5, nwell.9) found by #260 *(curated)*
+- **#301**: spec: decide whether DR-008 through DR-012 ratified on merge *(curated)*
 - **#314**: PSRR: decide and evidence the binding output-capacitor/ESR condition *(curated)*
 - **#381**: Sim: admit load-regulation cold-start endpoints to the batch backend *(curated)*
 - **#416**: Re-run folded-resistor MC at n>=1000 to firm up M2 sigma-ratio gate *(curated)*
@@ -74,10 +75,10 @@ _None._
 | Very important | 0 |
 | Important | 0 |
 | Ready (`loom:issue`) | 0 |
-| In Progress (`loom:building`) | 0 |
-| PRs awaiting review | 0 |
+| In Progress (`loom:building`) | 1 |
+| PRs awaiting review | 1 |
 | Approved PRs awaiting merge | 0 |
-| Curated | 8 |
+| Curated | 9 |
 | Architect / Hermit proposals | 0 |
 | Active epics | 1 |
 <!-- guide:plan-body:end -->
