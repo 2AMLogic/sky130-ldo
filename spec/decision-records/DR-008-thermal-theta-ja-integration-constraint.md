@@ -4,6 +4,12 @@
   `spec/target-spec.md`; it records an assumption the ratified Thermal row
   delegates, so its ratification is an operator decision (PR approval, per the
   ratification-via-PR standing policy cited in DR-005's header)
+- **Ratification path**: fresh ratification required — operator ruling on
+  #301, 2026-10-19 (option 2). The historical merge of #132 (`51a2a9f`) is cited
+  for context only and is not accepted as this record's ratifying event; the
+  record stays `proposed` until a fresh ratification PR is reviewed and released
+  under the standing process (2AMLogic/2am#357, #372) and merged. This note
+  changes no decision text or target value.
 - **Date**: 2026-09-23
 - **Author**: Builder agent (drafted per #120)
 - **Ratifies against / input to**: #120; #114 (gap-to-T1 tracker, Thermal row)
