@@ -5,6 +5,12 @@
   as refined by the two-key mechanism (2AMLogic/2am#372), the ratifying act is
   Judge review (→ `loom:pr`), the two-key mechanism's release, and the merge of
   the pull request this record ships in — the same path DR-006 took.
+- **Ratification path**: fresh ratification required — operator ruling on
+  #301, 2026-10-19 (option 2). The historical merge of #134 (`e7ac917`) is cited
+  for context only and is not accepted as this record's ratifying event; the
+  record stays `proposed` until a fresh ratification PR is reviewed and released
+  under the standing process (2AMLogic/2am#357, #372) and merged. This note
+  changes no decision text or target value.
 - **Date**: 2026-09-23
 - **Author**: Builder agent (per #121)
 - **Ratifies against / input to**: #121 (the Iq row is unratified yet graded
