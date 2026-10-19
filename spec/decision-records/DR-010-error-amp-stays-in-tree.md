@@ -9,6 +9,12 @@
   in `sky130-opamp`): merging the PR does not rewrite the line above, so a merged
   copy of this record still reads `proposed` — treat that as a drafting artifact
   of the ratification mechanism, not as an unratified decision.
+- **Ratification path**: fresh ratification required — operator ruling on
+  #301, 2026-10-19 (option 2). The historical merge of #137 (`9ff2f8e`) is cited
+  for context only and is not accepted as this record's ratifying event; the
+  record stays `proposed` until a fresh ratification PR is reviewed and released
+  under the standing process (2AMLogic/2am#357, #372) and merged. This note
+  changes no decision text or target value.
 - **Date**: 2026-09-23
 - **Author**: Builder agent (drafted per #123)
 - **Ratifies against / input to**: #123 (2am reuse rule 9 — adopt-or-record for
