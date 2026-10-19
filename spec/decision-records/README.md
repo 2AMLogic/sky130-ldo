@@ -52,4 +52,4 @@ table names a record that does not exist.
 | [DR-009](DR-009-iq-budget.md) | proposed | unresolved — see #301 | Iq row (< 30 µA, no load and full load) |
 | [DR-010](DR-010-error-amp-stays-in-tree.md) | proposed | unresolved — see #301 | error amplifier stays in-tree (reuse rule 9) |
 | [DR-011](DR-011-pass-device-resize.md) | proposed | unresolved — see #301 | pass-device re-sizing (DR-003 sizing point) |
-| [DR-012](DR-012-no-bandgap-reuse-lock-entry-yet.md) | proposed | unresolved — see #301 | no `reuse.lock.json` entry for the bandgap edge yet (reuse rule 9) |
+| [DR-012](DR-012-no-bandgap-reuse-lock-entry-yet.md) | proposed | fresh ratification required — #301 ruling, 2026-10-19 (historical #144 context only) | no `reuse.lock.json` entry for the bandgap edge yet (reuse rule 9) |
