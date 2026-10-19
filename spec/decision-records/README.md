@@ -51,6 +51,6 @@ table names a record that does not exist.
 | [DR-008](DR-008-thermal-theta-ja-integration-constraint.md) | proposed | fresh ratification required — #301 ruling, 2026-10-19 (historical #132 context only) | Thermal row: θJA integration constraint on the package |
 | [DR-009](DR-009-iq-budget.md) | proposed | fresh ratification required — #301 ruling, 2026-10-19 (historical #134 context only) | Iq row (< 30 µA, no load and full load) |
 | [DR-010](DR-010-error-amp-stays-in-tree.md) | proposed | fresh ratification required — #301 ruling, 2026-10-19 (historical #137 context only) | error amplifier stays in-tree (reuse rule 9) |
-| [DR-011](DR-011-pass-device-resize.md) | proposed | unresolved — see #301 | pass-device re-sizing (DR-003 sizing point) |
+| [DR-011](DR-011-pass-device-resize.md) | proposed | fresh ratification required — #301 ruling, 2026-10-19 (historical #139 context only) | pass-device re-sizing (DR-003 sizing point) |
 | [DR-012](DR-012-no-bandgap-reuse-lock-entry-yet.md) | proposed | unresolved — see #301 | no `reuse.lock.json` entry for the bandgap edge yet (reuse rule 9) |
 | [DR-013](DR-013-bias-retopology.md) | proposed | two-key step, then operator ratification (2am#5346) — see #467 | bias re-topology: `R_BIAS` as a straight `res_xhigh_po` body (core Area row) |
