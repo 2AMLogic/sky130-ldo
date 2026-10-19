@@ -25,13 +25,13 @@ _None._
 
 Human-approved issues ready for implementation (`loom:issue`).
 
-_None._
+- **#301**: spec: decide whether DR-008 through DR-012 ratified on merge
 
 ## In Progress
 
 Issues currently being built (`loom:building`).
 
-- **#301**: spec: decide whether DR-008 through DR-012 ratified on merge
+_None._
 
 ## PRs Awaiting Review
 
@@ -74,8 +74,8 @@ _None._
 | Operator merge-risk holds | 0 |
 | Very important | 0 |
 | Important | 0 |
-| Ready (`loom:issue`) | 0 |
-| In Progress (`loom:building`) | 1 |
+| Ready (`loom:issue`) | 1 |
+| In Progress (`loom:building`) | 0 |
 | PRs awaiting review | 1 |
 | Approved PRs awaiting merge | 0 |
 | Curated | 9 |

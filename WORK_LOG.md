@@ -2,6 +2,11 @@
 
 Chronological record of merged pull requests and closed issues. Maintained by the Loom Guide role.
 
+### 2026-10-19
+
+- **PR #427**: docs(spec): DR-009 stays proposed; point to fresh-ratification path
+- **PR #425**: docs(spec): DR-008 stays proposed; point to fresh-ratification path
+
 ### 2026-10-17
 
 - **PR #418**: layout(folded-res-qual): n=4000 matrix, sigma-ratio SE reporting, BLOCKED batch record
