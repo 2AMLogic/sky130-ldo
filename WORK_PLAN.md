@@ -37,7 +37,7 @@ _None._
 
 PRs waiting on Judge (`loom:review-requested`).
 
-- **#425**: docs(spec): DR-008 stays proposed; point to fresh-ratification path
+_None._
 
 ## Approved (Awaiting Merge)
 
@@ -76,7 +76,7 @@ _None._
 | Important | 0 |
 | Ready (`loom:issue`) | 1 |
 | In Progress (`loom:building`) | 0 |
-| PRs awaiting review | 1 |
+| PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 0 |
 | Curated | 9 |
 | Architect / Hermit proposals | 0 |
