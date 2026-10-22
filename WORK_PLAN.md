@@ -26,6 +26,7 @@ _None._
 Human-approved issues ready for implementation (`loom:issue`).
 
 - **#301**: spec: decide whether DR-008 through DR-012 ratified on merge
+- **#416**: Re-run folded-resistor MC at n>=1000 to firm up M2 sigma-ratio gate
 
 ## In Progress
 
@@ -74,7 +75,7 @@ _None._
 | Operator merge-risk holds | 0 |
 | Very important | 0 |
 | Important | 1 |
-| Ready (`loom:issue`) | 1 |
+| Ready (`loom:issue`) | 2 |
 | In Progress (`loom:building`) | 0 |
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 0 |
