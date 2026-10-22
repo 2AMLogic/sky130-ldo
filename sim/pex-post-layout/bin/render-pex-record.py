@@ -195,6 +195,17 @@ def main() -> int:
                 f"- Extraction: deck={ext.get('deck')}, device_count={ext.get('device_count')}, "
                 f"net_count={ext.get('net_count')}"
             )
+            graph = ext.get("resistance_graph")
+            if graph:
+                # A `legacy` net fell back to the lumped series-sum: it is NOT a
+                # terminal-aware graph value and must not be read as one (#162).
+                nets = graph.get("nets") or []
+                legacy = sorted(n["net"] for n in nets if n.get("resistance_source") != "graph")
+                lines.append(
+                    f"- Resistance graph (`--resistance-graph`, r_cut={graph.get('r_cut_ohm')} ohm): "
+                    f"{len(nets) - len(legacy)} of {len(nets)} nets graph-derived; "
+                    f"**legacy fallback (NOT graph values)**: {', '.join(legacy) if legacy else 'none'}"
+                )
     elif pex_summary and pex_summary.get("error"):
         lines.append(f"- Hard failure: {pex_summary['error'].get('message')}")
     else:

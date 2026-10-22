@@ -36,6 +36,24 @@ if ! "$KLT" pex --help >/dev/null 2>&1; then
   exit 1
 fi
 
+# Terminal-aware resistance (issue #162): `klt pex --resistance-graph` writes the
+# graph-derived per-net R into the pex netlist instead of the legacy lumped
+# series-sum, which `klayout-tools#2391`/`#2458` showed cannot tell an adequate
+# power rail from an inadequate one. A build without the flag would silently
+# fall back to that legacy value, so refuse it rather than mint a record that
+# looks graph-derived and is not (layout/requirements.txt pins a build that has it).
+if ! "$KLT" pex --help 2>&1 | grep -q -- '--resistance-graph'; then
+  echo "run-pex.sh: '$KLT' has no 'klt pex --resistance-graph' -- use layout/.venv/bin/klt (layout/bin/setup-venv.sh)" >&2
+  exit 1
+fi
+# Per-cut via/contact R for the graph. The shipped klt decks curate none (a
+# cross-level landing is otherwise `unsupported`), so it is the sky130A PDK's own
+# contact resistance: magic's sky130A.tech `contact` table gives mcon 9.3 ohm,
+# via/via2/via3 4.5/3.41/3.41 ohm, via4 0.38 ohm. One scalar covers every cut, so
+# the largest (mcon, 9.3) is used -- an upper bound on the upper-level vias, never
+# a value picked to flatter a result. Override with PEX_R_CUT_OHM.
+PEX_R_CUT_OHM="${PEX_R_CUT_OHM:-9.3}"
+
 # Export PDK_ROOT/PDK so the request's PDK-relative `models` block (see
 # README.md's "models.lib" note) resolves the same pinned sky130.lib.spice
 # this repo's other sim/ testbenches use.
@@ -155,6 +173,7 @@ echo "run-pex.sh: running klt pex (schematic + extracted legs + delta)"
 set +e
 "$KLT" pex "$GDS" "$TESTBENCH_DIR/tb_pex_post_layout.request.json" \
   --deck sky130 --top "$CELL" --pdk "$PDK_VARIANT" \
+  --resistance-graph --resistance-graph-r-cut "$PEX_R_CUT_OHM" \
   --outdir "$BUILD_DIR/pex" \
   -o "$NETLIST_EXTRACT_PATH" \
   --format json > "$RESP_PEX_PATH" 2> "$BUILD_DIR/pex.stderr.log"

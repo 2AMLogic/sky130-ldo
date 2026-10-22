@@ -1,0 +1,4650 @@
+{
+  "schema_version": 2,
+  "status": "fail",
+  "layout": {
+    "path": "layout/ldo-core/reports/20261022-232042-56dd87fe/ldo_core.gds",
+    "scope": "repo"
+  },
+  "netlist": {
+    "path": "sim/pex-post-layout/netlist-snapshots/20261022-232148-56dd87fe.pex.extract.spice",
+    "scope": "repo"
+  },
+  "reference_netlist": {
+    "path": "sim/pex-post-layout/testbench/ldo_core_schematic_dut.spice",
+    "scope": "repo"
+  },
+  "reference_netlist_sha256": "sha256:eceb60ab03d6314d419eb26b38804fbfb5e4ab017808e4e0a96041cc7407a6fa",
+  "extraction": {
+    "deck": "sky130",
+    "device_count": 102,
+    "net_count": 28,
+    "netlist_sha256": "f5c5d72fa46b349215746746d2a929a52b983d608b60fa4dc5713ea269424b5d",
+    "model": {
+      "capacitance": "net-to-ground for every net's own (non-coupled) area/perimeter, plus net-to-net for the vertical-overlap coupling `coupling` describes below -- a coupled net pair gets a direct capacitor between their two hub nodes, not just capacitors to the deck's ground/substrate net",
+      "coupling": "vertical overlap (crossover) unconditionally -- where one net's conductor on an adjacent metal level sits directly over another *distinct* net's conductor, that overlap area is charged between the two nets instead of to ground (issue #760) -- plus lateral (same-layer, sidewall) coupling, but only for a net pair naming one of the caller's declared `--critical-net` nets (issue #976): facing-edge length within that layer's own minimum-spacing lookback is charged between the two nets, *additively* (not deducted from either net's substrate fringe term, unlike the vertical case -- a known simplification). Any same-layer pair with neither side named `--critical-net`, and fringe shielding in general, are still not modelled",
+      "resistance": "single lumped series resistance per net, distributed as a star across that net's device terminals (issue #592) -- not a per-segment, distributed RC ladder, *unless* `--distributed-rc` names this net via `--critical-net` (issue #977, Epic #709 Phase 2b): then the net's terminals are ordered along their approximate physical spread and its total R/C is broken into a chain of per-segment resistors (segment length proportional to inter-terminal distance) with a ground capacitor at each terminal node (proportional to its adjacent segment length/2), instead of one star hub -- still an approximation (terminal position is a device-placement proxy, not true per-segment routing geometry), but a strictly finer-grained one than the single-hub star",
+      "frequency": "quasi-static -- one frequency-independent R and C per net; no skin effect, no distributed transmission-line behavior"
+    },
+    "critical_nets": [],
+    "distributed_rc": false,
+    "mom_rlc_override": null,
+    "label_layers": null,
+    "rename_declared_pins": false,
+    "parasitic_integrity": {
+      "short_threshold_ohm": 1.0,
+      "cap_tolerance": {
+        "absolute_ff": 1e-06,
+        "relative": 1e-09
+      },
+      "max_detail_items": 20,
+      "nets_checked": 28,
+      "nets_with_findings": 0,
+      "open_nets": 0,
+      "island_components": 0,
+      "orphan_nodes": 0,
+      "suspicious_resistors": 0,
+      "short_candidates": 0,
+      "capacitance_mismatches": 0,
+      "nets": [
+        {
+          "net": "0",
+          "net_id": 29,
+          "rc_model": "lumped",
+          "integrity": {
+            "open": {
+              "status": "not_applicable",
+              "reason": "lumped model: terminal legs attach to the hub by construction; no distributed segments to check connectivity over",
+              "disconnected_count": 0,
+              "disconnected_terminals": [],
+              "details_truncated": false
+            },
+            "islands": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "orphan_nodes": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "suspicious_resistors": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "short_candidates": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "capacitance": {
+              "status": "pass",
+              "declared_ff": 17.724569,
+              "computed_ff": 17.724569,
+              "delta_ff": 0.0,
+              "reason": null,
+              "tolerance": {
+                "absolute_ff": 1e-06,
+                "relative": 1e-09
+              }
+            }
+          }
+        },
+        {
+          "net": "AMP_ENN",
+          "net_id": 17,
+          "rc_model": "lumped",
+          "integrity": {
+            "open": {
+              "status": "not_applicable",
+              "reason": "lumped model: terminal legs attach to the hub by construction; no distributed segments to check connectivity over",
+              "disconnected_count": 0,
+              "disconnected_terminals": [],
+              "details_truncated": false
+            },
+            "islands": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "orphan_nodes": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "suspicious_resistors": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "short_candidates": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "capacitance": {
+              "status": "pass",
+              "declared_ff": 32.457708,
+              "computed_ff": 32.457708,
+              "delta_ff": 0.0,
+              "reason": null,
+              "tolerance": {
+                "absolute_ff": 1e-06,
+                "relative": 1e-09
+              }
+            }
+          }
+        },
+        {
+          "net": "BIASP",
+          "net_id": 16,
+          "rc_model": "lumped",
+          "integrity": {
+            "open": {
+              "status": "not_applicable",
+              "reason": "lumped model: terminal legs attach to the hub by construction; no distributed segments to check connectivity over",
+              "disconnected_count": 0,
+              "disconnected_terminals": [],
+              "details_truncated": false
+            },
+            "islands": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "orphan_nodes": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "suspicious_resistors": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "short_candidates": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "capacitance": {
+              "status": "pass",
+              "declared_ff": 39.985284,
+              "computed_ff": 39.985284,
+              "delta_ff": 0.0,
+              "reason": null,
+              "tolerance": {
+                "absolute_ff": 1e-06,
+                "relative": 1e-09
+              }
+            }
+          }
+        },
+        {
+          "net": "BIAS_ENN",
+          "net_id": 18,
+          "rc_model": "lumped",
+          "integrity": {
+            "open": {
+              "status": "not_applicable",
+              "reason": "lumped model: terminal legs attach to the hub by construction; no distributed segments to check connectivity over",
+              "disconnected_count": 0,
+              "disconnected_terminals": [],
+              "details_truncated": false
+            },
+            "islands": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "orphan_nodes": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "suspicious_resistors": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "short_candidates": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "capacitance": {
+              "status": "pass",
+              "declared_ff": 4.696558,
+              "computed_ff": 4.696558,
+              "delta_ff": 0.0,
+              "reason": null,
+              "tolerance": {
+                "absolute_ff": 1e-06,
+                "relative": 1e-09
+              }
+            }
+          }
+        },
+        {
+          "net": "CL_CMP",
+          "net_id": 11,
+          "rc_model": "lumped",
+          "integrity": {
+            "open": {
+              "status": "not_applicable",
+              "reason": "lumped model: terminal legs attach to the hub by construction; no distributed segments to check connectivity over",
+              "disconnected_count": 0,
+              "disconnected_terminals": [],
+              "details_truncated": false
+            },
+            "islands": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "orphan_nodes": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "suspicious_resistors": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "short_candidates": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "capacitance": {
+              "status": "pass",
+              "declared_ff": 20.090073,
+              "computed_ff": 20.090073,
+              "delta_ff": 0.0,
+              "reason": null,
+              "tolerance": {
+                "absolute_ff": 1e-06,
+                "relative": 1e-09
+              }
+            }
+          }
+        },
+        {
+          "net": "CL_SNS",
+          "net_id": 15,
+          "rc_model": "lumped",
+          "integrity": {
+            "open": {
+              "status": "not_applicable",
+              "reason": "lumped model: terminal legs attach to the hub by construction; no distributed segments to check connectivity over",
+              "disconnected_count": 0,
+              "disconnected_terminals": [],
+              "details_truncated": false
+            },
+            "islands": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "orphan_nodes": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "suspicious_resistors": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "short_candidates": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "capacitance": {
+              "status": "pass",
+              "declared_ff": 21.392509,
+              "computed_ff": 21.392509,
+              "delta_ff": 0.0,
+              "reason": null,
+              "tolerance": {
+                "absolute_ff": 1e-06,
+                "relative": 1e-09
+              }
+            }
+          }
+        },
+        {
+          "net": "EA_CZ",
+          "net_id": 25,
+          "rc_model": "lumped",
+          "integrity": {
+            "open": {
+              "status": "not_applicable",
+              "reason": "lumped model: terminal legs attach to the hub by construction; no distributed segments to check connectivity over",
+              "disconnected_count": 0,
+              "disconnected_terminals": [],
+              "details_truncated": false
+            },
+            "islands": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "orphan_nodes": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "suspicious_resistors": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "short_candidates": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "capacitance": {
+              "status": "pass",
+              "declared_ff": 1.239707,
+              "computed_ff": 1.239707,
+              "delta_ff": 0.0,
+              "reason": null,
+              "tolerance": {
+                "absolute_ff": 1e-06,
+                "relative": 1e-09
+              }
+            }
+          }
+        },
+        {
+          "net": "EA_D1",
+          "net_id": 12,
+          "rc_model": "lumped",
+          "integrity": {
+            "open": {
+              "status": "not_applicable",
+              "reason": "lumped model: terminal legs attach to the hub by construction; no distributed segments to check connectivity over",
+              "disconnected_count": 0,
+              "disconnected_terminals": [],
+              "details_truncated": false
+            },
+            "islands": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "orphan_nodes": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "suspicious_resistors": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "short_candidates": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "capacitance": {
+              "status": "pass",
+              "declared_ff": 21.795649,
+              "computed_ff": 21.795649,
+              "delta_ff": 0.0,
+              "reason": null,
+              "tolerance": {
+                "absolute_ff": 1e-06,
+                "relative": 1e-09
+              }
+            }
+          }
+        },
+        {
+          "net": "EA_D2",
+          "net_id": 13,
+          "rc_model": "lumped",
+          "integrity": {
+            "open": {
+              "status": "not_applicable",
+              "reason": "lumped model: terminal legs attach to the hub by construction; no distributed segments to check connectivity over",
+              "disconnected_count": 0,
+              "disconnected_terminals": [],
+              "details_truncated": false
+            },
+            "islands": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "orphan_nodes": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "suspicious_resistors": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "short_candidates": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "capacitance": {
+              "status": "pass",
+              "declared_ff": 25.029556,
+              "computed_ff": 25.029556,
+              "delta_ff": 0.0,
+              "reason": null,
+              "tolerance": {
+                "absolute_ff": 1e-06,
+                "relative": 1e-09
+              }
+            }
+          }
+        },
+        {
+          "net": "EA_OUT",
+          "net_id": 20,
+          "rc_model": "lumped",
+          "integrity": {
+            "open": {
+              "status": "not_applicable",
+              "reason": "lumped model: terminal legs attach to the hub by construction; no distributed segments to check connectivity over",
+              "disconnected_count": 0,
+              "disconnected_terminals": [],
+              "details_truncated": false
+            },
+            "islands": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "orphan_nodes": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "suspicious_resistors": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "short_candidates": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "capacitance": {
+              "status": "pass",
+              "declared_ff": 520.835629,
+              "computed_ff": 520.835629,
+              "delta_ff": 0.0,
+              "reason": null,
+              "tolerance": {
+                "absolute_ff": 1e-06,
+                "relative": 1e-09
+              }
+            }
+          }
+        },
+        {
+          "net": "EA_TAIL",
+          "net_id": 1,
+          "rc_model": "lumped",
+          "integrity": {
+            "open": {
+              "status": "not_applicable",
+              "reason": "lumped model: terminal legs attach to the hub by construction; no distributed segments to check connectivity over",
+              "disconnected_count": 0,
+              "disconnected_terminals": [],
+              "details_truncated": false
+            },
+            "islands": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "orphan_nodes": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "suspicious_resistors": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "short_candidates": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "capacitance": {
+              "status": "pass",
+              "declared_ff": 17.210533,
+              "computed_ff": 17.210533,
+              "delta_ff": 0.0,
+              "reason": null,
+              "tolerance": {
+                "absolute_ff": 1e-06,
+                "relative": 1e-09
+              }
+            }
+          }
+        },
+        {
+          "net": "EN",
+          "net_id": 19,
+          "rc_model": "lumped",
+          "integrity": {
+            "open": {
+              "status": "not_applicable",
+              "reason": "lumped model: terminal legs attach to the hub by construction; no distributed segments to check connectivity over",
+              "disconnected_count": 0,
+              "disconnected_terminals": [],
+              "details_truncated": false
+            },
+            "islands": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "orphan_nodes": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "suspicious_resistors": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "short_candidates": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "capacitance": {
+              "status": "pass",
+              "declared_ff": 44.024015,
+              "computed_ff": 44.024015,
+              "delta_ff": 0.0,
+              "reason": null,
+              "tolerance": {
+                "absolute_ff": 1e-06,
+                "relative": 1e-09
+              }
+            }
+          }
+        },
+        {
+          "net": "ENB",
+          "net_id": 8,
+          "rc_model": "lumped",
+          "integrity": {
+            "open": {
+              "status": "not_applicable",
+              "reason": "lumped model: terminal legs attach to the hub by construction; no distributed segments to check connectivity over",
+              "disconnected_count": 0,
+              "disconnected_terminals": [],
+              "details_truncated": false
+            },
+            "islands": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "orphan_nodes": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "suspicious_resistors": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "short_candidates": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "capacitance": {
+              "status": "pass",
+              "declared_ff": 16.54914,
+              "computed_ff": 16.54914,
+              "delta_ff": 0.0,
+              "reason": null,
+              "tolerance": {
+                "absolute_ff": 1e-06,
+                "relative": 1e-09
+              }
+            }
+          }
+        },
+        {
+          "net": "FB",
+          "net_id": 22,
+          "rc_model": "lumped",
+          "integrity": {
+            "open": {
+              "status": "not_applicable",
+              "reason": "lumped model: terminal legs attach to the hub by construction; no distributed segments to check connectivity over",
+              "disconnected_count": 0,
+              "disconnected_terminals": [],
+              "details_truncated": false
+            },
+            "islands": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "orphan_nodes": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "suspicious_resistors": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "short_candidates": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "capacitance": {
+              "status": "pass",
+              "declared_ff": 55.81193,
+              "computed_ff": 55.81193,
+              "delta_ff": 0.0,
+              "reason": null,
+              "tolerance": {
+                "absolute_ff": 1e-06,
+                "relative": 1e-09
+              }
+            }
+          }
+        },
+        {
+          "net": "NB",
+          "net_id": 21,
+          "rc_model": "lumped",
+          "integrity": {
+            "open": {
+              "status": "not_applicable",
+              "reason": "lumped model: terminal legs attach to the hub by construction; no distributed segments to check connectivity over",
+              "disconnected_count": 0,
+              "disconnected_terminals": [],
+              "details_truncated": false
+            },
+            "islands": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "orphan_nodes": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "suspicious_resistors": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "short_candidates": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "capacitance": {
+              "status": "pass",
+              "declared_ff": 71.474333,
+              "computed_ff": 71.474333,
+              "delta_ff": 0.0,
+              "reason": null,
+              "tolerance": {
+                "absolute_ff": 1e-06,
+                "relative": 1e-09
+              }
+            }
+          }
+        },
+        {
+          "net": "N_FBB",
+          "net_id": 23,
+          "rc_model": "lumped",
+          "integrity": {
+            "open": {
+              "status": "not_applicable",
+              "reason": "lumped model: terminal legs attach to the hub by construction; no distributed segments to check connectivity over",
+              "disconnected_count": 0,
+              "disconnected_terminals": [],
+              "details_truncated": false
+            },
+            "islands": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "orphan_nodes": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "suspicious_resistors": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "short_candidates": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "capacitance": {
+              "status": "pass",
+              "declared_ff": 2.406497,
+              "computed_ff": 2.406497,
+              "delta_ff": 0.0,
+              "reason": null,
+              "tolerance": {
+                "absolute_ff": 1e-06,
+                "relative": 1e-09
+              }
+            }
+          }
+        },
+        {
+          "net": "PB",
+          "net_id": 14,
+          "rc_model": "lumped",
+          "integrity": {
+            "open": {
+              "status": "not_applicable",
+              "reason": "lumped model: terminal legs attach to the hub by construction; no distributed segments to check connectivity over",
+              "disconnected_count": 0,
+              "disconnected_terminals": [],
+              "details_truncated": false
+            },
+            "islands": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "orphan_nodes": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "suspicious_resistors": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "short_candidates": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "capacitance": {
+              "status": "pass",
+              "declared_ff": 25.710997,
+              "computed_ff": 25.710997,
+              "delta_ff": 0.0,
+              "reason": null,
+              "tolerance": {
+                "absolute_ff": 1e-06,
+                "relative": 1e-09
+              }
+            }
+          }
+        },
+        {
+          "net": "RC_A",
+          "net_id": 4,
+          "rc_model": "lumped",
+          "integrity": {
+            "open": {
+              "status": "not_applicable",
+              "reason": "lumped model: terminal legs attach to the hub by construction; no distributed segments to check connectivity over",
+              "disconnected_count": 0,
+              "disconnected_terminals": [],
+              "details_truncated": false
+            },
+            "islands": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "orphan_nodes": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "suspicious_resistors": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "short_candidates": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "capacitance": {
+              "status": "pass",
+              "declared_ff": 34.886219,
+              "computed_ff": 34.886219,
+              "delta_ff": 0.0,
+              "reason": null,
+              "tolerance": {
+                "absolute_ff": 1e-06,
+                "relative": 1e-09
+              }
+            }
+          }
+        },
+        {
+          "net": "RC_B",
+          "net_id": 3,
+          "rc_model": "lumped",
+          "integrity": {
+            "open": {
+              "status": "not_applicable",
+              "reason": "lumped model: terminal legs attach to the hub by construction; no distributed segments to check connectivity over",
+              "disconnected_count": 0,
+              "disconnected_terminals": [],
+              "details_truncated": false
+            },
+            "islands": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "orphan_nodes": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "suspicious_resistors": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "short_candidates": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "capacitance": {
+              "status": "pass",
+              "declared_ff": 31.768928,
+              "computed_ff": 31.768928,
+              "delta_ff": 0.0,
+              "reason": null,
+              "tolerance": {
+                "absolute_ff": 1e-06,
+                "relative": 1e-09
+              }
+            }
+          }
+        },
+        {
+          "net": "RC_TAIL",
+          "net_id": 7,
+          "rc_model": "lumped",
+          "integrity": {
+            "open": {
+              "status": "not_applicable",
+              "reason": "lumped model: terminal legs attach to the hub by construction; no distributed segments to check connectivity over",
+              "disconnected_count": 0,
+              "disconnected_terminals": [],
+              "details_truncated": false
+            },
+            "islands": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "orphan_nodes": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "suspicious_resistors": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "short_candidates": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "capacitance": {
+              "status": "pass",
+              "declared_ff": 7.896989,
+              "computed_ff": 7.896989,
+              "delta_ff": 0.0,
+              "reason": null,
+              "tolerance": {
+                "absolute_ff": 1e-06,
+                "relative": 1e-09
+              }
+            }
+          }
+        },
+        {
+          "net": "SS",
+          "net_id": 9,
+          "rc_model": "lumped",
+          "integrity": {
+            "open": {
+              "status": "not_applicable",
+              "reason": "lumped model: terminal legs attach to the hub by construction; no distributed segments to check connectivity over",
+              "disconnected_count": 0,
+              "disconnected_terminals": [],
+              "details_truncated": false
+            },
+            "islands": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "orphan_nodes": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "suspicious_resistors": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "short_candidates": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "capacitance": {
+              "status": "pass",
+              "declared_ff": 18.457818,
+              "computed_ff": 18.457818,
+              "delta_ff": 0.0,
+              "reason": null,
+              "tolerance": {
+                "absolute_ff": 1e-06,
+                "relative": 1e-09
+              }
+            }
+          }
+        },
+        {
+          "net": "TS_CMP",
+          "net_id": 2,
+          "rc_model": "lumped",
+          "integrity": {
+            "open": {
+              "status": "not_applicable",
+              "reason": "lumped model: terminal legs attach to the hub by construction; no distributed segments to check connectivity over",
+              "disconnected_count": 0,
+              "disconnected_terminals": [],
+              "details_truncated": false
+            },
+            "islands": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "orphan_nodes": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "suspicious_resistors": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "short_candidates": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "capacitance": {
+              "status": "pass",
+              "declared_ff": 25.319566,
+              "computed_ff": 25.319566,
+              "delta_ff": 0.0,
+              "reason": null,
+              "tolerance": {
+                "absolute_ff": 1e-06,
+                "relative": 1e-09
+              }
+            }
+          }
+        },
+        {
+          "net": "TS_MID",
+          "net_id": 10,
+          "rc_model": "lumped",
+          "integrity": {
+            "open": {
+              "status": "not_applicable",
+              "reason": "lumped model: terminal legs attach to the hub by construction; no distributed segments to check connectivity over",
+              "disconnected_count": 0,
+              "disconnected_terminals": [],
+              "details_truncated": false
+            },
+            "islands": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "orphan_nodes": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "suspicious_resistors": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "short_candidates": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "capacitance": {
+              "status": "pass",
+              "declared_ff": 29.129559,
+              "computed_ff": 29.129559,
+              "delta_ff": 0.0,
+              "reason": null,
+              "tolerance": {
+                "absolute_ff": 1e-06,
+                "relative": 1e-09
+              }
+            }
+          }
+        },
+        {
+          "net": "TS_REF",
+          "net_id": 6,
+          "rc_model": "lumped",
+          "integrity": {
+            "open": {
+              "status": "not_applicable",
+              "reason": "lumped model: terminal legs attach to the hub by construction; no distributed segments to check connectivity over",
+              "disconnected_count": 0,
+              "disconnected_terminals": [],
+              "details_truncated": false
+            },
+            "islands": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "orphan_nodes": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "suspicious_resistors": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "short_candidates": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "capacitance": {
+              "status": "pass",
+              "declared_ff": 21.372753,
+              "computed_ff": 21.372753,
+              "delta_ff": 0.0,
+              "reason": null,
+              "tolerance": {
+                "absolute_ff": 1e-06,
+                "relative": 1e-09
+              }
+            }
+          }
+        },
+        {
+          "net": "TS_SNS",
+          "net_id": 5,
+          "rc_model": "lumped",
+          "integrity": {
+            "open": {
+              "status": "not_applicable",
+              "reason": "lumped model: terminal legs attach to the hub by construction; no distributed segments to check connectivity over",
+              "disconnected_count": 0,
+              "disconnected_terminals": [],
+              "details_truncated": false
+            },
+            "islands": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "orphan_nodes": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "suspicious_resistors": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "short_candidates": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "capacitance": {
+              "status": "pass",
+              "declared_ff": 35.998814,
+              "computed_ff": 35.998814,
+              "delta_ff": 0.0,
+              "reason": null,
+              "tolerance": {
+                "absolute_ff": 1e-06,
+                "relative": 1e-09
+              }
+            }
+          }
+        },
+        {
+          "net": "VIN",
+          "net_id": 26,
+          "rc_model": "lumped",
+          "integrity": {
+            "open": {
+              "status": "not_applicable",
+              "reason": "lumped model: terminal legs attach to the hub by construction; no distributed segments to check connectivity over",
+              "disconnected_count": 0,
+              "disconnected_terminals": [],
+              "details_truncated": false
+            },
+            "islands": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "orphan_nodes": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "suspicious_resistors": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "short_candidates": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "capacitance": {
+              "status": "pass",
+              "declared_ff": 1978.662101,
+              "computed_ff": 1978.662101,
+              "delta_ff": 0.0,
+              "reason": null,
+              "tolerance": {
+                "absolute_ff": 1e-06,
+                "relative": 1e-09
+              }
+            }
+          }
+        },
+        {
+          "net": "VOUT",
+          "net_id": 27,
+          "rc_model": "lumped",
+          "integrity": {
+            "open": {
+              "status": "not_applicable",
+              "reason": "lumped model: terminal legs attach to the hub by construction; no distributed segments to check connectivity over",
+              "disconnected_count": 0,
+              "disconnected_terminals": [],
+              "details_truncated": false
+            },
+            "islands": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "orphan_nodes": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "suspicious_resistors": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "short_candidates": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "capacitance": {
+              "status": "pass",
+              "declared_ff": 1289.034805,
+              "computed_ff": 1289.034805,
+              "delta_ff": 0.0,
+              "reason": null,
+              "tolerance": {
+                "absolute_ff": 1e-06,
+                "relative": 1e-09
+              }
+            }
+          }
+        },
+        {
+          "net": "VREF",
+          "net_id": 28,
+          "rc_model": "lumped",
+          "integrity": {
+            "open": {
+              "status": "not_applicable",
+              "reason": "lumped model: terminal legs attach to the hub by construction; no distributed segments to check connectivity over",
+              "disconnected_count": 0,
+              "disconnected_terminals": [],
+              "details_truncated": false
+            },
+            "islands": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "orphan_nodes": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "suspicious_resistors": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "short_candidates": {
+              "count": 0,
+              "details": [],
+              "details_truncated": false,
+              "reason": null
+            },
+            "capacitance": {
+              "status": "pass",
+              "declared_ff": 3.958112,
+              "computed_ff": 3.958112,
+              "delta_ff": 0.0,
+              "reason": null,
+              "tolerance": {
+                "absolute_ff": 1e-06,
+                "relative": 1e-09
+              }
+            }
+          }
+        }
+      ]
+    },
+    "resistance_graph": {
+      "r_cut_ohm": 9.3,
+      "nets": [
+        {
+          "net": "0",
+          "net_id": 29,
+          "resistance_source": "legacy",
+          "selected_resistance_ohm": 3001.2008,
+          "legacy_resistance_ohm": 3001.2008
+        },
+        {
+          "net": "AMP_ENN",
+          "net_id": 17,
+          "resistance_source": "legacy",
+          "selected_resistance_ohm": 11403.3919,
+          "legacy_resistance_ohm": 11403.3919
+        },
+        {
+          "net": "BIASP",
+          "net_id": 16,
+          "resistance_source": "legacy",
+          "selected_resistance_ohm": 12009.641,
+          "legacy_resistance_ohm": 12009.641
+        },
+        {
+          "net": "BIAS_ENN",
+          "net_id": 18,
+          "resistance_source": "legacy",
+          "selected_resistance_ohm": 1927.3301,
+          "legacy_resistance_ohm": 1927.3301
+        },
+        {
+          "net": "CL_CMP",
+          "net_id": 11,
+          "resistance_source": "legacy",
+          "selected_resistance_ohm": 3616.1224,
+          "legacy_resistance_ohm": 3616.1224
+        },
+        {
+          "net": "CL_SNS",
+          "net_id": 15,
+          "resistance_source": "legacy",
+          "selected_resistance_ohm": 3846.9258,
+          "legacy_resistance_ohm": 3846.9258
+        },
+        {
+          "net": "EA_CZ",
+          "net_id": 25,
+          "resistance_source": "legacy",
+          "selected_resistance_ohm": 487.7233,
+          "legacy_resistance_ohm": 487.7233
+        },
+        {
+          "net": "EA_D1",
+          "net_id": 12,
+          "resistance_source": "legacy",
+          "selected_resistance_ohm": 7128.9576,
+          "legacy_resistance_ohm": 7128.9576
+        },
+        {
+          "net": "EA_D2",
+          "net_id": 13,
+          "resistance_source": "legacy",
+          "selected_resistance_ohm": 8198.6003,
+          "legacy_resistance_ohm": 8198.6003
+        },
+        {
+          "net": "EA_OUT",
+          "net_id": 20,
+          "resistance_source": "legacy",
+          "selected_resistance_ohm": 30455.2525,
+          "legacy_resistance_ohm": 30455.2525
+        },
+        {
+          "net": "EA_TAIL",
+          "net_id": 1,
+          "resistance_source": "legacy",
+          "selected_resistance_ohm": 7210.162,
+          "legacy_resistance_ohm": 7210.162
+        },
+        {
+          "net": "EN",
+          "net_id": 19,
+          "resistance_source": "legacy",
+          "selected_resistance_ohm": 5629.0714,
+          "legacy_resistance_ohm": 5629.0714
+        },
+        {
+          "net": "ENB",
+          "net_id": 8,
+          "resistance_source": "legacy",
+          "selected_resistance_ohm": 2604.8425,
+          "legacy_resistance_ohm": 2604.8425
+        },
+        {
+          "net": "FB",
+          "net_id": 22,
+          "resistance_source": "legacy",
+          "selected_resistance_ohm": 2273.6971,
+          "legacy_resistance_ohm": 2273.6971
+        },
+        {
+          "net": "NB",
+          "net_id": 21,
+          "resistance_source": "legacy",
+          "selected_resistance_ohm": 4517.6009,
+          "legacy_resistance_ohm": 4517.6009
+        },
+        {
+          "net": "N_FBB",
+          "net_id": 23,
+          "resistance_source": "legacy",
+          "selected_resistance_ohm": 768.4729,
+          "legacy_resistance_ohm": 768.4729
+        },
+        {
+          "net": "PB",
+          "net_id": 14,
+          "resistance_source": "legacy",
+          "selected_resistance_ohm": 8473.0159,
+          "legacy_resistance_ohm": 8473.0159
+        },
+        {
+          "net": "RC_A",
+          "net_id": 4,
+          "resistance_source": "legacy",
+          "selected_resistance_ohm": 9472.4823,
+          "legacy_resistance_ohm": 9472.4823
+        },
+        {
+          "net": "RC_B",
+          "net_id": 3,
+          "resistance_source": "legacy",
+          "selected_resistance_ohm": 8906.2011,
+          "legacy_resistance_ohm": 8906.2011
+        },
+        {
+          "net": "RC_TAIL",
+          "net_id": 7,
+          "resistance_source": "legacy",
+          "selected_resistance_ohm": 4134.573,
+          "legacy_resistance_ohm": 4134.573
+        },
+        {
+          "net": "SS",
+          "net_id": 9,
+          "resistance_source": "legacy",
+          "selected_resistance_ohm": 3625.335,
+          "legacy_resistance_ohm": 3625.335
+        },
+        {
+          "net": "TS_CMP",
+          "net_id": 2,
+          "resistance_source": "legacy",
+          "selected_resistance_ohm": 6427.6234,
+          "legacy_resistance_ohm": 6427.6234
+        },
+        {
+          "net": "TS_MID",
+          "net_id": 10,
+          "resistance_source": "legacy",
+          "selected_resistance_ohm": 9177.3001,
+          "legacy_resistance_ohm": 9177.3001
+        },
+        {
+          "net": "TS_REF",
+          "net_id": 6,
+          "resistance_source": "legacy",
+          "selected_resistance_ohm": 5366.0559,
+          "legacy_resistance_ohm": 5366.0559
+        },
+        {
+          "net": "TS_SNS",
+          "net_id": 5,
+          "resistance_source": "legacy",
+          "selected_resistance_ohm": 8585.9631,
+          "legacy_resistance_ohm": 8585.9631
+        },
+        {
+          "net": "VIN",
+          "net_id": 26,
+          "resistance_source": "legacy",
+          "selected_resistance_ohm": 162687.7448,
+          "legacy_resistance_ohm": 162687.7448
+        },
+        {
+          "net": "VOUT",
+          "net_id": 27,
+          "resistance_source": "legacy",
+          "selected_resistance_ohm": 153284.1077,
+          "legacy_resistance_ohm": 153284.1077
+        },
+        {
+          "net": "VREF",
+          "net_id": 28,
+          "resistance_source": "legacy",
+          "selected_resistance_ohm": 1375.8883,
+          "legacy_resistance_ohm": 1375.8883
+        }
+      ]
+    }
+  },
+  "body_bias": {
+    "status": "biased",
+    "unbiased_device_count": 0,
+    "unbiased_nets": [],
+    "unbiased_pmos_body_nets": []
+  },
+  "measurement": {
+    "mode": "testbench",
+    "command": null,
+    "timeout_s": null,
+    "sides": null
+  },
+  "testbenches": [
+    {
+      "request": {
+        "path": "sim/pex-post-layout/testbench/tb_pex_post_layout.request.json",
+        "scope": "repo"
+      },
+      "request_sha256": "sha256:61e77cad24f9b1b0603a228e33dad37e9d39547cefe89ca6d8cd4174d68cc438",
+      "netlist": {
+        "path": "sim/pex-post-layout/testbench/tb_pex_post_layout.spice",
+        "scope": "repo"
+      },
+      "netlist_sha256": "sha256:a5ad6cc20fb94098885cdf12d5a3ef0dbb89ae8f8dd9d06e9e7d12c6bffa4d3f",
+      "schematic_netlist": {
+        "path": "sim/pex-post-layout/testbench/ldo_core_schematic_dut.spice",
+        "scope": "repo"
+      },
+      "schematic_netlist_sha256": "sha256:eceb60ab03d6314d419eb26b38804fbfb5e4ab017808e4e0a96041cc7407a6fa",
+      "corner_count": 45,
+      "measurement_names": [
+        "vout_light_load_v",
+        "vout_full_load_v",
+        "vin_minus_vout_full_load_v"
+      ],
+      "sides": {
+        "schematic": {
+          "environment": {
+            "engine": "ngspice",
+            "engine_version": "46",
+            "ngspice_binary": "/usr/local/bin/ngspice",
+            "engine_host": "worker",
+            "client_ngspice_binary": "/home/ubuntu/.local/bin/ngspice",
+            "remote": {
+              "provider": "aws-batch-fleet",
+              "job_id": "klt-sim-6733729adf7a",
+              "region": "us-east-1",
+              "instance_id": "i-07d8fe3ce8715eb82",
+              "instance_type": "m7i.4xlarge",
+              "availability_zone": "us-east-1b",
+              "ami_id": "ami-0e0bec04ad8e81877",
+              "lifecycle": "spot",
+              "spot": true,
+              "state": "failed",
+              "exit_code": "3",
+              "concurrency": "1",
+              "physical_cores": "8",
+              "elapsed_seconds": 149,
+              "client_submitted_at": "2026-10-22T23:24:55.289301Z",
+              "client_launched_at": "2026-10-22T23:25:12.558739Z",
+              "client_status_terminal_at": "2026-10-22T23:28:17.265583Z",
+              "client_collected_at": "2026-10-22T23:28:18.497088Z",
+              "runner_klt_version": "0.7.0",
+              "client_klt_version": "0.7.1.dev2457+gdc136150a49e",
+              "runner_compatibility": "match",
+              "worker_environment": {
+                "capture": "ok",
+                "simulator": {
+                  "requested_binary": "ngspice",
+                  "binary_source": "PATH",
+                  "selected_path": "/usr/local/bin/ngspice",
+                  "version_banner": "******\n** ngspice-46 : Circuit level simulation program\n** Compiled with KLU Direct Linear Solver\n** The U. C. Berkeley CAD Group\n** Copyright 1985-1994, Regents of the University of California.\n** Copyright 2001-2025, The ngspice team.\n** Please get your ngspice manual from https://ngspice.sourceforge.io/docs.html\n** Please file your bug-reports at http://ngspice.sourceforge.net/bugrep.html\n** Creation Date: Thu Oct  1 23:51:59 UTC 2026\n******\n",
+                  "version_probe": "ok"
+                },
+                "pdk": {
+                  "variant": "sky130A",
+                  "root": "/opt/pdk",
+                  "stamp_scheme": "sources-sha256",
+                  "stamp_sha256": "d5ac52956829da3fee35d0b307d4e6cb83ae0e6535b56dba2eefed61cdffaf9b",
+                  "stamp_text": "open_pdks c6d73a35f524070e85faff4a6a9eef49553ebc2b",
+                  "models_staged": false,
+                  "stamp_scope": "executed"
+                },
+                "cpu_model": "Intel(R) Xeon(R) Platinum 8488C",
+                "omp_num_threads": null,
+                "image_manifest": null,
+                "model_inputs": null,
+                "diagnostics": [],
+                "pdk_stamp_comparison": {
+                  "status": "match"
+                },
+                "engine_build_comparison": {
+                  "status": "mismatch",
+                  "warning": "the worker's ngspice --version banner differs from the local binary's; build options (e.g. FFT linkage) may differ, so results derived from them can differ from a local run"
+                }
+              },
+              "runner_model_inputs": null,
+              "job_ceiling": {
+                "basis": "conservative_serial_bound",
+                "unit_count": 45,
+                "per_unit_timeout_s": 120,
+                "overhead_s": 120.0,
+                "job_bound_s": 5520.0,
+                "max_job_seconds": 3600.0,
+                "max_job_seconds_source": "fleet_config",
+                "exceeds_ceiling": true,
+                "check": "warn",
+                "max_units_per_job": 29,
+                "recommended_hosts": 2,
+                "warning": "batch job bound 5520s (options.timeout_s 120s x 45 units + 120s; a conservative fully-serial upper bound, not a runtime estimate) exceeds the fleet's whole-job ceiling of 3600s (max_job_seconds from fleet_config); a job still running at the ceiling is killed and every unit is reported batch_job_timeout. Set request.remote.hosts to at least 2 to run one job per shard of at most 29 units, each within the ceiling"
+              }
+            }
+          },
+          "corners": [
+            {
+              "corner_id": "tt/2.970V/-40C",
+              "status": "pass",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "singular_matrix",
+                  "message": "Warning: singular matrix:  check nodes ea_cz and xldo.xr_fb_b.t2"
+                },
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "tt/2.970V/27C",
+              "status": "pass",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "singular_matrix",
+                  "message": "Warning: singular matrix:  check nodes xldo.xr_fb_b.t2 and fb"
+                },
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "tt/2.970V/125C",
+              "status": "pass",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "singular_matrix",
+                  "message": "Warning: singular matrix:  check nodes ea_cz and fb"
+                },
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "tt/3.300V/-40C",
+              "status": "pass",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "singular_matrix",
+                  "message": "Warning: singular matrix:  check node xldo.xr_fb_b.t2"
+                },
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "tt/3.300V/27C",
+              "status": "pass",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "singular_matrix",
+                  "message": "Warning: singular matrix:  check node ea_cz"
+                },
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "tt/3.300V/125C",
+              "status": "pass",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "singular_matrix",
+                  "message": "Warning: singular matrix:  check node xldo.xr_fb_b.t2"
+                },
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "tt/3.630V/-40C",
+              "status": "pass",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "singular_matrix",
+                  "message": "Warning: singular matrix:  check node ea_cz"
+                },
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "tt/3.630V/27C",
+              "status": "pass",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "tt/3.630V/125C",
+              "status": "pass",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "singular_matrix",
+                  "message": "Warning: singular matrix:  check node ea_cz"
+                },
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "ss/2.970V/-40C",
+              "status": "pass",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "singular_matrix",
+                  "message": "Warning: singular matrix:  check nodes ea_cz and xldo.xr_fb_b.t2"
+                },
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "ss/2.970V/27C",
+              "status": "fail",
+              "diagnostics": [],
+              "produced_value": true
+            },
+            {
+              "corner_id": "ss/2.970V/125C",
+              "status": "pass",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "singular_matrix",
+                  "message": "Warning: singular matrix:  check node xldo.xr_fb_b.t2"
+                },
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "ss/3.300V/-40C",
+              "status": "pass",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "singular_matrix",
+                  "message": "Warning: singular matrix:  check nodes ea_cz and xldo.xr_fb_b.t2"
+                },
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "ss/3.300V/27C",
+              "status": "pass",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "singular_matrix",
+                  "message": "Warning: singular matrix:  check node ea_cz"
+                },
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "ss/3.300V/125C",
+              "status": "pass",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "singular_matrix",
+                  "message": "Warning: singular matrix:  check node ea_cz"
+                },
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "ss/3.630V/-40C",
+              "status": "pass",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "singular_matrix",
+                  "message": "Warning: singular matrix:  check nodes xldo.xr_fb_b.t2 and ea_cz"
+                },
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "ss/3.630V/27C",
+              "status": "pass",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "singular_matrix",
+                  "message": "Warning: singular matrix:  check nodes fb and xldo.xr_fb_b.t2"
+                },
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "ss/3.630V/125C",
+              "status": "pass",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "singular_matrix",
+                  "message": "Warning: singular matrix:  check node fb"
+                },
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "ff/2.970V/-40C",
+              "status": "pass",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "singular_matrix",
+                  "message": "Warning: singular matrix:  check node xldo.xr_fb_b.t2"
+                },
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "ff/2.970V/27C",
+              "status": "fail",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "singular_matrix",
+                  "message": "Warning: singular matrix:  check node ea_cz"
+                },
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "ff/2.970V/125C",
+              "status": "pass",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "singular_matrix",
+                  "message": "Warning: singular matrix:  check node ea_cz"
+                },
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "ff/3.300V/-40C",
+              "status": "pass",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "singular_matrix",
+                  "message": "Warning: singular matrix:  check node ea_cz"
+                },
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "ff/3.300V/27C",
+              "status": "pass",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "singular_matrix",
+                  "message": "Warning: singular matrix:  check nodes xldo.xr_fb_b.t2 and fb"
+                },
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "ff/3.300V/125C",
+              "status": "pass",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "singular_matrix",
+                  "message": "Warning: singular matrix:  check node xldo.xr_fb_b.t2"
+                },
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "ff/3.630V/-40C",
+              "status": "pass",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "singular_matrix",
+                  "message": "Warning: singular matrix:  check nodes xldo.xr_fb_b.t2 and fb"
+                },
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "ff/3.630V/27C",
+              "status": "pass",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "singular_matrix",
+                  "message": "Warning: singular matrix:  check node ea_cz"
+                },
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "ff/3.630V/125C",
+              "status": "pass",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "singular_matrix",
+                  "message": "Warning: singular matrix:  check nodes ea_cz and fb"
+                },
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "sf/2.970V/-40C",
+              "status": "pass",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "singular_matrix",
+                  "message": "Warning: singular matrix:  check node xldo.xr_fb_b.t2"
+                },
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "sf/2.970V/27C",
+              "status": "pass",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "singular_matrix",
+                  "message": "Warning: singular matrix:  check nodes fb and xldo.xr_fb_b.t2"
+                },
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "sf/2.970V/125C",
+              "status": "fail",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "sf/3.300V/-40C",
+              "status": "pass",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "singular_matrix",
+                  "message": "Warning: singular matrix:  check node xldo.xr_fb_b.t2"
+                },
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "sf/3.300V/27C",
+              "status": "pass",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "singular_matrix",
+                  "message": "Warning: singular matrix:  check node xldo.xr_fb_b.t2"
+                },
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "sf/3.300V/125C",
+              "status": "pass",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "singular_matrix",
+                  "message": "Warning: singular matrix:  check node xldo.xr_fb_b.t2"
+                },
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "sf/3.630V/-40C",
+              "status": "pass",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "singular_matrix",
+                  "message": "Warning: singular matrix:  check nodes ea_cz and xldo.xr_fb_b.t2"
+                },
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "sf/3.630V/27C",
+              "status": "pass",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "singular_matrix",
+                  "message": "Warning: singular matrix:  check node xldo.xr_fb_b.t2"
+                },
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "sf/3.630V/125C",
+              "status": "pass",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "singular_matrix",
+                  "message": "Warning: singular matrix:  check node xldo.xr_fb_b.t2"
+                },
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "fs/2.970V/-40C",
+              "status": "pass",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "singular_matrix",
+                  "message": "Warning: singular matrix:  check node ea_cz"
+                },
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "fs/2.970V/27C",
+              "status": "pass",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "fs/2.970V/125C",
+              "status": "pass",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "singular_matrix",
+                  "message": "Warning: singular matrix:  check node ea_cz"
+                },
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "fs/3.300V/-40C",
+              "status": "pass",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "singular_matrix",
+                  "message": "Warning: singular matrix:  check nodes xldo.xr_fb_b.t2 and ea_cz"
+                },
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "fs/3.300V/27C",
+              "status": "pass",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "singular_matrix",
+                  "message": "Warning: singular matrix:  check node xldo.xr_fb_b.t2"
+                },
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "fs/3.300V/125C",
+              "status": "pass",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "singular_matrix",
+                  "message": "Warning: singular matrix:  check node ea_cz"
+                },
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "fs/3.630V/-40C",
+              "status": "pass",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "singular_matrix",
+                  "message": "Warning: singular matrix:  check node xldo.xr_fb_b.t2"
+                },
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "fs/3.630V/27C",
+              "status": "pass",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "singular_matrix",
+                  "message": "Warning: singular matrix:  check node xldo.xr_fb_b.t2"
+                },
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "fs/3.630V/125C",
+              "status": "pass",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "singular_matrix",
+                  "message": "Warning: singular matrix:  check node xldo.xr_fb_b.t2"
+                },
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            }
+          ]
+        },
+        "extracted": {
+          "environment": {
+            "engine": "ngspice",
+            "engine_version": "46",
+            "ngspice_binary": "/usr/local/bin/ngspice",
+            "engine_host": "worker",
+            "client_ngspice_binary": "/home/ubuntu/.local/bin/ngspice",
+            "remote": {
+              "provider": "aws-batch-fleet",
+              "job_id": "klt-sim-51d80ce3109c",
+              "region": "us-east-1",
+              "instance_id": "i-02faf86d26e3d7199",
+              "instance_type": "m7i.4xlarge",
+              "availability_zone": "us-east-1b",
+              "ami_id": "ami-0e0bec04ad8e81877",
+              "lifecycle": "spot",
+              "spot": true,
+              "state": "failed",
+              "exit_code": "3",
+              "concurrency": "1",
+              "physical_cores": "8",
+              "elapsed_seconds": 225,
+              "client_submitted_at": "2026-10-22T23:28:18.621954Z",
+              "client_launched_at": "2026-10-22T23:28:35.735474Z",
+              "client_status_terminal_at": "2026-10-22T23:32:41.813340Z",
+              "client_collected_at": "2026-10-22T23:32:42.928952Z",
+              "runner_klt_version": "0.7.0",
+              "client_klt_version": "0.7.1.dev2457+gdc136150a49e",
+              "runner_compatibility": "match",
+              "worker_environment": {
+                "capture": "ok",
+                "simulator": {
+                  "requested_binary": "ngspice",
+                  "binary_source": "PATH",
+                  "selected_path": "/usr/local/bin/ngspice",
+                  "version_banner": "******\n** ngspice-46 : Circuit level simulation program\n** Compiled with KLU Direct Linear Solver\n** The U. C. Berkeley CAD Group\n** Copyright 1985-1994, Regents of the University of California.\n** Copyright 2001-2025, The ngspice team.\n** Please get your ngspice manual from https://ngspice.sourceforge.io/docs.html\n** Please file your bug-reports at http://ngspice.sourceforge.net/bugrep.html\n** Creation Date: Thu Oct  1 23:51:59 UTC 2026\n******\n",
+                  "version_probe": "ok"
+                },
+                "pdk": {
+                  "variant": "sky130A",
+                  "root": "/opt/pdk",
+                  "stamp_scheme": "sources-sha256",
+                  "stamp_sha256": "d5ac52956829da3fee35d0b307d4e6cb83ae0e6535b56dba2eefed61cdffaf9b",
+                  "stamp_text": "open_pdks c6d73a35f524070e85faff4a6a9eef49553ebc2b",
+                  "models_staged": false,
+                  "stamp_scope": "executed"
+                },
+                "cpu_model": "Intel(R) Xeon(R) Platinum 8488C",
+                "omp_num_threads": null,
+                "image_manifest": null,
+                "model_inputs": null,
+                "diagnostics": [],
+                "pdk_stamp_comparison": {
+                  "status": "match"
+                },
+                "engine_build_comparison": {
+                  "status": "mismatch",
+                  "warning": "the worker's ngspice --version banner differs from the local binary's; build options (e.g. FFT linkage) may differ, so results derived from them can differ from a local run"
+                }
+              },
+              "runner_model_inputs": null,
+              "job_ceiling": {
+                "basis": "conservative_serial_bound",
+                "unit_count": 45,
+                "per_unit_timeout_s": 120,
+                "overhead_s": 120.0,
+                "job_bound_s": 5520.0,
+                "max_job_seconds": 3600.0,
+                "max_job_seconds_source": "fleet_config",
+                "exceeds_ceiling": true,
+                "check": "warn",
+                "max_units_per_job": 29,
+                "recommended_hosts": 2,
+                "warning": "batch job bound 5520s (options.timeout_s 120s x 45 units + 120s; a conservative fully-serial upper bound, not a runtime estimate) exceeds the fleet's whole-job ceiling of 3600s (max_job_seconds from fleet_config); a job still running at the ceiling is killed and every unit is reported batch_job_timeout. Set request.remote.hosts to at least 2 to run one job per shard of at most 29 units, each within the ceiling"
+              }
+            }
+          },
+          "corners": [
+            {
+              "corner_id": "tt/2.970V/-40C",
+              "status": "fail",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "tt/2.970V/27C",
+              "status": "fail",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "tt/2.970V/125C",
+              "status": "fail",
+              "diagnostics": [],
+              "produced_value": true
+            },
+            {
+              "corner_id": "tt/3.300V/-40C",
+              "status": "fail",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "tt/3.300V/27C",
+              "status": "fail",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "tt/3.300V/125C",
+              "status": "fail",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "tt/3.630V/-40C",
+              "status": "fail",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "tt/3.630V/27C",
+              "status": "fail",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "tt/3.630V/125C",
+              "status": "fail",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "ss/2.970V/-40C",
+              "status": "fail",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "ss/2.970V/27C",
+              "status": "fail",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "ss/2.970V/125C",
+              "status": "fail",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "ss/3.300V/-40C",
+              "status": "fail",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "ss/3.300V/27C",
+              "status": "fail",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "ss/3.300V/125C",
+              "status": "fail",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "ss/3.630V/-40C",
+              "status": "fail",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "ss/3.630V/27C",
+              "status": "fail",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "ss/3.630V/125C",
+              "status": "fail",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "ff/2.970V/-40C",
+              "status": "fail",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "ff/2.970V/27C",
+              "status": "fail",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "ff/2.970V/125C",
+              "status": "fail",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "ff/3.300V/-40C",
+              "status": "fail",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "ff/3.300V/27C",
+              "status": "fail",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "ff/3.300V/125C",
+              "status": "fail",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "ff/3.630V/-40C",
+              "status": "fail",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "ff/3.630V/27C",
+              "status": "fail",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "ff/3.630V/125C",
+              "status": "fail",
+              "diagnostics": [],
+              "produced_value": true
+            },
+            {
+              "corner_id": "sf/2.970V/-40C",
+              "status": "fail",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "sf/2.970V/27C",
+              "status": "fail",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "sf/2.970V/125C",
+              "status": "fail",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "sf/3.300V/-40C",
+              "status": "fail",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "sf/3.300V/27C",
+              "status": "fail",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "sf/3.300V/125C",
+              "status": "fail",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "sf/3.630V/-40C",
+              "status": "fail",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "sf/3.630V/27C",
+              "status": "fail",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "sf/3.630V/125C",
+              "status": "fail",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "fs/2.970V/-40C",
+              "status": "fail",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "fs/2.970V/27C",
+              "status": "fail",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "fs/2.970V/125C",
+              "status": "fail",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "fs/3.300V/-40C",
+              "status": "fail",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "fs/3.300V/27C",
+              "status": "fail",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "fs/3.300V/125C",
+              "status": "fail",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "fs/3.630V/-40C",
+              "status": "fail",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "fs/3.630V/27C",
+              "status": "fail",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            },
+            {
+              "corner_id": "fs/3.630V/125C",
+              "status": "fail",
+              "diagnostics": [
+                {
+                  "severity": "warning",
+                  "code": "nonconvergence",
+                  "message": "Warning: Dynamic gmin stepping failed"
+                }
+              ],
+              "produced_value": true
+            }
+          ]
+        }
+      },
+      "nothing_simulated_corners": []
+    }
+  ],
+  "corner_count": 45,
+  "delta": [
+    {
+      "spec_row": "vout_light_load_v",
+      "corner_id": "tt/2.970V/-40C",
+      "schematic_value": 1.80026,
+      "extracted_value": 1.83335,
+      "delta_pct": 1.838,
+      "status": "pass",
+      "schematic_status": "pass",
+      "extracted_status": "pass"
+    },
+    {
+      "spec_row": "vout_full_load_v",
+      "corner_id": "tt/2.970V/-40C",
+      "schematic_value": 1.79879,
+      "extracted_value": -36.6198,
+      "delta_pct": -2135.802,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vin_minus_vout_full_load_v",
+      "corner_id": "tt/2.970V/-40C",
+      "schematic_value": 1.17121,
+      "extracted_value": 39.5898,
+      "delta_pct": 3280.248,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vout_light_load_v",
+      "corner_id": "tt/2.970V/27C",
+      "schematic_value": 1.80043,
+      "extracted_value": 3.05102,
+      "delta_pct": 69.461,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vout_full_load_v",
+      "corner_id": "tt/2.970V/27C",
+      "schematic_value": 1.79864,
+      "extracted_value": -5.54292,
+      "delta_pct": -408.173,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vin_minus_vout_full_load_v",
+      "corner_id": "tt/2.970V/27C",
+      "schematic_value": 1.17136,
+      "extracted_value": 8.51292,
+      "delta_pct": 626.755,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vout_light_load_v",
+      "corner_id": "tt/2.970V/125C",
+      "schematic_value": 1.80074,
+      "extracted_value": 1.83388,
+      "delta_pct": 1.84,
+      "status": "pass",
+      "schematic_status": "pass",
+      "extracted_status": "pass"
+    },
+    {
+      "spec_row": "vout_full_load_v",
+      "corner_id": "tt/2.970V/125C",
+      "schematic_value": 1.79835,
+      "extracted_value": -5.69376,
+      "delta_pct": -416.61,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vin_minus_vout_full_load_v",
+      "corner_id": "tt/2.970V/125C",
+      "schematic_value": 1.17165,
+      "extracted_value": 8.66376,
+      "delta_pct": 639.449,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vout_light_load_v",
+      "corner_id": "tt/3.300V/-40C",
+      "schematic_value": 1.80033,
+      "extracted_value": 1.83312,
+      "delta_pct": 1.821,
+      "status": "pass",
+      "schematic_status": "pass",
+      "extracted_status": "pass"
+    },
+    {
+      "spec_row": "vout_full_load_v",
+      "corner_id": "tt/3.300V/-40C",
+      "schematic_value": 1.79892,
+      "extracted_value": -5.15101,
+      "delta_pct": -386.339,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vin_minus_vout_full_load_v",
+      "corner_id": "tt/3.300V/-40C",
+      "schematic_value": 1.50108,
+      "extracted_value": 8.45101,
+      "delta_pct": 462.995,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vout_light_load_v",
+      "corner_id": "tt/3.300V/27C",
+      "schematic_value": 1.80052,
+      "extracted_value": 1.83329,
+      "delta_pct": 1.82,
+      "status": "pass",
+      "schematic_status": "pass",
+      "extracted_status": "pass"
+    },
+    {
+      "spec_row": "vout_full_load_v",
+      "corner_id": "tt/3.300V/27C",
+      "schematic_value": 1.79877,
+      "extracted_value": -5.08981,
+      "delta_pct": -382.961,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vin_minus_vout_full_load_v",
+      "corner_id": "tt/3.300V/27C",
+      "schematic_value": 1.50123,
+      "extracted_value": 8.38981,
+      "delta_pct": 458.862,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vout_light_load_v",
+      "corner_id": "tt/3.300V/125C",
+      "schematic_value": 1.80087,
+      "extracted_value": 1.83374,
+      "delta_pct": 1.825,
+      "status": "pass",
+      "schematic_status": "pass",
+      "extracted_status": "pass"
+    },
+    {
+      "spec_row": "vout_full_load_v",
+      "corner_id": "tt/3.300V/125C",
+      "schematic_value": 1.7985,
+      "extracted_value": -5.05011,
+      "delta_pct": -380.796,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vin_minus_vout_full_load_v",
+      "corner_id": "tt/3.300V/125C",
+      "schematic_value": 1.5015,
+      "extracted_value": 8.35011,
+      "delta_pct": 456.118,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vout_light_load_v",
+      "corner_id": "tt/3.630V/-40C",
+      "schematic_value": 1.8004,
+      "extracted_value": 1.8329,
+      "delta_pct": 1.805,
+      "status": "pass",
+      "schematic_status": "pass",
+      "extracted_status": "pass"
+    },
+    {
+      "spec_row": "vout_full_load_v",
+      "corner_id": "tt/3.630V/-40C",
+      "schematic_value": 1.79901,
+      "extracted_value": -4.70998,
+      "delta_pct": -361.81,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vin_minus_vout_full_load_v",
+      "corner_id": "tt/3.630V/-40C",
+      "schematic_value": 1.83099,
+      "extracted_value": 8.33998,
+      "delta_pct": 355.49,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vout_light_load_v",
+      "corner_id": "tt/3.630V/27C",
+      "schematic_value": 1.80062,
+      "extracted_value": 1.83309,
+      "delta_pct": 1.803,
+      "status": "pass",
+      "schematic_status": "pass",
+      "extracted_status": "pass"
+    },
+    {
+      "spec_row": "vout_full_load_v",
+      "corner_id": "tt/3.630V/27C",
+      "schematic_value": 1.79887,
+      "extracted_value": -4.62946,
+      "delta_pct": -357.354,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vin_minus_vout_full_load_v",
+      "corner_id": "tt/3.630V/27C",
+      "schematic_value": 1.83113,
+      "extracted_value": 8.25946,
+      "delta_pct": 351.058,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vout_light_load_v",
+      "corner_id": "tt/3.630V/125C",
+      "schematic_value": 1.80092,
+      "extracted_value": 1.8335,
+      "delta_pct": 1.809,
+      "status": "pass",
+      "schematic_status": "pass",
+      "extracted_status": "pass"
+    },
+    {
+      "spec_row": "vout_full_load_v",
+      "corner_id": "tt/3.630V/125C",
+      "schematic_value": 1.79844,
+      "extracted_value": -4.56933,
+      "delta_pct": -354.072,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vin_minus_vout_full_load_v",
+      "corner_id": "tt/3.630V/125C",
+      "schematic_value": 1.83156,
+      "extracted_value": 8.19933,
+      "delta_pct": 347.669,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vout_light_load_v",
+      "corner_id": "ss/2.970V/-40C",
+      "schematic_value": 1.80022,
+      "extracted_value": 1.83323,
+      "delta_pct": 1.834,
+      "status": "pass",
+      "schematic_status": "pass",
+      "extracted_status": "pass"
+    },
+    {
+      "spec_row": "vout_full_load_v",
+      "corner_id": "ss/2.970V/-40C",
+      "schematic_value": 1.79872,
+      "extracted_value": -39.7848,
+      "delta_pct": -2311.84,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vin_minus_vout_full_load_v",
+      "corner_id": "ss/2.970V/-40C",
+      "schematic_value": 1.17128,
+      "extracted_value": 42.7548,
+      "delta_pct": 3550.263,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vout_light_load_v",
+      "corner_id": "ss/2.970V/27C",
+      "schematic_value": 1.80038,
+      "extracted_value": 1.83337,
+      "delta_pct": 1.832,
+      "status": "pass",
+      "schematic_status": "pass",
+      "extracted_status": "pass"
+    },
+    {
+      "spec_row": "vout_full_load_v",
+      "corner_id": "ss/2.970V/27C",
+      "schematic_value": 2.77719,
+      "extracted_value": -5.2979,
+      "delta_pct": -290.765,
+      "status": "fail",
+      "schematic_status": "fail",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vin_minus_vout_full_load_v",
+      "corner_id": "ss/2.970V/27C",
+      "schematic_value": 0.192808,
+      "extracted_value": 8.2679,
+      "delta_pct": 4188.152,
+      "status": "fail",
+      "schematic_status": "fail",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vout_light_load_v",
+      "corner_id": "ss/2.970V/125C",
+      "schematic_value": 1.80068,
+      "extracted_value": 1.83376,
+      "delta_pct": 1.837,
+      "status": "pass",
+      "schematic_status": "pass",
+      "extracted_status": "pass"
+    },
+    {
+      "spec_row": "vout_full_load_v",
+      "corner_id": "ss/2.970V/125C",
+      "schematic_value": 1.79827,
+      "extracted_value": -5.25848,
+      "delta_pct": -392.419,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vin_minus_vout_full_load_v",
+      "corner_id": "ss/2.970V/125C",
+      "schematic_value": 1.17173,
+      "extracted_value": 8.22848,
+      "delta_pct": 602.251,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vout_light_load_v",
+      "corner_id": "ss/3.300V/-40C",
+      "schematic_value": 1.80028,
+      "extracted_value": 3.37873,
+      "delta_pct": 87.678,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vout_full_load_v",
+      "corner_id": "ss/3.300V/-40C",
+      "schematic_value": 1.79885,
+      "extracted_value": -4.87815,
+      "delta_pct": -371.182,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vin_minus_vout_full_load_v",
+      "corner_id": "ss/3.300V/-40C",
+      "schematic_value": 1.50115,
+      "extracted_value": 8.17815,
+      "delta_pct": 444.792,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vout_light_load_v",
+      "corner_id": "ss/3.300V/27C",
+      "schematic_value": 1.80046,
+      "extracted_value": 1.83315,
+      "delta_pct": 1.816,
+      "status": "pass",
+      "schematic_status": "pass",
+      "extracted_status": "pass"
+    },
+    {
+      "spec_row": "vout_full_load_v",
+      "corner_id": "ss/3.300V/27C",
+      "schematic_value": 1.7987,
+      "extracted_value": -4.79067,
+      "delta_pct": -366.341,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vin_minus_vout_full_load_v",
+      "corner_id": "ss/3.300V/27C",
+      "schematic_value": 1.5013,
+      "extracted_value": 8.09067,
+      "delta_pct": 438.911,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vout_light_load_v",
+      "corner_id": "ss/3.300V/125C",
+      "schematic_value": 1.8008,
+      "extracted_value": 1.8336,
+      "delta_pct": 1.821,
+      "status": "pass",
+      "schematic_status": "pass",
+      "extracted_status": "pass"
+    },
+    {
+      "spec_row": "vout_full_load_v",
+      "corner_id": "ss/3.300V/125C",
+      "schematic_value": 1.79843,
+      "extracted_value": -4.71917,
+      "delta_pct": -362.405,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vin_minus_vout_full_load_v",
+      "corner_id": "ss/3.300V/125C",
+      "schematic_value": 1.50157,
+      "extracted_value": 8.01917,
+      "delta_pct": 434.052,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vout_light_load_v",
+      "corner_id": "ss/3.630V/-40C",
+      "schematic_value": 1.80035,
+      "extracted_value": 1.83274,
+      "delta_pct": 1.799,
+      "status": "pass",
+      "schematic_status": "pass",
+      "extracted_status": "pass"
+    },
+    {
+      "spec_row": "vout_full_load_v",
+      "corner_id": "ss/3.630V/-40C",
+      "schematic_value": 1.79894,
+      "extracted_value": -4.38267,
+      "delta_pct": -343.625,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vin_minus_vout_full_load_v",
+      "corner_id": "ss/3.630V/-40C",
+      "schematic_value": 1.83106,
+      "extracted_value": 8.01267,
+      "delta_pct": 337.597,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vout_light_load_v",
+      "corner_id": "ss/3.630V/27C",
+      "schematic_value": 1.80056,
+      "extracted_value": 1.83294,
+      "delta_pct": 1.798,
+      "status": "pass",
+      "schematic_status": "pass",
+      "extracted_status": "pass"
+    },
+    {
+      "spec_row": "vout_full_load_v",
+      "corner_id": "ss/3.630V/27C",
+      "schematic_value": 1.7988,
+      "extracted_value": -4.25268,
+      "delta_pct": -336.418,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vin_minus_vout_full_load_v",
+      "corner_id": "ss/3.630V/27C",
+      "schematic_value": 1.8312,
+      "extracted_value": 7.88268,
+      "delta_pct": 330.465,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vout_light_load_v",
+      "corner_id": "ss/3.630V/125C",
+      "schematic_value": 1.8009,
+      "extracted_value": 1.8334,
+      "delta_pct": 1.805,
+      "status": "pass",
+      "schematic_status": "pass",
+      "extracted_status": "pass"
+    },
+    {
+      "spec_row": "vout_full_load_v",
+      "corner_id": "ss/3.630V/125C",
+      "schematic_value": 1.79846,
+      "extracted_value": -4.12675,
+      "delta_pct": -329.46,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vin_minus_vout_full_load_v",
+      "corner_id": "ss/3.630V/125C",
+      "schematic_value": 1.83154,
+      "extracted_value": 7.75675,
+      "delta_pct": 323.51,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vout_light_load_v",
+      "corner_id": "ff/2.970V/-40C",
+      "schematic_value": 1.80032,
+      "extracted_value": 1.83345,
+      "delta_pct": 1.84,
+      "status": "pass",
+      "schematic_status": "pass",
+      "extracted_status": "pass"
+    },
+    {
+      "spec_row": "vout_full_load_v",
+      "corner_id": "ff/2.970V/-40C",
+      "schematic_value": 1.79887,
+      "extracted_value": -5.78442,
+      "delta_pct": -421.559,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vin_minus_vout_full_load_v",
+      "corner_id": "ff/2.970V/-40C",
+      "schematic_value": 1.17113,
+      "extracted_value": 8.75442,
+      "delta_pct": 647.519,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vout_light_load_v",
+      "corner_id": "ff/2.970V/27C",
+      "schematic_value": 1.80049,
+      "extracted_value": 1.83359,
+      "delta_pct": 1.838,
+      "status": "pass",
+      "schematic_status": "pass",
+      "extracted_status": "pass"
+    },
+    {
+      "spec_row": "vout_full_load_v",
+      "corner_id": "ff/2.970V/27C",
+      "schematic_value": 2.64591,
+      "extracted_value": -5.74238,
+      "delta_pct": -317.029,
+      "status": "fail",
+      "schematic_status": "fail",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vin_minus_vout_full_load_v",
+      "corner_id": "ff/2.970V/27C",
+      "schematic_value": 0.324094,
+      "extracted_value": 8.71238,
+      "delta_pct": 2588.226,
+      "status": "fail",
+      "schematic_status": "fail",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vout_light_load_v",
+      "corner_id": "ff/2.970V/125C",
+      "schematic_value": 1.80082,
+      "extracted_value": 1.83399,
+      "delta_pct": 1.842,
+      "status": "pass",
+      "schematic_status": "pass",
+      "extracted_status": "pass"
+    },
+    {
+      "spec_row": "vout_full_load_v",
+      "corner_id": "ff/2.970V/125C",
+      "schematic_value": 1.7984,
+      "extracted_value": -5.72273,
+      "delta_pct": -418.212,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vin_minus_vout_full_load_v",
+      "corner_id": "ff/2.970V/125C",
+      "schematic_value": 1.1716,
+      "extracted_value": 8.69273,
+      "delta_pct": 641.954,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vout_light_load_v",
+      "corner_id": "ff/3.300V/-40C",
+      "schematic_value": 1.80038,
+      "extracted_value": 1.83323,
+      "delta_pct": 1.825,
+      "status": "pass",
+      "schematic_status": "pass",
+      "extracted_status": "pass"
+    },
+    {
+      "spec_row": "vout_full_load_v",
+      "corner_id": "ff/3.300V/-40C",
+      "schematic_value": 1.79899,
+      "extracted_value": -5.36822,
+      "delta_pct": -398.402,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vin_minus_vout_full_load_v",
+      "corner_id": "ff/3.300V/-40C",
+      "schematic_value": 1.50101,
+      "extracted_value": 8.66822,
+      "delta_pct": 477.492,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vout_light_load_v",
+      "corner_id": "ff/3.300V/27C",
+      "schematic_value": 1.80059,
+      "extracted_value": 1.83339,
+      "delta_pct": 1.822,
+      "status": "pass",
+      "schematic_status": "pass",
+      "extracted_status": "pass"
+    },
+    {
+      "spec_row": "vout_full_load_v",
+      "corner_id": "ff/3.300V/27C",
+      "schematic_value": 1.79886,
+      "extracted_value": -5.31695,
+      "delta_pct": -395.573,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vin_minus_vout_full_load_v",
+      "corner_id": "ff/3.300V/27C",
+      "schematic_value": 1.50114,
+      "extracted_value": 8.61695,
+      "delta_pct": 474.027,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vout_light_load_v",
+      "corner_id": "ff/3.300V/125C",
+      "schematic_value": 1.80097,
+      "extracted_value": 1.83385,
+      "delta_pct": 1.826,
+      "status": "pass",
+      "schematic_status": "pass",
+      "extracted_status": "pass"
+    },
+    {
+      "spec_row": "vout_full_load_v",
+      "corner_id": "ff/3.300V/125C",
+      "schematic_value": 1.79857,
+      "extracted_value": -5.28842,
+      "delta_pct": -394.035,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vin_minus_vout_full_load_v",
+      "corner_id": "ff/3.300V/125C",
+      "schematic_value": 1.50143,
+      "extracted_value": 8.58842,
+      "delta_pct": 472.016,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vout_light_load_v",
+      "corner_id": "ff/3.630V/-40C",
+      "schematic_value": 1.80046,
+      "extracted_value": 1.833,
+      "delta_pct": 1.807,
+      "status": "pass",
+      "schematic_status": "pass",
+      "extracted_status": "pass"
+    },
+    {
+      "spec_row": "vout_full_load_v",
+      "corner_id": "ff/3.630V/-40C",
+      "schematic_value": 1.79909,
+      "extracted_value": -4.95378,
+      "delta_pct": -375.349,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vin_minus_vout_full_load_v",
+      "corner_id": "ff/3.630V/-40C",
+      "schematic_value": 1.83091,
+      "extracted_value": 8.58378,
+      "delta_pct": 368.826,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vout_light_load_v",
+      "corner_id": "ff/3.630V/27C",
+      "schematic_value": 1.8007,
+      "extracted_value": 1.83319,
+      "delta_pct": 1.804,
+      "status": "pass",
+      "schematic_status": "pass",
+      "extracted_status": "pass"
+    },
+    {
+      "spec_row": "vout_full_load_v",
+      "corner_id": "ff/3.630V/27C",
+      "schematic_value": 1.79896,
+      "extracted_value": -4.70752,
+      "delta_pct": -361.68,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vin_minus_vout_full_load_v",
+      "corner_id": "ff/3.630V/27C",
+      "schematic_value": 1.83104,
+      "extracted_value": 8.33752,
+      "delta_pct": 355.343,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vout_light_load_v",
+      "corner_id": "ff/3.630V/125C",
+      "schematic_value": 1.8009,
+      "extracted_value": 1.83348,
+      "delta_pct": 1.809,
+      "status": "pass",
+      "schematic_status": "pass",
+      "extracted_status": "pass"
+    },
+    {
+      "spec_row": "vout_full_load_v",
+      "corner_id": "ff/3.630V/125C",
+      "schematic_value": 1.79831,
+      "extracted_value": -4.85359,
+      "delta_pct": -369.897,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vin_minus_vout_full_load_v",
+      "corner_id": "ff/3.630V/125C",
+      "schematic_value": 1.83169,
+      "extracted_value": 8.48359,
+      "delta_pct": 363.156,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vout_light_load_v",
+      "corner_id": "sf/2.970V/-40C",
+      "schematic_value": 1.80023,
+      "extracted_value": 1.83316,
+      "delta_pct": 1.829,
+      "status": "pass",
+      "schematic_status": "pass",
+      "extracted_status": "pass"
+    },
+    {
+      "spec_row": "vout_full_load_v",
+      "corner_id": "sf/2.970V/-40C",
+      "schematic_value": 1.79875,
+      "extracted_value": -38.5623,
+      "delta_pct": -2243.839,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vin_minus_vout_full_load_v",
+      "corner_id": "sf/2.970V/-40C",
+      "schematic_value": 1.17125,
+      "extracted_value": 41.5323,
+      "delta_pct": 3445.981,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vout_light_load_v",
+      "corner_id": "sf/2.970V/27C",
+      "schematic_value": 1.80039,
+      "extracted_value": 1.83331,
+      "delta_pct": 1.828,
+      "status": "pass",
+      "schematic_status": "pass",
+      "extracted_status": "pass"
+    },
+    {
+      "spec_row": "vout_full_load_v",
+      "corner_id": "sf/2.970V/27C",
+      "schematic_value": 1.7986,
+      "extracted_value": -5.59949,
+      "delta_pct": -411.325,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vin_minus_vout_full_load_v",
+      "corner_id": "sf/2.970V/27C",
+      "schematic_value": 1.1714,
+      "extracted_value": 8.56949,
+      "delta_pct": 631.56,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vout_light_load_v",
+      "corner_id": "sf/2.970V/125C",
+      "schematic_value": 1.80068,
+      "extracted_value": 1.8337,
+      "delta_pct": 1.834,
+      "status": "pass",
+      "schematic_status": "pass",
+      "extracted_status": "pass"
+    },
+    {
+      "spec_row": "vout_full_load_v",
+      "corner_id": "sf/2.970V/125C",
+      "schematic_value": 2.68576,
+      "extracted_value": -5.56037,
+      "delta_pct": -307.032,
+      "status": "fail",
+      "schematic_status": "fail",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vin_minus_vout_full_load_v",
+      "corner_id": "sf/2.970V/125C",
+      "schematic_value": 0.284236,
+      "extracted_value": 8.53037,
+      "delta_pct": 2901.157,
+      "status": "fail",
+      "schematic_status": "fail",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vout_light_load_v",
+      "corner_id": "sf/3.300V/-40C",
+      "schematic_value": 1.80029,
+      "extracted_value": 1.83292,
+      "delta_pct": 1.812,
+      "status": "pass",
+      "schematic_status": "pass",
+      "extracted_status": "pass"
+    },
+    {
+      "spec_row": "vout_full_load_v",
+      "corner_id": "sf/3.300V/-40C",
+      "schematic_value": 1.79888,
+      "extracted_value": -5.22953,
+      "delta_pct": -390.71,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vin_minus_vout_full_load_v",
+      "corner_id": "sf/3.300V/-40C",
+      "schematic_value": 1.50112,
+      "extracted_value": 8.52953,
+      "delta_pct": 468.211,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vout_light_load_v",
+      "corner_id": "sf/3.300V/27C",
+      "schematic_value": 1.80047,
+      "extracted_value": 1.83309,
+      "delta_pct": 1.812,
+      "status": "pass",
+      "schematic_status": "pass",
+      "extracted_status": "pass"
+    },
+    {
+      "spec_row": "vout_full_load_v",
+      "corner_id": "sf/3.300V/27C",
+      "schematic_value": 1.79873,
+      "extracted_value": -5.15641,
+      "delta_pct": -386.669,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vin_minus_vout_full_load_v",
+      "corner_id": "sf/3.300V/27C",
+      "schematic_value": 1.50127,
+      "extracted_value": 8.45641,
+      "delta_pct": 463.284,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vout_light_load_v",
+      "corner_id": "sf/3.300V/125C",
+      "schematic_value": 1.8008,
+      "extracted_value": 1.83354,
+      "delta_pct": 1.818,
+      "status": "pass",
+      "schematic_status": "pass",
+      "extracted_status": "pass"
+    },
+    {
+      "spec_row": "vout_full_load_v",
+      "corner_id": "sf/3.300V/125C",
+      "schematic_value": 1.79848,
+      "extracted_value": 3.85826,
+      "delta_pct": 114.529,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vin_minus_vout_full_load_v",
+      "corner_id": "sf/3.300V/125C",
+      "schematic_value": 1.50152,
+      "extracted_value": -0.558264,
+      "delta_pct": -137.18,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vout_light_load_v",
+      "corner_id": "sf/3.630V/-40C",
+      "schematic_value": 1.80036,
+      "extracted_value": 1.83268,
+      "delta_pct": 1.795,
+      "status": "pass",
+      "schematic_status": "pass",
+      "extracted_status": "pass"
+    },
+    {
+      "spec_row": "vout_full_load_v",
+      "corner_id": "sf/3.630V/-40C",
+      "schematic_value": 1.79897,
+      "extracted_value": -4.61209,
+      "delta_pct": -356.374,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vin_minus_vout_full_load_v",
+      "corner_id": "sf/3.630V/-40C",
+      "schematic_value": 1.83103,
+      "extracted_value": 8.24209,
+      "delta_pct": 350.134,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vout_light_load_v",
+      "corner_id": "sf/3.630V/27C",
+      "schematic_value": 1.80057,
+      "extracted_value": 1.83288,
+      "delta_pct": 1.794,
+      "status": "pass",
+      "schematic_status": "pass",
+      "extracted_status": "pass"
+    },
+    {
+      "spec_row": "vout_full_load_v",
+      "corner_id": "sf/3.630V/27C",
+      "schematic_value": 1.79883,
+      "extracted_value": -4.70843,
+      "delta_pct": -361.75,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vin_minus_vout_full_load_v",
+      "corner_id": "sf/3.630V/27C",
+      "schematic_value": 1.83117,
+      "extracted_value": 8.33843,
+      "delta_pct": 355.361,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vout_light_load_v",
+      "corner_id": "sf/3.630V/125C",
+      "schematic_value": 1.80092,
+      "extracted_value": 1.83336,
+      "delta_pct": 1.801,
+      "status": "pass",
+      "schematic_status": "pass",
+      "extracted_status": "pass"
+    },
+    {
+      "spec_row": "vout_full_load_v",
+      "corner_id": "sf/3.630V/125C",
+      "schematic_value": 1.79856,
+      "extracted_value": -4.63305,
+      "delta_pct": -357.598,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vin_minus_vout_full_load_v",
+      "corner_id": "sf/3.630V/125C",
+      "schematic_value": 1.83144,
+      "extracted_value": 8.26305,
+      "delta_pct": 351.178,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vout_light_load_v",
+      "corner_id": "fs/2.970V/-40C",
+      "schematic_value": 1.8003,
+      "extracted_value": 1.83354,
+      "delta_pct": 1.846,
+      "status": "pass",
+      "schematic_status": "pass",
+      "extracted_status": "pass"
+    },
+    {
+      "spec_row": "vout_full_load_v",
+      "corner_id": "fs/2.970V/-40C",
+      "schematic_value": 1.79883,
+      "extracted_value": -5.51393,
+      "delta_pct": -406.529,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vin_minus_vout_full_load_v",
+      "corner_id": "fs/2.970V/-40C",
+      "schematic_value": 1.17117,
+      "extracted_value": 8.48393,
+      "delta_pct": 624.398,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vout_light_load_v",
+      "corner_id": "fs/2.970V/27C",
+      "schematic_value": 1.80047,
+      "extracted_value": 1.83368,
+      "delta_pct": 1.845,
+      "status": "pass",
+      "schematic_status": "pass",
+      "extracted_status": "pass"
+    },
+    {
+      "spec_row": "vout_full_load_v",
+      "corner_id": "fs/2.970V/27C",
+      "schematic_value": 1.79868,
+      "extracted_value": -5.48254,
+      "delta_pct": -404.809,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vin_minus_vout_full_load_v",
+      "corner_id": "fs/2.970V/27C",
+      "schematic_value": 1.17132,
+      "extracted_value": 8.45254,
+      "delta_pct": 621.625,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vout_light_load_v",
+      "corner_id": "fs/2.970V/125C",
+      "schematic_value": 1.80079,
+      "extracted_value": 1.83406,
+      "delta_pct": 1.848,
+      "status": "pass",
+      "schematic_status": "pass",
+      "extracted_status": "pass"
+    },
+    {
+      "spec_row": "vout_full_load_v",
+      "corner_id": "fs/2.970V/125C",
+      "schematic_value": 1.79832,
+      "extracted_value": -5.4758,
+      "delta_pct": -404.495,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vin_minus_vout_full_load_v",
+      "corner_id": "fs/2.970V/125C",
+      "schematic_value": 1.17168,
+      "extracted_value": 8.4458,
+      "delta_pct": 620.828,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vout_light_load_v",
+      "corner_id": "fs/3.300V/-40C",
+      "schematic_value": 1.80036,
+      "extracted_value": 1.83332,
+      "delta_pct": 1.831,
+      "status": "pass",
+      "schematic_status": "pass",
+      "extracted_status": "pass"
+    },
+    {
+      "spec_row": "vout_full_load_v",
+      "corner_id": "fs/3.300V/-40C",
+      "schematic_value": 1.79895,
+      "extracted_value": -5.06434,
+      "delta_pct": -381.516,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vin_minus_vout_full_load_v",
+      "corner_id": "fs/3.300V/-40C",
+      "schematic_value": 1.50105,
+      "extracted_value": 8.36434,
+      "delta_pct": 457.233,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vout_light_load_v",
+      "corner_id": "fs/3.300V/27C",
+      "schematic_value": 1.80057,
+      "extracted_value": 1.83349,
+      "delta_pct": 1.828,
+      "status": "pass",
+      "schematic_status": "pass",
+      "extracted_status": "pass"
+    },
+    {
+      "spec_row": "vout_full_load_v",
+      "corner_id": "fs/3.300V/27C",
+      "schematic_value": 1.79881,
+      "extracted_value": -58.3565,
+      "delta_pct": -3344.173,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vin_minus_vout_full_load_v",
+      "corner_id": "fs/3.300V/27C",
+      "schematic_value": 1.50119,
+      "extracted_value": 61.6565,
+      "delta_pct": 4007.175,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vout_light_load_v",
+      "corner_id": "fs/3.300V/125C",
+      "schematic_value": 1.80094,
+      "extracted_value": 1.83394,
+      "delta_pct": 1.832,
+      "status": "pass",
+      "schematic_status": "pass",
+      "extracted_status": "pass"
+    },
+    {
+      "spec_row": "vout_full_load_v",
+      "corner_id": "fs/3.300V/125C",
+      "schematic_value": 1.79848,
+      "extracted_value": -4.99661,
+      "delta_pct": -377.824,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vin_minus_vout_full_load_v",
+      "corner_id": "fs/3.300V/125C",
+      "schematic_value": 1.50152,
+      "extracted_value": 8.29661,
+      "delta_pct": 452.547,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vout_light_load_v",
+      "corner_id": "fs/3.630V/-40C",
+      "schematic_value": 1.80044,
+      "extracted_value": 1.83311,
+      "delta_pct": 1.815,
+      "status": "pass",
+      "schematic_status": "pass",
+      "extracted_status": "pass"
+    },
+    {
+      "spec_row": "vout_full_load_v",
+      "corner_id": "fs/3.630V/-40C",
+      "schematic_value": 1.79904,
+      "extracted_value": -4.60976,
+      "delta_pct": -356.234,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vin_minus_vout_full_load_v",
+      "corner_id": "fs/3.630V/-40C",
+      "schematic_value": 1.83096,
+      "extracted_value": 8.23976,
+      "delta_pct": 350.024,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vout_light_load_v",
+      "corner_id": "fs/3.630V/27C",
+      "schematic_value": 1.80068,
+      "extracted_value": 1.83331,
+      "delta_pct": 1.812,
+      "status": "pass",
+      "schematic_status": "pass",
+      "extracted_status": "pass"
+    },
+    {
+      "spec_row": "vout_full_load_v",
+      "corner_id": "fs/3.630V/27C",
+      "schematic_value": 1.7989,
+      "extracted_value": -4.54249,
+      "delta_pct": -352.515,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vin_minus_vout_full_load_v",
+      "corner_id": "fs/3.630V/27C",
+      "schematic_value": 1.8311,
+      "extracted_value": 8.17249,
+      "delta_pct": 346.316,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vout_light_load_v",
+      "corner_id": "fs/3.630V/125C",
+      "schematic_value": 1.80064,
+      "extracted_value": 1.83337,
+      "delta_pct": 1.818,
+      "status": "pass",
+      "schematic_status": "pass",
+      "extracted_status": "pass"
+    },
+    {
+      "spec_row": "vout_full_load_v",
+      "corner_id": "fs/3.630V/125C",
+      "schematic_value": 1.79785,
+      "extracted_value": -4.50695,
+      "delta_pct": -350.686,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    },
+    {
+      "spec_row": "vin_minus_vout_full_load_v",
+      "corner_id": "fs/3.630V/125C",
+      "schematic_value": 1.83215,
+      "extracted_value": 8.13695,
+      "delta_pct": 344.12,
+      "status": "fail",
+      "schematic_status": "pass",
+      "extracted_status": "fail"
+    }
+  ],
+  "coverage": {
+    "testbenches": 1,
+    "delta_rows": 135,
+    "corners_compared": 45,
+    "schema_version": 1,
+    "known": true,
+    "checked": [
+      "comparison:[0,\"tt/2.970V/-40C\",\"vout_light_load_v\"]",
+      "comparison:[1,\"tt/2.970V/-40C\",\"vout_full_load_v\"]",
+      "comparison:[10,\"tt/3.300V/-40C\",\"vout_full_load_v\"]",
+      "comparison:[100,\"sf/3.630V/-40C\",\"vout_full_load_v\"]",
+      "comparison:[101,\"sf/3.630V/-40C\",\"vin_minus_vout_full_load_v\"]",
+      "comparison:[102,\"sf/3.630V/27C\",\"vout_light_load_v\"]",
+      "comparison:[103,\"sf/3.630V/27C\",\"vout_full_load_v\"]",
+      "comparison:[104,\"sf/3.630V/27C\",\"vin_minus_vout_full_load_v\"]",
+      "comparison:[105,\"sf/3.630V/125C\",\"vout_light_load_v\"]",
+      "comparison:[106,\"sf/3.630V/125C\",\"vout_full_load_v\"]",
+      "comparison:[107,\"sf/3.630V/125C\",\"vin_minus_vout_full_load_v\"]",
+      "comparison:[108,\"fs/2.970V/-40C\",\"vout_light_load_v\"]",
+      "comparison:[109,\"fs/2.970V/-40C\",\"vout_full_load_v\"]",
+      "comparison:[11,\"tt/3.300V/-40C\",\"vin_minus_vout_full_load_v\"]",
+      "comparison:[110,\"fs/2.970V/-40C\",\"vin_minus_vout_full_load_v\"]",
+      "comparison:[111,\"fs/2.970V/27C\",\"vout_light_load_v\"]",
+      "comparison:[112,\"fs/2.970V/27C\",\"vout_full_load_v\"]",
+      "comparison:[113,\"fs/2.970V/27C\",\"vin_minus_vout_full_load_v\"]",
+      "comparison:[114,\"fs/2.970V/125C\",\"vout_light_load_v\"]",
+      "comparison:[115,\"fs/2.970V/125C\",\"vout_full_load_v\"]",
+      "comparison:[116,\"fs/2.970V/125C\",\"vin_minus_vout_full_load_v\"]",
+      "comparison:[117,\"fs/3.300V/-40C\",\"vout_light_load_v\"]",
+      "comparison:[118,\"fs/3.300V/-40C\",\"vout_full_load_v\"]",
+      "comparison:[119,\"fs/3.300V/-40C\",\"vin_minus_vout_full_load_v\"]",
+      "comparison:[12,\"tt/3.300V/27C\",\"vout_light_load_v\"]",
+      "comparison:[120,\"fs/3.300V/27C\",\"vout_light_load_v\"]",
+      "comparison:[121,\"fs/3.300V/27C\",\"vout_full_load_v\"]",
+      "comparison:[122,\"fs/3.300V/27C\",\"vin_minus_vout_full_load_v\"]",
+      "comparison:[123,\"fs/3.300V/125C\",\"vout_light_load_v\"]",
+      "comparison:[124,\"fs/3.300V/125C\",\"vout_full_load_v\"]",
+      "comparison:[125,\"fs/3.300V/125C\",\"vin_minus_vout_full_load_v\"]",
+      "comparison:[126,\"fs/3.630V/-40C\",\"vout_light_load_v\"]",
+      "comparison:[127,\"fs/3.630V/-40C\",\"vout_full_load_v\"]",
+      "comparison:[128,\"fs/3.630V/-40C\",\"vin_minus_vout_full_load_v\"]",
+      "comparison:[129,\"fs/3.630V/27C\",\"vout_light_load_v\"]",
+      "comparison:[13,\"tt/3.300V/27C\",\"vout_full_load_v\"]",
+      "comparison:[130,\"fs/3.630V/27C\",\"vout_full_load_v\"]",
+      "comparison:[131,\"fs/3.630V/27C\",\"vin_minus_vout_full_load_v\"]",
+      "comparison:[132,\"fs/3.630V/125C\",\"vout_light_load_v\"]",
+      "comparison:[133,\"fs/3.630V/125C\",\"vout_full_load_v\"]",
+      "comparison:[134,\"fs/3.630V/125C\",\"vin_minus_vout_full_load_v\"]",
+      "comparison:[14,\"tt/3.300V/27C\",\"vin_minus_vout_full_load_v\"]",
+      "comparison:[15,\"tt/3.300V/125C\",\"vout_light_load_v\"]",
+      "comparison:[16,\"tt/3.300V/125C\",\"vout_full_load_v\"]",
+      "comparison:[17,\"tt/3.300V/125C\",\"vin_minus_vout_full_load_v\"]",
+      "comparison:[18,\"tt/3.630V/-40C\",\"vout_light_load_v\"]",
+      "comparison:[19,\"tt/3.630V/-40C\",\"vout_full_load_v\"]",
+      "comparison:[2,\"tt/2.970V/-40C\",\"vin_minus_vout_full_load_v\"]",
+      "comparison:[20,\"tt/3.630V/-40C\",\"vin_minus_vout_full_load_v\"]",
+      "comparison:[21,\"tt/3.630V/27C\",\"vout_light_load_v\"]",
+      "comparison:[22,\"tt/3.630V/27C\",\"vout_full_load_v\"]",
+      "comparison:[23,\"tt/3.630V/27C\",\"vin_minus_vout_full_load_v\"]",
+      "comparison:[24,\"tt/3.630V/125C\",\"vout_light_load_v\"]",
+      "comparison:[25,\"tt/3.630V/125C\",\"vout_full_load_v\"]",
+      "comparison:[26,\"tt/3.630V/125C\",\"vin_minus_vout_full_load_v\"]",
+      "comparison:[27,\"ss/2.970V/-40C\",\"vout_light_load_v\"]",
+      "comparison:[28,\"ss/2.970V/-40C\",\"vout_full_load_v\"]",
+      "comparison:[29,\"ss/2.970V/-40C\",\"vin_minus_vout_full_load_v\"]",
+      "comparison:[3,\"tt/2.970V/27C\",\"vout_light_load_v\"]",
+      "comparison:[30,\"ss/2.970V/27C\",\"vout_light_load_v\"]",
+      "comparison:[31,\"ss/2.970V/27C\",\"vout_full_load_v\"]",
+      "comparison:[32,\"ss/2.970V/27C\",\"vin_minus_vout_full_load_v\"]",
+      "comparison:[33,\"ss/2.970V/125C\",\"vout_light_load_v\"]",
+      "comparison:[34,\"ss/2.970V/125C\",\"vout_full_load_v\"]",
+      "comparison:[35,\"ss/2.970V/125C\",\"vin_minus_vout_full_load_v\"]",
+      "comparison:[36,\"ss/3.300V/-40C\",\"vout_light_load_v\"]",
+      "comparison:[37,\"ss/3.300V/-40C\",\"vout_full_load_v\"]",
+      "comparison:[38,\"ss/3.300V/-40C\",\"vin_minus_vout_full_load_v\"]",
+      "comparison:[39,\"ss/3.300V/27C\",\"vout_light_load_v\"]",
+      "comparison:[4,\"tt/2.970V/27C\",\"vout_full_load_v\"]",
+      "comparison:[40,\"ss/3.300V/27C\",\"vout_full_load_v\"]",
+      "comparison:[41,\"ss/3.300V/27C\",\"vin_minus_vout_full_load_v\"]",
+      "comparison:[42,\"ss/3.300V/125C\",\"vout_light_load_v\"]",
+      "comparison:[43,\"ss/3.300V/125C\",\"vout_full_load_v\"]",
+      "comparison:[44,\"ss/3.300V/125C\",\"vin_minus_vout_full_load_v\"]",
+      "comparison:[45,\"ss/3.630V/-40C\",\"vout_light_load_v\"]",
+      "comparison:[46,\"ss/3.630V/-40C\",\"vout_full_load_v\"]",
+      "comparison:[47,\"ss/3.630V/-40C\",\"vin_minus_vout_full_load_v\"]",
+      "comparison:[48,\"ss/3.630V/27C\",\"vout_light_load_v\"]",
+      "comparison:[49,\"ss/3.630V/27C\",\"vout_full_load_v\"]",
+      "comparison:[5,\"tt/2.970V/27C\",\"vin_minus_vout_full_load_v\"]",
+      "comparison:[50,\"ss/3.630V/27C\",\"vin_minus_vout_full_load_v\"]",
+      "comparison:[51,\"ss/3.630V/125C\",\"vout_light_load_v\"]",
+      "comparison:[52,\"ss/3.630V/125C\",\"vout_full_load_v\"]",
+      "comparison:[53,\"ss/3.630V/125C\",\"vin_minus_vout_full_load_v\"]",
+      "comparison:[54,\"ff/2.970V/-40C\",\"vout_light_load_v\"]",
+      "comparison:[55,\"ff/2.970V/-40C\",\"vout_full_load_v\"]",
+      "comparison:[56,\"ff/2.970V/-40C\",\"vin_minus_vout_full_load_v\"]",
+      "comparison:[57,\"ff/2.970V/27C\",\"vout_light_load_v\"]",
+      "comparison:[58,\"ff/2.970V/27C\",\"vout_full_load_v\"]",
+      "comparison:[59,\"ff/2.970V/27C\",\"vin_minus_vout_full_load_v\"]",
+      "comparison:[6,\"tt/2.970V/125C\",\"vout_light_load_v\"]",
+      "comparison:[60,\"ff/2.970V/125C\",\"vout_light_load_v\"]",
+      "comparison:[61,\"ff/2.970V/125C\",\"vout_full_load_v\"]",
+      "comparison:[62,\"ff/2.970V/125C\",\"vin_minus_vout_full_load_v\"]",
+      "comparison:[63,\"ff/3.300V/-40C\",\"vout_light_load_v\"]",
+      "comparison:[64,\"ff/3.300V/-40C\",\"vout_full_load_v\"]",
+      "comparison:[65,\"ff/3.300V/-40C\",\"vin_minus_vout_full_load_v\"]",
+      "comparison:[66,\"ff/3.300V/27C\",\"vout_light_load_v\"]",
+      "comparison:[67,\"ff/3.300V/27C\",\"vout_full_load_v\"]",
+      "comparison:[68,\"ff/3.300V/27C\",\"vin_minus_vout_full_load_v\"]",
+      "comparison:[69,\"ff/3.300V/125C\",\"vout_light_load_v\"]",
+      "comparison:[7,\"tt/2.970V/125C\",\"vout_full_load_v\"]",
+      "comparison:[70,\"ff/3.300V/125C\",\"vout_full_load_v\"]",
+      "comparison:[71,\"ff/3.300V/125C\",\"vin_minus_vout_full_load_v\"]",
+      "comparison:[72,\"ff/3.630V/-40C\",\"vout_light_load_v\"]",
+      "comparison:[73,\"ff/3.630V/-40C\",\"vout_full_load_v\"]",
+      "comparison:[74,\"ff/3.630V/-40C\",\"vin_minus_vout_full_load_v\"]",
+      "comparison:[75,\"ff/3.630V/27C\",\"vout_light_load_v\"]",
+      "comparison:[76,\"ff/3.630V/27C\",\"vout_full_load_v\"]",
+      "comparison:[77,\"ff/3.630V/27C\",\"vin_minus_vout_full_load_v\"]",
+      "comparison:[78,\"ff/3.630V/125C\",\"vout_light_load_v\"]",
+      "comparison:[79,\"ff/3.630V/125C\",\"vout_full_load_v\"]",
+      "comparison:[8,\"tt/2.970V/125C\",\"vin_minus_vout_full_load_v\"]",
+      "comparison:[80,\"ff/3.630V/125C\",\"vin_minus_vout_full_load_v\"]",
+      "comparison:[81,\"sf/2.970V/-40C\",\"vout_light_load_v\"]",
+      "comparison:[82,\"sf/2.970V/-40C\",\"vout_full_load_v\"]",
+      "comparison:[83,\"sf/2.970V/-40C\",\"vin_minus_vout_full_load_v\"]",
+      "comparison:[84,\"sf/2.970V/27C\",\"vout_light_load_v\"]",
+      "comparison:[85,\"sf/2.970V/27C\",\"vout_full_load_v\"]",
+      "comparison:[86,\"sf/2.970V/27C\",\"vin_minus_vout_full_load_v\"]",
+      "comparison:[87,\"sf/2.970V/125C\",\"vout_light_load_v\"]",
+      "comparison:[88,\"sf/2.970V/125C\",\"vout_full_load_v\"]",
+      "comparison:[89,\"sf/2.970V/125C\",\"vin_minus_vout_full_load_v\"]",
+      "comparison:[9,\"tt/3.300V/-40C\",\"vout_light_load_v\"]",
+      "comparison:[90,\"sf/3.300V/-40C\",\"vout_light_load_v\"]",
+      "comparison:[91,\"sf/3.300V/-40C\",\"vout_full_load_v\"]",
+      "comparison:[92,\"sf/3.300V/-40C\",\"vin_minus_vout_full_load_v\"]",
+      "comparison:[93,\"sf/3.300V/27C\",\"vout_light_load_v\"]",
+      "comparison:[94,\"sf/3.300V/27C\",\"vout_full_load_v\"]",
+      "comparison:[95,\"sf/3.300V/27C\",\"vin_minus_vout_full_load_v\"]",
+      "comparison:[96,\"sf/3.300V/125C\",\"vout_light_load_v\"]",
+      "comparison:[97,\"sf/3.300V/125C\",\"vout_full_load_v\"]",
+      "comparison:[98,\"sf/3.300V/125C\",\"vin_minus_vout_full_load_v\"]",
+      "comparison:[99,\"sf/3.630V/-40C\",\"vout_light_load_v\"]"
+    ],
+    "skipped": [],
+    "inapplicable": [],
+    "unknown": [],
+    "nothing_checked": false,
+    "nothing_checked_reasons": []
+  },
+  "passed": 43,
+  "failed": 92,
+  "errored": 0,
+  "schematic_failed": 6,
+  "pin_count_mismatch": null,
+  "backend_failure": null,
+  "flat_dut_mismatch": null,
+  "pin_order_mismatch": null,
+  "model_mismatch": {
+    "kind": "count_only",
+    "reference_only": [],
+    "extracted_only": [],
+    "counts": {
+      "reference": {
+        "sky130_fd_pr__nfet_g5v0d10v5": 19,
+        "sky130_fd_pr__pfet_g5v0d10v5": 29,
+        "sky130_fd_pr__res_high_po": 1,
+        "sky130_fd_pr__res_xhigh_po": 4
+      },
+      "extracted": {
+        "sky130_fd_pr__nfet_g5v0d10v5": 19,
+        "sky130_fd_pr__pfet_g5v0d10v5": 78,
+        "sky130_fd_pr__res_high_po": 1,
+        "sky130_fd_pr__res_xhigh_po": 4
+      }
+    },
+    "detail": "the reference (schematic) and extracted netlists instantiate the same device models/`.subckt`s and differ only in how many instances of each they carry. The usual cause is finger/multiplier decomposition: the layout draws a device as several fingers while the schematic has one instance (with `nf`/`m`, or none), a difference `klt lvs` has already reconciled. It does not by itself make `delta[]` unrelated, but representation effects (fingering, AS/AD) are folded into `delta[]` alongside the parasitics. See docs/cli/pex.md's `model_mismatch` section"
+  },
+  "flatten_schematic": false,
+  "schematic_flatten": null,
+  "provenance": {
+    "klt_version": "0.7.1.dev2457+gdc136150a49e",
+    "klayout_version": "0.30.12",
+    "pdk": {
+      "name": "sky130A",
+      "source": "PDK_ROOT environment variable",
+      "version": "open_pdks c6d73a35f524070e85faff4a6a9eef49553ebc2b",
+      "ambiguous_sources": [
+        "search root: ~/.ciel"
+      ],
+      "compatibility": {
+        "status": "mismatch",
+        "package": "open_pdks-sky130",
+        "expected": "open_pdks f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7"
+      }
+    },
+    "deck": {
+      "name": "sky130",
+      "content_hash": "sha256:ba0f97887e3d231aec8b54f1f52f2941ded0228f0234b6759712bcaca0e942e6",
+      "released": false
+    },
+    "input": {
+      "content_hash": "sha256:1698311e6a2e98017f1d91e852688b4a4b788f5912d130751ce62ef3b3b080b1",
+      "role": "layout"
+    }
+  }
+}

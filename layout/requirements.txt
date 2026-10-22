@@ -24,7 +24,7 @@
 #   It predates sky130 voltage-flavor support entirely: no `hvi` (75/20)
 #   entry in `gen`'s `_PDK_VOLTAGE_FLAVOR_LAYERS`, and no `hvi` `MOSFlavour`
 #   in the curated sky130 extraction deck's `mos_flavours`.
-# * `040f3406` (issue #142, current) -- has both halves of that support:
+# * `040f3406` (issue #142, retired by #162) -- has both halves of that support:
 #   `klt gen mos_array` accepts `voltage_flavor="hvi"` on sky130 and draws
 #   the 75/20 marker (klayout-tools#1912), and `decks/sky130.py` declares the
 #   matching `MOSFlavour(marker=(75, 20), flavour="hvi", ...)` that binds a
@@ -45,4 +45,11 @@
 #   this repo now draws, not twelve unrelated upstream commits. (The records
 #   also differ on the design side, by the DR-011 schematic resize; see
 #   `sim/pex-post-layout/README.md` for the full statement.)
-klayout-tools @ git+https://github.com/2AMLogic/klayout-tools@040f3406b4858ac7a5b8faa8df5327fd62a65afa
+# * `dc136150` (issue #162, current) -- carries klayout-tools#4038
+#   (`c375dc18`, ancestor-checked via the GitHub compare API), which makes
+#   `klt pex` accept `--resistance-graph [--resistance-graph-r-cut OHM]` and
+#   write the graph-derived per-net resistance (klayout-tools#2391/#2458/#4037)
+#   into the pex netlist. `sim/pex-post-layout/bin/run-pex.sh` passes the flag;
+#   without it the default `resistance_ohm` is byte-identical to the legacy
+#   value, so a bare pin bump would not change any row.
+klayout-tools @ git+https://github.com/2AMLogic/klayout-tools@dc136150a49e9f539a1050bf31e2117ce53441d0
