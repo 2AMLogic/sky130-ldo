@@ -1,0 +1,452 @@
+{
+  "schema_version": 1,
+  "engine": "klayout",
+  "layout": "ldo_core.gds",
+  "reference": "reference.spice",
+  "top": "ldo_core",
+  "reference_top": "LDO_CORE",
+  "parameter_tolerance": null,
+  "options": {
+    "combine_devices": true,
+    "combine_devices_per_circuit": null,
+    "combine_devices_max_attempts": 5,
+    "flatten_layout": false,
+    "flatten_reference": false,
+    "netgen_setup": null,
+    "parameter_tolerance": null,
+    "compare_parameters": null,
+    "power_connectivity": null,
+    "anchor_top_level_pins": null,
+    "strict_top_level_pin_count": false,
+    "compare_mos_flavour": false,
+    "supply_nets": [
+      "GND",
+      "VCC",
+      "VDD",
+      "VGND",
+      "VPWR",
+      "VSS"
+    ],
+    "finfet_bulk": null
+  },
+  "hints_applied": null,
+  "constant_nets_applied": null,
+  "status": "match",
+  "power_connectivity": {
+    "status": "unchecked",
+    "reason": "reference.form is 'plain-element', whose reference netlist carries its own power/ground pins and nets -- they take part in the ordinary compare, so this check (which exists to cover the signal-only 'gate-level-verilog' form) does not apply",
+    "power_pins": [],
+    "power_pins_derivation": null,
+    "instance_count": 0,
+    "expected_nets": null,
+    "unchecked_expected_pins": [],
+    "findings": [],
+    "finding_count": 0
+  },
+  "body_verification": {
+    "status": "verified",
+    "reason": null,
+    "device_classes": [],
+    "device_count": 0,
+    "findings": [],
+    "finding_count": 0
+  },
+  "device_parameter_coverage": [
+    {
+      "class": "res_high_po",
+      "device_kind": "resistor",
+      "layout_devices": 1,
+      "reference_devices": 1,
+      "compared": [
+        "R"
+      ],
+      "not_compared": [
+        {
+          "parameter": "L",
+          "reason": "secondary"
+        },
+        {
+          "parameter": "W",
+          "reason": "secondary"
+        },
+        {
+          "parameter": "A",
+          "reason": "secondary"
+        },
+        {
+          "parameter": "P",
+          "reason": "secondary"
+        }
+      ]
+    },
+    {
+      "class": "res_xhigh_po",
+      "device_kind": "resistor",
+      "layout_devices": 3,
+      "reference_devices": 3,
+      "compared": [
+        "R"
+      ],
+      "not_compared": [
+        {
+          "parameter": "L",
+          "reason": "secondary"
+        },
+        {
+          "parameter": "W",
+          "reason": "secondary"
+        },
+        {
+          "parameter": "A",
+          "reason": "secondary"
+        },
+        {
+          "parameter": "P",
+          "reason": "secondary"
+        }
+      ]
+    }
+  ],
+  "mismatch_count": 5,
+  "error_count": 0,
+  "category_counts": {
+    "device.bulk_reconciled": 2,
+    "device.geometry_not_compared": 2,
+    "topology": 1
+  },
+  "category_error_counts": {},
+  "counts": {
+    "nets": {
+      "layout": 27,
+      "reference": 27,
+      "matched": 27
+    },
+    "devices": {
+      "layout": 51,
+      "reference": 51,
+      "matched": 51
+    },
+    "pins": {
+      "layout": 4,
+      "reference": 4,
+      "matched": 4
+    }
+  },
+  "device_classes": [
+    "nfet",
+    "pfet",
+    "pnp",
+    "sky130_fd_pr__model__cap_mim",
+    "sky130_fd_pr__model__cap_mim_m4",
+    "resistor",
+    "diode_pw2nd_05v5",
+    "diode_pw2nd_05v5_lvt",
+    "diode_pw2nd_05v5_nvt",
+    "diode_pw2nd_11v0",
+    "diode_pd2nw_05v5",
+    "diode_pd2nw_05v5_lvt",
+    "diode_pd2nw_05v5_hvt",
+    "diode_pd2nw_11v0"
+  ],
+  "environment": {
+    "engine": "klayout",
+    "engine_version": "0.30.12",
+    "netgen_binary": null,
+    "layout_sha256": "1698311e6a2e98017f1d91e852688b4a4b788f5912d130751ce62ef3b3b080b1",
+    "reference_sha256": "c135039e908a7f9ec3639eaf1b14784dd6384c6f61ff93c081d11e07505c2086",
+    "extracted_netlist": null
+  },
+  "provenance": {
+    "klt_version": "0.7.1.dev2457+gdc136150a49e",
+    "klayout_version": "0.30.12",
+    "pdk": null,
+    "deck": {
+      "name": "sky130",
+      "content_hash": "sha256:ba0f97887e3d231aec8b54f1f52f2941ded0228f0234b6759712bcaca0e942e6",
+      "released": false
+    },
+    "input": {
+      "content_hash": "sha256:1698311e6a2e98017f1d91e852688b4a4b788f5912d130751ce62ef3b3b080b1",
+      "role": "layout"
+    },
+    "klayout_version_mismatch": false
+  },
+  "mismatches": [
+    {
+      "category": "device.bulk_reconciled",
+      "severity": "warning",
+      "description": "request.reference.device_bulk reconciled reference device class 'RES_HIGH_PO' with the layout side: a 'W' terminal was added to the reference class (layout: ['A', 'B', 'W'], reference was: ['A', 'B']) and tied to reference net '0' on 1 device instance(s), an existing reference net -- that terminal's connectivity was asserted by the request, not read from the reference netlist, so this dimension of the compare is not independently verified (see docs/cli/lvs.md, 'device.bulk_reconciled')",
+      "side": "reference",
+      "net": null,
+      "device": {
+        "layout": null,
+        "reference": null,
+        "class": "RES_HIGH_PO"
+      },
+      "property": null,
+      "details": {
+        "terminal": "W",
+        "reference_net": "0",
+        "reference_net_created": false,
+        "devices": 1,
+        "layout_terminals": [
+          "A",
+          "B",
+          "W"
+        ],
+        "reference_terminals": [
+          "A",
+          "B"
+        ]
+      },
+      "circuit": null,
+      "instance": null,
+      "subcircuit": null
+    },
+    {
+      "category": "device.bulk_reconciled",
+      "severity": "warning",
+      "description": "request.reference.device_bulk reconciled reference device class 'RES_XHIGH_PO' with the layout side: a 'W' terminal was added to the reference class (layout: ['A', 'B', 'W'], reference was: ['A', 'B']) and tied to reference net '0' on 3 device instance(s), an existing reference net -- that terminal's connectivity was asserted by the request, not read from the reference netlist, so this dimension of the compare is not independently verified (see docs/cli/lvs.md, 'device.bulk_reconciled')",
+      "side": "reference",
+      "net": null,
+      "device": {
+        "layout": null,
+        "reference": null,
+        "class": "RES_XHIGH_PO"
+      },
+      "property": null,
+      "details": {
+        "terminal": "W",
+        "reference_net": "0",
+        "reference_net_created": false,
+        "devices": 3,
+        "layout_terminals": [
+          "A",
+          "B",
+          "W"
+        ],
+        "reference_terminals": [
+          "A",
+          "B"
+        ]
+      },
+      "circuit": null,
+      "instance": null,
+      "subcircuit": null
+    },
+    {
+      "category": "device.geometry_not_compared",
+      "severity": "warning",
+      "description": "device class 'res_high_po' is a resistor class, whose ['A', 'L', 'P', 'W'] parameter(s) KLayout declares *secondary*: kdb.NetlistComparer compares primary parameters only, so none of them took part in this compare and each is NOT verified -- this resistor's geometry could differ between the two sides by any amount and this run would still report 'match'. The compared parameter(s) were ['R']. Name them in options.compare_parameters to compare them (see docs/cli/lvs.md, 'device.geometry_not_compared')",
+      "side": "both",
+      "net": null,
+      "device": {
+        "layout": null,
+        "reference": null,
+        "class": "res_high_po"
+      },
+      "property": null,
+      "details": {
+        "device_kind": "resistor",
+        "compared_parameters": [
+          "R"
+        ],
+        "not_compared_parameters": [
+          "A",
+          "L",
+          "P",
+          "W"
+        ],
+        "layout_devices": 1,
+        "reference_devices": 1
+      },
+      "circuit": null,
+      "instance": null,
+      "subcircuit": null
+    },
+    {
+      "category": "device.geometry_not_compared",
+      "severity": "warning",
+      "description": "device class 'res_xhigh_po' is a resistor class, whose ['A', 'L', 'P', 'W'] parameter(s) KLayout declares *secondary*: kdb.NetlistComparer compares primary parameters only, so none of them took part in this compare and each is NOT verified -- this resistor's geometry could differ between the two sides by any amount and this run would still report 'match'. The compared parameter(s) were ['R']. Name them in options.compare_parameters to compare them (see docs/cli/lvs.md, 'device.geometry_not_compared')",
+      "side": "both",
+      "net": null,
+      "device": {
+        "layout": null,
+        "reference": null,
+        "class": "res_xhigh_po"
+      },
+      "property": null,
+      "details": {
+        "device_kind": "resistor",
+        "compared_parameters": [
+          "R"
+        ],
+        "not_compared_parameters": [
+          "A",
+          "L",
+          "P",
+          "W"
+        ],
+        "layout_devices": 3,
+        "reference_devices": 3
+      },
+      "circuit": null,
+      "instance": null,
+      "subcircuit": null
+    },
+    {
+      "category": "topology",
+      "severity": "warning",
+      "description": "device class has no counterpart on the other side, but no devices of this class were extracted either -- not a real topology mismatch: 'pnp'",
+      "side": "layout",
+      "net": null,
+      "device": {
+        "layout": null,
+        "reference": null,
+        "class": "pnp"
+      },
+      "property": null,
+      "details": null,
+      "circuit": null,
+      "instance": null,
+      "subcircuit": null
+    }
+  ],
+  "net_correspondence": [
+    {
+      "layout": "0",
+      "reference": "0",
+      "pin": false
+    },
+    {
+      "layout": "AMP_ENN",
+      "reference": "AMP_ENN",
+      "pin": false
+    },
+    {
+      "layout": "BIASP",
+      "reference": "BIASP",
+      "pin": false
+    },
+    {
+      "layout": "BIAS_ENN",
+      "reference": "BIAS_ENN",
+      "pin": false
+    },
+    {
+      "layout": "CL_CMP",
+      "reference": "CL_CMP",
+      "pin": false
+    },
+    {
+      "layout": "CL_SNS",
+      "reference": "CL_SNS",
+      "pin": false
+    },
+    {
+      "layout": "EA_CZ",
+      "reference": "EA_CZ",
+      "pin": false
+    },
+    {
+      "layout": "EA_D1",
+      "reference": "EA_D1",
+      "pin": false
+    },
+    {
+      "layout": "EA_D2",
+      "reference": "EA_D2",
+      "pin": false
+    },
+    {
+      "layout": "EA_OUT",
+      "reference": "EA_OUT",
+      "pin": false
+    },
+    {
+      "layout": "EA_TAIL",
+      "reference": "EA_TAIL",
+      "pin": false
+    },
+    {
+      "layout": "EN",
+      "reference": "EN",
+      "pin": true
+    },
+    {
+      "layout": "ENB",
+      "reference": "ENB",
+      "pin": false
+    },
+    {
+      "layout": "FB",
+      "reference": "FB",
+      "pin": false
+    },
+    {
+      "layout": "NB",
+      "reference": "NB",
+      "pin": false
+    },
+    {
+      "layout": "PB",
+      "reference": "PB",
+      "pin": false
+    },
+    {
+      "layout": "RC_A",
+      "reference": "RC_A",
+      "pin": false
+    },
+    {
+      "layout": "RC_B",
+      "reference": "RC_B",
+      "pin": false
+    },
+    {
+      "layout": "RC_TAIL",
+      "reference": "RC_TAIL",
+      "pin": false
+    },
+    {
+      "layout": "SS",
+      "reference": "SS",
+      "pin": false
+    },
+    {
+      "layout": "TS_CMP",
+      "reference": "TS_CMP",
+      "pin": false
+    },
+    {
+      "layout": "TS_MID",
+      "reference": "TS_MID",
+      "pin": false
+    },
+    {
+      "layout": "TS_REF",
+      "reference": "TS_REF",
+      "pin": false
+    },
+    {
+      "layout": "TS_SNS",
+      "reference": "TS_SNS",
+      "pin": false
+    },
+    {
+      "layout": "VIN",
+      "reference": "VIN",
+      "pin": true
+    },
+    {
+      "layout": "VOUT",
+      "reference": "VOUT",
+      "pin": true
+    },
+    {
+      "layout": "VREF",
+      "reference": "VREF",
+      "pin": true
+    }
+  ]
+}

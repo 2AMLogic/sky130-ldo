@@ -78,8 +78,9 @@ RES_MODEL_MAP = {
 }
 
 
-def resistor_models(deck_name: str) -> dict[str, tuple[float, float]]:
-    """``{class name: (sheet_rho_ohm_sq, fixed_offset_ohm)}`` from `klt`'s own
+def resistor_models(deck_name: str) -> dict[str, tuple[float, float, float]]:
+    """``{class name: (sheet_rho_ohm_sq, end_term_ohm_um, fixed_offset_ohm)}``
+    from `klt`'s own
     curated extraction deck -- the single source of truth the layout side is
     extracted with. Requires running under `layout/.venv` (see
     `run-ldo-lvs-flow.sh`), which is where `klt` lives."""
@@ -93,7 +94,13 @@ def resistor_models(deck_name: str) -> dict[str, tuple[float, float]]:
         ) from exc
     deck = get_extraction_deck(deck_name)
     return {
-        resistor.name: (resistor.sheet_rho_ohm_sq, resistor.fixed_offset_ohm)
+        resistor.name: (
+            resistor.sheet_rho_ohm_sq,
+            # Width-normalized head term (klayout-tools#3049); absent on a deck
+            # that predates the split, where the whole head is the offset.
+            getattr(resistor, "end_term_ohm_um", 0.0),
+            resistor.fixed_offset_ohm,
+        )
         for resistor in deck.resistors
     }
 
@@ -157,13 +164,13 @@ def translate(
             klass = RES_MODEL_MAP[model_token]
             l_um = float(pdict.get("L", "0"))
             w_um = float(pdict.get("W", "0"))
-            sheet_rho, fixed_offset = res_models[klass]
+            sheet_rho, end_term, fixed_offset = res_models[klass]
             # The value/area/perimeter `klt extract` measures off the drawn
             # body (`klt lvs` compares all three). The bulk terminal is *not*
             # emitted as a third net -- KLayout's SPICE reader would read it
             # as the element's value; it is supplied instead through
             # `request.reference.device_bulk`, see run-ldo-lvs-flow.sh.
-            r_ohm = sheet_rho * l_um / w_um + fixed_offset
+            r_ohm = sheet_rho * l_um / w_um + end_term / w_um + fixed_offset
             area_um2 = l_um * w_um
             perimeter_um = 2.0 * (l_um + w_um)
             elem_name = inst_suffix if inst_suffix[:1] in ("R", "r") else f"R{inst_suffix}"

@@ -384,6 +384,26 @@ issues above). `signoff/block-manifest.json` therefore still declines to cite
 a passing record for item 7 -- deliberately; see `signoff/README.md`, "Item 7
 has a passing record that this manifest declines to cite".
 
+**Update (2026-10-22, issue #162): the pin moved, the rows did not.** The
+`klt` pin is now `dc136150` (carries klayout-tools#4038, so `klt pex
+--resistance-graph` exists; DRC `PASS` and LVS `MATCH` re-verified on it --
+see `layout/requirements.txt`'s pin history, and note the LVS reference now
+adds the deck's width-normalized head term). `run-pex.sh` passes
+`--resistance-graph --resistance-graph-r-cut 9.3` (the sky130A PDK's `mcon`
+contact resistance, the largest per-cut value in its `contact` table).
+Record [`20261022-232148-56dd87fe`](records/20261022-232148-56dd87fe.md)
+is the result: **0 of 28 nets are graph-derived** -- every net, `VIN` and
+`VOUT` included, reports `resistance_source: legacy` with
+`unsupported_geometry` ("contact/via landing(s) lie in the interior of a
+conductor; ports are only attached at conductor edges"; 4542 interior
+landings on `VIN`, 5648 on `VOUT` in the post-#154 layout). The extracted
+netlist therefore carries the legacy lumped values and the full-load rows are
+still non-physical (median `vout_full_load_v` |delta| 378 %). The pre-/post-#154
+GDS cannot be separated by the graph either. This is an extractor limit, not
+a routing result; it is filed generically as klayout-tools#4061. `r_cut` 0
+and 9.3 gave the same `unsupported` verdict. Item 7 stays unciteable, and no
+spec, bound or rail sizing was changed.
+
 **Limits are declared as of this record (issue #154).** All three measurements
 now carry `limits`, so a `delta[]` row's `pass` means the extracted value sits
 inside a bound rather than merely being non-null. The `vout_*_v` bounds are

@@ -29,8 +29,8 @@ def _load(name: str, filename: str):
 BLOCKS = _load("gen_ldo_blocks_t", "gen-ldo-blocks.py")
 REF = _load("gen_ldo_ref_t", "gen-ldo-reference-netlist.py")
 REF.resistor_models = lambda deck: {
-    "res_high_po": (1000.0, 1.5),
-    "res_xhigh_po": (2000.0, 2.5),
+    "res_high_po": (1000.0, 0.0, 1.5),
+    "res_xhigh_po": (2000.0, 0.0, 2.5),
 }
 
 NMOS = "sky130_fd_pr__nfet_g5v0d10v5"
