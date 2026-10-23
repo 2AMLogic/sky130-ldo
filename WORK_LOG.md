@@ -4,6 +4,8 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 
 ### 2026-10-23
 
+- **PR #438**: feat(sim): store new run evidence in the artifact store, commit only manifest and summary
+- **Issue #436** (closed): Adopt the common artifact store for sim evidence (manifests in git, bytes via klt artifact)
 - **PR #439**: fix(measurements): mint fresh core-area record against current routed GDS
 - **Issue #437** (closed): Area row: mint a fresh core-area record against the current LATEST routed GDS and regenerate characterization.md
 
