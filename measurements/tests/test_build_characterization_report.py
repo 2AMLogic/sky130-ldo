@@ -1084,7 +1084,12 @@ class TestAreaRow(unittest.TestCase):
         area = [ln for ln in text.splitlines() if ln.startswith("- **Area**")]
         self.assertEqual(len(area), 1)
         self.assertIn("C_COMP", area[0])
-        self.assertIn("Official-deck DRC on the same layout record: violations", area[0])
+        # The official-deck verdict is read from the committed record, so accept
+        # either rendering; the synthetic-record test above pins "violations".
+        self.assertRegex(
+            area[0],
+            r"Official-deck DRC on the same layout record: (violations|clean)",
+        )
         # The LVS freshness verdict is read from the committed record (STALE or
         # fresh depending on whether LATEST-LVS checked the measured GDS); the
         # synthetic-record test above pins the STALE rendering.
