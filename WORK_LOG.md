@@ -2,6 +2,11 @@
 
 Chronological record of merged pull requests and closed issues. Maintained by the Loom Guide role.
 
+### 2026-10-22
+
+- **PR #434**: feat(pex): bump klt pin and run klt pex with --resistance-graph
+- **Issue #162** (closed): sim/pex-post-layout: full-load rows stay non-physical after #154 — the blocker is klt's lumped-R model, not this repo's routing
+
 ### 2026-10-21
 
 - **PR #431**: Bump Repo Skills 0.24.3 -> 0.24.7
