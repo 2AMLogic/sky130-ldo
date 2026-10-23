@@ -7,7 +7,7 @@ Current roadmap derived from GitHub lifecycle labels. Maintained by the Loom Gui
 
 Judge-approved PRs under a hold (`loom:blocked` or `loom:operator`) — only a human merge decision is missing.
 
-_None._
+- **#438**: feat(sim): store new run evidence in the artifact store, commit only manifest and summary
 
 ## Very Important
 
@@ -33,7 +33,6 @@ Human-approved issues ready for implementation (`loom:issue`).
 Issues currently being built (`loom:building`).
 
 - **#436**: Adopt the common artifact store for sim evidence (manifests in git, bytes via klt artifact)
-- **#437**: Area row: mint a fresh core-area record against the current LATEST routed GDS and regenerate characterization.md
 
 ## PRs Awaiting Review
 
@@ -61,7 +60,6 @@ Issues carrying `loom:curated`.
 - **#416**: Re-run folded-resistor MC at n>=1000 to firm up M2 sigma-ratio gate *(curated)*
 - **#423**: T1 items 1, 2, 9, 10: bump the signoff grading pin and attest with artifact-anchored envelopes (klt signoff --attest) *(curated)*
 - **#436**: Adopt the common artifact store for sim evidence (manifests in git, bytes via klt artifact) *(curated)*
-- **#437**: Area row: mint a fresh core-area record against the current LATEST routed GDS and regenerate characterization.md *(curated)*
 
 ## Proposed (Architect / Hermit)
 
@@ -75,14 +73,14 @@ _None._
 
 | Bucket | Count |
 |------|-------|
-| Operator merge-risk holds | 0 |
+| Operator merge-risk holds | 1 |
 | Very important | 0 |
 | Important | 1 |
 | Ready (`loom:issue`) | 2 |
-| In Progress (`loom:building`) | 2 |
+| In Progress (`loom:building`) | 1 |
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 1 |
-| Curated | 11 |
+| Curated | 10 |
 | Architect / Hermit proposals | 0 |
 | Active epics | 1 |
 <!-- guide:plan-body:end -->

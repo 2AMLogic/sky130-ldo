@@ -2,6 +2,11 @@
 
 Chronological record of merged pull requests and closed issues. Maintained by the Loom Guide role.
 
+### 2026-10-23
+
+- **PR #439**: fix(measurements): mint fresh core-area record against current routed GDS
+- **Issue #437** (closed): Area row: mint a fresh core-area record against the current LATEST routed GDS and regenerate characterization.md
+
 ### 2026-10-22
 
 - **PR #434**: feat(pex): bump klt pin and run klt pex with --resistance-graph
