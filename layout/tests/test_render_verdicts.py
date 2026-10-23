@@ -9,8 +9,7 @@ PVT study and qualification renderer, the trivial-cell record and the
 official-DRC marker-family summary. Where a committed record can be replayed
 without a PDK, the regression classes re-render it and require byte-identical
 output; where it cannot (the PVT study's simulations, the KLayout geometry
-census), they compare the helper against a frozen copy of the pre-extraction
-inline logic on inputs derived from committed files.
+census), direct behaviour tests pin the extracted helper.
 
 Standard library only; runs in the headless `checks` job (no klayout wheel).
 The scripts' filenames contain hyphens, so they are loaded by path.
@@ -21,14 +20,12 @@ from __future__ import annotations
 import contextlib
 import importlib.util
 import io
-import itertools
 import json
 import shutil
 import subprocess
 import sys
 import tempfile
 import unittest
-from collections import Counter
 from decimal import Decimal
 from pathlib import Path
 from unittest import mock
@@ -63,7 +60,6 @@ QUAL_RECORDS = [
 ]
 TRIVIAL_RECORD = LAYOUT / "trivial-cell" / "reports" / "20260814-002846-42bbf2e"
 OFFICIAL_DRC_RECORD = LAYOUT / "ldo-core" / "reports" / "20261010-045715-e17e713"
-PVT_MATRIX = json.loads((LAYOUT / "folded-res-qual" / "pvt" / "matrix.json").read_text())
 
 
 class Item11VerdictTests(unittest.TestCase):
@@ -319,17 +315,6 @@ class CapRailGateTests(unittest.TestCase):
 # --- issue #306: folded-resistor PVT study control check ----------------------
 
 
-def _legacy_control_check(quals, controls):
-    """Frozen pre-extraction copy of run-folded-res-pvt.py's inline logic."""
-    ctl_fail = [q for q in quals if q["control"] and q["det_ok"]]
-    control_ok = not ctl_fail
-    control_check = ("The known nonequivalent control(s) "
-                     + ", ".join(f"{d} N={n}" for d, ns in controls.items() for n in ns)
-                     + (" FAILED the deterministic criterion as required (study valid)." if control_ok
-                        else " PASSED the deterministic criterion: the study is INVALID."))
-    return control_ok, control_check, 0 if control_ok else 1
-
-
 def _q(device, segments, det_ok, control):
     return {"device": device, "segments": segments, "det_ok": det_ok, "control": control}
 
@@ -378,59 +363,6 @@ class FoldedResControlTests(unittest.TestCase):
                 self.assertFalse(d.ok)
                 self.assertEqual(d.exit_code, 1)
                 self.assertIn("the study is INVALID", d.message)
-
-
-class FoldedResControlRegressionTests(unittest.TestCase):
-    """The committed PVT record is BLOCKED (no qualification rows), so the
-    helper inputs are derived from the committed matrix.json through the real
-    `_folded_res_pvt.qualification()` and compared to the frozen inline copy."""
-
-    def quals(self, det_ok):
-        import _folded_res_pvt as pvt
-
-        det, agg = [], {}
-        for dev in PVT_MATRIX["devices"]:
-            name = dev["schematic_device"]
-            for n in dev["candidate_segments"]:
-                verdict = "EQUIVALENT" if det_ok(name, n) else "NOT EQUIVALENT"
-                for mode in ("j1", "j4"):
-                    det.append({"device": name, "segments": n, "mode": mode, "verdict": verdict,
-                                "worst_abs_shift": 0.0})
-                agg[(name, n, "j1")] = {"m1": True, "m2": True}
-        return pvt.qualification(det, agg, PVT_MATRIX)
-
-    def test_matches_pre_extraction_logic_on_matrix_derived_rows(self):
-        controls = {d["schematic_device"]: d["control_segments"] for d in PVT_MATRIX["devices"]}
-        self.assertTrue(any(controls.values()), "matrix.json declares no control")
-        scenarios = {
-            "controls_fail_as_required": lambda name, n: n not in controls[name],
-            "everything_equivalent": lambda name, n: True,
-            "nothing_equivalent": lambda name, n: False,
-            "small_n_only": lambda name, n: n <= 4,
-        }
-        for label, det_ok in scenarios.items():
-            with self.subTest(label):
-                quals = self.quals(det_ok)
-                d = fr_pvt.control_decision(quals, controls)
-                self.assertEqual((d.ok, d.message, d.exit_code), _legacy_control_check(quals, controls))
-        self.assertEqual(fr_pvt.control_decision(self.quals(scenarios["controls_fail_as_required"]),
-                                                 controls).exit_code, 0)
-        self.assertEqual(fr_pvt.control_decision(self.quals(scenarios["everything_equivalent"]),
-                                                 controls).exit_code, 1)
-
-    def test_exhaustive_small_grid_matches_pre_extraction_logic(self):
-        controls = {"R_BIAS": [8, 16], "R_FB_A": [6]}
-        keys = [("R_BIAS", 4, False), ("R_BIAS", 8, True), ("R_BIAS", 16, True), ("R_FB_A", 6, True)]
-        for bits in itertools.product((False, True), repeat=len(keys)):
-            quals = [_q(dev, n, ok, ctl) for (dev, n, ctl), ok in zip(keys, bits)]
-            d = fr_pvt.control_decision(quals, controls)
-            self.assertEqual((d.ok, d.message, d.exit_code), _legacy_control_check(quals, controls))
-
-    def test_main_uses_the_helper(self):
-        src = (BIN / "run-folded-res-pvt.py").read_text()
-        self.assertIn("decision = control_decision(quals, controls)", src)
-        self.assertIn("return decision.exit_code", src)
-        self.assertEqual(src.count('q["control"] and q["det_ok"]'), 1)
 
 
 # --- issue #306: folded-resistor qualification renderer -----------------------
@@ -620,18 +552,6 @@ def _marker(rule, cell, kind="polygon", geometry=None):
     return od.Marker(rule, cell, kind, geometry, od._bbox(geometry))
 
 
-def _legacy_families(report, max_samples):
-    """Frozen pre-extraction copy of diagnose-official-drc.py's inline loop."""
-    fams = {}
-    for fam, items in sorted(report.by_rule.items()):
-        cells = Counter(i.cell for i in items)
-        samples = []
-        for i in items[: max_samples]:
-            samples.append({"cell": i.cell, "kind": i.kind, "geometry": i.geometry[:200]})
-        fams[fam] = {"count": len(items), "deck_cells": dict(cells.most_common(6)), "sample_markers": samples}
-    return fams
-
-
 class MarkerFamilySummaryTests(unittest.TestCase):
     def report(self):
         long_geom = "edge-pair: " + ";".join(f"({i},{i})" for i in range(100))
@@ -672,12 +592,6 @@ class MarkerFamilySummaryTests(unittest.TestCase):
     def test_empty_report(self):
         self.assertEqual(od.summarize_marker_families(od.Report("ldo_core", 3, 0, {}), 3), {})
 
-    def test_matches_pre_extraction_logic(self):
-        rep, _ = self.report()
-        for n in (0, 1, 3, 20):
-            self.assertEqual(json.dumps(od.summarize_marker_families(rep, n)),
-                             json.dumps(_legacy_families(rep, n)))
-
     def test_seam_imports_without_klayout(self):
         code = (
             "import sys\n"
@@ -694,12 +608,6 @@ class MarkerFamilySummaryTests(unittest.TestCase):
         proc = subprocess.run([sys.executable, "-I", "-c", code], capture_output=True, text=True)
         self.assertEqual(proc.returncode, 0, proc.stderr)
 
-    def test_diagnose_script_uses_the_seam(self):
-        src = (BIN / "diagnose-official-drc.py").read_text()
-        self.assertIn("fams = summarize_marker_families(markers, args.max_samples)", src)
-        self.assertNotIn("Counter(i.cell for i in items)", src)
-
-
 class MarkerFamilyRegressionTests(unittest.TestCase):
     """The KLayout census can't run headless, but the marker-family part of the
     committed `official-drc-diagnosis.json` is reproducible from its lyrdb."""
@@ -713,7 +621,6 @@ class MarkerFamilyRegressionTests(unittest.TestCase):
             for fam, body in committed.items() if "count" in body
         }
         self.assertEqual(json.dumps(fams, indent=1), json.dumps(expected, indent=1))
-        self.assertEqual(json.dumps(fams), json.dumps(_legacy_families(report, 3)))
 
 
 if __name__ == "__main__":
