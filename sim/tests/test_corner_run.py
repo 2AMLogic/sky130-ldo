@@ -24,7 +24,8 @@ from pathlib import Path
 from unittest import mock
 
 SIM_DIR = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(SIM_DIR / "bin"))  # corner-run.py imports _record_common (issue #46)
+sys.path.insert(0, str(SIM_DIR / "bin"))
+import _evidence_store  # noqa: E402  # corner-run.py imports _record_common (issue #46)
 _spec = importlib.util.spec_from_file_location("corner_run", SIM_DIR / "bin" / "corner-run.py")
 corner_run = importlib.util.module_from_spec(_spec)
 sys.modules["corner_run"] = corner_run
@@ -563,6 +564,25 @@ class FakeKlt:
         return subprocess.CompletedProcess(cmd, self.rc, stdout=out, stderr="")
 
 
+def _fake_commit(self):
+    """Stand-in for EvidenceRun.commit(): no broker; copy staged files to
+    REPO_ROOT/<store name> and write a manifest with artifact: uris."""
+    import hashlib
+    entries = []
+    for path in sorted(p for p in self.stage.rglob("*") if p.is_file()):
+        name = self.uri_label(path.relative_to(self.stage).as_posix())
+        dest = self.repo_root / name
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(path, dest)
+        data = path.read_bytes()
+        sha = hashlib.sha256(data).hexdigest()
+        entries.append({"sha256": sha, "size": len(data), "name": name, "kind": "evidence",
+                        "uri": f"artifact:evidence/test/{sha[:2]}/{sha}"})
+    self.manifest_path.parent.mkdir(parents=True, exist_ok=True)
+    self.manifest_path.write_text(json.dumps({"schema_version": 1, "entries": entries}))
+    return entries
+
+
 class BatchHarness(unittest.TestCase):
     """A scratch repo root holding a copy of sim/pdk-smoke (or SLUG), with the PDK,
     xschem, git and tool-version lookups mocked."""
@@ -611,6 +631,11 @@ class BatchHarness(unittest.TestCase):
             mock.patch.object(corner_run, "default_author", return_value="tester"),
             mock.patch.object(corner_run, "klt_binary", return_value="/fake/klt"),
             mock.patch.object(corner_run.subprocess, "run", side_effect=lambda *a, **k: self.fake(*a, **k)),
+            # evidence store (issue #436): the broker is faked; commit()
+            # materialises the staged files at their store-name paths so the
+            # record-content assertions below still read them from disk.
+            mock.patch.object(_evidence_store, "preflight", return_value="/fake/klt"),
+            mock.patch.object(_evidence_store.EvidenceRun, "commit", _fake_commit),
             # ticking clock: every run mints a fresh record id (a consumed id
             # stays reserved, issue #310), so repeated main() calls don't collide
             mock.patch.object(corner_run, "datetime", self._ticking_datetime()),
@@ -799,6 +824,16 @@ class TestBatchRecord(BatchHarness):
             err, _, _ = self.run_main("--backend", "batch", *QUICK, expect_exit=HarnessErr)
         self.assertIn("append-only", str(err))
         self.assertEqual(len(self.klt_calls()), n)
+
+    def test_unavailable_evidence_store_aborts_before_any_klt_call_and_writes_nothing(self):
+        # issue #436: fail closed before simulating, nothing under manifests/ or sim/
+        err_cls = _evidence_store.EvidenceStoreError
+        with mock.patch.object(_evidence_store, "preflight", side_effect=err_cls("$KLT_ARTIFACT_BROKER is not set")):
+            err, _, _ = self.run_main("--backend", "batch", *QUICK, expect_exit=HarnessErr)
+        self.assertIn("KLT_ARTIFACT_BROKER", str(err))
+        self.assertEqual(self.klt_calls(), [])
+        self.assertFalse((self.tmp / "manifests").exists())
+        self.assertFalse((self.exp_dir / "records").exists())
 
     def test_same_id_rerun_in_same_scratch_is_refused_by_reservation(self):
         with mock.patch.object(corner_run, "datetime", wraps=corner_run.datetime) as dt:

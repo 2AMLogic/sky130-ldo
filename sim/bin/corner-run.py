@@ -54,13 +54,13 @@ from _record_common import (
     build_input_fingerprint,
     klt_binary as _shared_klt_binary,
     git,
-    copy_new,
     pvt_input_sections,
     reserve_record_id,
     render_record_footer,
     render_record_header,
     write_new_text,
 )
+import _evidence_store
 
 SIM_DIR = Path(__file__).resolve().parent.parent
 REPO_ROOT = SIM_DIR.parent
@@ -2511,6 +2511,17 @@ def main(argv: list[str]) -> int:
                     f"{path} already exists — sim/ is append-only, refusing to overwrite"
                 )
 
+    store = None
+    if not args.dry_run and not args.no_write:
+        # Fail closed BEFORE simulating: new evidence bytes go to the artifact
+        # store, never into git (issue #436).
+        try:
+            store = _evidence_store.EvidenceRun(
+                REPO_ROOT, exp.dir.name, record_id, _evidence_store.preflight()
+            )
+        except _evidence_store.EvidenceStoreError as err:
+            raise HarnessError(str(err)) from err
+
     run_dir = BUILD_DIR / exp.slug / record_id
     if args.dry_run or args.no_write:
         # no evidence => no reservation, so keep scratch off any real run's dir
@@ -2579,7 +2590,7 @@ def main(argv: list[str]) -> int:
             exp, pdk, pin, prepared, matrix, run_dir, args.timeout, args.allow_pdk_mismatch
         )
     for i, corner in enumerate([] if batch else matrix, start=1):
-        log_path = None if args.no_write else corners_dir / f"{corner.id}.log"
+        log_path = None if args.no_write else store.stage / "corners" / record_id / f"{corner.id}.log"
         res = run_corner(exp, pdk, corner, body, run_dir, log_path, args.timeout)
         results.append(res)
         summary = ", ".join(
@@ -2624,8 +2635,11 @@ def main(argv: list[str]) -> int:
         print(f"overall  : {'PASS' if overall else 'FAIL'}")
         return 0 if overall else 2
 
-    snapshot.parent.mkdir(parents=True, exist_ok=True)
-    write_new_text(snapshot, "\n".join(body) + "\n.end\n")
+    snapshot_rel = f"netlist-snapshots/{record_id}.spice"
+    store.stage_text(snapshot_rel, "\n".join(body) + "\n.end\n")
+    for res in results:
+        if not batch:
+            res["log"] = store.uri_label(f"corners/{record_id}/{res['corner_id']}.log")
 
     record = {
         "record_id": record_id,
@@ -2682,9 +2696,10 @@ def main(argv: list[str]) -> int:
         "links": {
             "testbench": str(exp.schematic.relative_to(REPO_ROOT)),
             "manifest": str((exp.dir / "experiment.json").relative_to(REPO_ROOT)),
-            "netlist_snapshot": str(snapshot.relative_to(REPO_ROOT)),
-            "corners_dir": str(corners_dir.relative_to(REPO_ROOT)) + "/",
-            "json": str(record_json.relative_to(REPO_ROOT)),
+            "netlist_snapshot": store.uri_label(snapshot_rel),
+            "corners_dir": store.uri_label(f"corners/{record_id}") + "/",
+            "json": store.uri_label(f"records/{record_id}.json"),
+            "artifact_manifest": store.manifest_rel(),
             "record": str(record_md.relative_to(REPO_ROOT)),
         },
     }
@@ -2700,16 +2715,14 @@ def main(argv: list[str]) -> int:
                 (responses_dir, rq["response_file"], "json", link_resps),
                 (request_netlists_dir, str(Path(rq["request_file"]).with_suffix(".spice")), "spice", link_nets),
             ):
-                d.mkdir(parents=True, exist_ok=True)
-                dest = d / f"{record_id}.{key}.{ext}"
-                copy_new(src, dest)
-                links[key] = str(dest.relative_to(REPO_ROOT))
-        corners_dir.mkdir(parents=True, exist_ok=True)
+                rel = f"{d.name}/{record_id}.{key}.{ext}"
+                store.stage_file(rel, Path(src))
+                links[key] = store.uri_label(rel)
         for cid, text in batch_logs.items():
-            write_new_text(corners_dir / f"{cid}.log", text)
+            store.stage_text(f"corners/{record_id}/{cid}.log", text)
         for res in results:
             if res["corner_id"] in batch_logs:
-                res["log"] = str((corners_dir / f"{res['corner_id']}.log").relative_to(REPO_ROOT))
+                res["log"] = store.uri_label(f"corners/{record_id}/{res['corner_id']}.log")
         for rq in execution["requests"]:
             rq["request_file"] = link_reqs[rq["key"]]
             rq["response_file"] = link_resps[rq["key"]]
@@ -2722,14 +2735,18 @@ def main(argv: list[str]) -> int:
             {"klt_requests": link_reqs, "klt_responses": link_resps, "request_netlists": link_nets}
         )
 
+    store.stage_text(f"records/{record_id}.json", json.dumps(record, indent=2, sort_keys=True) + "\n")
+    try:
+        entries = store.commit()
+    except _evidence_store.EvidenceStoreError as err:
+        raise HarnessError(f"evidence not stored, nothing committed: {err}") from err
     records_dir.mkdir(parents=True, exist_ok=True)
-    write_new_text(record_json, json.dumps(record, indent=2, sort_keys=True) + "\n")
-    write_new_text(record_md, render_record(record))
+    summary = _evidence_store.render_summary(entries, store.manifest_rel())
+    write_new_text(record_md, render_record(record) + "\n\n" + "\n".join(summary) + "\n")
 
     print()
     print(f"record  : {record_md.relative_to(REPO_ROOT)}")
-    print(f"json    : {record_json.relative_to(REPO_ROOT)}")
-    print(f"logs    : {corners_dir.relative_to(REPO_ROOT)}/")
+    print(f"manifest: {store.manifest_rel()}")
     print(f"overall : {'PASS' if overall else 'FAIL'}")
     return 0 if overall else 2
 

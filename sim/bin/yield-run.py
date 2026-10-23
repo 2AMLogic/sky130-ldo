@@ -128,6 +128,8 @@ from _record_common import (  # noqa: E402
     write_new_text,
 )
 
+import _evidence_store  # noqa: E402
+
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
@@ -941,27 +943,35 @@ def main(argv: list[str]) -> int:
         sha = git(REPO_ROOT, "rev-parse", "--short", "HEAD") or "unknown"
         record_id = args.record_id or f"{now.strftime('%Y%m%d-%H%M%S')}-{sha}"
 
+        # Source responses are read from the committed responses dir; this
+        # run's own outputs are staged and stored in the artifact store, never
+        # committed (issue #436). Fail closed before any work.
+        try:
+            store = _evidence_store.EvidenceRun(
+                REPO_ROOT, exp_dir.name, record_id, _evidence_store.preflight()
+            )
+        except _evidence_store.EvidenceStoreError as err:
+            raise HarnessError(str(err)) from err
         responses_dir = exp_dir / "klt-responses"
-        requests_dir = exp_dir / "klt-requests"
         records_dir = exp_dir / "records"
-        limits_path = requests_dir / f"{record_id}.yield-limits.json"
-        report_path = responses_dir / f"{record_id}.yield.json"
-        record_json = records_dir / f"{record_id}.json"
+        limits_path = store.stage / "klt-requests" / f"{record_id}.yield-limits.json"
+        report_path = store.stage / "klt-responses" / f"{record_id}.yield.json"
+        record_json = store.stage / "records" / f"{record_id}.json"
         record_md = records_dir / f"{record_id}.md"
-        sample_set_path = responses_dir / f"{record_id}.samples.json"
+        sample_set_path = store.stage / "klt-responses" / f"{record_id}.samples.json"
+        lab = lambda p: store.uri_label(Path(p).relative_to(store.stage).as_posix())  # noqa: E731
         # Atomic claim before any evidence is written (issue #310).
         reserve_record_id(REPO_ROOT / "sim" / "build", exp_dir.name, record_id, HarnessError)
-        guarded = [limits_path, report_path, record_json, record_md]
-        if args.negative_control:
-            guarded.append(sample_set_path)
-        for path in guarded:
+        for path in (record_md, store.manifest_path):
             if path.exists():
                 raise HarnessError(
                     f"{path} already exists -- sim/ evidence is append-only; a "
                     "re-run mints a new record id (see sim/README.md)"
                 )
 
-        requests_dir.mkdir(parents=True, exist_ok=True)
+        limits_path.parent.mkdir(parents=True, exist_ok=True)
+        report_path.parent.mkdir(parents=True, exist_ok=True)
+        record_json.parent.mkdir(parents=True, exist_ok=True)
         if limits_src is not None:
             copy_new(limits_src, limits_path)
         else:
@@ -1069,10 +1079,10 @@ def main(argv: list[str]) -> int:
             with sample_set_path.open("w") as fh:
                 json.dump(sample_set, fh, indent=2)
                 fh.write("\n")
-            analysed_name = sample_set_path.name
+            analysed_name = str(sample_set_path)
 
         exe = klt_binary()
-        limits_rel = f"../klt-requests/{limits_path.name}"
+        limits_rel = str(limits_path)
         cmd, raw_stdout, report, exit_code = run_klt_yield(
             exe, responses_dir, analysed_name, limits_rel, args
         )
@@ -1128,7 +1138,7 @@ def main(argv: list[str]) -> int:
             },
             "negative_control": negative_control,
             "analysed_document": {
-                "file": rel(sample_set_path if negative_control else samples),
+                "file": lab(sample_set_path) if negative_control else rel(samples),
                 "sha256": sha256_file(sample_set_path if negative_control else samples),
                 "kind": "derived sample-set document" if negative_control else "klt sim response",
                 "note": (
@@ -1154,7 +1164,7 @@ def main(argv: list[str]) -> int:
                 ),
             },
             "limits": {
-                "file": rel(limits_path),
+                "file": lab(limits_path),
                 "origin": (
                     f"explicit --limits document ({limits_src})"
                     if limits_src is not None
@@ -1170,7 +1180,13 @@ def main(argv: list[str]) -> int:
                     "than grading them."
                 ),
             },
-            "command": [Path(cmd[0]).name, *cmd[1:]],
+            "command": [
+                Path(cmd[0]).name,
+                *[
+                    lab(a) if a.startswith(str(store.stage)) else a
+                    for a in cmd[1:]
+                ],
+            ],
             "command_cwd": rel(responses_dir),
             "exit_code": exit_code,
             "klt_version": klt_ver,
@@ -1206,15 +1222,16 @@ def main(argv: list[str]) -> int:
             )
         )
         record["links"] = {
-            "klt yield report (raw)": rel(report_path),
-            "klt yield spec-limits": rel(limits_path),
+            "klt yield report (raw)": lab(report_path),
+            "klt yield spec-limits": lab(limits_path),
             "source klt sim response (samples)": rel(samples),
             "source campaign record": rel(exp_dir / "records" / f"{source_record_id}.md"),
-            "machine-readable record": rel(record_json),
+            "machine-readable record": lab(record_json),
+            "artifact manifest": store.manifest_rel(),
             "experiment manifest": rel(exp_dir / "experiment.json"),
         }
         if negative_control is not None:
-            record["links"]["analysed sample-set document (what klt signoff hashes)"] = rel(
+            record["links"]["analysed sample-set document (what klt signoff hashes)"] = lab(
                 sample_set_path
             )
             record["links"]["negative-control campaign record"] = negative_control["record"]
@@ -1226,13 +1243,15 @@ def main(argv: list[str]) -> int:
         with record_json.open("x") as fh:
             json.dump(record, fh, indent=2, sort_keys=True)
             fh.write("\n")
-        write_new_text(record_md, render_record(record))
+        try:
+            entries = store.commit()
+        except _evidence_store.EvidenceStoreError as err:
+            raise HarnessError(f"evidence not stored, nothing committed: {err}") from err
+        records_dir.mkdir(parents=True, exist_ok=True)
+        summary = _evidence_store.render_summary(entries, store.manifest_rel())
+        write_new_text(record_md, render_record(record) + "\n\n" + "\n".join(summary) + "\n")
 
-        print(f"wrote {rel(report_path)}")
-        print(f"wrote {rel(limits_path)}")
-        if negative_control is not None:
-            print(f"wrote {rel(sample_set_path)}")
-        print(f"wrote {rel(record_json)}")
+        print(f"stored {len(entries)} object(s); manifest {store.manifest_rel()}")
         print(f"wrote {rel(record_md)}")
         print(f"klt yield status: {report.get('status')}")
         for m in report.get("measurements") or []:
