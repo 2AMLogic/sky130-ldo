@@ -32,7 +32,8 @@ Human-approved issues ready for implementation (`loom:issue`).
 
 Issues currently being built (`loom:building`).
 
-_None._
+- **#436**: Adopt the common artifact store for sim evidence (manifests in git, bytes via klt artifact)
+- **#437**: Area row: mint a fresh core-area record against the current LATEST routed GDS and regenerate characterization.md
 
 ## PRs Awaiting Review
 
@@ -44,7 +45,7 @@ _None._
 
 PRs that passed review and are queued for Champion auto-merge (`loom:pr`).
 
-_None._
+- **#438**: feat(sim): store new run evidence in the artifact store, commit only manifest and summary
 
 ## Proposed
 
@@ -59,6 +60,8 @@ Issues carrying `loom:curated`.
 - **#381**: Sim: admit load-regulation cold-start endpoints to the batch backend *(curated)*
 - **#416**: Re-run folded-resistor MC at n>=1000 to firm up M2 sigma-ratio gate *(curated)*
 - **#423**: T1 items 1, 2, 9, 10: bump the signoff grading pin and attest with artifact-anchored envelopes (klt signoff --attest) *(curated)*
+- **#436**: Adopt the common artifact store for sim evidence (manifests in git, bytes via klt artifact) *(curated)*
+- **#437**: Area row: mint a fresh core-area record against the current LATEST routed GDS and regenerate characterization.md *(curated)*
 
 ## Proposed (Architect / Hermit)
 
@@ -76,10 +79,10 @@ _None._
 | Very important | 0 |
 | Important | 1 |
 | Ready (`loom:issue`) | 2 |
-| In Progress (`loom:building`) | 0 |
+| In Progress (`loom:building`) | 2 |
 | PRs awaiting review | 0 |
-| Approved PRs awaiting merge | 0 |
-| Curated | 9 |
+| Approved PRs awaiting merge | 1 |
+| Curated | 11 |
 | Architect / Hermit proposals | 0 |
 | Active epics | 1 |
 <!-- guide:plan-body:end -->
