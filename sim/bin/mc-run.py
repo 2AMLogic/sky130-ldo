@@ -60,6 +60,8 @@ from _record_common import (
     write_new_text,
 )
 
+import _evidence_store
+
 corner_run = load_corner_run_module(Path(__file__).resolve().parent)
 
 HarnessError = corner_run.HarnessError
@@ -707,6 +709,17 @@ def main(argv: list[str]) -> int:
                     f"{path} already exists — sim/ is append-only, refusing to overwrite"
                 )
 
+    store = None
+    if not args.dry_run:
+        # Fail closed BEFORE simulating: new evidence bytes go to the artifact
+        # store, never into git (issue #436).
+        try:
+            store = _evidence_store.EvidenceRun(
+                REPO_ROOT, exp["_dir"].name, record_id, _evidence_store.preflight()
+            )
+        except _evidence_store.EvidenceStoreError as err:
+            raise HarnessError(str(err)) from err
+
     run_dir = BUILD_DIR / exp["slug"] / record_id
     if args.dry_run:
         # dry-run holds no reservation, so keep its scratch off any real run's dir
@@ -747,14 +760,15 @@ def main(argv: list[str]) -> int:
         print("\n(dry run: klt sim not invoked, nothing written under sim/<experiment>/)")
         return 0
 
-    snapshot.parent.mkdir(parents=True, exist_ok=True)
-    write_new_text(snapshot, prepped_netlist_text)
+    snapshot_rel = f"netlist-snapshots/{record_id}.spice"
+    request_rel = f"klt-requests/{record_id}.json"
+    response_rel = f"klt-responses/{record_id}.json"
+    snapshot_staged = store.stage_text(snapshot_rel, prepped_netlist_text)
 
     request = build_klt_request(
-        exp, pdk, snapshot.resolve(), n, args.seed, vary, k_sigma, args.timeout, args.keep_logs
+        exp, pdk, snapshot_staged.resolve(), n, args.seed, vary, k_sigma, args.timeout, args.keep_logs
     )
-    requests_dir.mkdir(parents=True, exist_ok=True)
-    write_new_text(request_file, json.dumps(request, indent=2, sort_keys=True) + "\n")
+    request_file = store.stage_text(request_rel, json.dumps(request, indent=2, sort_keys=True) + "\n")
 
     klt_outdir = run_dir / "klt-out"
     response = run_klt_sim(
@@ -763,8 +777,7 @@ def main(argv: list[str]) -> int:
 
     assert_klt_read_the_pinned_pdk(response, pdk, pin, args.allow_pdk_mismatch)
 
-    responses_dir.mkdir(parents=True, exist_ok=True)
-    write_new_text(response_file, json.dumps(response, indent=2, sort_keys=True) + "\n")
+    store.stage_text(response_rel, json.dumps(response, indent=2, sort_keys=True) + "\n")
 
     overall_pass = response.get("status") == "pass"
 
@@ -807,22 +820,27 @@ def main(argv: list[str]) -> int:
         "links": {
             "testbench": str(exp["_schematic"].relative_to(REPO_ROOT)),
             "manifest": str((exp["_dir"] / "experiment.json").relative_to(REPO_ROOT)),
-            "netlist_snapshot": str(snapshot.relative_to(REPO_ROOT)),
-            "klt_request": str(request_file.relative_to(REPO_ROOT)),
-            "klt_response": str(response_file.relative_to(REPO_ROOT)),
-            "json": str(record_json.relative_to(REPO_ROOT)),
+            "netlist_snapshot": store.uri_label(snapshot_rel),
+            "klt_request": store.uri_label(request_rel),
+            "klt_response": store.uri_label(response_rel),
+            "json": store.uri_label(f"records/{record_id}.json"),
+            "artifact_manifest": store.manifest_rel(),
             "record": str(record_md.relative_to(REPO_ROOT)),
         },
     }
 
+    store.stage_text(f"records/{record_id}.json", json.dumps(record, indent=2, sort_keys=True) + "\n")
+    try:
+        entries = store.commit()
+    except _evidence_store.EvidenceStoreError as err:
+        raise HarnessError(f"evidence not stored, nothing committed: {err}") from err
     records_dir.mkdir(parents=True, exist_ok=True)
-    write_new_text(record_json, json.dumps(record, indent=2, sort_keys=True) + "\n")
-    write_new_text(record_md, render_record(record))
+    summary = _evidence_store.render_summary(entries, store.manifest_rel())
+    write_new_text(record_md, render_record(record) + "\n\n" + "\n".join(summary) + "\n")
 
     print()
     print(f"record   : {record_md.relative_to(REPO_ROOT)}")
-    print(f"json     : {record_json.relative_to(REPO_ROOT)}")
-    print(f"response : {response_file.relative_to(REPO_ROOT)}")
+    print(f"manifest : {store.manifest_rel()}")
     print(f"overall  : {'PASS' if overall_pass else 'FAIL'}")
     return 0 if overall_pass else 2
 

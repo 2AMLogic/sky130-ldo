@@ -21,6 +21,9 @@ __pycache__/
 !layout/cap-study/*/**/*.log
 # harness scratch: regenerated netlists and generated corner decks
 sim/build/
+# Evidence-store staging (issue #436): new-run bytes are staged here, pushed to
+# the artifact store by `klt artifact put`, and never committed.
+sim/.work/
 # ngspice model-check scratch dumps (e.g. bsim4v5.out) from ad hoc ngspice
 # invocations at repo root -- the harness never writes here, it always runs
 # under sim/build/ (see sim/bin/corner-run.py). Root-anchored so it doesn't

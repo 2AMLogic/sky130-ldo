@@ -1135,3 +1135,16 @@ manifests (flags omitted or default) keep their previous digest; flipping a
 flag to strict changes the `measurements` digest, so records made before the
 change are reported as input-stale rather than regraded (records are
 append-only and are never rewritten).
+
+## Evidence bytes go to the artifact store (issue #436)
+
+Runs of `corner-run.py`, `mc-run.py` and `yield-run.py` that write evidence no
+longer commit the JSON twin, netlist snapshot, per-corner logs or batch
+request/response files: they are stored with `klt artifact put` and the commit
+carries `manifests/artifacts/<bench>-<run-id>.manifest.json` plus the
+`records/<run-id>.md` summary (name, size, sha256 per object). Record `links`
+name objects as `sim/<bench>/...` store names. `--dry-run` and `--no-write`
+need no broker. Set `$KLT_ARTIFACT_BROKER` (environment only); with it unset,
+`klt artifact put` missing, or the broker unreachable the runner exits nonzero
+before simulating and writes nothing. See `manifests/README.md`. Records minted
+before this change keep their committed files.
