@@ -4,6 +4,8 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 
 ### 2026-10-23
 
+- **PR #444**: test: remove frozen pre-extraction copies and source-grep tests
+- **Issue #443** (closed): Remove frozen pre-extraction legacy copies from test_render_verdicts.py
 - **PR #438**: feat(sim): store new run evidence in the artifact store, commit only manifest and summary
 - **Issue #436** (closed): Adopt the common artifact store for sim evidence (manifests in git, bytes via klt artifact)
 - **PR #439**: fix(measurements): mint fresh core-area record against current routed GDS
