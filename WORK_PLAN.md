@@ -7,7 +7,7 @@ Current roadmap derived from GitHub lifecycle labels. Maintained by the Loom Gui
 
 Judge-approved PRs under a hold (`loom:blocked` or `loom:operator`) — only a human merge decision is missing.
 
-- **#438**: feat(sim): store new run evidence in the artifact store, commit only manifest and summary
+_None._
 
 ## Very Important
 
@@ -32,7 +32,7 @@ Human-approved issues ready for implementation (`loom:issue`).
 
 Issues currently being built (`loom:building`).
 
-- **#436**: Adopt the common artifact store for sim evidence (manifests in git, bytes via klt artifact)
+_None._
 
 ## PRs Awaiting Review
 
@@ -44,7 +44,7 @@ _None._
 
 PRs that passed review and are queued for Champion auto-merge (`loom:pr`).
 
-- **#438**: feat(sim): store new run evidence in the artifact store, commit only manifest and summary
+_None._
 
 ## Proposed
 
@@ -59,7 +59,6 @@ Issues carrying `loom:curated`.
 - **#381**: Sim: admit load-regulation cold-start endpoints to the batch backend *(curated)*
 - **#416**: Re-run folded-resistor MC at n>=1000 to firm up M2 sigma-ratio gate *(curated)*
 - **#423**: T1 items 1, 2, 9, 10: bump the signoff grading pin and attest with artifact-anchored envelopes (klt signoff --attest) *(curated)*
-- **#436**: Adopt the common artifact store for sim evidence (manifests in git, bytes via klt artifact) *(curated)*
 
 ## Proposed (Architect / Hermit)
 
@@ -73,14 +72,14 @@ _None._
 
 | Bucket | Count |
 |------|-------|
-| Operator merge-risk holds | 1 |
+| Operator merge-risk holds | 0 |
 | Very important | 0 |
 | Important | 1 |
 | Ready (`loom:issue`) | 2 |
-| In Progress (`loom:building`) | 1 |
+| In Progress (`loom:building`) | 0 |
 | PRs awaiting review | 0 |
-| Approved PRs awaiting merge | 1 |
-| Curated | 10 |
+| Approved PRs awaiting merge | 0 |
+| Curated | 9 |
 | Architect / Hermit proposals | 0 |
 | Active epics | 1 |
 <!-- guide:plan-body:end -->
