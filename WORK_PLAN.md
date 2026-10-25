@@ -62,7 +62,7 @@ Issues carrying `loom:curated`.
 
 ## Proposed (Architect / Hermit)
 
-_None._
+- **#446**: Dedupe batch_iq/batch_load_regulation parse_deck and drop unused re-exports *(hermit)*
 
 ## Epics
 
@@ -80,6 +80,6 @@ _None._
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 0 |
 | Curated | 9 |
-| Architect / Hermit proposals | 0 |
+| Architect / Hermit proposals | 1 |
 | Active epics | 1 |
 <!-- guide:plan-body:end -->
