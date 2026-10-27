@@ -32,7 +32,7 @@ Human-approved issues ready for implementation (`loom:issue`).
 
 Issues currently being built (`loom:building`).
 
-_None._
+- **#449**: T1 item 5 (Full corner verification): emit klt sim envelopes for every ratified row so failures are graded, not no_evidence
 
 ## PRs Awaiting Review
 
@@ -44,7 +44,7 @@ _None._
 
 PRs that passed review and are queued for Champion auto-merge (`loom:pr`).
 
-_None._
+- **#450**: feat(signoff): wrap PVT records into klt sim envelopes for T1 item 5
 
 ## Proposed
 
@@ -59,6 +59,7 @@ Issues carrying `loom:curated`.
 - **#381**: Sim: admit load-regulation cold-start endpoints to the batch backend *(curated)*
 - **#416**: Re-run folded-resistor MC at n>=1000 to firm up M2 sigma-ratio gate *(curated)*
 - **#423**: T1 items 1, 2, 9, 10: bump the signoff grading pin and attest with artifact-anchored envelopes (klt signoff --attest) *(curated)*
+- **#449**: T1 item 5 (Full corner verification): emit klt sim envelopes for every ratified row so failures are graded, not no_evidence *(curated)*
 
 ## Proposed (Architect / Hermit)
 
@@ -76,10 +77,10 @@ Issues carrying `loom:curated`.
 | Very important | 0 |
 | Important | 1 |
 | Ready (`loom:issue`) | 2 |
-| In Progress (`loom:building`) | 0 |
+| In Progress (`loom:building`) | 1 |
 | PRs awaiting review | 0 |
-| Approved PRs awaiting merge | 0 |
-| Curated | 9 |
+| Approved PRs awaiting merge | 1 |
+| Curated | 10 |
 | Architect / Hermit proposals | 1 |
 | Active epics | 1 |
 <!-- guide:plan-body:end -->
