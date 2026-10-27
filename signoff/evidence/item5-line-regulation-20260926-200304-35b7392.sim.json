@@ -1,0 +1,1612 @@
+{
+  "schema_version": 1,
+  "netlist": "sim/line-regulation/netlist-snapshots/20260926-200304-35b7392.spice",
+  "status": "pass",
+  "corner_count": 45,
+  "passed": 45,
+  "failed": 0,
+  "errored": 0,
+  "wrapper": "NOT a `klt sim` run. Hand-wrapped by signoff/make_item5_envelope.py from the committed harness-format record named in `source_record`; every value, limit and verdict is copied verbatim and nothing was re-simulated. Measurements tagged with a `spec_row` carry that row's RATIFIED bound (spec/target-spec.md, DR-006), which the script checked against the record's own limit before writing. The input pin is the netlist snapshot the record simulated, not necessarily the current schematic: see measurements/characterization.md for per-record freshness.",
+  "source_record": {
+    "bench": "line-regulation",
+    "record_id": "20260926-200304-35b7392",
+    "path": "sim/line-regulation/records/20260926-200304-35b7392.json",
+    "sha256": "sha256:176f53e2efa78a79914bf3aae4c50f97cabdfd484b7321205c9e362ffeeb13aa",
+    "overall_pass": true,
+    "matrix_is_subset": false
+  },
+  "environment": {
+    "engine": "ngspice",
+    "engine_version": "ngspice-46 : Circuit level simulation program",
+    "pdk": "c6d73a35f524070e85faff4a6a9eef49553ebc2b",
+    "platform": "Darwin 27.0.0 arm64"
+  },
+  "provenance": {
+    "input": {
+      "path": "sim/line-regulation/netlist-snapshots/20260926-200304-35b7392.spice",
+      "role": "netlist",
+      "content_hash": "sha256:cde71b6b4e3d722f09f2385fd34a3d424bd9888d48160d8d4f1da0553fddfec4"
+    }
+  },
+  "metrics": {
+    "sim__corner__count": 45,
+    "sim__corner__passed_count": 45,
+    "sim__corner__failed_count": 0,
+    "sim__corner__errored_count": 0
+  },
+  "coverage": {
+    "schema_version": 1,
+    "known": true,
+    "checked": [
+      "line-regulation:ff_-40c_2.97v:line_reg_1ma_mv_per_v",
+      "line-regulation:ff_-40c_2.97v:line_reg_50ma_mv_per_v",
+      "line-regulation:ff_-40c_3.30v:line_reg_1ma_mv_per_v",
+      "line-regulation:ff_-40c_3.30v:line_reg_50ma_mv_per_v",
+      "line-regulation:ff_-40c_3.63v:line_reg_1ma_mv_per_v",
+      "line-regulation:ff_-40c_3.63v:line_reg_50ma_mv_per_v",
+      "line-regulation:ff_125c_2.97v:line_reg_1ma_mv_per_v",
+      "line-regulation:ff_125c_2.97v:line_reg_50ma_mv_per_v",
+      "line-regulation:ff_125c_3.30v:line_reg_1ma_mv_per_v",
+      "line-regulation:ff_125c_3.30v:line_reg_50ma_mv_per_v",
+      "line-regulation:ff_125c_3.63v:line_reg_1ma_mv_per_v",
+      "line-regulation:ff_125c_3.63v:line_reg_50ma_mv_per_v",
+      "line-regulation:ff_27c_2.97v:line_reg_1ma_mv_per_v",
+      "line-regulation:ff_27c_2.97v:line_reg_50ma_mv_per_v",
+      "line-regulation:ff_27c_3.30v:line_reg_1ma_mv_per_v",
+      "line-regulation:ff_27c_3.30v:line_reg_50ma_mv_per_v",
+      "line-regulation:ff_27c_3.63v:line_reg_1ma_mv_per_v",
+      "line-regulation:ff_27c_3.63v:line_reg_50ma_mv_per_v",
+      "line-regulation:fs_-40c_2.97v:line_reg_1ma_mv_per_v",
+      "line-regulation:fs_-40c_2.97v:line_reg_50ma_mv_per_v",
+      "line-regulation:fs_-40c_3.30v:line_reg_1ma_mv_per_v",
+      "line-regulation:fs_-40c_3.30v:line_reg_50ma_mv_per_v",
+      "line-regulation:fs_-40c_3.63v:line_reg_1ma_mv_per_v",
+      "line-regulation:fs_-40c_3.63v:line_reg_50ma_mv_per_v",
+      "line-regulation:fs_125c_2.97v:line_reg_1ma_mv_per_v",
+      "line-regulation:fs_125c_2.97v:line_reg_50ma_mv_per_v",
+      "line-regulation:fs_125c_3.30v:line_reg_1ma_mv_per_v",
+      "line-regulation:fs_125c_3.30v:line_reg_50ma_mv_per_v",
+      "line-regulation:fs_125c_3.63v:line_reg_1ma_mv_per_v",
+      "line-regulation:fs_125c_3.63v:line_reg_50ma_mv_per_v",
+      "line-regulation:fs_27c_2.97v:line_reg_1ma_mv_per_v",
+      "line-regulation:fs_27c_2.97v:line_reg_50ma_mv_per_v",
+      "line-regulation:fs_27c_3.30v:line_reg_1ma_mv_per_v",
+      "line-regulation:fs_27c_3.30v:line_reg_50ma_mv_per_v",
+      "line-regulation:fs_27c_3.63v:line_reg_1ma_mv_per_v",
+      "line-regulation:fs_27c_3.63v:line_reg_50ma_mv_per_v",
+      "line-regulation:sf_-40c_2.97v:line_reg_1ma_mv_per_v",
+      "line-regulation:sf_-40c_2.97v:line_reg_50ma_mv_per_v",
+      "line-regulation:sf_-40c_3.30v:line_reg_1ma_mv_per_v",
+      "line-regulation:sf_-40c_3.30v:line_reg_50ma_mv_per_v",
+      "line-regulation:sf_-40c_3.63v:line_reg_1ma_mv_per_v",
+      "line-regulation:sf_-40c_3.63v:line_reg_50ma_mv_per_v",
+      "line-regulation:sf_125c_2.97v:line_reg_1ma_mv_per_v",
+      "line-regulation:sf_125c_2.97v:line_reg_50ma_mv_per_v",
+      "line-regulation:sf_125c_3.30v:line_reg_1ma_mv_per_v",
+      "line-regulation:sf_125c_3.30v:line_reg_50ma_mv_per_v",
+      "line-regulation:sf_125c_3.63v:line_reg_1ma_mv_per_v",
+      "line-regulation:sf_125c_3.63v:line_reg_50ma_mv_per_v",
+      "line-regulation:sf_27c_2.97v:line_reg_1ma_mv_per_v",
+      "line-regulation:sf_27c_2.97v:line_reg_50ma_mv_per_v",
+      "line-regulation:sf_27c_3.30v:line_reg_1ma_mv_per_v",
+      "line-regulation:sf_27c_3.30v:line_reg_50ma_mv_per_v",
+      "line-regulation:sf_27c_3.63v:line_reg_1ma_mv_per_v",
+      "line-regulation:sf_27c_3.63v:line_reg_50ma_mv_per_v",
+      "line-regulation:ss_-40c_2.97v:line_reg_1ma_mv_per_v",
+      "line-regulation:ss_-40c_2.97v:line_reg_50ma_mv_per_v",
+      "line-regulation:ss_-40c_3.30v:line_reg_1ma_mv_per_v",
+      "line-regulation:ss_-40c_3.30v:line_reg_50ma_mv_per_v",
+      "line-regulation:ss_-40c_3.63v:line_reg_1ma_mv_per_v",
+      "line-regulation:ss_-40c_3.63v:line_reg_50ma_mv_per_v",
+      "line-regulation:ss_125c_2.97v:line_reg_1ma_mv_per_v",
+      "line-regulation:ss_125c_2.97v:line_reg_50ma_mv_per_v",
+      "line-regulation:ss_125c_3.30v:line_reg_1ma_mv_per_v",
+      "line-regulation:ss_125c_3.30v:line_reg_50ma_mv_per_v",
+      "line-regulation:ss_125c_3.63v:line_reg_1ma_mv_per_v",
+      "line-regulation:ss_125c_3.63v:line_reg_50ma_mv_per_v",
+      "line-regulation:ss_27c_2.97v:line_reg_1ma_mv_per_v",
+      "line-regulation:ss_27c_2.97v:line_reg_50ma_mv_per_v",
+      "line-regulation:ss_27c_3.30v:line_reg_1ma_mv_per_v",
+      "line-regulation:ss_27c_3.30v:line_reg_50ma_mv_per_v",
+      "line-regulation:ss_27c_3.63v:line_reg_1ma_mv_per_v",
+      "line-regulation:ss_27c_3.63v:line_reg_50ma_mv_per_v",
+      "line-regulation:tt_-40c_2.97v:line_reg_1ma_mv_per_v",
+      "line-regulation:tt_-40c_2.97v:line_reg_50ma_mv_per_v",
+      "line-regulation:tt_-40c_3.30v:line_reg_1ma_mv_per_v",
+      "line-regulation:tt_-40c_3.30v:line_reg_50ma_mv_per_v",
+      "line-regulation:tt_-40c_3.63v:line_reg_1ma_mv_per_v",
+      "line-regulation:tt_-40c_3.63v:line_reg_50ma_mv_per_v",
+      "line-regulation:tt_125c_2.97v:line_reg_1ma_mv_per_v",
+      "line-regulation:tt_125c_2.97v:line_reg_50ma_mv_per_v",
+      "line-regulation:tt_125c_3.30v:line_reg_1ma_mv_per_v",
+      "line-regulation:tt_125c_3.30v:line_reg_50ma_mv_per_v",
+      "line-regulation:tt_125c_3.63v:line_reg_1ma_mv_per_v",
+      "line-regulation:tt_125c_3.63v:line_reg_50ma_mv_per_v",
+      "line-regulation:tt_27c_2.97v:line_reg_1ma_mv_per_v",
+      "line-regulation:tt_27c_2.97v:line_reg_50ma_mv_per_v",
+      "line-regulation:tt_27c_3.30v:line_reg_1ma_mv_per_v",
+      "line-regulation:tt_27c_3.30v:line_reg_50ma_mv_per_v",
+      "line-regulation:tt_27c_3.63v:line_reg_1ma_mv_per_v",
+      "line-regulation:tt_27c_3.63v:line_reg_50ma_mv_per_v"
+    ],
+    "skipped": [],
+    "inapplicable": [],
+    "unknown": [],
+    "nothing_checked": false,
+    "nothing_checked_reasons": [],
+    "measurements_declared": 2,
+    "measurements_with_limits": 2
+  },
+  "measurements": [
+    {
+      "name": "line_reg_1ma_mv_per_v",
+      "unit": "mV/V",
+      "limits": {
+        "max": 5
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "fs_125c_2.97v",
+        "value": 0.5954545,
+        "margin": 4.4045455
+      },
+      "spec_row": "line-regulation"
+    },
+    {
+      "name": "line_reg_50ma_mv_per_v",
+      "unit": "mV/V",
+      "limits": {
+        "max": 5
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "ff_125c_2.97v",
+        "value": 0.3681818,
+        "margin": 4.6318182
+      },
+      "spec_row": "line-regulation"
+    }
+  ],
+  "corners": [
+    {
+      "corner_id": "tt_-40c_2.97v",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "line_reg_1ma_mv_per_v",
+          "value": 0.2287879,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.7712121
+        },
+        {
+          "name": "line_reg_50ma_mv_per_v",
+          "value": 0.2787879,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.7212121
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "tt_-40c_3.30v",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "line_reg_1ma_mv_per_v",
+          "value": 0.2287879,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.7712121
+        },
+        {
+          "name": "line_reg_50ma_mv_per_v",
+          "value": 0.2787879,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.7212121
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "tt_-40c_3.63v",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "line_reg_1ma_mv_per_v",
+          "value": 0.2287879,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.7712121
+        },
+        {
+          "name": "line_reg_50ma_mv_per_v",
+          "value": 0.2787879,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.7212121
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "tt_27c_2.97v",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": 27.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "line_reg_1ma_mv_per_v",
+          "value": 0.3151515,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.6848485
+        },
+        {
+          "name": "line_reg_50ma_mv_per_v",
+          "value": 0.2969697,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.7030303
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "tt_27c_3.30v",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 27.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "line_reg_1ma_mv_per_v",
+          "value": 0.3151515,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.6848485
+        },
+        {
+          "name": "line_reg_50ma_mv_per_v",
+          "value": 0.2969697,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.7030303
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "tt_27c_3.63v",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": 27.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "line_reg_1ma_mv_per_v",
+          "value": 0.3151515,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.6848485
+        },
+        {
+          "name": "line_reg_50ma_mv_per_v",
+          "value": 0.2969697,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.7030303
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "tt_125c_2.97v",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "line_reg_1ma_mv_per_v",
+          "value": 0.5106061,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.4893939
+        },
+        {
+          "name": "line_reg_50ma_mv_per_v",
+          "value": 0.3378788,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.6621212
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "tt_125c_3.30v",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "line_reg_1ma_mv_per_v",
+          "value": 0.5106061,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.4893939
+        },
+        {
+          "name": "line_reg_50ma_mv_per_v",
+          "value": 0.3378788,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.6621212
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "tt_125c_3.63v",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "line_reg_1ma_mv_per_v",
+          "value": 0.5106061,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.4893939
+        },
+        {
+          "name": "line_reg_50ma_mv_per_v",
+          "value": 0.3378788,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.6621212
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ss_-40c_2.97v",
+      "process": "ss",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "line_reg_1ma_mv_per_v",
+          "value": 0.2227273,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.7772727
+        },
+        {
+          "name": "line_reg_50ma_mv_per_v",
+          "value": 0.2818182,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.7181818
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ss_-40c_3.30v",
+      "process": "ss",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "line_reg_1ma_mv_per_v",
+          "value": 0.2227273,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.7772727
+        },
+        {
+          "name": "line_reg_50ma_mv_per_v",
+          "value": 0.2818182,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.7181818
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ss_-40c_3.63v",
+      "process": "ss",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "line_reg_1ma_mv_per_v",
+          "value": 0.2227273,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.7772727
+        },
+        {
+          "name": "line_reg_50ma_mv_per_v",
+          "value": 0.2818182,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.7181818
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ss_27c_2.97v",
+      "process": "ss",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": 27.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "line_reg_1ma_mv_per_v",
+          "value": 0.3015152,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.6984848
+        },
+        {
+          "name": "line_reg_50ma_mv_per_v",
+          "value": 0.3015152,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.6984848
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ss_27c_3.30v",
+      "process": "ss",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 27.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "line_reg_1ma_mv_per_v",
+          "value": 0.3015152,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.6984848
+        },
+        {
+          "name": "line_reg_50ma_mv_per_v",
+          "value": 0.3015152,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.6984848
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ss_27c_3.63v",
+      "process": "ss",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": 27.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "line_reg_1ma_mv_per_v",
+          "value": 0.3015152,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.6984848
+        },
+        {
+          "name": "line_reg_50ma_mv_per_v",
+          "value": 0.3015152,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.6984848
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ss_125c_2.97v",
+      "process": "ss",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "line_reg_1ma_mv_per_v",
+          "value": 0.4833333,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.5166667
+        },
+        {
+          "name": "line_reg_50ma_mv_per_v",
+          "value": 0.3363636,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.6636364
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ss_125c_3.30v",
+      "process": "ss",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "line_reg_1ma_mv_per_v",
+          "value": 0.4833333,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.5166667
+        },
+        {
+          "name": "line_reg_50ma_mv_per_v",
+          "value": 0.3363636,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.6636364
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ss_125c_3.63v",
+      "process": "ss",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "line_reg_1ma_mv_per_v",
+          "value": 0.4833333,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.5166667
+        },
+        {
+          "name": "line_reg_50ma_mv_per_v",
+          "value": 0.3363636,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.6636364
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ff_-40c_2.97v",
+      "process": "ff",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "line_reg_1ma_mv_per_v",
+          "value": 0.2409091,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.7590909
+        },
+        {
+          "name": "line_reg_50ma_mv_per_v",
+          "value": 0.2787879,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.7212121
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ff_-40c_3.30v",
+      "process": "ff",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "line_reg_1ma_mv_per_v",
+          "value": 0.2409091,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.7590909
+        },
+        {
+          "name": "line_reg_50ma_mv_per_v",
+          "value": 0.2787879,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.7212121
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ff_-40c_3.63v",
+      "process": "ff",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "line_reg_1ma_mv_per_v",
+          "value": 0.2409091,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.7590909
+        },
+        {
+          "name": "line_reg_50ma_mv_per_v",
+          "value": 0.2787879,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.7212121
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ff_27c_2.97v",
+      "process": "ff",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": 27.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "line_reg_1ma_mv_per_v",
+          "value": 0.3378788,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.6621212
+        },
+        {
+          "name": "line_reg_50ma_mv_per_v",
+          "value": 0.3,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.7
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ff_27c_3.30v",
+      "process": "ff",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 27.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "line_reg_1ma_mv_per_v",
+          "value": 0.3378788,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.6621212
+        },
+        {
+          "name": "line_reg_50ma_mv_per_v",
+          "value": 0.3,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.7
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ff_27c_3.63v",
+      "process": "ff",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": 27.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "line_reg_1ma_mv_per_v",
+          "value": 0.3378788,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.6621212
+        },
+        {
+          "name": "line_reg_50ma_mv_per_v",
+          "value": 0.3,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.7
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ff_125c_2.97v",
+      "process": "ff",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "line_reg_1ma_mv_per_v",
+          "value": 0.5636364,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.4363636
+        },
+        {
+          "name": "line_reg_50ma_mv_per_v",
+          "value": 0.3681818,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.6318182
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ff_125c_3.30v",
+      "process": "ff",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "line_reg_1ma_mv_per_v",
+          "value": 0.5636364,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.4363636
+        },
+        {
+          "name": "line_reg_50ma_mv_per_v",
+          "value": 0.3681818,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.6318182
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ff_125c_3.63v",
+      "process": "ff",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "line_reg_1ma_mv_per_v",
+          "value": 0.5636364,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.4363636
+        },
+        {
+          "name": "line_reg_50ma_mv_per_v",
+          "value": 0.3681818,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.6318182
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "sf_-40c_2.97v",
+      "process": "sf",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "line_reg_1ma_mv_per_v",
+          "value": 0.2166667,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.7833333
+        },
+        {
+          "name": "line_reg_50ma_mv_per_v",
+          "value": 0.2863636,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.7136364
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "sf_-40c_3.30v",
+      "process": "sf",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "line_reg_1ma_mv_per_v",
+          "value": 0.2166667,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.7833333
+        },
+        {
+          "name": "line_reg_50ma_mv_per_v",
+          "value": 0.2863636,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.7136364
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "sf_-40c_3.63v",
+      "process": "sf",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "line_reg_1ma_mv_per_v",
+          "value": 0.2166667,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.7833333
+        },
+        {
+          "name": "line_reg_50ma_mv_per_v",
+          "value": 0.2863636,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.7136364
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "sf_27c_2.97v",
+      "process": "sf",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": 27.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "line_reg_1ma_mv_per_v",
+          "value": 0.2893939,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.7106061
+        },
+        {
+          "name": "line_reg_50ma_mv_per_v",
+          "value": 0.3060606,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.6939394
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "sf_27c_3.30v",
+      "process": "sf",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 27.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "line_reg_1ma_mv_per_v",
+          "value": 0.2893939,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.7106061
+        },
+        {
+          "name": "line_reg_50ma_mv_per_v",
+          "value": 0.3060606,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.6939394
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "sf_27c_3.63v",
+      "process": "sf",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": 27.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "line_reg_1ma_mv_per_v",
+          "value": 0.2893939,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.7106061
+        },
+        {
+          "name": "line_reg_50ma_mv_per_v",
+          "value": 0.3060606,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.6939394
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "sf_125c_2.97v",
+      "process": "sf",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "line_reg_1ma_mv_per_v",
+          "value": 0.45,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.55
+        },
+        {
+          "name": "line_reg_50ma_mv_per_v",
+          "value": 0.3424242,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.6575758
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "sf_125c_3.30v",
+      "process": "sf",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "line_reg_1ma_mv_per_v",
+          "value": 0.45,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.55
+        },
+        {
+          "name": "line_reg_50ma_mv_per_v",
+          "value": 0.3424242,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.6575758
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "sf_125c_3.63v",
+      "process": "sf",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "line_reg_1ma_mv_per_v",
+          "value": 0.45,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.55
+        },
+        {
+          "name": "line_reg_50ma_mv_per_v",
+          "value": 0.3424242,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.6575758
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "fs_-40c_2.97v",
+      "process": "fs",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "line_reg_1ma_mv_per_v",
+          "value": 0.2439394,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.7560606
+        },
+        {
+          "name": "line_reg_50ma_mv_per_v",
+          "value": 0.2712121,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.7287879
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "fs_-40c_3.30v",
+      "process": "fs",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "line_reg_1ma_mv_per_v",
+          "value": 0.2439394,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.7560606
+        },
+        {
+          "name": "line_reg_50ma_mv_per_v",
+          "value": 0.2712121,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.7287879
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "fs_-40c_3.63v",
+      "process": "fs",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "line_reg_1ma_mv_per_v",
+          "value": 0.2439394,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.7560606
+        },
+        {
+          "name": "line_reg_50ma_mv_per_v",
+          "value": 0.2712121,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.7287879
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "fs_27c_2.97v",
+      "process": "fs",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": 27.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "line_reg_1ma_mv_per_v",
+          "value": 0.3469697,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.6530303
+        },
+        {
+          "name": "line_reg_50ma_mv_per_v",
+          "value": 0.2878788,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.7121212
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "fs_27c_3.30v",
+      "process": "fs",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 27.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "line_reg_1ma_mv_per_v",
+          "value": 0.3469697,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.6530303
+        },
+        {
+          "name": "line_reg_50ma_mv_per_v",
+          "value": 0.2878788,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.7121212
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "fs_27c_3.63v",
+      "process": "fs",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": 27.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "line_reg_1ma_mv_per_v",
+          "value": 0.3469697,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.6530303
+        },
+        {
+          "name": "line_reg_50ma_mv_per_v",
+          "value": 0.2878788,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.7121212
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "fs_125c_2.97v",
+      "process": "fs",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "line_reg_1ma_mv_per_v",
+          "value": 0.5954545,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.4045455
+        },
+        {
+          "name": "line_reg_50ma_mv_per_v",
+          "value": 0.3530303,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.6469697
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "fs_125c_3.30v",
+      "process": "fs",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "line_reg_1ma_mv_per_v",
+          "value": 0.5954545,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.4045455
+        },
+        {
+          "name": "line_reg_50ma_mv_per_v",
+          "value": 0.3530303,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.6469697
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "fs_125c_3.63v",
+      "process": "fs",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "line_reg_1ma_mv_per_v",
+          "value": 0.5954545,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.4045455
+        },
+        {
+          "name": "line_reg_50ma_mv_per_v",
+          "value": 0.3530303,
+          "unit": "mV/V",
+          "limits": {
+            "max": 5
+          },
+          "status": "pass",
+          "margin": 4.6469697
+        }
+      ],
+      "diagnostics": []
+    }
+  ]
+}

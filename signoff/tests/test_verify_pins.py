@@ -44,6 +44,9 @@ _spec.loader.exec_module(verify_pins)
 # The compound-citation item this issue is about, and the half whose pin the
 # mutation deletes.
 COMPOUND_ITEM = "11"
+# Item 5 (issue #449) is a list of per-bench `klt sim` citations, each with
+# its own pin; the per-file correlation is covered by test_item5_envelopes.py.
+MULTI_ITEMS = (COMPOUND_ITEM, "5")
 LVS_HALF_SUFFIX = "lvs.json"
 
 
@@ -216,7 +219,7 @@ class TestSingleObjectItemsStillVerify(unittest.TestCase):
 
     def test_every_non_compound_item_is_a_single_object_with_a_file(self):
         for item, entry in sorted(_manifest()["evidence"].items()):
-            if item == COMPOUND_ITEM:
+            if item in MULTI_ITEMS:
                 continue
             with self.subTest(item=item):
                 self.assertIsInstance(entry, dict)
@@ -226,7 +229,7 @@ class TestSingleObjectItemsStillVerify(unittest.TestCase):
         manifest = _manifest()
         pins = _pins()
         for item in sorted(manifest["evidence"]):
-            if item == COMPOUND_ITEM:
+            if item in MULTI_ITEMS:
                 continue
             with self.subTest(item=item):
                 sliced = {

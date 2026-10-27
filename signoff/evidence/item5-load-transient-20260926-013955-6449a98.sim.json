@@ -1,0 +1,3001 @@
+{
+  "schema_version": 1,
+  "netlist": "sim/load-transient/netlist-snapshots/20260926-013955-6449a98.spice",
+  "status": "fail",
+  "corner_count": 45,
+  "passed": 0,
+  "failed": 45,
+  "errored": 0,
+  "wrapper": "NOT a `klt sim` run. Hand-wrapped by signoff/make_item5_envelope.py from the committed harness-format record named in `source_record`; every value, limit and verdict is copied verbatim and nothing was re-simulated. Measurements tagged with a `spec_row` carry that row's RATIFIED bound (spec/target-spec.md, DR-006), which the script checked against the record's own limit before writing. The input pin is the netlist snapshot the record simulated, not necessarily the current schematic: see measurements/characterization.md for per-record freshness.",
+  "source_record": {
+    "bench": "load-transient",
+    "record_id": "20260926-013955-6449a98",
+    "path": "sim/load-transient/records/20260926-013955-6449a98.json",
+    "sha256": "sha256:3331c16f94f6ae5cb86151ee3f067183699154e61c5a09eb80ea858e48e30304",
+    "overall_pass": false,
+    "matrix_is_subset": false
+  },
+  "environment": {
+    "engine": "ngspice",
+    "engine_version": "ngspice-46 : Circuit level simulation program",
+    "pdk": "c6d73a35f524070e85faff4a6a9eef49553ebc2b",
+    "platform": "Darwin 27.0.0 arm64"
+  },
+  "provenance": {
+    "input": {
+      "path": "sim/load-transient/netlist-snapshots/20260926-013955-6449a98.spice",
+      "role": "netlist",
+      "content_hash": "sha256:c79b7d0181fdd481a6d41c5c5cdddbd4db434560e4da5b0afab1f4a6b3544076"
+    }
+  },
+  "metrics": {
+    "sim__corner__count": 45,
+    "sim__corner__passed_count": 0,
+    "sim__corner__failed_count": 45,
+    "sim__corner__errored_count": 0
+  },
+  "coverage": {
+    "schema_version": 1,
+    "known": true,
+    "checked": [
+      "load-transient:ff_-40c_2.97v:overshoot_v",
+      "load-transient:ff_-40c_2.97v:recovery_fall_us",
+      "load-transient:ff_-40c_2.97v:recovery_rise_us",
+      "load-transient:ff_-40c_2.97v:undershoot_v",
+      "load-transient:ff_-40c_3.30v:overshoot_v",
+      "load-transient:ff_-40c_3.30v:recovery_fall_us",
+      "load-transient:ff_-40c_3.30v:recovery_rise_us",
+      "load-transient:ff_-40c_3.30v:undershoot_v",
+      "load-transient:ff_-40c_3.63v:overshoot_v",
+      "load-transient:ff_-40c_3.63v:recovery_fall_us",
+      "load-transient:ff_-40c_3.63v:recovery_rise_us",
+      "load-transient:ff_-40c_3.63v:undershoot_v",
+      "load-transient:ff_125c_2.97v:overshoot_v",
+      "load-transient:ff_125c_2.97v:recovery_fall_us",
+      "load-transient:ff_125c_2.97v:recovery_rise_us",
+      "load-transient:ff_125c_2.97v:undershoot_v",
+      "load-transient:ff_125c_3.30v:overshoot_v",
+      "load-transient:ff_125c_3.30v:recovery_fall_us",
+      "load-transient:ff_125c_3.30v:recovery_rise_us",
+      "load-transient:ff_125c_3.30v:undershoot_v",
+      "load-transient:ff_125c_3.63v:overshoot_v",
+      "load-transient:ff_125c_3.63v:recovery_fall_us",
+      "load-transient:ff_125c_3.63v:recovery_rise_us",
+      "load-transient:ff_125c_3.63v:undershoot_v",
+      "load-transient:ff_27c_2.97v:overshoot_v",
+      "load-transient:ff_27c_2.97v:recovery_fall_us",
+      "load-transient:ff_27c_2.97v:recovery_rise_us",
+      "load-transient:ff_27c_2.97v:undershoot_v",
+      "load-transient:ff_27c_3.30v:overshoot_v",
+      "load-transient:ff_27c_3.30v:recovery_fall_us",
+      "load-transient:ff_27c_3.30v:recovery_rise_us",
+      "load-transient:ff_27c_3.30v:undershoot_v",
+      "load-transient:ff_27c_3.63v:overshoot_v",
+      "load-transient:ff_27c_3.63v:recovery_fall_us",
+      "load-transient:ff_27c_3.63v:recovery_rise_us",
+      "load-transient:ff_27c_3.63v:undershoot_v",
+      "load-transient:fs_-40c_2.97v:overshoot_v",
+      "load-transient:fs_-40c_2.97v:recovery_fall_us",
+      "load-transient:fs_-40c_2.97v:recovery_rise_us",
+      "load-transient:fs_-40c_2.97v:undershoot_v",
+      "load-transient:fs_-40c_3.30v:overshoot_v",
+      "load-transient:fs_-40c_3.30v:recovery_fall_us",
+      "load-transient:fs_-40c_3.30v:recovery_rise_us",
+      "load-transient:fs_-40c_3.30v:undershoot_v",
+      "load-transient:fs_-40c_3.63v:overshoot_v",
+      "load-transient:fs_-40c_3.63v:recovery_fall_us",
+      "load-transient:fs_-40c_3.63v:recovery_rise_us",
+      "load-transient:fs_-40c_3.63v:undershoot_v",
+      "load-transient:fs_125c_2.97v:overshoot_v",
+      "load-transient:fs_125c_2.97v:recovery_fall_us",
+      "load-transient:fs_125c_2.97v:recovery_rise_us",
+      "load-transient:fs_125c_2.97v:undershoot_v",
+      "load-transient:fs_125c_3.30v:overshoot_v",
+      "load-transient:fs_125c_3.30v:recovery_fall_us",
+      "load-transient:fs_125c_3.30v:recovery_rise_us",
+      "load-transient:fs_125c_3.30v:undershoot_v",
+      "load-transient:fs_125c_3.63v:overshoot_v",
+      "load-transient:fs_125c_3.63v:recovery_fall_us",
+      "load-transient:fs_125c_3.63v:recovery_rise_us",
+      "load-transient:fs_125c_3.63v:undershoot_v",
+      "load-transient:fs_27c_2.97v:overshoot_v",
+      "load-transient:fs_27c_2.97v:recovery_fall_us",
+      "load-transient:fs_27c_2.97v:recovery_rise_us",
+      "load-transient:fs_27c_2.97v:undershoot_v",
+      "load-transient:fs_27c_3.30v:overshoot_v",
+      "load-transient:fs_27c_3.30v:recovery_fall_us",
+      "load-transient:fs_27c_3.30v:recovery_rise_us",
+      "load-transient:fs_27c_3.30v:undershoot_v",
+      "load-transient:fs_27c_3.63v:overshoot_v",
+      "load-transient:fs_27c_3.63v:recovery_fall_us",
+      "load-transient:fs_27c_3.63v:recovery_rise_us",
+      "load-transient:fs_27c_3.63v:undershoot_v",
+      "load-transient:sf_-40c_2.97v:overshoot_v",
+      "load-transient:sf_-40c_2.97v:recovery_fall_us",
+      "load-transient:sf_-40c_2.97v:recovery_rise_us",
+      "load-transient:sf_-40c_2.97v:undershoot_v",
+      "load-transient:sf_-40c_3.30v:overshoot_v",
+      "load-transient:sf_-40c_3.30v:recovery_fall_us",
+      "load-transient:sf_-40c_3.30v:recovery_rise_us",
+      "load-transient:sf_-40c_3.30v:undershoot_v",
+      "load-transient:sf_-40c_3.63v:overshoot_v",
+      "load-transient:sf_-40c_3.63v:recovery_fall_us",
+      "load-transient:sf_-40c_3.63v:recovery_rise_us",
+      "load-transient:sf_-40c_3.63v:undershoot_v",
+      "load-transient:sf_125c_2.97v:overshoot_v",
+      "load-transient:sf_125c_2.97v:recovery_fall_us",
+      "load-transient:sf_125c_2.97v:recovery_rise_us",
+      "load-transient:sf_125c_2.97v:undershoot_v",
+      "load-transient:sf_125c_3.30v:overshoot_v",
+      "load-transient:sf_125c_3.30v:recovery_fall_us",
+      "load-transient:sf_125c_3.30v:recovery_rise_us",
+      "load-transient:sf_125c_3.30v:undershoot_v",
+      "load-transient:sf_125c_3.63v:overshoot_v",
+      "load-transient:sf_125c_3.63v:recovery_fall_us",
+      "load-transient:sf_125c_3.63v:recovery_rise_us",
+      "load-transient:sf_125c_3.63v:undershoot_v",
+      "load-transient:sf_27c_2.97v:overshoot_v",
+      "load-transient:sf_27c_2.97v:recovery_fall_us",
+      "load-transient:sf_27c_2.97v:recovery_rise_us",
+      "load-transient:sf_27c_2.97v:undershoot_v",
+      "load-transient:sf_27c_3.30v:overshoot_v",
+      "load-transient:sf_27c_3.30v:recovery_fall_us",
+      "load-transient:sf_27c_3.30v:recovery_rise_us",
+      "load-transient:sf_27c_3.30v:undershoot_v",
+      "load-transient:sf_27c_3.63v:overshoot_v",
+      "load-transient:sf_27c_3.63v:recovery_fall_us",
+      "load-transient:sf_27c_3.63v:recovery_rise_us",
+      "load-transient:sf_27c_3.63v:undershoot_v",
+      "load-transient:ss_-40c_2.97v:overshoot_v",
+      "load-transient:ss_-40c_2.97v:recovery_fall_us",
+      "load-transient:ss_-40c_2.97v:recovery_rise_us",
+      "load-transient:ss_-40c_2.97v:undershoot_v",
+      "load-transient:ss_-40c_3.30v:overshoot_v",
+      "load-transient:ss_-40c_3.30v:recovery_fall_us",
+      "load-transient:ss_-40c_3.30v:recovery_rise_us",
+      "load-transient:ss_-40c_3.30v:undershoot_v",
+      "load-transient:ss_-40c_3.63v:overshoot_v",
+      "load-transient:ss_-40c_3.63v:recovery_fall_us",
+      "load-transient:ss_-40c_3.63v:recovery_rise_us",
+      "load-transient:ss_-40c_3.63v:undershoot_v",
+      "load-transient:ss_125c_2.97v:overshoot_v",
+      "load-transient:ss_125c_2.97v:recovery_fall_us",
+      "load-transient:ss_125c_2.97v:recovery_rise_us",
+      "load-transient:ss_125c_2.97v:undershoot_v",
+      "load-transient:ss_125c_3.30v:overshoot_v",
+      "load-transient:ss_125c_3.30v:recovery_fall_us",
+      "load-transient:ss_125c_3.30v:recovery_rise_us",
+      "load-transient:ss_125c_3.30v:undershoot_v",
+      "load-transient:ss_125c_3.63v:overshoot_v",
+      "load-transient:ss_125c_3.63v:recovery_fall_us",
+      "load-transient:ss_125c_3.63v:recovery_rise_us",
+      "load-transient:ss_125c_3.63v:undershoot_v",
+      "load-transient:ss_27c_2.97v:overshoot_v",
+      "load-transient:ss_27c_2.97v:recovery_fall_us",
+      "load-transient:ss_27c_2.97v:recovery_rise_us",
+      "load-transient:ss_27c_2.97v:undershoot_v",
+      "load-transient:ss_27c_3.30v:overshoot_v",
+      "load-transient:ss_27c_3.30v:recovery_fall_us",
+      "load-transient:ss_27c_3.30v:recovery_rise_us",
+      "load-transient:ss_27c_3.30v:undershoot_v",
+      "load-transient:ss_27c_3.63v:overshoot_v",
+      "load-transient:ss_27c_3.63v:recovery_fall_us",
+      "load-transient:ss_27c_3.63v:recovery_rise_us",
+      "load-transient:ss_27c_3.63v:undershoot_v",
+      "load-transient:tt_-40c_2.97v:overshoot_v",
+      "load-transient:tt_-40c_2.97v:recovery_fall_us",
+      "load-transient:tt_-40c_2.97v:recovery_rise_us",
+      "load-transient:tt_-40c_2.97v:undershoot_v",
+      "load-transient:tt_-40c_3.30v:overshoot_v",
+      "load-transient:tt_-40c_3.30v:recovery_fall_us",
+      "load-transient:tt_-40c_3.30v:recovery_rise_us",
+      "load-transient:tt_-40c_3.30v:undershoot_v",
+      "load-transient:tt_-40c_3.63v:overshoot_v",
+      "load-transient:tt_-40c_3.63v:recovery_fall_us",
+      "load-transient:tt_-40c_3.63v:recovery_rise_us",
+      "load-transient:tt_-40c_3.63v:undershoot_v",
+      "load-transient:tt_125c_2.97v:overshoot_v",
+      "load-transient:tt_125c_2.97v:recovery_fall_us",
+      "load-transient:tt_125c_2.97v:recovery_rise_us",
+      "load-transient:tt_125c_2.97v:undershoot_v",
+      "load-transient:tt_125c_3.30v:overshoot_v",
+      "load-transient:tt_125c_3.30v:recovery_fall_us",
+      "load-transient:tt_125c_3.30v:recovery_rise_us",
+      "load-transient:tt_125c_3.30v:undershoot_v",
+      "load-transient:tt_125c_3.63v:overshoot_v",
+      "load-transient:tt_125c_3.63v:recovery_fall_us",
+      "load-transient:tt_125c_3.63v:recovery_rise_us",
+      "load-transient:tt_125c_3.63v:undershoot_v",
+      "load-transient:tt_27c_2.97v:overshoot_v",
+      "load-transient:tt_27c_2.97v:recovery_fall_us",
+      "load-transient:tt_27c_2.97v:recovery_rise_us",
+      "load-transient:tt_27c_2.97v:undershoot_v",
+      "load-transient:tt_27c_3.30v:overshoot_v",
+      "load-transient:tt_27c_3.30v:recovery_fall_us",
+      "load-transient:tt_27c_3.30v:recovery_rise_us",
+      "load-transient:tt_27c_3.30v:undershoot_v",
+      "load-transient:tt_27c_3.63v:overshoot_v",
+      "load-transient:tt_27c_3.63v:recovery_fall_us",
+      "load-transient:tt_27c_3.63v:recovery_rise_us",
+      "load-transient:tt_27c_3.63v:undershoot_v"
+    ],
+    "skipped": [],
+    "inapplicable": [],
+    "unknown": [],
+    "nothing_checked": false,
+    "nothing_checked_reasons": [],
+    "measurements_declared": 5,
+    "measurements_with_limits": 4
+  },
+  "measurements": [
+    {
+      "name": "undershoot_v",
+      "unit": "V",
+      "limits": {
+        "max": 0.15
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "fs_125c_2.97v",
+        "value": 0.119265,
+        "margin": 0.030735
+      },
+      "spec_row": "load-transient"
+    },
+    {
+      "name": "overshoot_v",
+      "unit": "V",
+      "limits": {
+        "max": 0.15
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "fs_125c_2.97v",
+        "value": 0.091696,
+        "margin": 0.058303999999999995
+      },
+      "spec_row": "load-transient"
+    },
+    {
+      "name": "recovery_rise_us",
+      "unit": "us",
+      "limits": {
+        "max": 20
+      },
+      "status": "fail",
+      "worst_case": {
+        "corner_id": "fs_125c_2.97v",
+        "value": 132.1,
+        "margin": -112.1
+      },
+      "spec_row": "load-transient"
+    },
+    {
+      "name": "recovery_fall_us",
+      "unit": "us",
+      "limits": {
+        "max": 20
+      },
+      "status": "fail",
+      "worst_case": {
+        "corner_id": "ss_125c_2.97v",
+        "value": 796.1,
+        "margin": -776.1
+      },
+      "spec_row": "load-transient"
+    },
+    {
+      "name": "settle_err_50ma_pct",
+      "unit": "%",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_-40c_2.97v",
+        "value": -0.0811512,
+        "margin": null
+      }
+    }
+  ],
+  "corners": [
+    {
+      "corner_id": "tt_-40c_2.97v",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": -40.0,
+      "status": "fail",
+      "measurements": [
+        {
+          "name": "undershoot_v",
+          "value": 0.077202,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.07279799999999999
+        },
+        {
+          "name": "overshoot_v",
+          "value": 0.060238,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.089762
+        },
+        {
+          "name": "recovery_rise_us",
+          "value": 92.5,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -72.5
+        },
+        {
+          "name": "recovery_fall_us",
+          "value": 552.1,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -532.1
+        },
+        {
+          "name": "settle_err_50ma_pct",
+          "value": -0.0811512,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "tt_-40c_3.30v",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": -40.0,
+      "status": "fail",
+      "measurements": [
+        {
+          "name": "undershoot_v",
+          "value": 0.069857,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.08014299999999999
+        },
+        {
+          "name": "overshoot_v",
+          "value": 0.054164,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.095836
+        },
+        {
+          "name": "recovery_rise_us",
+          "value": 83.5,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -63.5
+        },
+        {
+          "name": "recovery_fall_us",
+          "value": 487.7,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -467.7
+        },
+        {
+          "name": "settle_err_50ma_pct",
+          "value": -0.0793151,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "tt_-40c_3.63v",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": -40.0,
+      "status": "fail",
+      "measurements": [
+        {
+          "name": "undershoot_v",
+          "value": 0.064359,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.085641
+        },
+        {
+          "name": "overshoot_v",
+          "value": 0.049574,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.10042599999999999
+        },
+        {
+          "name": "recovery_rise_us",
+          "value": 76.5,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -56.5
+        },
+        {
+          "name": "recovery_fall_us",
+          "value": 437.1,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -417.1
+        },
+        {
+          "name": "settle_err_50ma_pct",
+          "value": -0.0794226,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "tt_27c_2.97v",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": 27.0,
+      "status": "fail",
+      "measurements": [
+        {
+          "name": "undershoot_v",
+          "value": 0.092695,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.057304999999999995
+        },
+        {
+          "name": "overshoot_v",
+          "value": 0.072219,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.07778099999999999
+        },
+        {
+          "name": "recovery_rise_us",
+          "value": 108.3,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -88.3
+        },
+        {
+          "name": "recovery_fall_us",
+          "value": 674.9,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -654.9
+        },
+        {
+          "name": "settle_err_50ma_pct",
+          "value": -0.0990279,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "tt_27c_3.30v",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 27.0,
+      "status": "fail",
+      "measurements": [
+        {
+          "name": "undershoot_v",
+          "value": 0.08447,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.06552999999999999
+        },
+        {
+          "name": "overshoot_v",
+          "value": 0.065478,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.084522
+        },
+        {
+          "name": "recovery_rise_us",
+          "value": 99.5,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -79.5
+        },
+        {
+          "name": "recovery_fall_us",
+          "value": 606.1,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -586.1
+        },
+        {
+          "name": "settle_err_50ma_pct",
+          "value": -0.0979676,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "tt_27c_3.63v",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": 27.0,
+      "status": "fail",
+      "measurements": [
+        {
+          "name": "undershoot_v",
+          "value": 0.078224,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.07177599999999999
+        },
+        {
+          "name": "overshoot_v",
+          "value": 0.060309,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.08969099999999999
+        },
+        {
+          "name": "recovery_rise_us",
+          "value": 92.7,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -72.7
+        },
+        {
+          "name": "recovery_fall_us",
+          "value": 551.9,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -531.9
+        },
+        {
+          "name": "settle_err_50ma_pct",
+          "value": -0.0996828,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "tt_125c_2.97v",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": 125.0,
+      "status": "fail",
+      "measurements": [
+        {
+          "name": "undershoot_v",
+          "value": 0.116788,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.03321199999999999
+        },
+        {
+          "name": "overshoot_v",
+          "value": 0.08975,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.06025
+        },
+        {
+          "name": "recovery_rise_us",
+          "value": 129.5,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -109.5
+        },
+        {
+          "name": "recovery_fall_us",
+          "value": 788.1,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -768.1
+        },
+        {
+          "name": "settle_err_50ma_pct",
+          "value": -0.129391,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "tt_125c_3.30v",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 125.0,
+      "status": "fail",
+      "measurements": [
+        {
+          "name": "undershoot_v",
+          "value": 0.106867,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.04313299999999999
+        },
+        {
+          "name": "overshoot_v",
+          "value": 0.081649,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.068351
+        },
+        {
+          "name": "recovery_rise_us",
+          "value": 120.5,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -100.5
+        },
+        {
+          "name": "recovery_fall_us",
+          "value": 719.9,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -699.9
+        },
+        {
+          "name": "settle_err_50ma_pct",
+          "value": -0.131655,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "tt_125c_3.63v",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": 125.0,
+      "status": "fail",
+      "measurements": [
+        {
+          "name": "undershoot_v",
+          "value": 0.099291,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.05070899999999999
+        },
+        {
+          "name": "overshoot_v",
+          "value": 0.075408,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.07459199999999999
+        },
+        {
+          "name": "recovery_rise_us",
+          "value": 113.5,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -93.5
+        },
+        {
+          "name": "recovery_fall_us",
+          "value": 665.1,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -645.1
+        },
+        {
+          "name": "settle_err_50ma_pct",
+          "value": -0.137969,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ss_-40c_2.97v",
+      "process": "ss",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": -40.0,
+      "status": "fail",
+      "measurements": [
+        {
+          "name": "undershoot_v",
+          "value": 0.076322,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.073678
+        },
+        {
+          "name": "overshoot_v",
+          "value": 0.059784,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.09021599999999999
+        },
+        {
+          "name": "recovery_rise_us",
+          "value": 91.3,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -71.3
+        },
+        {
+          "name": "recovery_fall_us",
+          "value": 546.1,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -526.1
+        },
+        {
+          "name": "settle_err_50ma_pct",
+          "value": -0.0822085,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ss_-40c_3.30v",
+      "process": "ss",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": -40.0,
+      "status": "fail",
+      "measurements": [
+        {
+          "name": "undershoot_v",
+          "value": 0.068957,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.08104299999999999
+        },
+        {
+          "name": "overshoot_v",
+          "value": 0.053666,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.096334
+        },
+        {
+          "name": "recovery_rise_us",
+          "value": 82.3,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -62.3
+        },
+        {
+          "name": "recovery_fall_us",
+          "value": 481.1,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -461.1
+        },
+        {
+          "name": "settle_err_50ma_pct",
+          "value": -0.0802057,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ss_-40c_3.63v",
+      "process": "ss",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": -40.0,
+      "status": "fail",
+      "measurements": [
+        {
+          "name": "undershoot_v",
+          "value": 0.063412,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.086588
+        },
+        {
+          "name": "overshoot_v",
+          "value": 0.049029,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.10097099999999999
+        },
+        {
+          "name": "recovery_rise_us",
+          "value": 75.3,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -55.3
+        },
+        {
+          "name": "recovery_fall_us",
+          "value": 430.1,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -410.1
+        },
+        {
+          "name": "settle_err_50ma_pct",
+          "value": -0.0800911,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ss_27c_2.97v",
+      "process": "ss",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": 27.0,
+      "status": "fail",
+      "measurements": [
+        {
+          "name": "undershoot_v",
+          "value": 0.092122,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.057878
+        },
+        {
+          "name": "overshoot_v",
+          "value": 0.072049,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.07795099999999999
+        },
+        {
+          "name": "recovery_rise_us",
+          "value": 107.3,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -87.3
+        },
+        {
+          "name": "recovery_fall_us",
+          "value": 672.5,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -652.5
+        },
+        {
+          "name": "settle_err_50ma_pct",
+          "value": -0.100086,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ss_27c_3.30v",
+      "process": "ss",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 27.0,
+      "status": "fail",
+      "measurements": [
+        {
+          "name": "undershoot_v",
+          "value": 0.083827,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.066173
+        },
+        {
+          "name": "overshoot_v",
+          "value": 0.065225,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.08477499999999999
+        },
+        {
+          "name": "recovery_rise_us",
+          "value": 98.5,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -78.5
+        },
+        {
+          "name": "recovery_fall_us",
+          "value": 602.7,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -582.7
+        },
+        {
+          "name": "settle_err_50ma_pct",
+          "value": -0.0988035,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ss_27c_3.63v",
+      "process": "ss",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": 27.0,
+      "status": "fail",
+      "measurements": [
+        {
+          "name": "undershoot_v",
+          "value": 0.077476,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.07252399999999999
+        },
+        {
+          "name": "overshoot_v",
+          "value": 0.059965,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.090035
+        },
+        {
+          "name": "recovery_rise_us",
+          "value": 91.7,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -71.7
+        },
+        {
+          "name": "recovery_fall_us",
+          "value": 547.5,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -527.5
+        },
+        {
+          "name": "settle_err_50ma_pct",
+          "value": -0.10013,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ss_125c_2.97v",
+      "process": "ss",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": 125.0,
+      "status": "fail",
+      "measurements": [
+        {
+          "name": "undershoot_v",
+          "value": 0.116728,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.033271999999999996
+        },
+        {
+          "name": "overshoot_v",
+          "value": 0.089888,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.060112
+        },
+        {
+          "name": "recovery_rise_us",
+          "value": 128.9,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -108.9
+        },
+        {
+          "name": "recovery_fall_us",
+          "value": 796.1,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -776.1
+        },
+        {
+          "name": "settle_err_50ma_pct",
+          "value": -0.133832,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ss_125c_3.30v",
+      "process": "ss",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 125.0,
+      "status": "fail",
+      "measurements": [
+        {
+          "name": "undershoot_v",
+          "value": 0.106609,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.043391
+        },
+        {
+          "name": "overshoot_v",
+          "value": 0.08168,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.06831999999999999
+        },
+        {
+          "name": "recovery_rise_us",
+          "value": 119.7,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -99.7
+        },
+        {
+          "name": "recovery_fall_us",
+          "value": 726.5,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -706.5
+        },
+        {
+          "name": "settle_err_50ma_pct",
+          "value": -0.133878,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ss_125c_3.63v",
+      "process": "ss",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": 125.0,
+      "status": "fail",
+      "measurements": [
+        {
+          "name": "undershoot_v",
+          "value": 0.098799,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.051200999999999997
+        },
+        {
+          "name": "overshoot_v",
+          "value": 0.075303,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.074697
+        },
+        {
+          "name": "recovery_rise_us",
+          "value": 112.7,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -92.7
+        },
+        {
+          "name": "recovery_fall_us",
+          "value": 670.1,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -650.1
+        },
+        {
+          "name": "settle_err_50ma_pct",
+          "value": -0.138307,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ff_-40c_2.97v",
+      "process": "ff",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": -40.0,
+      "status": "fail",
+      "measurements": [
+        {
+          "name": "undershoot_v",
+          "value": 0.077381,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.07261899999999999
+        },
+        {
+          "name": "overshoot_v",
+          "value": 0.060066,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.08993399999999999
+        },
+        {
+          "name": "recovery_rise_us",
+          "value": 92.9,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -72.9
+        },
+        {
+          "name": "recovery_fall_us",
+          "value": 551.7,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -531.7
+        },
+        {
+          "name": "settle_err_50ma_pct",
+          "value": -0.0802047,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ff_-40c_3.30v",
+      "process": "ff",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": -40.0,
+      "status": "fail",
+      "measurements": [
+        {
+          "name": "undershoot_v",
+          "value": 0.070018,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.079982
+        },
+        {
+          "name": "overshoot_v",
+          "value": 0.054006,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.095994
+        },
+        {
+          "name": "recovery_rise_us",
+          "value": 83.7,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -63.7
+        },
+        {
+          "name": "recovery_fall_us",
+          "value": 487.1,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -467.1
+        },
+        {
+          "name": "settle_err_50ma_pct",
+          "value": -0.0784797,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ff_-40c_3.63v",
+      "process": "ff",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": -40.0,
+      "status": "fail",
+      "measurements": [
+        {
+          "name": "undershoot_v",
+          "value": 0.064479,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.085521
+        },
+        {
+          "name": "overshoot_v",
+          "value": 0.049404,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.10059599999999999
+        },
+        {
+          "name": "recovery_rise_us",
+          "value": 76.7,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -56.7
+        },
+        {
+          "name": "recovery_fall_us",
+          "value": 436.3,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -416.3
+        },
+        {
+          "name": "settle_err_50ma_pct",
+          "value": -0.0788646,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ff_27c_2.97v",
+      "process": "ff",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": 27.0,
+      "status": "fail",
+      "measurements": [
+        {
+          "name": "undershoot_v",
+          "value": 0.092572,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.05742799999999999
+        },
+        {
+          "name": "overshoot_v",
+          "value": 0.071754,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.078246
+        },
+        {
+          "name": "recovery_rise_us",
+          "value": 108.5,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -88.5
+        },
+        {
+          "name": "recovery_fall_us",
+          "value": 670.7,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -650.7
+        },
+        {
+          "name": "settle_err_50ma_pct",
+          "value": -0.0983025,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ff_27c_3.30v",
+      "process": "ff",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 27.0,
+      "status": "fail",
+      "measurements": [
+        {
+          "name": "undershoot_v",
+          "value": 0.084358,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.06564199999999999
+        },
+        {
+          "name": "overshoot_v",
+          "value": 0.065049,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.084951
+        },
+        {
+          "name": "recovery_rise_us",
+          "value": 99.5,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -79.5
+        },
+        {
+          "name": "recovery_fall_us",
+          "value": 602.5,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -582.5
+        },
+        {
+          "name": "settle_err_50ma_pct",
+          "value": -0.0976861,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ff_27c_3.63v",
+      "process": "ff",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": 27.0,
+      "status": "fail",
+      "measurements": [
+        {
+          "name": "undershoot_v",
+          "value": 0.078091,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.071909
+        },
+        {
+          "name": "overshoot_v",
+          "value": 0.059888,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.090112
+        },
+        {
+          "name": "recovery_rise_us",
+          "value": 92.7,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -72.7
+        },
+        {
+          "name": "recovery_fall_us",
+          "value": 547.9,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -527.9
+        },
+        {
+          "name": "settle_err_50ma_pct",
+          "value": -0.0997896,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ff_125c_2.97v",
+      "process": "ff",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": 125.0,
+      "status": "fail",
+      "measurements": [
+        {
+          "name": "undershoot_v",
+          "value": 0.11612,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.03387999999999999
+        },
+        {
+          "name": "overshoot_v",
+          "value": 0.088997,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.06100299999999999
+        },
+        {
+          "name": "recovery_rise_us",
+          "value": 129.3,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -109.30000000000001
+        },
+        {
+          "name": "recovery_fall_us",
+          "value": 773.5,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -753.5
+        },
+        {
+          "name": "settle_err_50ma_pct",
+          "value": -0.124951,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ff_125c_3.30v",
+      "process": "ff",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 125.0,
+      "status": "fail",
+      "measurements": [
+        {
+          "name": "undershoot_v",
+          "value": 0.106304,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.043696
+        },
+        {
+          "name": "overshoot_v",
+          "value": 0.080931,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.06906899999999999
+        },
+        {
+          "name": "recovery_rise_us",
+          "value": 120.3,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -100.3
+        },
+        {
+          "name": "recovery_fall_us",
+          "value": 705.9,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -685.9
+        },
+        {
+          "name": "settle_err_50ma_pct",
+          "value": -0.129932,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ff_125c_3.63v",
+      "process": "ff",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": 125.0,
+      "status": "fail",
+      "measurements": [
+        {
+          "name": "undershoot_v",
+          "value": 0.098793,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.05120699999999999
+        },
+        {
+          "name": "overshoot_v",
+          "value": 0.074678,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.075322
+        },
+        {
+          "name": "recovery_rise_us",
+          "value": 113.5,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -93.5
+        },
+        {
+          "name": "recovery_fall_us",
+          "value": 651.3,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -631.3
+        },
+        {
+          "name": "settle_err_50ma_pct",
+          "value": -0.139073,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "sf_-40c_2.97v",
+      "process": "sf",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": -40.0,
+      "status": "fail",
+      "measurements": [
+        {
+          "name": "undershoot_v",
+          "value": 0.075031,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.074969
+        },
+        {
+          "name": "overshoot_v",
+          "value": 0.058591,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.09140899999999999
+        },
+        {
+          "name": "recovery_rise_us",
+          "value": 89.7,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -69.7
+        },
+        {
+          "name": "recovery_fall_us",
+          "value": 534.3,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -514.3
+        },
+        {
+          "name": "settle_err_50ma_pct",
+          "value": -0.0815416,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "sf_-40c_3.30v",
+      "process": "sf",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": -40.0,
+      "status": "fail",
+      "measurements": [
+        {
+          "name": "undershoot_v",
+          "value": 0.068179,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.08182099999999999
+        },
+        {
+          "name": "overshoot_v",
+          "value": 0.052884,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.097116
+        },
+        {
+          "name": "recovery_rise_us",
+          "value": 81.3,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -61.3
+        },
+        {
+          "name": "recovery_fall_us",
+          "value": 473.5,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -453.5
+        },
+        {
+          "name": "settle_err_50ma_pct",
+          "value": -0.0794278,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "sf_-40c_3.63v",
+      "process": "sf",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": -40.0,
+      "status": "fail",
+      "measurements": [
+        {
+          "name": "undershoot_v",
+          "value": 0.063031,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.08696899999999999
+        },
+        {
+          "name": "overshoot_v",
+          "value": 0.048571,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.10142899999999999
+        },
+        {
+          "name": "recovery_rise_us",
+          "value": 74.7,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -54.7
+        },
+        {
+          "name": "recovery_fall_us",
+          "value": 425.7,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -405.7
+        },
+        {
+          "name": "settle_err_50ma_pct",
+          "value": -0.0790912,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "sf_27c_2.97v",
+      "process": "sf",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": 27.0,
+      "status": "fail",
+      "measurements": [
+        {
+          "name": "undershoot_v",
+          "value": 0.090464,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.05953599999999999
+        },
+        {
+          "name": "overshoot_v",
+          "value": 0.070596,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.07940399999999999
+        },
+        {
+          "name": "recovery_rise_us",
+          "value": 105.7,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -85.7
+        },
+        {
+          "name": "recovery_fall_us",
+          "value": 659.1,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -639.1
+        },
+        {
+          "name": "settle_err_50ma_pct",
+          "value": -0.0989191,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "sf_27c_3.30v",
+      "process": "sf",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 27.0,
+      "status": "fail",
+      "measurements": [
+        {
+          "name": "undershoot_v",
+          "value": 0.082741,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.067259
+        },
+        {
+          "name": "overshoot_v",
+          "value": 0.064232,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.085768
+        },
+        {
+          "name": "recovery_rise_us",
+          "value": 97.3,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -77.3
+        },
+        {
+          "name": "recovery_fall_us",
+          "value": 593.9,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -573.9
+        },
+        {
+          "name": "settle_err_50ma_pct",
+          "value": -0.0973593,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "sf_27c_3.63v",
+      "process": "sf",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": 27.0,
+      "status": "fail",
+      "measurements": [
+        {
+          "name": "undershoot_v",
+          "value": 0.076856,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.073144
+        },
+        {
+          "name": "overshoot_v",
+          "value": 0.059348,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.090652
+        },
+        {
+          "name": "recovery_rise_us",
+          "value": 90.9,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -70.9
+        },
+        {
+          "name": "recovery_fall_us",
+          "value": 542.3,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -522.3
+        },
+        {
+          "name": "settle_err_50ma_pct",
+          "value": -0.0982422,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "sf_125c_2.97v",
+      "process": "sf",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": 125.0,
+      "status": "fail",
+      "measurements": [
+        {
+          "name": "undershoot_v",
+          "value": 0.114384,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.035615999999999995
+        },
+        {
+          "name": "overshoot_v",
+          "value": 0.087951,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.06204899999999999
+        },
+        {
+          "name": "recovery_rise_us",
+          "value": 126.9,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -106.9
+        },
+        {
+          "name": "recovery_fall_us",
+          "value": 791.3,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -771.3
+        },
+        {
+          "name": "settle_err_50ma_pct",
+          "value": -0.13161,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "sf_125c_3.30v",
+      "process": "sf",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 125.0,
+      "status": "fail",
+      "measurements": [
+        {
+          "name": "undershoot_v",
+          "value": 0.104945,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.045055
+        },
+        {
+          "name": "overshoot_v",
+          "value": 0.080299,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.069701
+        },
+        {
+          "name": "recovery_rise_us",
+          "value": 118.3,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -98.3
+        },
+        {
+          "name": "recovery_fall_us",
+          "value": 725.3,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -705.3
+        },
+        {
+          "name": "settle_err_50ma_pct",
+          "value": -0.130658,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "sf_125c_3.63v",
+      "process": "sf",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": 125.0,
+      "status": "fail",
+      "measurements": [
+        {
+          "name": "undershoot_v",
+          "value": 0.097725,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.05227499999999999
+        },
+        {
+          "name": "overshoot_v",
+          "value": 0.0744,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.0756
+        },
+        {
+          "name": "recovery_rise_us",
+          "value": 111.7,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -91.7
+        },
+        {
+          "name": "recovery_fall_us",
+          "value": 671.9,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -651.9
+        },
+        {
+          "name": "settle_err_50ma_pct",
+          "value": -0.134034,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "fs_-40c_2.97v",
+      "process": "fs",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": -40.0,
+      "status": "fail",
+      "measurements": [
+        {
+          "name": "undershoot_v",
+          "value": 0.079634,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.070366
+        },
+        {
+          "name": "overshoot_v",
+          "value": 0.062068,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.087932
+        },
+        {
+          "name": "recovery_rise_us",
+          "value": 95.5,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -75.5
+        },
+        {
+          "name": "recovery_fall_us",
+          "value": 571.7,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -551.7
+        },
+        {
+          "name": "settle_err_50ma_pct",
+          "value": -0.0812606,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "fs_-40c_3.30v",
+      "process": "fs",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": -40.0,
+      "status": "fail",
+      "measurements": [
+        {
+          "name": "undershoot_v",
+          "value": 0.071727,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.078273
+        },
+        {
+          "name": "overshoot_v",
+          "value": 0.055576,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.094424
+        },
+        {
+          "name": "recovery_rise_us",
+          "value": 86.1,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -66.1
+        },
+        {
+          "name": "recovery_fall_us",
+          "value": 503.1,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -483.1
+        },
+        {
+          "name": "settle_err_50ma_pct",
+          "value": -0.0796466,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "fs_-40c_3.63v",
+      "process": "fs",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": -40.0,
+      "status": "fail",
+      "measurements": [
+        {
+          "name": "undershoot_v",
+          "value": 0.065825,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.084175
+        },
+        {
+          "name": "overshoot_v",
+          "value": 0.050674,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.099326
+        },
+        {
+          "name": "recovery_rise_us",
+          "value": 78.5,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -58.5
+        },
+        {
+          "name": "recovery_fall_us",
+          "value": 449.3,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -429.3
+        },
+        {
+          "name": "settle_err_50ma_pct",
+          "value": -0.0803091,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "fs_27c_2.97v",
+      "process": "fs",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": 27.0,
+      "status": "fail",
+      "measurements": [
+        {
+          "name": "undershoot_v",
+          "value": 0.095141,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.05485899999999999
+        },
+        {
+          "name": "overshoot_v",
+          "value": 0.073989,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.076011
+        },
+        {
+          "name": "recovery_rise_us",
+          "value": 111.1,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -91.1
+        },
+        {
+          "name": "recovery_fall_us",
+          "value": 689.9,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -669.9
+        },
+        {
+          "name": "settle_err_50ma_pct",
+          "value": -0.0996362,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "fs_27c_3.30v",
+      "process": "fs",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 27.0,
+      "status": "fail",
+      "measurements": [
+        {
+          "name": "undershoot_v",
+          "value": 0.086368,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.063632
+        },
+        {
+          "name": "overshoot_v",
+          "value": 0.06682,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.08317999999999999
+        },
+        {
+          "name": "recovery_rise_us",
+          "value": 101.9,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -81.9
+        },
+        {
+          "name": "recovery_fall_us",
+          "value": 618.3,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -598.3
+        },
+        {
+          "name": "settle_err_50ma_pct",
+          "value": -0.0995747,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "fs_27c_3.63v",
+      "process": "fs",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": 27.0,
+      "status": "fail",
+      "measurements": [
+        {
+          "name": "undershoot_v",
+          "value": 0.079714,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.070286
+        },
+        {
+          "name": "overshoot_v",
+          "value": 0.061337,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.08866299999999999
+        },
+        {
+          "name": "recovery_rise_us",
+          "value": 94.7,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -74.7
+        },
+        {
+          "name": "recovery_fall_us",
+          "value": 561.1,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -541.1
+        },
+        {
+          "name": "settle_err_50ma_pct",
+          "value": -0.102178,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "fs_125c_2.97v",
+      "process": "fs",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": 125.0,
+      "status": "fail",
+      "measurements": [
+        {
+          "name": "undershoot_v",
+          "value": 0.119265,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.030735
+        },
+        {
+          "name": "overshoot_v",
+          "value": 0.091696,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.058303999999999995
+        },
+        {
+          "name": "recovery_rise_us",
+          "value": 132.1,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -112.1
+        },
+        {
+          "name": "recovery_fall_us",
+          "value": 782.3,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -762.3
+        },
+        {
+          "name": "settle_err_50ma_pct",
+          "value": -0.125344,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "fs_125c_3.30v",
+      "process": "fs",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 125.0,
+      "status": "fail",
+      "measurements": [
+        {
+          "name": "undershoot_v",
+          "value": 0.108819,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.041180999999999995
+        },
+        {
+          "name": "overshoot_v",
+          "value": 0.083094,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.066906
+        },
+        {
+          "name": "recovery_rise_us",
+          "value": 122.7,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -102.7
+        },
+        {
+          "name": "recovery_fall_us",
+          "value": 711.5,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -691.5
+        },
+        {
+          "name": "settle_err_50ma_pct",
+          "value": -0.131878,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "fs_125c_3.63v",
+      "process": "fs",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": 125.0,
+      "status": "fail",
+      "measurements": [
+        {
+          "name": "undershoot_v",
+          "value": 0.100899,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.04910099999999999
+        },
+        {
+          "name": "overshoot_v",
+          "value": 0.076454,
+          "unit": "V",
+          "limits": {
+            "max": 0.15
+          },
+          "status": "pass",
+          "margin": 0.073546
+        },
+        {
+          "name": "recovery_rise_us",
+          "value": 115.7,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -95.7
+        },
+        {
+          "name": "recovery_fall_us",
+          "value": 654.7,
+          "unit": "us",
+          "limits": {
+            "max": 20
+          },
+          "status": "fail",
+          "margin": -634.7
+        },
+        {
+          "name": "settle_err_50ma_pct",
+          "value": -0.143071,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    }
+  ]
+}

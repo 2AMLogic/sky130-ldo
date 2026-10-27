@@ -1,0 +1,6150 @@
+{
+  "schema_version": 1,
+  "netlist": "sim/startup/netlist-snapshots/20260825-110456-933dfdd.spice",
+  "status": "pass",
+  "corner_count": 45,
+  "passed": 45,
+  "failed": 0,
+  "errored": 0,
+  "wrapper": "NOT a `klt sim` run. Hand-wrapped by signoff/make_item5_envelope.py from the committed harness-format record named in `source_record`; every value, limit and verdict is copied verbatim and nothing was re-simulated. Measurements tagged with a `spec_row` carry that row's RATIFIED bound (spec/target-spec.md, DR-006), which the script checked against the record's own limit before writing. The input pin is the netlist snapshot the record simulated, not necessarily the current schematic: see measurements/characterization.md for per-record freshness.",
+  "source_record": {
+    "bench": "startup",
+    "record_id": "20260825-110456-933dfdd",
+    "path": "sim/startup/records/20260825-110456-933dfdd.json",
+    "sha256": "sha256:5a96e8017c38903e843e17689253b4252582f00c2dc8728541b40df3851267d7",
+    "overall_pass": true,
+    "matrix_is_subset": false
+  },
+  "environment": {
+    "engine": "ngspice",
+    "engine_version": "ngspice-46 : Circuit level simulation program",
+    "pdk": "c6d73a35f524070e85faff4a6a9eef49553ebc2b",
+    "platform": "Linux 7.0.0-1010-aws x86_64"
+  },
+  "provenance": {
+    "input": {
+      "path": "sim/startup/netlist-snapshots/20260825-110456-933dfdd.spice",
+      "role": "netlist",
+      "content_hash": "sha256:e19e3bf46a221435d4bc47b921b204c2c5336cc8188c665c327a01f010bf5a77"
+    }
+  },
+  "metrics": {
+    "sim__corner__count": 45,
+    "sim__corner__passed_count": 45,
+    "sim__corner__failed_count": 0,
+    "sim__corner__errored_count": 0
+  },
+  "coverage": {
+    "schema_version": 1,
+    "known": true,
+    "checked": [
+      "startup:ff_-40c_2.97v:vfloor_c033_0ma_v",
+      "startup:ff_-40c_2.97v:vfloor_c033_50ma_v",
+      "startup:ff_-40c_2.97v:vfloor_c47_0ma_v",
+      "startup:ff_-40c_2.97v:vfloor_c47_50ma_v",
+      "startup:ff_-40c_2.97v:vpk_c033_0ma_v",
+      "startup:ff_-40c_2.97v:vpk_c033_50ma_v",
+      "startup:ff_-40c_2.97v:vpk_c47_0ma_v",
+      "startup:ff_-40c_2.97v:vpk_c47_50ma_v",
+      "startup:ff_-40c_3.30v:vfloor_c033_0ma_v",
+      "startup:ff_-40c_3.30v:vfloor_c033_50ma_v",
+      "startup:ff_-40c_3.30v:vfloor_c47_0ma_v",
+      "startup:ff_-40c_3.30v:vfloor_c47_50ma_v",
+      "startup:ff_-40c_3.30v:vpk_c033_0ma_v",
+      "startup:ff_-40c_3.30v:vpk_c033_50ma_v",
+      "startup:ff_-40c_3.30v:vpk_c47_0ma_v",
+      "startup:ff_-40c_3.30v:vpk_c47_50ma_v",
+      "startup:ff_-40c_3.63v:vfloor_c033_0ma_v",
+      "startup:ff_-40c_3.63v:vfloor_c033_50ma_v",
+      "startup:ff_-40c_3.63v:vfloor_c47_0ma_v",
+      "startup:ff_-40c_3.63v:vfloor_c47_50ma_v",
+      "startup:ff_-40c_3.63v:vpk_c033_0ma_v",
+      "startup:ff_-40c_3.63v:vpk_c033_50ma_v",
+      "startup:ff_-40c_3.63v:vpk_c47_0ma_v",
+      "startup:ff_-40c_3.63v:vpk_c47_50ma_v",
+      "startup:ff_125c_2.97v:vfloor_c033_0ma_v",
+      "startup:ff_125c_2.97v:vfloor_c033_50ma_v",
+      "startup:ff_125c_2.97v:vfloor_c47_0ma_v",
+      "startup:ff_125c_2.97v:vfloor_c47_50ma_v",
+      "startup:ff_125c_2.97v:vpk_c033_0ma_v",
+      "startup:ff_125c_2.97v:vpk_c033_50ma_v",
+      "startup:ff_125c_2.97v:vpk_c47_0ma_v",
+      "startup:ff_125c_2.97v:vpk_c47_50ma_v",
+      "startup:ff_125c_3.30v:vfloor_c033_0ma_v",
+      "startup:ff_125c_3.30v:vfloor_c033_50ma_v",
+      "startup:ff_125c_3.30v:vfloor_c47_0ma_v",
+      "startup:ff_125c_3.30v:vfloor_c47_50ma_v",
+      "startup:ff_125c_3.30v:vpk_c033_0ma_v",
+      "startup:ff_125c_3.30v:vpk_c033_50ma_v",
+      "startup:ff_125c_3.30v:vpk_c47_0ma_v",
+      "startup:ff_125c_3.30v:vpk_c47_50ma_v",
+      "startup:ff_125c_3.63v:vfloor_c033_0ma_v",
+      "startup:ff_125c_3.63v:vfloor_c033_50ma_v",
+      "startup:ff_125c_3.63v:vfloor_c47_0ma_v",
+      "startup:ff_125c_3.63v:vfloor_c47_50ma_v",
+      "startup:ff_125c_3.63v:vpk_c033_0ma_v",
+      "startup:ff_125c_3.63v:vpk_c033_50ma_v",
+      "startup:ff_125c_3.63v:vpk_c47_0ma_v",
+      "startup:ff_125c_3.63v:vpk_c47_50ma_v",
+      "startup:ff_27c_2.97v:vfloor_c033_0ma_v",
+      "startup:ff_27c_2.97v:vfloor_c033_50ma_v",
+      "startup:ff_27c_2.97v:vfloor_c47_0ma_v",
+      "startup:ff_27c_2.97v:vfloor_c47_50ma_v",
+      "startup:ff_27c_2.97v:vpk_c033_0ma_v",
+      "startup:ff_27c_2.97v:vpk_c033_50ma_v",
+      "startup:ff_27c_2.97v:vpk_c47_0ma_v",
+      "startup:ff_27c_2.97v:vpk_c47_50ma_v",
+      "startup:ff_27c_3.30v:vfloor_c033_0ma_v",
+      "startup:ff_27c_3.30v:vfloor_c033_50ma_v",
+      "startup:ff_27c_3.30v:vfloor_c47_0ma_v",
+      "startup:ff_27c_3.30v:vfloor_c47_50ma_v",
+      "startup:ff_27c_3.30v:vpk_c033_0ma_v",
+      "startup:ff_27c_3.30v:vpk_c033_50ma_v",
+      "startup:ff_27c_3.30v:vpk_c47_0ma_v",
+      "startup:ff_27c_3.30v:vpk_c47_50ma_v",
+      "startup:ff_27c_3.63v:vfloor_c033_0ma_v",
+      "startup:ff_27c_3.63v:vfloor_c033_50ma_v",
+      "startup:ff_27c_3.63v:vfloor_c47_0ma_v",
+      "startup:ff_27c_3.63v:vfloor_c47_50ma_v",
+      "startup:ff_27c_3.63v:vpk_c033_0ma_v",
+      "startup:ff_27c_3.63v:vpk_c033_50ma_v",
+      "startup:ff_27c_3.63v:vpk_c47_0ma_v",
+      "startup:ff_27c_3.63v:vpk_c47_50ma_v",
+      "startup:fs_-40c_2.97v:vfloor_c033_0ma_v",
+      "startup:fs_-40c_2.97v:vfloor_c033_50ma_v",
+      "startup:fs_-40c_2.97v:vfloor_c47_0ma_v",
+      "startup:fs_-40c_2.97v:vfloor_c47_50ma_v",
+      "startup:fs_-40c_2.97v:vpk_c033_0ma_v",
+      "startup:fs_-40c_2.97v:vpk_c033_50ma_v",
+      "startup:fs_-40c_2.97v:vpk_c47_0ma_v",
+      "startup:fs_-40c_2.97v:vpk_c47_50ma_v",
+      "startup:fs_-40c_3.30v:vfloor_c033_0ma_v",
+      "startup:fs_-40c_3.30v:vfloor_c033_50ma_v",
+      "startup:fs_-40c_3.30v:vfloor_c47_0ma_v",
+      "startup:fs_-40c_3.30v:vfloor_c47_50ma_v",
+      "startup:fs_-40c_3.30v:vpk_c033_0ma_v",
+      "startup:fs_-40c_3.30v:vpk_c033_50ma_v",
+      "startup:fs_-40c_3.30v:vpk_c47_0ma_v",
+      "startup:fs_-40c_3.30v:vpk_c47_50ma_v",
+      "startup:fs_-40c_3.63v:vfloor_c033_0ma_v",
+      "startup:fs_-40c_3.63v:vfloor_c033_50ma_v",
+      "startup:fs_-40c_3.63v:vfloor_c47_0ma_v",
+      "startup:fs_-40c_3.63v:vfloor_c47_50ma_v",
+      "startup:fs_-40c_3.63v:vpk_c033_0ma_v",
+      "startup:fs_-40c_3.63v:vpk_c033_50ma_v",
+      "startup:fs_-40c_3.63v:vpk_c47_0ma_v",
+      "startup:fs_-40c_3.63v:vpk_c47_50ma_v",
+      "startup:fs_125c_2.97v:vfloor_c033_0ma_v",
+      "startup:fs_125c_2.97v:vfloor_c033_50ma_v",
+      "startup:fs_125c_2.97v:vfloor_c47_0ma_v",
+      "startup:fs_125c_2.97v:vfloor_c47_50ma_v",
+      "startup:fs_125c_2.97v:vpk_c033_0ma_v",
+      "startup:fs_125c_2.97v:vpk_c033_50ma_v",
+      "startup:fs_125c_2.97v:vpk_c47_0ma_v",
+      "startup:fs_125c_2.97v:vpk_c47_50ma_v",
+      "startup:fs_125c_3.30v:vfloor_c033_0ma_v",
+      "startup:fs_125c_3.30v:vfloor_c033_50ma_v",
+      "startup:fs_125c_3.30v:vfloor_c47_0ma_v",
+      "startup:fs_125c_3.30v:vfloor_c47_50ma_v",
+      "startup:fs_125c_3.30v:vpk_c033_0ma_v",
+      "startup:fs_125c_3.30v:vpk_c033_50ma_v",
+      "startup:fs_125c_3.30v:vpk_c47_0ma_v",
+      "startup:fs_125c_3.30v:vpk_c47_50ma_v",
+      "startup:fs_125c_3.63v:vfloor_c033_0ma_v",
+      "startup:fs_125c_3.63v:vfloor_c033_50ma_v",
+      "startup:fs_125c_3.63v:vfloor_c47_0ma_v",
+      "startup:fs_125c_3.63v:vfloor_c47_50ma_v",
+      "startup:fs_125c_3.63v:vpk_c033_0ma_v",
+      "startup:fs_125c_3.63v:vpk_c033_50ma_v",
+      "startup:fs_125c_3.63v:vpk_c47_0ma_v",
+      "startup:fs_125c_3.63v:vpk_c47_50ma_v",
+      "startup:fs_27c_2.97v:vfloor_c033_0ma_v",
+      "startup:fs_27c_2.97v:vfloor_c033_50ma_v",
+      "startup:fs_27c_2.97v:vfloor_c47_0ma_v",
+      "startup:fs_27c_2.97v:vfloor_c47_50ma_v",
+      "startup:fs_27c_2.97v:vpk_c033_0ma_v",
+      "startup:fs_27c_2.97v:vpk_c033_50ma_v",
+      "startup:fs_27c_2.97v:vpk_c47_0ma_v",
+      "startup:fs_27c_2.97v:vpk_c47_50ma_v",
+      "startup:fs_27c_3.30v:vfloor_c033_0ma_v",
+      "startup:fs_27c_3.30v:vfloor_c033_50ma_v",
+      "startup:fs_27c_3.30v:vfloor_c47_0ma_v",
+      "startup:fs_27c_3.30v:vfloor_c47_50ma_v",
+      "startup:fs_27c_3.30v:vpk_c033_0ma_v",
+      "startup:fs_27c_3.30v:vpk_c033_50ma_v",
+      "startup:fs_27c_3.30v:vpk_c47_0ma_v",
+      "startup:fs_27c_3.30v:vpk_c47_50ma_v",
+      "startup:fs_27c_3.63v:vfloor_c033_0ma_v",
+      "startup:fs_27c_3.63v:vfloor_c033_50ma_v",
+      "startup:fs_27c_3.63v:vfloor_c47_0ma_v",
+      "startup:fs_27c_3.63v:vfloor_c47_50ma_v",
+      "startup:fs_27c_3.63v:vpk_c033_0ma_v",
+      "startup:fs_27c_3.63v:vpk_c033_50ma_v",
+      "startup:fs_27c_3.63v:vpk_c47_0ma_v",
+      "startup:fs_27c_3.63v:vpk_c47_50ma_v",
+      "startup:sf_-40c_2.97v:vfloor_c033_0ma_v",
+      "startup:sf_-40c_2.97v:vfloor_c033_50ma_v",
+      "startup:sf_-40c_2.97v:vfloor_c47_0ma_v",
+      "startup:sf_-40c_2.97v:vfloor_c47_50ma_v",
+      "startup:sf_-40c_2.97v:vpk_c033_0ma_v",
+      "startup:sf_-40c_2.97v:vpk_c033_50ma_v",
+      "startup:sf_-40c_2.97v:vpk_c47_0ma_v",
+      "startup:sf_-40c_2.97v:vpk_c47_50ma_v",
+      "startup:sf_-40c_3.30v:vfloor_c033_0ma_v",
+      "startup:sf_-40c_3.30v:vfloor_c033_50ma_v",
+      "startup:sf_-40c_3.30v:vfloor_c47_0ma_v",
+      "startup:sf_-40c_3.30v:vfloor_c47_50ma_v",
+      "startup:sf_-40c_3.30v:vpk_c033_0ma_v",
+      "startup:sf_-40c_3.30v:vpk_c033_50ma_v",
+      "startup:sf_-40c_3.30v:vpk_c47_0ma_v",
+      "startup:sf_-40c_3.30v:vpk_c47_50ma_v",
+      "startup:sf_-40c_3.63v:vfloor_c033_0ma_v",
+      "startup:sf_-40c_3.63v:vfloor_c033_50ma_v",
+      "startup:sf_-40c_3.63v:vfloor_c47_0ma_v",
+      "startup:sf_-40c_3.63v:vfloor_c47_50ma_v",
+      "startup:sf_-40c_3.63v:vpk_c033_0ma_v",
+      "startup:sf_-40c_3.63v:vpk_c033_50ma_v",
+      "startup:sf_-40c_3.63v:vpk_c47_0ma_v",
+      "startup:sf_-40c_3.63v:vpk_c47_50ma_v",
+      "startup:sf_125c_2.97v:vfloor_c033_0ma_v",
+      "startup:sf_125c_2.97v:vfloor_c033_50ma_v",
+      "startup:sf_125c_2.97v:vfloor_c47_0ma_v",
+      "startup:sf_125c_2.97v:vfloor_c47_50ma_v",
+      "startup:sf_125c_2.97v:vpk_c033_0ma_v",
+      "startup:sf_125c_2.97v:vpk_c033_50ma_v",
+      "startup:sf_125c_2.97v:vpk_c47_0ma_v",
+      "startup:sf_125c_2.97v:vpk_c47_50ma_v",
+      "startup:sf_125c_3.30v:vfloor_c033_0ma_v",
+      "startup:sf_125c_3.30v:vfloor_c033_50ma_v",
+      "startup:sf_125c_3.30v:vfloor_c47_0ma_v",
+      "startup:sf_125c_3.30v:vfloor_c47_50ma_v",
+      "startup:sf_125c_3.30v:vpk_c033_0ma_v",
+      "startup:sf_125c_3.30v:vpk_c033_50ma_v",
+      "startup:sf_125c_3.30v:vpk_c47_0ma_v",
+      "startup:sf_125c_3.30v:vpk_c47_50ma_v",
+      "startup:sf_125c_3.63v:vfloor_c033_0ma_v",
+      "startup:sf_125c_3.63v:vfloor_c033_50ma_v",
+      "startup:sf_125c_3.63v:vfloor_c47_0ma_v",
+      "startup:sf_125c_3.63v:vfloor_c47_50ma_v",
+      "startup:sf_125c_3.63v:vpk_c033_0ma_v",
+      "startup:sf_125c_3.63v:vpk_c033_50ma_v",
+      "startup:sf_125c_3.63v:vpk_c47_0ma_v",
+      "startup:sf_125c_3.63v:vpk_c47_50ma_v",
+      "startup:sf_27c_2.97v:vfloor_c033_0ma_v",
+      "startup:sf_27c_2.97v:vfloor_c033_50ma_v",
+      "startup:sf_27c_2.97v:vfloor_c47_0ma_v",
+      "startup:sf_27c_2.97v:vfloor_c47_50ma_v",
+      "startup:sf_27c_2.97v:vpk_c033_0ma_v",
+      "startup:sf_27c_2.97v:vpk_c033_50ma_v",
+      "startup:sf_27c_2.97v:vpk_c47_0ma_v",
+      "startup:sf_27c_2.97v:vpk_c47_50ma_v",
+      "startup:sf_27c_3.30v:vfloor_c033_0ma_v",
+      "startup:sf_27c_3.30v:vfloor_c033_50ma_v",
+      "startup:sf_27c_3.30v:vfloor_c47_0ma_v",
+      "startup:sf_27c_3.30v:vfloor_c47_50ma_v",
+      "startup:sf_27c_3.30v:vpk_c033_0ma_v",
+      "startup:sf_27c_3.30v:vpk_c033_50ma_v",
+      "startup:sf_27c_3.30v:vpk_c47_0ma_v",
+      "startup:sf_27c_3.30v:vpk_c47_50ma_v",
+      "startup:sf_27c_3.63v:vfloor_c033_0ma_v",
+      "startup:sf_27c_3.63v:vfloor_c033_50ma_v",
+      "startup:sf_27c_3.63v:vfloor_c47_0ma_v",
+      "startup:sf_27c_3.63v:vfloor_c47_50ma_v",
+      "startup:sf_27c_3.63v:vpk_c033_0ma_v",
+      "startup:sf_27c_3.63v:vpk_c033_50ma_v",
+      "startup:sf_27c_3.63v:vpk_c47_0ma_v",
+      "startup:sf_27c_3.63v:vpk_c47_50ma_v",
+      "startup:ss_-40c_2.97v:vfloor_c033_0ma_v",
+      "startup:ss_-40c_2.97v:vfloor_c033_50ma_v",
+      "startup:ss_-40c_2.97v:vfloor_c47_0ma_v",
+      "startup:ss_-40c_2.97v:vfloor_c47_50ma_v",
+      "startup:ss_-40c_2.97v:vpk_c033_0ma_v",
+      "startup:ss_-40c_2.97v:vpk_c033_50ma_v",
+      "startup:ss_-40c_2.97v:vpk_c47_0ma_v",
+      "startup:ss_-40c_2.97v:vpk_c47_50ma_v",
+      "startup:ss_-40c_3.30v:vfloor_c033_0ma_v",
+      "startup:ss_-40c_3.30v:vfloor_c033_50ma_v",
+      "startup:ss_-40c_3.30v:vfloor_c47_0ma_v",
+      "startup:ss_-40c_3.30v:vfloor_c47_50ma_v",
+      "startup:ss_-40c_3.30v:vpk_c033_0ma_v",
+      "startup:ss_-40c_3.30v:vpk_c033_50ma_v",
+      "startup:ss_-40c_3.30v:vpk_c47_0ma_v",
+      "startup:ss_-40c_3.30v:vpk_c47_50ma_v",
+      "startup:ss_-40c_3.63v:vfloor_c033_0ma_v",
+      "startup:ss_-40c_3.63v:vfloor_c033_50ma_v",
+      "startup:ss_-40c_3.63v:vfloor_c47_0ma_v",
+      "startup:ss_-40c_3.63v:vfloor_c47_50ma_v",
+      "startup:ss_-40c_3.63v:vpk_c033_0ma_v",
+      "startup:ss_-40c_3.63v:vpk_c033_50ma_v",
+      "startup:ss_-40c_3.63v:vpk_c47_0ma_v",
+      "startup:ss_-40c_3.63v:vpk_c47_50ma_v",
+      "startup:ss_125c_2.97v:vfloor_c033_0ma_v",
+      "startup:ss_125c_2.97v:vfloor_c033_50ma_v",
+      "startup:ss_125c_2.97v:vfloor_c47_0ma_v",
+      "startup:ss_125c_2.97v:vfloor_c47_50ma_v",
+      "startup:ss_125c_2.97v:vpk_c033_0ma_v",
+      "startup:ss_125c_2.97v:vpk_c033_50ma_v",
+      "startup:ss_125c_2.97v:vpk_c47_0ma_v",
+      "startup:ss_125c_2.97v:vpk_c47_50ma_v",
+      "startup:ss_125c_3.30v:vfloor_c033_0ma_v",
+      "startup:ss_125c_3.30v:vfloor_c033_50ma_v",
+      "startup:ss_125c_3.30v:vfloor_c47_0ma_v",
+      "startup:ss_125c_3.30v:vfloor_c47_50ma_v",
+      "startup:ss_125c_3.30v:vpk_c033_0ma_v",
+      "startup:ss_125c_3.30v:vpk_c033_50ma_v",
+      "startup:ss_125c_3.30v:vpk_c47_0ma_v",
+      "startup:ss_125c_3.30v:vpk_c47_50ma_v",
+      "startup:ss_125c_3.63v:vfloor_c033_0ma_v",
+      "startup:ss_125c_3.63v:vfloor_c033_50ma_v",
+      "startup:ss_125c_3.63v:vfloor_c47_0ma_v",
+      "startup:ss_125c_3.63v:vfloor_c47_50ma_v",
+      "startup:ss_125c_3.63v:vpk_c033_0ma_v",
+      "startup:ss_125c_3.63v:vpk_c033_50ma_v",
+      "startup:ss_125c_3.63v:vpk_c47_0ma_v",
+      "startup:ss_125c_3.63v:vpk_c47_50ma_v",
+      "startup:ss_27c_2.97v:vfloor_c033_0ma_v",
+      "startup:ss_27c_2.97v:vfloor_c033_50ma_v",
+      "startup:ss_27c_2.97v:vfloor_c47_0ma_v",
+      "startup:ss_27c_2.97v:vfloor_c47_50ma_v",
+      "startup:ss_27c_2.97v:vpk_c033_0ma_v",
+      "startup:ss_27c_2.97v:vpk_c033_50ma_v",
+      "startup:ss_27c_2.97v:vpk_c47_0ma_v",
+      "startup:ss_27c_2.97v:vpk_c47_50ma_v",
+      "startup:ss_27c_3.30v:vfloor_c033_0ma_v",
+      "startup:ss_27c_3.30v:vfloor_c033_50ma_v",
+      "startup:ss_27c_3.30v:vfloor_c47_0ma_v",
+      "startup:ss_27c_3.30v:vfloor_c47_50ma_v",
+      "startup:ss_27c_3.30v:vpk_c033_0ma_v",
+      "startup:ss_27c_3.30v:vpk_c033_50ma_v",
+      "startup:ss_27c_3.30v:vpk_c47_0ma_v",
+      "startup:ss_27c_3.30v:vpk_c47_50ma_v",
+      "startup:ss_27c_3.63v:vfloor_c033_0ma_v",
+      "startup:ss_27c_3.63v:vfloor_c033_50ma_v",
+      "startup:ss_27c_3.63v:vfloor_c47_0ma_v",
+      "startup:ss_27c_3.63v:vfloor_c47_50ma_v",
+      "startup:ss_27c_3.63v:vpk_c033_0ma_v",
+      "startup:ss_27c_3.63v:vpk_c033_50ma_v",
+      "startup:ss_27c_3.63v:vpk_c47_0ma_v",
+      "startup:ss_27c_3.63v:vpk_c47_50ma_v",
+      "startup:tt_-40c_2.97v:vfloor_c033_0ma_v",
+      "startup:tt_-40c_2.97v:vfloor_c033_50ma_v",
+      "startup:tt_-40c_2.97v:vfloor_c47_0ma_v",
+      "startup:tt_-40c_2.97v:vfloor_c47_50ma_v",
+      "startup:tt_-40c_2.97v:vpk_c033_0ma_v",
+      "startup:tt_-40c_2.97v:vpk_c033_50ma_v",
+      "startup:tt_-40c_2.97v:vpk_c47_0ma_v",
+      "startup:tt_-40c_2.97v:vpk_c47_50ma_v",
+      "startup:tt_-40c_3.30v:vfloor_c033_0ma_v",
+      "startup:tt_-40c_3.30v:vfloor_c033_50ma_v",
+      "startup:tt_-40c_3.30v:vfloor_c47_0ma_v",
+      "startup:tt_-40c_3.30v:vfloor_c47_50ma_v",
+      "startup:tt_-40c_3.30v:vpk_c033_0ma_v",
+      "startup:tt_-40c_3.30v:vpk_c033_50ma_v",
+      "startup:tt_-40c_3.30v:vpk_c47_0ma_v",
+      "startup:tt_-40c_3.30v:vpk_c47_50ma_v",
+      "startup:tt_-40c_3.63v:vfloor_c033_0ma_v",
+      "startup:tt_-40c_3.63v:vfloor_c033_50ma_v",
+      "startup:tt_-40c_3.63v:vfloor_c47_0ma_v",
+      "startup:tt_-40c_3.63v:vfloor_c47_50ma_v",
+      "startup:tt_-40c_3.63v:vpk_c033_0ma_v",
+      "startup:tt_-40c_3.63v:vpk_c033_50ma_v",
+      "startup:tt_-40c_3.63v:vpk_c47_0ma_v",
+      "startup:tt_-40c_3.63v:vpk_c47_50ma_v",
+      "startup:tt_125c_2.97v:vfloor_c033_0ma_v",
+      "startup:tt_125c_2.97v:vfloor_c033_50ma_v",
+      "startup:tt_125c_2.97v:vfloor_c47_0ma_v",
+      "startup:tt_125c_2.97v:vfloor_c47_50ma_v",
+      "startup:tt_125c_2.97v:vpk_c033_0ma_v",
+      "startup:tt_125c_2.97v:vpk_c033_50ma_v",
+      "startup:tt_125c_2.97v:vpk_c47_0ma_v",
+      "startup:tt_125c_2.97v:vpk_c47_50ma_v",
+      "startup:tt_125c_3.30v:vfloor_c033_0ma_v",
+      "startup:tt_125c_3.30v:vfloor_c033_50ma_v",
+      "startup:tt_125c_3.30v:vfloor_c47_0ma_v",
+      "startup:tt_125c_3.30v:vfloor_c47_50ma_v",
+      "startup:tt_125c_3.30v:vpk_c033_0ma_v",
+      "startup:tt_125c_3.30v:vpk_c033_50ma_v",
+      "startup:tt_125c_3.30v:vpk_c47_0ma_v",
+      "startup:tt_125c_3.30v:vpk_c47_50ma_v",
+      "startup:tt_125c_3.63v:vfloor_c033_0ma_v",
+      "startup:tt_125c_3.63v:vfloor_c033_50ma_v",
+      "startup:tt_125c_3.63v:vfloor_c47_0ma_v",
+      "startup:tt_125c_3.63v:vfloor_c47_50ma_v",
+      "startup:tt_125c_3.63v:vpk_c033_0ma_v",
+      "startup:tt_125c_3.63v:vpk_c033_50ma_v",
+      "startup:tt_125c_3.63v:vpk_c47_0ma_v",
+      "startup:tt_125c_3.63v:vpk_c47_50ma_v",
+      "startup:tt_27c_2.97v:vfloor_c033_0ma_v",
+      "startup:tt_27c_2.97v:vfloor_c033_50ma_v",
+      "startup:tt_27c_2.97v:vfloor_c47_0ma_v",
+      "startup:tt_27c_2.97v:vfloor_c47_50ma_v",
+      "startup:tt_27c_2.97v:vpk_c033_0ma_v",
+      "startup:tt_27c_2.97v:vpk_c033_50ma_v",
+      "startup:tt_27c_2.97v:vpk_c47_0ma_v",
+      "startup:tt_27c_2.97v:vpk_c47_50ma_v",
+      "startup:tt_27c_3.30v:vfloor_c033_0ma_v",
+      "startup:tt_27c_3.30v:vfloor_c033_50ma_v",
+      "startup:tt_27c_3.30v:vfloor_c47_0ma_v",
+      "startup:tt_27c_3.30v:vfloor_c47_50ma_v",
+      "startup:tt_27c_3.30v:vpk_c033_0ma_v",
+      "startup:tt_27c_3.30v:vpk_c033_50ma_v",
+      "startup:tt_27c_3.30v:vpk_c47_0ma_v",
+      "startup:tt_27c_3.30v:vpk_c47_50ma_v",
+      "startup:tt_27c_3.63v:vfloor_c033_0ma_v",
+      "startup:tt_27c_3.63v:vfloor_c033_50ma_v",
+      "startup:tt_27c_3.63v:vfloor_c47_0ma_v",
+      "startup:tt_27c_3.63v:vfloor_c47_50ma_v",
+      "startup:tt_27c_3.63v:vpk_c033_0ma_v",
+      "startup:tt_27c_3.63v:vpk_c033_50ma_v",
+      "startup:tt_27c_3.63v:vpk_c47_0ma_v",
+      "startup:tt_27c_3.63v:vpk_c47_50ma_v"
+    ],
+    "skipped": [],
+    "inapplicable": [],
+    "unknown": [],
+    "nothing_checked": false,
+    "nothing_checked_reasons": [],
+    "measurements_declared": 12,
+    "measurements_with_limits": 8
+  },
+  "measurements": [
+    {
+      "name": "vpk_c033_0ma_v",
+      "unit": "V",
+      "limits": {
+        "max": 1.836
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "fs_125c_2.97v",
+        "value": 1.820902,
+        "margin": 0.015098000000000056
+      },
+      "spec_row": "startup"
+    },
+    {
+      "name": "vfloor_c033_0ma_v",
+      "unit": "V",
+      "limits": {
+        "min": 1.764
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "sf_-40c_3.63v",
+        "value": 1.801776,
+        "margin": 0.03777600000000003
+      },
+      "spec_row": "startup"
+    },
+    {
+      "name": "tramp_c033_0ma_ms",
+      "unit": "ms",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_-40c_2.97v",
+        "value": 0.2950161,
+        "margin": null
+      }
+    },
+    {
+      "name": "vpk_c033_50ma_v",
+      "unit": "V",
+      "limits": {
+        "max": 1.836
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "fs_-40c_3.63v",
+        "value": 1.798697,
+        "margin": 0.037303000000000086
+      },
+      "spec_row": "startup"
+    },
+    {
+      "name": "vfloor_c033_50ma_v",
+      "unit": "V",
+      "limits": {
+        "min": 1.764
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "ss_125c_2.97v",
+        "value": 1.797214,
+        "margin": 0.03321400000000008
+      },
+      "spec_row": "startup"
+    },
+    {
+      "name": "tramp_c033_50ma_ms",
+      "unit": "ms",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_-40c_2.97v",
+        "value": 0.3256862,
+        "margin": null
+      }
+    },
+    {
+      "name": "vpk_c47_0ma_v",
+      "unit": "V",
+      "limits": {
+        "max": 1.836
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "ss_125c_2.97v",
+        "value": 1.829569,
+        "margin": 0.0064310000000000755
+      },
+      "spec_row": "startup"
+    },
+    {
+      "name": "vfloor_c47_0ma_v",
+      "unit": "V",
+      "limits": {
+        "min": 1.764
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "sf_-40c_3.63v",
+        "value": 1.814109,
+        "margin": 0.05010899999999996
+      },
+      "spec_row": "startup"
+    },
+    {
+      "name": "tramp_c47_0ma_ms",
+      "unit": "ms",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_-40c_2.97v",
+        "value": 0.2836884,
+        "margin": null
+      }
+    },
+    {
+      "name": "vpk_c47_50ma_v",
+      "unit": "V",
+      "limits": {
+        "max": 1.836
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "ff_-40c_3.63v",
+        "value": 1.79858,
+        "margin": 0.03742000000000001
+      },
+      "spec_row": "startup"
+    },
+    {
+      "name": "vfloor_c47_50ma_v",
+      "unit": "V",
+      "limits": {
+        "min": 1.764
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "ss_125c_2.97v",
+        "value": 1.797214,
+        "margin": 0.03321400000000008
+      },
+      "spec_row": "startup"
+    },
+    {
+      "name": "tramp_c47_50ma_ms",
+      "unit": "ms",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_-40c_2.97v",
+        "value": 0.3003354,
+        "margin": null
+      }
+    }
+  ],
+  "corners": [
+    {
+      "corner_id": "tt_-40c_2.97v",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vpk_c033_0ma_v",
+          "value": 1.809353,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.026647000000000087
+        },
+        {
+          "name": "vfloor_c033_0ma_v",
+          "value": 1.803941,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.039941000000000004
+        },
+        {
+          "name": "tramp_c033_0ma_ms",
+          "value": 0.2950161,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c033_50ma_v",
+          "value": 1.798212,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.037788000000000155
+        },
+        {
+          "name": "vfloor_c033_50ma_v",
+          "value": 1.798182,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.034181999999999935
+        },
+        {
+          "name": "tramp_c033_50ma_ms",
+          "value": 0.3256862,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_0ma_v",
+          "value": 1.81962,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.01638000000000006
+        },
+        {
+          "name": "vfloor_c47_0ma_v",
+          "value": 1.819228,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.055228000000000055
+        },
+        {
+          "name": "tramp_c47_0ma_ms",
+          "value": 0.2836884,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_50ma_v",
+          "value": 1.798214,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.0377860000000001
+        },
+        {
+          "name": "vfloor_c47_50ma_v",
+          "value": 1.79819,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.03418999999999994
+        },
+        {
+          "name": "tramp_c47_50ma_ms",
+          "value": 0.3003354,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "tt_-40c_3.30v",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vpk_c033_0ma_v",
+          "value": 1.808447,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.02755300000000016
+        },
+        {
+          "name": "vfloor_c033_0ma_v",
+          "value": 1.802941,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.03894099999999989
+        },
+        {
+          "name": "tramp_c033_0ma_ms",
+          "value": 0.2641603,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c033_50ma_v",
+          "value": 1.79833,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03767000000000009
+        },
+        {
+          "name": "vfloor_c033_50ma_v",
+          "value": 1.798314,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.034313999999999956
+        },
+        {
+          "name": "tramp_c033_50ma_ms",
+          "value": 0.2923422,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_0ma_v",
+          "value": 1.817564,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.01843600000000012
+        },
+        {
+          "name": "vfloor_c47_0ma_v",
+          "value": 1.817167,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.053166999999999964
+        },
+        {
+          "name": "tramp_c47_0ma_ms",
+          "value": 0.2528316,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_50ma_v",
+          "value": 1.798331,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.037669000000000175
+        },
+        {
+          "name": "vfloor_c47_50ma_v",
+          "value": 1.798315,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.034315000000000095
+        },
+        {
+          "name": "tramp_c47_50ma_ms",
+          "value": 0.2676964,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "tt_-40c_3.63v",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vpk_c033_0ma_v",
+          "value": 1.8078,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.028200000000000003
+        },
+        {
+          "name": "vfloor_c033_0ma_v",
+          "value": 1.802205,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.038205000000000044
+        },
+        {
+          "name": "tramp_c033_0ma_ms",
+          "value": 0.2396052,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c033_50ma_v",
+          "value": 1.7985,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03750000000000009
+        },
+        {
+          "name": "vfloor_c033_50ma_v",
+          "value": 1.79846,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.034459999999999935
+        },
+        {
+          "name": "tramp_c033_50ma_ms",
+          "value": 0.2670757,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_0ma_v",
+          "value": 1.81577,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.02022999999999997
+        },
+        {
+          "name": "vfloor_c47_0ma_v",
+          "value": 1.81537,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.051369999999999916
+        },
+        {
+          "name": "tramp_c47_0ma_ms",
+          "value": 0.2293138,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_50ma_v",
+          "value": 1.798498,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.037502000000000146
+        },
+        {
+          "name": "vfloor_c47_50ma_v",
+          "value": 1.798465,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.03446499999999997
+        },
+        {
+          "name": "tramp_c47_50ma_ms",
+          "value": 0.242412,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "tt_27c_2.97v",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": 27.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vpk_c033_0ma_v",
+          "value": 1.813842,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.022158000000000122
+        },
+        {
+          "name": "vfloor_c033_0ma_v",
+          "value": 1.808469,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.04446900000000009
+        },
+        {
+          "name": "tramp_c033_0ma_ms",
+          "value": 0.3677788,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c033_50ma_v",
+          "value": 1.797855,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.038145000000000095
+        },
+        {
+          "name": "vfloor_c033_50ma_v",
+          "value": 1.797849,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.03384900000000002
+        },
+        {
+          "name": "tramp_c033_50ma_ms",
+          "value": 0.3957896,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_0ma_v",
+          "value": 1.82505,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.010950000000000015
+        },
+        {
+          "name": "vfloor_c47_0ma_v",
+          "value": 1.824663,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.06066299999999991
+        },
+        {
+          "name": "tramp_c47_0ma_ms",
+          "value": 0.3572527,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_50ma_v",
+          "value": 1.797855,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.038145000000000095
+        },
+        {
+          "name": "vfloor_c47_50ma_v",
+          "value": 1.797849,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.03384900000000002
+        },
+        {
+          "name": "tramp_c47_50ma_ms",
+          "value": 0.3743111,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "tt_27c_3.30v",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 27.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vpk_c033_0ma_v",
+          "value": 1.812726,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.023274000000000017
+        },
+        {
+          "name": "vfloor_c033_0ma_v",
+          "value": 1.807259,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.043258999999999936
+        },
+        {
+          "name": "tramp_c033_0ma_ms",
+          "value": 0.3266,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c033_50ma_v",
+          "value": 1.797999,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.038001000000000174
+        },
+        {
+          "name": "vfloor_c033_50ma_v",
+          "value": 1.797998,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.03399799999999997
+        },
+        {
+          "name": "tramp_c033_50ma_ms",
+          "value": 0.3526651,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_0ma_v",
+          "value": 1.823624,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.012376000000000165
+        },
+        {
+          "name": "vfloor_c47_0ma_v",
+          "value": 1.82323,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.059229999999999894
+        },
+        {
+          "name": "tramp_c47_0ma_ms",
+          "value": 0.3167388,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_50ma_v",
+          "value": 1.797999,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.038001000000000174
+        },
+        {
+          "name": "vfloor_c47_50ma_v",
+          "value": 1.797998,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.03399799999999997
+        },
+        {
+          "name": "tramp_c47_50ma_ms",
+          "value": 0.3318874,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "tt_27c_3.63v",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": 27.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vpk_c033_0ma_v",
+          "value": 1.811844,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.024156000000000066
+        },
+        {
+          "name": "vfloor_c033_0ma_v",
+          "value": 1.806307,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.042307000000000095
+        },
+        {
+          "name": "tramp_c033_0ma_ms",
+          "value": 0.2948298,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c033_50ma_v",
+          "value": 1.798229,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.037771
+        },
+        {
+          "name": "vfloor_c033_50ma_v",
+          "value": 1.798168,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.034167999999999976
+        },
+        {
+          "name": "tramp_c033_50ma_ms",
+          "value": 0.3198652,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_0ma_v",
+          "value": 1.822342,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.01365800000000017
+        },
+        {
+          "name": "vfloor_c47_0ma_v",
+          "value": 1.821943,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.05794300000000008
+        },
+        {
+          "name": "tramp_c47_0ma_ms",
+          "value": 0.2854571,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_50ma_v",
+          "value": 1.798183,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03781699999999999
+        },
+        {
+          "name": "vfloor_c47_50ma_v",
+          "value": 1.79815,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.0341499999999999
+        },
+        {
+          "name": "tramp_c47_50ma_ms",
+          "value": 0.2991867,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "tt_125c_2.97v",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vpk_c033_0ma_v",
+          "value": 1.8206,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.01540000000000008
+        },
+        {
+          "name": "vfloor_c033_0ma_v",
+          "value": 1.815722,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.051722000000000046
+        },
+        {
+          "name": "tramp_c033_0ma_ms",
+          "value": 0.5019458,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c033_50ma_v",
+          "value": 1.79732,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03868000000000005
+        },
+        {
+          "name": "vfloor_c033_50ma_v",
+          "value": 1.797319,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.0333190000000001
+        },
+        {
+          "name": "tramp_c033_50ma_ms",
+          "value": 0.5323176,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_0ma_v",
+          "value": 1.828388,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.007612000000000174
+        },
+        {
+          "name": "vfloor_c47_0ma_v",
+          "value": 1.828039,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.06403899999999996
+        },
+        {
+          "name": "tramp_c47_0ma_ms",
+          "value": 0.4923218,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_50ma_v",
+          "value": 1.79732,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03868000000000005
+        },
+        {
+          "name": "vfloor_c47_50ma_v",
+          "value": 1.797319,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.0333190000000001
+        },
+        {
+          "name": "tramp_c47_50ma_ms",
+          "value": 0.5145451,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "tt_125c_3.30v",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vpk_c033_0ma_v",
+          "value": 1.819778,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.01622200000000018
+        },
+        {
+          "name": "vfloor_c033_0ma_v",
+          "value": 1.81491,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.05091000000000001
+        },
+        {
+          "name": "tramp_c033_0ma_ms",
+          "value": 0.4423053,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c033_50ma_v",
+          "value": 1.797499,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03850100000000012
+        },
+        {
+          "name": "vfloor_c033_50ma_v",
+          "value": 1.797495,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.03349500000000005
+        },
+        {
+          "name": "tramp_c033_50ma_ms",
+          "value": 0.4696104,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_0ma_v",
+          "value": 1.827814,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.008186000000000027
+        },
+        {
+          "name": "vfloor_c47_0ma_v",
+          "value": 1.827459,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.06345899999999993
+        },
+        {
+          "name": "tramp_c47_0ma_ms",
+          "value": 0.4330779,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_50ma_v",
+          "value": 1.797499,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03850100000000012
+        },
+        {
+          "name": "vfloor_c47_50ma_v",
+          "value": 1.797495,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.03349500000000005
+        },
+        {
+          "name": "tramp_c47_50ma_ms",
+          "value": 0.4522122,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "tt_125c_3.63v",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vpk_c033_0ma_v",
+          "value": 1.819124,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.016876000000000113
+        },
+        {
+          "name": "vfloor_c033_0ma_v",
+          "value": 1.814369,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.050368999999999886
+        },
+        {
+          "name": "tramp_c033_0ma_ms",
+          "value": 0.3959053,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c033_50ma_v",
+          "value": 1.79762,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03838000000000008
+        },
+        {
+          "name": "vfloor_c033_50ma_v",
+          "value": 1.797607,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.03360699999999994
+        },
+        {
+          "name": "tramp_c033_50ma_ms",
+          "value": 0.4211813,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_0ma_v",
+          "value": 1.827332,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.00866800000000012
+        },
+        {
+          "name": "vfloor_c47_0ma_v",
+          "value": 1.826978,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.06297799999999998
+        },
+        {
+          "name": "tramp_c47_0ma_ms",
+          "value": 0.3869973,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_50ma_v",
+          "value": 1.79762,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03838000000000008
+        },
+        {
+          "name": "vfloor_c47_50ma_v",
+          "value": 1.797611,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.03361100000000006
+        },
+        {
+          "name": "tramp_c47_50ma_ms",
+          "value": 0.4038323,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ss_-40c_2.97v",
+      "process": "ss",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vpk_c033_0ma_v",
+          "value": 1.808881,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.027119000000000115
+        },
+        {
+          "name": "vfloor_c033_0ma_v",
+          "value": 1.803449,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.03944900000000007
+        },
+        {
+          "name": "tramp_c033_0ma_ms",
+          "value": 0.2737657,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c033_50ma_v",
+          "value": 1.798072,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.037928000000000184
+        },
+        {
+          "name": "vfloor_c033_50ma_v",
+          "value": 1.798072,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.03407199999999988
+        },
+        {
+          "name": "tramp_c033_50ma_ms",
+          "value": 0.3064642,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_0ma_v",
+          "value": 1.819593,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.01640700000000006
+        },
+        {
+          "name": "vfloor_c47_0ma_v",
+          "value": 1.819199,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.055199
+        },
+        {
+          "name": "tramp_c47_0ma_ms",
+          "value": 0.2607414,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_50ma_v",
+          "value": 1.798072,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.037928000000000184
+        },
+        {
+          "name": "vfloor_c47_50ma_v",
+          "value": 1.798072,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.03407199999999988
+        },
+        {
+          "name": "tramp_c47_50ma_ms",
+          "value": 0.2781115,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ss_-40c_3.30v",
+      "process": "ss",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vpk_c033_0ma_v",
+          "value": 1.80802,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.027980000000000116
+        },
+        {
+          "name": "vfloor_c033_0ma_v",
+          "value": 1.802491,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.03849100000000005
+        },
+        {
+          "name": "tramp_c033_0ma_ms",
+          "value": 0.246047,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c033_50ma_v",
+          "value": 1.798324,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03767600000000004
+        },
+        {
+          "name": "vfloor_c033_50ma_v",
+          "value": 1.798282,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.034281999999999924
+        },
+        {
+          "name": "tramp_c033_50ma_ms",
+          "value": 0.2761512,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_0ma_v",
+          "value": 1.817333,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.01866699999999999
+        },
+        {
+          "name": "vfloor_c47_0ma_v",
+          "value": 1.816935,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.052934999999999954
+        },
+        {
+          "name": "tramp_c47_0ma_ms",
+          "value": 0.2336558,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_50ma_v",
+          "value": 1.798341,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03765900000000011
+        },
+        {
+          "name": "vfloor_c47_50ma_v",
+          "value": 1.798292,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.03429199999999999
+        },
+        {
+          "name": "tramp_c47_50ma_ms",
+          "value": 0.2487946,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ss_-40c_3.63v",
+      "process": "ss",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vpk_c033_0ma_v",
+          "value": 1.807416,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.028584000000000165
+        },
+        {
+          "name": "vfloor_c033_0ma_v",
+          "value": 1.801794,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.03779399999999988
+        },
+        {
+          "name": "tramp_c033_0ma_ms",
+          "value": 0.224139,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c033_50ma_v",
+          "value": 1.798435,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03756500000000007
+        },
+        {
+          "name": "vfloor_c033_50ma_v",
+          "value": 1.798388,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.034388000000000085
+        },
+        {
+          "name": "tramp_c033_50ma_ms",
+          "value": 0.2527866,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_0ma_v",
+          "value": 1.815447,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.020553000000000043
+        },
+        {
+          "name": "vfloor_c47_0ma_v",
+          "value": 1.815046,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.051045999999999925
+        },
+        {
+          "name": "tramp_c47_0ma_ms",
+          "value": 0.2123622,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_50ma_v",
+          "value": 1.798383,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03761700000000001
+        },
+        {
+          "name": "vfloor_c47_50ma_v",
+          "value": 1.798364,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.03436400000000006
+        },
+        {
+          "name": "tramp_c47_50ma_ms",
+          "value": 0.2262375,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ss_27c_2.97v",
+      "process": "ss",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": 27.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vpk_c033_0ma_v",
+          "value": 1.81329,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.022710000000000008
+        },
+        {
+          "name": "vfloor_c033_0ma_v",
+          "value": 1.807894,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.04389399999999988
+        },
+        {
+          "name": "tramp_c033_0ma_ms",
+          "value": 0.3404029,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c033_50ma_v",
+          "value": 1.797782,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.038218000000000085
+        },
+        {
+          "name": "vfloor_c033_50ma_v",
+          "value": 1.797764,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.033763999999999905
+        },
+        {
+          "name": "tramp_c033_50ma_ms",
+          "value": 0.3706817,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_0ma_v",
+          "value": 1.825773,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.010226999999999986
+        },
+        {
+          "name": "vfloor_c47_0ma_v",
+          "value": 1.825383,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.061382999999999965
+        },
+        {
+          "name": "tramp_c47_0ma_ms",
+          "value": 0.3291963,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_50ma_v",
+          "value": 1.79778,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03822000000000014
+        },
+        {
+          "name": "vfloor_c47_50ma_v",
+          "value": 1.797764,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.033763999999999905
+        },
+        {
+          "name": "tramp_c47_50ma_ms",
+          "value": 0.3464769,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ss_27c_3.30v",
+      "process": "ss",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 27.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vpk_c033_0ma_v",
+          "value": 1.812167,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.023832999999999993
+        },
+        {
+          "name": "vfloor_c033_0ma_v",
+          "value": 1.806685,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.042685000000000084
+        },
+        {
+          "name": "tramp_c033_0ma_ms",
+          "value": 0.3037394,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c033_50ma_v",
+          "value": 1.797901,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.038099000000000105
+        },
+        {
+          "name": "vfloor_c033_50ma_v",
+          "value": 1.797901,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.03390099999999996
+        },
+        {
+          "name": "tramp_c033_50ma_ms",
+          "value": 0.3318877,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_0ma_v",
+          "value": 1.824151,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.011848999999999998
+        },
+        {
+          "name": "vfloor_c47_0ma_v",
+          "value": 1.823754,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.059754000000000085
+        },
+        {
+          "name": "tramp_c47_0ma_ms",
+          "value": 0.2931238,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_50ma_v",
+          "value": 1.797901,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.038099000000000105
+        },
+        {
+          "name": "vfloor_c47_50ma_v",
+          "value": 1.797901,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.03390099999999996
+        },
+        {
+          "name": "tramp_c47_50ma_ms",
+          "value": 0.3082347,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ss_27c_3.63v",
+      "process": "ss",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": 27.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vpk_c033_0ma_v",
+          "value": 1.811293,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.024707000000000034
+        },
+        {
+          "name": "vfloor_c033_0ma_v",
+          "value": 1.805745,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.04174499999999992
+        },
+        {
+          "name": "tramp_c033_0ma_ms",
+          "value": 0.2752008,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c033_50ma_v",
+          "value": 1.798121,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.037878999999999996
+        },
+        {
+          "name": "vfloor_c033_50ma_v",
+          "value": 1.798087,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.03408699999999998
+        },
+        {
+          "name": "tramp_c033_50ma_ms",
+          "value": 0.301701,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_0ma_v",
+          "value": 1.822702,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.013298000000000032
+        },
+        {
+          "name": "vfloor_c47_0ma_v",
+          "value": 1.8223,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.05830000000000002
+        },
+        {
+          "name": "tramp_c47_0ma_ms",
+          "value": 0.2647281,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_50ma_v",
+          "value": 1.798123,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03787700000000016
+        },
+        {
+          "name": "vfloor_c47_50ma_v",
+          "value": 1.798087,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.03408699999999998
+        },
+        {
+          "name": "tramp_c47_50ma_ms",
+          "value": 0.2786374,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ss_125c_2.97v",
+      "process": "ss",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vpk_c033_0ma_v",
+          "value": 1.820381,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.01561900000000005
+        },
+        {
+          "name": "vfloor_c033_0ma_v",
+          "value": 1.81526,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.05126000000000008
+        },
+        {
+          "name": "tramp_c033_0ma_ms",
+          "value": 0.4644747,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c033_50ma_v",
+          "value": 1.797214,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03878599999999999
+        },
+        {
+          "name": "vfloor_c033_50ma_v",
+          "value": 1.797214,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.03321400000000008
+        },
+        {
+          "name": "tramp_c033_50ma_ms",
+          "value": 0.4959661,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_0ma_v",
+          "value": 1.829569,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.0064310000000000755
+        },
+        {
+          "name": "vfloor_c47_0ma_v",
+          "value": 1.829203,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.0652029999999999
+        },
+        {
+          "name": "tramp_c47_0ma_ms",
+          "value": 0.4541145,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_50ma_v",
+          "value": 1.797214,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03878599999999999
+        },
+        {
+          "name": "vfloor_c47_50ma_v",
+          "value": 1.797214,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.03321400000000008
+        },
+        {
+          "name": "tramp_c47_50ma_ms",
+          "value": 0.4760738,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ss_125c_3.30v",
+      "process": "ss",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vpk_c033_0ma_v",
+          "value": 1.819434,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.01656600000000008
+        },
+        {
+          "name": "vfloor_c033_0ma_v",
+          "value": 1.814254,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.05025400000000002
+        },
+        {
+          "name": "tramp_c033_0ma_ms",
+          "value": 0.4104787,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c033_50ma_v",
+          "value": 1.797404,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.038596000000000075
+        },
+        {
+          "name": "vfloor_c033_50ma_v",
+          "value": 1.797399,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.033398999999999957
+        },
+        {
+          "name": "tramp_c033_50ma_ms",
+          "value": 0.4389999,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_0ma_v",
+          "value": 1.828838,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.007162000000000113
+        },
+        {
+          "name": "vfloor_c47_0ma_v",
+          "value": 1.828465,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.064465
+        },
+        {
+          "name": "tramp_c47_0ma_ms",
+          "value": 0.4005815,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_50ma_v",
+          "value": 1.797404,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.038596000000000075
+        },
+        {
+          "name": "vfloor_c47_50ma_v",
+          "value": 1.7974,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.033400000000000096
+        },
+        {
+          "name": "tramp_c47_50ma_ms",
+          "value": 0.4193926,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ss_125c_3.63v",
+      "process": "ss",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vpk_c033_0ma_v",
+          "value": 1.818662,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.017338000000000076
+        },
+        {
+          "name": "vfloor_c033_0ma_v",
+          "value": 1.813491,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.04949099999999995
+        },
+        {
+          "name": "tramp_c033_0ma_ms",
+          "value": 0.3682706,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c033_50ma_v",
+          "value": 1.797548,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03845200000000015
+        },
+        {
+          "name": "vfloor_c033_50ma_v",
+          "value": 1.797531,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.03353099999999998
+        },
+        {
+          "name": "tramp_c033_50ma_ms",
+          "value": 0.3950798,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_0ma_v",
+          "value": 1.828193,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.007807000000000119
+        },
+        {
+          "name": "vfloor_c47_0ma_v",
+          "value": 1.827816,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.0638160000000001
+        },
+        {
+          "name": "tramp_c47_0ma_ms",
+          "value": 0.358859,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_50ma_v",
+          "value": 1.79755,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.038450000000000095
+        },
+        {
+          "name": "vfloor_c47_50ma_v",
+          "value": 1.797535,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.03353500000000009
+        },
+        {
+          "name": "tramp_c47_50ma_ms",
+          "value": 0.3758425,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ff_-40c_2.97v",
+      "process": "ff",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vpk_c033_0ma_v",
+          "value": 1.809816,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.026183999999999985
+        },
+        {
+          "name": "vfloor_c033_0ma_v",
+          "value": 1.80442,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.0404199999999999
+        },
+        {
+          "name": "tramp_c033_0ma_ms",
+          "value": 0.3204767,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c033_50ma_v",
+          "value": 1.798348,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03765200000000002
+        },
+        {
+          "name": "vfloor_c033_50ma_v",
+          "value": 1.798295,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.034294999999999964
+        },
+        {
+          "name": "tramp_c033_50ma_ms",
+          "value": 0.3477841,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_0ma_v",
+          "value": 1.819423,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.016577000000000064
+        },
+        {
+          "name": "vfloor_c47_0ma_v",
+          "value": 1.819034,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.05503400000000003
+        },
+        {
+          "name": "tramp_c47_0ma_ms",
+          "value": 0.3106169,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_50ma_v",
+          "value": 1.798356,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03764400000000001
+        },
+        {
+          "name": "vfloor_c47_50ma_v",
+          "value": 1.7983,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.0343
+        },
+        {
+          "name": "tramp_c47_50ma_ms",
+          "value": 0.3261342,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ff_-40c_3.30v",
+      "process": "ff",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vpk_c033_0ma_v",
+          "value": 1.808848,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.027152000000000065
+        },
+        {
+          "name": "vfloor_c033_0ma_v",
+          "value": 1.803356,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.03935599999999995
+        },
+        {
+          "name": "tramp_c033_0ma_ms",
+          "value": 0.2853132,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c033_50ma_v",
+          "value": 1.798461,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03753899999999999
+        },
+        {
+          "name": "vfloor_c033_50ma_v",
+          "value": 1.798428,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.0344279999999999
+        },
+        {
+          "name": "tramp_c033_50ma_ms",
+          "value": 0.3110775,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_0ma_v",
+          "value": 1.817532,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.01846800000000015
+        },
+        {
+          "name": "vfloor_c47_0ma_v",
+          "value": 1.817137,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.05313699999999999
+        },
+        {
+          "name": "tramp_c47_0ma_ms",
+          "value": 0.2755305,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_50ma_v",
+          "value": 1.798462,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03753800000000007
+        },
+        {
+          "name": "vfloor_c47_50ma_v",
+          "value": 1.798437,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.03443700000000005
+        },
+        {
+          "name": "tramp_c47_50ma_ms",
+          "value": 0.2895039,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ff_-40c_3.63v",
+      "process": "ff",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vpk_c033_0ma_v",
+          "value": 1.808146,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.027854000000000045
+        },
+        {
+          "name": "vfloor_c033_0ma_v",
+          "value": 1.802566,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.03856599999999988
+        },
+        {
+          "name": "tramp_c033_0ma_ms",
+          "value": 0.2582946,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c033_50ma_v",
+          "value": 1.798622,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03737800000000013
+        },
+        {
+          "name": "vfloor_c033_50ma_v",
+          "value": 1.798567,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.034567000000000014
+        },
+        {
+          "name": "tramp_c033_50ma_ms",
+          "value": 0.2827325,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_0ma_v",
+          "value": 1.815869,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.02013100000000012
+        },
+        {
+          "name": "vfloor_c47_0ma_v",
+          "value": 1.81547,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.051469999999999905
+        },
+        {
+          "name": "tramp_c47_0ma_ms",
+          "value": 0.2489033,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_50ma_v",
+          "value": 1.79858,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03742000000000001
+        },
+        {
+          "name": "vfloor_c47_50ma_v",
+          "value": 1.798541,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.03454099999999993
+        },
+        {
+          "name": "tramp_c47_50ma_ms",
+          "value": 0.2611273,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ff_27c_2.97v",
+      "process": "ff",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": 27.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vpk_c033_0ma_v",
+          "value": 1.814284,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.02171600000000007
+        },
+        {
+          "name": "vfloor_c033_0ma_v",
+          "value": 1.80894,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.04493999999999998
+        },
+        {
+          "name": "tramp_c033_0ma_ms",
+          "value": 0.3993265,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c033_50ma_v",
+          "value": 1.797945,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03805500000000017
+        },
+        {
+          "name": "vfloor_c033_50ma_v",
+          "value": 1.797945,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.03394499999999989
+        },
+        {
+          "name": "tramp_c033_50ma_ms",
+          "value": 0.4250043,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_0ma_v",
+          "value": 1.824134,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.011866000000000154
+        },
+        {
+          "name": "vfloor_c47_0ma_v",
+          "value": 1.823752,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.05975200000000003
+        },
+        {
+          "name": "tramp_c47_0ma_ms",
+          "value": 0.389986,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_50ma_v",
+          "value": 1.797945,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03805500000000017
+        },
+        {
+          "name": "vfloor_c47_50ma_v",
+          "value": 1.797945,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.03394499999999989
+        },
+        {
+          "name": "tramp_c47_50ma_ms",
+          "value": 0.40649,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ff_27c_3.30v",
+      "process": "ff",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 27.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vpk_c033_0ma_v",
+          "value": 1.813203,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.022797000000000178
+        },
+        {
+          "name": "vfloor_c033_0ma_v",
+          "value": 1.807756,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.043755999999999906
+        },
+        {
+          "name": "tramp_c033_0ma_ms",
+          "value": 0.353537,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c033_50ma_v",
+          "value": 1.798112,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.037888000000000144
+        },
+        {
+          "name": "vfloor_c033_50ma_v",
+          "value": 1.798106,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.03410599999999997
+        },
+        {
+          "name": "tramp_c033_50ma_ms",
+          "value": 0.3773273,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_0ma_v",
+          "value": 1.822869,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.013131000000000004
+        },
+        {
+          "name": "vfloor_c47_0ma_v",
+          "value": 1.822479,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.05847899999999995
+        },
+        {
+          "name": "tramp_c47_0ma_ms",
+          "value": 0.3444826,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_50ma_v",
+          "value": 1.798112,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.037888000000000144
+        },
+        {
+          "name": "vfloor_c47_50ma_v",
+          "value": 1.798106,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.03410599999999997
+        },
+        {
+          "name": "tramp_c47_50ma_ms",
+          "value": 0.3589996,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ff_27c_3.63v",
+      "process": "ff",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": 27.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vpk_c033_0ma_v",
+          "value": 1.812329,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.023670999999999998
+        },
+        {
+          "name": "vfloor_c033_0ma_v",
+          "value": 1.806806,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.0428059999999999
+        },
+        {
+          "name": "tramp_c033_0ma_ms",
+          "value": 0.3180233,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c033_50ma_v",
+          "value": 1.798313,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.037687000000000026
+        },
+        {
+          "name": "vfloor_c033_50ma_v",
+          "value": 1.798277,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.03427699999999989
+        },
+        {
+          "name": "tramp_c033_50ma_ms",
+          "value": 0.3406947,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_0ma_v",
+          "value": 1.821732,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.01426800000000017
+        },
+        {
+          "name": "vfloor_c47_0ma_v",
+          "value": 1.821335,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.057334999999999914
+        },
+        {
+          "name": "tramp_c47_0ma_ms",
+          "value": 0.3090914,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_50ma_v",
+          "value": 1.798191,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03780899999999998
+        },
+        {
+          "name": "vfloor_c47_50ma_v",
+          "value": 1.798191,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.03419100000000008
+        },
+        {
+          "name": "tramp_c47_50ma_ms",
+          "value": 0.3227267,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ff_125c_2.97v",
+      "process": "ff",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vpk_c033_0ma_v",
+          "value": 1.820645,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.015355000000000008
+        },
+        {
+          "name": "vfloor_c033_0ma_v",
+          "value": 1.816279,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.052278999999999964
+        },
+        {
+          "name": "tramp_c033_0ma_ms",
+          "value": 0.547147,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c033_50ma_v",
+          "value": 1.797425,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.038575000000000026
+        },
+        {
+          "name": "vfloor_c033_50ma_v",
+          "value": 1.797415,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.03341499999999997
+        },
+        {
+          "name": "tramp_c033_50ma_ms",
+          "value": 0.5762639,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_0ma_v",
+          "value": 1.826945,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.009055000000000035
+        },
+        {
+          "name": "vfloor_c47_0ma_v",
+          "value": 1.826626,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.06262600000000007
+        },
+        {
+          "name": "tramp_c47_0ma_ms",
+          "value": 0.5385067,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_50ma_v",
+          "value": 1.797425,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.038575000000000026
+        },
+        {
+          "name": "vfloor_c47_50ma_v",
+          "value": 1.797418,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.03341799999999995
+        },
+        {
+          "name": "tramp_c47_50ma_ms",
+          "value": 0.5606916,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ff_125c_3.30v",
+      "process": "ff",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vpk_c033_0ma_v",
+          "value": 1.819957,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.01604300000000003
+        },
+        {
+          "name": "vfloor_c033_0ma_v",
+          "value": 1.815777,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.05177699999999996
+        },
+        {
+          "name": "tramp_c033_0ma_ms",
+          "value": 0.4804979,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c033_50ma_v",
+          "value": 1.797581,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03841899999999998
+        },
+        {
+          "name": "vfloor_c033_50ma_v",
+          "value": 1.797577,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.03357699999999997
+        },
+        {
+          "name": "tramp_c033_50ma_ms",
+          "value": 0.5064008,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_0ma_v",
+          "value": 1.826514,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.009486000000000105
+        },
+        {
+          "name": "vfloor_c47_0ma_v",
+          "value": 1.8262,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.06220000000000003
+        },
+        {
+          "name": "tramp_c47_0ma_ms",
+          "value": 0.4721608,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_50ma_v",
+          "value": 1.797581,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03841899999999998
+        },
+        {
+          "name": "vfloor_c47_50ma_v",
+          "value": 1.797578,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.033577999999999886
+        },
+        {
+          "name": "tramp_c47_50ma_ms",
+          "value": 0.491123,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ff_125c_3.63v",
+      "process": "ff",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vpk_c033_0ma_v",
+          "value": 1.819449,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.016550999999999982
+        },
+        {
+          "name": "vfloor_c033_0ma_v",
+          "value": 1.815631,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.05163099999999998
+        },
+        {
+          "name": "tramp_c033_0ma_ms",
+          "value": 0.4285682,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c033_50ma_v",
+          "value": 1.797692,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03830800000000001
+        },
+        {
+          "name": "vfloor_c033_50ma_v",
+          "value": 1.797685,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.033684999999999965
+        },
+        {
+          "name": "tramp_c033_50ma_ms",
+          "value": 0.4527549,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_0ma_v",
+          "value": 1.826156,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.009844000000000186
+        },
+        {
+          "name": "vfloor_c47_0ma_v",
+          "value": 1.825855,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.06185499999999999
+        },
+        {
+          "name": "tramp_c47_0ma_ms",
+          "value": 0.4206065,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_50ma_v",
+          "value": 1.797692,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03830800000000001
+        },
+        {
+          "name": "vfloor_c47_50ma_v",
+          "value": 1.797687,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.03368700000000002
+        },
+        {
+          "name": "tramp_c47_50ma_ms",
+          "value": 0.437671,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "sf_-40c_2.97v",
+      "process": "sf",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vpk_c033_0ma_v",
+          "value": 1.808727,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.027273000000000103
+        },
+        {
+          "name": "vfloor_c033_0ma_v",
+          "value": 1.803282,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.03928200000000004
+        },
+        {
+          "name": "tramp_c033_0ma_ms",
+          "value": 0.2580245,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c033_50ma_v",
+          "value": 1.798252,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.037748000000000115
+        },
+        {
+          "name": "vfloor_c033_50ma_v",
+          "value": 1.798185,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.03418499999999991
+        },
+        {
+          "name": "tramp_c033_50ma_ms",
+          "value": 0.2918155,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_0ma_v",
+          "value": 1.818705,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.01729500000000006
+        },
+        {
+          "name": "vfloor_c47_0ma_v",
+          "value": 1.818311,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.054311
+        },
+        {
+          "name": "tramp_c47_0ma_ms",
+          "value": 0.2441574,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_50ma_v",
+          "value": 1.798244,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03775600000000012
+        },
+        {
+          "name": "vfloor_c47_50ma_v",
+          "value": 1.798196,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.03419599999999989
+        },
+        {
+          "name": "tramp_c47_50ma_ms",
+          "value": 0.2630052,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "sf_-40c_3.30v",
+      "process": "sf",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vpk_c033_0ma_v",
+          "value": 1.807952,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.028048000000000073
+        },
+        {
+          "name": "vfloor_c033_0ma_v",
+          "value": 1.802413,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.03841300000000003
+        },
+        {
+          "name": "tramp_c033_0ma_ms",
+          "value": 0.2330321,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c033_50ma_v",
+          "value": 1.79828,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.037719999999999976
+        },
+        {
+          "name": "vfloor_c033_50ma_v",
+          "value": 1.798269,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.03426899999999988
+        },
+        {
+          "name": "tramp_c033_50ma_ms",
+          "value": 0.2649188,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_0ma_v",
+          "value": 1.816414,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.019586000000000103
+        },
+        {
+          "name": "vfloor_c47_0ma_v",
+          "value": 1.816017,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.05201699999999998
+        },
+        {
+          "name": "tramp_c47_0ma_ms",
+          "value": 0.2195645,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_50ma_v",
+          "value": 1.79828,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.037719999999999976
+        },
+        {
+          "name": "vfloor_c47_50ma_v",
+          "value": 1.798271,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.03427099999999994
+        },
+        {
+          "name": "tramp_c47_50ma_ms",
+          "value": 0.2367403,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "sf_-40c_3.63v",
+      "process": "sf",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vpk_c033_0ma_v",
+          "value": 1.807403,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.028596999999999984
+        },
+        {
+          "name": "vfloor_c033_0ma_v",
+          "value": 1.801776,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.03777600000000003
+        },
+        {
+          "name": "tramp_c033_0ma_ms",
+          "value": 0.2141772,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c033_50ma_v",
+          "value": 1.798449,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03755100000000011
+        },
+        {
+          "name": "vfloor_c033_50ma_v",
+          "value": 1.798409,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.03440899999999991
+        },
+        {
+          "name": "tramp_c033_50ma_ms",
+          "value": 0.2441972,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_0ma_v",
+          "value": 1.814508,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.021492000000000067
+        },
+        {
+          "name": "vfloor_c47_0ma_v",
+          "value": 1.814109,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.05010899999999996
+        },
+        {
+          "name": "tramp_c47_0ma_ms",
+          "value": 0.2005366,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_50ma_v",
+          "value": 1.798451,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.037549000000000055
+        },
+        {
+          "name": "vfloor_c47_50ma_v",
+          "value": 1.798412,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.03441199999999989
+        },
+        {
+          "name": "tramp_c47_50ma_ms",
+          "value": 0.2167469,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "sf_27c_2.97v",
+      "process": "sf",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": 27.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vpk_c033_0ma_v",
+          "value": 1.812913,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.02308700000000008
+        },
+        {
+          "name": "vfloor_c033_0ma_v",
+          "value": 1.807502,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.04350199999999993
+        },
+        {
+          "name": "tramp_c033_0ma_ms",
+          "value": 0.3186776,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c033_50ma_v",
+          "value": 1.797861,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.038139000000000145
+        },
+        {
+          "name": "vfloor_c033_50ma_v",
+          "value": 1.797841,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.03384100000000001
+        },
+        {
+          "name": "tramp_c033_50ma_ms",
+          "value": 0.3506026,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_0ma_v",
+          "value": 1.825626,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.010374000000000105
+        },
+        {
+          "name": "vfloor_c47_0ma_v",
+          "value": 1.825233,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.06123300000000009
+        },
+        {
+          "name": "tramp_c47_0ma_ms",
+          "value": 0.3072162,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_50ma_v",
+          "value": 1.797862,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.038138000000000005
+        },
+        {
+          "name": "vfloor_c47_50ma_v",
+          "value": 1.797841,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.03384100000000001
+        },
+        {
+          "name": "tramp_c47_50ma_ms",
+          "value": 0.3247455,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "sf_27c_3.30v",
+      "process": "sf",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 27.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vpk_c033_0ma_v",
+          "value": 1.81185,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.024150000000000116
+        },
+        {
+          "name": "vfloor_c033_0ma_v",
+          "value": 1.806362,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.04236200000000001
+        },
+        {
+          "name": "tramp_c033_0ma_ms",
+          "value": 0.2863188,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c033_50ma_v",
+          "value": 1.797948,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.038051999999999975
+        },
+        {
+          "name": "vfloor_c033_50ma_v",
+          "value": 1.797946,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.03394600000000003
+        },
+        {
+          "name": "tramp_c033_50ma_ms",
+          "value": 0.3163216,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_0ma_v",
+          "value": 1.823889,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.012110999999999983
+        },
+        {
+          "name": "vfloor_c47_0ma_v",
+          "value": 1.823491,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.05949099999999996
+        },
+        {
+          "name": "tramp_c47_0ma_ms",
+          "value": 0.2751428,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_50ma_v",
+          "value": 1.797948,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.038051999999999975
+        },
+        {
+          "name": "vfloor_c47_50ma_v",
+          "value": 1.797946,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.03394600000000003
+        },
+        {
+          "name": "tramp_c47_50ma_ms",
+          "value": 0.290694,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "sf_27c_3.63v",
+      "process": "sf",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": 27.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vpk_c033_0ma_v",
+          "value": 1.811042,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.024958000000000036
+        },
+        {
+          "name": "vfloor_c033_0ma_v",
+          "value": 1.805492,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.041492000000000084
+        },
+        {
+          "name": "tramp_c033_0ma_ms",
+          "value": 0.2607625,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c033_50ma_v",
+          "value": 1.798055,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03794500000000012
+        },
+        {
+          "name": "vfloor_c033_50ma_v",
+          "value": 1.798054,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.03405400000000003
+        },
+        {
+          "name": "tramp_c033_50ma_ms",
+          "value": 0.289689,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_0ma_v",
+          "value": 1.822343,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.01365700000000003
+        },
+        {
+          "name": "vfloor_c47_0ma_v",
+          "value": 1.821941,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.05794100000000002
+        },
+        {
+          "name": "tramp_c47_0ma_ms",
+          "value": 0.2499473,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_50ma_v",
+          "value": 1.798055,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03794500000000012
+        },
+        {
+          "name": "vfloor_c47_50ma_v",
+          "value": 1.798054,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.03405400000000003
+        },
+        {
+          "name": "tramp_c47_50ma_ms",
+          "value": 0.2641782,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "sf_125c_2.97v",
+      "process": "sf",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vpk_c033_0ma_v",
+          "value": 1.820118,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.015882000000000174
+        },
+        {
+          "name": "vfloor_c033_0ma_v",
+          "value": 1.814903,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.05090299999999992
+        },
+        {
+          "name": "tramp_c033_0ma_ms",
+          "value": 0.443177,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c033_50ma_v",
+          "value": 1.797288,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03871200000000008
+        },
+        {
+          "name": "vfloor_c033_50ma_v",
+          "value": 1.797284,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.03328400000000009
+        },
+        {
+          "name": "tramp_c033_50ma_ms",
+          "value": 0.4746204,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_0ma_v",
+          "value": 1.829491,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.006509000000000098
+        },
+        {
+          "name": "vfloor_c47_0ma_v",
+          "value": 1.82912,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.06512000000000007
+        },
+        {
+          "name": "tramp_c47_0ma_ms",
+          "value": 0.432798,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_50ma_v",
+          "value": 1.797288,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03871200000000008
+        },
+        {
+          "name": "vfloor_c47_50ma_v",
+          "value": 1.797285,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.03328500000000001
+        },
+        {
+          "name": "tramp_c47_50ma_ms",
+          "value": 0.4542721,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "sf_125c_3.30v",
+      "process": "sf",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vpk_c033_0ma_v",
+          "value": 1.819168,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.01683200000000018
+        },
+        {
+          "name": "vfloor_c033_0ma_v",
+          "value": 1.813869,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.04986899999999994
+        },
+        {
+          "name": "tramp_c033_0ma_ms",
+          "value": 0.3930383,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c033_50ma_v",
+          "value": 1.797465,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.038534999999999986
+        },
+        {
+          "name": "vfloor_c033_50ma_v",
+          "value": 1.797464,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.03346399999999994
+        },
+        {
+          "name": "tramp_c033_50ma_ms",
+          "value": 0.4216245,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_0ma_v",
+          "value": 1.828799,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.007201000000000013
+        },
+        {
+          "name": "vfloor_c47_0ma_v",
+          "value": 1.828419,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.064419
+        },
+        {
+          "name": "tramp_c47_0ma_ms",
+          "value": 0.3830223,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_50ma_v",
+          "value": 1.797465,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.038534999999999986
+        },
+        {
+          "name": "vfloor_c47_50ma_v",
+          "value": 1.797464,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.03346399999999994
+        },
+        {
+          "name": "tramp_c47_50ma_ms",
+          "value": 0.4015384,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "sf_125c_3.63v",
+      "process": "sf",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vpk_c033_0ma_v",
+          "value": 1.818402,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.017598000000000003
+        },
+        {
+          "name": "vfloor_c033_0ma_v",
+          "value": 1.81307,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.04906999999999995
+        },
+        {
+          "name": "tramp_c033_0ma_ms",
+          "value": 0.3539136,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c033_50ma_v",
+          "value": 1.797578,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03842200000000018
+        },
+        {
+          "name": "vfloor_c033_50ma_v",
+          "value": 1.797578,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.033577999999999886
+        },
+        {
+          "name": "tramp_c033_50ma_ms",
+          "value": 0.3809398,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_0ma_v",
+          "value": 1.828193,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.007807000000000119
+        },
+        {
+          "name": "vfloor_c47_0ma_v",
+          "value": 1.827808,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.06380800000000009
+        },
+        {
+          "name": "tramp_c47_0ma_ms",
+          "value": 0.3440166,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_50ma_v",
+          "value": 1.797578,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03842200000000018
+        },
+        {
+          "name": "vfloor_c47_50ma_v",
+          "value": 1.797578,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.033577999999999886
+        },
+        {
+          "name": "tramp_c47_50ma_ms",
+          "value": 0.3607552,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "fs_-40c_2.97v",
+      "process": "fs",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vpk_c033_0ma_v",
+          "value": 1.810167,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.025832999999999995
+        },
+        {
+          "name": "vfloor_c033_0ma_v",
+          "value": 1.804796,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.040796000000000054
+        },
+        {
+          "name": "tramp_c033_0ma_ms",
+          "value": 0.3449904,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c033_50ma_v",
+          "value": 1.798309,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03769100000000014
+        },
+        {
+          "name": "vfloor_c033_50ma_v",
+          "value": 1.798262,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.034262000000000015
+        },
+        {
+          "name": "tramp_c033_50ma_ms",
+          "value": 0.3705922,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_0ma_v",
+          "value": 1.820029,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.01597100000000018
+        },
+        {
+          "name": "vfloor_c47_0ma_v",
+          "value": 1.819642,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.05564199999999997
+        },
+        {
+          "name": "tramp_c47_0ma_ms",
+          "value": 0.3351076,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_50ma_v",
+          "value": 1.798292,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.037708000000000075
+        },
+        {
+          "name": "vfloor_c47_50ma_v",
+          "value": 1.798247,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.034246999999999916
+        },
+        {
+          "name": "tramp_c47_50ma_ms",
+          "value": 0.3504991,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "fs_-40c_3.30v",
+      "process": "fs",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vpk_c033_0ma_v",
+          "value": 1.80913,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.02687000000000017
+        },
+        {
+          "name": "vfloor_c033_0ma_v",
+          "value": 1.803658,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.03965799999999997
+        },
+        {
+          "name": "tramp_c033_0ma_ms",
+          "value": 0.3049644,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c033_50ma_v",
+          "value": 1.798374,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03762600000000016
+        },
+        {
+          "name": "vfloor_c033_50ma_v",
+          "value": 1.798356,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.03435600000000005
+        },
+        {
+          "name": "tramp_c033_50ma_ms",
+          "value": 0.3289046,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_0ma_v",
+          "value": 1.818229,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.01777099999999998
+        },
+        {
+          "name": "vfloor_c47_0ma_v",
+          "value": 1.817836,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.053835999999999995
+        },
+        {
+          "name": "tramp_c47_0ma_ms",
+          "value": 0.295432,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_50ma_v",
+          "value": 1.79843,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.0375700000000001
+        },
+        {
+          "name": "vfloor_c47_50ma_v",
+          "value": 1.798402,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.034402000000000044
+        },
+        {
+          "name": "tramp_c47_50ma_ms",
+          "value": 0.3088823,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "fs_-40c_3.63v",
+      "process": "fs",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vpk_c033_0ma_v",
+          "value": 1.808351,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.027649000000000035
+        },
+        {
+          "name": "vfloor_c033_0ma_v",
+          "value": 1.802784,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.03878399999999993
+        },
+        {
+          "name": "tramp_c033_0ma_ms",
+          "value": 0.2738925,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c033_50ma_v",
+          "value": 1.798697,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.037303000000000086
+        },
+        {
+          "name": "vfloor_c033_50ma_v",
+          "value": 1.798593,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.034593000000000096
+        },
+        {
+          "name": "tramp_c033_50ma_ms",
+          "value": 0.2969647,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_0ma_v",
+          "value": 1.816641,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.019359000000000126
+        },
+        {
+          "name": "vfloor_c47_0ma_v",
+          "value": 1.816243,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.05224300000000004
+        },
+        {
+          "name": "tramp_c47_0ma_ms",
+          "value": 0.2652034,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_50ma_v",
+          "value": 1.798416,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03758400000000006
+        },
+        {
+          "name": "vfloor_c47_50ma_v",
+          "value": 1.798415,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.034415000000000084
+        },
+        {
+          "name": "tramp_c47_50ma_ms",
+          "value": 0.277065,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "fs_27c_2.97v",
+      "process": "fs",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": 27.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vpk_c033_0ma_v",
+          "value": 1.814688,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.021311999999999998
+        },
+        {
+          "name": "vfloor_c033_0ma_v",
+          "value": 1.809386,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.045385999999999926
+        },
+        {
+          "name": "tramp_c033_0ma_ms",
+          "value": 0.4299077,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c033_50ma_v",
+          "value": 1.797891,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03810900000000017
+        },
+        {
+          "name": "vfloor_c033_50ma_v",
+          "value": 1.797891,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.03389099999999989
+        },
+        {
+          "name": "tramp_c033_50ma_ms",
+          "value": 0.454973,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_0ma_v",
+          "value": 1.824168,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.011832000000000065
+        },
+        {
+          "name": "vfloor_c47_0ma_v",
+          "value": 1.82379,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.05979000000000001
+        },
+        {
+          "name": "tramp_c47_0ma_ms",
+          "value": 0.4205401,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_50ma_v",
+          "value": 1.797929,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.038070999999999966
+        },
+        {
+          "name": "vfloor_c47_50ma_v",
+          "value": 1.797914,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.033914
+        },
+        {
+          "name": "tramp_c47_50ma_ms",
+          "value": 0.4378618,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "fs_27c_3.30v",
+      "process": "fs",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 27.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vpk_c033_0ma_v",
+          "value": 1.8136,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.022399999999999975
+        },
+        {
+          "name": "vfloor_c033_0ma_v",
+          "value": 1.808181,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.044181000000000026
+        },
+        {
+          "name": "tramp_c033_0ma_ms",
+          "value": 0.3778881,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c033_50ma_v",
+          "value": 1.798064,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03793599999999997
+        },
+        {
+          "name": "vfloor_c033_50ma_v",
+          "value": 1.798057,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.034057000000000004
+        },
+        {
+          "name": "tramp_c033_50ma_ms",
+          "value": 0.400607,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_0ma_v",
+          "value": 1.823027,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.012973000000000123
+        },
+        {
+          "name": "vfloor_c47_0ma_v",
+          "value": 1.822639,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.058638999999999886
+        },
+        {
+          "name": "tramp_c47_0ma_ms",
+          "value": 0.369251,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_50ma_v",
+          "value": 1.798099,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.037901000000000185
+        },
+        {
+          "name": "vfloor_c47_50ma_v",
+          "value": 1.798073,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.03407300000000002
+        },
+        {
+          "name": "tramp_c47_50ma_ms",
+          "value": 0.3842893,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "fs_27c_3.63v",
+      "process": "fs",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": 27.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vpk_c033_0ma_v",
+          "value": 1.812722,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.023278000000000132
+        },
+        {
+          "name": "vfloor_c033_0ma_v",
+          "value": 1.807218,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.04321799999999998
+        },
+        {
+          "name": "tramp_c033_0ma_ms",
+          "value": 0.3378702,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c033_50ma_v",
+          "value": 1.798304,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.037696000000000174
+        },
+        {
+          "name": "vfloor_c033_50ma_v",
+          "value": 1.798253,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.03425300000000009
+        },
+        {
+          "name": "tramp_c033_50ma_ms",
+          "value": 0.3593254,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_0ma_v",
+          "value": 1.822009,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.013991000000000087
+        },
+        {
+          "name": "vfloor_c47_0ma_v",
+          "value": 1.821615,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.05761499999999997
+        },
+        {
+          "name": "tramp_c47_0ma_ms",
+          "value": 0.3294905,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_50ma_v",
+          "value": 1.798274,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03772600000000015
+        },
+        {
+          "name": "vfloor_c47_50ma_v",
+          "value": 1.798231,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.0342309999999999
+        },
+        {
+          "name": "tramp_c47_50ma_ms",
+          "value": 0.3427496,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "fs_125c_2.97v",
+      "process": "fs",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vpk_c033_0ma_v",
+          "value": 1.820902,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.015098000000000056
+        },
+        {
+          "name": "vfloor_c033_0ma_v",
+          "value": 1.8172,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.053199999999999914
+        },
+        {
+          "name": "tramp_c033_0ma_ms",
+          "value": 0.5810806,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c033_50ma_v",
+          "value": 1.7973,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03870000000000018
+        },
+        {
+          "name": "vfloor_c033_50ma_v",
+          "value": 1.797296,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.03329599999999999
+        },
+        {
+          "name": "tramp_c033_50ma_ms",
+          "value": 0.6108084,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_0ma_v",
+          "value": 1.826884,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.009116000000000124
+        },
+        {
+          "name": "vfloor_c47_0ma_v",
+          "value": 1.826604,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.06260399999999988
+        },
+        {
+          "name": "tramp_c47_0ma_ms",
+          "value": 0.5723093,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_50ma_v",
+          "value": 1.7973,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03870000000000018
+        },
+        {
+          "name": "vfloor_c47_50ma_v",
+          "value": 1.797296,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.03329599999999999
+        },
+        {
+          "name": "tramp_c47_50ma_ms",
+          "value": 0.5955656,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "fs_125c_3.30v",
+      "process": "fs",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vpk_c033_0ma_v",
+          "value": 1.820262,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.01573800000000003
+        },
+        {
+          "name": "vfloor_c033_0ma_v",
+          "value": 1.816972,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.05297200000000002
+        },
+        {
+          "name": "tramp_c033_0ma_ms",
+          "value": 0.507544,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c033_50ma_v",
+          "value": 1.797466,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03853400000000007
+        },
+        {
+          "name": "vfloor_c033_50ma_v",
+          "value": 1.797465,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.03346500000000008
+        },
+        {
+          "name": "tramp_c033_50ma_ms",
+          "value": 0.5340296,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_0ma_v",
+          "value": 1.826485,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.009515000000000162
+        },
+        {
+          "name": "vfloor_c47_0ma_v",
+          "value": 1.826222,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.062222
+        },
+        {
+          "name": "tramp_c47_0ma_ms",
+          "value": 0.4993339,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_50ma_v",
+          "value": 1.797466,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03853400000000007
+        },
+        {
+          "name": "vfloor_c47_50ma_v",
+          "value": 1.797465,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.03346500000000008
+        },
+        {
+          "name": "tramp_c47_50ma_ms",
+          "value": 0.5192124,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "fs_125c_3.63v",
+      "process": "fs",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vpk_c033_0ma_v",
+          "value": 1.819824,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.016175999999999968
+        },
+        {
+          "name": "vfloor_c033_0ma_v",
+          "value": 1.817188,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.05318800000000001
+        },
+        {
+          "name": "tramp_c033_0ma_ms",
+          "value": 0.4510906,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c033_50ma_v",
+          "value": 1.797578,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03842200000000018
+        },
+        {
+          "name": "vfloor_c033_50ma_v",
+          "value": 1.797571,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.03357100000000002
+        },
+        {
+          "name": "tramp_c033_50ma_ms",
+          "value": 0.4754339,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_0ma_v",
+          "value": 1.826183,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.009817000000000187
+        },
+        {
+          "name": "vfloor_c47_0ma_v",
+          "value": 1.82595,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.06194999999999995
+        },
+        {
+          "name": "tramp_c47_0ma_ms",
+          "value": 0.4429869,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vpk_c47_50ma_v",
+          "value": 1.797578,
+          "unit": "V",
+          "limits": {
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03842200000000018
+        },
+        {
+          "name": "vfloor_c47_50ma_v",
+          "value": 1.797572,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.033571999999999935
+        },
+        {
+          "name": "tramp_c47_50ma_ms",
+          "value": 0.4606388,
+          "unit": "ms",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    }
+  ]
+}

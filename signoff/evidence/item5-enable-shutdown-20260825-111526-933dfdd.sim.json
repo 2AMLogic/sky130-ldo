@@ -1,0 +1,4296 @@
+{
+  "schema_version": 1,
+  "netlist": "sim/enable-shutdown/netlist-snapshots/20260825-111526-933dfdd.spice",
+  "status": "pass",
+  "corner_count": 45,
+  "passed": 45,
+  "failed": 0,
+  "errored": 0,
+  "wrapper": "NOT a `klt sim` run. Hand-wrapped by signoff/make_item5_envelope.py from the committed harness-format record named in `source_record`; every value, limit and verdict is copied verbatim and nothing was re-simulated. Measurements tagged with a `spec_row` carry that row's RATIFIED bound (spec/target-spec.md, DR-006), which the script checked against the record's own limit before writing. The input pin is the netlist snapshot the record simulated, not necessarily the current schematic: see measurements/characterization.md for per-record freshness.",
+  "source_record": {
+    "bench": "enable-shutdown",
+    "record_id": "20260825-111526-933dfdd",
+    "path": "sim/enable-shutdown/records/20260825-111526-933dfdd.json",
+    "sha256": "sha256:c0c9c4a7e3c679bba195d1269c08e7b51364b1cbe07e1b8199aadf21142476a0",
+    "overall_pass": true,
+    "matrix_is_subset": false
+  },
+  "environment": {
+    "engine": "ngspice",
+    "engine_version": "ngspice-46 : Circuit level simulation program",
+    "pdk": "c6d73a35f524070e85faff4a6a9eef49553ebc2b",
+    "platform": "Linux 7.0.0-1010-aws x86_64"
+  },
+  "provenance": {
+    "input": {
+      "path": "sim/enable-shutdown/netlist-snapshots/20260825-111526-933dfdd.spice",
+      "role": "netlist",
+      "content_hash": "sha256:564f63f4b1e2b4659ad7b1598dcfdd57b2d4217fb29fb3038ac909c98edb34d3"
+    }
+  },
+  "metrics": {
+    "sim__corner__count": 45,
+    "sim__corner__passed_count": 45,
+    "sim__corner__failed_count": 0,
+    "sim__corner__errored_count": 0
+  },
+  "coverage": {
+    "schema_version": 1,
+    "known": true,
+    "checked": [
+      "enable-shutdown:ff_-40c_2.97v:iq_shutdown_after_edge_ua",
+      "enable-shutdown:ff_-40c_2.97v:iq_shutdown_static_ua",
+      "enable-shutdown:ff_-40c_2.97v:leak_vin_vout_ua",
+      "enable-shutdown:ff_-40c_2.97v:vout_hold_2ms_v",
+      "enable-shutdown:ff_-40c_2.97v:vout_pre_disable_v",
+      "enable-shutdown:ff_-40c_3.30v:iq_shutdown_after_edge_ua",
+      "enable-shutdown:ff_-40c_3.30v:iq_shutdown_static_ua",
+      "enable-shutdown:ff_-40c_3.30v:leak_vin_vout_ua",
+      "enable-shutdown:ff_-40c_3.30v:vout_hold_2ms_v",
+      "enable-shutdown:ff_-40c_3.30v:vout_pre_disable_v",
+      "enable-shutdown:ff_-40c_3.63v:iq_shutdown_after_edge_ua",
+      "enable-shutdown:ff_-40c_3.63v:iq_shutdown_static_ua",
+      "enable-shutdown:ff_-40c_3.63v:leak_vin_vout_ua",
+      "enable-shutdown:ff_-40c_3.63v:vout_hold_2ms_v",
+      "enable-shutdown:ff_-40c_3.63v:vout_pre_disable_v",
+      "enable-shutdown:ff_125c_2.97v:iq_shutdown_after_edge_ua",
+      "enable-shutdown:ff_125c_2.97v:iq_shutdown_static_ua",
+      "enable-shutdown:ff_125c_2.97v:leak_vin_vout_ua",
+      "enable-shutdown:ff_125c_2.97v:vout_hold_2ms_v",
+      "enable-shutdown:ff_125c_2.97v:vout_pre_disable_v",
+      "enable-shutdown:ff_125c_3.30v:iq_shutdown_after_edge_ua",
+      "enable-shutdown:ff_125c_3.30v:iq_shutdown_static_ua",
+      "enable-shutdown:ff_125c_3.30v:leak_vin_vout_ua",
+      "enable-shutdown:ff_125c_3.30v:vout_hold_2ms_v",
+      "enable-shutdown:ff_125c_3.30v:vout_pre_disable_v",
+      "enable-shutdown:ff_125c_3.63v:iq_shutdown_after_edge_ua",
+      "enable-shutdown:ff_125c_3.63v:iq_shutdown_static_ua",
+      "enable-shutdown:ff_125c_3.63v:leak_vin_vout_ua",
+      "enable-shutdown:ff_125c_3.63v:vout_hold_2ms_v",
+      "enable-shutdown:ff_125c_3.63v:vout_pre_disable_v",
+      "enable-shutdown:ff_27c_2.97v:iq_shutdown_after_edge_ua",
+      "enable-shutdown:ff_27c_2.97v:iq_shutdown_static_ua",
+      "enable-shutdown:ff_27c_2.97v:leak_vin_vout_ua",
+      "enable-shutdown:ff_27c_2.97v:vout_hold_2ms_v",
+      "enable-shutdown:ff_27c_2.97v:vout_pre_disable_v",
+      "enable-shutdown:ff_27c_3.30v:iq_shutdown_after_edge_ua",
+      "enable-shutdown:ff_27c_3.30v:iq_shutdown_static_ua",
+      "enable-shutdown:ff_27c_3.30v:leak_vin_vout_ua",
+      "enable-shutdown:ff_27c_3.30v:vout_hold_2ms_v",
+      "enable-shutdown:ff_27c_3.30v:vout_pre_disable_v",
+      "enable-shutdown:ff_27c_3.63v:iq_shutdown_after_edge_ua",
+      "enable-shutdown:ff_27c_3.63v:iq_shutdown_static_ua",
+      "enable-shutdown:ff_27c_3.63v:leak_vin_vout_ua",
+      "enable-shutdown:ff_27c_3.63v:vout_hold_2ms_v",
+      "enable-shutdown:ff_27c_3.63v:vout_pre_disable_v",
+      "enable-shutdown:fs_-40c_2.97v:iq_shutdown_after_edge_ua",
+      "enable-shutdown:fs_-40c_2.97v:iq_shutdown_static_ua",
+      "enable-shutdown:fs_-40c_2.97v:leak_vin_vout_ua",
+      "enable-shutdown:fs_-40c_2.97v:vout_hold_2ms_v",
+      "enable-shutdown:fs_-40c_2.97v:vout_pre_disable_v",
+      "enable-shutdown:fs_-40c_3.30v:iq_shutdown_after_edge_ua",
+      "enable-shutdown:fs_-40c_3.30v:iq_shutdown_static_ua",
+      "enable-shutdown:fs_-40c_3.30v:leak_vin_vout_ua",
+      "enable-shutdown:fs_-40c_3.30v:vout_hold_2ms_v",
+      "enable-shutdown:fs_-40c_3.30v:vout_pre_disable_v",
+      "enable-shutdown:fs_-40c_3.63v:iq_shutdown_after_edge_ua",
+      "enable-shutdown:fs_-40c_3.63v:iq_shutdown_static_ua",
+      "enable-shutdown:fs_-40c_3.63v:leak_vin_vout_ua",
+      "enable-shutdown:fs_-40c_3.63v:vout_hold_2ms_v",
+      "enable-shutdown:fs_-40c_3.63v:vout_pre_disable_v",
+      "enable-shutdown:fs_125c_2.97v:iq_shutdown_after_edge_ua",
+      "enable-shutdown:fs_125c_2.97v:iq_shutdown_static_ua",
+      "enable-shutdown:fs_125c_2.97v:leak_vin_vout_ua",
+      "enable-shutdown:fs_125c_2.97v:vout_hold_2ms_v",
+      "enable-shutdown:fs_125c_2.97v:vout_pre_disable_v",
+      "enable-shutdown:fs_125c_3.30v:iq_shutdown_after_edge_ua",
+      "enable-shutdown:fs_125c_3.30v:iq_shutdown_static_ua",
+      "enable-shutdown:fs_125c_3.30v:leak_vin_vout_ua",
+      "enable-shutdown:fs_125c_3.30v:vout_hold_2ms_v",
+      "enable-shutdown:fs_125c_3.30v:vout_pre_disable_v",
+      "enable-shutdown:fs_125c_3.63v:iq_shutdown_after_edge_ua",
+      "enable-shutdown:fs_125c_3.63v:iq_shutdown_static_ua",
+      "enable-shutdown:fs_125c_3.63v:leak_vin_vout_ua",
+      "enable-shutdown:fs_125c_3.63v:vout_hold_2ms_v",
+      "enable-shutdown:fs_125c_3.63v:vout_pre_disable_v",
+      "enable-shutdown:fs_27c_2.97v:iq_shutdown_after_edge_ua",
+      "enable-shutdown:fs_27c_2.97v:iq_shutdown_static_ua",
+      "enable-shutdown:fs_27c_2.97v:leak_vin_vout_ua",
+      "enable-shutdown:fs_27c_2.97v:vout_hold_2ms_v",
+      "enable-shutdown:fs_27c_2.97v:vout_pre_disable_v",
+      "enable-shutdown:fs_27c_3.30v:iq_shutdown_after_edge_ua",
+      "enable-shutdown:fs_27c_3.30v:iq_shutdown_static_ua",
+      "enable-shutdown:fs_27c_3.30v:leak_vin_vout_ua",
+      "enable-shutdown:fs_27c_3.30v:vout_hold_2ms_v",
+      "enable-shutdown:fs_27c_3.30v:vout_pre_disable_v",
+      "enable-shutdown:fs_27c_3.63v:iq_shutdown_after_edge_ua",
+      "enable-shutdown:fs_27c_3.63v:iq_shutdown_static_ua",
+      "enable-shutdown:fs_27c_3.63v:leak_vin_vout_ua",
+      "enable-shutdown:fs_27c_3.63v:vout_hold_2ms_v",
+      "enable-shutdown:fs_27c_3.63v:vout_pre_disable_v",
+      "enable-shutdown:sf_-40c_2.97v:iq_shutdown_after_edge_ua",
+      "enable-shutdown:sf_-40c_2.97v:iq_shutdown_static_ua",
+      "enable-shutdown:sf_-40c_2.97v:leak_vin_vout_ua",
+      "enable-shutdown:sf_-40c_2.97v:vout_hold_2ms_v",
+      "enable-shutdown:sf_-40c_2.97v:vout_pre_disable_v",
+      "enable-shutdown:sf_-40c_3.30v:iq_shutdown_after_edge_ua",
+      "enable-shutdown:sf_-40c_3.30v:iq_shutdown_static_ua",
+      "enable-shutdown:sf_-40c_3.30v:leak_vin_vout_ua",
+      "enable-shutdown:sf_-40c_3.30v:vout_hold_2ms_v",
+      "enable-shutdown:sf_-40c_3.30v:vout_pre_disable_v",
+      "enable-shutdown:sf_-40c_3.63v:iq_shutdown_after_edge_ua",
+      "enable-shutdown:sf_-40c_3.63v:iq_shutdown_static_ua",
+      "enable-shutdown:sf_-40c_3.63v:leak_vin_vout_ua",
+      "enable-shutdown:sf_-40c_3.63v:vout_hold_2ms_v",
+      "enable-shutdown:sf_-40c_3.63v:vout_pre_disable_v",
+      "enable-shutdown:sf_125c_2.97v:iq_shutdown_after_edge_ua",
+      "enable-shutdown:sf_125c_2.97v:iq_shutdown_static_ua",
+      "enable-shutdown:sf_125c_2.97v:leak_vin_vout_ua",
+      "enable-shutdown:sf_125c_2.97v:vout_hold_2ms_v",
+      "enable-shutdown:sf_125c_2.97v:vout_pre_disable_v",
+      "enable-shutdown:sf_125c_3.30v:iq_shutdown_after_edge_ua",
+      "enable-shutdown:sf_125c_3.30v:iq_shutdown_static_ua",
+      "enable-shutdown:sf_125c_3.30v:leak_vin_vout_ua",
+      "enable-shutdown:sf_125c_3.30v:vout_hold_2ms_v",
+      "enable-shutdown:sf_125c_3.30v:vout_pre_disable_v",
+      "enable-shutdown:sf_125c_3.63v:iq_shutdown_after_edge_ua",
+      "enable-shutdown:sf_125c_3.63v:iq_shutdown_static_ua",
+      "enable-shutdown:sf_125c_3.63v:leak_vin_vout_ua",
+      "enable-shutdown:sf_125c_3.63v:vout_hold_2ms_v",
+      "enable-shutdown:sf_125c_3.63v:vout_pre_disable_v",
+      "enable-shutdown:sf_27c_2.97v:iq_shutdown_after_edge_ua",
+      "enable-shutdown:sf_27c_2.97v:iq_shutdown_static_ua",
+      "enable-shutdown:sf_27c_2.97v:leak_vin_vout_ua",
+      "enable-shutdown:sf_27c_2.97v:vout_hold_2ms_v",
+      "enable-shutdown:sf_27c_2.97v:vout_pre_disable_v",
+      "enable-shutdown:sf_27c_3.30v:iq_shutdown_after_edge_ua",
+      "enable-shutdown:sf_27c_3.30v:iq_shutdown_static_ua",
+      "enable-shutdown:sf_27c_3.30v:leak_vin_vout_ua",
+      "enable-shutdown:sf_27c_3.30v:vout_hold_2ms_v",
+      "enable-shutdown:sf_27c_3.30v:vout_pre_disable_v",
+      "enable-shutdown:sf_27c_3.63v:iq_shutdown_after_edge_ua",
+      "enable-shutdown:sf_27c_3.63v:iq_shutdown_static_ua",
+      "enable-shutdown:sf_27c_3.63v:leak_vin_vout_ua",
+      "enable-shutdown:sf_27c_3.63v:vout_hold_2ms_v",
+      "enable-shutdown:sf_27c_3.63v:vout_pre_disable_v",
+      "enable-shutdown:ss_-40c_2.97v:iq_shutdown_after_edge_ua",
+      "enable-shutdown:ss_-40c_2.97v:iq_shutdown_static_ua",
+      "enable-shutdown:ss_-40c_2.97v:leak_vin_vout_ua",
+      "enable-shutdown:ss_-40c_2.97v:vout_hold_2ms_v",
+      "enable-shutdown:ss_-40c_2.97v:vout_pre_disable_v",
+      "enable-shutdown:ss_-40c_3.30v:iq_shutdown_after_edge_ua",
+      "enable-shutdown:ss_-40c_3.30v:iq_shutdown_static_ua",
+      "enable-shutdown:ss_-40c_3.30v:leak_vin_vout_ua",
+      "enable-shutdown:ss_-40c_3.30v:vout_hold_2ms_v",
+      "enable-shutdown:ss_-40c_3.30v:vout_pre_disable_v",
+      "enable-shutdown:ss_-40c_3.63v:iq_shutdown_after_edge_ua",
+      "enable-shutdown:ss_-40c_3.63v:iq_shutdown_static_ua",
+      "enable-shutdown:ss_-40c_3.63v:leak_vin_vout_ua",
+      "enable-shutdown:ss_-40c_3.63v:vout_hold_2ms_v",
+      "enable-shutdown:ss_-40c_3.63v:vout_pre_disable_v",
+      "enable-shutdown:ss_125c_2.97v:iq_shutdown_after_edge_ua",
+      "enable-shutdown:ss_125c_2.97v:iq_shutdown_static_ua",
+      "enable-shutdown:ss_125c_2.97v:leak_vin_vout_ua",
+      "enable-shutdown:ss_125c_2.97v:vout_hold_2ms_v",
+      "enable-shutdown:ss_125c_2.97v:vout_pre_disable_v",
+      "enable-shutdown:ss_125c_3.30v:iq_shutdown_after_edge_ua",
+      "enable-shutdown:ss_125c_3.30v:iq_shutdown_static_ua",
+      "enable-shutdown:ss_125c_3.30v:leak_vin_vout_ua",
+      "enable-shutdown:ss_125c_3.30v:vout_hold_2ms_v",
+      "enable-shutdown:ss_125c_3.30v:vout_pre_disable_v",
+      "enable-shutdown:ss_125c_3.63v:iq_shutdown_after_edge_ua",
+      "enable-shutdown:ss_125c_3.63v:iq_shutdown_static_ua",
+      "enable-shutdown:ss_125c_3.63v:leak_vin_vout_ua",
+      "enable-shutdown:ss_125c_3.63v:vout_hold_2ms_v",
+      "enable-shutdown:ss_125c_3.63v:vout_pre_disable_v",
+      "enable-shutdown:ss_27c_2.97v:iq_shutdown_after_edge_ua",
+      "enable-shutdown:ss_27c_2.97v:iq_shutdown_static_ua",
+      "enable-shutdown:ss_27c_2.97v:leak_vin_vout_ua",
+      "enable-shutdown:ss_27c_2.97v:vout_hold_2ms_v",
+      "enable-shutdown:ss_27c_2.97v:vout_pre_disable_v",
+      "enable-shutdown:ss_27c_3.30v:iq_shutdown_after_edge_ua",
+      "enable-shutdown:ss_27c_3.30v:iq_shutdown_static_ua",
+      "enable-shutdown:ss_27c_3.30v:leak_vin_vout_ua",
+      "enable-shutdown:ss_27c_3.30v:vout_hold_2ms_v",
+      "enable-shutdown:ss_27c_3.30v:vout_pre_disable_v",
+      "enable-shutdown:ss_27c_3.63v:iq_shutdown_after_edge_ua",
+      "enable-shutdown:ss_27c_3.63v:iq_shutdown_static_ua",
+      "enable-shutdown:ss_27c_3.63v:leak_vin_vout_ua",
+      "enable-shutdown:ss_27c_3.63v:vout_hold_2ms_v",
+      "enable-shutdown:ss_27c_3.63v:vout_pre_disable_v",
+      "enable-shutdown:tt_-40c_2.97v:iq_shutdown_after_edge_ua",
+      "enable-shutdown:tt_-40c_2.97v:iq_shutdown_static_ua",
+      "enable-shutdown:tt_-40c_2.97v:leak_vin_vout_ua",
+      "enable-shutdown:tt_-40c_2.97v:vout_hold_2ms_v",
+      "enable-shutdown:tt_-40c_2.97v:vout_pre_disable_v",
+      "enable-shutdown:tt_-40c_3.30v:iq_shutdown_after_edge_ua",
+      "enable-shutdown:tt_-40c_3.30v:iq_shutdown_static_ua",
+      "enable-shutdown:tt_-40c_3.30v:leak_vin_vout_ua",
+      "enable-shutdown:tt_-40c_3.30v:vout_hold_2ms_v",
+      "enable-shutdown:tt_-40c_3.30v:vout_pre_disable_v",
+      "enable-shutdown:tt_-40c_3.63v:iq_shutdown_after_edge_ua",
+      "enable-shutdown:tt_-40c_3.63v:iq_shutdown_static_ua",
+      "enable-shutdown:tt_-40c_3.63v:leak_vin_vout_ua",
+      "enable-shutdown:tt_-40c_3.63v:vout_hold_2ms_v",
+      "enable-shutdown:tt_-40c_3.63v:vout_pre_disable_v",
+      "enable-shutdown:tt_125c_2.97v:iq_shutdown_after_edge_ua",
+      "enable-shutdown:tt_125c_2.97v:iq_shutdown_static_ua",
+      "enable-shutdown:tt_125c_2.97v:leak_vin_vout_ua",
+      "enable-shutdown:tt_125c_2.97v:vout_hold_2ms_v",
+      "enable-shutdown:tt_125c_2.97v:vout_pre_disable_v",
+      "enable-shutdown:tt_125c_3.30v:iq_shutdown_after_edge_ua",
+      "enable-shutdown:tt_125c_3.30v:iq_shutdown_static_ua",
+      "enable-shutdown:tt_125c_3.30v:leak_vin_vout_ua",
+      "enable-shutdown:tt_125c_3.30v:vout_hold_2ms_v",
+      "enable-shutdown:tt_125c_3.30v:vout_pre_disable_v",
+      "enable-shutdown:tt_125c_3.63v:iq_shutdown_after_edge_ua",
+      "enable-shutdown:tt_125c_3.63v:iq_shutdown_static_ua",
+      "enable-shutdown:tt_125c_3.63v:leak_vin_vout_ua",
+      "enable-shutdown:tt_125c_3.63v:vout_hold_2ms_v",
+      "enable-shutdown:tt_125c_3.63v:vout_pre_disable_v",
+      "enable-shutdown:tt_27c_2.97v:iq_shutdown_after_edge_ua",
+      "enable-shutdown:tt_27c_2.97v:iq_shutdown_static_ua",
+      "enable-shutdown:tt_27c_2.97v:leak_vin_vout_ua",
+      "enable-shutdown:tt_27c_2.97v:vout_hold_2ms_v",
+      "enable-shutdown:tt_27c_2.97v:vout_pre_disable_v",
+      "enable-shutdown:tt_27c_3.30v:iq_shutdown_after_edge_ua",
+      "enable-shutdown:tt_27c_3.30v:iq_shutdown_static_ua",
+      "enable-shutdown:tt_27c_3.30v:leak_vin_vout_ua",
+      "enable-shutdown:tt_27c_3.30v:vout_hold_2ms_v",
+      "enable-shutdown:tt_27c_3.30v:vout_pre_disable_v",
+      "enable-shutdown:tt_27c_3.63v:iq_shutdown_after_edge_ua",
+      "enable-shutdown:tt_27c_3.63v:iq_shutdown_static_ua",
+      "enable-shutdown:tt_27c_3.63v:leak_vin_vout_ua",
+      "enable-shutdown:tt_27c_3.63v:vout_hold_2ms_v",
+      "enable-shutdown:tt_27c_3.63v:vout_pre_disable_v"
+    ],
+    "skipped": [],
+    "inapplicable": [],
+    "unknown": [],
+    "nothing_checked": false,
+    "nothing_checked_reasons": [],
+    "measurements_declared": 8,
+    "measurements_with_limits": 5
+  },
+  "measurements": [
+    {
+      "name": "iq_shutdown_static_ua",
+      "unit": "uA",
+      "limits": {
+        "max": 3.0
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "fs_125c_3.63v",
+        "value": 0.06544239,
+        "margin": 2.93455761
+      },
+      "spec_row": "enable-shutdown"
+    },
+    {
+      "name": "iq_shutdown_after_edge_ua",
+      "unit": "uA",
+      "limits": {
+        "max": 3.0
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "fs_125c_3.63v",
+        "value": 0.03223173,
+        "margin": 2.96776827
+      },
+      "spec_row": "enable-shutdown"
+    },
+    {
+      "name": "iq_shutdown_after_edge_mean_ua",
+      "unit": "uA",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_-40c_2.97v",
+        "value": 0.0001656556,
+        "margin": null
+      }
+    },
+    {
+      "name": "leak_vin_vout_ua",
+      "unit": "uA",
+      "limits": {
+        "max": 1.0
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "fs_125c_3.63v",
+        "value": 0.07580629,
+        "margin": 0.92419371
+      },
+      "spec_row": "enable-shutdown"
+    },
+    {
+      "name": "vout_pre_disable_v",
+      "unit": "V",
+      "limits": {
+        "min": 1.764,
+        "max": 1.836
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "fs_125c_2.97v",
+        "value": 1.821324,
+        "margin": 0.014676000000000133
+      }
+    },
+    {
+      "name": "vout_hold_2ms_v",
+      "unit": "V",
+      "limits": {
+        "min": 1.764
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "sf_-40c_3.63v",
+        "value": 1.806251,
+        "margin": 0.04225100000000004
+      }
+    },
+    {
+      "name": "vout_disabled_static_v",
+      "unit": "V",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_-40c_2.97v",
+        "value": 0.0002318128,
+        "margin": null
+      }
+    },
+    {
+      "name": "ivout_held_1v8_ua",
+      "unit": "uA",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_-40c_2.97v",
+        "value": 0.5766567,
+        "margin": null
+      }
+    }
+  ],
+  "corners": [
+    {
+      "corner_id": "tt_-40c_2.97v",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_shutdown_static_ua",
+          "value": 0.0001290716,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.9998709284
+        },
+        {
+          "name": "iq_shutdown_after_edge_ua",
+          "value": 0.001596194,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.998403806
+        },
+        {
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "value": 0.0001656556,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "leak_vin_vout_ua",
+          "value": 7.425084e-05,
+          "unit": "uA",
+          "limits": {
+            "max": 1.0
+          },
+          "status": "pass",
+          "margin": 0.99992574916
+        },
+        {
+          "name": "vout_pre_disable_v",
+          "value": 1.809962,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.026038000000000006
+        },
+        {
+          "name": "vout_hold_2ms_v",
+          "value": 1.808765,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.044764999999999944
+        },
+        {
+          "name": "vout_disabled_static_v",
+          "value": 0.0002318128,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ivout_held_1v8_ua",
+          "value": 0.5766567,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "tt_-40c_3.30v",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_shutdown_static_ua",
+          "value": 0.0001439027,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.9998560973
+        },
+        {
+          "name": "iq_shutdown_after_edge_ua",
+          "value": 0.002253355,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.997746645
+        },
+        {
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "value": 0.0001876185,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "leak_vin_vout_ua",
+          "value": 8.250205e-05,
+          "unit": "uA",
+          "limits": {
+            "max": 1.0
+          },
+          "status": "pass",
+          "margin": 0.99991749795
+        },
+        {
+          "name": "vout_pre_disable_v",
+          "value": 1.808833,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.027167000000000163
+        },
+        {
+          "name": "vout_hold_2ms_v",
+          "value": 1.80764,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.0436399999999999
+        },
+        {
+          "name": "vout_disabled_static_v",
+          "value": 0.0002575732,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ivout_held_1v8_ua",
+          "value": 0.5766485,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "tt_-40c_3.63v",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_shutdown_static_ua",
+          "value": 0.0001589711,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.9998410289
+        },
+        {
+          "name": "iq_shutdown_after_edge_ua",
+          "value": 0.00148443,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.99851557
+        },
+        {
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "value": 0.0002039372,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "leak_vin_vout_ua",
+          "value": 9.081657e-05,
+          "unit": "uA",
+          "limits": {
+            "max": 1.0
+          },
+          "status": "pass",
+          "margin": 0.99990918343
+        },
+        {
+          "name": "vout_pre_disable_v",
+          "value": 1.807994,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.028005999999999975
+        },
+        {
+          "name": "vout_hold_2ms_v",
+          "value": 1.806806,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.0428059999999999
+        },
+        {
+          "name": "vout_disabled_static_v",
+          "value": 0.0002835307,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ivout_held_1v8_ua",
+          "value": 0.5766403,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "tt_27c_2.97v",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": 27.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_shutdown_static_ua",
+          "value": 0.0001491996,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.9998508004
+        },
+        {
+          "name": "iq_shutdown_after_edge_ua",
+          "value": 0.0003950869,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.9996049131
+        },
+        {
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "value": 0.0001887015,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "leak_vin_vout_ua",
+          "value": 7.944849e-05,
+          "unit": "uA",
+          "limits": {
+            "max": 1.0
+          },
+          "status": "pass",
+          "margin": 0.99992055151
+        },
+        {
+          "name": "vout_pre_disable_v",
+          "value": 1.814777,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.021222999999999992
+        },
+        {
+          "name": "vout_hold_2ms_v",
+          "value": 1.813574,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.04957400000000001
+        },
+        {
+          "name": "vout_disabled_static_v",
+          "value": 0.0002480387,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ivout_held_1v8_ua",
+          "value": 0.5766521,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "tt_27c_3.30v",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 27.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_shutdown_static_ua",
+          "value": 0.0001667425,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.9998332575
+        },
+        {
+          "name": "iq_shutdown_after_edge_ua",
+          "value": 0.004394837,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.995605163
+        },
+        {
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "value": 0.0002047104,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "leak_vin_vout_ua",
+          "value": 8.90954e-05,
+          "unit": "uA",
+          "limits": {
+            "max": 1.0
+          },
+          "status": "pass",
+          "margin": 0.9999109046
+        },
+        {
+          "name": "vout_pre_disable_v",
+          "value": 1.813523,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.02247700000000008
+        },
+        {
+          "name": "vout_hold_2ms_v",
+          "value": 1.812323,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.048322999999999894
+        },
+        {
+          "name": "vout_disabled_static_v",
+          "value": 0.0002781547,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ivout_held_1v8_ua",
+          "value": 0.5766434,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "tt_27c_3.63v",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": 27.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_shutdown_static_ua",
+          "value": 0.0001854577,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.9998145423
+        },
+        {
+          "name": "iq_shutdown_after_edge_ua",
+          "value": 0.002366021,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.997633979
+        },
+        {
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "value": 0.0002211805,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "leak_vin_vout_ua",
+          "value": 9.968418e-05,
+          "unit": "uA",
+          "limits": {
+            "max": 1.0
+          },
+          "status": "pass",
+          "margin": 0.99990031582
+        },
+        {
+          "name": "vout_pre_disable_v",
+          "value": 1.812495,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.02350500000000011
+        },
+        {
+          "name": "vout_hold_2ms_v",
+          "value": 1.811298,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.04729800000000006
+        },
+        {
+          "name": "vout_disabled_static_v",
+          "value": 0.0003112086,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ivout_held_1v8_ua",
+          "value": 0.5766345,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "tt_125c_2.97v",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_shutdown_static_ua",
+          "value": 0.01183849,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.98816151
+        },
+        {
+          "name": "iq_shutdown_after_edge_ua",
+          "value": 0.008764895,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.991235105
+        },
+        {
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "value": 0.006660043,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "leak_vin_vout_ua",
+          "value": 0.009948619,
+          "unit": "uA",
+          "limits": {
+            "max": 1.0
+          },
+          "status": "pass",
+          "margin": 0.990051381
+        },
+        {
+          "name": "vout_pre_disable_v",
+          "value": 1.821152,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.014847999999999972
+        },
+        {
+          "name": "vout_hold_2ms_v",
+          "value": 1.819958,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.05595799999999995
+        },
+        {
+          "name": "vout_disabled_static_v",
+          "value": 0.03056915,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ivout_held_1v8_ua",
+          "value": 0.5721408,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "tt_125c_3.30v",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_shutdown_static_ua",
+          "value": 0.01402582,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.98597418
+        },
+        {
+          "name": "iq_shutdown_after_edge_ua",
+          "value": 0.008305913,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.991694087
+        },
+        {
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "value": 0.007525226,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "leak_vin_vout_ua",
+          "value": 0.01211239,
+          "unit": "uA",
+          "limits": {
+            "max": 1.0
+          },
+          "status": "pass",
+          "margin": 0.98788761
+        },
+        {
+          "name": "vout_pre_disable_v",
+          "value": 1.820296,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.015704000000000162
+        },
+        {
+          "name": "vout_hold_2ms_v",
+          "value": 1.819107,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.05510700000000002
+        },
+        {
+          "name": "vout_disabled_static_v",
+          "value": 0.03689883,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ivout_held_1v8_ua",
+          "value": 0.5714336,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "tt_125c_3.63v",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_shutdown_static_ua",
+          "value": 0.01738273,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.98261727
+        },
+        {
+          "name": "iq_shutdown_after_edge_ua",
+          "value": 0.008907753,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.991092247
+        },
+        {
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "value": 0.008473007,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "leak_vin_vout_ua",
+          "value": 0.01562439,
+          "unit": "uA",
+          "limits": {
+            "max": 1.0
+          },
+          "status": "pass",
+          "margin": 0.98437561
+        },
+        {
+          "name": "vout_pre_disable_v",
+          "value": 1.819595,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.016405000000000003
+        },
+        {
+          "name": "vout_hold_2ms_v",
+          "value": 1.818412,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.054411999999999905
+        },
+        {
+          "name": "vout_disabled_static_v",
+          "value": 0.04686097,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ivout_held_1v8_ua",
+          "value": 0.5706486,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ss_-40c_2.97v",
+      "process": "ss",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_shutdown_static_ua",
+          "value": 0.0001289834,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.9998710166
+        },
+        {
+          "name": "iq_shutdown_after_edge_ua",
+          "value": 0.0004283095,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.9995716905
+        },
+        {
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "value": 0.0001731753,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "leak_vin_vout_ua",
+          "value": 7.425016e-05,
+          "unit": "uA",
+          "limits": {
+            "max": 1.0
+          },
+          "status": "pass",
+          "margin": 0.99992574984
+        },
+        {
+          "name": "vout_pre_disable_v",
+          "value": 1.809369,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.02663100000000007
+        },
+        {
+          "name": "vout_hold_2ms_v",
+          "value": 1.808178,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.04417800000000005
+        },
+        {
+          "name": "vout_disabled_static_v",
+          "value": 0.0002318106,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ivout_held_1v8_ua",
+          "value": 0.5766567,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ss_-40c_3.30v",
+      "process": "ss",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_shutdown_static_ua",
+          "value": 0.0001440124,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.9998559876
+        },
+        {
+          "name": "iq_shutdown_after_edge_ua",
+          "value": 0.001609794,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.998390206
+        },
+        {
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "value": 0.0001798049,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "leak_vin_vout_ua",
+          "value": 8.250165e-05,
+          "unit": "uA",
+          "limits": {
+            "max": 1.0
+          },
+          "status": "pass",
+          "margin": 0.99991749835
+        },
+        {
+          "name": "vout_pre_disable_v",
+          "value": 1.808293,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.027707000000000148
+        },
+        {
+          "name": "vout_hold_2ms_v",
+          "value": 1.807107,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.043107000000000006
+        },
+        {
+          "name": "vout_disabled_static_v",
+          "value": 0.000257572,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ivout_held_1v8_ua",
+          "value": 0.5766485,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ss_-40c_3.63v",
+      "process": "ss",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_shutdown_static_ua",
+          "value": 0.0001589416,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.9998410584
+        },
+        {
+          "name": "iq_shutdown_after_edge_ua",
+          "value": 0.0004685098,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.9995314902
+        },
+        {
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "value": 0.000201607,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "leak_vin_vout_ua",
+          "value": 9.082945e-05,
+          "unit": "uA",
+          "limits": {
+            "max": 1.0
+          },
+          "status": "pass",
+          "margin": 0.99990917055
+        },
+        {
+          "name": "vout_pre_disable_v",
+          "value": 1.807511,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.028488999999999987
+        },
+        {
+          "name": "vout_hold_2ms_v",
+          "value": 1.806331,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.042330999999999896
+        },
+        {
+          "name": "vout_disabled_static_v",
+          "value": 0.0002835708,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ivout_held_1v8_ua",
+          "value": 0.5766401,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ss_27c_2.97v",
+      "process": "ss",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": 27.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_shutdown_static_ua",
+          "value": 0.000137523,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.999862477
+        },
+        {
+          "name": "iq_shutdown_after_edge_ua",
+          "value": 0.001434733,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.998565267
+        },
+        {
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "value": 0.0001712259,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "leak_vin_vout_ua",
+          "value": 7.563464e-05,
+          "unit": "uA",
+          "limits": {
+            "max": 1.0
+          },
+          "status": "pass",
+          "margin": 0.99992436536
+        },
+        {
+          "name": "vout_pre_disable_v",
+          "value": 1.814261,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.021739000000000175
+        },
+        {
+          "name": "vout_hold_2ms_v",
+          "value": 1.813059,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.049058999999999964
+        },
+        {
+          "name": "vout_disabled_static_v",
+          "value": 0.0002361337,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ivout_held_1v8_ua",
+          "value": 0.5766529,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ss_27c_3.30v",
+      "process": "ss",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 27.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_shutdown_static_ua",
+          "value": 0.0001532415,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.9998467585
+        },
+        {
+          "name": "iq_shutdown_after_edge_ua",
+          "value": 0.0002874921,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.9997125079
+        },
+        {
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "value": 0.0001943605,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "leak_vin_vout_ua",
+          "value": 8.416879e-05,
+          "unit": "uA",
+          "limits": {
+            "max": 1.0
+          },
+          "status": "pass",
+          "margin": 0.99991583121
+        },
+        {
+          "name": "vout_pre_disable_v",
+          "value": 1.812973,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.02302700000000013
+        },
+        {
+          "name": "vout_hold_2ms_v",
+          "value": 1.811774,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.04777399999999998
+        },
+        {
+          "name": "vout_disabled_static_v",
+          "value": 0.0002627774,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ivout_held_1v8_ua",
+          "value": 0.5766447,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ss_27c_3.63v",
+      "process": "ss",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": 27.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_shutdown_static_ua",
+          "value": 0.0001691624,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.9998308376
+        },
+        {
+          "name": "iq_shutdown_after_edge_ua",
+          "value": 0.003952251,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.996047749
+        },
+        {
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "value": 0.0002096362,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "leak_vin_vout_ua",
+          "value": 9.291167e-05,
+          "unit": "uA",
+          "limits": {
+            "max": 1.0
+          },
+          "status": "pass",
+          "margin": 0.99990708833
+        },
+        {
+          "name": "vout_pre_disable_v",
+          "value": 1.811931,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.024069000000000118
+        },
+        {
+          "name": "vout_hold_2ms_v",
+          "value": 1.810735,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.04673499999999997
+        },
+        {
+          "name": "vout_disabled_static_v",
+          "value": 0.0002900717,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ivout_held_1v8_ua",
+          "value": 0.5766363,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ss_125c_2.97v",
+      "process": "ss",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_shutdown_static_ua",
+          "value": 0.005071311,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.994928689
+        },
+        {
+          "name": "iq_shutdown_after_edge_ua",
+          "value": 0.003803552,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.996196448
+        },
+        {
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "value": 0.003272452,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "leak_vin_vout_ua",
+          "value": 0.003883107,
+          "unit": "uA",
+          "limits": {
+            "max": 1.0
+          },
+          "status": "pass",
+          "margin": 0.996116893
+        },
+        {
+          "name": "vout_pre_disable_v",
+          "value": 1.821062,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.014938000000000118
+        },
+        {
+          "name": "vout_hold_2ms_v",
+          "value": 1.819862,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.05586200000000008
+        },
+        {
+          "name": "vout_disabled_static_v",
+          "value": 0.01206452,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ivout_held_1v8_ua",
+          "value": 0.57472,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ss_125c_3.30v",
+      "process": "ss",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_shutdown_static_ua",
+          "value": 0.005755031,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.994244969
+        },
+        {
+          "name": "iq_shutdown_after_edge_ua",
+          "value": 0.005007392,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.994992608
+        },
+        {
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "value": 0.003626854,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "leak_vin_vout_ua",
+          "value": 0.00449492,
+          "unit": "uA",
+          "limits": {
+            "max": 1.0
+          },
+          "status": "pass",
+          "margin": 0.99550508
+        },
+        {
+          "name": "vout_pre_disable_v",
+          "value": 1.820081,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.015919000000000016
+        },
+        {
+          "name": "vout_hold_2ms_v",
+          "value": 1.818884,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.05488399999999993
+        },
+        {
+          "name": "vout_disabled_static_v",
+          "value": 0.0139391,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ivout_held_1v8_ua",
+          "value": 0.5744489,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ss_125c_3.63v",
+      "process": "ss",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_shutdown_static_ua",
+          "value": 0.006712068,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.993287932
+        },
+        {
+          "name": "iq_shutdown_after_edge_ua",
+          "value": 0.004800703,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.995199297
+        },
+        {
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "value": 0.00400924,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "leak_vin_vout_ua",
+          "value": 0.005389655,
+          "unit": "uA",
+          "limits": {
+            "max": 1.0
+          },
+          "status": "pass",
+          "margin": 0.994610345
+        },
+        {
+          "name": "vout_pre_disable_v",
+          "value": 1.819242,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.01675800000000005
+        },
+        {
+          "name": "vout_hold_2ms_v",
+          "value": 1.818049,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.054049000000000014
+        },
+        {
+          "name": "vout_disabled_static_v",
+          "value": 0.0166557,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ivout_held_1v8_ua",
+          "value": 0.5741532,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ff_-40c_2.97v",
+      "process": "ff",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_shutdown_static_ua",
+          "value": 0.0001291822,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.9998708178
+        },
+        {
+          "name": "iq_shutdown_after_edge_ua",
+          "value": 0.0009788213,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.9990211787
+        },
+        {
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "value": 0.0001735668,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "leak_vin_vout_ua",
+          "value": 7.425508e-05,
+          "unit": "uA",
+          "limits": {
+            "max": 1.0
+          },
+          "status": "pass",
+          "margin": 0.99992574492
+        },
+        {
+          "name": "vout_pre_disable_v",
+          "value": 1.810512,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.025488000000000177
+        },
+        {
+          "name": "vout_hold_2ms_v",
+          "value": 1.809312,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.04531200000000002
+        },
+        {
+          "name": "vout_disabled_static_v",
+          "value": 0.000231826,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ivout_held_1v8_ua",
+          "value": 0.5766569,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ff_-40c_3.30v",
+      "process": "ff",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_shutdown_static_ua",
+          "value": 0.0001440587,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.9998559413
+        },
+        {
+          "name": "iq_shutdown_after_edge_ua",
+          "value": 0.0009488906,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.9990511094
+        },
+        {
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "value": 0.0001880744,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "leak_vin_vout_ua",
+          "value": 8.250789e-05,
+          "unit": "uA",
+          "limits": {
+            "max": 1.0
+          },
+          "status": "pass",
+          "margin": 0.99991749211
+        },
+        {
+          "name": "vout_pre_disable_v",
+          "value": 1.809328,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.02667200000000003
+        },
+        {
+          "name": "vout_hold_2ms_v",
+          "value": 1.808131,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.04413099999999992
+        },
+        {
+          "name": "vout_disabled_static_v",
+          "value": 0.0002575915,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ivout_held_1v8_ua",
+          "value": 0.5766485,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ff_-40c_3.63v",
+      "process": "ff",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_shutdown_static_ua",
+          "value": 0.0001590002,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.9998409998
+        },
+        {
+          "name": "iq_shutdown_after_edge_ua",
+          "value": 0.0007757809,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.9992242191
+        },
+        {
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "value": 0.0002036965,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "leak_vin_vout_ua",
+          "value": 9.08145e-05,
+          "unit": "uA",
+          "limits": {
+            "max": 1.0
+          },
+          "status": "pass",
+          "margin": 0.9999091855
+        },
+        {
+          "name": "vout_pre_disable_v",
+          "value": 1.808429,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.027571000000000012
+        },
+        {
+          "name": "vout_hold_2ms_v",
+          "value": 1.807235,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.04323499999999991
+        },
+        {
+          "name": "vout_disabled_static_v",
+          "value": 0.0002835243,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ivout_held_1v8_ua",
+          "value": 0.5766403,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ff_27c_2.97v",
+      "process": "ff",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": 27.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_shutdown_static_ua",
+          "value": 0.000186018,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.999813982
+        },
+        {
+          "name": "iq_shutdown_after_edge_ua",
+          "value": 0.001450196,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.998549804
+        },
+        {
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "value": 0.0002150162,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "leak_vin_vout_ua",
+          "value": 9.513878e-05,
+          "unit": "uA",
+          "limits": {
+            "max": 1.0
+          },
+          "status": "pass",
+          "margin": 0.99990486122
+        },
+        {
+          "name": "vout_pre_disable_v",
+          "value": 1.815144,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.020855999999999986
+        },
+        {
+          "name": "vout_hold_2ms_v",
+          "value": 1.81394,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.049940000000000095
+        },
+        {
+          "name": "vout_disabled_static_v",
+          "value": 0.0002970106,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ivout_held_1v8_ua",
+          "value": 0.5766467,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ff_27c_3.30v",
+      "process": "ff",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 27.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_shutdown_static_ua",
+          "value": 0.0002123257,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.9997876743
+        },
+        {
+          "name": "iq_shutdown_after_edge_ua",
+          "value": 0.00168042,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.99831958
+        },
+        {
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "value": 0.0002341188,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "leak_vin_vout_ua",
+          "value": 0.0001111818,
+          "unit": "uA",
+          "limits": {
+            "max": 1.0
+          },
+          "status": "pass",
+          "margin": 0.9998888182
+        },
+        {
+          "name": "vout_pre_disable_v",
+          "value": 1.813954,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.02204600000000001
+        },
+        {
+          "name": "vout_hold_2ms_v",
+          "value": 1.812752,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.048751999999999907
+        },
+        {
+          "name": "vout_disabled_static_v",
+          "value": 0.0003470804,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ivout_held_1v8_ua",
+          "value": 0.576637,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ff_27c_3.63v",
+      "process": "ff",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": 27.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_shutdown_static_ua",
+          "value": 0.0002449756,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.9997550244
+        },
+        {
+          "name": "iq_shutdown_after_edge_ua",
+          "value": 0.002285509,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.997714491
+        },
+        {
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "value": 0.000253853,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "leak_vin_vout_ua",
+          "value": 0.0001334237,
+          "unit": "uA",
+          "limits": {
+            "max": 1.0
+          },
+          "status": "pass",
+          "margin": 0.9998665763
+        },
+        {
+          "name": "vout_pre_disable_v",
+          "value": 1.81295,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.023050000000000015
+        },
+        {
+          "name": "vout_hold_2ms_v",
+          "value": 1.811751,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.04775099999999988
+        },
+        {
+          "name": "vout_disabled_static_v",
+          "value": 0.0004164805,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ivout_held_1v8_ua",
+          "value": 0.576627,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ff_125c_2.97v",
+      "process": "ff",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_shutdown_static_ua",
+          "value": 0.03004048,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.96995952
+        },
+        {
+          "name": "iq_shutdown_after_edge_ua",
+          "value": 0.01629174,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.9837082600000002
+        },
+        {
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "value": 0.01501417,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "leak_vin_vout_ua",
+          "value": 0.02768902,
+          "unit": "uA",
+          "limits": {
+            "max": 1.0
+          },
+          "status": "pass",
+          "margin": 0.97231098
+        },
+        {
+          "name": "vout_pre_disable_v",
+          "value": 1.821069,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.014931000000000028
+        },
+        {
+          "name": "vout_hold_2ms_v",
+          "value": 1.819892,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.05589200000000005
+        },
+        {
+          "name": "vout_disabled_static_v",
+          "value": 0.08171912,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ivout_held_1v8_ua",
+          "value": 0.5655345,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ff_125c_3.30v",
+      "process": "ff",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_shutdown_static_ua",
+          "value": 0.03730397,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.96269603
+        },
+        {
+          "name": "iq_shutdown_after_edge_ua",
+          "value": 0.01850609,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.98149391
+        },
+        {
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "value": 0.01725834,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "leak_vin_vout_ua",
+          "value": 0.03634401,
+          "unit": "uA",
+          "limits": {
+            "max": 1.0
+          },
+          "status": "pass",
+          "margin": 0.96365599
+        },
+        {
+          "name": "vout_pre_disable_v",
+          "value": 1.820348,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.015652
+        },
+        {
+          "name": "vout_hold_2ms_v",
+          "value": 1.81918,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.05518000000000001
+        },
+        {
+          "name": "vout_disabled_static_v",
+          "value": 0.10334,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ivout_held_1v8_ua",
+          "value": 0.5636192,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ff_125c_3.63v",
+      "process": "ff",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_shutdown_static_ua",
+          "value": 0.04872458,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.95127542
+        },
+        {
+          "name": "iq_shutdown_after_edge_ua",
+          "value": 0.02001272,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.97998728
+        },
+        {
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "value": 0.01975956,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "leak_vin_vout_ua",
+          "value": 0.05164267,
+          "unit": "uA",
+          "limits": {
+            "max": 1.0
+          },
+          "status": "pass",
+          "margin": 0.94835733
+        },
+        {
+          "name": "vout_pre_disable_v",
+          "value": 1.819811,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.01618900000000001
+        },
+        {
+          "name": "vout_hold_2ms_v",
+          "value": 1.818654,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.05465399999999998
+        },
+        {
+          "name": "vout_disabled_static_v",
+          "value": 0.1379016,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ivout_held_1v8_ua",
+          "value": 0.5614553,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "sf_-40c_2.97v",
+      "process": "sf",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_shutdown_static_ua",
+          "value": 0.0001292664,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.9998707336
+        },
+        {
+          "name": "iq_shutdown_after_edge_ua",
+          "value": 0.000459508,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.999540492
+        },
+        {
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "value": 0.0001735677,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "leak_vin_vout_ua",
+          "value": 7.425006e-05,
+          "unit": "uA",
+          "limits": {
+            "max": 1.0
+          },
+          "status": "pass",
+          "margin": 0.99992574994
+        },
+        {
+          "name": "vout_pre_disable_v",
+          "value": 1.809101,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.026899000000000006
+        },
+        {
+          "name": "vout_hold_2ms_v",
+          "value": 1.807916,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.043916000000000066
+        },
+        {
+          "name": "vout_disabled_static_v",
+          "value": 0.0002318103,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ivout_held_1v8_ua",
+          "value": 0.5766567,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "sf_-40c_3.30v",
+      "process": "sf",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_shutdown_static_ua",
+          "value": 0.0001440067,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.9998559933
+        },
+        {
+          "name": "iq_shutdown_after_edge_ua",
+          "value": 0.000631043,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.999368957
+        },
+        {
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "value": 0.0001816991,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "leak_vin_vout_ua",
+          "value": 8.250102e-05,
+          "unit": "uA",
+          "limits": {
+            "max": 1.0
+          },
+          "status": "pass",
+          "margin": 0.99991749898
+        },
+        {
+          "name": "vout_pre_disable_v",
+          "value": 1.80813,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.02787000000000006
+        },
+        {
+          "name": "vout_hold_2ms_v",
+          "value": 1.806948,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.042947999999999986
+        },
+        {
+          "name": "vout_disabled_static_v",
+          "value": 0.00025757,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ivout_held_1v8_ua",
+          "value": 0.5766485,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "sf_-40c_3.63v",
+      "process": "sf",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_shutdown_static_ua",
+          "value": 0.0001590171,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.9998409829
+        },
+        {
+          "name": "iq_shutdown_after_edge_ua",
+          "value": 0.0005007283,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.9994992717
+        },
+        {
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "value": 0.000196862,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "leak_vin_vout_ua",
+          "value": 9.081512e-05,
+          "unit": "uA",
+          "limits": {
+            "max": 1.0
+          },
+          "status": "pass",
+          "margin": 0.99990918488
+        },
+        {
+          "name": "vout_pre_disable_v",
+          "value": 1.807427,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.02857300000000018
+        },
+        {
+          "name": "vout_hold_2ms_v",
+          "value": 1.806251,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.04225100000000004
+        },
+        {
+          "name": "vout_disabled_static_v",
+          "value": 0.0002835262,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ivout_held_1v8_ua",
+          "value": 0.5766403,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "sf_27c_2.97v",
+      "process": "sf",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": 27.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_shutdown_static_ua",
+          "value": 0.0002252816,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.9997747184
+        },
+        {
+          "name": "iq_shutdown_after_edge_ua",
+          "value": 0.003448062,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.996551938
+        },
+        {
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "value": 0.0002708142,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "leak_vin_vout_ua",
+          "value": 7.488598e-05,
+          "unit": "uA",
+          "limits": {
+            "max": 1.0
+          },
+          "status": "pass",
+          "margin": 0.99992511402
+        },
+        {
+          "name": "vout_pre_disable_v",
+          "value": 1.813844,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.022156000000000065
+        },
+        {
+          "name": "vout_hold_2ms_v",
+          "value": 1.812642,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.048642000000000074
+        },
+        {
+          "name": "vout_disabled_static_v",
+          "value": 0.0002337967,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ivout_held_1v8_ua",
+          "value": 0.5766536,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "sf_27c_3.30v",
+      "process": "sf",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 27.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_shutdown_static_ua",
+          "value": 0.0002499241,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.9997500759
+        },
+        {
+          "name": "iq_shutdown_after_edge_ua",
+          "value": 0.001766555,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.998233445
+        },
+        {
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "value": 0.0002935797,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "leak_vin_vout_ua",
+          "value": 8.330623e-05,
+          "unit": "uA",
+          "limits": {
+            "max": 1.0
+          },
+          "status": "pass",
+          "margin": 0.99991669377
+        },
+        {
+          "name": "vout_pre_disable_v",
+          "value": 1.812595,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.02340500000000012
+        },
+        {
+          "name": "vout_hold_2ms_v",
+          "value": 1.811396,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.047395999999999994
+        },
+        {
+          "name": "vout_disabled_static_v",
+          "value": 0.0002600848,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ivout_held_1v8_ua",
+          "value": 0.5766454,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "sf_27c_3.63v",
+      "process": "sf",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": 27.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_shutdown_static_ua",
+          "value": 0.0002752896,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.9997247104
+        },
+        {
+          "name": "iq_shutdown_after_edge_ua",
+          "value": 0.001075562,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.998924438
+        },
+        {
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "value": 0.0003167517,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "leak_vin_vout_ua",
+          "value": 9.189619e-05,
+          "unit": "uA",
+          "limits": {
+            "max": 1.0
+          },
+          "status": "pass",
+          "margin": 0.99990810381
+        },
+        {
+          "name": "vout_pre_disable_v",
+          "value": 1.811596,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.024404000000000092
+        },
+        {
+          "name": "vout_hold_2ms_v",
+          "value": 1.810401,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.046400999999999915
+        },
+        {
+          "name": "vout_disabled_static_v",
+          "value": 0.0002869019,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ivout_held_1v8_ua",
+          "value": 0.576637,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "sf_125c_2.97v",
+      "process": "sf",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_shutdown_static_ua",
+          "value": 0.009965277,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.990034723
+        },
+        {
+          "name": "iq_shutdown_after_edge_ua",
+          "value": 0.009370959,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.990629041
+        },
+        {
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "value": 0.008926331,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "leak_vin_vout_ua",
+          "value": 0.002248034,
+          "unit": "uA",
+          "limits": {
+            "max": 1.0
+          },
+          "status": "pass",
+          "margin": 0.997751966
+        },
+        {
+          "name": "vout_pre_disable_v",
+          "value": 1.820812,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.01518799999999998
+        },
+        {
+          "name": "vout_hold_2ms_v",
+          "value": 1.81961,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.05560999999999994
+        },
+        {
+          "name": "vout_disabled_static_v",
+          "value": 0.006995184,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ivout_held_1v8_ua",
+          "value": 0.575582,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "sf_125c_3.30v",
+      "process": "sf",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_shutdown_static_ua",
+          "value": 0.01109781,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.98890219
+        },
+        {
+          "name": "iq_shutdown_after_edge_ua",
+          "value": 0.01045806,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.98954194
+        },
+        {
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "value": 0.009769887,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "leak_vin_vout_ua",
+          "value": 0.002692891,
+          "unit": "uA",
+          "limits": {
+            "max": 1.0
+          },
+          "status": "pass",
+          "margin": 0.997307109
+        },
+        {
+          "name": "vout_pre_disable_v",
+          "value": 1.819822,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.016178000000000026
+        },
+        {
+          "name": "vout_hold_2ms_v",
+          "value": 1.818623,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.05462300000000009
+        },
+        {
+          "name": "vout_disabled_static_v",
+          "value": 0.008364106,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ivout_held_1v8_ua",
+          "value": 0.5754321,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "sf_125c_3.63v",
+      "process": "sf",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_shutdown_static_ua",
+          "value": 0.0125183,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.9874817
+        },
+        {
+          "name": "iq_shutdown_after_edge_ua",
+          "value": 0.01207799,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.98792201
+        },
+        {
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "value": 0.01065243,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "leak_vin_vout_ua",
+          "value": 0.003410901,
+          "unit": "uA",
+          "limits": {
+            "max": 1.0
+          },
+          "status": "pass",
+          "margin": 0.996589099
+        },
+        {
+          "name": "vout_pre_disable_v",
+          "value": 1.818998,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.017002000000000184
+        },
+        {
+          "name": "vout_hold_2ms_v",
+          "value": 1.817803,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.053803000000000045
+        },
+        {
+          "name": "vout_disabled_static_v",
+          "value": 0.01055853,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ivout_held_1v8_ua",
+          "value": 0.5752667,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "fs_-40c_2.97v",
+      "process": "fs",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_shutdown_static_ua",
+          "value": 0.0001292322,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.9998707678
+        },
+        {
+          "name": "iq_shutdown_after_edge_ua",
+          "value": 0.0008443519,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.9991556481
+        },
+        {
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "value": 0.0001651989,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "leak_vin_vout_ua",
+          "value": 7.426258e-05,
+          "unit": "uA",
+          "limits": {
+            "max": 1.0
+          },
+          "status": "pass",
+          "margin": 0.99992573742
+        },
+        {
+          "name": "vout_pre_disable_v",
+          "value": 1.810958,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.02504200000000001
+        },
+        {
+          "name": "vout_hold_2ms_v",
+          "value": 1.809756,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.04575599999999991
+        },
+        {
+          "name": "vout_disabled_static_v",
+          "value": 0.0002318494,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ivout_held_1v8_ua",
+          "value": 0.5766567,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "fs_-40c_3.30v",
+      "process": "fs",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_shutdown_static_ua",
+          "value": 0.0001441926,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.9998558074
+        },
+        {
+          "name": "iq_shutdown_after_edge_ua",
+          "value": 0.0009365942,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.9990634058
+        },
+        {
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "value": 0.0001880078,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "leak_vin_vout_ua",
+          "value": 8.251756e-05,
+          "unit": "uA",
+          "limits": {
+            "max": 1.0
+          },
+          "status": "pass",
+          "margin": 0.99991748244
+        },
+        {
+          "name": "vout_pre_disable_v",
+          "value": 1.809712,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.02628800000000009
+        },
+        {
+          "name": "vout_hold_2ms_v",
+          "value": 1.808513,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.044513000000000025
+        },
+        {
+          "name": "vout_disabled_static_v",
+          "value": 0.0002576216,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ivout_held_1v8_ua",
+          "value": 0.5766485,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "fs_-40c_3.63v",
+      "process": "fs",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_shutdown_static_ua",
+          "value": 0.000159429,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.999840571
+        },
+        {
+          "name": "iq_shutdown_after_edge_ua",
+          "value": 0.0008179256,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.9991820744
+        },
+        {
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "value": 0.0002023975,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "leak_vin_vout_ua",
+          "value": 9.083828e-05,
+          "unit": "uA",
+          "limits": {
+            "max": 1.0
+          },
+          "status": "pass",
+          "margin": 0.99990916172
+        },
+        {
+          "name": "vout_pre_disable_v",
+          "value": 1.808739,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.02726099999999998
+        },
+        {
+          "name": "vout_hold_2ms_v",
+          "value": 1.807544,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.04354400000000003
+        },
+        {
+          "name": "vout_disabled_static_v",
+          "value": 0.0002835985,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ivout_held_1v8_ua",
+          "value": 0.5766403,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "fs_27c_2.97v",
+      "process": "fs",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": 27.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_shutdown_static_ua",
+          "value": 0.0001762231,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.9998237769
+        },
+        {
+          "name": "iq_shutdown_after_edge_ua",
+          "value": 0.001095198,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.998904802
+        },
+        {
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "value": 0.0001918778,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "leak_vin_vout_ua",
+          "value": 0.0001170902,
+          "unit": "uA",
+          "limits": {
+            "max": 1.0
+          },
+          "status": "pass",
+          "margin": 0.9998829098
+        },
+        {
+          "name": "vout_pre_disable_v",
+          "value": 1.815537,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.02046300000000012
+        },
+        {
+          "name": "vout_hold_2ms_v",
+          "value": 1.814332,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.05033200000000004
+        },
+        {
+          "name": "vout_disabled_static_v",
+          "value": 0.0003655282,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ivout_held_1v8_ua",
+          "value": 0.5766383,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "fs_27c_3.30v",
+      "process": "fs",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 27.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_shutdown_static_ua",
+          "value": 0.0002028644,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.9997971356
+        },
+        {
+          "name": "iq_shutdown_after_edge_ua",
+          "value": 0.001662947,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.998337053
+        },
+        {
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "value": 0.0002097256,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "leak_vin_vout_ua",
+          "value": 0.0001368581,
+          "unit": "uA",
+          "limits": {
+            "max": 1.0
+          },
+          "status": "pass",
+          "margin": 0.9998631419
+        },
+        {
+          "name": "vout_pre_disable_v",
+          "value": 1.814355,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.021645000000000136
+        },
+        {
+          "name": "vout_hold_2ms_v",
+          "value": 1.813153,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.049153
+        },
+        {
+          "name": "vout_disabled_static_v",
+          "value": 0.0004272183,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ivout_held_1v8_ua",
+          "value": 0.5766267,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "fs_27c_3.63v",
+      "process": "fs",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": 27.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_shutdown_static_ua",
+          "value": 0.0002369928,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.9997630072
+        },
+        {
+          "name": "iq_shutdown_after_edge_ua",
+          "value": 0.0003006639,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.9996993361
+        },
+        {
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "value": 0.0002280821,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "leak_vin_vout_ua",
+          "value": 0.000163939,
+          "unit": "uA",
+          "limits": {
+            "max": 1.0
+          },
+          "status": "pass",
+          "margin": 0.999836061
+        },
+        {
+          "name": "vout_pre_disable_v",
+          "value": 1.813373,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.022627000000000175
+        },
+        {
+          "name": "vout_hold_2ms_v",
+          "value": 1.812173,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.04817300000000002
+        },
+        {
+          "name": "vout_disabled_static_v",
+          "value": 0.0005117061,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ivout_held_1v8_ua",
+          "value": 0.5766148,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "fs_125c_2.97v",
+      "process": "fs",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_shutdown_static_ua",
+          "value": 0.04562291,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.95437709
+        },
+        {
+          "name": "iq_shutdown_after_edge_ua",
+          "value": 0.02432636,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.97567364
+        },
+        {
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "value": 0.02248453,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "leak_vin_vout_ua",
+          "value": 0.047907,
+          "unit": "uA",
+          "limits": {
+            "max": 1.0
+          },
+          "status": "pass",
+          "margin": 0.952093
+        },
+        {
+          "name": "vout_pre_disable_v",
+          "value": 1.821324,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.014676000000000133
+        },
+        {
+          "name": "vout_hold_2ms_v",
+          "value": 1.820174,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.056173999999999946
+        },
+        {
+          "name": "vout_disabled_static_v",
+          "value": 0.1392186,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ivout_held_1v8_ua",
+          "value": 0.5551677,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "fs_125c_3.30v",
+      "process": "fs",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_shutdown_static_ua",
+          "value": 0.05374502,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.94625498
+        },
+        {
+          "name": "iq_shutdown_after_edge_ua",
+          "value": 0.02613639,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.97386361
+        },
+        {
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "value": 0.02599348,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "leak_vin_vout_ua",
+          "value": 0.0585356,
+          "unit": "uA",
+          "limits": {
+            "max": 1.0
+          },
+          "status": "pass",
+          "margin": 0.9414644
+        },
+        {
+          "name": "vout_pre_disable_v",
+          "value": 1.820672,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.015328000000000008
+        },
+        {
+          "name": "vout_hold_2ms_v",
+          "value": 1.819536,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.05553600000000003
+        },
+        {
+          "name": "vout_disabled_static_v",
+          "value": 0.1643736,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ivout_held_1v8_ua",
+          "value": 0.5517107,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "fs_125c_3.63v",
+      "process": "fs",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_shutdown_static_ua",
+          "value": 0.06544239,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.93455761
+        },
+        {
+          "name": "iq_shutdown_after_edge_ua",
+          "value": 0.03223173,
+          "unit": "uA",
+          "limits": {
+            "max": 3.0
+          },
+          "status": "pass",
+          "margin": 2.96776827
+        },
+        {
+          "name": "iq_shutdown_after_edge_mean_ua",
+          "value": 0.02988204,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "leak_vin_vout_ua",
+          "value": 0.07580629,
+          "unit": "uA",
+          "limits": {
+            "max": 1.0
+          },
+          "status": "pass",
+          "margin": 0.92419371
+        },
+        {
+          "name": "vout_pre_disable_v",
+          "value": 1.820229,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.01577099999999998
+        },
+        {
+          "name": "vout_hold_2ms_v",
+          "value": 1.81911,
+          "unit": "V",
+          "limits": {
+            "min": 1.764
+          },
+          "status": "pass",
+          "margin": 0.05510999999999999
+        },
+        {
+          "name": "vout_disabled_static_v",
+          "value": 0.2006798,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ivout_held_1v8_ua",
+          "value": 0.5478731,
+          "unit": "uA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    }
+  ]
+}
