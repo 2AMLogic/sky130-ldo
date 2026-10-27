@@ -2,6 +2,11 @@
 
 Chronological record of merged pull requests and closed issues. Maintained by the Loom Guide role.
 
+### 2026-10-27
+
+- **PR #450**: feat(signoff): wrap PVT records into klt sim envelopes for T1 item 5
+- **Issue #449** (closed): T1 item 5 (Full corner verification): emit klt sim envelopes for every ratified row so failures are graded, not no_evidence
+
 ### 2026-10-23
 
 - **PR #444**: test: remove frozen pre-extraction copies and source-grep tests
