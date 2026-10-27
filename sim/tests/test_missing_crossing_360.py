@@ -6,19 +6,15 @@ and is never reported as supported/passing.
 """
 from __future__ import annotations
 
-import importlib.util
 import cmath
 import math
-import sys
 import unittest
 from pathlib import Path
+from _sim_script_loader import load_script  # noqa: E402
 
 SIM_DIR = Path(__file__).resolve().parents[1]
 _DIR = next((SIM_DIR / "loop-gain" / "diagnostics").glob("*-missing-crossing"))
-_spec = importlib.util.spec_from_file_location("crossing_extract", _DIR / "crossing_extract.py")
-ce = importlib.util.module_from_spec(_spec)
-sys.modules["crossing_extract"] = ce
-_spec.loader.exec_module(ce)
+ce = load_script("crossing_extract", _DIR / "crossing_extract.py", register=True)
 
 
 def grid(lo, hi, ppd=60):

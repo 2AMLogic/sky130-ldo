@@ -5,7 +5,6 @@ PDK-free: a stub executable stands in for `klt`.
 
 from __future__ import annotations
 
-import importlib.util
 import stat
 import sys
 import tempfile
@@ -16,13 +15,11 @@ BIN_DIR = Path(__file__).resolve().parents[1] / "bin"
 sys.path.insert(0, str(BIN_DIR))
 
 from _record_common import git, run_klt_json  # noqa: E402
+from _layout_script_loader import load_script  # noqa: E402
 
 
 def _load(name: str, filename: str):
-    spec = importlib.util.spec_from_file_location(name, BIN_DIR / filename)
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
-    return mod
+    return load_script(name, BIN_DIR / filename)
 
 
 class RunKltJsonTest(unittest.TestCase):

@@ -21,20 +21,17 @@ ever invoked.
 from __future__ import annotations
 
 import argparse
-import importlib.util
 import json
 import subprocess
 import sys
 import unittest
 from pathlib import Path
 from unittest import mock
+from _sim_script_loader import load_script  # noqa: E402
 
 SIM_DIR = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(SIM_DIR / "bin"))  # yield-run.py imports _record_common (issue #46)
-_spec = importlib.util.spec_from_file_location("yield_run", SIM_DIR / "bin" / "yield-run.py")
-yield_run = importlib.util.module_from_spec(_spec)
-sys.modules["yield_run"] = yield_run
-_spec.loader.exec_module(yield_run)
+yield_run = load_script("yield_run", SIM_DIR / "bin" / "yield-run.py", register=True)
 
 WHERE = "sim/mc-fixture/klt-responses/20260101-000000-abcdef0.json"
 

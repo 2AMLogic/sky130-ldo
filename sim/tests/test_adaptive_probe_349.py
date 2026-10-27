@@ -6,10 +6,10 @@ Loaded by file path, like test_mitigation_probe.py. Pure-text fixtures; no ngspi
 """
 from __future__ import annotations
 
-import importlib.util
 import sys
 import unittest
 from pathlib import Path
+from _sim_script_loader import load_script  # noqa: E402
 
 SIM_DIR = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SIM_DIR / "bin"))
@@ -17,11 +17,7 @@ _DIAG = next((SIM_DIR / "loop-gain" / "diagnostics").glob("*-adaptive-comp"))
 
 
 def _load(name):
-    spec = importlib.util.spec_from_file_location(name, _DIAG / f"{name}.py")
-    mod = importlib.util.module_from_spec(spec)
-    sys.modules[name] = mod
-    spec.loader.exec_module(mod)
-    return mod
+    return load_script(name, _DIAG / f"{name}.py", register=True)
 
 
 ap = _load("adaptive_probe")

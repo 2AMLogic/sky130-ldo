@@ -15,24 +15,18 @@ synthetic `nets` dicts handed to `assign_tracks`.
 
 from __future__ import annotations
 
-import importlib.util
 import math
 import sys
 import unittest
 from pathlib import Path
+from _layout_script_loader import load_script  # noqa: E402
 
 BIN_DIR = Path(__file__).resolve().parents[1] / "bin"
 sys.path.insert(0, str(BIN_DIR))
 
 
 def _load_gen_module():
-    spec = importlib.util.spec_from_file_location(
-        "gen_ldo_blocks_placement", BIN_DIR / "gen-ldo-blocks.py"
-    )
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    return load_script("gen_ldo_blocks_placement", BIN_DIR / "gen-ldo-blocks.py")
 
 
 GEN = _load_gen_module()

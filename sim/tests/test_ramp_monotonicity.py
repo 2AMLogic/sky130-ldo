@@ -1,6 +1,5 @@
 """PDK-free tests for the startup ramp-monotonicity checker (issue #309)."""
 
-import importlib.util
 import json
 import sys
 import tempfile
@@ -10,6 +9,7 @@ from pathlib import Path
 BIN = Path(__file__).resolve().parents[1] / "bin"
 sys.path.insert(0, str(BIN))
 import ramp_monotonicity as rm  # noqa: E402
+from _sim_script_loader import load_script  # noqa: E402
 
 SET = {"t_enable_s": 1.0e-4, "v_low": 1.764, "max_dt_s": 2.0e-5, "min_samples": 20}
 
@@ -117,10 +117,7 @@ class TestLegs(unittest.TestCase):
 class TestWiring(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        spec = importlib.util.spec_from_file_location("corner_run", BIN / "corner-run.py")
-        cls.cr = importlib.util.module_from_spec(spec)
-        sys.modules["corner_run"] = cls.cr
-        spec.loader.exec_module(cls.cr)
+        cls.cr = load_script("corner_run", BIN / "corner-run.py", register=True)
         cls.manifest = json.loads((BIN.parents[0] / "startup/experiment.json").read_text())
 
     def test_manifest_has_twelve_grid_legs_and_trace_per_tran(self):

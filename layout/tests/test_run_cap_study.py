@@ -5,7 +5,6 @@ inline fixtures -- no PDK, klt, ngspice or network. The module name is
 hyphenated, so it is loaded with importlib."""
 from __future__ import annotations
 
-import importlib.util
 import json
 import sys
 import tempfile
@@ -13,13 +12,12 @@ import unittest
 from pathlib import Path
 from types import SimpleNamespace
 from unittest import mock
+from _layout_script_loader import load_script  # noqa: E402
 
 CAP_DIR = Path(__file__).resolve().parents[1] / "cap-study"
 sys.path.insert(0, str(CAP_DIR))
 
-_spec = importlib.util.spec_from_file_location("run_cap_study", CAP_DIR / "run-cap-study.py")
-rcs = importlib.util.module_from_spec(_spec)
-_spec.loader.exec_module(rcs)
+rcs = load_script("run_cap_study", CAP_DIR / "run-cap-study.py")
 cs = rcs.cs
 
 CAPS = [{"name": "C1", "nets": ["VOUT", "0"], "value_f": 1e-12},

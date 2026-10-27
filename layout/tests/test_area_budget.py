@@ -1,12 +1,9 @@
 """Sanity tests for layout/bin/ldo-area-budget.py (issue #246): stdlib only."""
-import importlib.util
 import unittest
 from pathlib import Path
+from _layout_script_loader import load_script  # noqa: E402
 
-SPEC = importlib.util.spec_from_file_location(
-    "area_budget", Path(__file__).resolve().parent.parent / "bin" / "ldo-area-budget.py")
-ab = importlib.util.module_from_spec(SPEC)
-SPEC.loader.exec_module(ab)
+ab = load_script("area_budget", Path(__file__).resolve().parent.parent / "bin" / "ldo-area-budget.py")
 
 
 class FoldBank(unittest.TestCase):

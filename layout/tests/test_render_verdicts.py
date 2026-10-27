@@ -18,7 +18,6 @@ The scripts' filenames contain hyphens, so they are loaded by path.
 from __future__ import annotations
 
 import contextlib
-import importlib.util
 import io
 import json
 import shutil
@@ -29,6 +28,7 @@ import unittest
 from decimal import Decimal
 from pathlib import Path
 from unittest import mock
+from _layout_script_loader import load_script  # noqa: E402
 
 BIN = Path(__file__).resolve().parents[1] / "bin"
 LAYOUT = BIN.parent
@@ -36,10 +36,7 @@ sys.path.insert(0, str(BIN))
 
 
 def _load(filename: str, name: str):
-    spec = importlib.util.spec_from_file_location(name, BIN / filename)
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    return load_script(name, BIN / filename)
 
 
 erc = _load("render-ldo-erc-record.py", "render_ldo_erc_record")

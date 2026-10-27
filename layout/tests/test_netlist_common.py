@@ -6,7 +6,6 @@ Standard library only; the reference generator's `klt` deck lookup is stubbed.
 from __future__ import annotations
 
 import contextlib
-import importlib.util
 import io
 import sys
 import tempfile
@@ -17,13 +16,11 @@ BIN_DIR = Path(__file__).resolve().parents[1] / "bin"
 sys.path.insert(0, str(BIN_DIR))
 
 from _netlist_common import XCard, _merge_continuations, parse_x_card  # noqa: E402
+from _layout_script_loader import load_script  # noqa: E402
 
 
 def _load(name: str, filename: str):
-    spec = importlib.util.spec_from_file_location(name, BIN_DIR / filename)
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
-    return mod
+    return load_script(name, BIN_DIR / filename)
 
 
 BLOCKS = _load("gen_ldo_blocks_t", "gen-ldo-blocks.py")
