@@ -3,17 +3,15 @@
 from __future__ import annotations
 
 import hashlib
-import importlib.util
 import json
 import subprocess
 import tempfile
 import unittest
 from pathlib import Path
+from _sim_script_loader import load_script  # noqa: E402
 
 _p = Path(__file__).resolve().parents[2] / "scripts" / "check_artifact_manifests.py"
-_spec = importlib.util.spec_from_file_location("check_artifact_manifests", _p)
-chk = importlib.util.module_from_spec(_spec)
-_spec.loader.exec_module(chk)
+chk = load_script("check_artifact_manifests", _p)
 
 
 def entry(data: bytes, uri: str | None = None, name: str = "sim/b/x.log") -> dict:

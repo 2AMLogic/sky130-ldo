@@ -7,11 +7,11 @@ render-pex-record.py. Both files are hyphenated, so they are loaded by path
 
 from __future__ import annotations
 
-import importlib.util
 import re
 import sys
 import unittest
 from pathlib import Path
+from _sim_script_loader import load_script  # noqa: E402
 
 SIM_DIR = Path(__file__).resolve().parent.parent
 PEX_BIN = SIM_DIR / "pex-post-layout" / "bin"
@@ -19,11 +19,7 @@ sys.path.insert(0, str(SIM_DIR / "bin"))  # render-pex-record imports _record_co
 
 
 def _load(name: str, filename: str):
-    spec = importlib.util.spec_from_file_location(name, PEX_BIN / filename)
-    mod = importlib.util.module_from_spec(spec)
-    sys.modules[name] = mod
-    spec.loader.exec_module(mod)
-    return mod
+    return load_script(name, PEX_BIN / filename, register=True)
 
 
 gen = _load("gen_pex_testbench", "gen-pex-testbench.py")

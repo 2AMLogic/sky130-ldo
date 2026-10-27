@@ -23,18 +23,15 @@ from __future__ import annotations
 
 import contextlib
 import hashlib
-import importlib.util
 import io
 import sys
 import unittest
 from pathlib import Path
+from _sim_script_loader import load_script  # noqa: E402
 
 SIM_DIR = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(SIM_DIR / "bin"))  # mc-run.py imports _record_common (issue #46)
-_spec = importlib.util.spec_from_file_location("mc_run", SIM_DIR / "bin" / "mc-run.py")
-mc_run = importlib.util.module_from_spec(_spec)
-sys.modules["mc_run"] = mc_run
-_spec.loader.exec_module(mc_run)
+mc_run = load_script("mc_run", SIM_DIR / "bin" / "mc-run.py", register=True)
 
 MANIFEST = Path("sim/mc-fixture/experiment.json")
 

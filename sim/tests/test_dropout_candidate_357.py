@@ -6,12 +6,12 @@ Every invalid input must stay invalid: no dropout / derived number, named reason
 """
 from __future__ import annotations
 
-import importlib.util
 import json
 import sys
 import tempfile
 import unittest
 from pathlib import Path
+from _sim_script_loader import load_script  # noqa: E402
 
 SIM_DIR = Path(__file__).resolve().parents[1]
 DIAG = SIM_DIR / "dropout-vs-load" / "diagnostics" / "issue-357"
@@ -21,11 +21,7 @@ sys.path.insert(0, str(DIAG))
 
 
 def _load(name, fname):
-    spec = importlib.util.spec_from_file_location(name, DIAG / fname)
-    mod = importlib.util.module_from_spec(spec)
-    sys.modules[name] = mod
-    spec.loader.exec_module(mod)
-    return mod
+    return load_script(name, DIAG / fname, register=True)
 
 
 cand = _load("candidate", "candidate.py")

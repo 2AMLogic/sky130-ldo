@@ -1,18 +1,14 @@
 """Tests for the #365 light-load extraction/classification helpers (synthetic, no ngspice)."""
 from __future__ import annotations
 
-import importlib.util
 import math
-import sys
 import unittest
 from pathlib import Path
+from _sim_script_loader import load_script  # noqa: E402
 
 SIM_DIR = Path(__file__).resolve().parents[1]
 _DIR = next((SIM_DIR / "loop-gain" / "diagnostics").glob("*-lightload-phase-dip"))
-_spec = importlib.util.spec_from_file_location("lightload_extract", _DIR / "lightload_extract.py")
-ll = importlib.util.module_from_spec(_spec)
-sys.modules["lightload_extract"] = ll
-_spec.loader.exec_module(ll)
+ll = load_script("lightload_extract", _DIR / "lightload_extract.py", register=True)
 
 
 def grid(lo, hi, ppd=30):

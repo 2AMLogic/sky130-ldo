@@ -6,20 +6,17 @@ Canned klt responses only: nothing is submitted, no ngspice/xschem/PDK needed.
 from __future__ import annotations
 
 import contextlib
-import importlib.util
 import io
 import json
 import shutil
 import sys
 import unittest
 from pathlib import Path
+from _sim_script_loader import load_script  # noqa: E402
 
 SIM_DIR = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(SIM_DIR / "bin"))
-_spec = importlib.util.spec_from_file_location("batch_preflight", SIM_DIR / "bin" / "batch-preflight.py")
-bp = importlib.util.module_from_spec(_spec)
-sys.modules["batch_preflight"] = bp
-_spec.loader.exec_module(bp)
+bp = load_script("batch_preflight", SIM_DIR / "bin" / "batch-preflight.py", register=True)
 
 
 class FakeCR:

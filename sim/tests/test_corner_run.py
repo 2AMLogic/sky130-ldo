@@ -13,7 +13,6 @@ from __future__ import annotations
 
 import datetime
 import hashlib
-import importlib.util
 import math
 import re
 import subprocess
@@ -26,10 +25,8 @@ from unittest import mock
 SIM_DIR = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(SIM_DIR / "bin"))
 import _evidence_store  # noqa: E402  # corner-run.py imports _record_common (issue #46)
-_spec = importlib.util.spec_from_file_location("corner_run", SIM_DIR / "bin" / "corner-run.py")
-corner_run = importlib.util.module_from_spec(_spec)
-sys.modules["corner_run"] = corner_run
-_spec.loader.exec_module(corner_run)
+from _sim_script_loader import load_script  # noqa: E402
+corner_run = load_script("corner_run", SIM_DIR / "bin" / "corner-run.py", register=True)
 
 
 class TestToolVersionPin(unittest.TestCase):

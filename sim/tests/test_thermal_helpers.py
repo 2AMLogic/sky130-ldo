@@ -1,6 +1,5 @@
 """PDK-free tests for the shared thermal trip-search helpers (issue #297)."""
 
-import importlib.util
 import sys
 import tempfile
 import unittest
@@ -9,13 +8,11 @@ from pathlib import Path
 SIM = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SIM / "bin"))
 import _record_common as rc  # noqa: E402
+from _sim_script_loader import load_script  # noqa: E402
 
 
 def load(name, path):
-    spec = importlib.util.spec_from_file_location(name, path)
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
-    return mod
+    return load_script(name, path)
 
 
 class FakePdk:

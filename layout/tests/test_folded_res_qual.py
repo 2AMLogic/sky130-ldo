@@ -3,7 +3,6 @@
 Stdlib only: no klt, KLayout, PDK or ngspice needed (the generator imports
 `klayout.db` lazily, inside the functions that draw).
 """
-import importlib.util
 import sys
 import unittest
 from pathlib import Path
@@ -11,10 +10,9 @@ from pathlib import Path
 BIN = Path(__file__).resolve().parent.parent / "bin"
 sys.path.insert(0, str(BIN))
 import _folded_res_analysis as fra  # noqa: E402
+from _layout_script_loader import load_script  # noqa: E402
 
-SPEC = importlib.util.spec_from_file_location("gen_folded", BIN / "gen-folded-res-qual.py")
-gen = importlib.util.module_from_spec(SPEC)
-SPEC.loader.exec_module(gen)
+gen = load_script("gen_folded", BIN / "gen-folded-res-qual.py")
 
 
 def ports(n, length=10.0, pitch=0.82):

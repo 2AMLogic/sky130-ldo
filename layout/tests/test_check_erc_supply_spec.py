@@ -14,13 +14,13 @@ an explicit reason there rather than failing.
 from __future__ import annotations
 
 import contextlib
-import importlib.util
 import io
 import json
 import sys
 import tempfile
 import unittest
 from pathlib import Path
+from _layout_script_loader import load_script  # noqa: E402
 
 try:
     import klayout.db as db
@@ -46,10 +46,7 @@ NARRATIVE = [
 
 
 def _load():
-    spec = importlib.util.spec_from_file_location("check_erc_supply_spec", SCRIPT)
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    return load_script("check_erc_supply_spec", SCRIPT)
 
 
 def _build(shapes):

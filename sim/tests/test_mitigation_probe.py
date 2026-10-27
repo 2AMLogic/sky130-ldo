@@ -4,18 +4,15 @@ Loaded by file path, like test_corner_run.py. Pure-text fixtures; no ngspice.
 """
 from __future__ import annotations
 
-import importlib.util
 import sys
 import unittest
 from pathlib import Path
+from _sim_script_loader import load_script  # noqa: E402
 
 SIM_DIR = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SIM_DIR / "bin"))
 _p = next((SIM_DIR / "loop-gain" / "diagnostics").glob("*-mitigation-screen/mitigation_probe.py"))
-_spec = importlib.util.spec_from_file_location("mitigation_probe", _p)
-mp = importlib.util.module_from_spec(_spec)
-sys.modules["mitigation_probe"] = mp
-_spec.loader.exec_module(mp)
+mp = load_script("mitigation_probe", _p, register=True)
 
 GOOD = """PT1_OP
 vseed = 1.798832210e+00

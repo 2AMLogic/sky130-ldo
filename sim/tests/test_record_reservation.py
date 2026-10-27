@@ -5,7 +5,6 @@ PDK-free: fake simulator/netlister calls, no PVT matrices, no ngspice/klt.
 
 from __future__ import annotations
 
-import importlib.util
 import subprocess
 import sys
 import tempfile
@@ -19,14 +18,11 @@ SIM_DIR = Path(__file__).resolve().parent.parent
 BIN = SIM_DIR / "bin"
 sys.path.insert(0, str(BIN))
 import _record_common as rc  # noqa: E402
+from _sim_script_loader import load_script  # noqa: E402
 
 
 def _load(name, fname):
-    spec = importlib.util.spec_from_file_location(name, BIN / fname)
-    mod = importlib.util.module_from_spec(spec)
-    sys.modules[name] = mod
-    spec.loader.exec_module(mod)
-    return mod
+    return load_script(name, BIN / fname, register=True)
 
 
 corner_run = _load("corner_run", "corner-run.py")

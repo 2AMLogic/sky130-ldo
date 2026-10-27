@@ -9,7 +9,6 @@ sky130A_mr.drc / klt lvs results.
 """
 from __future__ import annotations
 
-import importlib.util
 import sys
 import unittest
 from pathlib import Path
@@ -18,6 +17,7 @@ BIN_DIR = Path(__file__).resolve().parents[1] / "bin"
 sys.path.insert(0, str(BIN_DIR))
 
 import _cap_rail_plan as plan  # noqa: E402
+from _layout_script_loader import load_script  # noqa: E402
 
 # The sky130 MiM law as the pinned klt deck states it (2.00 fF/um^2 +
 # 0.19 fF/um); the generator reads it from the deck at run time, these tests
@@ -27,11 +27,7 @@ PERIM_F = 0.19e-15
 
 
 def _load(name: str, file: str):
-    spec = importlib.util.spec_from_file_location(name, BIN_DIR / file)
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    return load_script(name, BIN_DIR / file)
 
 
 NETLIST = """** sch_path: x
