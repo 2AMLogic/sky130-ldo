@@ -58,7 +58,9 @@
     "",
     "`envelope_field` is a dotted path into the cited envelope whose value must",
     "equal `sha256`; null means the envelope makes no hash claim about this",
-    "artifact and only the on-disk re-hash is checked."
+    "artifact and only the on-disk re-hash is checked.",
+    "",
+    "Issue #449 added item 5: eleven wrapped `klt sim`-shaped envelopes (signoff/make_item5_envelope.py), one per bench, each pinned to the netlist snapshot its source record simulated."
   ],
   "pins": [
     {
@@ -87,6 +89,105 @@
       "envelope_field": "environment.reference_sha256",
       "manifest_pinned": false,
       "note": "The schematic-derived reference netlist the layout was compared against -- item 4 requires the compare to be against item 1's netlist, so the reference side needs pinning too, not just the layout side. Re-pinned by issue #127 alongside the GDS entry above; the manifest pin covers only the layout (input) side, not this reference side."
+    },
+    {
+      "item": "5",
+      "artifact": "sim/dropout-vs-load/netlist-snapshots/20261011-092557-7a4e0cc.spice",
+      "sha256": "sha256:eac4cf442d9ade7d6e039164d818f1022ba88413acae907993f5de7939b1f883",
+      "cited_envelope": "signoff/evidence/item5-dropout-vs-load-20261011-092557-7a4e0cc.sim.json",
+      "envelope_field": "provenance.input.content_hash",
+      "manifest_pinned": true,
+      "note": "The netlist snapshot the dropout-vs-load record 20261011-092557-7a4e0cc simulated (issue #449). Pinned as the netlist this record ran on, not as the current schematic; measurements/characterization.md reports freshness separately."
+    },
+    {
+      "item": "5",
+      "artifact": "sim/line-regulation/netlist-snapshots/20260926-200304-35b7392.spice",
+      "sha256": "sha256:cde71b6b4e3d722f09f2385fd34a3d424bd9888d48160d8d4f1da0553fddfec4",
+      "cited_envelope": "signoff/evidence/item5-line-regulation-20260926-200304-35b7392.sim.json",
+      "envelope_field": "provenance.input.content_hash",
+      "manifest_pinned": true,
+      "note": "The netlist snapshot the line-regulation record 20260926-200304-35b7392 simulated (issue #449). Pinned as the netlist this record ran on, not as the current schematic; measurements/characterization.md reports freshness separately."
+    },
+    {
+      "item": "5",
+      "artifact": "sim/load-regulation/netlist-snapshots/20260926-010432-228fbc7.spice",
+      "sha256": "sha256:ed5005f180db739448c4994c30b8db78325216c511a907e5ef2f4d22a10671ac",
+      "cited_envelope": "signoff/evidence/item5-load-regulation-20260926-010432-228fbc7.sim.json",
+      "envelope_field": "provenance.input.content_hash",
+      "manifest_pinned": true,
+      "note": "The netlist snapshot the load-regulation record 20260926-010432-228fbc7 simulated (issue #449). Pinned as the netlist this record ran on, not as the current schematic; measurements/characterization.md reports freshness separately."
+    },
+    {
+      "item": "5",
+      "artifact": "sim/load-transient/netlist-snapshots/20260926-013955-6449a98.spice",
+      "sha256": "sha256:c79b7d0181fdd481a6d41c5c5cdddbd4db434560e4da5b0afab1f4a6b3544076",
+      "cited_envelope": "signoff/evidence/item5-load-transient-20260926-013955-6449a98.sim.json",
+      "envelope_field": "provenance.input.content_hash",
+      "manifest_pinned": true,
+      "note": "The netlist snapshot the load-transient record 20260926-013955-6449a98 simulated (issue #449). Pinned as the netlist this record ran on, not as the current schematic; measurements/characterization.md reports freshness separately."
+    },
+    {
+      "item": "5",
+      "artifact": "sim/psrr-dc/netlist-snapshots/20260926-033606-4a9ec09.spice",
+      "sha256": "sha256:481f5adb0633168114c7def4d22034b20c2917a46b2f926fc10266b56c554fed",
+      "cited_envelope": "signoff/evidence/item5-psrr-dc-20260926-033606-4a9ec09.sim.json",
+      "envelope_field": "provenance.input.content_hash",
+      "manifest_pinned": true,
+      "note": "The netlist snapshot the psrr-dc record 20260926-033606-4a9ec09 simulated (issue #449). Pinned as the netlist this record ran on, not as the current schematic; measurements/characterization.md reports freshness separately."
+    },
+    {
+      "item": "5",
+      "artifact": "sim/iq/netlist-snapshots/20260910-034648-6c0436d.spice",
+      "sha256": "sha256:276777f5d01e1d124a26c38e9030133e51ba84c8e3ec790bb1314405361d2fb4",
+      "cited_envelope": "signoff/evidence/item5-iq-20260910-034648-6c0436d.sim.json",
+      "envelope_field": "provenance.input.content_hash",
+      "manifest_pinned": true,
+      "note": "The netlist snapshot the iq record 20260910-034648-6c0436d simulated (issue #449). Pinned as the netlist this record ran on, not as the current schematic; measurements/characterization.md reports freshness separately."
+    },
+    {
+      "item": "5",
+      "artifact": "sim/current-limit/netlist-snapshots/20260825-105322-933dfdd.spice",
+      "sha256": "sha256:05a4c99f2a08097560bb364d60362a6474aa3456e55cae559381f8e0c5816b83",
+      "cited_envelope": "signoff/evidence/item5-current-limit-20260825-105322-933dfdd.sim.json",
+      "envelope_field": "provenance.input.content_hash",
+      "manifest_pinned": true,
+      "note": "The netlist snapshot the current-limit record 20260825-105322-933dfdd simulated (issue #449). Pinned as the netlist this record ran on, not as the current schematic; measurements/characterization.md reports freshness separately."
+    },
+    {
+      "item": "5",
+      "artifact": "sim/startup/netlist-snapshots/20260825-110456-933dfdd.spice",
+      "sha256": "sha256:e19e3bf46a221435d4bc47b921b204c2c5336cc8188c665c327a01f010bf5a77",
+      "cited_envelope": "signoff/evidence/item5-startup-20260825-110456-933dfdd.sim.json",
+      "envelope_field": "provenance.input.content_hash",
+      "manifest_pinned": true,
+      "note": "The netlist snapshot the startup record 20260825-110456-933dfdd simulated (issue #449). Pinned as the netlist this record ran on, not as the current schematic; measurements/characterization.md reports freshness separately."
+    },
+    {
+      "item": "5",
+      "artifact": "sim/enable-shutdown/netlist-snapshots/20260825-111526-933dfdd.spice",
+      "sha256": "sha256:564f63f4b1e2b4659ad7b1598dcfdd57b2d4217fb29fb3038ac909c98edb34d3",
+      "cited_envelope": "signoff/evidence/item5-enable-shutdown-20260825-111526-933dfdd.sim.json",
+      "envelope_field": "provenance.input.content_hash",
+      "manifest_pinned": true,
+      "note": "The netlist snapshot the enable-shutdown record 20260825-111526-933dfdd simulated (issue #449). Pinned as the netlist this record ran on, not as the current schematic; measurements/characterization.md reports freshness separately."
+    },
+    {
+      "item": "5",
+      "artifact": "sim/thermal/netlist-snapshots/20260926-095154-f6ab418.spice",
+      "sha256": "sha256:35b2e28bf981c698d3ae2bba793d953aaab1016ab32cf836aa8e8d1f83bd85ff",
+      "cited_envelope": "signoff/evidence/item5-thermal-20260926-095154-f6ab418.sim.json",
+      "envelope_field": "provenance.input.content_hash",
+      "manifest_pinned": true,
+      "note": "The netlist snapshot the thermal record 20260926-095154-f6ab418 simulated (issue #449). Pinned as the netlist this record ran on, not as the current schematic; measurements/characterization.md reports freshness separately."
+    },
+    {
+      "item": "5",
+      "artifact": "sim/loop-gain/netlist-snapshots/20260926-040338-4a9ec09.spice",
+      "sha256": "sha256:4b3c44283ca98392b441f14ec32e23b3b5a5682aa17aef76e8a2863ba6d6cbe2",
+      "cited_envelope": "signoff/evidence/item5-loop-gain-20260926-040338-4a9ec09.sim.json",
+      "envelope_field": "provenance.input.content_hash",
+      "manifest_pinned": true,
+      "note": "The netlist snapshot the loop-gain record 20260926-040338-4a9ec09 simulated (issue #449). Pinned as the netlist this record ran on, not as the current schematic; measurements/characterization.md reports freshness separately."
     },
     {
       "item": "6",

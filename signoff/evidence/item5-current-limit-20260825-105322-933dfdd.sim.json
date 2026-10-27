@@ -1,0 +1,4531 @@
+{
+  "schema_version": 1,
+  "netlist": "sim/current-limit/netlist-snapshots/20260825-105322-933dfdd.spice",
+  "status": "pass",
+  "corner_count": 45,
+  "passed": 45,
+  "failed": 0,
+  "errored": 0,
+  "wrapper": "NOT a `klt sim` run. Hand-wrapped by signoff/make_item5_envelope.py from the committed harness-format record named in `source_record`; every value, limit and verdict is copied verbatim and nothing was re-simulated. Measurements tagged with a `spec_row` carry that row's RATIFIED bound (spec/target-spec.md, DR-006), which the script checked against the record's own limit before writing. The input pin is the netlist snapshot the record simulated, not necessarily the current schematic: see measurements/characterization.md for per-record freshness.",
+  "source_record": {
+    "bench": "current-limit",
+    "record_id": "20260825-105322-933dfdd",
+    "path": "sim/current-limit/records/20260825-105322-933dfdd.json",
+    "sha256": "sha256:0f7dd1459df995ca7fe54480c95256091804ffc4040d5c0b12a184902e2e4c12",
+    "overall_pass": true,
+    "matrix_is_subset": false
+  },
+  "environment": {
+    "engine": "ngspice",
+    "engine_version": "ngspice-46 : Circuit level simulation program",
+    "pdk": "c6d73a35f524070e85faff4a6a9eef49553ebc2b",
+    "platform": "Linux 7.0.0-1010-aws x86_64"
+  },
+  "provenance": {
+    "input": {
+      "path": "sim/current-limit/netlist-snapshots/20260825-105322-933dfdd.spice",
+      "role": "netlist",
+      "content_hash": "sha256:05a4c99f2a08097560bb364d60362a6474aa3456e55cae559381f8e0c5816b83"
+    }
+  },
+  "metrics": {
+    "sim__corner__count": 45,
+    "sim__corner__passed_count": 45,
+    "sim__corner__failed_count": 0,
+    "sim__corner__errored_count": 0
+  },
+  "coverage": {
+    "schema_version": 1,
+    "known": true,
+    "checked": [
+      "current-limit:ff_-40c_2.97v:ilim_knee_ma",
+      "current-limit:ff_-40c_2.97v:ilim_short_ma",
+      "current-limit:ff_-40c_2.97v:ishort_ripple_pct",
+      "current-limit:ff_-40c_2.97v:vout_50ma_v",
+      "current-limit:ff_-40c_3.30v:ilim_knee_ma",
+      "current-limit:ff_-40c_3.30v:ilim_short_ma",
+      "current-limit:ff_-40c_3.30v:ishort_ripple_pct",
+      "current-limit:ff_-40c_3.30v:vout_50ma_v",
+      "current-limit:ff_-40c_3.63v:ilim_knee_ma",
+      "current-limit:ff_-40c_3.63v:ilim_short_ma",
+      "current-limit:ff_-40c_3.63v:ishort_ripple_pct",
+      "current-limit:ff_-40c_3.63v:vout_50ma_v",
+      "current-limit:ff_125c_2.97v:ilim_knee_ma",
+      "current-limit:ff_125c_2.97v:ilim_short_ma",
+      "current-limit:ff_125c_2.97v:ishort_ripple_pct",
+      "current-limit:ff_125c_2.97v:vout_50ma_v",
+      "current-limit:ff_125c_3.30v:ilim_knee_ma",
+      "current-limit:ff_125c_3.30v:ilim_short_ma",
+      "current-limit:ff_125c_3.30v:ishort_ripple_pct",
+      "current-limit:ff_125c_3.30v:vout_50ma_v",
+      "current-limit:ff_125c_3.63v:ilim_knee_ma",
+      "current-limit:ff_125c_3.63v:ilim_short_ma",
+      "current-limit:ff_125c_3.63v:ishort_ripple_pct",
+      "current-limit:ff_125c_3.63v:vout_50ma_v",
+      "current-limit:ff_27c_2.97v:ilim_knee_ma",
+      "current-limit:ff_27c_2.97v:ilim_short_ma",
+      "current-limit:ff_27c_2.97v:ishort_ripple_pct",
+      "current-limit:ff_27c_2.97v:vout_50ma_v",
+      "current-limit:ff_27c_3.30v:ilim_knee_ma",
+      "current-limit:ff_27c_3.30v:ilim_short_ma",
+      "current-limit:ff_27c_3.30v:ishort_ripple_pct",
+      "current-limit:ff_27c_3.30v:vout_50ma_v",
+      "current-limit:ff_27c_3.63v:ilim_knee_ma",
+      "current-limit:ff_27c_3.63v:ilim_short_ma",
+      "current-limit:ff_27c_3.63v:ishort_ripple_pct",
+      "current-limit:ff_27c_3.63v:vout_50ma_v",
+      "current-limit:fs_-40c_2.97v:ilim_knee_ma",
+      "current-limit:fs_-40c_2.97v:ilim_short_ma",
+      "current-limit:fs_-40c_2.97v:ishort_ripple_pct",
+      "current-limit:fs_-40c_2.97v:vout_50ma_v",
+      "current-limit:fs_-40c_3.30v:ilim_knee_ma",
+      "current-limit:fs_-40c_3.30v:ilim_short_ma",
+      "current-limit:fs_-40c_3.30v:ishort_ripple_pct",
+      "current-limit:fs_-40c_3.30v:vout_50ma_v",
+      "current-limit:fs_-40c_3.63v:ilim_knee_ma",
+      "current-limit:fs_-40c_3.63v:ilim_short_ma",
+      "current-limit:fs_-40c_3.63v:ishort_ripple_pct",
+      "current-limit:fs_-40c_3.63v:vout_50ma_v",
+      "current-limit:fs_125c_2.97v:ilim_knee_ma",
+      "current-limit:fs_125c_2.97v:ilim_short_ma",
+      "current-limit:fs_125c_2.97v:ishort_ripple_pct",
+      "current-limit:fs_125c_2.97v:vout_50ma_v",
+      "current-limit:fs_125c_3.30v:ilim_knee_ma",
+      "current-limit:fs_125c_3.30v:ilim_short_ma",
+      "current-limit:fs_125c_3.30v:ishort_ripple_pct",
+      "current-limit:fs_125c_3.30v:vout_50ma_v",
+      "current-limit:fs_125c_3.63v:ilim_knee_ma",
+      "current-limit:fs_125c_3.63v:ilim_short_ma",
+      "current-limit:fs_125c_3.63v:ishort_ripple_pct",
+      "current-limit:fs_125c_3.63v:vout_50ma_v",
+      "current-limit:fs_27c_2.97v:ilim_knee_ma",
+      "current-limit:fs_27c_2.97v:ilim_short_ma",
+      "current-limit:fs_27c_2.97v:ishort_ripple_pct",
+      "current-limit:fs_27c_2.97v:vout_50ma_v",
+      "current-limit:fs_27c_3.30v:ilim_knee_ma",
+      "current-limit:fs_27c_3.30v:ilim_short_ma",
+      "current-limit:fs_27c_3.30v:ishort_ripple_pct",
+      "current-limit:fs_27c_3.30v:vout_50ma_v",
+      "current-limit:fs_27c_3.63v:ilim_knee_ma",
+      "current-limit:fs_27c_3.63v:ilim_short_ma",
+      "current-limit:fs_27c_3.63v:ishort_ripple_pct",
+      "current-limit:fs_27c_3.63v:vout_50ma_v",
+      "current-limit:sf_-40c_2.97v:ilim_knee_ma",
+      "current-limit:sf_-40c_2.97v:ilim_short_ma",
+      "current-limit:sf_-40c_2.97v:ishort_ripple_pct",
+      "current-limit:sf_-40c_2.97v:vout_50ma_v",
+      "current-limit:sf_-40c_3.30v:ilim_knee_ma",
+      "current-limit:sf_-40c_3.30v:ilim_short_ma",
+      "current-limit:sf_-40c_3.30v:ishort_ripple_pct",
+      "current-limit:sf_-40c_3.30v:vout_50ma_v",
+      "current-limit:sf_-40c_3.63v:ilim_knee_ma",
+      "current-limit:sf_-40c_3.63v:ilim_short_ma",
+      "current-limit:sf_-40c_3.63v:ishort_ripple_pct",
+      "current-limit:sf_-40c_3.63v:vout_50ma_v",
+      "current-limit:sf_125c_2.97v:ilim_knee_ma",
+      "current-limit:sf_125c_2.97v:ilim_short_ma",
+      "current-limit:sf_125c_2.97v:ishort_ripple_pct",
+      "current-limit:sf_125c_2.97v:vout_50ma_v",
+      "current-limit:sf_125c_3.30v:ilim_knee_ma",
+      "current-limit:sf_125c_3.30v:ilim_short_ma",
+      "current-limit:sf_125c_3.30v:ishort_ripple_pct",
+      "current-limit:sf_125c_3.30v:vout_50ma_v",
+      "current-limit:sf_125c_3.63v:ilim_knee_ma",
+      "current-limit:sf_125c_3.63v:ilim_short_ma",
+      "current-limit:sf_125c_3.63v:ishort_ripple_pct",
+      "current-limit:sf_125c_3.63v:vout_50ma_v",
+      "current-limit:sf_27c_2.97v:ilim_knee_ma",
+      "current-limit:sf_27c_2.97v:ilim_short_ma",
+      "current-limit:sf_27c_2.97v:ishort_ripple_pct",
+      "current-limit:sf_27c_2.97v:vout_50ma_v",
+      "current-limit:sf_27c_3.30v:ilim_knee_ma",
+      "current-limit:sf_27c_3.30v:ilim_short_ma",
+      "current-limit:sf_27c_3.30v:ishort_ripple_pct",
+      "current-limit:sf_27c_3.30v:vout_50ma_v",
+      "current-limit:sf_27c_3.63v:ilim_knee_ma",
+      "current-limit:sf_27c_3.63v:ilim_short_ma",
+      "current-limit:sf_27c_3.63v:ishort_ripple_pct",
+      "current-limit:sf_27c_3.63v:vout_50ma_v",
+      "current-limit:ss_-40c_2.97v:ilim_knee_ma",
+      "current-limit:ss_-40c_2.97v:ilim_short_ma",
+      "current-limit:ss_-40c_2.97v:ishort_ripple_pct",
+      "current-limit:ss_-40c_2.97v:vout_50ma_v",
+      "current-limit:ss_-40c_3.30v:ilim_knee_ma",
+      "current-limit:ss_-40c_3.30v:ilim_short_ma",
+      "current-limit:ss_-40c_3.30v:ishort_ripple_pct",
+      "current-limit:ss_-40c_3.30v:vout_50ma_v",
+      "current-limit:ss_-40c_3.63v:ilim_knee_ma",
+      "current-limit:ss_-40c_3.63v:ilim_short_ma",
+      "current-limit:ss_-40c_3.63v:ishort_ripple_pct",
+      "current-limit:ss_-40c_3.63v:vout_50ma_v",
+      "current-limit:ss_125c_2.97v:ilim_knee_ma",
+      "current-limit:ss_125c_2.97v:ilim_short_ma",
+      "current-limit:ss_125c_2.97v:ishort_ripple_pct",
+      "current-limit:ss_125c_2.97v:vout_50ma_v",
+      "current-limit:ss_125c_3.30v:ilim_knee_ma",
+      "current-limit:ss_125c_3.30v:ilim_short_ma",
+      "current-limit:ss_125c_3.30v:ishort_ripple_pct",
+      "current-limit:ss_125c_3.30v:vout_50ma_v",
+      "current-limit:ss_125c_3.63v:ilim_knee_ma",
+      "current-limit:ss_125c_3.63v:ilim_short_ma",
+      "current-limit:ss_125c_3.63v:ishort_ripple_pct",
+      "current-limit:ss_125c_3.63v:vout_50ma_v",
+      "current-limit:ss_27c_2.97v:ilim_knee_ma",
+      "current-limit:ss_27c_2.97v:ilim_short_ma",
+      "current-limit:ss_27c_2.97v:ishort_ripple_pct",
+      "current-limit:ss_27c_2.97v:vout_50ma_v",
+      "current-limit:ss_27c_3.30v:ilim_knee_ma",
+      "current-limit:ss_27c_3.30v:ilim_short_ma",
+      "current-limit:ss_27c_3.30v:ishort_ripple_pct",
+      "current-limit:ss_27c_3.30v:vout_50ma_v",
+      "current-limit:ss_27c_3.63v:ilim_knee_ma",
+      "current-limit:ss_27c_3.63v:ilim_short_ma",
+      "current-limit:ss_27c_3.63v:ishort_ripple_pct",
+      "current-limit:ss_27c_3.63v:vout_50ma_v",
+      "current-limit:tt_-40c_2.97v:ilim_knee_ma",
+      "current-limit:tt_-40c_2.97v:ilim_short_ma",
+      "current-limit:tt_-40c_2.97v:ishort_ripple_pct",
+      "current-limit:tt_-40c_2.97v:vout_50ma_v",
+      "current-limit:tt_-40c_3.30v:ilim_knee_ma",
+      "current-limit:tt_-40c_3.30v:ilim_short_ma",
+      "current-limit:tt_-40c_3.30v:ishort_ripple_pct",
+      "current-limit:tt_-40c_3.30v:vout_50ma_v",
+      "current-limit:tt_-40c_3.63v:ilim_knee_ma",
+      "current-limit:tt_-40c_3.63v:ilim_short_ma",
+      "current-limit:tt_-40c_3.63v:ishort_ripple_pct",
+      "current-limit:tt_-40c_3.63v:vout_50ma_v",
+      "current-limit:tt_125c_2.97v:ilim_knee_ma",
+      "current-limit:tt_125c_2.97v:ilim_short_ma",
+      "current-limit:tt_125c_2.97v:ishort_ripple_pct",
+      "current-limit:tt_125c_2.97v:vout_50ma_v",
+      "current-limit:tt_125c_3.30v:ilim_knee_ma",
+      "current-limit:tt_125c_3.30v:ilim_short_ma",
+      "current-limit:tt_125c_3.30v:ishort_ripple_pct",
+      "current-limit:tt_125c_3.30v:vout_50ma_v",
+      "current-limit:tt_125c_3.63v:ilim_knee_ma",
+      "current-limit:tt_125c_3.63v:ilim_short_ma",
+      "current-limit:tt_125c_3.63v:ishort_ripple_pct",
+      "current-limit:tt_125c_3.63v:vout_50ma_v",
+      "current-limit:tt_27c_2.97v:ilim_knee_ma",
+      "current-limit:tt_27c_2.97v:ilim_short_ma",
+      "current-limit:tt_27c_2.97v:ishort_ripple_pct",
+      "current-limit:tt_27c_2.97v:vout_50ma_v",
+      "current-limit:tt_27c_3.30v:ilim_knee_ma",
+      "current-limit:tt_27c_3.30v:ilim_short_ma",
+      "current-limit:tt_27c_3.30v:ishort_ripple_pct",
+      "current-limit:tt_27c_3.30v:vout_50ma_v",
+      "current-limit:tt_27c_3.63v:ilim_knee_ma",
+      "current-limit:tt_27c_3.63v:ilim_short_ma",
+      "current-limit:tt_27c_3.63v:ishort_ripple_pct",
+      "current-limit:tt_27c_3.63v:vout_50ma_v"
+    ],
+    "skipped": [],
+    "inapplicable": [],
+    "unknown": [],
+    "nothing_checked": false,
+    "nothing_checked_reasons": [],
+    "measurements_declared": 9,
+    "measurements_with_limits": 4
+  },
+  "measurements": [
+    {
+      "name": "vout_50ma_v",
+      "unit": "V",
+      "limits": {
+        "min": 1.764,
+        "max": 1.836
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "ss_125c_2.97v",
+        "value": 1.797213,
+        "margin": 0.03321299999999994
+      },
+      "spec_row": "output"
+    },
+    {
+      "name": "cl_margin_50ma_v",
+      "unit": "V",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_-40c_2.97v",
+        "value": 0.03585627,
+        "margin": null
+      }
+    },
+    {
+      "name": "ilim_short_ma",
+      "unit": "mA",
+      "limits": {
+        "min": 50
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "ff_125c_2.97v",
+        "value": 108.1403,
+        "margin": 58.140299999999996
+      },
+      "spec_row": "current-limit"
+    },
+    {
+      "name": "ilim_knee_ma",
+      "unit": "mA",
+      "limits": {
+        "min": 50
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "ff_125c_2.97v",
+        "value": 85.1744,
+        "margin": 35.174400000000006
+      },
+      "spec_row": "current-limit"
+    },
+    {
+      "name": "ilim_droop_pct",
+      "unit": "%",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_-40c_2.97v",
+        "value": -22.3749,
+        "margin": null
+      }
+    },
+    {
+      "name": "ishort_sustained_ma",
+      "unit": "mA",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_-40c_2.97v",
+        "value": 145.2611,
+        "margin": null
+      }
+    },
+    {
+      "name": "ishort_ripple_pct",
+      "unit": "%",
+      "limits": {
+        "max": 100
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "ff_125c_2.97v",
+        "value": 0.04270909,
+        "margin": 99.95729091
+      },
+      "spec_row": "current-limit"
+    },
+    {
+      "name": "vout_short_mv",
+      "unit": "mV",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_-40c_2.97v",
+        "value": 0.1452239,
+        "margin": null
+      }
+    },
+    {
+      "name": "isup_pre_short_ma",
+      "unit": "mA",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_-40c_2.97v",
+        "value": 0.0108059,
+        "margin": null
+      }
+    }
+  ],
+  "corners": [
+    {
+      "corner_id": "tt_-40c_2.97v",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vout_50ma_v",
+          "value": 1.798156,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.034156000000000075
+        },
+        {
+          "name": "cl_margin_50ma_v",
+          "value": 0.03585627,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ilim_short_ma",
+          "value": 145.2234,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 95.2234
+        },
+        {
+          "name": "ilim_knee_ma",
+          "value": 118.6709,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 68.6709
+        },
+        {
+          "name": "ilim_droop_pct",
+          "value": -22.3749,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_sustained_ma",
+          "value": 145.2611,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_ripple_pct",
+          "value": 0.003166712,
+          "unit": "%",
+          "limits": {
+            "max": 100
+          },
+          "status": "pass",
+          "margin": 99.996833288
+        },
+        {
+          "name": "vout_short_mv",
+          "value": 0.1452239,
+          "unit": "mV",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "isup_pre_short_ma",
+          "value": 0.0108059,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "tt_-40c_3.30v",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vout_50ma_v",
+          "value": 1.798295,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.034294999999999964
+        },
+        {
+          "name": "cl_margin_50ma_v",
+          "value": 0.03031242,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ilim_short_ma",
+          "value": 169.9886,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 119.98859999999999
+        },
+        {
+          "name": "ilim_knee_ma",
+          "value": 142.2041,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 92.20410000000001
+        },
+        {
+          "name": "ilim_droop_pct",
+          "value": -19.5385,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_sustained_ma",
+          "value": 170.0324,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_ripple_pct",
+          "value": 0.001117434,
+          "unit": "%",
+          "limits": {
+            "max": 100
+          },
+          "status": "pass",
+          "margin": 99.998882566
+        },
+        {
+          "name": "vout_short_mv",
+          "value": 0.1699839,
+          "unit": "mV",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "isup_pre_short_ma",
+          "value": 0.01276205,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "tt_-40c_3.63v",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vout_50ma_v",
+          "value": 1.798393,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.034392999999999896
+        },
+        {
+          "name": "cl_margin_50ma_v",
+          "value": 0.02672383,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ilim_short_ma",
+          "value": 198.0309,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 148.0309
+        },
+        {
+          "name": "ilim_knee_ma",
+          "value": 165.6201,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 115.62010000000001
+        },
+        {
+          "name": "ilim_droop_pct",
+          "value": -19.5694,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_sustained_ma",
+          "value": 198.0806,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_ripple_pct",
+          "value": 0.003231008,
+          "unit": "%",
+          "limits": {
+            "max": 100
+          },
+          "status": "pass",
+          "margin": 99.996768992
+        },
+        {
+          "name": "vout_short_mv",
+          "value": 0.1980253,
+          "unit": "mV",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "isup_pre_short_ma",
+          "value": 0.01476047,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "tt_27c_2.97v",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": 27.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vout_50ma_v",
+          "value": 1.797844,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.033843999999999985
+        },
+        {
+          "name": "cl_margin_50ma_v",
+          "value": 0.04245438,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ilim_short_ma",
+          "value": 139.5753,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 89.5753
+        },
+        {
+          "name": "ilim_knee_ma",
+          "value": 112.9328,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 62.9328
+        },
+        {
+          "name": "ilim_droop_pct",
+          "value": -23.5915,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_sustained_ma",
+          "value": 139.6123,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_ripple_pct",
+          "value": 0.0001432539,
+          "unit": "%",
+          "limits": {
+            "max": 100
+          },
+          "status": "pass",
+          "margin": 99.9998567461
+        },
+        {
+          "name": "vout_short_mv",
+          "value": 0.1395714,
+          "unit": "mV",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "isup_pre_short_ma",
+          "value": 0.0111948,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "tt_27c_3.30v",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 27.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vout_50ma_v",
+          "value": 1.797993,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03399299999999994
+        },
+        {
+          "name": "cl_margin_50ma_v",
+          "value": 0.03620915,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ilim_short_ma",
+          "value": 162.0476,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 112.04759999999999
+        },
+        {
+          "name": "ilim_knee_ma",
+          "value": 134.9819,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 84.9819
+        },
+        {
+          "name": "ilim_droop_pct",
+          "value": -20.0514,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_sustained_ma",
+          "value": 162.0903,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_ripple_pct",
+          "value": 0.005367379,
+          "unit": "%",
+          "limits": {
+            "max": 100
+          },
+          "status": "pass",
+          "margin": 99.994632621
+        },
+        {
+          "name": "vout_short_mv",
+          "value": 0.1620431,
+          "unit": "mV",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "isup_pre_short_ma",
+          "value": 0.01312163,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "tt_27c_3.63v",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": 27.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vout_50ma_v",
+          "value": 1.798094,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03409400000000007
+        },
+        {
+          "name": "cl_margin_50ma_v",
+          "value": 0.03210086,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ilim_short_ma",
+          "value": 186.5756,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 136.5756
+        },
+        {
+          "name": "ilim_knee_ma",
+          "value": 156.8534,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 106.8534
+        },
+        {
+          "name": "ilim_droop_pct",
+          "value": -18.949,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_sustained_ma",
+          "value": 186.6242,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_ripple_pct",
+          "value": 0.007876792,
+          "unit": "%",
+          "limits": {
+            "max": 100
+          },
+          "status": "pass",
+          "margin": 99.992123208
+        },
+        {
+          "name": "vout_short_mv",
+          "value": 0.1865704,
+          "unit": "mV",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "isup_pre_short_ma",
+          "value": 0.01509336,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "tt_125c_2.97v",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vout_50ma_v",
+          "value": 1.797315,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.033314999999999984
+        },
+        {
+          "name": "cl_margin_50ma_v",
+          "value": 0.0520897,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ilim_short_ma",
+          "value": 131.8091,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 81.8091
+        },
+        {
+          "name": "ilim_knee_ma",
+          "value": 104.8364,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 54.8364
+        },
+        {
+          "name": "ilim_droop_pct",
+          "value": -25.7284,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_sustained_ma",
+          "value": 131.8442,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_ripple_pct",
+          "value": 0.002502954,
+          "unit": "%",
+          "limits": {
+            "max": 100
+          },
+          "status": "pass",
+          "margin": 99.997497046
+        },
+        {
+          "name": "vout_short_mv",
+          "value": 0.131805,
+          "unit": "mV",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "isup_pre_short_ma",
+          "value": 0.01144555,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "tt_125c_3.30v",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vout_50ma_v",
+          "value": 1.797487,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.033487000000000045
+        },
+        {
+          "name": "cl_margin_50ma_v",
+          "value": 0.04478289,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ilim_short_ma",
+          "value": 151.7073,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 101.7073
+        },
+        {
+          "name": "ilim_knee_ma",
+          "value": 124.8559,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 74.8559
+        },
+        {
+          "name": "ilim_droop_pct",
+          "value": -21.5059,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_sustained_ma",
+          "value": 151.7481,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_ripple_pct",
+          "value": 0.01034609,
+          "unit": "%",
+          "limits": {
+            "max": 100
+          },
+          "status": "pass",
+          "margin": 99.98965391
+        },
+        {
+          "name": "vout_short_mv",
+          "value": 0.1517031,
+          "unit": "mV",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "isup_pre_short_ma",
+          "value": 0.01369749,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "tt_125c_3.63v",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vout_50ma_v",
+          "value": 1.797591,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.033590999999999926
+        },
+        {
+          "name": "cl_margin_50ma_v",
+          "value": 0.03990494,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ilim_short_ma",
+          "value": 172.7189,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 122.71889999999999
+        },
+        {
+          "name": "ilim_knee_ma",
+          "value": 144.6001,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 94.6001
+        },
+        {
+          "name": "ilim_droop_pct",
+          "value": -19.4459,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_sustained_ma",
+          "value": 172.7651,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_ripple_pct",
+          "value": 0.01475993,
+          "unit": "%",
+          "limits": {
+            "max": 100
+          },
+          "status": "pass",
+          "margin": 99.98524007
+        },
+        {
+          "name": "vout_short_mv",
+          "value": 0.1727142,
+          "unit": "mV",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "isup_pre_short_ma",
+          "value": 0.01660618,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ss_-40c_2.97v",
+      "process": "ss",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vout_50ma_v",
+          "value": 1.798072,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03407199999999988
+        },
+        {
+          "name": "cl_margin_50ma_v",
+          "value": 0.02562614,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ilim_short_ma",
+          "value": 180.3162,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 130.3162
+        },
+        {
+          "name": "ilim_knee_ma",
+          "value": 148.7412,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 98.74119999999999
+        },
+        {
+          "name": "ilim_droop_pct",
+          "value": -21.2281,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_sustained_ma",
+          "value": 180.3571,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_ripple_pct",
+          "value": 0.01757624,
+          "unit": "%",
+          "limits": {
+            "max": 100
+          },
+          "status": "pass",
+          "margin": 99.98242376
+        },
+        {
+          "name": "vout_short_mv",
+          "value": 0.1803111,
+          "unit": "mV",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "isup_pre_short_ma",
+          "value": 0.01108303,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ss_-40c_3.30v",
+      "process": "ss",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vout_50ma_v",
+          "value": 1.798215,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.034214999999999884
+        },
+        {
+          "name": "cl_margin_50ma_v",
+          "value": 0.02215314,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ilim_short_ma",
+          "value": 207.5473,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 157.5473
+        },
+        {
+          "name": "ilim_knee_ma",
+          "value": 176.7216,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 126.7216
+        },
+        {
+          "name": "ilim_droop_pct",
+          "value": -17.4431,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_sustained_ma",
+          "value": 207.5949,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_ripple_pct",
+          "value": 0.01796769,
+          "unit": "%",
+          "limits": {
+            "max": 100
+          },
+          "status": "pass",
+          "margin": 99.98203231
+        },
+        {
+          "name": "vout_short_mv",
+          "value": 0.2075415,
+          "unit": "mV",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "isup_pre_short_ma",
+          "value": 0.01314182,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ss_-40c_3.63v",
+      "process": "ss",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vout_50ma_v",
+          "value": 1.798315,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.034315000000000095
+        },
+        {
+          "name": "cl_margin_50ma_v",
+          "value": 0.01979486,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ilim_short_ma",
+          "value": 235.9172,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 185.9172
+        },
+        {
+          "name": "ilim_knee_ma",
+          "value": 204.0855,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 154.0855
+        },
+        {
+          "name": "ilim_droop_pct",
+          "value": -15.5972,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_sustained_ma",
+          "value": 235.9714,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_ripple_pct",
+          "value": 0.01724785,
+          "unit": "%",
+          "limits": {
+            "max": 100
+          },
+          "status": "pass",
+          "margin": 99.98275215
+        },
+        {
+          "name": "vout_short_mv",
+          "value": 0.2359106,
+          "unit": "mV",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "isup_pre_short_ma",
+          "value": 0.01525906,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ss_27c_2.97v",
+      "process": "ss",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": 27.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vout_50ma_v",
+          "value": 1.797746,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.033746000000000054
+        },
+        {
+          "name": "cl_margin_50ma_v",
+          "value": 0.03160983,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ilim_short_ma",
+          "value": 170.8724,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 120.8724
+        },
+        {
+          "name": "ilim_knee_ma",
+          "value": 138.6687,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 88.6687
+        },
+        {
+          "name": "ilim_droop_pct",
+          "value": -23.2235,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_sustained_ma",
+          "value": 170.9119,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_ripple_pct",
+          "value": 0.02562724,
+          "unit": "%",
+          "limits": {
+            "max": 100
+          },
+          "status": "pass",
+          "margin": 99.97437276
+        },
+        {
+          "name": "vout_short_mv",
+          "value": 0.1708674,
+          "unit": "mV",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "isup_pre_short_ma",
+          "value": 0.01144747,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ss_27c_3.30v",
+      "process": "ss",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 27.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vout_50ma_v",
+          "value": 1.797901,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03390099999999996
+        },
+        {
+          "name": "cl_margin_50ma_v",
+          "value": 0.02745185,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ilim_short_ma",
+          "value": 195.8379,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 145.8379
+        },
+        {
+          "name": "ilim_knee_ma",
+          "value": 164.867,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 114.86699999999999
+        },
+        {
+          "name": "ilim_droop_pct",
+          "value": -18.7854,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_sustained_ma",
+          "value": 195.884,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_ripple_pct",
+          "value": 0.02603582,
+          "unit": "%",
+          "limits": {
+            "max": 100
+          },
+          "status": "pass",
+          "margin": 99.97396418
+        },
+        {
+          "name": "vout_short_mv",
+          "value": 0.1958325,
+          "unit": "mV",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "isup_pre_short_ma",
+          "value": 0.01347066,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ss_27c_3.63v",
+      "process": "ss",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": 27.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vout_50ma_v",
+          "value": 1.798004,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03400399999999992
+        },
+        {
+          "name": "cl_margin_50ma_v",
+          "value": 0.02460951,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ilim_short_ma",
+          "value": 221.4357,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 171.4357
+        },
+        {
+          "name": "ilim_knee_ma",
+          "value": 190.3676,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 140.3676
+        },
+        {
+          "name": "ilim_droop_pct",
+          "value": -16.3201,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_sustained_ma",
+          "value": 221.4881,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_ripple_pct",
+          "value": 0.02537382,
+          "unit": "%",
+          "limits": {
+            "max": 100
+          },
+          "status": "pass",
+          "margin": 99.97462618
+        },
+        {
+          "name": "vout_short_mv",
+          "value": 0.2214295,
+          "unit": "mV",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "isup_pre_short_ma",
+          "value": 0.0155546,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ss_125c_2.97v",
+      "process": "ss",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vout_50ma_v",
+          "value": 1.797213,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03321299999999994
+        },
+        {
+          "name": "cl_margin_50ma_v",
+          "value": 0.04021235,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ilim_short_ma",
+          "value": 159.2507,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 109.2507
+        },
+        {
+          "name": "ilim_knee_ma",
+          "value": 126.1678,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 76.1678
+        },
+        {
+          "name": "ilim_droop_pct",
+          "value": -26.2213,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_sustained_ma",
+          "value": 159.2878,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_ripple_pct",
+          "value": 0.04086942,
+          "unit": "%",
+          "limits": {
+            "max": 100
+          },
+          "status": "pass",
+          "margin": 99.95913058
+        },
+        {
+          "name": "vout_short_mv",
+          "value": 0.1592455,
+          "unit": "mV",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "isup_pre_short_ma",
+          "value": 0.0115711,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ss_125c_3.30v",
+      "process": "ss",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vout_50ma_v",
+          "value": 1.79739,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03339000000000003
+        },
+        {
+          "name": "cl_margin_50ma_v",
+          "value": 0.03507932,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ilim_short_ma",
+          "value": 181.5131,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 131.5131
+        },
+        {
+          "name": "ilim_knee_ma",
+          "value": 150.051,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 100.05099999999999
+        },
+        {
+          "name": "ilim_droop_pct",
+          "value": -20.9676,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_sustained_ma",
+          "value": 181.5567,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_ripple_pct",
+          "value": 0.04175004,
+          "unit": "%",
+          "limits": {
+            "max": 100
+          },
+          "status": "pass",
+          "margin": 99.95824996
+        },
+        {
+          "name": "vout_short_mv",
+          "value": 0.181508,
+          "unit": "mV",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "isup_pre_short_ma",
+          "value": 0.01374471,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ss_125c_3.63v",
+      "process": "ss",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vout_50ma_v",
+          "value": 1.797497,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03349699999999989
+        },
+        {
+          "name": "cl_margin_50ma_v",
+          "value": 0.03154738,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ilim_short_ma",
+          "value": 204.0879,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 154.0879
+        },
+        {
+          "name": "ilim_knee_ma",
+          "value": 173.0771,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 123.0771
+        },
+        {
+          "name": "ilim_droop_pct",
+          "value": -17.9173,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_sustained_ma",
+          "value": 204.1374,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_ripple_pct",
+          "value": 0.04129572,
+          "unit": "%",
+          "limits": {
+            "max": 100
+          },
+          "status": "pass",
+          "margin": 99.95870428
+        },
+        {
+          "name": "vout_short_mv",
+          "value": 0.2040822,
+          "unit": "mV",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "isup_pre_short_ma",
+          "value": 0.01638313,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ff_-40c_2.97v",
+      "process": "ff",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vout_50ma_v",
+          "value": 1.798246,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.034246
+        },
+        {
+          "name": "cl_margin_50ma_v",
+          "value": 0.0530646,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ilim_short_ma",
+          "value": 116.1196,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 66.1196
+        },
+        {
+          "name": "ilim_knee_ma",
+          "value": 92.46751,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 42.467510000000004
+        },
+        {
+          "name": "ilim_droop_pct",
+          "value": -25.5788,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_sustained_ma",
+          "value": 116.1543,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_ripple_pct",
+          "value": 0.02772175,
+          "unit": "%",
+          "limits": {
+            "max": 100
+          },
+          "status": "pass",
+          "margin": 99.97227825
+        },
+        {
+          "name": "vout_short_mv",
+          "value": 0.1161485,
+          "unit": "mV",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "isup_pre_short_ma",
+          "value": 0.01064727,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ff_-40c_3.30v",
+      "process": "ff",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vout_50ma_v",
+          "value": 1.798383,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03438300000000005
+        },
+        {
+          "name": "cl_margin_50ma_v",
+          "value": 0.04252899,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ilim_short_ma",
+          "value": 140.2302,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 90.2302
+        },
+        {
+          "name": "ilim_knee_ma",
+          "value": 112.1063,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 62.106300000000005
+        },
+        {
+          "name": "ilim_droop_pct",
+          "value": -25.0868,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_sustained_ma",
+          "value": 140.2705,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_ripple_pct",
+          "value": 0.01860691,
+          "unit": "%",
+          "limits": {
+            "max": 100
+          },
+          "status": "pass",
+          "margin": 99.98139309
+        },
+        {
+          "name": "vout_short_mv",
+          "value": 0.1402523,
+          "unit": "mV",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "isup_pre_short_ma",
+          "value": 0.01254468,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ff_-40c_3.63v",
+      "process": "ff",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vout_50ma_v",
+          "value": 1.79848,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.034480000000000066
+        },
+        {
+          "name": "cl_margin_50ma_v",
+          "value": 0.03654394,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ilim_short_ma",
+          "value": 171.8338,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 121.8338
+        },
+        {
+          "name": "ilim_knee_ma",
+          "value": 131.9642,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 81.9642
+        },
+        {
+          "name": "ilim_droop_pct",
+          "value": -30.2124,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_sustained_ma",
+          "value": 171.8798,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_ripple_pct",
+          "value": 0.01274146,
+          "unit": "%",
+          "limits": {
+            "max": 100
+          },
+          "status": "pass",
+          "margin": 99.98725854
+        },
+        {
+          "name": "vout_short_mv",
+          "value": 0.171851,
+          "unit": "mV",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "isup_pre_short_ma",
+          "value": 0.0144851,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ff_27c_2.97v",
+      "process": "ff",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": 27.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vout_50ma_v",
+          "value": 1.797945,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03394499999999989
+        },
+        {
+          "name": "cl_margin_50ma_v",
+          "value": 0.05936047,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ilim_short_ma",
+          "value": 113.1316,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 63.131600000000006
+        },
+        {
+          "name": "ilim_knee_ma",
+          "value": 89.98219,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 39.98219
+        },
+        {
+          "name": "ilim_droop_pct",
+          "value": -25.7267,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_sustained_ma",
+          "value": 113.1661,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_ripple_pct",
+          "value": 0.02951414,
+          "unit": "%",
+          "limits": {
+            "max": 100
+          },
+          "status": "pass",
+          "margin": 99.97048586
+        },
+        {
+          "name": "vout_short_mv",
+          "value": 0.1131618,
+          "unit": "mV",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "isup_pre_short_ma",
+          "value": 0.01105628,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ff_27c_3.30v",
+      "process": "ff",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 27.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vout_50ma_v",
+          "value": 1.798092,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03409200000000001
+        },
+        {
+          "name": "cl_margin_50ma_v",
+          "value": 0.04868385,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ilim_short_ma",
+          "value": 134.4572,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 84.4572
+        },
+        {
+          "name": "ilim_knee_ma",
+          "value": 108.4663,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 58.466300000000004
+        },
+        {
+          "name": "ilim_droop_pct",
+          "value": -23.9622,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_sustained_ma",
+          "value": 134.497,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_ripple_pct",
+          "value": 0.01903388,
+          "unit": "%",
+          "limits": {
+            "max": 100
+          },
+          "status": "pass",
+          "margin": 99.98096612
+        },
+        {
+          "name": "vout_short_mv",
+          "value": 0.1344791,
+          "unit": "mV",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "isup_pre_short_ma",
+          "value": 0.01293865,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ff_27c_3.63v",
+      "process": "ff",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": 27.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vout_50ma_v",
+          "value": 1.798191,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03419100000000008
+        },
+        {
+          "name": "cl_margin_50ma_v",
+          "value": 0.04230879,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ilim_short_ma",
+          "value": 160.9891,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 110.98910000000001
+        },
+        {
+          "name": "ilim_knee_ma",
+          "value": 127.0967,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 77.0967
+        },
+        {
+          "name": "ilim_droop_pct",
+          "value": -26.6666,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_sustained_ma",
+          "value": 161.0344,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_ripple_pct",
+          "value": 0.01210921,
+          "unit": "%",
+          "limits": {
+            "max": 100
+          },
+          "status": "pass",
+          "margin": 99.98789079
+        },
+        {
+          "name": "vout_short_mv",
+          "value": 0.1610042,
+          "unit": "mV",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "isup_pre_short_ma",
+          "value": 0.01487305,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ff_125c_2.97v",
+      "process": "ff",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vout_50ma_v",
+          "value": 1.797394,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.033393999999999924
+        },
+        {
+          "name": "cl_margin_50ma_v",
+          "value": 0.06955645,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ilim_short_ma",
+          "value": 108.1403,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 58.140299999999996
+        },
+        {
+          "name": "ilim_knee_ma",
+          "value": 85.1744,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 35.174400000000006
+        },
+        {
+          "name": "ilim_droop_pct",
+          "value": -26.9634,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_sustained_ma",
+          "value": 108.1737,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_ripple_pct",
+          "value": 0.04270909,
+          "unit": "%",
+          "limits": {
+            "max": 100
+          },
+          "status": "pass",
+          "margin": 99.95729091
+        },
+        {
+          "name": "vout_short_mv",
+          "value": 0.108183,
+          "unit": "mV",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "isup_pre_short_ma",
+          "value": 0.0115166,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ff_125c_3.30v",
+      "process": "ff",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vout_50ma_v",
+          "value": 1.79757,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03356999999999988
+        },
+        {
+          "name": "cl_margin_50ma_v",
+          "value": 0.05806502,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ilim_short_ma",
+          "value": 126.5358,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 76.5358
+        },
+        {
+          "name": "ilim_knee_ma",
+          "value": 101.9775,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 51.977500000000006
+        },
+        {
+          "name": "ilim_droop_pct",
+          "value": -24.0821,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_sustained_ma",
+          "value": 126.5741,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_ripple_pct",
+          "value": 0.02741477,
+          "unit": "%",
+          "limits": {
+            "max": 100
+          },
+          "status": "pass",
+          "margin": 99.97258523
+        },
+        {
+          "name": "vout_short_mv",
+          "value": 0.1265663,
+          "unit": "mV",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "isup_pre_short_ma",
+          "value": 0.01404505,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ff_125c_3.63v",
+      "process": "ff",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vout_50ma_v",
+          "value": 1.797675,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.0336749999999999
+        },
+        {
+          "name": "cl_margin_50ma_v",
+          "value": 0.05093304,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ilim_short_ma",
+          "value": 148.1236,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 98.12360000000001
+        },
+        {
+          "name": "ilim_knee_ma",
+          "value": 118.835,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 68.835
+        },
+        {
+          "name": "ilim_droop_pct",
+          "value": -24.6464,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_sustained_ma",
+          "value": 148.1669,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_ripple_pct",
+          "value": 0.01700785,
+          "unit": "%",
+          "limits": {
+            "max": 100
+          },
+          "status": "pass",
+          "margin": 99.98299215
+        },
+        {
+          "name": "vout_short_mv",
+          "value": 0.1481441,
+          "unit": "mV",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "isup_pre_short_ma",
+          "value": 0.01767205,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "sf_-40c_2.97v",
+      "process": "sf",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vout_50ma_v",
+          "value": 1.798101,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03410099999999994
+        },
+        {
+          "name": "cl_margin_50ma_v",
+          "value": 0.04242237,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ilim_short_ma",
+          "value": 131.4357,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 81.4357
+        },
+        {
+          "name": "ilim_knee_ma",
+          "value": 107.1869,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 57.186899999999994
+        },
+        {
+          "name": "ilim_droop_pct",
+          "value": -22.6229,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_sustained_ma",
+          "value": 131.471,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_ripple_pct",
+          "value": 0.003118558,
+          "unit": "%",
+          "limits": {
+            "max": 100
+          },
+          "status": "pass",
+          "margin": 99.996881442
+        },
+        {
+          "name": "vout_short_mv",
+          "value": 0.1314361,
+          "unit": "mV",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "isup_pre_short_ma",
+          "value": 0.01158248,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "sf_-40c_3.30v",
+      "process": "sf",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vout_50ma_v",
+          "value": 1.798247,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.034246999999999916
+        },
+        {
+          "name": "cl_margin_50ma_v",
+          "value": 0.03535876,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ilim_short_ma",
+          "value": 154.2163,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 104.21629999999999
+        },
+        {
+          "name": "ilim_knee_ma",
+          "value": 128.5597,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 78.55969999999999
+        },
+        {
+          "name": "ilim_droop_pct",
+          "value": -19.957,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_sustained_ma",
+          "value": 154.2573,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_ripple_pct",
+          "value": 0.0001944803,
+          "unit": "%",
+          "limits": {
+            "max": 100
+          },
+          "status": "pass",
+          "margin": 99.9998055197
+        },
+        {
+          "name": "vout_short_mv",
+          "value": 0.154212,
+          "unit": "mV",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "isup_pre_short_ma",
+          "value": 0.01360639,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "sf_-40c_3.63v",
+      "process": "sf",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vout_50ma_v",
+          "value": 1.79835,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03434999999999988
+        },
+        {
+          "name": "cl_margin_50ma_v",
+          "value": 0.03094359,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ilim_short_ma",
+          "value": 180.3777,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 130.3777
+        },
+        {
+          "name": "ilim_knee_ma",
+          "value": 149.9941,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 99.9941
+        },
+        {
+          "name": "ilim_droop_pct",
+          "value": -20.2565,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_sustained_ma",
+          "value": 180.4245,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_ripple_pct",
+          "value": 0.002050719,
+          "unit": "%",
+          "limits": {
+            "max": 100
+          },
+          "status": "pass",
+          "margin": 99.997949281
+        },
+        {
+          "name": "vout_short_mv",
+          "value": 0.1803727,
+          "unit": "mV",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "isup_pre_short_ma",
+          "value": 0.01566586,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "sf_27c_2.97v",
+      "process": "sf",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": 27.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vout_50ma_v",
+          "value": 1.797786,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.033786000000000094
+        },
+        {
+          "name": "cl_margin_50ma_v",
+          "value": 0.04784506,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ilim_short_ma",
+          "value": 129.8676,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 79.86760000000001
+        },
+        {
+          "name": "ilim_knee_ma",
+          "value": 105.1003,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 55.100300000000004
+        },
+        {
+          "name": "ilim_droop_pct",
+          "value": -23.5654,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_sustained_ma",
+          "value": 129.9023,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_ripple_pct",
+          "value": 0.00169358,
+          "unit": "%",
+          "limits": {
+            "max": 100
+          },
+          "status": "pass",
+          "margin": 99.99830642
+        },
+        {
+          "name": "vout_short_mv",
+          "value": 0.1298633,
+          "unit": "mV",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "isup_pre_short_ma",
+          "value": 0.01190743,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "sf_27c_3.30v",
+      "process": "sf",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 27.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vout_50ma_v",
+          "value": 1.797945,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03394499999999989
+        },
+        {
+          "name": "cl_margin_50ma_v",
+          "value": 0.04046903,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ilim_short_ma",
+          "value": 150.8236,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 100.8236
+        },
+        {
+          "name": "ilim_knee_ma",
+          "value": 125.5182,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 75.5182
+        },
+        {
+          "name": "ilim_droop_pct",
+          "value": -20.1607,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_sustained_ma",
+          "value": 150.864,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_ripple_pct",
+          "value": 0.005501644,
+          "unit": "%",
+          "limits": {
+            "max": 100
+          },
+          "status": "pass",
+          "margin": 99.994498356
+        },
+        {
+          "name": "vout_short_mv",
+          "value": 0.1508189,
+          "unit": "mV",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "isup_pre_short_ma",
+          "value": 0.01389023,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "sf_27c_3.63v",
+      "process": "sf",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": 27.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vout_50ma_v",
+          "value": 1.798053,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03405299999999989
+        },
+        {
+          "name": "cl_margin_50ma_v",
+          "value": 0.03571749,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ilim_short_ma",
+          "value": 173.9256,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 123.9256
+        },
+        {
+          "name": "ilim_knee_ma",
+          "value": 145.8838,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 95.88380000000001
+        },
+        {
+          "name": "ilim_droop_pct",
+          "value": -19.222,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_sustained_ma",
+          "value": 173.9714,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_ripple_pct",
+          "value": 0.007415012,
+          "unit": "%",
+          "limits": {
+            "max": 100
+          },
+          "status": "pass",
+          "margin": 99.992584988
+        },
+        {
+          "name": "vout_short_mv",
+          "value": 0.1739201,
+          "unit": "mV",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "isup_pre_short_ma",
+          "value": 0.01590685,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "sf_125c_2.97v",
+      "process": "sf",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vout_50ma_v",
+          "value": 1.797282,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.033282000000000034
+        },
+        {
+          "name": "cl_margin_50ma_v",
+          "value": 0.0565566,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ilim_short_ma",
+          "value": 125.6307,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 75.6307
+        },
+        {
+          "name": "ilim_knee_ma",
+          "value": 100.1763,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 50.1763
+        },
+        {
+          "name": "ilim_droop_pct",
+          "value": -25.4096,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_sustained_ma",
+          "value": 125.6652,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_ripple_pct",
+          "value": 0.007400617,
+          "unit": "%",
+          "limits": {
+            "max": 100
+          },
+          "status": "pass",
+          "margin": 99.992599383
+        },
+        {
+          "name": "vout_short_mv",
+          "value": 0.1256272,
+          "unit": "mV",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "isup_pre_short_ma",
+          "value": 0.01191638,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "sf_125c_3.30v",
+      "process": "sf",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vout_50ma_v",
+          "value": 1.797464,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03346399999999994
+        },
+        {
+          "name": "cl_margin_50ma_v",
+          "value": 0.04838615,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ilim_short_ma",
+          "value": 144.4196,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 94.4196
+        },
+        {
+          "name": "ilim_knee_ma",
+          "value": 119.0631,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 69.0631
+        },
+        {
+          "name": "ilim_droop_pct",
+          "value": -21.2967,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_sustained_ma",
+          "value": 144.4589,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_ripple_pct",
+          "value": 0.01280641,
+          "unit": "%",
+          "limits": {
+            "max": 100
+          },
+          "status": "pass",
+          "margin": 99.98719359
+        },
+        {
+          "name": "vout_short_mv",
+          "value": 0.1444153,
+          "unit": "mV",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "isup_pre_short_ma",
+          "value": 0.0139532,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "sf_125c_3.63v",
+      "process": "sf",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vout_50ma_v",
+          "value": 1.797578,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.033577999999999886
+        },
+        {
+          "name": "cl_margin_50ma_v",
+          "value": 0.04300151,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ilim_short_ma",
+          "value": 164.3738,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 114.37379999999999
+        },
+        {
+          "name": "ilim_knee_ma",
+          "value": 137.7594,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 87.7594
+        },
+        {
+          "name": "ilim_droop_pct",
+          "value": -19.3195,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_sustained_ma",
+          "value": 164.4186,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_ripple_pct",
+          "value": 0.01563083,
+          "unit": "%",
+          "limits": {
+            "max": 100
+          },
+          "status": "pass",
+          "margin": 99.98436917
+        },
+        {
+          "name": "vout_short_mv",
+          "value": 0.1643692,
+          "unit": "mV",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "isup_pre_short_ma",
+          "value": 0.01627423,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "fs_-40c_2.97v",
+      "process": "fs",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vout_50ma_v",
+          "value": 1.798202,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.034202000000000066
+        },
+        {
+          "name": "cl_margin_50ma_v",
+          "value": 0.03038542,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ilim_short_ma",
+          "value": 160.7499,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 110.7499
+        },
+        {
+          "name": "ilim_knee_ma",
+          "value": 131.5714,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 81.57140000000001
+        },
+        {
+          "name": "ilim_droop_pct",
+          "value": -22.1769,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_sustained_ma",
+          "value": 160.7904,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_ripple_pct",
+          "value": 0.002674289,
+          "unit": "%",
+          "limits": {
+            "max": 100
+          },
+          "status": "pass",
+          "margin": 99.997325711
+        },
+        {
+          "name": "vout_short_mv",
+          "value": 0.1607497,
+          "unit": "mV",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "isup_pre_short_ma",
+          "value": 0.01009336,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "fs_-40c_3.30v",
+      "process": "fs",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vout_50ma_v",
+          "value": 1.798337,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03433700000000006
+        },
+        {
+          "name": "cl_margin_50ma_v",
+          "value": 0.0259574,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ilim_short_ma",
+          "value": 187.5338,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 137.5338
+        },
+        {
+          "name": "ilim_knee_ma",
+          "value": 157.3771,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 107.37710000000001
+        },
+        {
+          "name": "ilim_droop_pct",
+          "value": -19.1621,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_sustained_ma",
+          "value": 187.5806,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_ripple_pct",
+          "value": 0.00250559,
+          "unit": "%",
+          "limits": {
+            "max": 100
+          },
+          "status": "pass",
+          "margin": 99.99749441
+        },
+        {
+          "name": "vout_short_mv",
+          "value": 0.1875286,
+          "unit": "mV",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "isup_pre_short_ma",
+          "value": 0.01198491,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "fs_-40c_3.63v",
+      "process": "fs",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vout_50ma_v",
+          "value": 1.798429,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03442900000000004
+        },
+        {
+          "name": "cl_margin_50ma_v",
+          "value": 0.02301809,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ilim_short_ma",
+          "value": 217.4595,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 167.4595
+        },
+        {
+          "name": "ilim_knee_ma",
+          "value": 182.8484,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 132.8484
+        },
+        {
+          "name": "ilim_droop_pct",
+          "value": -18.9289,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_sustained_ma",
+          "value": 217.5128,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_ripple_pct",
+          "value": 0.005057174,
+          "unit": "%",
+          "limits": {
+            "max": 100
+          },
+          "status": "pass",
+          "margin": 99.994942826
+        },
+        {
+          "name": "vout_short_mv",
+          "value": 0.2174535,
+          "unit": "mV",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "isup_pre_short_ma",
+          "value": 0.01392475,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "fs_27c_2.97v",
+      "process": "fs",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": 27.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vout_50ma_v",
+          "value": 1.797891,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03389099999999989
+        },
+        {
+          "name": "cl_margin_50ma_v",
+          "value": 0.03771715,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ilim_short_ma",
+          "value": 150.158,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 100.15799999999999
+        },
+        {
+          "name": "ilim_knee_ma",
+          "value": 121.4242,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 71.4242
+        },
+        {
+          "name": "ilim_droop_pct",
+          "value": -23.664,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_sustained_ma",
+          "value": 150.1968,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_ripple_pct",
+          "value": 0.0006657931,
+          "unit": "%",
+          "limits": {
+            "max": 100
+          },
+          "status": "pass",
+          "margin": 99.9993342069
+        },
+        {
+          "name": "vout_short_mv",
+          "value": 0.1501547,
+          "unit": "mV",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "isup_pre_short_ma",
+          "value": 0.01053079,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "fs_27c_3.30v",
+      "process": "fs",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 27.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vout_50ma_v",
+          "value": 1.798034,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.0340339999999999
+        },
+        {
+          "name": "cl_margin_50ma_v",
+          "value": 0.03238474,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ilim_short_ma",
+          "value": 174.1666,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 124.16659999999999
+        },
+        {
+          "name": "ilim_knee_ma",
+          "value": 145.1609,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 95.1609
+        },
+        {
+          "name": "ilim_droop_pct",
+          "value": -19.9818,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_sustained_ma",
+          "value": 174.21,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_ripple_pct",
+          "value": 0.005625395,
+          "unit": "%",
+          "limits": {
+            "max": 100
+          },
+          "status": "pass",
+          "margin": 99.994374605
+        },
+        {
+          "name": "vout_short_mv",
+          "value": 0.1741603,
+          "unit": "mV",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "isup_pre_short_ma",
+          "value": 0.01242009,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "fs_27c_3.63v",
+      "process": "fs",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": 27.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vout_50ma_v",
+          "value": 1.798126,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03412599999999988
+        },
+        {
+          "name": "cl_margin_50ma_v",
+          "value": 0.0288175,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ilim_short_ma",
+          "value": 200.1276,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 150.1276
+        },
+        {
+          "name": "ilim_knee_ma",
+          "value": 168.5713,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 118.57130000000001
+        },
+        {
+          "name": "ilim_droop_pct",
+          "value": -18.7199,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_sustained_ma",
+          "value": 200.1785,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_ripple_pct",
+          "value": 0.008991975,
+          "unit": "%",
+          "limits": {
+            "max": 100
+          },
+          "status": "pass",
+          "margin": 99.991008025
+        },
+        {
+          "name": "vout_short_mv",
+          "value": 0.200122,
+          "unit": "mV",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "isup_pre_short_ma",
+          "value": 0.01437314,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "fs_125c_2.97v",
+      "process": "fs",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vout_50ma_v",
+          "value": 1.797291,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03329099999999996
+        },
+        {
+          "name": "cl_margin_50ma_v",
+          "value": 0.04803816,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ilim_short_ma",
+          "value": 138.2085,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 88.20849999999999
+        },
+        {
+          "name": "ilim_knee_ma",
+          "value": 109.563,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 59.563
+        },
+        {
+          "name": "ilim_droop_pct",
+          "value": -26.1452,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_sustained_ma",
+          "value": 138.2451,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_ripple_pct",
+          "value": 0.003399759,
+          "unit": "%",
+          "limits": {
+            "max": 100
+          },
+          "status": "pass",
+          "margin": 99.996600241
+        },
+        {
+          "name": "vout_short_mv",
+          "value": 0.1382084,
+          "unit": "mV",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "isup_pre_short_ma",
+          "value": 0.01127596,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "fs_125c_3.30v",
+      "process": "fs",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vout_50ma_v",
+          "value": 1.797464,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03346399999999994
+        },
+        {
+          "name": "cl_margin_50ma_v",
+          "value": 0.04147249,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ilim_short_ma",
+          "value": 159.2133,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 109.2133
+        },
+        {
+          "name": "ilim_knee_ma",
+          "value": 130.7023,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 80.70230000000001
+        },
+        {
+          "name": "ilim_droop_pct",
+          "value": -21.8137,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_sustained_ma",
+          "value": 159.2554,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_ripple_pct",
+          "value": 0.007974612,
+          "unit": "%",
+          "limits": {
+            "max": 100
+          },
+          "status": "pass",
+          "margin": 99.992025388
+        },
+        {
+          "name": "vout_short_mv",
+          "value": 0.1592089,
+          "unit": "mV",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "isup_pre_short_ma",
+          "value": 0.01413644,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "fs_125c_3.63v",
+      "process": "fs",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "vout_50ma_v",
+          "value": 1.797561,
+          "unit": "V",
+          "limits": {
+            "min": 1.764,
+            "max": 1.836
+          },
+          "status": "pass",
+          "margin": 0.03356099999999995
+        },
+        {
+          "name": "cl_margin_50ma_v",
+          "value": 0.03703926,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ilim_short_ma",
+          "value": 181.2789,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 131.2789
+        },
+        {
+          "name": "ilim_knee_ma",
+          "value": 151.4767,
+          "unit": "mA",
+          "limits": {
+            "min": 50
+          },
+          "status": "pass",
+          "margin": 101.4767
+        },
+        {
+          "name": "ilim_droop_pct",
+          "value": -19.6744,
+          "unit": "%",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_sustained_ma",
+          "value": 181.3265,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "ishort_ripple_pct",
+          "value": 0.01450422,
+          "unit": "%",
+          "limits": {
+            "max": 100
+          },
+          "status": "pass",
+          "margin": 99.98549578
+        },
+        {
+          "name": "vout_short_mv",
+          "value": 0.1812738,
+          "unit": "mV",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "isup_pre_short_ma",
+          "value": 0.01850134,
+          "unit": "mA",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    }
+  ]
+}

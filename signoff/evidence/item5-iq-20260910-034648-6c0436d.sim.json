@@ -1,0 +1,2354 @@
+{
+  "schema_version": 1,
+  "netlist": "sim/iq/netlist-snapshots/20260910-034648-6c0436d.spice",
+  "status": "fail",
+  "corner_count": 45,
+  "passed": 36,
+  "failed": 9,
+  "errored": 0,
+  "wrapper": "NOT a `klt sim` run. Hand-wrapped by signoff/make_item5_envelope.py from the committed harness-format record named in `source_record`; every value, limit and verdict is copied verbatim and nothing was re-simulated. Measurements tagged with a `spec_row` carry that row's RATIFIED bound (spec/target-spec.md, DR-006), which the script checked against the record's own limit before writing. The input pin is the netlist snapshot the record simulated, not necessarily the current schematic: see measurements/characterization.md for per-record freshness.",
+  "source_record": {
+    "bench": "iq",
+    "record_id": "20260910-034648-6c0436d",
+    "path": "sim/iq/records/20260910-034648-6c0436d.json",
+    "sha256": "sha256:ec0f4f8a7b6dd02478107c1e965048ba39c76220fc86742706d18d914977414e",
+    "overall_pass": false,
+    "matrix_is_subset": false
+  },
+  "environment": {
+    "engine": "ngspice",
+    "engine_version": "ngspice-46 : Circuit level simulation program",
+    "pdk": "c6d73a35f524070e85faff4a6a9eef49553ebc2b",
+    "platform": "Linux 7.0.0-1010-aws x86_64"
+  },
+  "provenance": {
+    "input": {
+      "path": "sim/iq/netlist-snapshots/20260910-034648-6c0436d.spice",
+      "role": "netlist",
+      "content_hash": "sha256:276777f5d01e1d124a26c38e9030133e51ba84c8e3ec790bb1314405361d2fb4"
+    }
+  },
+  "metrics": {
+    "sim__corner__count": 45,
+    "sim__corner__passed_count": 36,
+    "sim__corner__failed_count": 9,
+    "sim__corner__errored_count": 0
+  },
+  "coverage": {
+    "schema_version": 1,
+    "known": true,
+    "checked": [
+      "iq:ff_-40c_2.97v:iq_full_load_ua",
+      "iq:ff_-40c_2.97v:iq_no_load_ua",
+      "iq:ff_-40c_3.30v:iq_full_load_ua",
+      "iq:ff_-40c_3.30v:iq_no_load_ua",
+      "iq:ff_-40c_3.63v:iq_full_load_ua",
+      "iq:ff_-40c_3.63v:iq_no_load_ua",
+      "iq:ff_125c_2.97v:iq_full_load_ua",
+      "iq:ff_125c_2.97v:iq_no_load_ua",
+      "iq:ff_125c_3.30v:iq_full_load_ua",
+      "iq:ff_125c_3.30v:iq_no_load_ua",
+      "iq:ff_125c_3.63v:iq_full_load_ua",
+      "iq:ff_125c_3.63v:iq_no_load_ua",
+      "iq:ff_27c_2.97v:iq_full_load_ua",
+      "iq:ff_27c_2.97v:iq_no_load_ua",
+      "iq:ff_27c_3.30v:iq_full_load_ua",
+      "iq:ff_27c_3.30v:iq_no_load_ua",
+      "iq:ff_27c_3.63v:iq_full_load_ua",
+      "iq:ff_27c_3.63v:iq_no_load_ua",
+      "iq:fs_-40c_2.97v:iq_full_load_ua",
+      "iq:fs_-40c_2.97v:iq_no_load_ua",
+      "iq:fs_-40c_3.30v:iq_full_load_ua",
+      "iq:fs_-40c_3.30v:iq_no_load_ua",
+      "iq:fs_-40c_3.63v:iq_full_load_ua",
+      "iq:fs_-40c_3.63v:iq_no_load_ua",
+      "iq:fs_125c_2.97v:iq_full_load_ua",
+      "iq:fs_125c_2.97v:iq_no_load_ua",
+      "iq:fs_125c_3.30v:iq_full_load_ua",
+      "iq:fs_125c_3.30v:iq_no_load_ua",
+      "iq:fs_125c_3.63v:iq_full_load_ua",
+      "iq:fs_125c_3.63v:iq_no_load_ua",
+      "iq:fs_27c_2.97v:iq_full_load_ua",
+      "iq:fs_27c_2.97v:iq_no_load_ua",
+      "iq:fs_27c_3.30v:iq_full_load_ua",
+      "iq:fs_27c_3.30v:iq_no_load_ua",
+      "iq:fs_27c_3.63v:iq_full_load_ua",
+      "iq:fs_27c_3.63v:iq_no_load_ua",
+      "iq:sf_-40c_2.97v:iq_full_load_ua",
+      "iq:sf_-40c_2.97v:iq_no_load_ua",
+      "iq:sf_-40c_3.30v:iq_full_load_ua",
+      "iq:sf_-40c_3.30v:iq_no_load_ua",
+      "iq:sf_-40c_3.63v:iq_full_load_ua",
+      "iq:sf_-40c_3.63v:iq_no_load_ua",
+      "iq:sf_125c_2.97v:iq_full_load_ua",
+      "iq:sf_125c_2.97v:iq_no_load_ua",
+      "iq:sf_125c_3.30v:iq_full_load_ua",
+      "iq:sf_125c_3.30v:iq_no_load_ua",
+      "iq:sf_125c_3.63v:iq_full_load_ua",
+      "iq:sf_125c_3.63v:iq_no_load_ua",
+      "iq:sf_27c_2.97v:iq_full_load_ua",
+      "iq:sf_27c_2.97v:iq_no_load_ua",
+      "iq:sf_27c_3.30v:iq_full_load_ua",
+      "iq:sf_27c_3.30v:iq_no_load_ua",
+      "iq:sf_27c_3.63v:iq_full_load_ua",
+      "iq:sf_27c_3.63v:iq_no_load_ua",
+      "iq:ss_-40c_2.97v:iq_full_load_ua",
+      "iq:ss_-40c_2.97v:iq_no_load_ua",
+      "iq:ss_-40c_3.30v:iq_full_load_ua",
+      "iq:ss_-40c_3.30v:iq_no_load_ua",
+      "iq:ss_-40c_3.63v:iq_full_load_ua",
+      "iq:ss_-40c_3.63v:iq_no_load_ua",
+      "iq:ss_125c_2.97v:iq_full_load_ua",
+      "iq:ss_125c_2.97v:iq_no_load_ua",
+      "iq:ss_125c_3.30v:iq_full_load_ua",
+      "iq:ss_125c_3.30v:iq_no_load_ua",
+      "iq:ss_125c_3.63v:iq_full_load_ua",
+      "iq:ss_125c_3.63v:iq_no_load_ua",
+      "iq:ss_27c_2.97v:iq_full_load_ua",
+      "iq:ss_27c_2.97v:iq_no_load_ua",
+      "iq:ss_27c_3.30v:iq_full_load_ua",
+      "iq:ss_27c_3.30v:iq_no_load_ua",
+      "iq:ss_27c_3.63v:iq_full_load_ua",
+      "iq:ss_27c_3.63v:iq_no_load_ua",
+      "iq:tt_-40c_2.97v:iq_full_load_ua",
+      "iq:tt_-40c_2.97v:iq_no_load_ua",
+      "iq:tt_-40c_3.30v:iq_full_load_ua",
+      "iq:tt_-40c_3.30v:iq_no_load_ua",
+      "iq:tt_-40c_3.63v:iq_full_load_ua",
+      "iq:tt_-40c_3.63v:iq_no_load_ua",
+      "iq:tt_125c_2.97v:iq_full_load_ua",
+      "iq:tt_125c_2.97v:iq_no_load_ua",
+      "iq:tt_125c_3.30v:iq_full_load_ua",
+      "iq:tt_125c_3.30v:iq_no_load_ua",
+      "iq:tt_125c_3.63v:iq_full_load_ua",
+      "iq:tt_125c_3.63v:iq_no_load_ua",
+      "iq:tt_27c_2.97v:iq_full_load_ua",
+      "iq:tt_27c_2.97v:iq_no_load_ua",
+      "iq:tt_27c_3.30v:iq_full_load_ua",
+      "iq:tt_27c_3.30v:iq_no_load_ua",
+      "iq:tt_27c_3.63v:iq_full_load_ua",
+      "iq:tt_27c_3.63v:iq_no_load_ua"
+    ],
+    "skipped": [],
+    "inapplicable": [],
+    "unknown": [],
+    "nothing_checked": false,
+    "nothing_checked_reasons": [],
+    "measurements_declared": 4,
+    "measurements_with_limits": 2
+  },
+  "measurements": [
+    {
+      "name": "iq_no_load_ua",
+      "unit": "uA",
+      "limits": {
+        "max": 30
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "sf_27c_3.63v",
+        "value": 16.53429,
+        "margin": 13.465710000000001
+      },
+      "spec_row": "iq"
+    },
+    {
+      "name": "iq_full_load_ua",
+      "unit": "uA",
+      "limits": {
+        "max": 30
+      },
+      "status": "fail",
+      "worst_case": {
+        "corner_id": "fs_-40c_3.63v",
+        "value": 3581.532,
+        "margin": -3551.532
+      },
+      "spec_row": "iq"
+    },
+    {
+      "name": "vout_no_load_v",
+      "unit": "V",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_-40c_2.97v",
+        "value": 1.801445,
+        "margin": null
+      }
+    },
+    {
+      "name": "vout_full_load_v",
+      "unit": "V",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_-40c_2.97v",
+        "value": 1.798154,
+        "margin": null
+      }
+    }
+  ],
+  "corners": [
+    {
+      "corner_id": "tt_-40c_2.97v",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_no_load_ua",
+          "value": 11.4301,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 18.5699
+        },
+        {
+          "name": "iq_full_load_ua",
+          "value": 23.93463,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 6.0653700000000015
+        },
+        {
+          "name": "vout_no_load_v",
+          "value": 1.801445,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.798154,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "tt_-40c_3.30v",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_no_load_ua",
+          "value": 13.38972,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 16.61028
+        },
+        {
+          "name": "iq_full_load_ua",
+          "value": 25.68515,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 4.31485
+        },
+        {
+          "name": "vout_no_load_v",
+          "value": 1.801527,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.798294,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "tt_-40c_3.63v",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_no_load_ua",
+          "value": 15.39133,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 14.60867
+        },
+        {
+          "name": "iq_full_load_ua",
+          "value": 27.5243,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 2.4757
+        },
+        {
+          "name": "vout_no_load_v",
+          "value": 1.801661,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.798392,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "tt_27c_2.97v",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": 27.0,
+      "status": "fail",
+      "measurements": [
+        {
+          "name": "iq_no_load_ua",
+          "value": 11.80205,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 18.19795
+        },
+        {
+          "name": "iq_full_load_ua",
+          "value": 3563.264,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "fail",
+          "margin": -3533.264
+        },
+        {
+          "name": "vout_no_load_v",
+          "value": 1.802055,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 2.667609,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "tt_27c_3.30v",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 27.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_no_load_ua",
+          "value": 13.73251,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 16.267490000000002
+        },
+        {
+          "name": "iq_full_load_ua",
+          "value": 25.92372,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 4.076280000000001
+        },
+        {
+          "name": "vout_no_load_v",
+          "value": 1.802209,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.797992,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "tt_27c_3.63v",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": 27.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_no_load_ua",
+          "value": 15.70061,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 14.29939
+        },
+        {
+          "name": "iq_full_load_ua",
+          "value": 27.73148,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 2.2685199999999988
+        },
+        {
+          "name": "vout_no_load_v",
+          "value": 1.802456,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.798092,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "tt_125c_2.97v",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_no_load_ua",
+          "value": 11.75038,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 18.24962
+        },
+        {
+          "name": "iq_full_load_ua",
+          "value": 24.0653,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 5.934699999999999
+        },
+        {
+          "name": "vout_no_load_v",
+          "value": 1.804058,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.797312,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "tt_125c_3.30v",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_no_load_ua",
+          "value": 13.58161,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 16.418390000000002
+        },
+        {
+          "name": "iq_full_load_ua",
+          "value": 25.66747,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 4.332529999999998
+        },
+        {
+          "name": "vout_no_load_v",
+          "value": 1.804575,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.797485,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "tt_125c_3.63v",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": 125.0,
+      "status": "fail",
+      "measurements": [
+        {
+          "name": "iq_no_load_ua",
+          "value": 15.45281,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 14.54719
+        },
+        {
+          "name": "iq_full_load_ua",
+          "value": 3463.669,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "fail",
+          "margin": -3433.669
+        },
+        {
+          "name": "vout_no_load_v",
+          "value": 1.805348,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 3.319788,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ss_-40c_2.97v",
+      "process": "ss",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_no_load_ua",
+          "value": 11.70857,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 18.29143
+        },
+        {
+          "name": "iq_full_load_ua",
+          "value": 22.65374,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 7.346260000000001
+        },
+        {
+          "name": "vout_no_load_v",
+          "value": 1.801383,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.79807,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ss_-40c_3.30v",
+      "process": "ss",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_no_load_ua",
+          "value": -3348.61,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 3378.61
+        },
+        {
+          "name": "iq_full_load_ua",
+          "value": 24.54194,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 5.45806
+        },
+        {
+          "name": "vout_no_load_v",
+          "value": 3.312095,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.798214,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ss_-40c_3.63v",
+      "process": "ss",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_no_load_ua",
+          "value": 15.89183,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 14.10817
+        },
+        {
+          "name": "iq_full_load_ua",
+          "value": 26.53179,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 3.468209999999999
+        },
+        {
+          "name": "vout_no_load_v",
+          "value": 1.801585,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.798314,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ss_27c_2.97v",
+      "process": "ss",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": 27.0,
+      "status": "fail",
+      "measurements": [
+        {
+          "name": "iq_no_load_ua",
+          "value": 12.06962,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 17.93038
+        },
+        {
+          "name": "iq_full_load_ua",
+          "value": 3566.354,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "fail",
+          "margin": -3536.354
+        },
+        {
+          "name": "vout_no_load_v",
+          "value": 1.801968,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 2.703352,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ss_27c_3.30v",
+      "process": "ss",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 27.0,
+      "status": "fail",
+      "measurements": [
+        {
+          "name": "iq_no_load_ua",
+          "value": 14.09547,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 15.90453
+        },
+        {
+          "name": "iq_full_load_ua",
+          "value": 3573.609,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "fail",
+          "margin": -3543.609
+        },
+        {
+          "name": "vout_no_load_v",
+          "value": 1.802112,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 3.052002,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ss_27c_3.63v",
+      "process": "ss",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": 27.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_no_load_ua",
+          "value": 16.1783,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 13.8217
+        },
+        {
+          "name": "iq_full_load_ua",
+          "value": 26.79491,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 3.2050899999999984
+        },
+        {
+          "name": "vout_no_load_v",
+          "value": 1.80234,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.798003,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ss_125c_2.97v",
+      "process": "ss",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_no_load_ua",
+          "value": 11.99648,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 18.00352
+        },
+        {
+          "name": "iq_full_load_ua",
+          "value": 22.92938,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 7.070620000000002
+        },
+        {
+          "name": "vout_no_load_v",
+          "value": 1.803665,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.79721,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ss_125c_3.30v",
+      "process": "ss",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_no_load_ua",
+          "value": 13.91594,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 16.08406
+        },
+        {
+          "name": "iq_full_load_ua",
+          "value": 24.63819,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 5.361809999999998
+        },
+        {
+          "name": "vout_no_load_v",
+          "value": 1.804075,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.797392,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ss_125c_3.63v",
+      "process": "ss",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_no_load_ua",
+          "value": 15.89903,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 14.10097
+        },
+        {
+          "name": "iq_full_load_ua",
+          "value": 26.48905,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 3.510950000000001
+        },
+        {
+          "name": "vout_no_load_v",
+          "value": 1.804694,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.797495,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ff_-40c_2.97v",
+      "process": "ff",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_no_load_ua",
+          "value": 11.27115,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 18.72885
+        },
+        {
+          "name": "iq_full_load_ua",
+          "value": -3357.86,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 3387.86
+        },
+        {
+          "name": "vout_no_load_v",
+          "value": 1.80152,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 2.709347,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ff_-40c_3.30v",
+      "process": "ff",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_no_load_ua",
+          "value": 13.1718,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 16.828200000000002
+        },
+        {
+          "name": "iq_full_load_ua",
+          "value": 27.13418,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 2.8658199999999994
+        },
+        {
+          "name": "vout_no_load_v",
+          "value": 1.801609,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.798382,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ff_-40c_3.63v",
+      "process": "ff",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_no_load_ua",
+          "value": 15.11526,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 14.88474
+        },
+        {
+          "name": "iq_full_load_ua",
+          "value": 28.88037,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 1.1196300000000008
+        },
+        {
+          "name": "vout_no_load_v",
+          "value": 1.801757,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.798479,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ff_27c_2.97v",
+      "process": "ff",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": 27.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_no_load_ua",
+          "value": 11.64668,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 18.35332
+        },
+        {
+          "name": "iq_full_load_ua",
+          "value": 25.66208,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 4.33792
+        },
+        {
+          "name": "vout_no_load_v",
+          "value": 1.802168,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.797943,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ff_27c_3.30v",
+      "process": "ff",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 27.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_no_load_ua",
+          "value": 13.52365,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 16.47635
+        },
+        {
+          "name": "iq_full_load_ua",
+          "value": 27.29049,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 2.7095100000000016
+        },
+        {
+          "name": "vout_no_load_v",
+          "value": 1.802339,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.79809,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ff_27c_3.63v",
+      "process": "ff",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": 27.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_no_load_ua",
+          "value": 15.43936,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 14.56064
+        },
+        {
+          "name": "iq_full_load_ua",
+          "value": 29.01481,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 0.9851899999999993
+        },
+        {
+          "name": "vout_no_load_v",
+          "value": 1.802615,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.798189,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ff_125c_2.97v",
+      "process": "ff",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_no_load_ua",
+          "value": 11.6043,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 18.395699999999998
+        },
+        {
+          "name": "iq_full_load_ua",
+          "value": 25.43039,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 4.569610000000001
+        },
+        {
+          "name": "vout_no_load_v",
+          "value": 1.804813,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.797391,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ff_125c_3.30v",
+      "process": "ff",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_no_load_ua",
+          "value": 13.3874,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 16.6126
+        },
+        {
+          "name": "iq_full_load_ua",
+          "value": 26.95538,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 3.0446199999999983
+        },
+        {
+          "name": "vout_no_load_v",
+          "value": 1.805634,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.797568,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ff_125c_3.63v",
+      "process": "ff",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_no_load_ua",
+          "value": 15.21171,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 14.78829
+        },
+        {
+          "name": "iq_full_load_ua",
+          "value": 28.58799,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 1.4120099999999987
+        },
+        {
+          "name": "vout_no_load_v",
+          "value": 1.806884,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.797673,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "sf_-40c_2.97v",
+      "process": "sf",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_no_load_ua",
+          "value": 12.20911,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 17.790889999999997
+        },
+        {
+          "name": "iq_full_load_ua",
+          "value": 23.78118,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 6.218820000000001
+        },
+        {
+          "name": "vout_no_load_v",
+          "value": 1.801389,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.798099,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "sf_-40c_3.30v",
+      "process": "sf",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_no_load_ua",
+          "value": 14.23675,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 15.76325
+        },
+        {
+          "name": "iq_full_load_ua",
+          "value": 25.57295,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 4.427050000000001
+        },
+        {
+          "name": "vout_no_load_v",
+          "value": 1.801463,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.798246,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "sf_-40c_3.63v",
+      "process": "sf",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": -40.0,
+      "status": "fail",
+      "measurements": [
+        {
+          "name": "iq_no_load_ua",
+          "value": 16.2994,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 13.700600000000001
+        },
+        {
+          "name": "iq_full_load_ua",
+          "value": 3575.144,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "fail",
+          "margin": -3545.144
+        },
+        {
+          "name": "vout_no_load_v",
+          "value": 1.801579,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 3.392966,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "sf_27c_2.97v",
+      "process": "sf",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": 27.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_no_load_ua",
+          "value": 12.53164,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 17.46836
+        },
+        {
+          "name": "iq_full_load_ua",
+          "value": 24.12857,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 5.87143
+        },
+        {
+          "name": "vout_no_load_v",
+          "value": 1.801952,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.797784,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "sf_27c_3.30v",
+      "process": "sf",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 27.0,
+      "status": "fail",
+      "measurements": [
+        {
+          "name": "iq_no_load_ua",
+          "value": -3350.04,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 3380.04
+        },
+        {
+          "name": "iq_full_load_ua",
+          "value": 3568.046,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "fail",
+          "margin": -3538.046
+        },
+        {
+          "name": "vout_no_load_v",
+          "value": 3.315889,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 3.00529,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "sf_27c_3.63v",
+      "process": "sf",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": 27.0,
+      "status": "fail",
+      "measurements": [
+        {
+          "name": "iq_no_load_ua",
+          "value": 16.53429,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 13.465710000000001
+        },
+        {
+          "name": "iq_full_load_ua",
+          "value": 3574.497,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "fail",
+          "margin": -3544.497
+        },
+        {
+          "name": "vout_no_load_v",
+          "value": 1.802293,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 3.356541,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "sf_125c_2.97v",
+      "process": "sf",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_no_load_ua",
+          "value": 12.40545,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 17.594549999999998
+        },
+        {
+          "name": "iq_full_load_ua",
+          "value": 24.02887,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 5.971129999999999
+        },
+        {
+          "name": "vout_no_load_v",
+          "value": 1.803476,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.797279,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "sf_125c_3.30v",
+      "process": "sf",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_no_load_ua",
+          "value": 14.28191,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 15.71809
+        },
+        {
+          "name": "iq_full_load_ua",
+          "value": 25.6505,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 4.349499999999999
+        },
+        {
+          "name": "vout_no_load_v",
+          "value": 1.803823,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.797461,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "sf_125c_3.63v",
+      "process": "sf",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_no_load_ua",
+          "value": 16.19325,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 13.806750000000001
+        },
+        {
+          "name": "iq_full_load_ua",
+          "value": 27.37884,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 2.6211599999999997
+        },
+        {
+          "name": "vout_no_load_v",
+          "value": 1.804349,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.797575,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "fs_-40c_2.97v",
+      "process": "fs",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_no_load_ua",
+          "value": 10.71313,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 19.28687
+        },
+        {
+          "name": "iq_full_load_ua",
+          "value": 24.21439,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 5.785609999999998
+        },
+        {
+          "name": "vout_no_load_v",
+          "value": 1.801515,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.798201,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "fs_-40c_3.30v",
+      "process": "fs",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": -40.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_no_load_ua",
+          "value": 12.6099,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 17.3901
+        },
+        {
+          "name": "iq_full_load_ua",
+          "value": 25.93442,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 4.065580000000001
+        },
+        {
+          "name": "vout_no_load_v",
+          "value": 1.801608,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.798335,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "fs_-40c_3.63v",
+      "process": "fs",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": -40.0,
+      "status": "fail",
+      "measurements": [
+        {
+          "name": "iq_no_load_ua",
+          "value": 14.55352,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 15.44648
+        },
+        {
+          "name": "iq_full_load_ua",
+          "value": 3581.532,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "fail",
+          "margin": -3551.532
+        },
+        {
+          "name": "vout_no_load_v",
+          "value": 1.801764,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 3.425948,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "fs_27c_2.97v",
+      "process": "fs",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": 27.0,
+      "status": "fail",
+      "measurements": [
+        {
+          "name": "iq_no_load_ua",
+          "value": 11.12074,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 18.879260000000002
+        },
+        {
+          "name": "iq_full_load_ua",
+          "value": 3453.952,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "fail",
+          "margin": -3423.952
+        },
+        {
+          "name": "vout_no_load_v",
+          "value": 1.802192,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 2.687128,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "fs_27c_3.30v",
+      "process": "fs",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 27.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_no_load_ua",
+          "value": 12.99981,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 17.00019
+        },
+        {
+          "name": "iq_full_load_ua",
+          "value": 26.08502,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 3.91498
+        },
+        {
+          "name": "vout_no_load_v",
+          "value": 1.802375,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.798032,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "fs_27c_3.63v",
+      "process": "fs",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": 27.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_no_load_ua",
+          "value": 14.92136,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 15.07864
+        },
+        {
+          "name": "iq_full_load_ua",
+          "value": 27.86838,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 2.1316200000000016
+        },
+        {
+          "name": "vout_no_load_v",
+          "value": 1.802671,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.798125,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "fs_125c_2.97v",
+      "process": "fs",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_no_load_ua",
+          "value": 11.13697,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 18.863030000000002
+        },
+        {
+          "name": "iq_full_load_ua",
+          "value": 24.18985,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 5.81015
+        },
+        {
+          "name": "vout_no_load_v",
+          "value": 1.805863,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.797288,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "fs_125c_3.30v",
+      "process": "fs",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_no_load_ua",
+          "value": 12.92649,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 17.07351
+        },
+        {
+          "name": "iq_full_load_ua",
+          "value": 25.78035,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 4.2196500000000015
+        },
+        {
+          "name": "vout_no_load_v",
+          "value": 1.807295,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.797461,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "fs_125c_3.63v",
+      "process": "fs",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": 125.0,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "iq_no_load_ua",
+          "value": 14.76073,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 15.23927
+        },
+        {
+          "name": "iq_full_load_ua",
+          "value": 27.47132,
+          "unit": "uA",
+          "limits": {
+            "max": 30
+          },
+          "status": "pass",
+          "margin": 2.5286800000000014
+        },
+        {
+          "name": "vout_no_load_v",
+          "value": 1.809524,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_full_load_v",
+          "value": 1.797559,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    }
+  ]
+}

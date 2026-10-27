@@ -54,7 +54,11 @@
 # This pin is deliberately independent of layout/requirements.txt's `klt` pin.
 # That one fixes the toolchain that *produced* this repo's DRC/LVS/PEX
 # evidence; this one fixes the grader that *reads* it. They move for different
-# reasons and are not expected to match -- they do not today (0.2.0 vs 0.6.0).
+# reasons and are not expected to match -- they do not today (0.2.0 vs 0.8.0).
+#
+# 0.6.0 -> 0.8.0 (issue #449): `spec_rows` (the declared item-5 row set, and
+# `ratified`/`gap` rows) is first read by 0.8.0; 0.7.0 ignores it. Re-grading the
+# pre-#449 manifest on 0.8.0 moved no item status, only build metadata.
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -62,7 +66,7 @@ cd "$REPO_ROOT"
 
 # klayout-tools release this block is graded against. See the header above
 # before changing it.
-KLT_VERSION="0.6.0"
+KLT_VERSION="0.8.0"
 
 MANIFEST="signoff/block-manifest.json"
 PINS="signoff/artifact-pins.json"

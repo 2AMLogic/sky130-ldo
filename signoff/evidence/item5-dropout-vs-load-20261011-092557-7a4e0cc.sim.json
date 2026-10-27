@@ -1,0 +1,122 @@
+{
+  "schema_version": 1,
+  "netlist": "sim/dropout-vs-load/netlist-snapshots/20261011-092557-7a4e0cc.spice",
+  "status": "fail",
+  "corner_count": 1,
+  "passed": 0,
+  "failed": 1,
+  "errored": 0,
+  "wrapper": "NOT a `klt sim` run. Hand-wrapped by signoff/make_item5_envelope.py from the committed harness-format record named in `source_record`; every value, limit and verdict is copied verbatim and nothing was re-simulated. Measurements tagged with a `spec_row` carry that row's RATIFIED bound (spec/target-spec.md, DR-006), which the script checked against the record's own limit before writing. The input pin is the netlist snapshot the record simulated, not necessarily the current schematic: see measurements/characterization.md for per-record freshness.",
+  "source_record": {
+    "bench": "dropout-vs-load",
+    "record_id": "20261011-092557-7a4e0cc",
+    "path": "sim/dropout-vs-load/records/20261011-092557-7a4e0cc.json",
+    "sha256": "sha256:42c9a4ae62b2a92281a9e4c0e4cd49e4797209bf030eeafbb1d002df3e73a7e2",
+    "overall_pass": false,
+    "matrix_is_subset": true
+  },
+  "environment": {
+    "engine": "ngspice",
+    "engine_version": "ngspice-42 : Circuit level simulation program",
+    "pdk": "c6d73a35f524070e85faff4a6a9eef49553ebc2b",
+    "platform": "Linux 7.0.0-1013-aws x86_64"
+  },
+  "provenance": {
+    "input": {
+      "path": "sim/dropout-vs-load/netlist-snapshots/20261011-092557-7a4e0cc.spice",
+      "role": "netlist",
+      "content_hash": "sha256:eac4cf442d9ade7d6e039164d818f1022ba88413acae907993f5de7939b1f883"
+    }
+  },
+  "metrics": {
+    "sim__corner__count": 1,
+    "sim__corner__passed_count": 0,
+    "sim__corner__failed_count": 1,
+    "sim__corner__errored_count": 0
+  },
+  "coverage": {
+    "schema_version": 1,
+    "known": true,
+    "checked": [
+      "dropout-vs-load:tt_27c_3.30v:dropout_v",
+      "dropout-vs-load:tt_27c_3.30v:vout_at_max_vin_v"
+    ],
+    "skipped": [
+      {
+        "id": "dropout-vs-load:corner-matrix",
+        "reason": "pvt_subset: Issue #323: current-schematic dropout attribution only; no PVT qualification"
+      }
+    ],
+    "inapplicable": [],
+    "unknown": [],
+    "nothing_checked": false,
+    "nothing_checked_reasons": [],
+    "measurements_declared": 2,
+    "measurements_with_limits": 2
+  },
+  "measurements": [
+    {
+      "name": "dropout_v",
+      "unit": "V",
+      "limits": {
+        "max": 0.3
+      },
+      "status": "fail",
+      "worst_case": {
+        "corner_id": "tt_27c_3.30v",
+        "value": 0.397658,
+        "margin": -0.09765800000000002
+      },
+      "spec_row": "dropout"
+    },
+    {
+      "name": "vout_at_max_vin_v",
+      "unit": "V",
+      "limits": {
+        "min": 0.5,
+        "max": 3.7
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_27c_3.30v",
+        "value": 1.798832,
+        "margin": 1.298832
+      }
+    }
+  ],
+  "corners": [
+    {
+      "corner_id": "tt_27c_3.30v",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 27.0,
+      "status": "fail",
+      "measurements": [
+        {
+          "name": "dropout_v",
+          "value": 0.397658,
+          "unit": "V",
+          "limits": {
+            "max": 0.3
+          },
+          "status": "fail",
+          "margin": -0.09765800000000002
+        },
+        {
+          "name": "vout_at_max_vin_v",
+          "value": 1.798832,
+          "unit": "V",
+          "limits": {
+            "min": 0.5,
+            "max": 3.7
+          },
+          "status": "pass",
+          "margin": 1.298832
+        }
+      ],
+      "diagnostics": []
+    }
+  ]
+}

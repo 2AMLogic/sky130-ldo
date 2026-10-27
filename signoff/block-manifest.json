@@ -10,6 +10,86 @@
       "file": "layout/ldo-core/reports/20260924-221912-a947aa8/lvs.json",
       "content_hash": "sha256:3e7f504b56ea85cdd733ecf456650b6f08c72540ec4a6ad38b73f3a0369beb9a"
     },
+    "5": [
+      {
+        "file": "signoff/evidence/item5-dropout-vs-load-20261011-092557-7a4e0cc.sim.json",
+        "content_hash": "sha256:eac4cf442d9ade7d6e039164d818f1022ba88413acae907993f5de7939b1f883",
+        "rows": [
+          "dropout"
+        ]
+      },
+      {
+        "file": "signoff/evidence/item5-line-regulation-20260926-200304-35b7392.sim.json",
+        "content_hash": "sha256:cde71b6b4e3d722f09f2385fd34a3d424bd9888d48160d8d4f1da0553fddfec4",
+        "rows": [
+          "line-regulation"
+        ]
+      },
+      {
+        "file": "signoff/evidence/item5-load-regulation-20260926-010432-228fbc7.sim.json",
+        "content_hash": "sha256:ed5005f180db739448c4994c30b8db78325216c511a907e5ef2f4d22a10671ac",
+        "rows": [
+          "load-regulation"
+        ]
+      },
+      {
+        "file": "signoff/evidence/item5-load-transient-20260926-013955-6449a98.sim.json",
+        "content_hash": "sha256:c79b7d0181fdd481a6d41c5c5cdddbd4db434560e4da5b0afab1f4a6b3544076",
+        "rows": [
+          "load-transient"
+        ]
+      },
+      {
+        "file": "signoff/evidence/item5-psrr-dc-20260926-033606-4a9ec09.sim.json",
+        "content_hash": "sha256:481f5adb0633168114c7def4d22034b20c2917a46b2f926fc10266b56c554fed",
+        "rows": [
+          "psrr"
+        ]
+      },
+      {
+        "file": "signoff/evidence/item5-iq-20260910-034648-6c0436d.sim.json",
+        "content_hash": "sha256:276777f5d01e1d124a26c38e9030133e51ba84c8e3ec790bb1314405361d2fb4",
+        "rows": [
+          "iq"
+        ]
+      },
+      {
+        "file": "signoff/evidence/item5-current-limit-20260825-105322-933dfdd.sim.json",
+        "content_hash": "sha256:05a4c99f2a08097560bb364d60362a6474aa3456e55cae559381f8e0c5816b83",
+        "rows": [
+          "current-limit",
+          "output"
+        ]
+      },
+      {
+        "file": "signoff/evidence/item5-startup-20260825-110456-933dfdd.sim.json",
+        "content_hash": "sha256:e19e3bf46a221435d4bc47b921b204c2c5336cc8188c665c327a01f010bf5a77",
+        "rows": [
+          "startup"
+        ]
+      },
+      {
+        "file": "signoff/evidence/item5-enable-shutdown-20260825-111526-933dfdd.sim.json",
+        "content_hash": "sha256:564f63f4b1e2b4659ad7b1598dcfdd57b2d4217fb29fb3038ac909c98edb34d3",
+        "rows": [
+          "enable-shutdown"
+        ]
+      },
+      {
+        "file": "signoff/evidence/item5-thermal-20260926-095154-f6ab418.sim.json",
+        "content_hash": "sha256:35b2e28bf981c698d3ae2bba793d953aaab1016ab32cf836aa8e8d1f83bd85ff",
+        "rows": [
+          "thermal"
+        ]
+      },
+      {
+        "file": "signoff/evidence/item5-loop-gain-20260926-040338-4a9ec09.sim.json",
+        "content_hash": "sha256:4b3c44283ca98392b441f14ec32e23b3b5a5682aa17aef76e8a2863ba6d6cbe2",
+        "rows": [
+          "stability"
+        ]
+      }
+    ],
     "6": {
       "file": "sim/mc-output-accuracy/klt-responses/20260927-093538-227be3e.yield.json",
       "content_hash": "sha256:82988e25e3b1ebd9a1806752f73e85d137b6b0479ecf6f938810515a2ecc40e1"
@@ -30,6 +110,55 @@
       {
         "file": "layout/ldo-core/reports/20260924-221912-a947aa8/lvs.json",
         "content_hash": "sha256:3e7f504b56ea85cdd733ecf456650b6f08c72540ec4a6ad38b73f3a0369beb9a"
+      }
+    ]
+  },
+  "spec_rows": {
+    "5": [
+      {
+        "id": "output"
+      },
+      {
+        "id": "dropout"
+      },
+      {
+        "id": "line-regulation"
+      },
+      {
+        "id": "load-regulation"
+      },
+      {
+        "id": "load-transient"
+      },
+      {
+        "id": "psrr"
+      },
+      {
+        "id": "iq",
+        "ratified": false
+      },
+      {
+        "id": "current-limit"
+      },
+      {
+        "id": "startup"
+      },
+      {
+        "id": "enable-shutdown"
+      },
+      {
+        "id": "thermal"
+      },
+      {
+        "id": "area",
+        "gap": "layout measurement (GDS bounding box), not a netlist simulation: no klt sim envelope can express it; graded by layout/ldo-core/reports/20261023-170539-a8292e91 and rolled up in measurements/characterization.md"
+      },
+      {
+        "id": "stability"
+      },
+      {
+        "id": "output-noise",
+        "gap": "waived by the spec row itself (not specified unless a consumer states a requirement)"
       }
     ]
   }
