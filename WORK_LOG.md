@@ -4,6 +4,10 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 
 ### 2026-10-28
 
+- **PR #463**: layout(area-study): four-capacitor core area budget for current schematic
+- **PR #462**: docs(signoff): describe area declared gap as a failing lower-bound row
+- **Issue #460** (closed): signoff: state item 5 area is a failing row, not an unexpressible gap (part of #458)
+- **Issue #459** (closed): T1 item 5 area: budget with all four capacitors, go figure or draft floor DR (part of #458)
 - **PR #457**: refactor(sim): remove unused apply_cap_point from psrr cap sweep
 - **Issue #455** (closed): Remove apply_cap_point: unused per-process netlist rewriter in psrr_cap_sweep.py
 
