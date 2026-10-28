@@ -119,7 +119,6 @@ def build() -> dict:
 
     # --- resistors ---
     xh = [devs[k]["length_um"] for k in sorted(fp_res) if devs[k]["flavor"] == "xhigh"]
-    rbias_len = devs["R_BIAS"]["length_um"]
     bank = fold_rows(xh, BANK_WIDTH_UM)  # feedback + compensation resistors, bank column
     n4 = next(c for c in geom["cases"] if c["case"] == "rbias_n4")["variants"]["folded"]["device_bbox_um"]
     strip_w, strip_h = n4["x1"] - n4["x0"], n4["y1"] - n4["y0"]
