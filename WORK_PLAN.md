@@ -32,13 +32,15 @@ Human-approved issues ready for implementation (`loom:issue`).
 
 Issues currently being built (`loom:building`).
 
-_None._
+- **#459**: T1 item 5 area: budget with all four capacitors, go figure or draft floor DR (part of #458)
+- **#460**: signoff: state item 5 area is a failing row, not an unexpressible gap (part of #458)
 
 ## PRs Awaiting Review
 
 PRs waiting on Judge (`loom:review-requested`).
 
-_None._
+- **#462**: docs(signoff): describe area declared gap as a failing lower-bound row
+- **#463**: layout(area-study): four-capacitor core area budget for current schematic
 
 ## Approved (Awaiting Merge)
 
@@ -76,8 +78,8 @@ Issues carrying `loom:curated`.
 | Very important | 0 |
 | Important | 1 |
 | Ready (`loom:issue`) | 2 |
-| In Progress (`loom:building`) | 0 |
-| PRs awaiting review | 0 |
+| In Progress (`loom:building`) | 2 |
+| PRs awaiting review | 2 |
 | Approved PRs awaiting merge | 0 |
 | Curated | 9 |
 | Architect / Hermit proposals | 1 |
