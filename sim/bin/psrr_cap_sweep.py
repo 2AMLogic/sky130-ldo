@@ -2,8 +2,6 @@
 
 Pure functions, no ngspice/PDK needed:
   * sweep_points / expected_cells  -- expand the manifest
-  * apply_cap_point                -- rewrite the testbench netlist for one
-                                      (C_eff, ESR) point, incl. zero-ESR topology
   * select_worst                   -- worst-sampled-point selection per sub-metric
 
 This is an evidence finding about the SAMPLED grid only; it does not define the
@@ -40,46 +38,6 @@ def corner_key(corner) -> str:
 
 def expected_cells(manifest: dict) -> list[tuple[str, tuple[float, float]]]:
     return [(corner_key(k), p) for k in manifest["corners"] for p in sweep_points(manifest)]
-
-
-def apply_cap_point(body: list[str], c_uf: float, esr_ohm: float) -> list[str]:
-    """Set COUT / ESR in an xschem netlist body for one sweep point.
-
-    ESR == 0 is an electrically equivalent topology: RESR is dropped and COUT's
-    second terminal is tied to ground (RESR's other terminal), not replaced by a
-    tiny resistor.  Raises ValueError if the expected cards are absent.
-    """
-    if c_uf <= 0 or esr_ohm < 0:
-        raise ValueError("c_uf must be > 0 and esr_ohm >= 0")
-    out: list[str] = []
-    esr_node = None
-    resr_gnd = None
-    for ln in body:
-        if _RESR_RE.match(ln):
-            parts = ln.split()
-            esr_node, resr_gnd = parts[1], parts[2]
-    if esr_node is None:
-        raise ValueError("no RESR card in netlist")
-    seen_c = False
-    for ln in body:
-        m = _COUT_RE.match(ln)
-        if m:
-            seen_c = True
-            bottom = m.group(3)
-            if esr_ohm == 0:
-                bottom = resr_gnd
-            out.append(f"COUT {m.group(2)} {bottom} {c_uf:g}u{m.group(5)}")
-        elif _RESR_RE.match(ln):
-            if esr_ohm == 0:
-                out.append("* RESR removed: zero-ESR topology (#314)")
-            else:
-                parts = ln.split()
-                out.append(f"RESR {parts[1]} {parts[2]} {esr_ohm:g}" + (" " + " ".join(parts[4:]) if len(parts) > 4 else ""))
-        else:
-            out.append(ln)
-    if not seen_c:
-        raise ValueError("no COUT card in netlist")
-    return out
 
 
 def _finite(v) -> bool:
