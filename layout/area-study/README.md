@@ -10,4 +10,7 @@ local single-unit `klt gen`). Everything is a geometric estimate computed from
 existing evidence; nothing here is DRC/LVS/PEX verified, the ratified `< 0.1 mm^2`
 Area row is unchanged, and no resistor value or transistor size is altered.
 
-Latest: `20261009-study-246/report.md`.
+Four-capacitor budget for the current schematic (issue #459):
+`python3 layout/bin/ldo-area-budget-4cap.py` (reads only committed records).
+
+Latest: `20261028-study-459/report.md` (supersedes `20261009-study-246/report.md`, which is kept).
