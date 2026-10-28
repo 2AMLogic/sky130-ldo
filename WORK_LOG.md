@@ -4,6 +4,8 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 
 ### 2026-10-27
 
+- **PR #454**: refactor(tests): share one hyphenated-script loader per sim/layout tests tree
+- **Issue #453** (closed): Consolidate duplicated hyphenated-script module loader across ~28 test modules
 - **PR #450**: feat(signoff): wrap PVT records into klt sim envelopes for T1 item 5
 - **Issue #449** (closed): T1 item 5 (Full corner verification): emit klt sim envelopes for every ratified row so failures are graded, not no_evidence
 
