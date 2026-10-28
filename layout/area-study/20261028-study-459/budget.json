@@ -1,0 +1,167 @@
+{
+  "capacitors": {
+    "block_overhead_factor": 1.121747335235061,
+    "effective_density_ff_per_um2": 4.053563726018412,
+    "met3_rail_keepout_um2": 5320.7,
+    "single_level_block_um2_counterfactual": 89038.1042,
+    "stacked_block_um2_drawn": 44830.445649999994,
+    "stacked_footprint_um2_drawn": 39964.83364999999
+  },
+  "claims_verified": "none: geometric estimate from committed records; no DRC/LVS/PEX on a full core with capacitors",
+  "geometry_convention": "bounding rectangle width x height, as in the area record",
+  "inventory": {
+    "capacitors_f": {
+      "C_CL": 1e-12,
+      "C_COMP": 1.5e-10,
+      "C_SS": 1e-11,
+      "C_TS": 1e-12
+    },
+    "caps_drawn_in_core_layout": false,
+    "caps_total_f": 1.62e-10,
+    "floorplan_matches_schematic": true,
+    "mos": 48,
+    "resistors": 5
+  },
+  "issue": 459,
+  "limit_comparison": "area < limit (strict); target unchanged, read only",
+  "limit_um2": 100000.0,
+  "measured_core_no_caps": {
+    "area_um2": 451931.0796,
+    "height_um": 184.17,
+    "ratio_to_limit": 4.519310796,
+    "width_um": 2453.88
+  },
+  "mos_domain": {
+    "area_um2": 62153.7,
+    "height_um": 184.17,
+    "source": "measured: all 48 MOS drawn in the current floorplan (no estimate of added/removed MOS)",
+    "width_um": 337.48,
+    "x_from_substrate_tie_um": 2116.4
+  },
+  "parent": 458,
+  "rectangle": {
+    "assumption": "MOS domain + 2 um + 100 um resistor-bank column; R_BIAS N=4 strip spans the width; caps overlay occupied core area",
+    "height_um": 184.17,
+    "width_um": 439.48,
+    "with_rbias_n4_strip_mm2": 0.08308,
+    "with_rbias_n4_strip_um2": 83083.7,
+    "without_rbias_strip_um2": 80939.0
+  },
+  "resistors": {
+    "qualification": {
+      "r_cz": "52 um body < bank width: one row, unfolded",
+      "r_fb_a": "qualified N=2..6 (R_FB_A); R_FB_B/C fold identically so the divider ratio is preserved to first order",
+      "rbias_any_n": "no segment count 2..16 is QUALIFIED (M2 fails at N=2: 1.1114; N>=5 fails the deterministic criterion)",
+      "rbias_n4": "deterministic worst +0.2226 % < 0.2462 % (ok), M1 ok, M2 sigma ratio 1.1316 > 1.1 (FAIL); not QUALIFIED; j4 sensitivity flips the verdict",
+      "record": "layout/folded-res-qual/pvt-reports/20261017-031511-76e0ba72/record.md"
+    },
+    "r_bias_n4_strip": {
+      "added_area_um2": 2144.7,
+      "gap_um": 2.0,
+      "height_um": 2.88,
+      "width_um": 375.84000000000003
+    },
+    "r_bias_straight": {
+      "area_at_current_height_mm2": 0.27649,
+      "area_at_current_height_um2": 276490.7,
+      "channel_plus_rail_bands_um": 82.75,
+      "fails_regardless_of_caps": true,
+      "max_height_for_limit_um": 66.60982628157306,
+      "min_width_um": 1501.28
+    },
+    "xhigh_bank": {
+      "bank_area_um2": 2170.0,
+      "bank_height_um": 21.7,
+      "bank_width_um": 100.0,
+      "row_pitch_um": 3.1,
+      "rows": 7,
+      "segments_per_resistor": [
+        1,
+        2,
+        2,
+        2
+      ]
+    }
+  },
+  "scenarios": {
+    "caps_overlay_nominal_4fF": {
+      "below_limit": true,
+      "cap_block_um2": 45430.8,
+      "description": "nominal 4 fF/um^2 footprint density with the same block overhead",
+      "fits_overlay": true,
+      "margin_fraction": 0.16916305999999998,
+      "overlay_fill_fraction": 0.5842207937623871,
+      "overlay_usable_um2": 77763.0,
+      "total_mm2": 0.08308,
+      "total_um2": 83083.7
+    },
+    "caps_overlay_single_2fF_drawn_counterfactual": {
+      "below_limit": true,
+      "cap_block_um2": 89038.1,
+      "description": "single MiM level (2 fF/um^2), #254 counterfactual block area, overlay attempted",
+      "fits_overlay": false,
+      "margin_fraction": 0.05641211200000005,
+      "overlay_fill_fraction": 1.1449930357247722,
+      "overlay_usable_um2": 77763.0,
+      "total_mm2": 0.09436,
+      "total_um2": 94358.8
+    },
+    "caps_overlay_single_2fF_nominal": {
+      "below_limit": true,
+      "cap_block_um2": 90861.5,
+      "description": "nominal 2 fF/um^2 footprint density with the stacked-block overhead",
+      "fits_overlay": false,
+      "margin_fraction": 0.03817781245960054,
+      "overlay_fill_fraction": 1.1684415875247742,
+      "overlay_usable_um2": 77763.0,
+      "total_mm2": 0.09618,
+      "total_um2": 96182.2
+    },
+    "caps_overlay_stacked_4fF_drawn": {
+      "below_limit": true,
+      "cap_block_um2": 44830.4,
+      "description": "stacked MiM as drawn in #254 (effective 4.05 fF/um^2 of footprint, block overhead x1.122)",
+      "fits_overlay": true,
+      "margin_fraction": 0.16916305999999998,
+      "overlay_fill_fraction": 0.5765009095699939,
+      "overlay_usable_um2": 77763.0,
+      "total_mm2": 0.08308,
+      "total_um2": 83083.7
+    }
+  },
+  "schema_version": 1,
+  "sensitivity_to_capacitor_budget": {
+    "c_comp_fraction_of_total": 0.9259259259259258,
+    "dominant_capacitor": "C_COMP",
+    "headroom_factor_below_limit": 2.112,
+    "headroom_factor_overlay": 1.735,
+    "max_total_c_below_limit_pf": 342.1,
+    "max_total_c_that_fits_overlay_pf": 281.0,
+    "scales_with": "capacitor total at fixed density; rectangle area is unchanged until the overlay is full"
+  },
+  "sources": {
+    "area_record": "layout/ldo-core/reports/20261023-170539-a8292e91/area.json",
+    "area_record_gds_sha256": "1698311e6a2e98017f1d91e852688b4a4b788f5912d130751ce62ef3b3b080b1",
+    "cap_demo": "layout/cap-rail-demo/reports/20261010-033947-80bc87e/summary.json",
+    "floorplan": "layout/ldo-core/reports/20261022-231908-56dd87fe/floorplan.json",
+    "folded_geometry": "layout/folded-res-qual/reports/20261010-033502-704005c/geometry.json",
+    "folded_pvt": "layout/folded-res-qual/pvt-reports/20261017-031511-76e0ba72/record.md",
+    "repo_head": "c0766b6abf4ad338ec4283e3b687e240399a1e8f",
+    "schematic": "design/ldo_3v3in_1v8out.sch",
+    "schematic_git_last_commit": "a09aa83fe320b5d8970e81db2fc71e55268ffdfa"
+  },
+  "units": {
+    "area": "um^2 (mm^2 = um^2 / 1e6)",
+    "capacitance": "F",
+    "length": "um"
+  },
+  "verdict": {
+    "feasible_under_limit_if": "R_BIAS is folded at N=4 (caps overlaid; stacked MiM ~4 fF/um^2 as drawn in #254 gives the full margin)",
+    "geometric_budget_mm2": 0.08308,
+    "not_feasible_if": [
+      "R_BIAS stays straight (floor 0.2765 mm^2 at the current height)"
+    ],
+    "open_gate": "R_BIAS N=4 fold is not QUALIFIED by the #263 record (M2 sigma-ratio gate)",
+    "thin_margin_if": "only a single MiM level (2 fF/um^2) is allowed: 0.094-0.096 mm^2"
+  }
+}
