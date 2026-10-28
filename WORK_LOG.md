@@ -2,6 +2,11 @@
 
 Chronological record of merged pull requests and closed issues. Maintained by the Loom Guide role.
 
+### 2026-10-28
+
+- **PR #457**: refactor(sim): remove unused apply_cap_point from psrr cap sweep
+- **Issue #455** (closed): Remove apply_cap_point: unused per-process netlist rewriter in psrr_cap_sweep.py
+
 ### 2026-10-27
 
 - **PR #454**: refactor(tests): share one hyphenated-script loader per sim/layout tests tree
