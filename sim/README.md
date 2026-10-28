@@ -1050,9 +1050,9 @@ tell "my circuit is wrong" apart from "my harness is broken".
 
 `sim/psrr-dc/cap-esr-sweep.json` declares a sampled grid (3 corners = the
 `psrr-dc` `quick_subset`, C_eff {0.33, 1, 4.7} uF, ESR {0, 10 m, 500 m} ohm, both
-load points). `sim/bin/psrr_cap_sweep.py` rewrites the testbench netlist per point
-(ESR 0 removes RESR, a real zero-ESR topology) and selects the worst sampled point
-per sub-metric (min over corners, ties -> lower C_eff then lower ESR; any missing or
+load points). `sim/bin/psrr_cap_sweep.py` builds the per-point `klt sim` analysis steps
+(`build_steps`; ESR 0 is a real zero-ESR topology via the `add_direct_cap` alters)
+and selects the worst sampled point per sub-metric (min over corners, ties -> lower C_eff then lower ESR; any missing or
 non-finite cell -> no finding, listed). Tests: `sim/tests/test_psrr_cap_sweep.py`.
 The grid samples the window; it cannot prove the continuous-window or 45-corner
 worst case.

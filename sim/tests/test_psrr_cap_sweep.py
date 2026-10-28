@@ -81,27 +81,6 @@ class TestSelection(unittest.TestCase):
         self.assertEqual((f["c_uf"], f["esr_ohm"]), (0.33, 0.0))
 
 
-class TestNetlistPoint(unittest.TestCase):
-    BODY = ["* x", "COUT VOUT VESR 1u m=1", "RESR VESR 0 10m m=1", "RLOAD VOUT 0 1.8k m=1"]
-
-    def test_nonzero_esr(self):
-        out = s.apply_cap_point(self.BODY, 4.7, 0.5)
-        self.assertIn("COUT VOUT VESR 4.7u m=1", out)
-        self.assertIn("RESR VESR 0 0.5 m=1", out)
-
-    def test_zero_esr_is_topology_not_standin(self):
-        out = s.apply_cap_point(self.BODY, 0.33, 0.0)
-        self.assertIn("COUT VOUT 0 0.33u m=1", out)
-        self.assertFalse(any(l.upper().startswith("RESR") for l in out))
-        self.assertIn("RLOAD VOUT 0 1.8k m=1", out)
-
-    def test_missing_cards_raise(self):
-        with self.assertRaises(ValueError):
-            s.apply_cap_point(["COUT VOUT VESR 1u"], 1, 1)
-        with self.assertRaises(ValueError):
-            s.apply_cap_point(["RESR VESR 0 10m"], 1, 1)
-
-
 class TestRequestShape(unittest.TestCase):
     BODY = ["* x", "COUT VOUT VESR 1u m=1", "RESR VESR 0 10m m=1", "RLOAD VOUT 0 1.8k m=1"]
 
