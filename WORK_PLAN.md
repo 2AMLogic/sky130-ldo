@@ -60,6 +60,7 @@ Issues carrying `loom:curated`.
 - **#416**: Re-run folded-resistor MC at n>=1000 to firm up M2 sigma-ratio gate *(curated)*
 - **#423**: T1 items 1, 2, 9, 10: bump the signoff grading pin and attest with artifact-anchored envelopes (klt signoff --attest) *(curated)*
 - **#461**: T1 item 5 area: compact routed ldo_core under 0.1 mm² with capacitors drawn, re-mint records (part of #458) *(curated)*
+- **#467**: Bias re-topology so R_BIAS is not one long resistor: new DR, to meet the < 0.1 mm² Area row without a fold waiver (#461) *(curated)*
 
 ## Proposed (Architect / Hermit)
 
@@ -80,7 +81,7 @@ Issues carrying `loom:curated`.
 | In Progress (`loom:building`) | 1 |
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 0 |
-| Curated | 10 |
+| Curated | 11 |
 | Architect / Hermit proposals | 1 |
 | Active epics | 1 |
 <!-- guide:plan-body:end -->
