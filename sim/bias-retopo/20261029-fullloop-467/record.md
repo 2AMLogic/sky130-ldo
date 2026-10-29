@@ -10,7 +10,7 @@ Method: `sim/iq` deck, 200 ms cold-start transients, graded locally with the exp
 Executed with `sim/bin/corner-run.py sim/iq --backend batch --timeout 1500`. The first attempt
 (`sim/iq/records/20261029-063823-5ba605f.md`) is a recorded FAIL: every unit hit the 300 s per-unit cap (`klt` diagnostic `timeout`),
 no values. The second attempt's runner process died after 4 of 6 requests had returned; the last two requests were completed by hand with
-`klt sim --attach` / a direct `klt sim` submit of the runner's own request files (`requests/`), raw responses in `responses/`.
+`klt sim --attach` / a direct `klt sim` submit of the runner's own request files (`requests/*.json`; the netlists are in `sim/iq/klt-request-netlists/20261029-063823-5ba605f.*`, identical bytes), raw responses in `responses/`.
 Because the runner did not finish, **no `corner-run` record or manifest exists for this run**: `iq-graded.json` and the table below are a
 manual aggregate of the six raw klt responses (45/45 points `pass` at the engine level, 0 errors). Treat as screening evidence, not a minted record.
 
