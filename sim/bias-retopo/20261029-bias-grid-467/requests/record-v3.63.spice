@@ -1,0 +1,13 @@
+.param vsup=3.63
+.option wnflag=1
+VVIN VIN 0 'vsup'
+.save i(vvin)
+XR_BIAS VIN NB 0 sky130_fd_pr__res_high_po W=0.42 L=1500 mult=1 m=1
+XM_BIASN1 NB NB BIAS_ENN 0 sky130_fd_pr__nfet_g5v0d10v5 L=1 W=4 nf=1 mult=1 m=1
+XM_ENN BIAS_ENN VIN 0 0 sky130_fd_pr__nfet_g5v0d10v5 L=0.5 W=10 nf=1 mult=1 m=1
+XM_BIASN2 BIASP NB BIAS_ENN 0 sky130_fd_pr__nfet_g5v0d10v5 L=1 W=4 nf=1 mult=1 m=1
+XM_BIASP1 BIASP BIASP VIN VIN sky130_fd_pr__pfet_g5v0d10v5 L=1 W=10 nf=2 mult=1 m=1
+XM_TAIL EA_TAIL BIASP VIN VIN sky130_fd_pr__pfet_g5v0d10v5 L=2 W=40 nf=8 mult=1 m=1
+VTAIL EA_TAIL 0 1.0
+.save i(vtail)
+.end

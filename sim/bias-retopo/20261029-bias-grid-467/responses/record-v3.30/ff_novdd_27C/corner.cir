@@ -1,0 +1,18 @@
+* klt sim -- generated corner deck, do not edit
+.lib /opt/pdk/sky130A/libs.tech/combined/sky130.lib.spice ff
+.include /var/tmp/eda-job-klt-sim-d0691b6094c9/inputs/netlist.cir
+.temp 27.0
+.control
+save all
+op 
+let meas_v_nb = v(nb)
+print meas_v_nb
+let meas_v_biasp = v(biasp)
+print meas_v_biasp
+let meas_i_tail_ua = 1e6*i(vtail)
+print meas_i_tail_ua
+let meas_i_bias_pair_ua = 1e6*(-i(vvin)-i(vtail))
+print meas_i_bias_pair_ua
+quit
+.endc
+.end

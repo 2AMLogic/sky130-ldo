@@ -14,3 +14,7 @@ Four-capacitor budget for the current schematic (issue #459):
 `python3 layout/bin/ldo-area-budget-4cap.py` (reads only committed records).
 
 Latest: `20261028-study-459/report.md` (supersedes `20261009-study-246/report.md`, which is kept).
+
+DR-013 bias candidate (issue #467): `python3 layout/bin/ldo-area-budget-dr013.py`
+(extends the #459 inputs; `R_BIAS` as a single straight `res_xhigh_po` body).
+Latest for that candidate: `20261029-study-467/report.md`.
