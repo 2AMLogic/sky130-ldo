@@ -7,7 +7,7 @@ Current roadmap derived from GitHub lifecycle labels. Maintained by the Loom Gui
 
 Judge-approved PRs under a hold (`loom:blocked` or `loom:operator`) — only a human merge decision is missing.
 
-_None._
+- **#470**: docs(spec): propose DR-013 bias re-topology (straight res_xhigh_po R_BIAS) with area and PVT evidence
 
 ## Very Important
 
@@ -44,7 +44,7 @@ _None._
 
 PRs that passed review and are queued for Champion auto-merge (`loom:pr`).
 
-_None._
+- **#470**: docs(spec): propose DR-013 bias re-topology (straight res_xhigh_po R_BIAS) with area and PVT evidence
 
 ## Proposed
 
@@ -74,13 +74,13 @@ Issues carrying `loom:curated`.
 
 | Bucket | Count |
 |------|-------|
-| Operator merge-risk holds | 0 |
+| Operator merge-risk holds | 1 |
 | Very important | 0 |
 | Important | 1 |
 | Ready (`loom:issue`) | 2 |
 | In Progress (`loom:building`) | 1 |
 | PRs awaiting review | 0 |
-| Approved PRs awaiting merge | 0 |
+| Approved PRs awaiting merge | 1 |
 | Curated | 11 |
 | Architect / Hermit proposals | 1 |
 | Active epics | 1 |
