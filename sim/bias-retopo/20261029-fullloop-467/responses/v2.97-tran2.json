@@ -1,0 +1,1002 @@
+{
+  "schema_version": 3,
+  "netlist": {
+    "path": "sim/build/iq/20261029-073450-5ba605f/klt-requests/v2.97-tran2.spice",
+    "scope": "repo"
+  },
+  "status": "pass",
+  "corner_count": 15,
+  "passed": 15,
+  "failed": 0,
+  "errored": 0,
+  "inconclusive": 0,
+  "diagnostic_counts": {
+    "by_code": {},
+    "by_severity": {},
+    "corners_with_diagnostics": 0
+  },
+  "metrics": {
+    "sim__corner__count": 15,
+    "sim__corner__passed_count": 15,
+    "sim__corner__failed_count": 0,
+    "sim__corner__errored_count": 0,
+    "sim__corner__inconclusive_count": 0
+  },
+  "environment": {
+    "engine": "ngspice",
+    "engine_version": "46",
+    "ngspice_binary": "/usr/local/bin/ngspice",
+    "engine_build": {
+      "version_banner": "******\n** ngspice-42 : Circuit level simulation program\n** Compiled with KLU Direct Linear Solver\n** The U. C. Berkeley CAD Group\n** Copyright 1985-1994, Regents of the University of California.\n** Copyright 2001-2023, The ngspice team.\n** Please get your ngspice manual from https://ngspice.sourceforge.io/docs.html\n** Please file your bug-reports at http://ngspice.sourceforge.net/bugrep.html\n** Creation Date: Sun Mar 31 20:15:14 UTC 2024\n******",
+      "binary_sha256": "820658317b0b54035208da41936fd6871ce924036e5ea4113a4168b821b7fc45",
+      "probe": "ok",
+      "reason": null
+    },
+    "models_lib": {
+      "path": null,
+      "scope": "external"
+    },
+    "models_lib_sha256": "48de7c677e2c6e7d09b2559279de9f818be71010a4aa933d728eb4db3b133c84",
+    "models_lib_sha256_scope": "client",
+    "netlist_sha256": "8f11f7d4fd682dec87263dfcec3480ae16664baaba6bd2881345521c568139f6",
+    "netlist_closure": [
+      {
+        "path": "sim/build/iq/20261029-073450-5ba605f/klt-requests/v2.97-tran2.spice",
+        "scope": "repo",
+        "sha256": "8f11f7d4fd682dec87263dfcec3480ae16664baaba6bd2881345521c568139f6"
+      }
+    ],
+    "netlist_identity": "sha256:be59de97dc1f2cdcef4da5094f523f5c3dee188d24b68aca493dfd28c318c151",
+    "remote": {
+      "provider": "aws-batch-fleet",
+      "job_id": "klt-sim-ad6ab0f32669",
+      "region": "us-east-1",
+      "instance_id": "i-0c48afd6c70b133e1",
+      "instance_type": "m7i.4xlarge",
+      "availability_zone": "us-east-1d",
+      "ami_id": "ami-0fe7e8c2bb10dc45a",
+      "lifecycle": "spot",
+      "spot": true,
+      "state": "done",
+      "exit_code": "0",
+      "concurrency": "1",
+      "physical_cores": "8",
+      "elapsed_seconds": 1312,
+      "client_submitted_at": "2026-10-29T07:57:06.252951Z",
+      "client_launched_at": "2026-10-29T07:57:22.318941Z",
+      "client_status_terminal_at": "2026-10-29T08:19:51.231110Z",
+      "client_collected_at": "2026-10-29T08:19:52.190331Z",
+      "runner_klt_version": "0.8.0",
+      "client_klt_version": "0.8.1.dev719+g526d52fbd7f9",
+      "runner_compatibility": "match",
+      "runner_request_features": {
+        "required": [
+          "analysis_steps",
+          "options.ngspice_init"
+        ],
+        "missing": [],
+        "status": "supported"
+      },
+      "worker_environment": {
+        "capture": "ok",
+        "simulator": {
+          "requested_binary": "ngspice",
+          "binary_source": "PATH",
+          "selected_path": "/usr/local/bin/ngspice",
+          "version_banner": "******\n** ngspice-46 : Circuit level simulation program\n** Compiled with KLU Direct Linear Solver\n** The U. C. Berkeley CAD Group\n** Copyright 1985-1994, Regents of the University of California.\n** Copyright 2001-2025, The ngspice team.\n** Please get your ngspice manual from https://ngspice.sourceforge.io/docs.html\n** Please file your bug-reports at http://ngspice.sourceforge.net/bugrep.html\n** Creation Date: Thu Oct  1 23:51:59 UTC 2026\n******\n",
+          "version_probe": "ok"
+        },
+        "pdk": {
+          "variant": "sky130A",
+          "root": "/opt/pdk",
+          "stamp_scheme": "sources-sha256",
+          "stamp_sha256": "d5ac52956829da3fee35d0b307d4e6cb83ae0e6535b56dba2eefed61cdffaf9b",
+          "stamp_text": "open_pdks c6d73a35f524070e85faff4a6a9eef49553ebc2b",
+          "models_staged": false,
+          "stamp_scope": "executed"
+        },
+        "cpu_model": "Intel(R) Xeon(R) Platinum 8488C",
+        "omp_num_threads": null,
+        "image_manifest": null,
+        "model_inputs": null,
+        "diagnostics": [],
+        "pdk_stamp_comparison": {
+          "status": "match"
+        },
+        "engine_build_comparison": {
+          "status": "mismatch",
+          "warning": "the worker's ngspice --version banner differs from the local binary's; build options (e.g. FFT linkage) may differ, so results derived from them can differ from a local run"
+        }
+      },
+      "runner_model_inputs": null,
+      "job_ceiling": {
+        "basis": "conservative_serial_bound",
+        "unit_count": 15,
+        "per_unit_timeout_s": 1500,
+        "overhead_s": 120.0,
+        "job_bound_s": 22620.0,
+        "max_job_seconds": 3600.0,
+        "max_job_seconds_source": "fleet_config",
+        "exceeds_ceiling": true,
+        "check": "warn",
+        "max_units_per_job": 2,
+        "recommended_hosts": 8,
+        "warning": "batch job bound 22620s (options.timeout_s 1500s x 15 units + 120s; a conservative fully-serial upper bound, not a runtime estimate) exceeds the fleet's whole-job ceiling of 3600s (max_job_seconds from fleet_config); a job still running at the ceiling is killed and every unit is reported batch_job_timeout. Set request.remote.hosts to at least 8 to run one job per shard of at most 2 units, each within the ceiling"
+      }
+    },
+    "engine_host": "worker",
+    "client_ngspice_binary": "/usr/bin/ngspice",
+    "backend": {
+      "resolved": "batch",
+      "source": "flag",
+      "requested": "batch"
+    }
+  },
+  "coverage": {
+    "corners_simulated": 15,
+    "measurements_declared": 2,
+    "measurements_with_limits": 0,
+    "unrecognized_limit_keys": [],
+    "schema_version": 1,
+    "known": true,
+    "checked": [
+      "measurement:[0,\"tt/novdd/-40C\",\"tran2.iq_full_load_raw\"]/observation",
+      "measurement:[0,\"tt/novdd/-40C\",\"tran2.vout_full_load\"]/observation",
+      "measurement:[1,\"tt/novdd/27C\",\"tran2.iq_full_load_raw\"]/observation",
+      "measurement:[1,\"tt/novdd/27C\",\"tran2.vout_full_load\"]/observation",
+      "measurement:[10,\"sf/novdd/27C\",\"tran2.iq_full_load_raw\"]/observation",
+      "measurement:[10,\"sf/novdd/27C\",\"tran2.vout_full_load\"]/observation",
+      "measurement:[11,\"sf/novdd/125C\",\"tran2.iq_full_load_raw\"]/observation",
+      "measurement:[11,\"sf/novdd/125C\",\"tran2.vout_full_load\"]/observation",
+      "measurement:[12,\"fs/novdd/-40C\",\"tran2.iq_full_load_raw\"]/observation",
+      "measurement:[12,\"fs/novdd/-40C\",\"tran2.vout_full_load\"]/observation",
+      "measurement:[13,\"fs/novdd/27C\",\"tran2.iq_full_load_raw\"]/observation",
+      "measurement:[13,\"fs/novdd/27C\",\"tran2.vout_full_load\"]/observation",
+      "measurement:[14,\"fs/novdd/125C\",\"tran2.iq_full_load_raw\"]/observation",
+      "measurement:[14,\"fs/novdd/125C\",\"tran2.vout_full_load\"]/observation",
+      "measurement:[2,\"tt/novdd/125C\",\"tran2.iq_full_load_raw\"]/observation",
+      "measurement:[2,\"tt/novdd/125C\",\"tran2.vout_full_load\"]/observation",
+      "measurement:[3,\"ss/novdd/-40C\",\"tran2.iq_full_load_raw\"]/observation",
+      "measurement:[3,\"ss/novdd/-40C\",\"tran2.vout_full_load\"]/observation",
+      "measurement:[4,\"ss/novdd/27C\",\"tran2.iq_full_load_raw\"]/observation",
+      "measurement:[4,\"ss/novdd/27C\",\"tran2.vout_full_load\"]/observation",
+      "measurement:[5,\"ss/novdd/125C\",\"tran2.iq_full_load_raw\"]/observation",
+      "measurement:[5,\"ss/novdd/125C\",\"tran2.vout_full_load\"]/observation",
+      "measurement:[6,\"ff/novdd/-40C\",\"tran2.iq_full_load_raw\"]/observation",
+      "measurement:[6,\"ff/novdd/-40C\",\"tran2.vout_full_load\"]/observation",
+      "measurement:[7,\"ff/novdd/27C\",\"tran2.iq_full_load_raw\"]/observation",
+      "measurement:[7,\"ff/novdd/27C\",\"tran2.vout_full_load\"]/observation",
+      "measurement:[8,\"ff/novdd/125C\",\"tran2.iq_full_load_raw\"]/observation",
+      "measurement:[8,\"ff/novdd/125C\",\"tran2.vout_full_load\"]/observation",
+      "measurement:[9,\"sf/novdd/-40C\",\"tran2.iq_full_load_raw\"]/observation",
+      "measurement:[9,\"sf/novdd/-40C\",\"tran2.vout_full_load\"]/observation"
+    ],
+    "skipped": [],
+    "inapplicable": [
+      {
+        "id": "measurement:[0,\"tt/novdd/-40C\",\"tran2.iq_full_load_raw\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/-40C\",\"tran2.vout_full_load\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[1,\"tt/novdd/27C\",\"tran2.iq_full_load_raw\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[1,\"tt/novdd/27C\",\"tran2.vout_full_load\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[10,\"sf/novdd/27C\",\"tran2.iq_full_load_raw\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[10,\"sf/novdd/27C\",\"tran2.vout_full_load\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[11,\"sf/novdd/125C\",\"tran2.iq_full_load_raw\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[11,\"sf/novdd/125C\",\"tran2.vout_full_load\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[12,\"fs/novdd/-40C\",\"tran2.iq_full_load_raw\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[12,\"fs/novdd/-40C\",\"tran2.vout_full_load\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[13,\"fs/novdd/27C\",\"tran2.iq_full_load_raw\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[13,\"fs/novdd/27C\",\"tran2.vout_full_load\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[14,\"fs/novdd/125C\",\"tran2.iq_full_load_raw\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[14,\"fs/novdd/125C\",\"tran2.vout_full_load\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[2,\"tt/novdd/125C\",\"tran2.iq_full_load_raw\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[2,\"tt/novdd/125C\",\"tran2.vout_full_load\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[3,\"ss/novdd/-40C\",\"tran2.iq_full_load_raw\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[3,\"ss/novdd/-40C\",\"tran2.vout_full_load\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[4,\"ss/novdd/27C\",\"tran2.iq_full_load_raw\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[4,\"ss/novdd/27C\",\"tran2.vout_full_load\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[5,\"ss/novdd/125C\",\"tran2.iq_full_load_raw\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[5,\"ss/novdd/125C\",\"tran2.vout_full_load\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[6,\"ff/novdd/-40C\",\"tran2.iq_full_load_raw\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[6,\"ff/novdd/-40C\",\"tran2.vout_full_load\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[7,\"ff/novdd/27C\",\"tran2.iq_full_load_raw\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[7,\"ff/novdd/27C\",\"tran2.vout_full_load\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[8,\"ff/novdd/125C\",\"tran2.iq_full_load_raw\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[8,\"ff/novdd/125C\",\"tran2.vout_full_load\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[9,\"sf/novdd/-40C\",\"tran2.iq_full_load_raw\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[9,\"sf/novdd/-40C\",\"tran2.vout_full_load\"]/limits",
+        "reason": "characterization_without_limits"
+      }
+    ],
+    "unknown": [],
+    "nothing_checked": false,
+    "nothing_checked_reasons": []
+  },
+  "provenance": {
+    "klt_version": "0.8.1.dev719+g526d52fbd7f9",
+    "klt_git_commit": "526d52fbd7f9d6fc08f26a14c19c9c9f3648c138",
+    "klt_reinstall_spec": "klayout-tools @ git+https://github.com/2AMLogic/klayout-tools@526d52fbd7f9d6fc08f26a14c19c9c9f3648c138",
+    "klayout_version": "0.30.12",
+    "pdk": {
+      "name": "sky130A",
+      "source": "PDK_ROOT environment variable",
+      "version": "open_pdks c6d73a35f524070e85faff4a6a9eef49553ebc2b",
+      "ambiguous_sources": [
+        "search root: ~/.ciel"
+      ],
+      "compatibility": {
+        "status": "mismatch",
+        "package": "open_pdks-sky130",
+        "expected": "open_pdks f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7"
+      }
+    },
+    "deck": {
+      "name": "sky130.lib.spice",
+      "content_hash": "sha256:48de7c677e2c6e7d09b2559279de9f818be71010a4aa933d728eb4db3b133c84",
+      "released": false
+    },
+    "input": {
+      "content_hash": "sha256:8f11f7d4fd682dec87263dfcec3480ae16664baaba6bd2881345521c568139f6",
+      "role": "netlist"
+    }
+  },
+  "measurements": [
+    {
+      "name": "tran2.vout_full_load",
+      "unit": "V",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/-40C",
+        "value": 1.798875,
+        "margin": null
+      },
+      "step": "tran2"
+    },
+    {
+      "name": "tran2.iq_full_load_raw",
+      "unit": null,
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/-40C",
+        "value": -0.0500255,
+        "margin": null
+      },
+      "step": "tran2"
+    }
+  ],
+  "corners": [
+    {
+      "corner_id": "tt/novdd/-40C",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": -40.0,
+      "status": "pass",
+      "runtime_s": 682.346,
+      "engine_exit_code": 0,
+      "engine_killed_by_signal": null,
+      "measurements": [
+        {
+          "name": "tran2.vout_full_load",
+          "value": 1.798875,
+          "unit": "V",
+          "status": "pass",
+          "margin": null,
+          "step": "tran2"
+        },
+        {
+          "name": "tran2.iq_full_load_raw",
+          "value": -0.0500255,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "tran2"
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-467/sim/build/iq/20261029-073450-5ba605f/klt-out/v2.97-tran2/tt_novdd_n40C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-467/sim/build/iq/20261029-073450-5ba605f/klt-out/v2.97-tran2/tt_novdd_n40C/corner.cir"
+      },
+      "monte_carlo": null,
+      "steps": [
+        {
+          "name": "tran2",
+          "kind": "tran",
+          "status": "ok"
+        }
+      ]
+    },
+    {
+      "corner_id": "tt/novdd/27C",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27.0,
+      "status": "pass",
+      "runtime_s": 693.165,
+      "engine_exit_code": 0,
+      "engine_killed_by_signal": null,
+      "measurements": [
+        {
+          "name": "tran2.vout_full_load",
+          "value": 1.798719,
+          "unit": "V",
+          "status": "pass",
+          "margin": null,
+          "step": "tran2"
+        },
+        {
+          "name": "tran2.iq_full_load_raw",
+          "value": -0.0500259,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "tran2"
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-467/sim/build/iq/20261029-073450-5ba605f/klt-out/v2.97-tran2/tt_novdd_27C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-467/sim/build/iq/20261029-073450-5ba605f/klt-out/v2.97-tran2/tt_novdd_27C/corner.cir"
+      },
+      "monte_carlo": null,
+      "steps": [
+        {
+          "name": "tran2",
+          "kind": "tran",
+          "status": "ok"
+        }
+      ]
+    },
+    {
+      "corner_id": "tt/novdd/125C",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 125.0,
+      "status": "pass",
+      "runtime_s": 690.885,
+      "engine_exit_code": 0,
+      "engine_killed_by_signal": null,
+      "measurements": [
+        {
+          "name": "tran2.vout_full_load",
+          "value": 1.798432,
+          "unit": "V",
+          "status": "pass",
+          "margin": null,
+          "step": "tran2"
+        },
+        {
+          "name": "tran2.iq_full_load_raw",
+          "value": -0.0500262,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "tran2"
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-467/sim/build/iq/20261029-073450-5ba605f/klt-out/v2.97-tran2/tt_novdd_125C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-467/sim/build/iq/20261029-073450-5ba605f/klt-out/v2.97-tran2/tt_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null,
+      "steps": [
+        {
+          "name": "tran2",
+          "kind": "tran",
+          "status": "ok"
+        }
+      ]
+    },
+    {
+      "corner_id": "ss/novdd/-40C",
+      "process": "ss",
+      "supply_v": {},
+      "temperature_c": -40.0,
+      "status": "pass",
+      "runtime_s": 685.94,
+      "engine_exit_code": 0,
+      "engine_killed_by_signal": null,
+      "measurements": [
+        {
+          "name": "tran2.vout_full_load",
+          "value": 1.79881,
+          "unit": "V",
+          "status": "pass",
+          "margin": null,
+          "step": "tran2"
+        },
+        {
+          "name": "tran2.iq_full_load_raw",
+          "value": -0.0500233,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "tran2"
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-467/sim/build/iq/20261029-073450-5ba605f/klt-out/v2.97-tran2/ss_novdd_n40C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-467/sim/build/iq/20261029-073450-5ba605f/klt-out/v2.97-tran2/ss_novdd_n40C/corner.cir"
+      },
+      "monte_carlo": null,
+      "steps": [
+        {
+          "name": "tran2",
+          "kind": "tran",
+          "status": "ok"
+        }
+      ]
+    },
+    {
+      "corner_id": "ss/novdd/27C",
+      "process": "ss",
+      "supply_v": {},
+      "temperature_c": 27.0,
+      "status": "pass",
+      "runtime_s": 678.556,
+      "engine_exit_code": 0,
+      "engine_killed_by_signal": null,
+      "measurements": [
+        {
+          "name": "tran2.vout_full_load",
+          "value": 1.798647,
+          "unit": "V",
+          "status": "pass",
+          "margin": null,
+          "step": "tran2"
+        },
+        {
+          "name": "tran2.iq_full_load_raw",
+          "value": -0.0500238,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "tran2"
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-467/sim/build/iq/20261029-073450-5ba605f/klt-out/v2.97-tran2/ss_novdd_27C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-467/sim/build/iq/20261029-073450-5ba605f/klt-out/v2.97-tran2/ss_novdd_27C/corner.cir"
+      },
+      "monte_carlo": null,
+      "steps": [
+        {
+          "name": "tran2",
+          "kind": "tran",
+          "status": "ok"
+        }
+      ]
+    },
+    {
+      "corner_id": "ss/novdd/125C",
+      "process": "ss",
+      "supply_v": {},
+      "temperature_c": 125.0,
+      "status": "pass",
+      "runtime_s": 692.262,
+      "engine_exit_code": 0,
+      "engine_killed_by_signal": null,
+      "measurements": [
+        {
+          "name": "tran2.vout_full_load",
+          "value": 1.798361,
+          "unit": "V",
+          "status": "pass",
+          "margin": null,
+          "step": "tran2"
+        },
+        {
+          "name": "tran2.iq_full_load_raw",
+          "value": -0.0500243,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "tran2"
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-467/sim/build/iq/20261029-073450-5ba605f/klt-out/v2.97-tran2/ss_novdd_125C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-467/sim/build/iq/20261029-073450-5ba605f/klt-out/v2.97-tran2/ss_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null,
+      "steps": [
+        {
+          "name": "tran2",
+          "kind": "tran",
+          "status": "ok"
+        }
+      ]
+    },
+    {
+      "corner_id": "ff/novdd/-40C",
+      "process": "ff",
+      "supply_v": {},
+      "temperature_c": -40.0,
+      "status": "pass",
+      "runtime_s": 693.117,
+      "engine_exit_code": 0,
+      "engine_killed_by_signal": null,
+      "measurements": [
+        {
+          "name": "tran2.vout_full_load",
+          "value": 1.798948,
+          "unit": "V",
+          "status": "pass",
+          "margin": null,
+          "step": "tran2"
+        },
+        {
+          "name": "tran2.iq_full_load_raw",
+          "value": -0.050028,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "tran2"
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-467/sim/build/iq/20261029-073450-5ba605f/klt-out/v2.97-tran2/ff_novdd_n40C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-467/sim/build/iq/20261029-073450-5ba605f/klt-out/v2.97-tran2/ff_novdd_n40C/corner.cir"
+      },
+      "monte_carlo": null,
+      "steps": [
+        {
+          "name": "tran2",
+          "kind": "tran",
+          "status": "ok"
+        }
+      ]
+    },
+    {
+      "corner_id": "ff/novdd/27C",
+      "process": "ff",
+      "supply_v": {},
+      "temperature_c": 27.0,
+      "status": "pass",
+      "runtime_s": 688.166,
+      "engine_exit_code": 0,
+      "engine_killed_by_signal": null,
+      "measurements": [
+        {
+          "name": "tran2.vout_full_load",
+          "value": 1.798799,
+          "unit": "V",
+          "status": "pass",
+          "margin": null,
+          "step": "tran2"
+        },
+        {
+          "name": "tran2.iq_full_load_raw",
+          "value": -0.0500283,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "tran2"
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-467/sim/build/iq/20261029-073450-5ba605f/klt-out/v2.97-tran2/ff_novdd_27C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-467/sim/build/iq/20261029-073450-5ba605f/klt-out/v2.97-tran2/ff_novdd_27C/corner.cir"
+      },
+      "monte_carlo": null,
+      "steps": [
+        {
+          "name": "tran2",
+          "kind": "tran",
+          "status": "ok"
+        }
+      ]
+    },
+    {
+      "corner_id": "ff/novdd/125C",
+      "process": "ff",
+      "supply_v": {},
+      "temperature_c": 125.0,
+      "status": "pass",
+      "runtime_s": 549.385,
+      "engine_exit_code": 0,
+      "engine_killed_by_signal": null,
+      "measurements": [
+        {
+          "name": "tran2.vout_full_load",
+          "value": 1.798487,
+          "unit": "V",
+          "status": "pass",
+          "margin": null,
+          "step": "tran2"
+        },
+        {
+          "name": "tran2.iq_full_load_raw",
+          "value": -0.0500285,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "tran2"
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-467/sim/build/iq/20261029-073450-5ba605f/klt-out/v2.97-tran2/ff_novdd_125C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-467/sim/build/iq/20261029-073450-5ba605f/klt-out/v2.97-tran2/ff_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null,
+      "steps": [
+        {
+          "name": "tran2",
+          "kind": "tran",
+          "status": "ok"
+        }
+      ]
+    },
+    {
+      "corner_id": "sf/novdd/-40C",
+      "process": "sf",
+      "supply_v": {},
+      "temperature_c": -40.0,
+      "status": "pass",
+      "runtime_s": 587.509,
+      "engine_exit_code": 0,
+      "engine_killed_by_signal": null,
+      "measurements": [
+        {
+          "name": "tran2.vout_full_load",
+          "value": 1.798835,
+          "unit": "V",
+          "status": "pass",
+          "margin": null,
+          "step": "tran2"
+        },
+        {
+          "name": "tran2.iq_full_load_raw",
+          "value": -0.0500246,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "tran2"
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-467/sim/build/iq/20261029-073450-5ba605f/klt-out/v2.97-tran2/sf_novdd_n40C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-467/sim/build/iq/20261029-073450-5ba605f/klt-out/v2.97-tran2/sf_novdd_n40C/corner.cir"
+      },
+      "monte_carlo": null,
+      "steps": [
+        {
+          "name": "tran2",
+          "kind": "tran",
+          "status": "ok"
+        }
+      ]
+    },
+    {
+      "corner_id": "sf/novdd/27C",
+      "process": "sf",
+      "supply_v": {},
+      "temperature_c": 27.0,
+      "status": "pass",
+      "runtime_s": 603.744,
+      "engine_exit_code": 0,
+      "engine_killed_by_signal": null,
+      "measurements": [
+        {
+          "name": "tran2.vout_full_load",
+          "value": 1.798679,
+          "unit": "V",
+          "status": "pass",
+          "margin": null,
+          "step": "tran2"
+        },
+        {
+          "name": "tran2.iq_full_load_raw",
+          "value": -0.0500251,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "tran2"
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-467/sim/build/iq/20261029-073450-5ba605f/klt-out/v2.97-tran2/sf_novdd_27C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-467/sim/build/iq/20261029-073450-5ba605f/klt-out/v2.97-tran2/sf_novdd_27C/corner.cir"
+      },
+      "monte_carlo": null,
+      "steps": [
+        {
+          "name": "tran2",
+          "kind": "tran",
+          "status": "ok"
+        }
+      ]
+    },
+    {
+      "corner_id": "sf/novdd/125C",
+      "process": "sf",
+      "supply_v": {},
+      "temperature_c": 125.0,
+      "status": "pass",
+      "runtime_s": 597.602,
+      "engine_exit_code": 0,
+      "engine_killed_by_signal": null,
+      "measurements": [
+        {
+          "name": "tran2.vout_full_load",
+          "value": 1.798413,
+          "unit": "V",
+          "status": "pass",
+          "margin": null,
+          "step": "tran2"
+        },
+        {
+          "name": "tran2.iq_full_load_raw",
+          "value": -0.0500256,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "tran2"
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-467/sim/build/iq/20261029-073450-5ba605f/klt-out/v2.97-tran2/sf_novdd_125C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-467/sim/build/iq/20261029-073450-5ba605f/klt-out/v2.97-tran2/sf_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null,
+      "steps": [
+        {
+          "name": "tran2",
+          "kind": "tran",
+          "status": "ok"
+        }
+      ]
+    },
+    {
+      "corner_id": "fs/novdd/-40C",
+      "process": "fs",
+      "supply_v": {},
+      "temperature_c": -40.0,
+      "status": "pass",
+      "runtime_s": 599.842,
+      "engine_exit_code": 0,
+      "engine_killed_by_signal": null,
+      "measurements": [
+        {
+          "name": "tran2.vout_full_load",
+          "value": 1.798912,
+          "unit": "V",
+          "status": "pass",
+          "margin": null,
+          "step": "tran2"
+        },
+        {
+          "name": "tran2.iq_full_load_raw",
+          "value": -0.0500266,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "tran2"
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-467/sim/build/iq/20261029-073450-5ba605f/klt-out/v2.97-tran2/fs_novdd_n40C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-467/sim/build/iq/20261029-073450-5ba605f/klt-out/v2.97-tran2/fs_novdd_n40C/corner.cir"
+      },
+      "monte_carlo": null,
+      "steps": [
+        {
+          "name": "tran2",
+          "kind": "tran",
+          "status": "ok"
+        }
+      ]
+    },
+    {
+      "corner_id": "fs/novdd/27C",
+      "process": "fs",
+      "supply_v": {},
+      "temperature_c": 27.0,
+      "status": "pass",
+      "runtime_s": 598.465,
+      "engine_exit_code": 0,
+      "engine_killed_by_signal": null,
+      "measurements": [
+        {
+          "name": "tran2.vout_full_load",
+          "value": 1.798755,
+          "unit": "V",
+          "status": "pass",
+          "margin": null,
+          "step": "tran2"
+        },
+        {
+          "name": "tran2.iq_full_load_raw",
+          "value": -0.0500268,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "tran2"
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-467/sim/build/iq/20261029-073450-5ba605f/klt-out/v2.97-tran2/fs_novdd_27C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-467/sim/build/iq/20261029-073450-5ba605f/klt-out/v2.97-tran2/fs_novdd_27C/corner.cir"
+      },
+      "monte_carlo": null,
+      "steps": [
+        {
+          "name": "tran2",
+          "kind": "tran",
+          "status": "ok"
+        }
+      ]
+    },
+    {
+      "corner_id": "fs/novdd/125C",
+      "process": "fs",
+      "supply_v": {},
+      "temperature_c": 125.0,
+      "status": "pass",
+      "runtime_s": 597.659,
+      "engine_exit_code": 0,
+      "engine_killed_by_signal": null,
+      "measurements": [
+        {
+          "name": "tran2.vout_full_load",
+          "value": 1.798398,
+          "unit": "V",
+          "status": "pass",
+          "margin": null,
+          "step": "tran2"
+        },
+        {
+          "name": "tran2.iq_full_load_raw",
+          "value": -0.050027,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "tran2"
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-467/sim/build/iq/20261029-073450-5ba605f/klt-out/v2.97-tran2/fs_novdd_125C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-467/sim/build/iq/20261029-073450-5ba605f/klt-out/v2.97-tran2/fs_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null,
+      "steps": [
+        {
+          "name": "tran2",
+          "kind": "tran",
+          "status": "ok"
+        }
+      ]
+    }
+  ]
+}

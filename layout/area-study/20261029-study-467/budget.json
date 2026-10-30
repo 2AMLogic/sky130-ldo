@@ -1,0 +1,86 @@
+{
+  "baseline_459": {
+    "r_bias_straight_floor_mm2": 0.27649,
+    "record": "layout/area-study/20261028-study-459",
+    "stacked_total_mm2": 0.08308
+  },
+  "candidate": {
+    "body_width_um": 212.28,
+    "fold_gates": "N/A: one segment, nothing to fold; #263 M1/M2/joint criteria compare folded vs unsplit",
+    "gap_um": 2.0,
+    "r_bias": "res_xhigh_po W=0.42 L=211 (single straight body, no fold)",
+    "strip_charged_um2": 2144.7,
+    "strip_height_um": 2.88,
+    "strip_model": "upper bound: full-width strip at the #459 N=4 strip height"
+  },
+  "claims_verified": "none: geometric estimate from committed records; no DRC/LVS/PEX on a full core with capacitors",
+  "decision_record": "DR-013",
+  "issue": 467,
+  "limit_comparison": "area < limit (strict); target unchanged, read only",
+  "limit_um2": 100000.0,
+  "rectangle": {
+    "area_mm2": 0.08308,
+    "area_um2": 83083.7,
+    "height_um": 184.17,
+    "width_um": 439.48
+  },
+  "scenarios": {
+    "caps_overlay_nominal_4fF": {
+      "below_limit": true,
+      "cap_block_um2": 45430.8,
+      "description": "nominal 4 fF/um^2 footprint density with the same block overhead",
+      "fits_overlay": true,
+      "margin_fraction": 0.16916305999999998,
+      "overlay_fill_fraction": 0.5842213328360274,
+      "overlay_usable_um2": 77763.0,
+      "total_mm2": 0.08308,
+      "total_um2": 83083.7
+    },
+    "caps_overlay_single_2fF_drawn_counterfactual": {
+      "below_limit": true,
+      "cap_block_um2": 89038.1,
+      "description": "single MiM level (2 fF/um^2), #254 counterfactual block area, overlay attempted",
+      "fits_overlay": false,
+      "margin_fraction": 0.05641199999999997,
+      "overlay_fill_fraction": 1.1449932084662275,
+      "overlay_usable_um2": 77763.0,
+      "total_mm2": 0.09436,
+      "total_um2": 94358.8
+    },
+    "caps_overlay_single_2fF_nominal": {
+      "below_limit": true,
+      "cap_block_um2": 90861.5,
+      "description": "nominal 2 fF/um^2 footprint density with the stacked-block overhead",
+      "fits_overlay": false,
+      "margin_fraction": 0.03817800000000003,
+      "overlay_fill_fraction": 1.1684413797133375,
+      "overlay_usable_um2": 77763.0,
+      "total_mm2": 0.09618,
+      "total_um2": 96182.2
+    },
+    "caps_overlay_stacked_4fF_drawn": {
+      "below_limit": true,
+      "cap_block_um2": 44830.4,
+      "description": "stacked MiM as drawn in #254 (effective 4.05 fF/um^2 of footprint, block overhead x1.122)",
+      "fits_overlay": true,
+      "margin_fraction": 0.16916305999999998,
+      "overlay_fill_fraction": 0.5765004366987208,
+      "overlay_usable_um2": 77763.0,
+      "total_mm2": 0.08308,
+      "total_um2": 83083.7
+    }
+  },
+  "schema_version": 1,
+  "sources": {
+    "area_record": "layout/ldo-core/reports/20261023-170539-a8292e91/area.json",
+    "area_record_gds_sha256": "1698311e6a2e98017f1d91e852688b4a4b788f5912d130751ce62ef3b3b080b1",
+    "cap_demo": "layout/cap-rail-demo/reports/20261010-033947-80bc87e/summary.json",
+    "floorplan": "layout/ldo-core/reports/20261022-231908-56dd87fe/floorplan.json",
+    "folded_geometry": "layout/folded-res-qual/reports/20261010-033502-704005c/geometry.json",
+    "folded_pvt": "layout/folded-res-qual/pvt-reports/20261017-031511-76e0ba72/record.md",
+    "repo_head": "5ba605f62338d1ba8b62b673e2ae330a7c5019cb",
+    "schematic": "design/ldo_3v3in_1v8out.sch",
+    "schematic_git_last_commit": "a09aa83fe320b5d8970e81db2fc71e55268ffdfa"
+  },
+  "sources_note": "inputs identical to #459 (same committed floorplan/area/cap-demo/fold records)"
+}

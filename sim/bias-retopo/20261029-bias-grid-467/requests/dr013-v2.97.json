@@ -1,0 +1,57 @@
+{
+  "netlist": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-467/sim/bias-retopo/20261029-bias-grid-467/requests/dr013-v2.97.spice",
+  "engine": "ngspice",
+  "models": {
+    "pdk": "sky130A",
+    "lib": "libs.tech/combined/sky130.lib.spice"
+  },
+  "corners": {
+    "process": [
+      "tt",
+      "ss",
+      "ff",
+      "sf",
+      "fs",
+      "ll",
+      "hh"
+    ],
+    "temperature_c": [
+      -40.0,
+      27.0,
+      125.0
+    ]
+  },
+  "analysis": {
+    "kind": "op",
+    "args": ""
+  },
+  "measurements": [
+    {
+      "name": "meas_v_nb",
+      "expr": "v(nb)",
+      "unit": "V"
+    },
+    {
+      "name": "meas_v_biasp",
+      "expr": "v(biasp)",
+      "unit": "V"
+    },
+    {
+      "name": "meas_i_tail_ua",
+      "expr": "1e6*i(vtail)",
+      "unit": "uA"
+    },
+    {
+      "name": "meas_i_bias_pair_ua",
+      "expr": "1e6*(-i(vvin)-i(vtail))",
+      "unit": "uA"
+    }
+  ],
+  "options": {
+    "timeout_s": 300,
+    "keep_artifacts": true
+  },
+  "batch": {
+    "capacity_wait_s": 10800
+  }
+}
