@@ -4,6 +4,7 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 
 ### 2026-11-01
 
+- **PR #470**: docs(spec): propose DR-013 bias re-topology (straight res_xhigh_po R_BIAS) with area and PVT evidence
 - **PR #474**: chore: remove superseded #246 area-budget generator
 - **Issue #472** (closed): Remove superseded ldo-area-budget.py (#246 generator); keep study record
 
