@@ -2,6 +2,15 @@
 
 Chronological record of merged pull requests and closed issues. Maintained by the Loom Guide role.
 
+### 2026-11-01
+
+- **PR #474**: chore: remove superseded #246 area-budget generator
+- **Issue #472** (closed): Remove superseded ldo-area-budget.py (#246 generator); keep study record
+
+### 2026-10-31
+
+- **PR #473**: Bump Repo Skills 0.24.7 -> 0.25.1
+
 ### 2026-10-28
 
 - **PR #463**: layout(area-study): four-capacitor core area budget for current schematic
