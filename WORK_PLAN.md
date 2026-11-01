@@ -50,6 +50,7 @@ PRs that passed review and are queued for Champion auto-merge (`loom:pr`).
 
 Issues carrying `loom:curated`.
 
+- **#114**: Gap to T1: 6 of 12 ratified rows FAIL — replacement tracker (#58 closed on child-completion, not on verdict) *(curated)*
 - **#131**: Thermal shutdown: track regenerative auto-restart hysteresis design, integration, and qualification *(curated)*
 - **#177**: Seed sim/current-limit's leg-1 operating point to conform to the initial-condition contract *(curated)*
 - **#213**: sim(iq): mint the 45-corner record under #173's seeded deck + #133's regulation gate — deck fixed, matrix not re-run (host contention) *(curated)*
@@ -65,6 +66,7 @@ Issues carrying `loom:curated`.
 ## Proposed (Architect / Hermit)
 
 - **#446**: Dedupe batch_iq/batch_load_regulation parse_deck and drop unused re-exports *(hermit)*
+- **#475**: Remove superseded ldo-area-budget.py (#246): replaced by 4cap budget (#459), helpers duplicated *(hermit)*
 
 ## Epics
 
@@ -81,7 +83,7 @@ Issues carrying `loom:curated`.
 | In Progress (`loom:building`) | 1 |
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 1 |
-| Curated | 11 |
-| Architect / Hermit proposals | 1 |
+| Curated | 12 |
+| Architect / Hermit proposals | 2 |
 | Active epics | 1 |
 <!-- guide:plan-body:end -->
