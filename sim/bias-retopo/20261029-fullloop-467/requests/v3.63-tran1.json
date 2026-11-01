@@ -1,0 +1,66 @@
+{
+  "analysis_steps": [
+    {
+      "analysis": {
+        "args": "10u 200m uic",
+        "kind": "tran"
+      },
+      "measurements": [
+        {
+          "name": "vout_no_load",
+          "spice": ".meas tran vout_no_load avg v(vout) from=199m to=200m",
+          "unit": "V"
+        },
+        {
+          "name": "iq_no_load_raw",
+          "spice": ".meas tran iq_no_load_raw avg i(vvin) from=199m to=200m"
+        }
+      ],
+      "name": "tran1"
+    }
+  ],
+  "batch": {
+    "capacity_wait_s": 10800
+  },
+  "corners": {
+    "process": [
+      "tt",
+      "ss",
+      "ff",
+      "sf",
+      "fs"
+    ],
+    "temperature_c": [
+      -40.0,
+      27.0,
+      125.0
+    ]
+  },
+  "engine": "ngspice",
+  "models": {
+    "lib": "libs.tech/combined/sky130.lib.spice",
+    "pdk": "sky130A"
+  },
+  "netlist": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-467/sim/build/iq/20261029-073450-5ba605f/klt-requests/v3.63-tran1.spice",
+  "options": {
+    "keep_artifacts": true,
+    "ngspice_init": [
+      "* ngspice init settings for the sky130 PDK model libraries.",
+      "*",
+      "* The corner runner copies this file into its scratch run directory as",
+      "* `.spiceinit` before invoking ngspice, so runs do not depend on whatever",
+      "* happens to be in ~/.spiceinit. To drive ngspice by hand with the same",
+      "* settings, copy this file to `.spiceinit` in your working directory.",
+      "*",
+      "* Same settings as the sibling sky130-bandgap harness (same PDK, same pin):",
+      "* derived from the PDK's own libs.tech/ngspice/spinit, kept in-repo so the",
+      "* settings a record was produced under are versioned with the harness.",
+      "set ngbehavior=hsa     ; HSPICE-ish compatibility, required to read PDK libs",
+      "set skywaterpdk        ; skip some checks for faster lib loading",
+      "set ng_nomodcheck      ; do not check model parameters",
+      "option noinit          ; do not dump operating point data into the log",
+      "option klu             ; KLU direct linear solver"
+    ],
+    "timeout_s": 1500
+  }
+}

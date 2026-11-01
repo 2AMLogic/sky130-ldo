@@ -91,6 +91,7 @@ passage below was written before ratification, the spec and DRs win.
   at EN=0 so the new pull-up has a defined off state.
 
   R_BIAS: VIN -> NB -> [M_BIASN1 (diode)] -> [BIAS_ENN] -> M_ENN -> 0
+  (R_BIAS re-topology under evaluation, not adopted: `spec/decision-records/DR-013-bias-retopology.md`, proposed.)
   M_ENP:  VIN -> EA_OUT, gate=EN   (forces pass gate off when EN=0)
   M_ENP2: VIN -> BIASP,  gate=EN   (forces bias/tail chain off when EN=0)
   M_ENP3: VIN -> CL_CMP, gate=EN   (defined off state for the limit comparator)

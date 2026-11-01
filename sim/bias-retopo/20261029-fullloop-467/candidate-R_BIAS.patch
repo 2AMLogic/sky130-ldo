@@ -1,0 +1,13 @@
+diff --git a/design/ldo_3v3in_1v8out.sch b/design/ldo_3v3in_1v8out.sch
+index da0a540..0291957 100644
+--- a/design/ldo_3v3in_1v8out.sch
++++ b/design/ldo_3v3in_1v8out.sch
+@@ -130,7 +130,7 @@ C {devices/opin.sym} -700 -700 0 0 {name=p_vout lab=VOUT}
+ T {VOUT: 1.8V +-2% output (DRAFT), 0-50mA} -680 -700 0 0 0.25 0.25 {}
+ 
+ * ---- bias generator: R_BIAS + M_BIASN1/M_BIASN2 (NMOS mirror) + M_BIASP1 (PMOS diode) ----
+-C {sky130_fd_pr/res_high_po.sym} 0 -100 0 0 {name=R_BIAS W=0.42 L=1500 model=res_high_po spiceprefix=X mult=1}
++C {sky130_fd_pr/res_xhigh_po.sym} 0 -100 0 0 {name=R_BIAS W=0.42 L=211 model=res_xhigh_po spiceprefix=X mult=1}
+ C {devices/lab_pin.sym} 0 -70 0 0 {name=p_rbias1 lab=VIN}
+ C {devices/lab_pin.sym} 0 -130 0 0 {name=p_rbias2 lab=NB}
+ C {devices/lab_pin.sym} -20 -100 0 0 {name=p_rbias3 lab=0}

@@ -53,3 +53,4 @@ table names a record that does not exist.
 | [DR-010](DR-010-error-amp-stays-in-tree.md) | proposed | unresolved — see #301 | error amplifier stays in-tree (reuse rule 9) |
 | [DR-011](DR-011-pass-device-resize.md) | proposed | unresolved — see #301 | pass-device re-sizing (DR-003 sizing point) |
 | [DR-012](DR-012-no-bandgap-reuse-lock-entry-yet.md) | proposed | unresolved — see #301 | no `reuse.lock.json` entry for the bandgap edge yet (reuse rule 9) |
+| [DR-013](DR-013-bias-retopology.md) | proposed | two-key step, then operator ratification (2am#5346) — see #467 | bias re-topology: `R_BIAS` as a straight `res_xhigh_po` body (core Area row) |
