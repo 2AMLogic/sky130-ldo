@@ -1,0 +1,14 @@
+* klt sim -- generated corner deck, do not edit
+.lib /opt/pdk/sky130A/libs.tech/combined/sky130.lib.spice sf
+.include /var/tmp/eda-job-klt-sim-3c722ef28f58/inputs/netlist.cir
+.temp -40.0
+.control
+save all
+set filetype=ascii
+ac dec 30 1e-2 1e9
+let __klt_xfer_0_num = v(xldo.fb)
+let __klt_xfer_0_den = v(xldo.lg_den)
+write /var/tmp/eda-job-klt-sim-3c722ef28f58/outputs/artifacts/sf_novdd_n40C/transfer_0.raw __klt_xfer_0_num __klt_xfer_0_den
+quit
+.endc
+.end

@@ -101,3 +101,35 @@ schematic of record changes only on ratification, not with this PR. A `sim/iq`
 batch attempt (`sim/iq/records/20261029-063823-5ba605f.md`) is a recorded FAIL
 (per-unit 300 s cap), kept as append-only evidence; the `psrr-dc` / `loop-gain`
 records of this date are single-corner debug probes.
+
+## Evidence update (2026-11-01, issue #467)
+
+Additive; the decision text and Status line above are unchanged. Ratification stays a human step.
+All three records below are new and append-only, run with the candidate `R_BIAS`
+(`candidate-R_BIAS.patch`, applied for netlisting/running only) on the batch fleet (no local grid).
+
+- **PSRR, 45 PVT points x {1 mA, 50 mA}**: `sim/bias-retopo/20261101-psrr-pvt-467/`.
+  Worst PSRR at 1 kHz is 20.64 dB (1 mA) / 20.79 dB (50 mA) against the unchanged `> 50 dB` bound,
+  and at 100 kHz 31.81 dB (1 mA, passes `> 20 dB`) / 10.38 dB (50 mA, fails). No point meets the 1 kHz
+  bound and none meets the 50 mA 100 kHz bound: these are the DR-007 gaps already recorded for the design of
+  record, not new failures attributable to this candidate. At tt/27 C/3.30 V the values match the earlier local
+  single-corner record (23.21 / 33.52 dB at 1 mA; 23.31 / 11.28 dB at 50 mA).
+- **Stability, 45 PVT points x 18 legs (C_out x ESR x load)**: `sim/bias-retopo/20261101-loop-pvt-467/`.
+  GM stays above 10 dB wherever it is defined (min 14.84 dB). PM `< 45 deg` at 197 of 810 points, concentrated in the
+  0.33 uF legs at 50 mA and 0 mA and the 4.7 uF / 0 mA legs; worst 15.18 deg (0.33 uF, 0 mA, ss/-40 C/2.97 V).
+  GM is not defined at 51 points and PM at 6 (`no_downward_phase_crossing` and similar): those are listed as
+  not established, never counted as passes. Method note: PM/GM/fc come from klt `transfer` metrics, not the local
+  ngspice `meas` cards, and differ slightly (tt/27 C/3.30 V, 0.33 uF / 10 mOhm / 50 mA: PM 40.15 vs 40.54 deg local
+  candidate, 40.48 deg local baseline; the 0 mA and 1 mA legs agree to 0.02 deg). A same-method design-of-record
+  baseline was NOT run, so a candidate-vs-baseline delta over PVT is not claimed; the only same-method evidence
+  of "no movement" remains the single tt/27 C/3.30 V comparison in `20261029-fullloop-467/record.md`.
+- **Iq, 45 points, minted**: `sim/iq/records/20261101-205815-8db2f9c4.md` (manifest
+  `manifests/artifacts/iq-20261101-205815-8db2f9c4.manifest.json`), replacing the hand aggregate `iq-graded.json`
+  as the citable artifact (the 20261029 FAIL record stays). Overall FAIL: the same 6 of 45 points exceed 30 uA at
+  full load (30.2 to 31.9 uA, all at VIN >= 3.30 V in ff/fs), reproduced exactly. The cause is still **not
+  attributed**: no same-method design-of-record run was made at those points.
+
+Alternative (a) (mirror ratio) was not simulated. The candidate fails spec rows (PSRR, stability, Iq), but the
+PSRR and stability failures are pre-existing DR-007 gaps, and the Iq exceedance is unattributed, so this update does
+not claim the candidate alone is the cause and does not declare a no-qualified-candidate verdict. That follow-up is
+left to a human decision after #478's attribution lands.
