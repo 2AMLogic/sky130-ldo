@@ -28,6 +28,7 @@ delta, is evaluated locally.
 from __future__ import annotations
 
 import re
+from collections.abc import Callable
 
 import batch_line_regulation as blr
 from batch_line_regulation import (  # re-exported helpers
@@ -61,15 +62,27 @@ _MEAS_RE = blr._MEAS_RE
 _ALTER_ILOAD_RE = re.compile(rf"^alter\s+iload\s*=\s*({_NUM})$", re.IGNORECASE)
 
 
-def parse_deck(lines: list[str], baseline_iload: str) -> list[Endpoint]:
-    """Parse `deck.analyses` into its two endpoints (comments ignored), or
-    raise naming the first line with no faithful form.
+def _check_load_regulation_cards(n: int, cards: list[tuple[str, str, str]]) -> None:
+    """Per-endpoint card check: one avg, one min, one max, in that order."""
+    if [k for _, k, _ in cards] != EXPECTED_KINDS:
+        raise EndpointTranslationError(
+            f"endpoint {n}: expected one avg, one min and one max `meas tran` card in that order; "
+            f"got {[k for _, k, _ in cards]}"
+        )
 
-    Point 1 is, in order, the cold-start `tran` then `avg|min|max` cards at the
-    pinned netlist load (`baseline_iload`); point 2 is the same preceded by
-    exactly one `alter iload = X` with X different from the baseline. There is
-    no `set`, no `alter` of VIN or EN, and nothing else: any other line is
-    refused.
+
+def parse_two_load_endpoints(
+    lines: list[str],
+    baseline_iload: str,
+    meas_re: re.Pattern[str],
+    check_cards: Callable[[int, list[tuple[str, str, str]]], None],
+) -> list[Endpoint]:
+    """Shared two-endpoint (no load, then one `alter iload`) deck parser.
+
+    Callers differ only in the `meas` card regex and `check_cards(n, cards)`,
+    which raises EndpointTranslationError when endpoint `n`'s cards are not the
+    set that experiment grades. Parse `deck.analyses` into its two endpoints
+    (comments ignored), or raise naming the first line with no faithful form.
     """
     body = [ln.strip() for ln in lines if ln.strip() and not ln.strip().startswith("*")]
     if not body:
@@ -96,18 +109,14 @@ def parse_deck(lines: list[str], baseline_iload: str) -> list[Endpoint]:
             raise EndpointTranslationError(f"endpoint {n}: expected the cold-start `tran <tstep> <tstop> uic`; got {got!r}")
         pos += 1
         cards: list[tuple[str, str, str]] = []
-        while pos < len(body) and (mm := _MEAS_RE.match(body[pos])) is not None:
+        while pos < len(body) and (mm := meas_re.match(body[pos])) is not None:
             name = mm.group(1)
             if name.lower() in names:
                 raise EndpointTranslationError(f"meas card name {name!r} is declared twice")
             names.add(name.lower())
             cards.append((name, mm.group(2).lower(), body[pos]))
             pos += 1
-        if [k for _, k, _ in cards] != EXPECTED_KINDS:
-            raise EndpointTranslationError(
-                f"endpoint {n}: expected one avg, one min and one max `meas tran` card in that order; "
-                f"got {[k for _, k, _ in cards]}"
-            )
+        check_cards(n, cards)
         endpoints.append(Endpoint(n, SUPPLY_LITERAL, iload, f"{tm.group(1)} {tm.group(2)} uic", cards))
     if len(endpoints) != EXPECTED_ENDPOINTS:
         raise EndpointTranslationError(
@@ -117,3 +126,15 @@ def parse_deck(lines: list[str], baseline_iload: str) -> list[Endpoint]:
         raise EndpointTranslationError("the two endpoints must have different loads")
     return endpoints
 
+
+def parse_deck(lines: list[str], baseline_iload: str) -> list[Endpoint]:
+    """Parse `deck.analyses` into its two endpoints (comments ignored), or
+    raise naming the first line with no faithful form.
+
+    Point 1 is, in order, the cold-start `tran` then `avg|min|max` cards at the
+    pinned netlist load (`baseline_iload`); point 2 is the same preceded by
+    exactly one `alter iload = X` with X different from the baseline. There is
+    no `set`, no `alter` of VIN or EN, and nothing else: any other line is
+    refused.
+    """
+    return parse_two_load_endpoints(lines, baseline_iload, _MEAS_RE, _check_load_regulation_cards)

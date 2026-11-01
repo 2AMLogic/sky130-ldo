@@ -27,6 +27,7 @@ from batch_load_regulation import (  # shared source state (identical stimulus)
     SUPPLY_LITERAL,
     endpoint_body,
     endpoint_source_lines,
+    parse_two_load_endpoints,
 )
 
 __all__ = ["parse_deck", "endpoint_source_lines", "endpoint_body", "SUPPLY_LITERAL"]
@@ -37,56 +38,22 @@ EXPECTED_CARDS = [("avg", "v(vout)"), ("avg", "i(vvin)")]
 
 _NUM = blr._NUM
 _IDENT = blr._IDENT
-_TRAN_RE = blr._TRAN_RE
-_ALTER_ILOAD_RE = re.compile(rf"^alter\s+iload\s*=\s*({_NUM})$", re.IGNORECASE)
 _MEAS_RE = re.compile(
     rf"^meas\s+tran\s+({_IDENT})\s+(avg)\s+((?:v|i)\([A-Za-z0-9_]+\))\s+from=\s*({_NUM})\s+to=\s*({_NUM})$",
     re.IGNORECASE,
 )
 
 
+def _check_iq_cards(n: int, cards: list[tuple[str, str, str]]) -> None:
+    """Per-endpoint card check: `avg v(vout)` then `avg i(vvin)`."""
+    probes = [(kind, _MEAS_RE.match(line).group(3).lower()) for _, kind, line in cards]
+    if probes != EXPECTED_CARDS:
+        raise EndpointTranslationError(
+            f"endpoint {n}: expected `avg v(vout)` then `avg i(vvin)` meas cards; got {probes}"
+        )
+
+
 def parse_deck(lines: list[str], baseline_iload: str) -> list[Endpoint]:
     """Parse `deck.analyses` into its two endpoints (comments ignored), or
     raise naming the first line with no faithful form."""
-    body = [ln.strip() for ln in lines if ln.strip() and not ln.strip().startswith("*")]
-    if not body:
-        raise EndpointTranslationError("deck.analyses declares no analysis")
-    endpoints: list[Endpoint] = []
-    iload = baseline_iload
-    pos = 0
-    names: set[str] = set()
-    while pos < len(body):
-        n = len(endpoints) + 1
-        if (m := _ALTER_ILOAD_RE.match(body[pos])) is not None:
-            if n == 1:
-                raise EndpointTranslationError(
-                    "endpoint 1 must run at the netlist's own load; `alter iload` before the first tran"
-                )
-            iload = m.group(1)
-            pos += 1
-        elif n == 2:
-            raise EndpointTranslationError(f"endpoint 2: expected `alter iload = <amps>`; got {body[pos]!r}")
-        if pos >= len(body) or (tm := _TRAN_RE.match(body[pos])) is None:
-            got = body[pos] if pos < len(body) else "end of deck"
-            raise EndpointTranslationError(f"endpoint {n}: expected the cold-start `tran <tstep> <tstop> uic`; got {got!r}")
-        pos += 1
-        cards: list[tuple[str, str, str]] = []
-        probes: list[tuple[str, str]] = []
-        while pos < len(body) and (mm := _MEAS_RE.match(body[pos])) is not None:
-            name = mm.group(1)
-            if name.lower() in names:
-                raise EndpointTranslationError(f"meas card name {name!r} is declared twice")
-            names.add(name.lower())
-            cards.append((name, mm.group(2).lower(), body[pos]))
-            probes.append((mm.group(2).lower(), mm.group(3).lower()))
-            pos += 1
-        if probes != EXPECTED_CARDS:
-            raise EndpointTranslationError(
-                f"endpoint {n}: expected `avg v(vout)` then `avg i(vvin)` meas cards; got {probes}"
-            )
-        endpoints.append(Endpoint(n, SUPPLY_LITERAL, iload, f"{tm.group(1)} {tm.group(2)} uic", cards))
-    if len(endpoints) != EXPECTED_ENDPOINTS:
-        raise EndpointTranslationError(f"expected exactly {EXPECTED_ENDPOINTS} endpoints, deck declares {len(endpoints)}")
-    if endpoints[0].iload == endpoints[1].iload:
-        raise EndpointTranslationError("the two endpoints must have different loads")
-    return endpoints
+    return parse_two_load_endpoints(lines, baseline_iload, _MEAS_RE, _check_iq_cards)
