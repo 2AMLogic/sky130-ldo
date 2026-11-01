@@ -80,6 +80,38 @@ bias shift points the same way. DR-009 must not ratify `< 30 µA` on this candid
 evidence without resolving this. Not a no-qualified-candidate verdict: alternative
 (a) is unevaluated.
 
+*Addendum (#478, additive; the text above is unchanged).* That 45-point matrix omitted the `ll`/`hh`
+resistor-skew corners. `sim/bias-retopo/20261101-llhh-478/record.md` adds them
+(18 points, batch, same deck and same `< 30 µA` bound) and re-tabulates all 63: **10 of 63 points exceed
+30 µA at full load**, the original 6 plus 4 at `ll` (31.3 @ −40 °C/3.63 V, 31.9 @ 27 °C/3.63 V,
+30.3 @ 125 °C/3.30 V, 32.4 @ 125 °C/3.63 V); `hh` is 9/9 in budget; no-load Iq is in budget at all 63.
+The worst full-load figure is now 32.4 µA (`ll`/125 °C/3.63 V). The carried FAIL stands at the unchanged bound.
+
+*Attribution of the exceedances (#478).* The candidate changes only `R_BIAS`, so it can change Iq only
+through the bias current; the bias-only grid (`sim/bias-retopo/20261029-bias-grid-467/record.md`) gives
+the pair-current shift at every point. At **ff / −40 °C / 3.63 V (31.2 µA)** the shift is −0.45 %
+(4.6346 → 4.6137 µA) and at **fs / 27 °C / 3.63 V (30.2 µA)** it is −0.34 % (4.5480 → 4.5325 µA): the
+candidate lowers bias current there, so **these two of the six cannot be caused by it**, and the design of
+record is **inferred** to be at or marginally above the same value (already over 30 µA); the two `ll`
+points at 3.63 V cold/room (−2.85 %, −0.08 %) are likewise not candidate-caused. This is an inference
+from the bias-only grid, **not a measured baseline** (none was run). The remaining six exceedances all
+have a positive bias shift (+2.4 % … +8.4 %, five of them hot), which is consistent with, not proof of,
+the candidate contributing; they stay **unattributed**.
+
+*Departure from gf180-ldo DR-0033 (#478; port parity, CLAUDE.md).* `2AMLogic/gf180-ldo`
+`DR-0033-poly-resistor-flavour-is-set-by-dc-current-not-by-area.md` rules that a poly resistor which sets a
+**DC current** keeps the low-spread flavour (its `Rbias` stays `ppolyf_u_1k`; only resistors with no DC
+current in their branch, `Rz`/`Rza`/`Rbufb`, move to the dense, high-spread `ppolyf_u_3k`), because the
+wider-spread flavour costs +1.97 µA of Iq at the hot/fast corner where the ratified 30 µA row already
+binds. This record does the opposite for the same role: `R_BIAS`, the resistor that sets the bias current,
+goes from `res_high_po` to the denser `res_xhigh_po`. It is forced by the area gate here: the straight
+`res_high_po` body costs 0.2765 mm² and its fold fails #263's M2, while `res_xhigh_po` (≈6x sheet
+resistance) makes the same ≈1.22 MΩ a ≈211 µm straight body, and gf180's option of leaving that resistor
+alone does not close the core-area row on sky130. The consequence is the one DR-0033 warns about: more
+spread on the Iq-setting resistor, hence on Iq at its worst corner. That spread is what the bias-only grid
+and the `ll`/`hh` Iq points above measure (bias-pair current −5.6 % … +8.4 % vs the design of record), and
+it is why the Iq FAIL is carried here rather than waived. It does not change the ratified decision.
+
 **PSRR and stability (DR-007).** Only one corner (tt / 27 °C / 3.30 V), because
 `corner-run.py` refuses batch for `psrr-dc`/`loop-gain` and local grids are not
 permitted on this host: PSRR and PM/GM are indistinguishable from the design of
