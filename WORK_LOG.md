@@ -4,6 +4,10 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 
 ### 2026-11-01
 
+- **PR #483**: feat: PVT PSRR/stability grid and minted Iq record for the DR-013 R_BIAS candidate
+- **PR #481**: refactor: share one two-endpoint deck parser between iq and load-regulation adapters
+- **Issue #479** (closed): Consolidate duplicated parse_deck in batch_iq and batch_load_regulation
+- **Issue #475** (closed): Remove superseded ldo-area-budget.py (#246): replaced by 4cap budget (#459), helpers duplicated
 - **PR #470**: docs(spec): propose DR-013 bias re-topology (straight res_xhigh_po R_BIAS) with area and PVT evidence
 - **PR #474**: chore: remove superseded #246 area-budget generator
 - **Issue #472** (closed): Remove superseded ldo-area-budget.py (#246 generator); keep study record
