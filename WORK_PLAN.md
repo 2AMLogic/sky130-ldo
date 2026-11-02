@@ -8,6 +8,7 @@ Current roadmap derived from GitHub lifecycle labels. Maintained by the Loom Gui
 Judge-approved PRs under a hold (`loom:blocked` or `loom:operator`) — only a human merge decision is missing.
 
 - **#482**: docs(spec): add ll/hh Iq corners and DR-0033 departure to DR-013 record
+- **#486**: docs(spec): DR-010 stays proposed; point to fresh-ratification path
 
 ## Very Important
 
@@ -25,7 +26,6 @@ _None._
 
 Human-approved issues ready for implementation (`loom:issue`).
 
-- **#301**: spec: decide whether DR-008 through DR-012 ratified on merge
 - **#416**: Re-run folded-resistor MC at n>=1000 to firm up M2 sigma-ratio gate
 
 ## In Progress
@@ -33,6 +33,7 @@ Human-approved issues ready for implementation (`loom:issue`).
 Issues currently being built (`loom:building`).
 
 - **#478**: DR-013 follow-ups: ll/hh resistor-skew corners missing from the full-loop sweep; write the departure from gf180-ldo DR-0033 against it
+- **#301**: spec: decide whether DR-008 through DR-012 ratified on merge
 
 ## PRs Awaiting Review
 
@@ -45,6 +46,7 @@ _None._
 PRs that passed review and are queued for Champion auto-merge (`loom:pr`).
 
 - **#482**: docs(spec): add ll/hh Iq corners and DR-0033 departure to DR-013 record
+- **#486**: docs(spec): DR-010 stays proposed; point to fresh-ratification path
 
 ## Proposed
 
@@ -75,13 +77,13 @@ Issues carrying `loom:curated`.
 
 | Bucket | Count |
 |------|-------|
-| Operator merge-risk holds | 1 |
+| Operator merge-risk holds | 2 |
 | Very important | 0 |
 | Important | 1 |
-| Ready (`loom:issue`) | 2 |
-| In Progress (`loom:building`) | 1 |
+| Ready (`loom:issue`) | 1 |
+| In Progress (`loom:building`) | 2 |
 | PRs awaiting review | 0 |
-| Approved PRs awaiting merge | 1 |
+| Approved PRs awaiting merge | 2 |
 | Curated | 12 |
 | Architect / Hermit proposals | 1 |
 | Active epics | 1 |
