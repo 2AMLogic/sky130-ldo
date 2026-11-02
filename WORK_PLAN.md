@@ -7,7 +7,7 @@ Current roadmap derived from GitHub lifecycle labels. Maintained by the Loom Gui
 
 Judge-approved PRs under a hold (`loom:blocked` or `loom:operator`) — only a human merge decision is missing.
 
-_None._
+- **#482**: docs(spec): add ll/hh Iq corners and DR-0033 departure to DR-013 record
 
 ## Very Important
 
@@ -44,7 +44,7 @@ _None._
 
 PRs that passed review and are queued for Champion auto-merge (`loom:pr`).
 
-_None._
+- **#482**: docs(spec): add ll/hh Iq corners and DR-0033 departure to DR-013 record
 
 ## Proposed
 
@@ -61,14 +61,11 @@ Issues carrying `loom:curated`.
 - **#416**: Re-run folded-resistor MC at n>=1000 to firm up M2 sigma-ratio gate *(curated)*
 - **#423**: T1 items 1, 2, 9, 10: bump the signoff grading pin and attest with artifact-anchored envelopes (klt signoff --attest) *(curated)*
 - **#461**: T1 item 5 area: compact routed ldo_core under 0.1 mm² with capacitors drawn, re-mint records (part of #458) *(curated)*
-- **#467**: Bias re-topology so R_BIAS is not one long resistor: new DR, to meet the < 0.1 mm² Area row without a fold waiver (#461) *(curated)*
 - **#478**: DR-013 follow-ups: ll/hh resistor-skew corners missing from the full-loop sweep; write the departure from gf180-ldo DR-0033 against it *(curated)*
 
 ## Proposed (Architect / Hermit)
 
 - **#446**: Dedupe batch_iq/batch_load_regulation parse_deck and drop unused re-exports *(hermit)*
-- **#475**: Remove superseded ldo-area-budget.py (#246): replaced by 4cap budget (#459), helpers duplicated *(hermit)*
-- **#479**: Consolidate duplicated parse_deck in batch_iq and batch_load_regulation *(hermit)*
 
 ## Epics
 
@@ -78,14 +75,14 @@ Issues carrying `loom:curated`.
 
 | Bucket | Count |
 |------|-------|
-| Operator merge-risk holds | 0 |
+| Operator merge-risk holds | 1 |
 | Very important | 0 |
 | Important | 1 |
 | Ready (`loom:issue`) | 2 |
 | In Progress (`loom:building`) | 1 |
 | PRs awaiting review | 0 |
-| Approved PRs awaiting merge | 0 |
-| Curated | 13 |
-| Architect / Hermit proposals | 3 |
+| Approved PRs awaiting merge | 1 |
+| Curated | 12 |
+| Architect / Hermit proposals | 1 |
 | Active epics | 1 |
 <!-- guide:plan-body:end -->
