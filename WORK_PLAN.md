@@ -26,14 +26,14 @@ _None._
 
 Human-approved issues ready for implementation (`loom:issue`).
 
-- **#416**: Re-run folded-resistor MC at n>=1000 to firm up M2 sigma-ratio gate
+_None._
 
 ## In Progress
 
 Issues currently being built (`loom:building`).
 
-- **#478**: DR-013 follow-ups: ll/hh resistor-skew corners missing from the full-loop sweep; write the departure from gf180-ldo DR-0033 against it
 - **#301**: spec: decide whether DR-008 through DR-012 ratified on merge
+- **#478**: DR-013 follow-ups: ll/hh resistor-skew corners missing from the full-loop sweep; write the departure from gf180-ldo DR-0033 against it
 
 ## PRs Awaiting Review
 
@@ -80,7 +80,7 @@ Issues carrying `loom:curated`.
 | Operator merge-risk holds | 2 |
 | Very important | 0 |
 | Important | 1 |
-| Ready (`loom:issue`) | 1 |
+| Ready (`loom:issue`) | 0 |
 | In Progress (`loom:building`) | 2 |
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 2 |
