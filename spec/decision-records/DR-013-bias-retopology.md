@@ -5,16 +5,15 @@
   (2am#5346), which are human gates outside this PR. #461 (layout) stays parked
   until that completes.
 - **Status amendment (2026-11-04, #489; additive — the line above is the original
-  text, kept as written)**: this record is now treated as **ratified**. The
-  evidence on record: the `ratify:key` key reviews and the operator release on the
-  #482 PR (operator release comment 2026-11-04T06:39Z; #482 merged 2026-11-04), and
-  #467's own text, "#478 landed via #482 (ratified 2026-11-04)". The ratification
-  date is therefore 2026-11-04. It is not stated whether that act covers DR-013 itself
-  or only the #478 additions; this amendment does not choose between them. No source
-  was found for a 2026-11-01 ratification (#470 merged that day as a `Part of #467`
-  increment that proposed DR-013 and left ratification to a human step). The status
-  line above reads `proposed` only because the merged copy was never rewritten. No
-  decision text or target value changes.
+  text, kept as written)**: this record is **ratified**. The operator ratified
+  DR-013 itself on 2026-11-01 on #470 (fleet-decide round 20261031-r5, question
+  r5-q34), at #470 head `191f1ffe`, after the EE-key and market-key reviews there; the
+  operator's comment on #470 (2026-11-01T17:55:18Z) records it, and #470 merged at
+  that head (2026-11-01T17:55:32Z). The #482 PR (operator release 2026-11-04T06:39Z,
+  merged 2026-11-04; #467: "#478 landed via #482 (ratified 2026-11-04)") ratified
+  the #478 additions only: the `ll`/`hh` Iq corners and the DR-0033 departure
+  paragraph. The status line above reads `proposed` only because the merged copy was
+  never rewritten after #470. No decision text or target value changes.
 - **Date**: 2026-10-29
 - **Author**: Builder agent (#467)
 - **Ratifies against / input to**: #467 (operator ruling 2026-10-29 on #461: fix the
@@ -98,14 +97,15 @@ resistor-skew corners. `sim/bias-retopo/20261101-llhh-478/record.md` adds them
 30.3 @ 125 °C/3.30 V, 32.4 @ 125 °C/3.63 V); `hh` is 9/9 in budget; no-load Iq is in budget at all 63.
 The worst full-load figure is now 32.4 µA (`ll`/125 °C/3.63 V). The carried FAIL stands at the unchanged bound.
 
-*Provenance and receipt notes (2026-11-04, #489; additive).* **Engine versions.** The response files differ by
-which ngspice built the graded numbers. The 45 carried rows (`sim/bias-retopo/20261029-fullloop-467/`) record a
-client-side ngspice binary whose banner reads **ngspice-42** (binary sha256 `82065831…`, the version pinned in
-`sim/pdk.json`); the 18 new `ll`/`hh` rows (`20261101-llhh-478/`) record a client-side binary reading
-**ngspice-46** (sha256 `c874869b…`). The batch worker's banner is ngspice-46 in the 45-row responses, and every
-response's `engine_version` field says `46`. Both sets used the same deck and the same
-`models_lib_sha256` (`48de7c67…`, 12 of 12 responses). The merged table therefore mixes two client-side engine
-versions; no cross-version check was run. **Receipt hash.** `request_sha256` in `batch-receipt`/`*.receipt.json`
+*Provenance and receipt notes (2026-11-04, #489; additive).* **Engine versions.** All 63 graded rows were
+built by the same engine. In all 12 response files (`20261029-fullloop-467/` and `20261101-llhh-478/`)
+`environment.engine_host` is `worker`, and the batch worker's banner is **ngspice-46** with the same worker PDK
+stamp (`d5ac5295…`). Only the client-side probe binary differs: its banner reads **ngspice-42** (sha256
+`82065831…`) on the 6 carried-row responses and **ngspice-46** (sha256 `c874869b…`) on the 6 new `ll`/`hh`
+responses; that binary did not build the graded numbers. `models_lib_sha256` (`48de7c67…`) is the same in 12
+of 12 responses, but it is client-scoped (`models_lib_sha256_scope: client`). The pin gap is that the
+worker's ngspice-46 differs from the `ngspice: 42` pin in `sim/pdk.json` for all 63 rows; no cross-version
+check against ngspice-42 was run. **Receipt hash.** `request_sha256` in `batch-receipt`/`*.receipt.json`
 is the SHA-256 of the request JSON in canonical sorted-key form (`json.dumps(obj, sort_keys=True)`), not of the
 committed request file's bytes; `sha256sum requests/<name>.json` will not match it. Checked on
 `20261101-llhh-478/requests/v2.97-tran1.json` → `dc4a7f19…`, equal to its receipt.
