@@ -26,12 +26,13 @@ from __future__ import annotations
 import argparse
 import json
 import os
-import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent.parent
+sys.path.insert(0, str(REPO / "sim" / "bin"))
+from _record_common import klt_binary, run_klt_sim  # noqa: E402
 PDK_JSON = REPO / "sim" / "pdk.json"
 SUPPLIES = [2.97, 3.30, 3.63]
 PROCESS = ["tt", "ss", "ff", "sf", "fs", "ll", "hh"]
@@ -100,16 +101,13 @@ def main() -> int:
             req.write_text(json.dumps(request(net.resolve(), pdk), indent=2) + "\n")
             od = out / "responses" / key
             od.mkdir(parents=True)
-            proc = subprocess.run(
-                ["klt", "sim", str(req), "-o", str(od), "--backend", "batch", "--format", "json"],
-                capture_output=True, text=True, env={**os.environ, "PDK_ROOT": pdk_root},
-            )
-            (od / "klt.stdout").write_text(proc.stdout)
-            (od / "klt.stderr").write_text(proc.stderr)
             try:
-                resp = json.loads(proc.stdout)
-            except json.JSONDecodeError:
-                sys.exit(f"{key}: klt sim batch submit failed (no JSON); NOT falling back to local.\n{proc.stderr[:2000]}")
+                resp, _meta = run_klt_sim(
+                    req, od, "batch", pdk_root,
+                    klt_exe=klt_binary("submit batch grids"), require_corners=False,
+                )
+            except RuntimeError as exc:
+                sys.exit(f"{key}: klt sim batch submit failed; NOT falling back to local.\n{str(exc)[:2000]}")
             remote = resp.get("environment", {}).get("remote", {})
             for c in resp["corners"]:
                 m = {x["name"].replace("meas_", ""): x["value"] for x in c["measurements"]}

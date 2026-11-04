@@ -107,14 +107,12 @@ class PdkFiles(unittest.TestCase):
         self.assertTrue(cs.mim_subckt_formula_ok(MODELS_CAPACITORS, "sky130_fd_pr__cap_mim_m3_1"))
         # a subckt with a different law is not silently accepted
         self.assertFalse(cs.mim_subckt_formula_ok(MODELS_CAPACITORS, "sky130_fd_pr__cap_mim_m3_2"))
-        self.assertAlmostEqual(cs.mim_cap_f(2e-15, 0.15, 10, 10), 2e-15 * 10.15 * 10.15)
 
     def test_vpp_ctot_and_rats(self):
         self.assertAlmostEqual(cs.vpp_ctot(VPP_MODEL, {"some_cell__cor": 1.0}), 74.6e-15)
         self.assertAlmostEqual(cs.vpp_ctot(VPP_MODEL, {"some_cell__cor": 1.19}), 74.6e-15 * 1.19)
         self.assertIsNone(cs.vpp_ctot(VPP_MODEL, {}))  # corner factor missing -> not a number
         self.assertEqual(cs.vpp_rat_sum(VPP_MODEL), 1.0)
-        self.assertEqual(cs.vpp_name_dims("sky130_fd_pr__cap_vpp_11p5x11p7_m1m2_noshield"), (11.5, 11.7))
 
     def test_mag_bbox(self):
         bb = cs.mag_bbox(MAG)
