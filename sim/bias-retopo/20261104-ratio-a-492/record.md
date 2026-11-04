@@ -142,12 +142,15 @@ batch backend does not support this experiment, and a 45-point grid is not permi
 
 ## Current-ratio matching on `M_BIASN1/N2`
 
-The pinned PDK ships the `nfet_g5v0d10v5` mismatch slope as 0.0 in the corner files (`libs.tech/ngspice/parameters/invariant.spice`, `*__mismatch.corner.spice`: `vth0_slope = 0.000`),
-so no Pelgrom coefficient is available from the PDK to cite; **mismatch sigma is therefore an assumption, not a measurement.** The mirror here is W=4 (N1) vs W=2 (N2), same L=1, ratio 2:1
+The pinned PDK (`c6d73a35...`) **does** carry a mismatch model for `nfet_g5v0d10v5`. In `sky130_fd_pr__nfet_g5v0d10v5__mismatch.corner.spice`, `vth0_slope = 0.000`, but
+`toxe_slope = 0.80e-2` (`toxe_slope2 = 1.00e-2` for the W=3 L=1 um bin), `voff_slope = 0.13` and `nfactor_slope = 0.12` are nonzero (`invariant.spice` agrees on `nfactor_slope`).
+sky130 models device mismatch mainly through `toxe`, `voff` and `nfactor`, not `vth0`. A Monte Carlo mismatch run is therefore **available on this pin and was not run here**.
+No sigma was derived from these parameters. The +-1/3/10 % ratio errors below are an **assumed range, not a PDK-derived or measured sigma**; the +-10 % figure is not shown to cover 3 sigma
+for a W=2 L=1 thick-oxide device (an order-of-magnitude estimate suggests 3 sigma could be 15-30 %; not measured). The mirror here is W=4 (N1) vs W=2 (N2), same L=1, ratio 2:1
 by area; the smaller device (W=2) has the larger relative mismatch (sigma ~ 1/sqrt(W*L)), a factor sqrt(2) over a 1:1 W=4 pair. Effect on Iq: the pair current enters Iq one-for-one at least,
 and the bias-only grid (`../20261029-bias-grid-467/record.md`) puts I_pair at about 4.0-5.5 uA, so a ratio error of d changes I_pair by d x I_pair: **+-1% -> +-0.04 to +-0.06 uA; +-3% -> +-0.12 to +-0.17 uA;
-+-10% -> +-0.4 to +-0.55 uA**, before any downstream gain (not established here; the pair-to-Iq gain was not measured). No Monte Carlo was run. Against the 34.4 uA worst point, a ratio error of
-that size moves Iq by less than the 4.4 uA overshoot unless the mismatch is several times 10%; it can only worsen (a), not rescue it.
++-10% -> +-0.4 to +-0.55 uA; +-30% -> +-1.2 to +-1.65 uA**, before any downstream gain (not established here; the pair-to-Iq gain was not measured). No Monte Carlo was run. Against the 34.4 uA worst point,
+a ratio error of that size moves Iq by less than the 4.4 uA overshoot even at +-30 %. A ratio error of either sign moves Iq either way, so mismatch **cannot rescue** (a); this conclusion does not depend on the PDK-sigma question.
 
 ## `R_BIAS` area and the Area row (`< 0.1 mm^2`)
 
@@ -160,7 +163,7 @@ the waiver. This is the one place where (a) loses to the candidate on a structur
 
 ## Not established
 
-- A second ratio; Monte Carlo of the mirror; EN=0 leakage at the other 44 corners; a measured baseline Iq grid of the schematic of record; layout/DRC/LVS; the pair-to-Iq gain used for the mismatch figures.
+- A second ratio; Monte Carlo of the mirror (available on this pin, not run); EN=0 leakage at the other 44 corners; a measured baseline Iq grid of the schematic of record; layout/DRC/LVS; the pair-to-Iq gain used for the mismatch figures.
 - Whether the 30 uA bound or DR-007 is "the" issue: the numbers above are consistent with both, and the choice is the next ruling's.
 
 ## Reproduce
