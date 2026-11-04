@@ -41,7 +41,6 @@ import hashlib
 import json
 import os
 import statistics
-import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -57,6 +56,7 @@ from _record_common import (
     render_record_footer,
     render_record_header,
     reserve_record_id,
+    run_klt_sim as _shared_run_klt_sim,
     write_new_text,
 )
 
@@ -284,37 +284,17 @@ def run_klt_sim(
     is worse than that: the control's samples and the nominal's would differ
     by the model build as well as by the declared defect.
     """
-    cmd = [
-        klt_binary(),
-        "sim",
-        str(request_path),
-        "-o",
-        str(outdir),
-        "--backend",
+    response, _meta = _shared_run_klt_sim(
+        request_path,
+        outdir,
         backend,
-        "--format",
-        "json",
-    ]
-    if backend == "local-parallel":
-        cmd += ["--max-workers", str(max_workers)]
-    env = None
-    if pdk_root is not None:
-        env = dict(os.environ)
-        env["PDK_ROOT"] = str(pdk_root)
-    proc = subprocess.run(cmd, capture_output=True, text=True, timeout=None, env=env)
-    if not proc.stdout.strip():
-        raise HarnessError(
-            "klt sim produced no stdout\n"
-            f"  cmd: {' '.join(cmd)}\n"
-            f"  rc: {proc.returncode}\n"
-            f"  stderr: {proc.stderr.strip()}"
-        )
-    try:
-        return json.loads(proc.stdout)
-    except json.JSONDecodeError as exc:
-        raise HarnessError(
-            f"klt sim produced non-JSON stdout ({exc})\n  stdout: {proc.stdout[:2000]}"
-        ) from exc
+        pdk_root,
+        klt_exe=klt_binary(),
+        error_cls=HarnessError,
+        extra_args=("--max-workers", str(max_workers)) if backend == "local-parallel" else (),
+        require_corners=False,
+    )
+    return response
 
 
 # --------------------------------------------------------------------------

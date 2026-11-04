@@ -32,8 +32,6 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-import os
-import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -46,6 +44,7 @@ from _record_common import (  # noqa: E402
     assert_klt_read_the_pinned_pdk,
     load_corner_run_module,
     reserve_record_id,
+    run_klt_sim,
     write_new_text,
 )
 
@@ -69,25 +68,10 @@ def corner_netlist(body: list[str], supply_v: float, options: list[str]) -> str:
 
 def run_klt(request_path: Path, outdir: Path, backend: str, pdk_root: Path) -> tuple[dict, dict]:
     """One `klt sim` call; never retried, never replaced by a local run."""
-    outdir = outdir.resolve()  # a relative -o breaks klt's per-corner cwd (klayout-tools#2892)
-    outdir.mkdir(parents=True, exist_ok=True)
-    cmd = [cr.klt_binary(), "sim", str(request_path.resolve()), "-o", str(outdir),
-           "--backend", backend, "--format", "json"]
-    env = dict(os.environ, PDK_ROOT=str(pdk_root))
-    proc = subprocess.run(cmd, capture_output=True, text=True, env=env, stdin=subprocess.DEVNULL)
-    (outdir / "klt.stdout").write_text(proc.stdout or "")
-    (outdir / "klt.stderr").write_text(proc.stderr or "")
-    ids = sorted(set(cr._JOB_ID_RE.findall((proc.stdout or "") + (proc.stderr or ""))))
-    where = (f"  cmd: {' '.join(cmd)}\n  rc: {proc.returncode}\n  job id(s): {', '.join(ids) or 'none'}\n"
-             f"  stderr: {(proc.stderr or '').strip()[:2000]}\n  kept in {outdir}")
-    try:
-        response = json.loads(proc.stdout)
-    except json.JSONDecodeError:
-        raise HarnessError(f"klt sim gave no JSON response\n{where}") from None
-    if not isinstance(response, dict) or not isinstance(response.get("corners"), list):
-        raise HarnessError(f"klt sim returned an error envelope\n{where}\n"
-                           f"  stdout: {(proc.stdout or '').strip()[:2000]}")
-    return response, {"returncode": proc.returncode, "cmd": cmd, "job_ids_seen": ids}
+    return run_klt_sim(
+        request_path, outdir, backend, pdk_root,
+        klt_exe=cr.klt_binary(), error_cls=HarnessError, resolve_paths=True,
+    )
 
 
 def engine_log(rc: dict, outdir: Path) -> str | None:

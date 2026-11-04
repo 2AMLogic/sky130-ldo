@@ -44,6 +44,7 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parent.parent.parent
 SIM = REPO / "sim"
 sys.path.insert(0, str(SIM / "bin"))
+from _record_common import klt_binary, run_klt_sim
 from xschem_exprs import eval_xschem_exprs
 
 PATCH = SIM / "bias-retopo" / "20261029-fullloop-467" / "candidate-R_BIAS.patch"
@@ -142,26 +143,17 @@ def base_request(
 def submit(key: str, req_path: Path, out: Path, env: dict) -> dict:
     od = out / "responses" / key
     od.mkdir(parents=True)
-    p = run(
-        [
-            "klt",
-            "sim",
-            str(req_path),
-            "-o",
-            str(od),
-            "--backend",
-            "batch",
-            "--format",
-            "json",
-        ],
-        env=env,
-    )
-    (od / "klt.stdout").write_text(p.stdout)
-    (od / "klt.stderr").write_text(p.stderr)
     try:
-        resp = json.loads(p.stdout)
-    except json.JSONDecodeError:
-        return {"key": key, "error": p.stderr[-1500:] or "no JSON from klt sim"}
+        resp, _meta = run_klt_sim(
+            req_path,
+            od,
+            "batch",
+            env["PDK_ROOT"],
+            klt_exe=klt_binary("submit batch grids"),
+            require_corners=False,
+        )
+    except RuntimeError as exc:
+        return {"key": key, "error": str(exc)[-1500:] or "no JSON from klt sim"}
     return {"key": key, "resp": resp}
 
 
