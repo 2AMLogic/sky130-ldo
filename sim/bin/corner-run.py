@@ -52,7 +52,10 @@ from xschem_exprs import eval_xschem_exprs  # noqa: F401  (re-exported; tests ca
 from _record_common import (
     assert_klt_read_the_pinned_pdk as _shared_assert_pdk,
     build_input_fingerprint,
+    CAPACITY_RETRY_BACKOFF_S,  # noqa: F401  (re-exported for tests)
+    CAPACITY_RETRY_BUDGET_S,
     klt_binary as _shared_klt_binary,
+    run_klt_sim,
     git,
     pvt_input_sections,
     reserve_record_id,
@@ -1575,98 +1578,13 @@ def prepare_batch_requests(
     return out
 
 
-_JOB_ID_RE = re.compile(r"klt-sim-[0-9a-f]+")
-
-# Shared-fleet saturation (issue #345): the only failure retried. The refusal
-# happens at launch, before a job exists, so a resubmit cannot double-run.
-CAPACITY_REFUSAL_TEXT = "exceeds BATCH_MAX_CONCURRENT_INSTANCES"
-CAPACITY_RETRY_BACKOFF_S = 90
-CAPACITY_RETRY_BUDGET_S = 3 * 3600
-
-
 def run_klt_batch(request_path: Path, outdir: Path, pdk_root: Path) -> tuple[dict, dict]:
-    """Invoke `klt sim --backend batch` (never replaced by a local run). The one
-    retried failure is a fleet-cap refusal (`CAPACITY_REFUSAL_TEXT`) with no job
-    id seen, resubmitted every `CAPACITY_RETRY_BACKOFF_S` for at most
-    `CAPACITY_RETRY_BUDGET_S`; any other failure is fatal and unretried.
-    Returns (response, meta); raises HarnessError, keeping whatever
-    stdout/stderr/job ids exist, if no usable JSON object came back."""
-    cmd = [
-        klt_binary(), "sim", str(request_path), "-o", str(outdir),
-        "--backend", "batch", "--format", "json",
-    ]
-    env = dict(os.environ)
-    env["PDK_ROOT"] = str(pdk_root)
-    outdir.mkdir(parents=True, exist_ok=True)
-
-    def diag(stdout: str, stderr: str) -> str:
-        (outdir / "klt.stdout").write_text(stdout or "")
-        (outdir / "klt.stderr").write_text(stderr or "")
-        ids = unique_in_order(_JOB_ID_RE.findall((stdout or "") + "\n" + (stderr or "")))
-        return (
-            f"  cmd: {' '.join(cmd)}\n"
-            f"  remote job id(s) seen: {', '.join(ids) if ids else 'none'}\n"
-            f"  stdout: {(stdout or '').strip()[:2000]}\n"
-            f"  stderr: {(stderr or '').strip()[:2000]}\n"
-            f"  diagnostics kept in {outdir}"
-        )
-
-    def launch() -> subprocess.CompletedProcess:
-        return subprocess.run(
-            cmd, capture_output=True, text=True, timeout=None, env=env,
-            stdin=subprocess.DEVNULL,
-        )
-
-    def capacity_refused(p: subprocess.CompletedProcess) -> bool:
-        text = (p.stdout or "") + "\n" + (p.stderr or "")
-        return (
-            p.returncode != 0
-            and CAPACITY_REFUSAL_TEXT in text
-            and not _JOB_ID_RE.search(text)
-        )
-
-    try:
-        proc = launch()
-        attempts, waited = 1, 0
-        while capacity_refused(proc):
-            if waited + CAPACITY_RETRY_BACKOFF_S > CAPACITY_RETRY_BUDGET_S:
-                raise HarnessError(
-                    f"klt sim (batch) refused for fleet capacity on all {attempts} "
-                    f"attempt(s) over {waited} s (budget {CAPACITY_RETRY_BUDGET_S} s); "
-                    "NOT falling back to a local run\n" + diag(proc.stdout, proc.stderr)
-                )
-            time.sleep(CAPACITY_RETRY_BACKOFF_S)
-            waited += CAPACITY_RETRY_BACKOFF_S
-            attempts += 1
-            proc = launch()
-    except subprocess.TimeoutExpired as exc:
-        def _s(v):
-            return v.decode(errors="replace") if isinstance(v, bytes) else (v or "")
-        raise HarnessError(
-            "klt sim (batch) timed out; NOT resubmitting and NOT falling back to a "
-            "local run -- the remote job may still be running\n"
-            + diag(_s(exc.stdout), _s(exc.stderr))
-        ) from exc
-    except OSError as exc:
-        raise HarnessError(f"could not launch klt sim: {exc}") from exc
-    if not proc.stdout.strip():
-        raise HarnessError(
-            f"klt sim produced no stdout (rc {proc.returncode})\n" + diag(proc.stdout, proc.stderr)
-        )
-    try:
-        response = json.loads(proc.stdout)
-    except json.JSONDecodeError as exc:
-        raise HarnessError(
-            f"klt sim produced non-JSON stdout ({exc}; rc {proc.returncode})\n"
-            + diag(proc.stdout, proc.stderr)
-        ) from exc
-    diag(proc.stdout, proc.stderr)
-    if not isinstance(response, dict) or not isinstance(response.get("corners"), list):
-        raise HarnessError(
-            f"klt sim returned an error envelope / non-sim response (rc {proc.returncode})\n"
-            + diag(proc.stdout, proc.stderr)
-        )
-    return response, {"returncode": proc.returncode, "cmd": cmd}
+    """`klt sim --backend batch` via the shared helper, with fleet-cap retry
+    (see `_record_common.run_klt_sim`); never replaced by a local run."""
+    return run_klt_sim(
+        request_path, outdir, "batch", pdk_root,
+        klt_exe=klt_binary(), error_cls=HarnessError, retry_capacity=True,
+    )
 
 
 def _finite_number(value) -> bool:

@@ -287,7 +287,8 @@ def run_klt(request: dict, req_path: Path, outdir: Path, backend: str, pdk_root:
     proc = subprocess.run(cmd, capture_output=True, text=True, env=env, stdin=subprocess.DEVNULL)
     stdout, stderr = scrub(proc.stdout or "", pdk_root), scrub(proc.stderr or "", pdk_root)
     (outdir / "klt.stderr").write_text(stderr)
-    ids = sorted(set(cr._JOB_ID_RE.findall(stdout + stderr)))
+    from _record_common import JOB_ID_RE  # noqa: E402
+    ids = sorted(set(JOB_ID_RE.findall(stdout + stderr)))
     summary = {"cmd": [Path(cmd[0]).name] + [scrub(c, pdk_root) for c in cmd[1:]], "returncode": proc.returncode,
                "backend": backend, "job_ids_seen": ids}
     try:
