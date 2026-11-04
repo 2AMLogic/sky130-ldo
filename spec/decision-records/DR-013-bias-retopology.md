@@ -165,3 +165,22 @@ Alternative (a) (mirror ratio) was not simulated. The candidate fails spec rows 
 PSRR and stability failures are pre-existing DR-007 gaps, and the Iq exceedance is unattributed, so this update does
 not claim the candidate alone is the cause and does not declare a no-qualified-candidate verdict. That follow-up is
 left to a human decision after #478's attribution lands.
+
+## Addendum 2026-11-04 (issue #492, operator ruling r5-q42): alternative (a) simulated
+
+Additive; the text above is unchanged. Status stays `proposed`; no spec row or bound is changed. Record:
+`sim/bias-retopo/20261104-ratio-a-492/record.md` (patch `candidate-ratio-a.patch`, plus `../20261104-psrr-ratio-a-492/`, `../20261104-loop-ratio-a-492/`).
+
+Alternative (a) was simulated with one ratio, k = 2: `R_BIAS` `res_high_po` W=0.42 L=750 (half of 1500) and `M_BIASN2` W=2 (mirror 1:0.5), same method, deck, models and
+bounds as the candidate's runs, on the Spot batch fleet:
+
+- **Iq, 63-point matrix, `< 30 uA` unchanged:** (a) exceeds 30 uA at full load at **21 of 63** points (candidate: 10 of 63), worst **34.4 uA** at ll/27C/3.63V (candidate worst 32.4 uA);
+  no-load Iq in budget at all 63. (a) is worse than the candidate at every point (+0.4 to +3.5 uA) because the reference branch carries about twice the current.
+- **PSRR / stability:** the DR-007 gaps are unchanged in kind and slightly worse (worst 1 kHz PSRR 19.6/19.8 dB vs 20.6/20.8 dB; PM < 45 deg at 212 vs 197 leg-points; GM < 10 dB at 0 in both).
+- **EN=0 leakage** (one corner, ff/125C/3.63V, existing `enable-shutdown` deck): 86 pA static, below the ~150 pA floor; other corners not established.
+- **Mirror matching:** the pinned PDK ships the mismatch slope as 0.0, so sigma is an assumption; +-1% ratio error moves I_pair by about +-0.05 uA (calculation, no Monte Carlo).
+- **Area:** a straight L=750 body (751 um) is wider than the 439 um core; it needs the unqualified #263 fold, so the `< 0.1 mm^2` row is **not** met without a fold waiver (the candidate's straight `res_xhigh_po` body needs none).
+
+Consequence for the record: (a) is **not** a better answer than the candidate on Iq, PSRR/PM or area. Both fail the `< 30 uA` bound at the high-VIN, low-R / hot corners, and the
+DR-007 PSRR/stability gaps are independent of the `R_BIAS` change. This points the next ruling at the `< 30 uA` bound (at VIN 3.63 V) and DR-007, not at the resistor choice.
+Not established: a second ratio, Monte Carlo mismatch, a measured baseline Iq grid of the schematic of record. This addendum does not ratify DR-013 or DR-009.
