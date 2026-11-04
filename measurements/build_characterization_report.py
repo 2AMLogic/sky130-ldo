@@ -109,7 +109,6 @@ from __future__ import annotations
 
 import argparse
 import difflib
-import hashlib
 import json
 import os
 import re
@@ -138,6 +137,7 @@ from _record_common import (  # shared helpers (issues #51, #96, #237)
 _LAYOUT_BIN_DIR = str(LAYOUT_DIR / "bin")
 if _LAYOUT_BIN_DIR not in sys.path:
     sys.path.insert(0, _LAYOUT_BIN_DIR)
+from _gds_area import sha256_file
 from _official_drc import official_result  # fail-closed official-deck reader (issue #260)
 
 SCHEMATIC_FILE = "design/ldo_3v3in_1v8out.sch"
@@ -636,12 +636,7 @@ def latest_area_record() -> tuple[dict, Path] | None:
         return None
 
 
-def _sha256_of(path: Path) -> str:
-    h = hashlib.sha256()
-    with path.open("rb") as f:
-        for chunk in iter(lambda: f.read(1 << 20), b""):
-            h.update(chunk)
-    return h.hexdigest()
+_sha256_of = sha256_file  # one chunked-SHA-256 helper; name kept for test monkeypatching
 
 
 def check_area_freshness(record: dict) -> str:
