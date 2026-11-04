@@ -5,12 +5,16 @@
   (2am#5346), which are human gates outside this PR. #461 (layout) stays parked
   until that completes.
 - **Status amendment (2026-11-04, #489; additive — the line above is the original
-  text, kept as written)**: this record is now treated as **ratified**. Issue #467
-  records the ratification as 2026-11-01; the `ratify:key` key reviews and the
-  operator release are on the #482 PR, and #489 cites them. The date was not
-  corroborated from #467's own comments when this amendment was written. The status
-  line above therefore reads `proposed` only because the merged copy was never
-  rewritten. No decision text or target value changes.
+  text, kept as written)**: this record is now treated as **ratified**. The
+  evidence on record: the `ratify:key` key reviews and the operator release on the
+  #482 PR (operator release comment 2026-11-04T06:39Z; #482 merged 2026-11-04), and
+  #467's own text, "#478 landed via #482 (ratified 2026-11-04)". The ratification
+  date is therefore 2026-11-04. It is not stated whether that act covers DR-013 itself
+  or only the #478 additions; this amendment does not choose between them. No source
+  was found for a 2026-11-01 ratification (#470 merged that day as a `Part of #467`
+  increment that proposed DR-013 and left ratification to a human step). The status
+  line above reads `proposed` only because the merged copy was never rewritten. No
+  decision text or target value changes.
 - **Date**: 2026-10-29
 - **Author**: Builder agent (#467)
 - **Ratifies against / input to**: #467 (operator ruling 2026-10-29 on #461: fix the
