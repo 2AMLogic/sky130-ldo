@@ -19,7 +19,6 @@ from __future__ import annotations
 import ast
 import math
 import re
-from pathlib import Path
 
 UNMEASURED = "unmeasured"
 LIMIT_UM2 = 0.1e6  # ratified Area row: < 0.1 mm^2 (strict); read-only here
@@ -201,10 +200,6 @@ def mim_subckt_formula_ok(models_capacitors_text: str, name: str) -> bool:
     return bool(m and MIM_FORMULA_RE.search(m.group(1)))
 
 
-def mim_cap_f(ca_f_per_um2: float, dw_um: float, w_um: float, l_um: float) -> float:
-    return ca_f_per_um2 * (w_um + dw_um) * (l_um + dw_um)
-
-
 def vpp_ctot(model_text: str, env: dict[str, float]) -> float | None:
     """The model's nominal plate-to-plate capacitance ``ctot_a`` (F) under the
     corner factors in *env*; None when the model has no evaluable ``ctot_a``."""
@@ -231,18 +226,6 @@ def vpp_rat_sum(model_text: str) -> float | None:
         return round(sum(eval_expr(v, {}) for v in rats), 6)
     except (KeyError, ValueError):
         return None
-
-
-VPP_NAME_RE = re.compile(r"sky130_fd_pr__cap_vpp_(\d+)p(\d+)x(\d+)p(\d+)_(.+)$")
-
-
-def vpp_name_dims(name: str) -> tuple[float, float] | None:
-    """Nominal W x L the PDK encodes in a vpp cell name (informational only;
-    the study's area uses the measured .mag bbox)."""
-    m = VPP_NAME_RE.match(name)
-    if not m:
-        return None
-    return float(f"{m.group(1)}.{m.group(2)}"), float(f"{m.group(3)}.{m.group(4)}")
 
 
 MAG_LAYER_MAP = {
@@ -412,10 +395,3 @@ def interp(xs: list[float], ys: list[float], x: float) -> float | None:
             x0, x1, y0, y1 = xs[i - 1], xs[i], ys[i - 1], ys[i]
             return y0 if x1 == x0 else y0 + (y1 - y0) * (x - x0) / (x1 - x0)
     return ys[-1]
-
-
-def rel_path(p: Path, root: Path) -> str:
-    try:
-        return str(p.resolve().relative_to(root.resolve()))
-    except ValueError:
-        return str(p)
