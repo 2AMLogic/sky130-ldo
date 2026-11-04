@@ -32,6 +32,7 @@ import hashlib
 import importlib.util
 import json
 import os
+import re
 import shutil
 import socket
 import subprocess
@@ -271,6 +272,137 @@ def klt_binary(usage_context: str, error_cls: type[Exception] = RuntimeError) ->
             f"(https://github.com/2AMLogic/klayout-tools) to {usage_context}"
         )
     return exe
+
+
+JOB_ID_RE = re.compile(r"klt-sim-[0-9a-f]+")
+
+# Shared-fleet saturation (issue #345): the only failure retried. The refusal
+# happens at launch, before a job exists, so a resubmit cannot double-run.
+CAPACITY_REFUSAL_TEXT = "exceeds BATCH_MAX_CONCURRENT_INSTANCES"
+CAPACITY_RETRY_BACKOFF_S = 90
+CAPACITY_RETRY_BUDGET_S = 3 * 3600
+
+
+def run_klt_sim(
+    request_path: Path,
+    outdir: Path,
+    backend: str,
+    pdk_root: Path | None = None,
+    *,
+    klt_exe: str,
+    error_cls: type[Exception] = RuntimeError,
+    retry_capacity: bool = False,
+    extra_args: tuple[str, ...] = (),
+    resolve_paths: bool = False,
+    require_corners: bool = True,
+) -> tuple[dict, dict]:
+    """Invoke `klt sim` once (never replaced by a local run) and return
+    `(response, meta)`; the one shared copy of what five scripts re-implemented.
+
+    `klt_exe` comes from the caller's `klt_binary(...)` wrapper (which owns
+    the install-hint wording and exception type). `pdk_root`, when given, is
+    exported as `PDK_ROOT` (issue #211). `klt.stdout`/`klt.stderr` are always
+    persisted in `outdir`, and the stdout JSON must be an object; with
+    `require_corners` (default) it must also hold a `corners` list, so an
+    error envelope is refused rather than read as a sim result.
+
+    `retry_capacity` retries ONLY a fleet-cap refusal (`CAPACITY_REFUSAL_TEXT`
+    with no job id seen) every `CAPACITY_RETRY_BACKOFF_S` for at most
+    `CAPACITY_RETRY_BUDGET_S`; any other failure is fatal and unretried.
+    `resolve_paths` makes `request_path`/`outdir` absolute (a relative `-o`
+    breaks klt's per-corner cwd, klayout-tools#2892). Raises `error_cls`,
+    keeping whatever stdout/stderr/job ids exist. `meta` is `returncode`,
+    `cmd` and `job_ids_seen`.
+    """
+    if resolve_paths:
+        request_path, outdir = request_path.resolve(), outdir.resolve()
+    cmd = [
+        klt_exe, "sim", str(request_path), "-o", str(outdir),
+        "--backend", backend, "--format", "json", *extra_args,
+    ]
+    env = None
+    if pdk_root is not None:
+        env = dict(os.environ)
+        env["PDK_ROOT"] = str(pdk_root)
+    outdir.mkdir(parents=True, exist_ok=True)
+
+    def job_ids(stdout: str, stderr: str) -> list[str]:
+        return list(dict.fromkeys(JOB_ID_RE.findall((stdout or "") + "\n" + (stderr or ""))))
+
+    def diag(stdout: str, stderr: str) -> str:
+        (outdir / "klt.stdout").write_text(stdout or "")
+        (outdir / "klt.stderr").write_text(stderr or "")
+        ids = job_ids(stdout, stderr)
+        return (
+            f"  cmd: {' '.join(cmd)}\n"
+            f"  remote job id(s) seen: {', '.join(ids) if ids else 'none'}\n"
+            f"  stdout: {(stdout or '').strip()[:2000]}\n"
+            f"  stderr: {(stderr or '').strip()[:2000]}\n"
+            f"  diagnostics kept in {outdir}"
+        )
+
+    def launch() -> subprocess.CompletedProcess:
+        return subprocess.run(
+            cmd, capture_output=True, text=True, timeout=None, env=env,
+            stdin=subprocess.DEVNULL,
+        )
+
+    def capacity_refused(p: subprocess.CompletedProcess) -> bool:
+        text = (p.stdout or "") + "\n" + (p.stderr or "")
+        return (
+            p.returncode != 0
+            and CAPACITY_REFUSAL_TEXT in text
+            and not JOB_ID_RE.search(text)
+        )
+
+    try:
+        proc = launch()
+        attempts, waited = 1, 0
+        while retry_capacity and capacity_refused(proc):
+            if waited + CAPACITY_RETRY_BACKOFF_S > CAPACITY_RETRY_BUDGET_S:
+                raise error_cls(
+                    f"klt sim ({backend}) refused for fleet capacity on all {attempts} "
+                    f"attempt(s) over {waited} s (budget {CAPACITY_RETRY_BUDGET_S} s); "
+                    "NOT falling back to a local run\n" + diag(proc.stdout, proc.stderr)
+                )
+            time.sleep(CAPACITY_RETRY_BACKOFF_S)
+            waited += CAPACITY_RETRY_BACKOFF_S
+            attempts += 1
+            proc = launch()
+    except subprocess.TimeoutExpired as exc:
+        def _s(v):
+            return v.decode(errors="replace") if isinstance(v, bytes) else (v or "")
+        raise error_cls(
+            f"klt sim ({backend}) timed out; NOT resubmitting and NOT falling back to a "
+            "local run -- the remote job may still be running\n"
+            + diag(_s(exc.stdout), _s(exc.stderr))
+        ) from exc
+    except OSError as exc:
+        raise error_cls(f"could not launch klt sim: {exc}") from exc
+    if not proc.stdout.strip():
+        raise error_cls(
+            f"klt sim produced no stdout (rc {proc.returncode})\n" + diag(proc.stdout, proc.stderr)
+        )
+    try:
+        response = json.loads(proc.stdout)
+    except json.JSONDecodeError as exc:
+        raise error_cls(
+            f"klt sim produced non-JSON stdout ({exc}; rc {proc.returncode})\n"
+            + diag(proc.stdout, proc.stderr)
+        ) from exc
+    detail = diag(proc.stdout, proc.stderr)
+    if not isinstance(response, dict) or (
+        require_corners and not isinstance(response.get("corners"), list)
+    ):
+        raise error_cls(
+            f"klt sim returned an error envelope / non-sim response (rc {proc.returncode})\n"
+            + detail
+        )
+    return response, {
+        "returncode": proc.returncode,
+        "cmd": cmd,
+        "job_ids_seen": job_ids(proc.stdout, proc.stderr),
+    }
 
 
 def assert_klt_read_the_pinned_pdk(
