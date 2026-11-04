@@ -907,6 +907,18 @@ the pinned netlist default (1 mA), so no request inherits another's load.
   not permit a local multi-corner campaign. The full 45-point refresh belongs
   to #231 after equivalence is evidenced.
 
+  **Paired check performed (issue #384, 2026-11-04, single corner tt / 27 C /
+  3.30 V only): equivalence NOT established.** Preflight was accepted and
+  both halves graded PASS, but the fleet runner used ngspice 46 and this
+  worker's local ngspice is 42, so no equivalence claim is possible. The
+  slopes agree (< 1e-6 mV/V) but `vout_50ma_hi_min`/`_max` differ by
+  +62/-65 uV (limit 1 uV; the local half only prints 6 significant digits, so
+  sub-5 uV rows are inconclusive). Evidence, comparison and reproduction:
+  `sim/line-regulation/diagnostics/issue-384/` (checker:
+  `sim/bin/compare_line_regulation_paired.py`). Broader PVT equivalence is
+  unclaimed. Handoff for #231: **defer** until a same-engine local run with
+  full-precision values exists.
+
 #### Load regulation endpoints on the batch backend (issue #381)
 
 `python3 sim/bin/corner-run.py sim/load-regulation --backend batch` is
