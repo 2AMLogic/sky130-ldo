@@ -62,7 +62,7 @@ ratified framing (A): pass device `sky130_fd_pr__pfet_g5v0d10v5`, 3.3 V ±10% in
 1.8 V out / 0–50 mA, port parity with `2AMLogic/gf180-ldo`. That ruling was
 scoped to the framing question only; the numeric table below has since been
 ratified in full via DR-006 (see "Status" above), with the Iq row DR-006
-left open set by DR-009. Framing (C) (5 V pass device with a
+left open, to be set by DR-009 (`proposed`; fresh ratification pending under #301). Framing (C) (5 V pass device with a
 core-device error-amplifier core) remains an open refinement inside (A),
 deferred to a later topology decision record.
 
@@ -124,7 +124,7 @@ it must be measured, per device, per bias point.
 3. **sky130 device characterization.** **Resolved: ratified per DR-003/#1**
    (2026-08-19, DR-006) — dropout test-point convention and binding-corner
    finding ratified. DR-003 never proposed an Iq budget number, and that item
-   is now set by DR-009 (< 30 µA at no load and full load).
+   is now set by DR-009 (< 30 µA at no load and full load; DR-009 is `proposed`, fresh ratification pending under #301).
 4. **Corner-model names.** **Resolved: ratified per DR-004/#1** (2026-08-19,
    DR-006) — bound to the sky130 `.lib` section names, no translation needed.
 

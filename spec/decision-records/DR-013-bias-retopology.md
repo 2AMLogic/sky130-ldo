@@ -4,6 +4,13 @@
   needs the two-key step (EE and market keys) and then operator ratification
   (2am#5346), which are human gates outside this PR. #461 (layout) stays parked
   until that completes.
+- **Status amendment (2026-11-04, #489; additive — the line above is the original
+  text, kept as written)**: this record is now treated as **ratified**. Issue #467
+  records the ratification as 2026-11-01; the `ratify:key` key reviews and the
+  operator release are on the #482 PR, and #489 cites them. The date was not
+  corroborated from #467's own comments when this amendment was written. The status
+  line above therefore reads `proposed` only because the merged copy was never
+  rewritten. No decision text or target value changes.
 - **Date**: 2026-10-29
 - **Author**: Builder agent (#467)
 - **Ratifies against / input to**: #467 (operator ruling 2026-10-29 on #461: fix the
@@ -87,19 +94,43 @@ resistor-skew corners. `sim/bias-retopo/20261101-llhh-478/record.md` adds them
 30.3 @ 125 °C/3.30 V, 32.4 @ 125 °C/3.63 V); `hh` is 9/9 in budget; no-load Iq is in budget at all 63.
 The worst full-load figure is now 32.4 µA (`ll`/125 °C/3.63 V). The carried FAIL stands at the unchanged bound.
 
+*Provenance and receipt notes (2026-11-04, #489; additive).* **Engine versions.** The response files differ by
+which ngspice built the graded numbers. The 45 carried rows (`sim/bias-retopo/20261029-fullloop-467/`) record a
+client-side ngspice binary whose banner reads **ngspice-42** (binary sha256 `82065831…`, the version pinned in
+`sim/pdk.json`); the 18 new `ll`/`hh` rows (`20261101-llhh-478/`) record a client-side binary reading
+**ngspice-46** (sha256 `c874869b…`). The batch worker's banner is ngspice-46 in the 45-row responses, and every
+response's `engine_version` field says `46`. Both sets used the same deck and the same
+`models_lib_sha256` (`48de7c67…`, 12 of 12 responses). The merged table therefore mixes two client-side engine
+versions; no cross-version check was run. **Receipt hash.** `request_sha256` in `batch-receipt`/`*.receipt.json`
+is the SHA-256 of the request JSON in canonical sorted-key form (`json.dumps(obj, sort_keys=True)`), not of the
+committed request file's bytes; `sha256sum requests/<name>.json` will not match it. Checked on
+`20261101-llhh-478/requests/v2.97-tran1.json` → `dc4a7f19…`, equal to its receipt.
+
 *Attribution of the exceedances (#478).* The candidate changes only `R_BIAS`, so it can change Iq only
 through the bias current; the bias-only grid (`sim/bias-retopo/20261029-bias-grid-467/record.md`) gives
 the pair-current shift at every point. At **ff / −40 °C / 3.63 V (31.2 µA)** the shift is −0.45 %
 (4.6346 → 4.6137 µA) and at **fs / 27 °C / 3.63 V (30.2 µA)** it is −0.34 % (4.5480 → 4.5325 µA): the
 candidate lowers bias current there, so **these two of the six cannot be caused by it**, and the design of
 record is **inferred** to be at or marginally above the same value (already over 30 µA); the two `ll`
-points at 3.63 V cold/room (−2.85 %, −0.08 %) are likewise not candidate-caused. This is an inference
+points at 3.63 V cold/room (−2.85 %, −0.08 %) are likewise not candidate-caused.
+*Amendment (2026-11-04, #489; additive — the sentence above is unchanged, this bounds "marginally").* The
+size of that margin follows from the mirror gain, not from the pair-current shift alone. Taking the
+whole-circuit Iq as proportional to the bias current is an upper bound on the gain, since the load-dependent
+part does not scale with it. The gain is then at most Iq / I_pair, using the 63-point table and the
+bias-only grid. At **ll / −40 °C / 3.63 V** the candidate lowers I_pair by 0.156 µA (5.4711 → 5.3153), and
+Iq / I_pair is 17.56 / 5.3153 ≈ 3.3 (no load) to 31.3 / 5.3153 ≈ 5.9 (full load). The design of record is
+therefore about **0.5–0.9 µA** higher at that point (≈ 31.8–32.2 µA at full load), not ≤ 0.16 µA, which is
+the unscaled pair shift. The same bound at ff / −40 °C / 3.63 V (ΔI_pair = 0.021 µA, Iq / I_pair ≈ 3.3–6.7)
+gives about 0.07–0.14 µA. The conclusion stands: the design of record is at or above the candidate at these
+points, so these exceedances are not candidate-caused. The bound is derived from the committed tables and
+is not a measured baseline. This is an inference
 from the bias-only grid, **not a measured baseline** (none was run). The remaining six exceedances all
 have a positive bias shift (+2.4 % … +8.4 %, five of them hot), which is consistent with, not proof of,
 the candidate contributing; they stay **unattributed**.
 
 *Departure from gf180-ldo DR-0033 (#478; port parity, CLAUDE.md).* `2AMLogic/gf180-ldo`
-`DR-0033-poly-resistor-flavour-is-set-by-dc-current-not-by-area.md` rules that a poly resistor which sets a
+`DR-0033-poly-resistor-flavour-is-set-by-dc-current-not-by-area.md` (status `proposed` in that repo as of
+2026-11-04, #489, so what follows is its proposed rule, not a ratified one) holds that a poly resistor which sets a
 **DC current** keeps the low-spread flavour (its `Rbias` stays `ppolyf_u_1k`; only resistors with no DC
 current in their branch, `Rz`/`Rza`/`Rbufb`, move to the dense, high-spread `ppolyf_u_3k`), because the
 wider-spread flavour costs +1.97 µA of Iq at the hot/fast corner where the ratified 30 µA row already

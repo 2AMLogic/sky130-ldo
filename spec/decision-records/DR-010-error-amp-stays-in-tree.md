@@ -9,6 +9,12 @@
   in `sky130-opamp`): merging the PR does not rewrite the line above, so a merged
   copy of this record still reads `proposed` — treat that as a drafting artifact
   of the ratification mechanism, not as an unratified decision.
+  *Amendment (2026-11-04, #489; additive — the wart note above is superseded for this
+  record only):* the wart note and "Status notes" below predate the #301 ruling. Under
+  it, #137's merge was **not** this record's ratifying act (see "Ratification path"),
+  so a merged `proposed` copy of DR-010 is **not** a drafting artifact: it is unratified
+  until a fresh ratification PR merges. Read "drafting artifact" and "the ratifying
+  act" in this record in that light.
 - **Ratification path**: fresh ratification required — operator ruling on
   #301, 2026-10-19 (option 2). The historical merge of #137 (`9ff2f8e`) is cited
   for context only and is not accepted as this record's ratifying event; the
@@ -214,8 +220,9 @@ implicit.
 ## Status notes
 
 - Stays `proposed` until the PR carrying it is approved and merged (Judge review
-  + Champion/operator merge), which is the ratifying act under the 2026-08-19
-  ratification-via-PR standing policy ([2am#357](https://github.com/2AMLogic/2am/issues/357)).
+  + Champion/operator merge), which was the ratifying act under the 2026-08-19
+  ratification-via-PR standing policy (superseded for this record by the #301 ruling —
+  see the 2026-11-04 amendment in the Status line) ([2am#357](https://github.com/2AMLogic/2am/issues/357)).
   This record does not self-ratify, and — see the status-line wart above — the
   merged copy will still read `proposed`.
 - Because it sets no `spec/target-spec.md` row, it is **not** input to #1's
