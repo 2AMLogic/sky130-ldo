@@ -1,0 +1,94 @@
+{
+ "candA": {
+  "ac_tt_valid": 18,
+  "ac_tt_total": 18,
+  "ac_tt_fail_or_unrun": [
+   "0.33u/10m/50mA",
+   "0.33u/10m/30uA",
+   "4.7u/10m/30uA",
+   "4.7u/10m/100uA",
+   "4.7u/10m/300uA"
+  ],
+  "ac_tt_regressions_vs_baseline": [],
+  "ac_pvt_total": 32,
+  "ac_pvt_regressions_vs_baseline": [],
+  "worst_dIq_uA": {
+   "0": 0.0022700000000011045,
+   "3uA": 0.01094999999999935,
+   "10uA": 0.022949999999999804,
+   "30uA": 0.02620999999999718,
+   "100uA": 0.0315000000000083,
+   "300uA": 0.03169999999996875,
+   "1mA": 0.030999999999945516,
+   "50mA": 0.030000000005028227
+  },
+  "op_nonregulating": {
+   "0": 0,
+   "3uA": 0,
+   "10uA": 0,
+   "30uA": 0,
+   "100uA": 0,
+   "300uA": 0,
+   "1mA": 0,
+   "50mA": 0
+  },
+  "tran_regressions_or_invalid": [
+   "f50to1mA/c0p33u/tt/-40(recovery 57->111us)",
+   "f50to1mA/c0p33u/tt/27(recovery 72->126us)",
+   "f50to1mA/c0p33u/ss/-40(recovery 56->111us)",
+   "f50to1mA/c0p33u/ss/27(recovery 72->130us)"
+  ],
+  "max_dIq_uA": 0.03169999999996875,
+  "verdict": "revise"
+ },
+ "candB": {
+  "ac_tt_valid": 18,
+  "ac_tt_total": 18,
+  "ac_tt_fail_or_unrun": [
+   "0.33u/10m/50mA",
+   "0.33u/10m/30uA",
+   "0.33u/10m/100uA",
+   "4.7u/10m/300uA"
+  ],
+  "ac_tt_regressions_vs_baseline": [
+   "0.33u/10m/100uA"
+  ],
+  "ac_pvt_total": 32,
+  "ac_pvt_regressions_vs_baseline": [
+   "0.33u/10m/100uA@ss/-40",
+   "0.33u/10m/100uA@ss/125"
+  ],
+  "worst_dIq_uA": {
+   "0": 0.0022700000000011045,
+   "3uA": 0.00931000000000104,
+   "10uA": 0.02771000000000079,
+   "30uA": 0.06825000000000436,
+   "100uA": 0.13630000000000742,
+   "300uA": 0.1369999999999898,
+   "1mA": 0.13700000000009638,
+   "50mA": 0.14000000000264023
+  },
+  "op_nonregulating": {
+   "0": 0,
+   "3uA": 1,
+   "10uA": 0,
+   "30uA": 0,
+   "100uA": 0,
+   "300uA": 0,
+   "1mA": 0,
+   "50mA": 0
+  },
+  "tran_regressions_or_invalid": [
+   "f50to1mA/c0p33u/tt/-40(recovery 57->113us)",
+   "f50to1mA/c0p33u/tt/27(recovery 72->134us)",
+   "f50to1mA/c0p33u/tt/125(recovery 91->159us)",
+   "f50to1mA/c0p33u/ss/-40(recovery 56->113us)",
+   "f50to1mA/c0p33u/ss/27(recovery 72->135us)",
+   "f50to1mA/c0p33u/ss/125(recovery 91->161us)",
+   "f50to1mA/c0p33u/ff/27(recovery 71->132us)",
+   "f50to1mA/c0p33u/ff/125(recovery 91->155us)"
+  ],
+  "max_dIq_uA": 0.14000000000264023,
+  "verdict": "reject"
+ }
+}
