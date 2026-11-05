@@ -80,13 +80,13 @@
       "cited_envelope": "signoff/evidence/item2-attestation.generic.json",
       "envelope_field": "provenance.input.content_hash",
       "manifest_pinned": true,
-      "note": "klt signoff --attest 2 --input (issue #423). Bound to the GDS items 4 and 11 cite (same hash). Item 3's DRC cites an earlier GDS (52307a20...) and the newest committed GDS is 1698311e...; no regeneration claim is made (the generator has moved on and the layout flow needs raw xschem, out of scope)."
+      "note": "klt signoff --attest 2 --input (issue #423). Bound to the GDS items 4 and 11 cite (same hash). Item 3's DRC now cites the clean `klt drc` envelope on the same GDS (20260924-221821-a947aa8/drc.json); item 7's PEX pin remains on the older 52307a20... GDS. The newest committed GDS (1698311e...) is not the alignment target because its LVS is a mismatch; no regeneration claim is made (the generator has moved on and the layout flow needs raw xschem, out of scope)."
     },
     {
       "item": "3",
-      "artifact": "layout/ldo-core/reports/20260825-123551-3b4e121/ldo_core.gds",
-      "sha256": "sha256:52307a206e6eaaa2e555dbb3aa6b62928ac2d5fab8189f9dd4f1600d220d9172",
-      "cited_envelope": "layout/ldo-core/reports/20260825-123551-3b4e121/drc.json",
+      "artifact": "layout/ldo-core/reports/20260924-221821-a947aa8/ldo_core.gds",
+      "sha256": "sha256:3e7f504b56ea85cdd733ecf456650b6f08c72540ec4a6ad38b73f3a0369beb9a",
+      "cited_envelope": "layout/ldo-core/reports/20260924-221821-a947aa8/drc.json",
       "envelope_field": "provenance.input.content_hash",
       "manifest_pinned": true,
       "note": "The composed LDO-core GDS the `klt drc` run read. Also the manifest's own item-3 pin, so all three -- file on disk, envelope claim, manifest pin -- must agree."

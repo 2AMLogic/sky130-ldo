@@ -107,7 +107,7 @@ of the claimant rather than of the tool.
 | # | Status | Reading |
 |---|---|---|
 | 1 | **`met`** | `klt signoff --attest 1 --inventory signoff/evidence/item1-inventory.json` (issue #423): the LDO and thermal-comparator schematics/symbols exist, and the committed headless xschem netlist `layout/ldo-core/reports/20261022-232042-56dd87fe/xschem_out/ldo_3v3in_1v8out.spice` passes its freshness check (`klt netlist --check --ignore-comments` on the klt batch backend, because this worker's xschem 3.4.4 cannot evaluate `expr()`). That command is `local_only`: `check.sh` does not re-run it, it carries the committed outcome; the sources, netlist and inventory are re-hashed on every run. |
-| 2 | **`met`** | `klt signoff --attest 2 --input` (issue #423) on `layout/ldo-core/reports/20260924-221912-a947aa8/ldo_core.gds` — the GDS items 4 and 11 cite: readable, non-empty top cell `ldo_core`, dbu on grid. **Disclosed:** no regeneration claim (the generator has since moved on and the layout flow needs raw xschem and mints new records, out of scope); item 3's DRC cites an earlier GDS (`52307a20…`) and the newest committed GDS (`20261022-232042-56dd87fe`) is cited by none of items 3, 4, 11. |
+| 2 | **`met`** | `klt signoff --attest 2 --input` (issue #423) on `layout/ldo-core/reports/20260924-221912-a947aa8/ldo_core.gds` — the GDS items 4 and 11 cite: readable, non-empty top cell `ldo_core`, dbu on grid. **Disclosed:** no regeneration claim (the generator has since moved on and the layout flow needs raw xschem and mints new records, out of scope); items 2, 3, 4 and 11 now all cite the same GDS (`3e7f504b…`; item 3's DRC re-cited to the existing clean `20260924-221821-a947aa8/drc.json`, no re-run). The newest committed GDS (`1698311e…`, `20261022-232042-56dd87fe`) is deliberately not the alignment target: its LVS (`20261022-231941-56dd87fe/lvs.json`) is `mismatch`, so moving items 4/11 to it would regress them. Remaining divergence: item 7's PEX pin stays on the older `52307a20…` GDS (`20260825-123551-3b4e121`); its errored PEX envelope was not re-run. |
 | 3 | **`met`** | `klt drc` on that GDS, `status: clean`, `violation_count: 0`, pinned to the GDS's own sha256. **Read the coverage disclosure below before treating this as "DRC clean".** |
 | 4 | **`met`** | `klt lvs`, `status: match`, layout vs. the schematic-derived reference netlist. **Three disclosed warnings below.** Re-pointed by issue #127 at a klt 0.6.0 re-run whose `provenance.input.content_hash` is non-null, so the manifest now pins this citation directly instead of relying only on `signoff/artifact-pins.json`. |
 | 5 | `unmet` / `check_failed` | **Graded from evidence since issue #449.** `signoff/make_item5_envelope.py` wraps the eleven committed corner-matrix records into `klt sim`-shaped envelopes (`signoff/evidence/item5-<bench>-<record>.sim.json`) **without re-simulating** — the *wrap* route, not a `klt sim` re-run. Every value, limit and verdict is copied verbatim from the record; the ratified bound is checked against the record's own limit before anything is written, and each envelope is pinned to the netlist snapshot its record simulated (not necessarily the current schematic — `measurements/characterization.md` reports freshness). `spec_rows."5"` declares 14 rows. Failing rows, named by the grader: `dropout`, `iq`, `load-regulation`, `load-transient`, `psrr`, `stability`. Covered and passing: `current-limit`, `enable-shutdown`, `line-regulation`, `output` (graded at 50 mA over the 45-point matrix via `vout_50ma_v`), `startup`, `thermal`. `iq` is declared `ratified: false` (DR-009 is `proposed`). Declared gaps: `area` (a layout measurement, not a netlist sim; a **failing** row at 0.4519 mm² against the ratified < 0.1 mm², and only a lower bound because the four capacitors C_COMP, C_CL, C_SS and C_TS are not drawn; graded by the layout record `20261023-170539-a8292e91`; `klt economy --budget-um2` can grade it, but no grader envelope kind exists for it) and `output-noise` (waived). The dropout record is a one-corner attribution run (`is_subset`), so its envelope could never be better than `pass_partial`. Input and Load are stimulus conditions, not graded rows. As each row-level issue lands a new record, re-mint its envelope (append-only: a new file, re-point the manifest and pin). Row-level design work: #314, #370, #375, #345, #381, #213. |
@@ -126,31 +126,33 @@ enumerated **in the claim**, and is explicit that this is claimant-enforced:
 not evidence that the gaps were disclosed. Quoted verbatim from the cited
 envelope's own `coverage` block:
 
-- `layers_checked` — `65/20` (diff), `66/20` (poly), `66/44` (licon1), `67/20`
-  (li1), `67/44` (mcon), `68/20` (met1), `68/44` (via), `69/20` (met2). Eight
-  layers; this block routes on met1/met2 only.
+- Cited envelope (issue #508): [`20260924-221821-a947aa8/drc.json`](../layout/ldo-core/reports/20260924-221821-a947aa8/drc.json)
+  — `status: clean`, `violation_count: 0`, on the GDS items 2, 4 and 11 also
+  cite (`3e7f504b…`). It replaces the earlier `20260825-123551-3b4e121/drc.json`
+  (`52307a20…`, klt 0.2.0), which stays in place as an append-only record.
+- `layers_checked` — twelve layers: `64/20` (nwell), `65/20` (diff), `65/44`
+  (tap), `66/20` (poly), `66/44` (licon1), `67/20` (li1), `67/44` (mcon),
+  `68/20` (met1), `68/44` (via), `69/20` (met2), `69/44` (via2), `70/20`
+  (met3).
 - `layers_in_stream_without_rules` — **seven layers are drawn in this stream
-  that the deck has no rule for**: `64/20` (nwell), `65/44` (tap), `66/13`
-  (poly.res marker), `68/5` (met1.pin), `79/20` (urpm), `86/20` (rpm), `94/20`
-  (psdm). Concretely: **no n-well rule was evaluated at all** — not width, not
-  spacing, not enclosure of the PMOS span the whole layout's body-tie strategy
-  depends on — and neither were the implant masks or the poly-resistor marker
-  that identify this block's precision resistors. A "clean" verdict says
-  nothing about any of them.
-- `rules_skipped` — empty: the deck did not carry a rule this run declined to
-  evaluate.
-- `deck_scope` — **absent**. This envelope was produced by klt 0.2.0, which
-  predates the field, so the artifact makes no statement about which chapters
-  of the sky130 DRM the deck transcribes at all. Per the checklist, an absent
-  `deck_scope` is "this artifact reported no scope", never "the deck covers
-  everything".
-- `rule_counts` — **empty (`{}`)**, same vintage. The report states zero
-  violations but names no rule inventory, so the artifact does not itself say
-  how many rules ran.
-
-Re-running DRC on a current `klt` would replace all three absences with real
-values. It needs the PDK, so it is not something CI can do here; it is worth
-doing the next time the layout is recomposed.
+  that the deck has no rule for**: `66/13` (poly.res marker), `68/5`
+  (met1.pin), `69/5`, `75/20`, `79/20` (urpm), `86/20` (rpm), `94/20` (psdm).
+  The implant masks and the poly-resistor marker that identify this block's
+  precision resistors were not evaluated; a "clean" verdict says nothing about
+  them. (Unlike the earlier envelope, nwell and tap are now checked.)
+- `rules_skipped` — **26 rules the deck carries but this run did not
+  evaluate**, all on layers this block does not draw: the `capm`/`capm2` MIM
+  capacitor rules (`capm.*`, `capm2.*`, `met3.enclosing.capm.1`,
+  `met4.enclosing.capm2.1`), the `met4`/`met5` rules (`met4.area.1`,
+  `met4.space.1`, `met4.width.1`, `met5.*`, …) and `via3.*`/`via4.*`
+  space/width/enclosure. The block routes on met1/met2 (with met3 present), so
+  none of these gates it, but they were not evaluated and are not claimed.
+- `deck_scope` — `cap2m`, `capm`, `ct`, `difftap`, `li`, `licon`, `m1`, `m2`,
+  `m3`, `m4`, `m5`, `nwell`, `poly`, `via`, `via2`, `via3`, `via4`: the DRM
+  chapters this deck transcribes. Everything outside that list (including the
+  implant and resistor-marker chapters) is outside what "clean" was measured
+  inside.
+- `rule_counts` — `null`: the report names no rule inventory.
 
 ### Item 4 is `met`, and what that compare did and did not ask
 
@@ -689,7 +691,7 @@ thirteen artifacts behind all six citations are also pinned in
 
 | Item | Artifact re-hashed by CI | Hash claim cross-checked against |
 |---|---|---|
-| 3 | `…/20260825-123551-3b4e121/ldo_core.gds` | envelope `provenance.input.content_hash` + manifest pin |
+| 3 | `…/20260924-221821-a947aa8/ldo_core.gds` | envelope `provenance.input.content_hash` + manifest pin |
 | 4 | `…/20260924-221912-a947aa8/ldo_core.gds` | envelope `environment.layout_sha256` + manifest pin |
 | 4 | `…/20260924-221912-a947aa8/reference.spice` | envelope `environment.reference_sha256` |
 | 6 | `…/klt-responses/20260927-093538-227be3e.samples.json` | the samples document the cited `klt yield` report names + manifest pin (no envelope claim to cross-check — a yield report makes none) |
