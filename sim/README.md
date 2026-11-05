@@ -1134,6 +1134,29 @@ upstream as klayout-tools#3249. The 45-corner re-run (`--supersedes
 20260910-034648-6c0436d`) still has to be done once the runner image carries
 `analysis_steps`.
 
+**Status (2026-11-05): record `20261105-052332-05df7a01`, FAIL, 40/45 corners
+PASS.** The runner image was rebaked to klt 0.9.0; `batch-preflight.py` exited 0
+and the full 45-point matrix ran as 6 `klt sim` requests (`--supersedes
+20260910-034648-6c0436d`). Results against the seeded `tran ... uic` deck:
+
+- **Solver-diagnostic gate (#171): 0/45** corners tripped it. (The superseded
+  unseeded `.op` record tripped it on all 45.)
+- **Regulation gate (#133): 45/45** within the 1.764-1.836 V Output window,
+  every `iq_*` value > 0. #133's two named corners, `ss_-40c_3.30v` (no load,
+  1.80157 V) and `ff_-40c_2.97v` (full load, 1.79895 V), now regulate and PASS;
+  once seeded they were not non-regulating.
+- **Iq budget (< 30 uA): 5 FAIL**, all `iq_full_load_ua` above max at 3.63 V on
+  the fast-NMOS corners: `ff_-40c_3.63v` (31.3), `ff_27c_3.63v` (31.3),
+  `ff_125c_3.63v` (30.7), `fs_-40c_3.63v` (30.4), `fs_27c_3.63v` (30.2).
+  No-load Iq peaks at 16.7 uA. Gates and bounds were not changed; the FAIL is
+  the recorded outcome.
+
+The record's JSON twin lives in the artifact store (issue #436), so
+`measurements/build_characterization_report.py` (which selects on committed
+`records/*.json`) does not yet see this record: the Iq row of
+`measurements/characterization.md` and the signoff item 8 pins were **not**
+regenerated here and still cite `20260910-034648-6c0436d`.
+
 ## Bound inclusivity (issue #335)
 
 A measurement's `min` / `max` are inclusive by default (value == bound passes).
