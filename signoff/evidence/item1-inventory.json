@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "kind": "t1-attestation-inventory",
+  "t1_item": 1,
+  "description": "Design sources: the LDO schematic/symbol (and the standalone thermal comparator), plus the committed headless xschem netlist the LVS reference derives from. Freshness = klt netlist --check run on the klt batch backend (the sweep host's xschem 3.4.4 cannot evaluate expr(); the batch runner has 3.4.7).",
+  "sources": [
+    "design/ldo_3v3in_1v8out.sch",
+    "design/ldo_3v3in_1v8out.sym",
+    "design/thermal_cmp_regen.sch",
+    "design/thermal_cmp_regen.sym"
+  ],
+  "derived": [
+    {
+      "path": "layout/ldo-core/reports/20261022-232042-56dd87fe/xschem_out/ldo_3v3in_1v8out.spice",
+      "generator": "klt netlist",
+      "check": {
+        "argv": [
+          "uvx",
+          "--from",
+          "klayout-tools==0.9.0",
+          "klt",
+          "netlist",
+          "design/ldo_3v3in_1v8out.sch",
+          "-o",
+          "layout/ldo-core/reports/20261022-232042-56dd87fe/xschem_out/ldo_3v3in_1v8out.spice",
+          "--check",
+          "--ignore-comments",
+          "--rcfile",
+          "sim/xschemrc",
+          "--pdk",
+          "sky130A",
+          "--backend",
+          "batch",
+          "--batch-include",
+          "design/*",
+          "--batch-include",
+          "sim/xschemrc"
+        ],
+        "local_only": true,
+        "timeout_s": 900
+      }
+    }
+  ]
+}

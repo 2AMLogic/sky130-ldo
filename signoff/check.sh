@@ -59,6 +59,13 @@
 # 0.6.0 -> 0.8.0 (issue #449): `spec_rows` (the declared item-5 row set, and
 # `ratified`/`gap` rows) is first read by 0.8.0; 0.7.0 ignores it. Re-grading the
 # pre-#449 manifest on 0.8.0 moved no item status, only build metadata.
+#
+# 0.8.0 -> 0.9.0 (issue #423): 0.8.0 has `klt signoff --attest {1,8,9,10}` but
+# not `--attest 2 --input STREAM` (klayout-tools#4188, first shipped in 0.9.0),
+# which the item-2 layout envelope needs. 0.6.0/0.7.0 predate `--attest`
+# (klayout-tools#2844) entirely. Items 1, 2, 9 and 10 are therefore graded from
+# tool-produced, artifact-anchored envelopes under signoff/evidence/ instead of
+# being left uncited.
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -66,7 +73,7 @@ cd "$REPO_ROOT"
 
 # klayout-tools release this block is graded against. See the header above
 # before changing it.
-KLT_VERSION="0.8.0"
+KLT_VERSION="0.9.0"
 
 MANIFEST="signoff/block-manifest.json"
 PINS="signoff/artifact-pins.json"
@@ -106,6 +113,31 @@ else
   echo "  install uv:  python3 -m pip install --user uv" >&2
   echo "  or klt:      python3 -m pip install --user 'klayout-tools==${KLT_VERSION}'" >&2
   exit 2
+fi
+
+# ---------------------------------------------------------------------------
+# 1b. Re-attest items 1, 2, 9 and 10 (issue #423).
+#
+# `klt signoff --attest N ... --check ENVELOPE` re-runs the attestation and
+# exits non-zero unless the committed envelope still reproduces and still
+# passes: a changed/missing inventory entry, a drifted source or cited
+# artifact, or a command that now fails is caught here. Inventory commands
+# marked `local_only` (item 1's `klt netlist --check` on the batch backend)
+# are skipped and carry the committed outcome; they are re-run by whoever
+# re-mints the envelope. Skipped under --write so a regrade is never blocked
+# by the record it is about to replace.
+# ---------------------------------------------------------------------------
+if [[ "$WRITE" -eq 0 ]]; then
+  EV="signoff/evidence"
+  GDS_ITEM2="layout/ldo-core/reports/20260924-221912-a947aa8/ldo_core.gds"
+  for n in 1 9 10; do
+    "${KLT[@]}" signoff --attest "$n" --inventory "$EV/item${n}-inventory.json" \
+      --check "$EV/item${n}-attestation.generic.json" >/dev/null \
+      || { echo "signoff/check.sh: item $n attestation drifted -- re-mint with klt signoff --attest $n" >&2; exit 1; }
+  done
+  "${KLT[@]}" signoff --attest 2 --input "$GDS_ITEM2" \
+    --check "$EV/item2-attestation.generic.json" >/dev/null \
+    || { echo "signoff/check.sh: item 2 attestation drifted -- re-mint with klt signoff --attest 2" >&2; exit 1; }
 fi
 
 set +e
