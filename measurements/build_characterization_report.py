@@ -113,12 +113,14 @@ import json
 import os
 import re
 import shutil
+import subprocess
 import sys
 from pathlib import Path
 
 MEASUREMENTS_DIR = Path(__file__).resolve().parent
 REPO_ROOT = MEASUREMENTS_DIR.parent
 SIM_DIR = REPO_ROOT / "sim"
+ARTIFACT_MANIFEST_DIR = REPO_ROOT / "manifests" / "artifacts"
 LAYOUT_DIR = REPO_ROOT / "layout"
 SPEC_FILE = REPO_ROOT / "spec" / "target-spec.md"
 
@@ -278,19 +280,70 @@ def latest_sim_record(slug: str) -> tuple[dict, Path] | None:
     records_dir = SIM_DIR / slug / "records"
     if not records_dir.is_dir():
         return None
-    json_files = sorted(records_dir.glob("*.json"))
-    campaign: list[tuple[dict, Path]] = []
-    for f in json_files:
-        try:
-            data = json.loads(f.read_text())
-        except (OSError, json.JSONDecodeError):
-            continue
+    # Candidates are every committed `.json` twin plus every `.md` record whose
+    # twin lives only in the artifact store (issue #503; the twin stopped being
+    # committed in #436). Ordering is by record id across both kinds.
+    candidates: dict[str, Path | None] = {f.stem: f for f in records_dir.glob("*.json")}
+    for md in records_dir.glob("*.md"):
+        if md.stem not in candidates and _store_manifest_entry(slug, md.stem) is not None:
+            candidates[md.stem] = None
+    for record_id in sorted(candidates, reverse=True):
+        json_path = candidates[record_id]
+        if json_path is None:
+            # Fail loud (no fallback to an older committed record): an
+            # unreachable store must not silently reproduce this bug.
+            data = _fetch_store_record(slug, record_id)
+        else:
+            try:
+                data = json.loads(json_path.read_text())
+            except (OSError, json.JSONDecodeError):
+                continue
         if isinstance(data, dict) and data.get("evidence_kind") is None:
-            campaign.append((data, f))
-    if not campaign:
+            return data, records_dir / f"{record_id}.md"
+    return None
+
+
+def _store_manifest_entry(slug: str, record_id: str) -> tuple[Path, str] | None:
+    """(manifest path, entry name) when `record_id`'s JSON twin is held in the
+    artifact store per `manifests/artifacts/<slug>-<id>.manifest.json`."""
+    manifest = ARTIFACT_MANIFEST_DIR / f"{slug}-{record_id}.manifest.json"
+    name = f"sim/{slug}/records/{record_id}.json"
+    try:
+        entries = json.loads(manifest.read_text()).get("entries", [])
+    except (OSError, json.JSONDecodeError, AttributeError):
         return None
-    data, latest = campaign[-1]
-    return data, latest.with_suffix(".md")
+    if any(isinstance(e, dict) and e.get("name") == name for e in entries):
+        return manifest, name
+    return None
+
+
+def _fetch_store_record(slug: str, record_id: str) -> dict:
+    """Fetch a store-only record's JSON twin via `klt artifact get`, which
+    emits bytes only if their sha256 matches the manifest entry. Any failure
+    raises RuntimeError naming the record."""
+    ref = _store_manifest_entry(slug, record_id)
+    where = f"sim/{slug}/records/{record_id}.json"
+    if ref is None:
+        raise RuntimeError(f"{where}: no artifact manifest entry")
+    manifest, name = ref
+    try:
+        proc = subprocess.run(
+            ["klt", "artifact", "get", f"{manifest}#{name}", "-o", "-"],
+            capture_output=True,
+            timeout=120,
+        )
+    except (OSError, subprocess.SubprocessError) as exc:
+        raise RuntimeError(f"{where}: cannot run `klt artifact get`: {exc}") from exc
+    if proc.returncode != 0:
+        detail = proc.stderr.decode(errors="replace").strip()[-300:]
+        raise RuntimeError(f"{where}: `klt artifact get` failed ({proc.returncode}): {detail}")
+    try:
+        data = json.loads(proc.stdout)
+    except json.JSONDecodeError as exc:
+        raise RuntimeError(f"{where}: fetched twin is not valid JSON: {exc}") from exc
+    if not isinstance(data, dict):
+        raise RuntimeError(f"{where}: fetched twin is not a JSON object")
+    return data
 
 
 def sim_corner_tally(record: dict) -> str | None:

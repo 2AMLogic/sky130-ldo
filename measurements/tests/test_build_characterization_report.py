@@ -159,6 +159,71 @@ class TestLatestSimRecord(unittest.TestCase):
         self.assertIsNone(bcr.latest_sim_record("no-such-slug"))
 
 
+class TestLatestSimRecordStoreOnly(unittest.TestCase):
+    """Issue #503: a record whose JSON twin lives only in the artifact store
+    (#436) must still be selected, and a failed fetch must fail loud rather
+    than fall back to an older committed record."""
+
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tmp.cleanup)
+        root = Path(self._tmp.name)
+        self._orig = (bcr.SIM_DIR, bcr.ARTIFACT_MANIFEST_DIR, bcr._fetch_store_record)
+        bcr.SIM_DIR = root / "sim"
+        bcr.ARTIFACT_MANIFEST_DIR = root / "manifests"
+        bcr.ARTIFACT_MANIFEST_DIR.mkdir()
+        self.addCleanup(self._restore)
+        d = bcr.SIM_DIR / "s" / "records"
+        d.mkdir(parents=True)
+        (d / "20260101-old.json").write_text(json.dumps({"record_id": "20260101-old"}))
+        (d / "20260101-old.md").write_text("# old\n")
+        (d / "20260202-new.md").write_text("# new\n")
+
+    def _restore(self):
+        bcr.SIM_DIR, bcr.ARTIFACT_MANIFEST_DIR, bcr._fetch_store_record = self._orig
+
+    def _manifest(self, record_id: str) -> None:
+        (bcr.ARTIFACT_MANIFEST_DIR / f"s-{record_id}.manifest.json").write_text(
+            json.dumps({"entries": [{"name": f"sim/s/records/{record_id}.json"}]})
+        )
+
+    def test_store_only_record_is_selected_over_older_committed(self):
+        self._manifest("20260202-new")
+        bcr._fetch_store_record = lambda slug, rid: {"record_id": rid}
+        data, md = bcr.latest_sim_record("s")
+        self.assertEqual(data["record_id"], "20260202-new")
+        self.assertEqual(md.name, "20260202-new.md")
+
+    def test_fetch_failure_fails_loud_without_fallback(self):
+        self._manifest("20260202-new")
+
+        def boom(slug, rid):
+            raise RuntimeError(f"sim/{slug}/records/{rid}.json: store unreachable")
+
+        bcr._fetch_store_record = boom
+        with self.assertRaisesRegex(RuntimeError, "20260202-new"):
+            bcr.latest_sim_record("s")
+
+    def test_md_without_json_or_manifest_is_skipped(self):
+        data, _ = bcr.latest_sim_record("s")
+        self.assertEqual(data["record_id"], "20260101-old")
+
+    def test_store_only_derived_record_is_skipped(self):
+        self._manifest("20260202-new")
+        bcr._fetch_store_record = lambda slug, rid: {"evidence_kind": "yield"}
+        data, _ = bcr.latest_sim_record("s")
+        self.assertEqual(data["record_id"], "20260101-old")
+
+    def test_real_fetch_reports_missing_klt(self):
+        self._manifest("20260202-new")
+        bcr._fetch_store_record = self._orig[2]
+        import unittest.mock as m
+
+        with m.patch.object(bcr.subprocess, "run", side_effect=FileNotFoundError("klt")):
+            with self.assertRaisesRegex(RuntimeError, "20260202-new.*klt"):
+                bcr.latest_sim_record("s")
+
+
 class TestCheckNetlistFreshnessTolerance(unittest.TestCase):
     """Issue #215 (option 3): a record shape this checker doesn't recognize
     (e.g. missing `links.netlist_snapshot`) must produce a diagnosed error
