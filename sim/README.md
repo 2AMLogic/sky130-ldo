@@ -971,10 +971,18 @@ general SPICE translator.
   negative controls (equal out-of-window endpoints, in-window averages with
   out-of-window extrema) and request-matrix preservation. It proves
   translation and grading only and does **not** establish local/fleet
-  numerical equivalence. **No paired local/fleet comparison has been
-  performed**, so remote equivalence is **unqualified**. After
-  `python3 sim/bin/batch-preflight.py` exits `0`, run one corner both ways at
-  the same commit and compare:
+  numerical equivalence. **Paired check performed (issue #381, 2026-11-05,
+  single corner tt / 27 C / 3.30 V only): equivalence NOT established.**
+  Preflight was accepted and both halves graded PASS, but the fleet runner
+  used ngspice 46 and this worker's local ngspice is 42. All six raw values and
+  both differences agree at the printed 7 significant digits (1 uV, equal to
+  the raw tolerance), so no breach was seen, but no equivalence claim is
+  possible. Evidence and reproduction:
+  `sim/load-regulation/diagnostics/issue-381/` (checker:
+  `sim/bin/compare_load_regulation_paired.py`). Handoff for #231: **defer**
+  until a same-engine pair exists. Remote equivalence stays **unqualified**.
+  Procedure: once `python3 sim/bin/batch-preflight.py` exits `0`, run one
+  corner both ways at the same commit and compare:
 
   ```bash
   python3 sim/bin/batch-preflight.py                       # must exit 0 first
