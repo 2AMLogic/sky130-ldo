@@ -1,0 +1,65 @@
+{
+  "netlist": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-370/sim/loop-gain/diagnostics/20261105-125812-89a1200-adaptive-rcz/requests/ac__rcz16__0.33u_10m_300uA.spice",
+  "engine": "ngspice",
+  "models": {
+    "pdk": "sky130A",
+    "lib": "libs.tech/combined/sky130.lib.spice"
+  },
+  "corners": {
+    "process": [
+      "tt"
+    ],
+    "temperature_c": [
+      27.0
+    ]
+  },
+  "options": {
+    "timeout_s": 300,
+    "keep_artifacts": true
+  },
+  "batch": {
+    "capacity_wait_s": 10800
+  },
+  "analysis": {
+    "kind": "ac",
+    "args": "dec 30 1e-2 1e9"
+  },
+  "measurements": [
+    {
+      "name": "pm",
+      "unit": "deg",
+      "transfer": {
+        "num": "v(xldo.fb)",
+        "den": "v(xldo.lg_den)",
+        "metric": "phase_margin_deg"
+      }
+    },
+    {
+      "name": "gm",
+      "unit": "dB",
+      "transfer": {
+        "num": "v(xldo.fb)",
+        "den": "v(xldo.lg_den)",
+        "metric": "gain_margin_db"
+      }
+    },
+    {
+      "name": "fc",
+      "unit": "Hz",
+      "transfer": {
+        "num": "v(xldo.fb)",
+        "den": "v(xldo.lg_den)",
+        "metric": "unity_crossing_hz"
+      }
+    },
+    {
+      "name": "dc",
+      "unit": "",
+      "transfer": {
+        "num": "v(xldo.fb)",
+        "den": "v(xldo.lg_den)",
+        "metric": "low_frequency_magnitude"
+      }
+    }
+  ]
+}
