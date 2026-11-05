@@ -1183,3 +1183,35 @@ need no broker. Set `$KLT_ARTIFACT_BROKER` (environment only); with it unset,
 `klt artifact put` missing, or the broker unreachable the runner exits nonzero
 before simulating and writes nothing. See `manifests/README.md`. Records minted
 before this change keep their committed files.
+
+## Thermal-hysteresis staircase on the batch fleet (issue #511)
+
+`sim/thermal/run_hysteresis.py` now has a batch route (default) for the #231
+PVT qualification: 5 process x 3 supply corners, `hot` (T_reset) and `cold_exc`
+(T_trip) searches.
+
+- **Route**: `klt sim --batch-set`, one single-step `tran 400n 170u uic` request
+  per (corner, scenario) carrying that round's temperatures as the klt
+  temperature axis. The `klt sim --dry-run` of a request validated, so the
+  Spot repo-script job kind is not needed: stimulus (`vsup`, `ix_amp`,
+  `en_dip`) are `.param` cards in the request netlist and the observations are
+  `.meas tran ... find v(xldo.ts_cmp) at=<t>u` cards (`sim/bin/batch_thermal_staircase.py`).
+  Interpolated `find ... at` replaces the local nearest-sample read.
+- **Rounds**: round 1 submits the 10 C grid; each later round one bisection
+  midpoint per open (corner, scenario), until `--tol`. `plan()` is a pure
+  function of recorded results, so a resume reproduces the same points.
+- **Records**: each point is an exclusive-create file in
+  `sim/thermal/hysteresis/<rec-id>/points/` (job id under `remote`). Refusals and
+  flagged points go to append-only `refusals.jsonl` / `failures.jsonl`.
+  `--resume <rec-dir>` skips recorded points and never rewrites one; an
+  incomplete run writes `result-incomplete-*.json`, only a finished one `result.json`.
+- **No local fallback**: a capacity refusal (after `--capacity-retries`, default 2,
+  plus the request's `capacity_wait_s`) is recorded and the run exits 3.
+  `--backend local` is accepted for exactly one corner (`--corners tt:3.30`).
+  A solver diagnostic (#171) or a runner-version mismatch fails the point.
+- **Not covered**: the cold-start, EN-reenable and disturbance-amplitude runs of
+  the local flow are not part of the batch route. `klt netlist` replaces raw
+  `xschem` for netlisting.
+- **Smoke**: `hysteresis/20261105-191708-3609d978-batch-smoke` (tt / 3.30 V) gives
+  T_reset 159.21875 C and T_trip 172.34375 C, brackets identical to the local
+  record `20261008-190150-0275a8b-dev1`.
