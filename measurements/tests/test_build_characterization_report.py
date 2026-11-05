@@ -551,12 +551,24 @@ class TestLvsGeometryFreshness(unittest.TestCase):
         self.assertIn("| LVS | STALE |", bcr.normalize_sim_freshness(text))
 
 
+def _stub_store_fetch(testcase: unittest.TestCase) -> None:
+    """Replace `_fetch_store_record` for tests that call `generate_report()`
+    against the live repo. Store-only records (#436/#503) need `klt` and a
+    broker, neither of which the headless CI job has; the fail-loud behaviour
+    itself is covered by `TestLatestSimRecordStoreOnly`. The stub returns a
+    campaign-shaped record (no `evidence_kind`), so selection is unchanged."""
+    orig = bcr._fetch_store_record
+    bcr._fetch_store_record = lambda slug, record_id: {"record_id": record_id, "overall_pass": True}
+    testcase.addCleanup(setattr, bcr, "_fetch_store_record", orig)
+
+
 class TestNoSelfReferentialProvenance(unittest.TestCase):
     """PR #49 review: the generated report must not embed the identity of the
     commit that generates it, or `--check` fails by construction on the commit
     that ships the regenerated file."""
 
     def setUp(self):
+        _stub_store_fetch(self)
         self._orig_git = bcr.git
         self.calls: list[tuple[str, ...]] = []
 
@@ -753,6 +765,7 @@ class TestNormalizeSimFreshness(unittest.TestCase):
         """Anti-vacuity: if the report's shape ever changes such that the
         substitutions stop matching, the gate must not quietly become a
         no-op comparison of two un-normalised documents."""
+        _stub_store_fetch(self)
         report = bcr.generate_report(skip_netlist_freshness=True)
         normalized = bcr.normalize_sim_freshness(report)
         self.assertNotEqual(normalized, report)
@@ -764,6 +777,7 @@ class TestCheckCli(unittest.TestCase):
     what `npm run check:ci` invokes on every push/PR."""
 
     def setUp(self):
+        _stub_store_fetch(self)
         self._tmpdir = tempfile.TemporaryDirectory()
         self.addCleanup(self._tmpdir.cleanup)
         self.report_path = Path(self._tmpdir.name) / "characterization.md"
