@@ -2,6 +2,12 @@
 
 Chronological record of merged pull requests and closed issues. Maintained by the Loom Guide role.
 
+### 2026-11-06
+
+- **PR #505**: sim(load-regulation): record paired local/fleet check and add comparator
+- **PR #504**: fix(measurements): select store-only sim records in latest_sim_record
+- **Issue #381** (closed): Sim: admit load-regulation cold-start endpoints to the batch backend
+
 ### 2026-11-05
 
 - **PR #512**: sim(thermal): batch route for the hysteresis staircase
