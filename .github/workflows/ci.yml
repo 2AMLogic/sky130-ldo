@@ -20,11 +20,9 @@ name: CI
 #     and a uniqueness lint over tracked `spec/decision-records/DR-NNN-*.md`
 #     filenames (#140), which catches two parallel branches independently
 #     claiming the same DR number, as four open PRs each did with `DR-008`,
-#     and -- via `check:characterization` -- an OFFLINE structural re-check
-#     (`--check --offline`, #503: cited records exist and match their
-#     manifest digests; no `klt`, no store fetch, no fallback) of the
-#     committed measurements/characterization.md rollup. The full store-backed
-#     `--check` runs on hosts with `klt` + store access (fleet/Spot), not in CI.)
+#     and -- via `check:characterization` -- a structural re-check of the
+#     committed measurements/characterization.md rollup against a fresh run
+#     of its own generator, #220)
 #     -> `checks` job below, every push/PR. Headless, no PDK, no `klt`
 #     install needed, but it DOES need full git history (see the job's
 #     fetch-depth below).
