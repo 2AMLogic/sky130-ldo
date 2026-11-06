@@ -128,12 +128,13 @@ def load_remote(d: Path) -> tuple[dict, str | None, list[str]]:
 
 
 _MEAS = re.compile(
-    r"^(vout_(?:0ma|50ma)(?:_min|_max)?)\s*=\s*([-+0-9.eE]+)\s+(?:from|at)=", re.M
+    r"^(vout_(?:0ma|50ma)(?:_min|_max)?)\s*=\s*([-+0-9.eE]+)(?:\s+(?:from|at)=.*)?$", re.M
 )
 
 
 def load_local(d: Path) -> dict:
-    """Full-precision endpoint values from the local ngspice `meas` lines."""
+    """Endpoint values from the local ngspice log. Accepts the 6-digit `meas` lines and
+    the `print` lines (`name = value`, `set numdgt`); a later line for the same name wins."""
     text = (d / "local" / "ngspice.log").read_text()
     vals = {m.group(1): float(m.group(2)) for m in _MEAS.finditer(text)}
     vals.update({k: v for k, v in derive(vals).items() if v is not None})

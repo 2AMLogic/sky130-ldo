@@ -43,3 +43,13 @@ Layout: `remote/tranN/{request.json,request.spice,response.json,batch-receipt.js
 `remote/corner-run.log`, `local/{deck.spice,ngspice.log,corner-run.log}`
 (local `ngspice.log` is a hand run of the same generated deck, for full-precision
 `meas` lines). Host paths inside artifacts are the dispatch worker's worktree.
+
+## Status note (added 2026-11-06)
+
+The `ngspice.log` / `corner-run.log` files listed in the layout above were never
+committed, and `local/deck.spice` here is the raw xschem netlist, so this run's
+"Reproduce the comparison" command cannot run from a checkout. Per operator
+ruling r7-q22 they are not recovered. The pair was re-run as a new, explicitly
+dated record with all cited artifacts committed: `run-20261106/` (same engine 46
+on both sides, verdict `equivalent` at this one corner). Cite that record, not
+this one, for reproducible figures.

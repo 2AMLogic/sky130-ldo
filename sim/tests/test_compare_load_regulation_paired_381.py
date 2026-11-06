@@ -65,6 +65,22 @@ class CompareTests(unittest.TestCase):
         self.assertAlmostEqual(d["load_reg_v"], 0.003553, places=9)
         self.assertAlmostEqual(d["load_reg_pct"], 0.197389, places=5)
 
+    def test_load_local_reads_meas_and_print_lines_last_wins(self):
+        import tempfile
+        from pathlib import Path
+
+        log = (
+            "vout_0ma            =  1.80239e+00 from=  1.99000e-01 to=  2.00000e-01\n"
+            "vout_0ma = 1.8023850000e+00\n"
+            "vout_50ma = 1.7988320000e+00\n"
+        )
+        with tempfile.TemporaryDirectory() as t:
+            (Path(t) / "local").mkdir()
+            (Path(t) / "local" / "ngspice.log").write_text(log)
+            v = cmp.load_local(Path(t))
+        self.assertEqual(v["vout_0ma"], 1.802385)
+        self.assertEqual(v["vout_50ma"], 1.798832)
+
 
 if __name__ == "__main__":
     unittest.main()

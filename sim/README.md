@@ -979,8 +979,12 @@ general SPICE translator.
   the raw tolerance), so no breach was seen, but no equivalence claim is
   possible. Evidence and reproduction:
   `sim/load-regulation/diagnostics/issue-381/` (checker:
-  `sim/bin/compare_load_regulation_paired.py`). Handoff for #231: **defer**
-  until a same-engine pair exists. Remote equivalence stays **unqualified**.
+  `sim/bin/compare_load_regulation_paired.py`). **Re-run 2026-11-06 (new
+  record `run-20261106/`, same single corner):** the host ngspice is now 46,
+  equal to the runner's, and the pair is `equivalent` (all six values and both
+  differences within tolerance, with the committed logs and a runnable local
+  deck). That covers tt / 27 C / 3.30 V only; the 45-corner matrix is
+  unverified, so remote equivalence stays **unqualified** beyond that corner.
   Procedure: once `python3 sim/bin/batch-preflight.py` exits `0`, run one
   corner both ways at the same commit and compare:
 
