@@ -68,6 +68,12 @@ Usage
                                   # column, which only a machine with the PDK
                                   # toolchain can evaluate (issue #220)
 
+    python3 measurements/build_characterization_report.py --check --offline
+                                  # CI gate (issue #503): no klt, no store. Verifies the
+                                  # committed report's cited records exist and match their
+                                  # manifest digests; fails loud, never fetches or falls back.
+                                  # The store-backed --check (above) runs on fleet/Spot hosts.
+
 Why `--check` has two modes (issue #220)
 ----------------------------------------
 Plain `--check` is byte-exact, and the per-`sim/` **Freshness** column it
@@ -1501,6 +1507,61 @@ def normalize_sim_freshness(text: str) -> str:
     return head + tail
 
 
+_REPORT_SIM_LINK_RE = re.compile(r"\(\.\./sim/([A-Za-z0-9_.-]+)/records/([A-Za-z0-9_.-]+)\.md\)")
+_REPORT_LAYOUT_LINK_RE = re.compile(r"\(\.\./(layout/[A-Za-z0-9_./-]+/record\.md)\)")
+_HEX64_RE = re.compile(r"[0-9a-f]{64}")
+
+
+def offline_check(report_text: str) -> list[str]:
+    """Offline structural check of a committed report (issue #503, CI mode).
+
+    Never fetches from the artifact store and never falls back to another
+    record. For every record the report cites it requires: the record `.md`
+    exists; its JSON twin is either committed or listed in the store manifest
+    with a well-formed sha256 digest; and, when a twin is committed AND the
+    manifest lists it, the twin hashes to the manifest digest. Returns one
+    message per problem (empty = consistent).
+
+    It does NOT regenerate the report, so it cannot say whether the cited
+    record is the *latest* campaign record -- that needs the store-only
+    twins, which only the store-backed `--check` (hosts with `klt` + store
+    access) can read.
+    """
+    errors: list[str] = []
+    seen: set[tuple[str, str]] = set()
+    for slug, rid in _REPORT_SIM_LINK_RE.findall(report_text):
+        if (slug, rid) in seen:
+            continue
+        seen.add((slug, rid))
+        where = f"sim/{slug}/records/{rid}"
+        if not (SIM_DIR / slug / "records" / f"{rid}.md").is_file():
+            errors.append(f"{where}.md: cited by the report but missing")
+            continue
+        twin = SIM_DIR / slug / "records" / f"{rid}.json"
+        digest = None
+        manifest = ARTIFACT_MANIFEST_DIR / f"{slug}-{rid}.manifest.json"
+        name = f"{where}.json"
+        try:
+            entries = json.loads(manifest.read_text()).get("entries", [])
+        except (OSError, json.JSONDecodeError, AttributeError):
+            entries = []
+        entry = next((e for e in entries if isinstance(e, dict) and e.get("name") == name), None)
+        if entry is not None:
+            digest = entry.get("sha256")
+            if not isinstance(digest, str) or not _HEX64_RE.fullmatch(digest):
+                errors.append(f"{manifest.name}: entry {name} has no well-formed sha256 digest")
+                continue
+        if twin.is_file():
+            if digest is not None and sha256_file(twin) != digest:
+                errors.append(f"{name}: committed twin does not hash to the manifest digest")
+        elif entry is None:
+            errors.append(f"{name}: neither committed nor listed in an artifact manifest")
+    for rel_path in sorted(set(_REPORT_LAYOUT_LINK_RE.findall(report_text))):
+        if not (REPO_ROOT / rel_path).is_file():
+            errors.append(f"{rel_path}: cited by the report but missing")
+    return errors
+
+
 # --------------------------------------------------------------------------
 # CLI
 # --------------------------------------------------------------------------
@@ -1533,6 +1594,14 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         "--no-netlist-freshness. This is the mode CI runs on every push/PR.",
     )
     parser.add_argument(
+        "--offline",
+        action="store_true",
+        help="with --check: offline structural check for headless CI (issue #503). Verifies every "
+        "record the committed report cites exists and is consistent with its artifact manifest "
+        "digest; never fetches from the store, never falls back to an older record. The full "
+        "store-backed --check runs on hosts with klt + store access.",
+    )
+    parser.add_argument(
         "--stdout",
         action="store_true",
         help="print the generated report to stdout instead of writing --out",
@@ -1543,11 +1612,26 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         # a rollup that states nothing about freshness -- exactly the false
         # artifact this mode exists to avoid. It is a comparison mode only.
         parser.error("--ignore-sim-freshness is only meaningful together with --check")
+    if args.offline and not args.check:
+        parser.error("--offline is only meaningful together with --check")
+    if args.offline and (args.ignore_sim_freshness or args.no_netlist_freshness):
+        parser.error("--offline does not regenerate the report; drop the freshness flags")
     return args
 
 
 def main(argv: list[str]) -> int:
     args = parse_args(argv)
+    if args.offline:
+        if not args.out.is_file():
+            print(f"FAIL: {args.out} does not exist.", file=sys.stderr)
+            return 1
+        problems = offline_check(args.out.read_text())
+        for msg in problems:
+            print(f"FAIL: {msg}", file=sys.stderr)
+        if problems:
+            return 1
+        print(f"OK: {args.out} cites only present, digest-consistent records (offline; no store fetch).")
+        return 0
     skip_netlist_freshness = args.no_netlist_freshness or args.ignore_sim_freshness
     report = generate_report(skip_netlist_freshness=skip_netlist_freshness)
 
