@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "kind": "t1-attestation-inventory",
+  "t1_item": 9,
+  "description": "Testbenches shipped: every tracked sim/*/testbench schematic. Cold start is the PDK-free harness unit suite (sim/selftest.sh stage 1); the PDK-gated end-to-end smoke run is NOT part of this check (volare absent on the sweep host).",
+  "testbenches": [
+    "sim/current-limit/testbench/tb_current_limit.sch",
+    "sim/dropout-vs-load/testbench/tb_dropout_vs_load.sch",
+    "sim/enable-shutdown/testbench/tb_enable_shutdown.sch",
+    "sim/ic-screen-125c-b/testbench/tb_ic_screen_125c_seeded.sch",
+    "sim/ic-screen-125c-c/testbench/tb_ic_screen_125c_cold.sch",
+    "sim/ic-screen-125c-h/testbench/tb_ic_screen_125c_hist81.sch",
+    "sim/ic-screen-125c-v/testbench/tb_ic_screen_125c_vout_only.sch",
+    "sim/iq/testbench/tb_iq.sch",
+    "sim/line-regulation/testbench/tb_line_regulation.sch",
+    "sim/load-regulation/testbench/tb_load_regulation.sch",
+    "sim/load-transient/testbench/tb_load_transient.sch",
+    "sim/loop-gain/testbench/tb_loop_gain.sch",
+    "sim/mc-ic-screen-a/testbench/tb_mc_output_accuracy.sch",
+    "sim/mc-ic-screen-b/testbench/tb_mc_output_accuracy.sch",
+    "sim/mc-output-accuracy/testbench/tb_mc_output_accuracy.sch",
+    "sim/pdk-smoke/testbench/tb_pdk_smoke.sch",
+    "sim/psrr-dc/testbench/tb_psrr_dc.sch",
+    "sim/startup/testbench/tb_startup.sch",
+    "sim/thermal-regen-cmp/testbench/tb_thermal_regen_cmp.sch",
+    "sim/thermal/testbench/tb_thermal_trip.sch"
+  ],
+  "cold_start": {
+    "argv": [
+      "python3",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "sim/tests",
+      "-t",
+      "sim/tests"
+    ],
+    "timeout_s": 900
+  },
+  "pins": {
+    "pdk": {
+      "name": "sky130A",
+      "revision": "c6d73a35f524070e85faff4a6a9eef49553ebc2b"
+    },
+    "tools": {
+      "ngspice": "42",
+      "xschem": "3.4.4"
+    }
+  }
+}

@@ -1,0 +1,2082 @@
+{
+  "schema_version": 3,
+  "netlist": {
+    "path": "sim/loop-gain/diagnostics/20261105-125812-89a1200-adaptive-rcz/requests/tran__rcz16__r1to50mA.spice",
+    "scope": "repo"
+  },
+  "status": "error",
+  "corner_count": 9,
+  "passed": 6,
+  "failed": 0,
+  "errored": 3,
+  "inconclusive": 0,
+  "diagnostic_counts": {
+    "by_code": {
+      "nonconvergence": 2,
+      "measurement": 3,
+      "singular_matrix": 1
+    },
+    "by_severity": {
+      "warning": 1,
+      "error": 5
+    },
+    "corners_with_diagnostics": 4
+  },
+  "metrics": {
+    "sim__corner__count": 9,
+    "sim__corner__passed_count": 6,
+    "sim__corner__failed_count": 0,
+    "sim__corner__errored_count": 3,
+    "sim__corner__inconclusive_count": 0
+  },
+  "environment": {
+    "engine": "ngspice",
+    "engine_version": "46",
+    "ngspice_binary": "/usr/local/bin/ngspice",
+    "engine_build": {
+      "version_banner": "******\n** ngspice-46 : Circuit level simulation program\n** Compiled with KLU Direct Linear Solver\n** The U. C. Berkeley CAD Group\n** Copyright 1985-1994, Regents of the University of California.\n** Copyright 2001-2025, The ngspice team.\n** Please get your ngspice manual from https://ngspice.sourceforge.io/docs.html\n** Please file your bug-reports at http://ngspice.sourceforge.net/bugrep.html\n** Creation Date: Thu Oct  1 23:51:59 UTC 2026\n******",
+      "binary_sha256": "dc859418bedd0478ff439a2d3e2e09f4386a7f4d5e3f17671953e101a000cc60",
+      "probe": "ok",
+      "reason": null
+    },
+    "models_lib": {
+      "path": null,
+      "scope": "external"
+    },
+    "models_lib_sha256": "48de7c677e2c6e7d09b2559279de9f818be71010a4aa933d728eb4db3b133c84",
+    "models_lib_sha256_scope": "client",
+    "netlist_sha256": "5b776a1ccd1360771365fc21501dc648ce4009fdc132d37d103e984d89ea01d2",
+    "netlist_closure": [
+      {
+        "path": "sim/loop-gain/diagnostics/20261105-125812-89a1200-adaptive-rcz/requests/tran__rcz16__r1to50mA.spice",
+        "scope": "repo",
+        "sha256": "5b776a1ccd1360771365fc21501dc648ce4009fdc132d37d103e984d89ea01d2"
+      }
+    ],
+    "netlist_identity": "sha256:e921fb4e82d1dbabde92f71617e6ad11348cd9a5f7fe1a9c51abcf4e0030c86d",
+    "remote": {
+      "provider": "aws-batch-fleet",
+      "job_id": "klt-sim-ecffe413760d",
+      "region": "us-east-1",
+      "instance_id": "i-0bc5c4a55f8d970bc",
+      "instance_type": "m7i.4xlarge",
+      "availability_zone": "us-east-1c",
+      "ami_id": "ami-04591566329422a44",
+      "lifecycle": "spot",
+      "spot": true,
+      "state": "failed",
+      "exit_code": "4",
+      "concurrency": "1",
+      "physical_cores": "8",
+      "elapsed_seconds": 30,
+      "client_submitted_at": "2026-11-05T14:32:40.639620Z",
+      "client_launched_at": "2026-11-05T14:33:04.334341Z",
+      "client_status_terminal_at": "2026-11-05T14:34:06.602364Z",
+      "client_collected_at": "2026-11-05T14:34:07.611156Z",
+      "runner_klt_version": "0.9.0",
+      "client_klt_version": "0.9.1.dev112+g64a726282d8a",
+      "runner_compatibility": "match",
+      "runner_request_features": {
+        "required": [
+          "analysis_steps"
+        ],
+        "missing": [],
+        "status": "supported"
+      },
+      "worker_environment": {
+        "capture": "ok",
+        "simulator": {
+          "requested_binary": "ngspice",
+          "binary_source": "PATH",
+          "selected_path": "/usr/local/bin/ngspice",
+          "version_banner": "******\n** ngspice-46 : Circuit level simulation program\n** Compiled with KLU Direct Linear Solver\n** The U. C. Berkeley CAD Group\n** Copyright 1985-1994, Regents of the University of California.\n** Copyright 2001-2025, The ngspice team.\n** Please get your ngspice manual from https://ngspice.sourceforge.io/docs.html\n** Please file your bug-reports at http://ngspice.sourceforge.net/bugrep.html\n** Creation Date: Thu Oct  1 23:51:59 UTC 2026\n******\n",
+          "version_probe": "ok"
+        },
+        "pdk": {
+          "variant": "sky130A",
+          "root": "/opt/pdk",
+          "stamp_scheme": "sources-sha256",
+          "stamp_sha256": "d5ac52956829da3fee35d0b307d4e6cb83ae0e6535b56dba2eefed61cdffaf9b",
+          "stamp_text": "open_pdks c6d73a35f524070e85faff4a6a9eef49553ebc2b",
+          "models_staged": false,
+          "stamp_scope": "executed"
+        },
+        "cpu_model": "Intel(R) Xeon(R) Platinum 8488C",
+        "omp_num_threads": null,
+        "image_manifest": null,
+        "model_inputs": null,
+        "diagnostics": [],
+        "pdk_stamp_comparison": {
+          "status": "match"
+        },
+        "engine_build_comparison": {
+          "status": "match"
+        }
+      },
+      "runner_model_inputs": null,
+      "exit_reason": {
+        "exit_code": 4,
+        "report_status": "error",
+        "nothing_checked": false,
+        "nothing_checked_reasons": [],
+        "message": "klt sim exited 4 (errored / not_checked / inconclusive): aggregate status 'error'; the job state is failed because of this verdict exit code, not a runner crash"
+      },
+      "job_ceiling": {
+        "basis": "conservative_serial_bound",
+        "unit_count": 9,
+        "per_unit_timeout_s": 300,
+        "overhead_s": 120.0,
+        "job_bound_s": 2820.0,
+        "max_job_seconds": 3600.0,
+        "max_job_seconds_source": "fleet_config",
+        "exceeds_ceiling": false,
+        "check": "warn",
+        "max_units_per_job": 11,
+        "recommended_hosts": 1
+      }
+    },
+    "engine_host": "worker",
+    "client_ngspice_binary": "/home/ubuntu/.local/bin/ngspice",
+    "backend": {
+      "resolved": "batch",
+      "source": "flag",
+      "requested": "batch"
+    }
+  },
+  "coverage": {
+    "corners_simulated": 9,
+    "measurements_declared": 12,
+    "measurements_with_limits": 0,
+    "unrecognized_limit_keys": [],
+    "schema_version": 1,
+    "known": true,
+    "checked": [
+      "measurement:[0,\"tt/novdd/-40C\",\"c0p33u.pre\"]/observation",
+      "measurement:[0,\"tt/novdd/-40C\",\"c0p33u.thi\"]/observation",
+      "measurement:[0,\"tt/novdd/-40C\",\"c0p33u.tlo\"]/observation",
+      "measurement:[0,\"tt/novdd/-40C\",\"c0p33u.vfin\"]/observation",
+      "measurement:[0,\"tt/novdd/-40C\",\"c0p33u.vmax\"]/observation",
+      "measurement:[0,\"tt/novdd/-40C\",\"c0p33u.vmin\"]/observation",
+      "measurement:[0,\"tt/novdd/-40C\",\"c4p7u.pre\"]/observation",
+      "measurement:[0,\"tt/novdd/-40C\",\"c4p7u.thi\"]/observation",
+      "measurement:[0,\"tt/novdd/-40C\",\"c4p7u.tlo\"]/observation",
+      "measurement:[0,\"tt/novdd/-40C\",\"c4p7u.vfin\"]/observation",
+      "measurement:[0,\"tt/novdd/-40C\",\"c4p7u.vmax\"]/observation",
+      "measurement:[0,\"tt/novdd/-40C\",\"c4p7u.vmin\"]/observation",
+      "measurement:[1,\"tt/novdd/27C\",\"c0p33u.pre\"]/observation",
+      "measurement:[1,\"tt/novdd/27C\",\"c0p33u.thi\"]/observation",
+      "measurement:[1,\"tt/novdd/27C\",\"c0p33u.tlo\"]/observation",
+      "measurement:[1,\"tt/novdd/27C\",\"c0p33u.vfin\"]/observation",
+      "measurement:[1,\"tt/novdd/27C\",\"c0p33u.vmax\"]/observation",
+      "measurement:[1,\"tt/novdd/27C\",\"c0p33u.vmin\"]/observation",
+      "measurement:[1,\"tt/novdd/27C\",\"c4p7u.pre\"]/observation",
+      "measurement:[1,\"tt/novdd/27C\",\"c4p7u.thi\"]/observation",
+      "measurement:[1,\"tt/novdd/27C\",\"c4p7u.tlo\"]/observation",
+      "measurement:[1,\"tt/novdd/27C\",\"c4p7u.vfin\"]/observation",
+      "measurement:[1,\"tt/novdd/27C\",\"c4p7u.vmax\"]/observation",
+      "measurement:[1,\"tt/novdd/27C\",\"c4p7u.vmin\"]/observation",
+      "measurement:[2,\"tt/novdd/125C\",\"c0p33u.pre\"]/observation",
+      "measurement:[2,\"tt/novdd/125C\",\"c0p33u.thi\"]/observation",
+      "measurement:[2,\"tt/novdd/125C\",\"c0p33u.tlo\"]/observation",
+      "measurement:[2,\"tt/novdd/125C\",\"c0p33u.vfin\"]/observation",
+      "measurement:[2,\"tt/novdd/125C\",\"c0p33u.vmax\"]/observation",
+      "measurement:[2,\"tt/novdd/125C\",\"c0p33u.vmin\"]/observation",
+      "measurement:[2,\"tt/novdd/125C\",\"c4p7u.pre\"]/observation",
+      "measurement:[2,\"tt/novdd/125C\",\"c4p7u.thi\"]/observation",
+      "measurement:[2,\"tt/novdd/125C\",\"c4p7u.tlo\"]/observation",
+      "measurement:[2,\"tt/novdd/125C\",\"c4p7u.vfin\"]/observation",
+      "measurement:[2,\"tt/novdd/125C\",\"c4p7u.vmax\"]/observation",
+      "measurement:[2,\"tt/novdd/125C\",\"c4p7u.vmin\"]/observation",
+      "measurement:[3,\"ss/novdd/-40C\",\"c0p33u.pre\"]/observation",
+      "measurement:[3,\"ss/novdd/-40C\",\"c0p33u.thi\"]/observation",
+      "measurement:[3,\"ss/novdd/-40C\",\"c0p33u.tlo\"]/observation",
+      "measurement:[3,\"ss/novdd/-40C\",\"c0p33u.vfin\"]/observation",
+      "measurement:[3,\"ss/novdd/-40C\",\"c0p33u.vmax\"]/observation",
+      "measurement:[3,\"ss/novdd/-40C\",\"c0p33u.vmin\"]/observation",
+      "measurement:[3,\"ss/novdd/-40C\",\"c4p7u.pre\"]/observation",
+      "measurement:[3,\"ss/novdd/-40C\",\"c4p7u.thi\"]/observation",
+      "measurement:[3,\"ss/novdd/-40C\",\"c4p7u.tlo\"]/observation",
+      "measurement:[3,\"ss/novdd/-40C\",\"c4p7u.vfin\"]/observation",
+      "measurement:[3,\"ss/novdd/-40C\",\"c4p7u.vmax\"]/observation",
+      "measurement:[3,\"ss/novdd/-40C\",\"c4p7u.vmin\"]/observation",
+      "measurement:[4,\"ss/novdd/27C\",\"c0p33u.pre\"]/observation",
+      "measurement:[4,\"ss/novdd/27C\",\"c0p33u.thi\"]/observation",
+      "measurement:[4,\"ss/novdd/27C\",\"c0p33u.tlo\"]/observation",
+      "measurement:[4,\"ss/novdd/27C\",\"c0p33u.vfin\"]/observation",
+      "measurement:[4,\"ss/novdd/27C\",\"c0p33u.vmax\"]/observation",
+      "measurement:[4,\"ss/novdd/27C\",\"c0p33u.vmin\"]/observation",
+      "measurement:[4,\"ss/novdd/27C\",\"c4p7u.pre\"]/observation",
+      "measurement:[4,\"ss/novdd/27C\",\"c4p7u.thi\"]/observation",
+      "measurement:[4,\"ss/novdd/27C\",\"c4p7u.tlo\"]/observation",
+      "measurement:[4,\"ss/novdd/27C\",\"c4p7u.vfin\"]/observation",
+      "measurement:[4,\"ss/novdd/27C\",\"c4p7u.vmax\"]/observation",
+      "measurement:[4,\"ss/novdd/27C\",\"c4p7u.vmin\"]/observation",
+      "measurement:[5,\"ss/novdd/125C\",\"c0p33u.pre\"]/observation",
+      "measurement:[5,\"ss/novdd/125C\",\"c0p33u.thi\"]/observation",
+      "measurement:[5,\"ss/novdd/125C\",\"c0p33u.tlo\"]/observation",
+      "measurement:[5,\"ss/novdd/125C\",\"c0p33u.vfin\"]/observation",
+      "measurement:[5,\"ss/novdd/125C\",\"c0p33u.vmax\"]/observation",
+      "measurement:[5,\"ss/novdd/125C\",\"c0p33u.vmin\"]/observation",
+      "measurement:[5,\"ss/novdd/125C\",\"c4p7u.pre\"]/observation",
+      "measurement:[5,\"ss/novdd/125C\",\"c4p7u.thi\"]/observation",
+      "measurement:[5,\"ss/novdd/125C\",\"c4p7u.tlo\"]/observation",
+      "measurement:[5,\"ss/novdd/125C\",\"c4p7u.vfin\"]/observation",
+      "measurement:[5,\"ss/novdd/125C\",\"c4p7u.vmax\"]/observation",
+      "measurement:[5,\"ss/novdd/125C\",\"c4p7u.vmin\"]/observation",
+      "measurement:[6,\"ff/novdd/-40C\",\"c0p33u.pre\"]/observation",
+      "measurement:[6,\"ff/novdd/-40C\",\"c0p33u.thi\"]/observation",
+      "measurement:[6,\"ff/novdd/-40C\",\"c0p33u.tlo\"]/observation",
+      "measurement:[6,\"ff/novdd/-40C\",\"c0p33u.vfin\"]/observation",
+      "measurement:[6,\"ff/novdd/-40C\",\"c0p33u.vmax\"]/observation",
+      "measurement:[6,\"ff/novdd/-40C\",\"c0p33u.vmin\"]/observation",
+      "measurement:[6,\"ff/novdd/-40C\",\"c4p7u.pre\"]/observation",
+      "measurement:[6,\"ff/novdd/-40C\",\"c4p7u.tlo\"]/observation",
+      "measurement:[6,\"ff/novdd/-40C\",\"c4p7u.vfin\"]/observation",
+      "measurement:[6,\"ff/novdd/-40C\",\"c4p7u.vmax\"]/observation",
+      "measurement:[6,\"ff/novdd/-40C\",\"c4p7u.vmin\"]/observation",
+      "measurement:[7,\"ff/novdd/27C\",\"c0p33u.pre\"]/observation",
+      "measurement:[7,\"ff/novdd/27C\",\"c0p33u.thi\"]/observation",
+      "measurement:[7,\"ff/novdd/27C\",\"c0p33u.tlo\"]/observation",
+      "measurement:[7,\"ff/novdd/27C\",\"c0p33u.vfin\"]/observation",
+      "measurement:[7,\"ff/novdd/27C\",\"c0p33u.vmax\"]/observation",
+      "measurement:[7,\"ff/novdd/27C\",\"c0p33u.vmin\"]/observation",
+      "measurement:[7,\"ff/novdd/27C\",\"c4p7u.pre\"]/observation",
+      "measurement:[7,\"ff/novdd/27C\",\"c4p7u.tlo\"]/observation",
+      "measurement:[7,\"ff/novdd/27C\",\"c4p7u.vfin\"]/observation",
+      "measurement:[7,\"ff/novdd/27C\",\"c4p7u.vmax\"]/observation",
+      "measurement:[7,\"ff/novdd/27C\",\"c4p7u.vmin\"]/observation",
+      "measurement:[8,\"ff/novdd/125C\",\"c0p33u.pre\"]/observation",
+      "measurement:[8,\"ff/novdd/125C\",\"c0p33u.thi\"]/observation",
+      "measurement:[8,\"ff/novdd/125C\",\"c0p33u.tlo\"]/observation",
+      "measurement:[8,\"ff/novdd/125C\",\"c0p33u.vfin\"]/observation",
+      "measurement:[8,\"ff/novdd/125C\",\"c0p33u.vmax\"]/observation",
+      "measurement:[8,\"ff/novdd/125C\",\"c0p33u.vmin\"]/observation",
+      "measurement:[8,\"ff/novdd/125C\",\"c4p7u.pre\"]/observation",
+      "measurement:[8,\"ff/novdd/125C\",\"c4p7u.tlo\"]/observation",
+      "measurement:[8,\"ff/novdd/125C\",\"c4p7u.vfin\"]/observation",
+      "measurement:[8,\"ff/novdd/125C\",\"c4p7u.vmax\"]/observation",
+      "measurement:[8,\"ff/novdd/125C\",\"c4p7u.vmin\"]/observation"
+    ],
+    "skipped": [
+      {
+        "id": "measurement:[6,\"ff/novdd/-40C\",\"c4p7u.thi\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[7,\"ff/novdd/27C\",\"c4p7u.thi\"]/observation",
+        "reason": "unavailable_measurement"
+      },
+      {
+        "id": "measurement:[8,\"ff/novdd/125C\",\"c4p7u.thi\"]/observation",
+        "reason": "unavailable_measurement"
+      }
+    ],
+    "inapplicable": [
+      {
+        "id": "measurement:[0,\"tt/novdd/-40C\",\"c0p33u.pre\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/-40C\",\"c0p33u.thi\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/-40C\",\"c0p33u.tlo\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/-40C\",\"c0p33u.vfin\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/-40C\",\"c0p33u.vmax\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/-40C\",\"c0p33u.vmin\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/-40C\",\"c4p7u.pre\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/-40C\",\"c4p7u.thi\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/-40C\",\"c4p7u.tlo\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/-40C\",\"c4p7u.vfin\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/-40C\",\"c4p7u.vmax\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/-40C\",\"c4p7u.vmin\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[1,\"tt/novdd/27C\",\"c0p33u.pre\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[1,\"tt/novdd/27C\",\"c0p33u.thi\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[1,\"tt/novdd/27C\",\"c0p33u.tlo\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[1,\"tt/novdd/27C\",\"c0p33u.vfin\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[1,\"tt/novdd/27C\",\"c0p33u.vmax\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[1,\"tt/novdd/27C\",\"c0p33u.vmin\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[1,\"tt/novdd/27C\",\"c4p7u.pre\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[1,\"tt/novdd/27C\",\"c4p7u.thi\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[1,\"tt/novdd/27C\",\"c4p7u.tlo\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[1,\"tt/novdd/27C\",\"c4p7u.vfin\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[1,\"tt/novdd/27C\",\"c4p7u.vmax\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[1,\"tt/novdd/27C\",\"c4p7u.vmin\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[2,\"tt/novdd/125C\",\"c0p33u.pre\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[2,\"tt/novdd/125C\",\"c0p33u.thi\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[2,\"tt/novdd/125C\",\"c0p33u.tlo\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[2,\"tt/novdd/125C\",\"c0p33u.vfin\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[2,\"tt/novdd/125C\",\"c0p33u.vmax\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[2,\"tt/novdd/125C\",\"c0p33u.vmin\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[2,\"tt/novdd/125C\",\"c4p7u.pre\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[2,\"tt/novdd/125C\",\"c4p7u.thi\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[2,\"tt/novdd/125C\",\"c4p7u.tlo\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[2,\"tt/novdd/125C\",\"c4p7u.vfin\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[2,\"tt/novdd/125C\",\"c4p7u.vmax\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[2,\"tt/novdd/125C\",\"c4p7u.vmin\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[3,\"ss/novdd/-40C\",\"c0p33u.pre\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[3,\"ss/novdd/-40C\",\"c0p33u.thi\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[3,\"ss/novdd/-40C\",\"c0p33u.tlo\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[3,\"ss/novdd/-40C\",\"c0p33u.vfin\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[3,\"ss/novdd/-40C\",\"c0p33u.vmax\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[3,\"ss/novdd/-40C\",\"c0p33u.vmin\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[3,\"ss/novdd/-40C\",\"c4p7u.pre\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[3,\"ss/novdd/-40C\",\"c4p7u.thi\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[3,\"ss/novdd/-40C\",\"c4p7u.tlo\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[3,\"ss/novdd/-40C\",\"c4p7u.vfin\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[3,\"ss/novdd/-40C\",\"c4p7u.vmax\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[3,\"ss/novdd/-40C\",\"c4p7u.vmin\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[4,\"ss/novdd/27C\",\"c0p33u.pre\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[4,\"ss/novdd/27C\",\"c0p33u.thi\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[4,\"ss/novdd/27C\",\"c0p33u.tlo\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[4,\"ss/novdd/27C\",\"c0p33u.vfin\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[4,\"ss/novdd/27C\",\"c0p33u.vmax\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[4,\"ss/novdd/27C\",\"c0p33u.vmin\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[4,\"ss/novdd/27C\",\"c4p7u.pre\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[4,\"ss/novdd/27C\",\"c4p7u.thi\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[4,\"ss/novdd/27C\",\"c4p7u.tlo\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[4,\"ss/novdd/27C\",\"c4p7u.vfin\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[4,\"ss/novdd/27C\",\"c4p7u.vmax\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[4,\"ss/novdd/27C\",\"c4p7u.vmin\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[5,\"ss/novdd/125C\",\"c0p33u.pre\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[5,\"ss/novdd/125C\",\"c0p33u.thi\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[5,\"ss/novdd/125C\",\"c0p33u.tlo\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[5,\"ss/novdd/125C\",\"c0p33u.vfin\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[5,\"ss/novdd/125C\",\"c0p33u.vmax\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[5,\"ss/novdd/125C\",\"c0p33u.vmin\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[5,\"ss/novdd/125C\",\"c4p7u.pre\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[5,\"ss/novdd/125C\",\"c4p7u.thi\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[5,\"ss/novdd/125C\",\"c4p7u.tlo\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[5,\"ss/novdd/125C\",\"c4p7u.vfin\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[5,\"ss/novdd/125C\",\"c4p7u.vmax\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[5,\"ss/novdd/125C\",\"c4p7u.vmin\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[6,\"ff/novdd/-40C\",\"c0p33u.pre\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[6,\"ff/novdd/-40C\",\"c0p33u.thi\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[6,\"ff/novdd/-40C\",\"c0p33u.tlo\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[6,\"ff/novdd/-40C\",\"c0p33u.vfin\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[6,\"ff/novdd/-40C\",\"c0p33u.vmax\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[6,\"ff/novdd/-40C\",\"c0p33u.vmin\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[6,\"ff/novdd/-40C\",\"c4p7u.pre\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[6,\"ff/novdd/-40C\",\"c4p7u.thi\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[6,\"ff/novdd/-40C\",\"c4p7u.tlo\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[6,\"ff/novdd/-40C\",\"c4p7u.vfin\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[6,\"ff/novdd/-40C\",\"c4p7u.vmax\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[6,\"ff/novdd/-40C\",\"c4p7u.vmin\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[7,\"ff/novdd/27C\",\"c0p33u.pre\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[7,\"ff/novdd/27C\",\"c0p33u.thi\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[7,\"ff/novdd/27C\",\"c0p33u.tlo\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[7,\"ff/novdd/27C\",\"c0p33u.vfin\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[7,\"ff/novdd/27C\",\"c0p33u.vmax\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[7,\"ff/novdd/27C\",\"c0p33u.vmin\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[7,\"ff/novdd/27C\",\"c4p7u.pre\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[7,\"ff/novdd/27C\",\"c4p7u.thi\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[7,\"ff/novdd/27C\",\"c4p7u.tlo\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[7,\"ff/novdd/27C\",\"c4p7u.vfin\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[7,\"ff/novdd/27C\",\"c4p7u.vmax\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[7,\"ff/novdd/27C\",\"c4p7u.vmin\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[8,\"ff/novdd/125C\",\"c0p33u.pre\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[8,\"ff/novdd/125C\",\"c0p33u.thi\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[8,\"ff/novdd/125C\",\"c0p33u.tlo\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[8,\"ff/novdd/125C\",\"c0p33u.vfin\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[8,\"ff/novdd/125C\",\"c0p33u.vmax\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[8,\"ff/novdd/125C\",\"c0p33u.vmin\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[8,\"ff/novdd/125C\",\"c4p7u.pre\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[8,\"ff/novdd/125C\",\"c4p7u.thi\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[8,\"ff/novdd/125C\",\"c4p7u.tlo\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[8,\"ff/novdd/125C\",\"c4p7u.vfin\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[8,\"ff/novdd/125C\",\"c4p7u.vmax\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[8,\"ff/novdd/125C\",\"c4p7u.vmin\"]/limits",
+        "reason": "characterization_without_limits"
+      }
+    ],
+    "unknown": [],
+    "nothing_checked": false,
+    "nothing_checked_reasons": []
+  },
+  "provenance": {
+    "klt_version": "0.9.1.dev112+g64a726282d8a",
+    "klt_git_commit": "64a726282d8aefefcdc76d7abd8eeef6ee01141a",
+    "klt_reinstall_spec": "klayout-tools @ git+https://github.com/2AMLogic/klayout-tools@64a726282d8aefefcdc76d7abd8eeef6ee01141a",
+    "klayout_version": "0.30.12",
+    "pdk": {
+      "name": "sky130A",
+      "source": "PDK_ROOT environment variable",
+      "version": "open_pdks c6d73a35f524070e85faff4a6a9eef49553ebc2b",
+      "ambiguous_sources": [
+        "search root: ~/.ciel"
+      ],
+      "compatibility": {
+        "status": "mismatch",
+        "package": "open_pdks-sky130",
+        "expected": "open_pdks f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7"
+      }
+    },
+    "deck": {
+      "name": "sky130.lib.spice",
+      "content_hash": "sha256:48de7c677e2c6e7d09b2559279de9f818be71010a4aa933d728eb4db3b133c84",
+      "released": false
+    },
+    "input": {
+      "content_hash": "sha256:5b776a1ccd1360771365fc21501dc648ce4009fdc132d37d103e984d89ea01d2",
+      "role": "netlist"
+    }
+  },
+  "measurements": [
+    {
+      "name": "c0p33u.pre",
+      "unit": null,
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/-40C",
+        "value": 1.800414,
+        "margin": null
+      },
+      "step": "c0p33u"
+    },
+    {
+      "name": "c0p33u.vmin",
+      "unit": null,
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/-40C",
+        "value": 1.64703,
+        "margin": null
+      },
+      "step": "c0p33u"
+    },
+    {
+      "name": "c0p33u.vmax",
+      "unit": null,
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/-40C",
+        "value": 1.92198,
+        "margin": null
+      },
+      "step": "c0p33u"
+    },
+    {
+      "name": "c0p33u.vfin",
+      "unit": null,
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/-40C",
+        "value": 1.797405,
+        "margin": null
+      },
+      "step": "c0p33u"
+    },
+    {
+      "name": "c0p33u.tlo",
+      "unit": null,
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/-40C",
+        "value": 0.0001489474,
+        "margin": null
+      },
+      "step": "c0p33u"
+    },
+    {
+      "name": "c0p33u.thi",
+      "unit": null,
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/-40C",
+        "value": 0.0001360057,
+        "margin": null
+      },
+      "step": "c0p33u"
+    },
+    {
+      "name": "c4p7u.pre",
+      "unit": null,
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/-40C",
+        "value": 1.800414,
+        "margin": null
+      },
+      "step": "c4p7u"
+    },
+    {
+      "name": "c4p7u.vmin",
+      "unit": null,
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/-40C",
+        "value": 1.755736,
+        "margin": null
+      },
+      "step": "c4p7u"
+    },
+    {
+      "name": "c4p7u.vmax",
+      "unit": null,
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/-40C",
+        "value": 1.824031,
+        "margin": null
+      },
+      "step": "c4p7u"
+    },
+    {
+      "name": "c4p7u.vfin",
+      "unit": null,
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/-40C",
+        "value": 1.797401,
+        "margin": null
+      },
+      "step": "c4p7u"
+    },
+    {
+      "name": "c4p7u.tlo",
+      "unit": null,
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/-40C",
+        "value": 0.0001459671,
+        "margin": null
+      },
+      "step": "c4p7u"
+    },
+    {
+      "name": "c4p7u.thi",
+      "unit": null,
+      "limits": null,
+      "status": "error",
+      "worst_case": {
+        "corner_id": "tt/novdd/-40C",
+        "value": 0.0001172051,
+        "margin": null
+      },
+      "step": "c4p7u"
+    }
+  ],
+  "corners": [
+    {
+      "corner_id": "tt/novdd/-40C",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": -40.0,
+      "status": "pass",
+      "runtime_s": 12.937,
+      "peak_rss_bytes": 182509568,
+      "engine_exit_code": 0,
+      "engine_killed_by_signal": null,
+      "measurements": [
+        {
+          "name": "c0p33u.pre",
+          "value": 1.800414,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c0p33u"
+        },
+        {
+          "name": "c0p33u.vmin",
+          "value": 1.64703,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c0p33u"
+        },
+        {
+          "name": "c0p33u.vmax",
+          "value": 1.92198,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c0p33u"
+        },
+        {
+          "name": "c0p33u.vfin",
+          "value": 1.797405,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c0p33u"
+        },
+        {
+          "name": "c0p33u.tlo",
+          "value": 0.0001489474,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c0p33u"
+        },
+        {
+          "name": "c0p33u.thi",
+          "value": 0.0001360057,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c0p33u"
+        },
+        {
+          "name": "c4p7u.pre",
+          "value": 1.800414,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c4p7u"
+        },
+        {
+          "name": "c4p7u.vmin",
+          "value": 1.755736,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c4p7u"
+        },
+        {
+          "name": "c4p7u.vmax",
+          "value": 1.824031,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c4p7u"
+        },
+        {
+          "name": "c4p7u.vfin",
+          "value": 1.797401,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c4p7u"
+        },
+        {
+          "name": "c4p7u.tlo",
+          "value": 0.0001459671,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c4p7u"
+        },
+        {
+          "name": "c4p7u.thi",
+          "value": 0.0001172051,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c4p7u"
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "nonconvergence",
+          "message": "Warning: Dynamic gmin stepping failed"
+        }
+      ],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-370/sim/loop-gain/diagnostics/20261105-125812-89a1200-adaptive-rcz/responses/tran__rcz16__r1to50mA/tt_novdd_n40C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-370/sim/loop-gain/diagnostics/20261105-125812-89a1200-adaptive-rcz/responses/tran__rcz16__r1to50mA/tt_novdd_n40C/corner.cir"
+      },
+      "monte_carlo": null,
+      "steps": [
+        {
+          "name": "c0p33u",
+          "kind": "tran",
+          "status": "ok"
+        },
+        {
+          "name": "c4p7u",
+          "kind": "tran",
+          "status": "ok"
+        }
+      ]
+    },
+    {
+      "corner_id": "tt/novdd/27C",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27.0,
+      "status": "pass",
+      "runtime_s": 12.621,
+      "peak_rss_bytes": 182509568,
+      "engine_exit_code": 0,
+      "engine_killed_by_signal": null,
+      "measurements": [
+        {
+          "name": "c0p33u.pre",
+          "value": 1.800596,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c0p33u"
+        },
+        {
+          "name": "c0p33u.vmin",
+          "value": 1.619468,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c0p33u"
+        },
+        {
+          "name": "c0p33u.vmax",
+          "value": 1.936038,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c0p33u"
+        },
+        {
+          "name": "c0p33u.vfin",
+          "value": 1.796785,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c0p33u"
+        },
+        {
+          "name": "c0p33u.tlo",
+          "value": 0.0001551333,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c0p33u"
+        },
+        {
+          "name": "c0p33u.thi",
+          "value": 0.0001350772,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c0p33u"
+        },
+        {
+          "name": "c4p7u.pre",
+          "value": 1.800596,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c4p7u"
+        },
+        {
+          "name": "c4p7u.vmin",
+          "value": 1.749632,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c4p7u"
+        },
+        {
+          "name": "c4p7u.vmax",
+          "value": 1.825167,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c4p7u"
+        },
+        {
+          "name": "c4p7u.vfin",
+          "value": 1.79678,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c4p7u"
+        },
+        {
+          "name": "c4p7u.tlo",
+          "value": 0.0001527309,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c4p7u"
+        },
+        {
+          "name": "c4p7u.thi",
+          "value": 0.0001196496,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c4p7u"
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-370/sim/loop-gain/diagnostics/20261105-125812-89a1200-adaptive-rcz/responses/tran__rcz16__r1to50mA/tt_novdd_27C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-370/sim/loop-gain/diagnostics/20261105-125812-89a1200-adaptive-rcz/responses/tran__rcz16__r1to50mA/tt_novdd_27C/corner.cir"
+      },
+      "monte_carlo": null,
+      "steps": [
+        {
+          "name": "c0p33u",
+          "kind": "tran",
+          "status": "ok"
+        },
+        {
+          "name": "c4p7u",
+          "kind": "tran",
+          "status": "ok"
+        }
+      ]
+    },
+    {
+      "corner_id": "tt/novdd/125C",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 125.0,
+      "status": "pass",
+      "runtime_s": 12.458,
+      "peak_rss_bytes": 182509568,
+      "engine_exit_code": 0,
+      "engine_killed_by_signal": null,
+      "measurements": [
+        {
+          "name": "c0p33u.pre",
+          "value": 1.800947,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c0p33u"
+        },
+        {
+          "name": "c0p33u.vmin",
+          "value": 1.591244,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c0p33u"
+        },
+        {
+          "name": "c0p33u.vmax",
+          "value": 1.9543,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c0p33u"
+        },
+        {
+          "name": "c0p33u.vfin",
+          "value": 1.795744,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c0p33u"
+        },
+        {
+          "name": "c0p33u.tlo",
+          "value": 0.0001636147,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c0p33u"
+        },
+        {
+          "name": "c0p33u.thi",
+          "value": 0.0001400557,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c0p33u"
+        },
+        {
+          "name": "c4p7u.pre",
+          "value": 1.800947,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c4p7u"
+        },
+        {
+          "name": "c4p7u.vmin",
+          "value": 1.740761,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c4p7u"
+        },
+        {
+          "name": "c4p7u.vmax",
+          "value": 1.825892,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c4p7u"
+        },
+        {
+          "name": "c4p7u.vfin",
+          "value": 1.795735,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c4p7u"
+        },
+        {
+          "name": "c4p7u.tlo",
+          "value": 0.0001620474,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c4p7u"
+        },
+        {
+          "name": "c4p7u.thi",
+          "value": 0.0001229141,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c4p7u"
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-370/sim/loop-gain/diagnostics/20261105-125812-89a1200-adaptive-rcz/responses/tran__rcz16__r1to50mA/tt_novdd_125C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-370/sim/loop-gain/diagnostics/20261105-125812-89a1200-adaptive-rcz/responses/tran__rcz16__r1to50mA/tt_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null,
+      "steps": [
+        {
+          "name": "c0p33u",
+          "kind": "tran",
+          "status": "ok"
+        },
+        {
+          "name": "c4p7u",
+          "kind": "tran",
+          "status": "ok"
+        }
+      ]
+    },
+    {
+      "corner_id": "ss/novdd/-40C",
+      "process": "ss",
+      "supply_v": {},
+      "temperature_c": -40.0,
+      "status": "pass",
+      "runtime_s": 12.803,
+      "peak_rss_bytes": 182509568,
+      "engine_exit_code": 0,
+      "engine_killed_by_signal": null,
+      "measurements": [
+        {
+          "name": "c0p33u.pre",
+          "value": 1.800369,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c0p33u"
+        },
+        {
+          "name": "c0p33u.vmin",
+          "value": 1.648568,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c0p33u"
+        },
+        {
+          "name": "c0p33u.vmax",
+          "value": 1.920532,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c0p33u"
+        },
+        {
+          "name": "c0p33u.vfin",
+          "value": 1.797342,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c0p33u"
+        },
+        {
+          "name": "c0p33u.tlo",
+          "value": 0.0001492076,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c0p33u"
+        },
+        {
+          "name": "c0p33u.thi",
+          "value": 0.0001362608,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c0p33u"
+        },
+        {
+          "name": "c4p7u.pre",
+          "value": 1.80037,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c4p7u"
+        },
+        {
+          "name": "c4p7u.vmin",
+          "value": 1.756,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c4p7u"
+        },
+        {
+          "name": "c4p7u.vmax",
+          "value": 1.823704,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c4p7u"
+        },
+        {
+          "name": "c4p7u.vfin",
+          "value": 1.797338,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c4p7u"
+        },
+        {
+          "name": "c4p7u.tlo",
+          "value": 0.0001459109,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c4p7u"
+        },
+        {
+          "name": "c4p7u.thi",
+          "value": 0.0001171336,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c4p7u"
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-370/sim/loop-gain/diagnostics/20261105-125812-89a1200-adaptive-rcz/responses/tran__rcz16__r1to50mA/ss_novdd_n40C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-370/sim/loop-gain/diagnostics/20261105-125812-89a1200-adaptive-rcz/responses/tran__rcz16__r1to50mA/ss_novdd_n40C/corner.cir"
+      },
+      "monte_carlo": null,
+      "steps": [
+        {
+          "name": "c0p33u",
+          "kind": "tran",
+          "status": "ok"
+        },
+        {
+          "name": "c4p7u",
+          "kind": "tran",
+          "status": "ok"
+        }
+      ]
+    },
+    {
+      "corner_id": "ss/novdd/27C",
+      "process": "ss",
+      "supply_v": {},
+      "temperature_c": 27.0,
+      "status": "pass",
+      "runtime_s": 12.436,
+      "peak_rss_bytes": 182509568,
+      "engine_exit_code": 0,
+      "engine_killed_by_signal": null,
+      "measurements": [
+        {
+          "name": "c0p33u.pre",
+          "value": 1.800541,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c0p33u"
+        },
+        {
+          "name": "c0p33u.vmin",
+          "value": 1.620284,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c0p33u"
+        },
+        {
+          "name": "c0p33u.vmax",
+          "value": 1.934266,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c0p33u"
+        },
+        {
+          "name": "c0p33u.vfin",
+          "value": 1.796707,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c0p33u"
+        },
+        {
+          "name": "c0p33u.tlo",
+          "value": 0.0001554581,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c0p33u"
+        },
+        {
+          "name": "c0p33u.thi",
+          "value": 0.0001404412,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c0p33u"
+        },
+        {
+          "name": "c4p7u.pre",
+          "value": 1.800541,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c4p7u"
+        },
+        {
+          "name": "c4p7u.vmin",
+          "value": 1.749828,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c4p7u"
+        },
+        {
+          "name": "c4p7u.vmax",
+          "value": 1.824823,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c4p7u"
+        },
+        {
+          "name": "c4p7u.vfin",
+          "value": 1.796701,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c4p7u"
+        },
+        {
+          "name": "c4p7u.tlo",
+          "value": 0.0001528175,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c4p7u"
+        },
+        {
+          "name": "c4p7u.thi",
+          "value": 0.0001196248,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c4p7u"
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-370/sim/loop-gain/diagnostics/20261105-125812-89a1200-adaptive-rcz/responses/tran__rcz16__r1to50mA/ss_novdd_27C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-370/sim/loop-gain/diagnostics/20261105-125812-89a1200-adaptive-rcz/responses/tran__rcz16__r1to50mA/ss_novdd_27C/corner.cir"
+      },
+      "monte_carlo": null,
+      "steps": [
+        {
+          "name": "c0p33u",
+          "kind": "tran",
+          "status": "ok"
+        },
+        {
+          "name": "c4p7u",
+          "kind": "tran",
+          "status": "ok"
+        }
+      ]
+    },
+    {
+      "corner_id": "ss/novdd/125C",
+      "process": "ss",
+      "supply_v": {},
+      "temperature_c": 125.0,
+      "status": "pass",
+      "runtime_s": 12.552,
+      "peak_rss_bytes": 182509568,
+      "engine_exit_code": 0,
+      "engine_killed_by_signal": null,
+      "measurements": [
+        {
+          "name": "c0p33u.pre",
+          "value": 1.800871,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c0p33u"
+        },
+        {
+          "name": "c0p33u.vmin",
+          "value": 1.591857,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c0p33u"
+        },
+        {
+          "name": "c0p33u.vmax",
+          "value": 1.955135,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c0p33u"
+        },
+        {
+          "name": "c0p33u.vfin",
+          "value": 1.795657,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c0p33u"
+        },
+        {
+          "name": "c0p33u.tlo",
+          "value": 0.0001641029,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c0p33u"
+        },
+        {
+          "name": "c0p33u.thi",
+          "value": 0.0001404112,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c0p33u"
+        },
+        {
+          "name": "c4p7u.pre",
+          "value": 1.800871,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c4p7u"
+        },
+        {
+          "name": "c4p7u.vmin",
+          "value": 1.740891,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c4p7u"
+        },
+        {
+          "name": "c4p7u.vmax",
+          "value": 1.825634,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c4p7u"
+        },
+        {
+          "name": "c4p7u.vfin",
+          "value": 1.795648,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c4p7u"
+        },
+        {
+          "name": "c4p7u.tlo",
+          "value": 0.0001623147,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c4p7u"
+        },
+        {
+          "name": "c4p7u.thi",
+          "value": 0.0001229465,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c4p7u"
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-370/sim/loop-gain/diagnostics/20261105-125812-89a1200-adaptive-rcz/responses/tran__rcz16__r1to50mA/ss_novdd_125C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-370/sim/loop-gain/diagnostics/20261105-125812-89a1200-adaptive-rcz/responses/tran__rcz16__r1to50mA/ss_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null,
+      "steps": [
+        {
+          "name": "c0p33u",
+          "kind": "tran",
+          "status": "ok"
+        },
+        {
+          "name": "c4p7u",
+          "kind": "tran",
+          "status": "ok"
+        }
+      ]
+    },
+    {
+      "corner_id": "ff/novdd/-40C",
+      "process": "ff",
+      "supply_v": {},
+      "temperature_c": -40.0,
+      "status": "error",
+      "runtime_s": 12.599,
+      "peak_rss_bytes": 182509568,
+      "engine_exit_code": 0,
+      "engine_killed_by_signal": null,
+      "measurements": [
+        {
+          "name": "c0p33u.pre",
+          "value": 1.800474,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c0p33u"
+        },
+        {
+          "name": "c0p33u.vmin",
+          "value": 1.648623,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c0p33u"
+        },
+        {
+          "name": "c0p33u.vmax",
+          "value": 1.9164,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c0p33u"
+        },
+        {
+          "name": "c0p33u.vfin",
+          "value": 1.797522,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c0p33u"
+        },
+        {
+          "name": "c0p33u.tlo",
+          "value": 0.0001434838,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c0p33u"
+        },
+        {
+          "name": "c0p33u.thi",
+          "value": 0.0001308403,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c0p33u"
+        },
+        {
+          "name": "c4p7u.pre",
+          "value": 1.800474,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c4p7u"
+        },
+        {
+          "name": "c4p7u.vmin",
+          "value": 1.756042,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c4p7u"
+        },
+        {
+          "name": "c4p7u.vmax",
+          "value": 1.813115,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c4p7u"
+        },
+        {
+          "name": "c4p7u.vfin",
+          "value": 1.797519,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c4p7u"
+        },
+        {
+          "name": "c4p7u.tlo",
+          "value": 0.0001263483,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c4p7u"
+        },
+        {
+          "name": "c4p7u.thi",
+          "value": null,
+          "unit": null,
+          "status": "error",
+          "margin": null,
+          "step": "c4p7u"
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'c4p7u.thi' produced no value: step 'c4p7u' completed, but its .meas card ('.meas tran thi WHEN v(vout)=1.818 CROSS=LAST') printed no 'c4p7u__thi = <value>' line -- check that it resolves against that step's saved vectors and reduces to a single real scalar"
+        }
+      ],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-370/sim/loop-gain/diagnostics/20261105-125812-89a1200-adaptive-rcz/responses/tran__rcz16__r1to50mA/ff_novdd_n40C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-370/sim/loop-gain/diagnostics/20261105-125812-89a1200-adaptive-rcz/responses/tran__rcz16__r1to50mA/ff_novdd_n40C/corner.cir"
+      },
+      "monte_carlo": null,
+      "steps": [
+        {
+          "name": "c0p33u",
+          "kind": "tran",
+          "status": "ok"
+        },
+        {
+          "name": "c4p7u",
+          "kind": "tran",
+          "status": "ok"
+        }
+      ]
+    },
+    {
+      "corner_id": "ff/novdd/27C",
+      "process": "ff",
+      "supply_v": {},
+      "temperature_c": 27.0,
+      "status": "error",
+      "runtime_s": 12.904,
+      "peak_rss_bytes": 182509568,
+      "engine_exit_code": 0,
+      "engine_killed_by_signal": null,
+      "measurements": [
+        {
+          "name": "c0p33u.pre",
+          "value": 1.800671,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c0p33u"
+        },
+        {
+          "name": "c0p33u.vmin",
+          "value": 1.620791,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c0p33u"
+        },
+        {
+          "name": "c0p33u.vmax",
+          "value": 1.929884,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c0p33u"
+        },
+        {
+          "name": "c0p33u.vfin",
+          "value": 1.796922,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c0p33u"
+        },
+        {
+          "name": "c0p33u.tlo",
+          "value": 0.000148895,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c0p33u"
+        },
+        {
+          "name": "c0p33u.thi",
+          "value": 0.0001344811,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c0p33u"
+        },
+        {
+          "name": "c4p7u.pre",
+          "value": 1.800671,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c4p7u"
+        },
+        {
+          "name": "c4p7u.vmin",
+          "value": 1.750053,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c4p7u"
+        },
+        {
+          "name": "c4p7u.vmax",
+          "value": 1.810704,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c4p7u"
+        },
+        {
+          "name": "c4p7u.vfin",
+          "value": 1.796918,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c4p7u"
+        },
+        {
+          "name": "c4p7u.tlo",
+          "value": 0.0001304689,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c4p7u"
+        },
+        {
+          "name": "c4p7u.thi",
+          "value": null,
+          "unit": null,
+          "status": "error",
+          "margin": null,
+          "step": "c4p7u"
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "error",
+          "code": "singular_matrix",
+          "message": "Warning: singular matrix:  check node xldo.xr_fb_b.t2"
+        },
+        {
+          "severity": "error",
+          "code": "nonconvergence",
+          "message": "Warning: Dynamic gmin stepping failed"
+        },
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'c4p7u.thi' produced no value: step 'c4p7u' completed, but its .meas card ('.meas tran thi WHEN v(vout)=1.818 CROSS=LAST') printed no 'c4p7u__thi = <value>' line -- check that it resolves against that step's saved vectors and reduces to a single real scalar"
+        }
+      ],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-370/sim/loop-gain/diagnostics/20261105-125812-89a1200-adaptive-rcz/responses/tran__rcz16__r1to50mA/ff_novdd_27C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-370/sim/loop-gain/diagnostics/20261105-125812-89a1200-adaptive-rcz/responses/tran__rcz16__r1to50mA/ff_novdd_27C/corner.cir"
+      },
+      "monte_carlo": null,
+      "steps": [
+        {
+          "name": "c0p33u",
+          "kind": "tran",
+          "status": "ok"
+        },
+        {
+          "name": "c4p7u",
+          "kind": "tran",
+          "status": "ok"
+        }
+      ]
+    },
+    {
+      "corner_id": "ff/novdd/125C",
+      "process": "ff",
+      "supply_v": {},
+      "temperature_c": 125.0,
+      "status": "error",
+      "runtime_s": 11.337,
+      "engine_exit_code": 0,
+      "engine_killed_by_signal": null,
+      "measurements": [
+        {
+          "name": "c0p33u.pre",
+          "value": 1.801055,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c0p33u"
+        },
+        {
+          "name": "c0p33u.vmin",
+          "value": 1.593363,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c0p33u"
+        },
+        {
+          "name": "c0p33u.vmax",
+          "value": 1.913548,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c0p33u"
+        },
+        {
+          "name": "c0p33u.vfin",
+          "value": 1.79588,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c0p33u"
+        },
+        {
+          "name": "c0p33u.tlo",
+          "value": 0.0001556324,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c0p33u"
+        },
+        {
+          "name": "c0p33u.thi",
+          "value": 0.0001325764,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c0p33u"
+        },
+        {
+          "name": "c4p7u.pre",
+          "value": 1.801055,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c4p7u"
+        },
+        {
+          "name": "c4p7u.vmin",
+          "value": 1.74122,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c4p7u"
+        },
+        {
+          "name": "c4p7u.vmax",
+          "value": 1.807972,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c4p7u"
+        },
+        {
+          "name": "c4p7u.vfin",
+          "value": 1.795873,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c4p7u"
+        },
+        {
+          "name": "c4p7u.tlo",
+          "value": 0.0001373135,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c4p7u"
+        },
+        {
+          "name": "c4p7u.thi",
+          "value": null,
+          "unit": null,
+          "status": "error",
+          "margin": null,
+          "step": "c4p7u"
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "error",
+          "code": "measurement",
+          "message": "measurement 'c4p7u.thi' produced no value: step 'c4p7u' completed, but its .meas card ('.meas tran thi WHEN v(vout)=1.818 CROSS=LAST') printed no 'c4p7u__thi = <value>' line -- check that it resolves against that step's saved vectors and reduces to a single real scalar"
+        }
+      ],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-370/sim/loop-gain/diagnostics/20261105-125812-89a1200-adaptive-rcz/responses/tran__rcz16__r1to50mA/ff_novdd_125C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-370/sim/loop-gain/diagnostics/20261105-125812-89a1200-adaptive-rcz/responses/tran__rcz16__r1to50mA/ff_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null,
+      "steps": [
+        {
+          "name": "c0p33u",
+          "kind": "tran",
+          "status": "ok"
+        },
+        {
+          "name": "c4p7u",
+          "kind": "tran",
+          "status": "ok"
+        }
+      ]
+    }
+  ]
+}

@@ -74,6 +74,60 @@ def dotted(doc, path):
     return cur
 
 
+def verify_input_set(pin, item: str, expected: str, root: pathlib.Path) -> list[str]:
+    """Stage-1 check for a pin whose envelope binds an input *set* (item 1)."""
+    envelope_path = root / pin["cited_envelope"]
+    if not envelope_path.is_file():
+        return [f"item {item}: cited envelope {pin['cited_envelope']!r} does not exist"]
+    envelope = json.loads(envelope_path.read_text())
+    members = dotted(envelope, "provenance.input.paths")
+    if not isinstance(members, list) or not members:
+        return [f"item {item}: {pin['cited_envelope']!r} records no provenance.input.paths"]
+    failures: list[str] = []
+    rehashed: list[tuple[str, str]] = []
+    names: set[str] = set()
+    for member in members:
+        name = dotted(member, "path.path")
+        recorded = norm(member.get("content_hash")) if isinstance(member, dict) else None
+        if not isinstance(name, str) or recorded is None:
+            failures.append(f"item {item}: malformed provenance.input.paths member {member!r}")
+            continue
+        names.add(name)
+        path = root / name
+        if not path.is_file():
+            failures.append(f"item {item}: input-set member {name!r} does not exist")
+            continue
+        actual = hashlib.sha256(path.read_bytes()).hexdigest()
+        if actual != recorded:
+            failures.append(
+                f"item {item}: input-set member {name!r} hashes to sha256:{actual} "
+                f"today, but {pin['cited_envelope']!r} recorded sha256:{recorded}"
+            )
+        rehashed.append((name, actual))
+    if pin["artifact"] not in names:
+        failures.append(
+            f"item {item}: pinned artifact {pin['artifact']!r} is not a member of "
+            f"{pin['cited_envelope']!r}'s input set"
+        )
+    if failures:
+        return failures
+    ordered = sorted(rehashed, key=lambda pair: pair[0].encode("utf-8"))
+    body = "".join(f"{h}  {n}\n" for n, h in ordered)
+    digest = hashlib.sha256(body.encode("utf-8")).hexdigest()
+    if digest != expected:
+        failures.append(
+            f"item {item}: input set digests to sha256:{digest} today, but "
+            f"signoff/artifact-pins.json pins sha256:{expected}"
+        )
+    claimed = norm(dotted(envelope, "provenance.input.content_hash"))
+    if claimed != expected:
+        failures.append(
+            f"item {item}: {pin['cited_envelope']!r} claims provenance.input.content_hash="
+            f"{claimed!r}, but the pin is sha256:{expected}"
+        )
+    return failures
+
+
 def verify(manifest, pins, root: pathlib.Path) -> list[str]:
     """Every way this block's pins can disagree with what they claim to cover."""
     failures: list[str] = []
@@ -100,6 +154,15 @@ def verify(manifest, pins, root: pathlib.Path) -> list[str]:
         item = str(pin["item"])
         artifact = root / pin["artifact"]
         expected = norm(pin["sha256"])
+
+        if pin.get("input_set"):
+            # Item 1 (`klt signoff --attest 1`) binds a SET of files: the
+            # envelope's provenance.input.content_hash is klt's input_set_digest
+            # over every member (sha256 of "<hex>  <path>" lines, sorted
+            # bytewise by path). Re-hash every member on disk and recompute it,
+            # so a drifted source or netlist fails here rather than only in klt.
+            failures.extend(verify_input_set(pin, item, expected, root))
+            continue
 
         if not artifact.is_file():
             failures.append(f"item {item}: artifact {pin['artifact']!r} does not exist")

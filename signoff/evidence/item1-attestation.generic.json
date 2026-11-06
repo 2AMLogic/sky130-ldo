@@ -1,0 +1,137 @@
+{
+  "schema_version": 1,
+  "kind": "generic",
+  "status": "pass",
+  "t1_item": 1,
+  "summary": "T1 item 1 (Design sources): 6/6 attestation checks passed (klt signoff --attest)",
+  "source": "signoff/evidence/item1-inventory.json",
+  "attestation": {
+    "producer": "klt signoff --attest",
+    "inventory_schema_version": 1,
+    "hash_algorithm": "sha256-raw-bytes",
+    "check_count": 6,
+    "passed_count": 6,
+    "checks": [
+      {
+        "check": "present",
+        "role": "source",
+        "path": "design/ldo_3v3in_1v8out.sch",
+        "passed": true,
+        "content_hash": "sha256:1378c2d440e6ffc2224091972a162357c2634600e6e56cb51e4d6f96159fd2e3"
+      },
+      {
+        "check": "present",
+        "role": "source",
+        "path": "design/ldo_3v3in_1v8out.sym",
+        "passed": true,
+        "content_hash": "sha256:5e2db71d9ad60b7be49ca9a1cd4e4c4930ce6dd3cbb87c7233f140421ef5c669"
+      },
+      {
+        "check": "present",
+        "role": "source",
+        "path": "design/thermal_cmp_regen.sch",
+        "passed": true,
+        "content_hash": "sha256:994bb74bb00614723c2839147db7cdf77c328cff71ff96fc6c1275648d2d6a05"
+      },
+      {
+        "check": "present",
+        "role": "source",
+        "path": "design/thermal_cmp_regen.sym",
+        "passed": true,
+        "content_hash": "sha256:6222783afd3a40de23cfcdc59a366d2cfa577912e47fd40af233c0625372be4b"
+      },
+      {
+        "check": "present",
+        "role": "derived",
+        "path": "layout/ldo-core/reports/20261022-232042-56dd87fe/xschem_out/ldo_3v3in_1v8out.spice",
+        "passed": true,
+        "content_hash": "sha256:258b85b57c0392158bac959bd34d3f97afa936a68af7437e4af6dc549a644b72"
+      },
+      {
+        "check": "command",
+        "role": "freshness",
+        "target": "layout/ldo-core/reports/20261022-232042-56dd87fe/xschem_out/ldo_3v3in_1v8out.spice",
+        "generator": "klt netlist",
+        "argv": [
+          "uvx",
+          "--from",
+          "klayout-tools==0.9.0",
+          "klt",
+          "netlist",
+          "design/ldo_3v3in_1v8out.sch",
+          "-o",
+          "layout/ldo-core/reports/20261022-232042-56dd87fe/xschem_out/ldo_3v3in_1v8out.spice",
+          "--check",
+          "--ignore-comments",
+          "--rcfile",
+          "sim/xschemrc",
+          "--pdk",
+          "sky130A",
+          "--backend",
+          "batch",
+          "--batch-include",
+          "design/*",
+          "--batch-include",
+          "sim/xschemrc"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true,
+        "local_only": true
+      }
+    ]
+  },
+  "provenance": {
+    "klt_version": "0.9.0",
+    "klayout_version": null,
+    "pdk": null,
+    "deck": null,
+    "input": {
+      "paths": [
+        {
+          "path": {
+            "path": "design/ldo_3v3in_1v8out.sch",
+            "scope": "repo"
+          },
+          "content_hash": "sha256:1378c2d440e6ffc2224091972a162357c2634600e6e56cb51e4d6f96159fd2e3"
+        },
+        {
+          "path": {
+            "path": "design/ldo_3v3in_1v8out.sym",
+            "scope": "repo"
+          },
+          "content_hash": "sha256:5e2db71d9ad60b7be49ca9a1cd4e4c4930ce6dd3cbb87c7233f140421ef5c669"
+        },
+        {
+          "path": {
+            "path": "design/thermal_cmp_regen.sch",
+            "scope": "repo"
+          },
+          "content_hash": "sha256:994bb74bb00614723c2839147db7cdf77c328cff71ff96fc6c1275648d2d6a05"
+        },
+        {
+          "path": {
+            "path": "design/thermal_cmp_regen.sym",
+            "scope": "repo"
+          },
+          "content_hash": "sha256:6222783afd3a40de23cfcdc59a366d2cfa577912e47fd40af233c0625372be4b"
+        },
+        {
+          "path": {
+            "path": "layout/ldo-core/reports/20261022-232042-56dd87fe/xschem_out/ldo_3v3in_1v8out.spice",
+            "scope": "repo"
+          },
+          "content_hash": "sha256:258b85b57c0392158bac959bd34d3f97afa936a68af7437e4af6dc549a644b72"
+        },
+        {
+          "path": {
+            "path": "signoff/evidence/item1-inventory.json",
+            "scope": "repo"
+          },
+          "content_hash": "sha256:71fd0db2c9e637ab1055eb6a2ba230c2f1c32a14139615783ca19c642b688d3c"
+        }
+      ],
+      "content_hash": "sha256:41a169b7a8578c6ddfb1c37a5f866690ac0c48eb96009dc077fbcf7045a15f9e"
+    }
+  }
+}

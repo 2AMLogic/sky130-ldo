@@ -266,6 +266,39 @@ class TestSingleObjectItemsStillVerify(unittest.TestCase):
         self.assertTrue(any("item 3" in f for f in failures), failures)
 
 
+class TestAttestedItems(unittest.TestCase):
+    """Items 1, 2, 9, 10 (issue #423): tool-produced envelopes stay pinned."""
+
+    def test_attested_items_are_pinned_and_cited(self):
+        for item in ("1", "2", "9", "10"):
+            self.assertIn(item, _manifest()["evidence"])
+            self.assertTrue([p for p in _pins() if p["item"] == item])
+
+    def test_wrong_input_set_pin_fails(self):
+        pins = _pins()
+        for pin in pins:
+            if pin["item"] == "1":
+                pin["sha256"] = "sha256:" + "0" * 64
+        self.assertTrue(_verify(_manifest(), pins))
+
+    def test_drifted_input_set_member_fails(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            pin = next(p for p in _pins() if p["item"] == "1")
+            env = json.loads((REPO_ROOT / pin["cited_envelope"]).read_text())
+            (root / Path(pin["cited_envelope"])).parent.mkdir(parents=True)
+            (root / pin["cited_envelope"]).write_text(json.dumps(env))
+            for m in env["provenance"]["input"]["paths"]:
+                dst = root / m["path"]["path"]
+                dst.parent.mkdir(parents=True, exist_ok=True)
+                dst.write_bytes((REPO_ROOT / m["path"]["path"]).read_bytes())
+            self.assertEqual(verify_pins.verify_input_set(
+                pin, "1", verify_pins.norm(pin["sha256"]), root), [])
+            (root / "design/ldo_3v3in_1v8out.sch").write_bytes(b"drift")
+            self.assertTrue(verify_pins.verify_input_set(
+                pin, "1", verify_pins.norm(pin["sha256"]), root))
+
+
 class TestManifestParts(unittest.TestCase):
     """The shape normaliser both loops depend on."""
 

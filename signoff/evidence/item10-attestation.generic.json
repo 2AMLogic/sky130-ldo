@@ -1,0 +1,92 @@
+{
+  "schema_version": 1,
+  "kind": "generic",
+  "status": "pass",
+  "t1_item": 10,
+  "summary": "T1 item 10 (Repo hygiene): 7/7 attestation checks passed (klt signoff --attest)",
+  "source": "signoff/evidence/item10-inventory.json",
+  "attestation": {
+    "producer": "klt signoff --attest",
+    "inventory_schema_version": 1,
+    "hash_algorithm": "sha256-raw-bytes",
+    "check_count": 7,
+    "passed_count": 7,
+    "checks": [
+      {
+        "check": "present",
+        "role": "hygiene",
+        "path": ".github/workflows/ci.yml",
+        "passed": true,
+        "content_hash": "sha256:aa92f510022bc080b88ae99fc4c02dac50d4df41db92cba42aff36a476fa1967"
+      },
+      {
+        "check": "present",
+        "role": "hygiene",
+        "path": "LICENSE",
+        "passed": true,
+        "content_hash": "sha256:cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+      },
+      {
+        "check": "present",
+        "role": "hygiene",
+        "path": "README.md",
+        "passed": true,
+        "content_hash": "sha256:1e7341eb04ea91ae66943db1cb333d536979e8916082e811109c8dc19666abc7"
+      },
+      {
+        "check": "present",
+        "role": "hygiene",
+        "path": "docs/environment-setup.md",
+        "passed": true,
+        "content_hash": "sha256:882c9cdb6705540a7990c9b0080d12027da1e1d17d1678197a6103cddcdc0a50"
+      },
+      {
+        "check": "present",
+        "role": "hygiene",
+        "path": "sim/README.md",
+        "passed": true,
+        "content_hash": "sha256:d531ad16e30ef6b57c8ff50a7f21cfba0b50028417dc8873d20b0edd592e68c8"
+      },
+      {
+        "check": "command",
+        "role": "audit",
+        "name": "repo-lint",
+        "argv": [
+          "npm",
+          "run",
+          "lint"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
+      },
+      {
+        "check": "command",
+        "role": "audit",
+        "name": "pin-rehash",
+        "argv": [
+          "python3",
+          "signoff/verify-pins.py",
+          "signoff/block-manifest.json",
+          "signoff/artifact-pins.json"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
+      }
+    ]
+  },
+  "provenance": {
+    "klt_version": "0.9.0",
+    "klayout_version": null,
+    "pdk": null,
+    "deck": null,
+    "input": {
+      "path": {
+        "path": "signoff/evidence/item10-inventory.json",
+        "scope": "repo"
+      },
+      "content_hash": "sha256:9c53b3d1431a4009e65df07ce7611e0c25ab4152e790cfa080594db12ee43295"
+    }
+  }
+}
