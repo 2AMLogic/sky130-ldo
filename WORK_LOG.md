@@ -2,6 +2,27 @@
 
 Chronological record of merged pull requests and closed issues. Maintained by the Loom Guide role.
 
+### 2026-11-05
+
+- **PR #512**: sim(thermal): batch route for the hysteresis staircase
+- **PR #510**: sim(loop-gain): fleet screen of a sub-mA load-sensed adaptive R_CZ
+- **PR #509**: signoff: re-cite item 3 DRC to the clean 3e7f504b envelope
+- **PR #507**: sim(loop-gain): fleet-confirm #365 baseline and R_CZ x16 AC pairs
+- **PR #506**: signoff: grade T1 items 1, 2, 9, 10 from klt --attest envelopes (klt 0.9.0)
+- **PR #502**: sim(iq): mint superseding 45-corner record on batch backend (40/45 PASS)
+
+### 2026-11-04
+
+- **PR #501**: sim: record paired line-regulation local/fleet check (engine mismatch, not equivalent)
+- **PR #499**: refactor: drop dead sha256_file and dedupe _sha256_of
+- **PR #498**: refactor(cap-study): remove caller-less rel_path, mim_cap_f, vpp_name_dims
+- **PR #496**: docs(sim): simulate DR-013 alternative (a) mirror-ratio candidate
+- **PR #494**: refactor(sim): share one klt sim runner across record scripts
+- **PR #493**: docs(spec): amend DR-013/DR-010 status and provenance, qualify Iq row's DR-009 cite
+- **PR #490**: docs(spec): DR-011 stays proposed; point to fresh-ratification path
+- **PR #486**: docs(spec): DR-010 stays proposed; point to fresh-ratification path
+- **PR #482**: docs(spec): add ll/hh Iq corners and DR-0033 departure to DR-013 record
+
 ### 2026-11-01
 
 - **PR #483**: feat: PVT PSRR/stability grid and minted Iq record for the DR-013 R_BIAS candidate
