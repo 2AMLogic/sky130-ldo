@@ -26,9 +26,7 @@ Judge-approved PRs under a hold (`loom:blocked` or `loom:operator`) — only a h
 Human-approved issues ready for implementation (`loom:issue`).
 
 - **#301**: spec: decide whether DR-008 through DR-012 ratified on merge
-- **#381**: Sim: admit load-regulation cold-start endpoints to the batch backend
 - **#467**: Bias re-topology so R_BIAS is not one long resistor: new DR, to meet the < 0.1 mm² Area row without a fold waiver (#461)
-- **#503**: measurements: characterization generator cannot see artifact-store-only sim records (iq 20261105-052332-05df7a01)
 
 ## In Progress
 
@@ -40,7 +38,7 @@ _None._
 
 PRs waiting on Judge (`loom:review-requested`).
 
-- **#504**: fix(measurements): select store-only sim records in latest_sim_record
+_None._
 
 ## Approved (Awaiting Merge)
 
@@ -60,7 +58,6 @@ Issues carrying `loom:curated`.
 - **#301**: spec: decide whether DR-008 through DR-012 ratified on merge *(curated)*
 - **#314**: PSRR: decide and evidence the binding output-capacitor/ESR condition *(curated)*
 - **#345**: Load transient: mint the COUT/ESR window-grid x 45 PVT campaign via --backend batch (blocked on fleet runner update) *(curated)*
-- **#381**: Sim: admit load-regulation cold-start endpoints to the batch backend *(curated)*
 - **#416**: Re-run folded-resistor MC at n>=1000 to firm up M2 sigma-ratio gate *(curated)*
 - **#461**: T1 item 5 area: compact routed ldo_core under 0.1 mm² with capacitors drawn, re-mint records (part of #458) *(curated)*
 - **#503**: measurements: characterization generator cannot see artifact-store-only sim records (iq 20261105-052332-05df7a01) *(curated)*
@@ -80,11 +77,11 @@ Issues carrying `loom:curated`.
 | Operator merge-risk holds | 1 |
 | Very important | 1 |
 | Important | 1 |
-| Ready (`loom:issue`) | 4 |
+| Ready (`loom:issue`) | 2 |
 | In Progress (`loom:building`) | 0 |
-| PRs awaiting review | 1 |
+| PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 1 |
-| Curated | 12 |
+| Curated | 11 |
 | Architect / Hermit proposals | 1 |
 | Active epics | 1 |
 <!-- guide:plan-body:end -->
