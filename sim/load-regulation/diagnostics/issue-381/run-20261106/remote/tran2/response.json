@@ -1,0 +1,296 @@
+{
+  "corner_count": 1,
+  "corners": [
+    {
+      "artifacts": {
+        "deck": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-381/sim/build/load-regulation/20261106-201043-9042a88a.ephemeral-1864511/klt-out/v3.30-tran2/tt_novdd_27C/corner.cir",
+        "log": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-381/sim/build/load-regulation/20261106-201043-9042a88a.ephemeral-1864511/klt-out/v3.30-tran2/tt_novdd_27C/ngspice.log",
+        "raw": null,
+        "waveform": null
+      },
+      "corner_id": "tt/novdd/27C",
+      "diagnostics": [],
+      "engine_exit_code": 0,
+      "engine_killed_by_signal": null,
+      "measurements": [
+        {
+          "margin": null,
+          "name": "tran2.vout_50ma",
+          "status": "pass",
+          "step": "tran2",
+          "unit": "V",
+          "value": 1.798832
+        },
+        {
+          "margin": null,
+          "name": "tran2.vout_50ma_min",
+          "status": "pass",
+          "step": "tran2",
+          "unit": "V",
+          "value": 1.798831
+        },
+        {
+          "margin": null,
+          "name": "tran2.vout_50ma_max",
+          "status": "pass",
+          "step": "tran2",
+          "unit": "V",
+          "value": 1.798832
+        }
+      ],
+      "monte_carlo": null,
+      "peak_rss_bytes": 207527936,
+      "process": "tt",
+      "runtime_s": 19.069,
+      "status": "pass",
+      "steps": [
+        {
+          "kind": "tran",
+          "name": "tran2",
+          "status": "ok"
+        }
+      ],
+      "supply_v": {},
+      "temperature_c": 27.0
+    }
+  ],
+  "coverage": {
+    "checked": [
+      "measurement:[0,\"tt/novdd/27C\",\"tran2.vout_50ma\"]/observation",
+      "measurement:[0,\"tt/novdd/27C\",\"tran2.vout_50ma_max\"]/observation",
+      "measurement:[0,\"tt/novdd/27C\",\"tran2.vout_50ma_min\"]/observation"
+    ],
+    "corners_simulated": 1,
+    "inapplicable": [
+      {
+        "id": "measurement:[0,\"tt/novdd/27C\",\"tran2.vout_50ma\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/27C\",\"tran2.vout_50ma_max\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/27C\",\"tran2.vout_50ma_min\"]/limits",
+        "reason": "characterization_without_limits"
+      }
+    ],
+    "known": true,
+    "measurements_declared": 3,
+    "measurements_with_limits": 0,
+    "nothing_checked": false,
+    "nothing_checked_reasons": [],
+    "schema_version": 1,
+    "skipped": [],
+    "unknown": [],
+    "unrecognized_limit_keys": []
+  },
+  "diagnostic_counts": {
+    "by_code": {},
+    "by_severity": {},
+    "corners_with_diagnostics": 0
+  },
+  "diagnostics": [
+    {
+      "code": "model_bin_range_preflight",
+      "instance": "XM_PASS",
+      "message": "preflight: instance 'XM_PASS' (sky130_fd_pr__pfet_g5v0d10v5) has w=1e+08u nf=25, at/above the ~100 um per-instance width bin range some PDKs enforce (keyed on w as written; nf= does not widen it); ngspice may abort with \"could not find a valid modelname\". Use m= to parallel smaller-width instances (see issue #4976)",
+      "model": "sky130_fd_pr__pfet_g5v0d10v5",
+      "nf": 25.0,
+      "severity": "warning",
+      "w_um": 100000000.0
+    }
+  ],
+  "environment": {
+    "backend": {
+      "requested": "batch",
+      "resolved": "batch",
+      "source": "flag"
+    },
+    "client_ngspice_binary": "/home/ubuntu/.local/bin/ngspice",
+    "engine": "ngspice",
+    "engine_build": {
+      "binary_sha256": "dc859418bedd0478ff439a2d3e2e09f4386a7f4d5e3f17671953e101a000cc60",
+      "probe": "ok",
+      "reason": null,
+      "version_banner": "******\n** ngspice-46 : Circuit level simulation program\n** Compiled with KLU Direct Linear Solver\n** The U. C. Berkeley CAD Group\n** Copyright 1985-1994, Regents of the University of California.\n** Copyright 2001-2025, The ngspice team.\n** Please get your ngspice manual from https://ngspice.sourceforge.io/docs.html\n** Please file your bug-reports at http://ngspice.sourceforge.net/bugrep.html\n** Creation Date: Thu Oct  1 23:51:59 UTC 2026\n******"
+    },
+    "engine_host": "worker",
+    "engine_version": "46",
+    "models_lib": {
+      "path": null,
+      "scope": "external"
+    },
+    "models_lib_sha256": "48de7c677e2c6e7d09b2559279de9f818be71010a4aa933d728eb4db3b133c84",
+    "models_lib_sha256_scope": "client",
+    "netlist_closure": [
+      {
+        "path": "sim/build/load-regulation/20261106-201043-9042a88a.ephemeral-1864511/klt-requests/v3.30-tran2.spice",
+        "scope": "repo",
+        "sha256": "7d9b883d675e3f6b2d4147418e9f8c9a556d5626b4aee26816b2e69b5c0904fe"
+      }
+    ],
+    "netlist_identity": "sha256:24960c12bee9dc6fe1582e135cbdc41d37f6f5833e0561eb03738f5438285661",
+    "netlist_sha256": "7d9b883d675e3f6b2d4147418e9f8c9a556d5626b4aee26816b2e69b5c0904fe",
+    "ngspice_binary": "/usr/local/bin/ngspice",
+    "remote": {
+      "ami_id": "ami-095c25ae241a4d360",
+      "availability_zone": "us-east-1d",
+      "client_collected_at": "2026-11-06T20:13:40.337888Z",
+      "client_klt_version": "0.9.2.dev119+gaa798644c611",
+      "client_launched_at": "2026-11-06T20:12:35.888446Z",
+      "client_status_terminal_at": "2026-11-06T20:13:39.188879Z",
+      "client_submitted_at": "2026-11-06T20:12:12.912054Z",
+      "concurrency": "1",
+      "elapsed_seconds": 29,
+      "exit_code": "0",
+      "instance_id": "i-04985014d7b9f4058",
+      "instance_type": "m7i.4xlarge",
+      "job_ceiling": {
+        "basis": "conservative_serial_bound",
+        "check": "warn",
+        "exceeds_ceiling": false,
+        "job_bound_s": 420.0,
+        "max_job_seconds": 3600.0,
+        "max_job_seconds_source": "fleet_config",
+        "max_units_per_job": 11,
+        "overhead_s": 120.0,
+        "per_unit_timeout_s": 300,
+        "recommended_hosts": 1,
+        "unit_count": 1
+      },
+      "job_id": "klt-sim-84d6d1b6d810",
+      "lifecycle": "spot",
+      "physical_cores": "8",
+      "provider": "aws-batch-fleet",
+      "region": "us-east-1",
+      "runner_compatibility": "match",
+      "runner_klt_version": "0.9.0",
+      "runner_model_inputs": null,
+      "runner_request_features": {
+        "missing": [],
+        "required": [
+          "analysis_steps",
+          "options.ngspice_init"
+        ],
+        "status": "supported"
+      },
+      "spot": true,
+      "state": "done",
+      "worker_environment": {
+        "capture": "ok",
+        "cpu_model": "Intel(R) Xeon(R) Platinum 8488C",
+        "diagnostics": [],
+        "engine_build_comparison": {
+          "status": "match"
+        },
+        "image_manifest": null,
+        "model_inputs": null,
+        "omp_num_threads": null,
+        "pdk": {
+          "models_staged": false,
+          "root": "/opt/pdk",
+          "stamp_scheme": "sources-sha256",
+          "stamp_scope": "executed",
+          "stamp_sha256": "4ca10280ae9f293aa1ff69f0060a52e0026929111bda881503717469b429ce67",
+          "stamp_text": "open_pdks f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7",
+          "variant": "sky130A"
+        },
+        "pdk_stamp_comparison": {
+          "status": "mismatch",
+          "warning": "the worker's PDK revision stamp for sky130A differs from the one the submitter resolved locally; results may differ from a local run (a matching stamp would not prove identical models)"
+        },
+        "simulator": {
+          "binary_source": "PATH",
+          "requested_binary": "ngspice",
+          "selected_path": "/usr/local/bin/ngspice",
+          "version_banner": "******\n** ngspice-46 : Circuit level simulation program\n** Compiled with KLU Direct Linear Solver\n** The U. C. Berkeley CAD Group\n** Copyright 1985-1994, Regents of the University of California.\n** Copyright 2001-2025, The ngspice team.\n** Please get your ngspice manual from https://ngspice.sourceforge.io/docs.html\n** Please file your bug-reports at http://ngspice.sourceforge.net/bugrep.html\n** Creation Date: Thu Oct  1 23:51:59 UTC 2026\n******\n",
+          "version_probe": "ok"
+        }
+      }
+    }
+  },
+  "errored": 0,
+  "failed": 0,
+  "inconclusive": 0,
+  "measurements": [
+    {
+      "limits": null,
+      "name": "tran2.vout_50ma",
+      "status": "pass",
+      "step": "tran2",
+      "unit": "V",
+      "worst_case": {
+        "corner_id": "tt/novdd/27C",
+        "margin": null,
+        "value": 1.798832
+      }
+    },
+    {
+      "limits": null,
+      "name": "tran2.vout_50ma_min",
+      "status": "pass",
+      "step": "tran2",
+      "unit": "V",
+      "worst_case": {
+        "corner_id": "tt/novdd/27C",
+        "margin": null,
+        "value": 1.798831
+      }
+    },
+    {
+      "limits": null,
+      "name": "tran2.vout_50ma_max",
+      "status": "pass",
+      "step": "tran2",
+      "unit": "V",
+      "worst_case": {
+        "corner_id": "tt/novdd/27C",
+        "margin": null,
+        "value": 1.798832
+      }
+    }
+  ],
+  "metrics": {
+    "sim__corner__count": 1,
+    "sim__corner__errored_count": 0,
+    "sim__corner__failed_count": 0,
+    "sim__corner__inconclusive_count": 0,
+    "sim__corner__passed_count": 1
+  },
+  "netlist": {
+    "path": "sim/build/load-regulation/20261106-201043-9042a88a.ephemeral-1864511/klt-requests/v3.30-tran2.spice",
+    "scope": "repo"
+  },
+  "passed": 1,
+  "provenance": {
+    "deck": {
+      "content_hash": "sha256:48de7c677e2c6e7d09b2559279de9f818be71010a4aa933d728eb4db3b133c84",
+      "name": "sky130.lib.spice",
+      "released": false
+    },
+    "input": {
+      "content_hash": "sha256:7d9b883d675e3f6b2d4147418e9f8c9a556d5626b4aee26816b2e69b5c0904fe",
+      "role": "netlist"
+    },
+    "klayout_version": "0.30.13",
+    "klt_git_commit": "aa798644c6111ab5a502360cee1631d9dcf708bf",
+    "klt_reinstall_spec": "klayout-tools @ git+https://github.com/2AMLogic/klayout-tools@aa798644c6111ab5a502360cee1631d9dcf708bf",
+    "klt_version": "0.9.2.dev119+gaa798644c611",
+    "pdk": {
+      "ambiguous_sources": [
+        "search root: ~/.ciel"
+      ],
+      "compatibility": {
+        "expected": "open_pdks f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7",
+        "package": "open_pdks-sky130",
+        "status": "mismatch"
+      },
+      "name": "sky130A",
+      "source": "PDK_ROOT environment variable",
+      "version": "open_pdks c6d73a35f524070e85faff4a6a9eef49553ebc2b"
+    }
+  },
+  "schema_version": 3,
+  "status": "pass"
+}
