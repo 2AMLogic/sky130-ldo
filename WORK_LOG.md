@@ -10,6 +10,11 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 - **PR #507**: sim(loop-gain): fleet-confirm #365 baseline and R_CZ x16 AC pairs
 - **PR #506**: signoff: grade T1 items 1, 2, 9, 10 from klt --attest envelopes (klt 0.9.0)
 - **PR #502**: sim(iq): mint superseding 45-corner record on batch backend (40/45 PASS)
+- **Issue #511** (closed): sim: batch backend for corner-run.py so the thermal-staircase PVT qualification can run on the Spot fleet
+- **Issue #508** (closed): Follow-on from PR #506: align the GDS cited by signoff items 2, 3, 4 and 11
+- **Issue #423** (closed): T1 items 1, 2, 9, 10: bump the signoff grading pin and attest with artifact-anchored envelopes (klt signoff --attest)
+- **Issue #370** (closed): Stability: confirm zero-load lever on fleet and screen sub-mA adaptive resistance
+- **Issue #213** (closed): sim(iq): mint the 45-corner record under #173's seeded deck + #133's regulation gate
 
 ### 2026-11-04
 
@@ -22,6 +27,13 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 - **PR #490**: docs(spec): DR-011 stays proposed; point to fresh-ratification path
 - **PR #486**: docs(spec): DR-010 stays proposed; point to fresh-ratification path
 - **PR #482**: docs(spec): add ll/hh Iq corners and DR-0033 departure to DR-013 record
+- **Issue #497** (closed): Remove dead sha256_file from _official_drc.py and dedupe _sha256_of
+- **Issue #495** (closed): Remove dead helpers from _cap_study.py: rel_path, mim_cap_f, vpp_name_dims
+- **Issue #492** (closed): DR-013 alternative (a): simulate smaller R_BIAS plus mirror ratio
+- **Issue #491** (closed): Consolidate five duplicated klt sim subprocess wrappers in sim/bin into _record_common
+- **Issue #489** (closed): DR-010/DR-013 record hygiene from the #486/#482 key reviews
+- **Issue #478** (closed): DR-013 follow-ups: ll/hh resistor-skew corners missing from the full-loop sweep
+- **Issue #384** (closed): Line regulation: complete the unperformed numerical-equivalence handoff
 
 ### 2026-11-01
 
