@@ -11,10 +11,11 @@ spec condition (that is a decision record, Phase 2).
 from __future__ import annotations
 
 import json
-import math
 import re
 import sys
 from pathlib import Path
+
+from _record_common import is_finite_number
 
 TIE_TOL_DB = 1e-6
 
@@ -38,10 +39,6 @@ def corner_key(corner) -> str:
 
 def expected_cells(manifest: dict) -> list[tuple[str, tuple[float, float]]]:
     return [(corner_key(k), p) for k in manifest["corners"] for p in sweep_points(manifest)]
-
-
-def _finite(v) -> bool:
-    return isinstance(v, (int, float)) and not isinstance(v, bool) and math.isfinite(v)
 
 
 # --------------------------------------------------------------------------
@@ -179,12 +176,12 @@ def parse_corner(manifest: dict, corner_id: str, rc: dict | None) -> tuple[list[
                 row["ok"] = False
                 row["reasons"].append(f"step {step}: status {status.get(step)!r}")
         vs = values.get(f"{e['op']}.vseed")
-        row["vseed_v"][e["load"]] = float(vs) if _finite(vs) else None
+        row["vseed_v"][e["load"]] = float(vs) if is_finite_number(vs) else None
         for freq in ("p1k", "p100k"):
             v = values.get(f"{e['ac']}.{freq}")
             name = _metric_name(freq, e["load"])
-            row["metrics"][name] = float(v) if _finite(v) else None
-            if not _finite(v):
+            row["metrics"][name] = float(v) if is_finite_number(v) else None
+            if not is_finite_number(v):
                 row["reasons"].append(f"{name}: value {v!r} not finite/absent")
     results, repeats = [], []
     for (tag, _), row in cells.items():
@@ -216,7 +213,7 @@ def independence_report(results: list[dict], repeats: list[dict], tol_db: float)
         base = first.get((rep["corner_id"], rep["c_uf"], rep["esr_ohm"]))
         for name, v in sorted(rep["metrics"].items()):
             b = None if base is None else base["metrics"].get(name)
-            same = _finite(v) and _finite(b) and abs(v - b) <= tol_db
+            same = is_finite_number(v) and is_finite_number(b) and abs(v - b) <= tol_db
             out.append({"corner_id": rep["corner_id"], "c_uf": rep["c_uf"], "esr_ohm": rep["esr_ohm"],
                         "metric": name, "first_db": b, "repeat_db": v, "identical": bool(same)})
     return out
@@ -239,7 +236,7 @@ def select_worst(manifest: dict, results: list[dict]) -> dict:
         for corner, point in cells:
             r = by_cell.get((corner, point))
             v = None if r is None or not r.get("ok", True) else (r.get("metrics") or {}).get(metric)
-            if not _finite(v):
+            if not is_finite_number(v):
                 missing.append({"corner_id": corner, "c_uf": point[0], "esr_ohm": point[1]})
                 continue
             if point not in per_point or v < per_point[point][0]:

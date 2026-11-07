@@ -24,6 +24,10 @@ Also home to `klt_binary()` (issue #224), the `shutil.which("klt")`
 fail-fast check -- `sim/bin/mc-run.py` and `sim/bin/yield-run.py` previously
 carried byte-identical copies of this function, differing only in the
 trailing usage phrase of their error message.
+
+Also home to `is_finite_number()` (issue #522), the "real finite number (not
+bool/NaN/inf)" predicate -- six `sim/bin/` scripts previously carried
+byte-equivalent copies under `_finite` / `_finite_number`.
 """
 
 from __future__ import annotations
@@ -31,6 +35,7 @@ from __future__ import annotations
 import hashlib
 import importlib.util
 import json
+import math
 import os
 import re
 import shutil
@@ -586,3 +591,8 @@ def bisect(pred, lo, hi, tol, want_lowest):
         else:
             lo, hi = (mid, hi) if ok else (lo, mid)
     return lo, hi
+
+
+def is_finite_number(x) -> bool:
+    """True for an int/float that is not a bool and not NaN/inf."""
+    return isinstance(x, (int, float)) and not isinstance(x, bool) and math.isfinite(x)

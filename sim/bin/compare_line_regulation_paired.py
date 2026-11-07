@@ -23,10 +23,11 @@ from __future__ import annotations
 
 import argparse
 import json
-import math
 import re
 import sys
 from pathlib import Path
+
+from _record_common import is_finite_number
 
 ENDPOINT_TOL_V = 1e-6
 SLOPE_TOL_MV_PER_V = 0.01
@@ -39,10 +40,6 @@ ENDPOINTS = [
 SLOPES = ["line_reg_1ma_mv_per_v", "line_reg_50ma_mv_per_v"]
 
 
-def _finite(x) -> bool:
-    return isinstance(x, (int, float)) and not isinstance(x, bool) and math.isfinite(x)
-
-
 def derive_slopes(v: dict) -> dict:
     """Slope from the graded average endpoints, as the deck/manifest defines it."""
     out = {}
@@ -50,7 +47,7 @@ def derive_slopes(v: dict) -> dict:
         lo, hi = v.get(f"vout_{ld}_lo"), v.get(f"vout_{ld}_hi")
         out[name] = (
             abs(1000 * (hi - lo) / (3.63 - 2.97))
-            if _finite(lo) and _finite(hi)
+            if is_finite_number(lo) and is_finite_number(hi)
             else None
         )
     return out
@@ -70,7 +67,7 @@ def compare(
             (SLOPE_TOL_MV_PER_V, "mV/V") if name in SLOPES else (ENDPOINT_TOL_V, "V")
         )
         r, l = remote.get(name), local.get(name)
-        if not (_finite(r) and _finite(l)):
+        if not (is_finite_number(r) and is_finite_number(l)):
             missing.append(name)
             rows.append(
                 {
@@ -134,7 +131,7 @@ def load_remote(d: Path) -> tuple[dict, str | None, list[str]]:
         resp = json.loads((d / "remote" / f"tran{t}" / "response.json").read_text())
         engines.add(str(resp["environment"].get("engine_version")))
         for m in resp["corners"][0]["measurements"]:
-            if m.get("status") == "pass" or _finite(m.get("value")):
+            if m.get("status") == "pass" or is_finite_number(m.get("value")):
                 vals[m["name"].split(".", 1)[1]] = m["value"]
     vals.update({k: v for k, v in derive_slopes(vals).items() if v is not None})
     return vals, (engines.pop() if len(engines) == 1 else None), sorted(engines)
