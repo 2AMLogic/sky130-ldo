@@ -26,14 +26,11 @@ Limits of the claim (see sim/README.md, "Startup ramp monotonicity"):
 from __future__ import annotations
 
 import hashlib
-import math
 from pathlib import Path
 
+from _record_common import is_finite_number
+
 REQUIRED_SETTINGS = ("t_enable_s", "v_low", "max_dt_s", "min_samples")
-
-
-def _finite(x) -> bool:
-    return isinstance(x, (int, float)) and not isinstance(x, bool) and math.isfinite(x)
 
 
 def _result(status, reasons, settings, **extra) -> dict:
@@ -59,7 +56,7 @@ def check_ramp_monotonicity(times, volts, settings: dict) -> dict:
     missing = [k for k in REQUIRED_SETTINGS if k not in s]
     if missing:
         return _result("INVALID", [f"missing checker settings: {', '.join(missing)}"], s)
-    if not all(_finite(s[k]) for k in (*REQUIRED_SETTINGS, "tolerance_v")) or s["tolerance_v"] < 0:
+    if not all(is_finite_number(s[k]) for k in (*REQUIRED_SETTINGS, "tolerance_v")) or s["tolerance_v"] < 0:
         return _result("INVALID", ["checker settings must be finite (tolerance_v >= 0)"], s)
 
     if times is None or volts is None or len(times) == 0 or len(volts) == 0:
@@ -67,7 +64,7 @@ def check_ramp_monotonicity(times, volts, settings: dict) -> dict:
     if len(times) != len(volts):
         return _result("INVALID", ["time and voltage columns differ in length"], s)
     n = len(times)
-    if not all(_finite(t) for t in times) or not all(_finite(v) for v in volts):
+    if not all(is_finite_number(t) for t in times) or not all(is_finite_number(v) for v in volts):
         return _result("INVALID", ["trace contains nonfinite samples"], s, n_samples=n)
     if any(b <= a for a, b in zip(times, times[1:])):
         return _result("INVALID", ["time column is not strictly increasing"], s, n_samples=n)

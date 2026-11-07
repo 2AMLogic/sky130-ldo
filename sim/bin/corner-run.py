@@ -57,6 +57,7 @@ from _record_common import (
     klt_binary as _shared_klt_binary,
     run_klt_sim,
     git,
+    is_finite_number as _finite_number,
     pvt_input_sections,
     reserve_record_id,
     render_record_footer,
@@ -1584,15 +1585,6 @@ def run_klt_batch(request_path: Path, outdir: Path, pdk_root: Path) -> tuple[dic
     return run_klt_sim(
         request_path, outdir, "batch", pdk_root,
         klt_exe=klt_binary(), error_cls=HarnessError, retry_capacity=True,
-    )
-
-
-def _finite_number(value) -> bool:
-    return (
-        isinstance(value, (int, float))
-        and not isinstance(value, bool)
-        and value == value
-        and value not in (float("inf"), float("-inf"))
     )
 
 

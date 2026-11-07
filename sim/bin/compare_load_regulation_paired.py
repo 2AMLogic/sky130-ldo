@@ -28,10 +28,11 @@ from __future__ import annotations
 
 import argparse
 import json
-import math
 import re
 import sys
 from pathlib import Path
+
+from _record_common import is_finite_number
 
 ENDPOINT_TOL_V = 1e-6
 LOAD_REG_V_TOL = 2e-6
@@ -49,14 +50,10 @@ TOLS = {
 }
 
 
-def _finite(x) -> bool:
-    return isinstance(x, (int, float)) and not isinstance(x, bool) and math.isfinite(x)
-
-
 def derive(v: dict) -> dict:
     """Both differences from the graded average endpoints, as the manifest does."""
     a, b = v.get("vout_0ma"), v.get("vout_50ma")
-    if not (_finite(a) and _finite(b)):
+    if not (is_finite_number(a) and is_finite_number(b)):
         return {"load_reg_v": None, "load_reg_pct": None}
     return {
         "load_reg_v": abs(b - a),
@@ -76,7 +73,7 @@ def compare(
     for name in ENDPOINTS + DERIVED:
         tol, unit = TOLS[name]
         r, l = remote.get(name), local.get(name)
-        if not (_finite(r) and _finite(l)):
+        if not (is_finite_number(r) and is_finite_number(l)):
             missing.append(name)
             rows.append(
                 dict(name=name, remote=r, local=l, delta=None, tol=tol, unit=unit, ok=False)
@@ -121,7 +118,7 @@ def load_remote(d: Path) -> tuple[dict, str | None, list[str]]:
         resp = json.loads((d / "remote" / f"tran{t}" / "response.json").read_text())
         engines.add(str(resp["environment"].get("engine_version")))
         for m in resp["corners"][0]["measurements"]:
-            if _finite(m.get("value")):
+            if is_finite_number(m.get("value")):
                 vals[m["name"].split(".", 1)[1]] = m["value"]
     vals.update({k: v for k, v in derive(vals).items() if v is not None})
     return vals, (engines.pop() if len(engines) == 1 else None), sorted(engines)
