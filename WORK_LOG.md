@@ -4,6 +4,8 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 
 ### 2026-11-07
 
+- **PR #523**: fix(sim): use shared is_finite_number in psrr-cap-sweep-run
+- **Issue #522** (closed): Dedupe: fold six copies of the finite-number predicate into _record_common
 - **PR #518**: Bump Repo Skills 0.25.1 -> 0.25.10
 
 ### 2026-11-06
