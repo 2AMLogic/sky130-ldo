@@ -47,7 +47,9 @@ sys.path.insert(0, str(SIM / "bin"))
 from _record_common import klt_binary, run_klt_sim
 from xschem_exprs import eval_xschem_exprs
 
-PATCH = SIM / "bias-retopo" / "20261029-fullloop-467" / "candidate-R_BIAS.patch"
+PATCH = (
+    SIM / "bias-retopo" / "20261029-fullloop-467" / "candidate-R_BIAS.patch"
+)  # default; --patch overrides
 SCH = "design/ldo_3v3in_1v8out.sch"
 SUPPLIES = [2.97, 3.30, 3.63]
 PROCESS = ["tt", "ss", "ff", "sf", "fs"]
@@ -169,7 +171,14 @@ def main() -> int:
         "--corners", help="process:temp:vsup list; default = full 45-point matrix"
     )
     ap.add_argument("--workers", type=int, default=2)
+    ap.add_argument(
+        "--patch",
+        help="candidate patch to apply for netlisting (default: DR-013 R_BIAS patch)",
+    )
     args = ap.parse_args()
+    if args.patch:
+        global PATCH
+        PATCH = Path(args.patch).resolve()
     if args.workers > 2:
         sys.exit("host rule: no more than 2 workers")
     out = REPO / "sim" / "bias-retopo" / args.record_id

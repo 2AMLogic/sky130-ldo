@@ -4,6 +4,16 @@
   needs the two-key step (EE and market keys) and then operator ratification
   (2am#5346), which are human gates outside this PR. #461 (layout) stays parked
   until that completes.
+- **Status amendment (2026-11-04, #489; additive — the line above is the original
+  text, kept as written)**: this record is **ratified**. The operator ratified
+  DR-013 itself on 2026-11-01 on #470 (fleet-decide round 20261031-r5, question
+  r5-q34), at #470 head `191f1ffe`, after the EE-key and market-key reviews there; the
+  operator's comment on #470 (2026-11-01T17:55:18Z) records it, and #470 merged at
+  that head (2026-11-01T17:55:32Z). The #482 PR (operator release 2026-11-04T06:39Z,
+  merged 2026-11-04; #467: "#478 landed via #482 (ratified 2026-11-04)") ratified
+  the #478 additions only: the `ll`/`hh` Iq corners and the DR-0033 departure
+  paragraph. The status line above reads `proposed` only because the merged copy was
+  never rewritten after #470. No decision text or target value changes.
 - **Date**: 2026-10-29
 - **Author**: Builder agent (#467)
 - **Ratifies against / input to**: #467 (operator ruling 2026-10-29 on #461: fix the
@@ -87,19 +97,44 @@ resistor-skew corners. `sim/bias-retopo/20261101-llhh-478/record.md` adds them
 30.3 @ 125 °C/3.30 V, 32.4 @ 125 °C/3.63 V); `hh` is 9/9 in budget; no-load Iq is in budget at all 63.
 The worst full-load figure is now 32.4 µA (`ll`/125 °C/3.63 V). The carried FAIL stands at the unchanged bound.
 
+*Provenance and receipt notes (2026-11-04, #489; additive).* **Engine versions.** All 63 graded rows were
+built by the same engine. In all 12 response files (`20261029-fullloop-467/` and `20261101-llhh-478/`)
+`environment.engine_host` is `worker`, and the batch worker's banner is **ngspice-46** with the same worker PDK
+stamp (`d5ac5295…`). Only the client-side probe binary differs: its banner reads **ngspice-42** (sha256
+`82065831…`) on the 6 carried-row responses and **ngspice-46** (sha256 `c874869b…`) on the 6 new `ll`/`hh`
+responses; that binary did not build the graded numbers. `models_lib_sha256` (`48de7c67…`) is the same in 12
+of 12 responses, but it is client-scoped (`models_lib_sha256_scope: client`). The pin gap is that the
+worker's ngspice-46 differs from the `ngspice: 42` pin in `sim/pdk.json` for all 63 rows; no cross-version
+check against ngspice-42 was run. **Receipt hash.** `request_sha256` in `batch-receipt`/`*.receipt.json`
+is the SHA-256 of the request JSON in canonical sorted-key form (`json.dumps(obj, sort_keys=True)`), not of the
+committed request file's bytes; `sha256sum requests/<name>.json` will not match it. Checked on
+`20261101-llhh-478/requests/v2.97-tran1.json` → `dc4a7f19…`, equal to its receipt.
+
 *Attribution of the exceedances (#478).* The candidate changes only `R_BIAS`, so it can change Iq only
 through the bias current; the bias-only grid (`sim/bias-retopo/20261029-bias-grid-467/record.md`) gives
 the pair-current shift at every point. At **ff / −40 °C / 3.63 V (31.2 µA)** the shift is −0.45 %
 (4.6346 → 4.6137 µA) and at **fs / 27 °C / 3.63 V (30.2 µA)** it is −0.34 % (4.5480 → 4.5325 µA): the
 candidate lowers bias current there, so **these two of the six cannot be caused by it**, and the design of
 record is **inferred** to be at or marginally above the same value (already over 30 µA); the two `ll`
-points at 3.63 V cold/room (−2.85 %, −0.08 %) are likewise not candidate-caused. This is an inference
+points at 3.63 V cold/room (−2.85 %, −0.08 %) are likewise not candidate-caused.
+*Amendment (2026-11-04, #489; additive — the sentence above is unchanged, this bounds "marginally").* The
+size of that margin follows from the mirror gain, not from the pair-current shift alone. Taking the
+whole-circuit Iq as proportional to the bias current is an upper bound on the gain, since the load-dependent
+part does not scale with it. The gain is then at most Iq / I_pair, using the 63-point table and the
+bias-only grid. At **ll / −40 °C / 3.63 V** the candidate lowers I_pair by 0.156 µA (5.4711 → 5.3153), and
+Iq / I_pair is 17.56 / 5.3153 ≈ 3.3 (no load) to 31.3 / 5.3153 ≈ 5.9 (full load). The design of record is
+therefore about **0.5–0.9 µA** higher at that point (≈ 31.8–32.2 µA at full load), not ≤ 0.16 µA, which is
+the unscaled pair shift. The same bound at ff / −40 °C / 3.63 V (ΔI_pair = 0.021 µA, Iq / I_pair ≈ 3.3–6.7)
+gives about 0.07–0.14 µA. The conclusion stands: the design of record is at or above the candidate at these
+points, so these exceedances are not candidate-caused. The bound is derived from the committed tables and
+is not a measured baseline. This is an inference
 from the bias-only grid, **not a measured baseline** (none was run). The remaining six exceedances all
 have a positive bias shift (+2.4 % … +8.4 %, five of them hot), which is consistent with, not proof of,
 the candidate contributing; they stay **unattributed**.
 
 *Departure from gf180-ldo DR-0033 (#478; port parity, CLAUDE.md).* `2AMLogic/gf180-ldo`
-`DR-0033-poly-resistor-flavour-is-set-by-dc-current-not-by-area.md` rules that a poly resistor which sets a
+`DR-0033-poly-resistor-flavour-is-set-by-dc-current-not-by-area.md` (status `proposed` in that repo as of
+2026-11-04, #489, so what follows is its proposed rule, not a ratified one) holds that a poly resistor which sets a
 **DC current** keeps the low-spread flavour (its `Rbias` stays `ppolyf_u_1k`; only resistors with no DC
 current in their branch, `Rz`/`Rza`/`Rbufb`, move to the dense, high-spread `ppolyf_u_3k`), because the
 wider-spread flavour costs +1.97 µA of Iq at the hot/fast corner where the ratified 30 µA row already
@@ -165,3 +200,22 @@ Alternative (a) (mirror ratio) was not simulated. The candidate fails spec rows 
 PSRR and stability failures are pre-existing DR-007 gaps, and the Iq exceedance is unattributed, so this update does
 not claim the candidate alone is the cause and does not declare a no-qualified-candidate verdict. That follow-up is
 left to a human decision after #478's attribution lands.
+
+## Addendum 2026-11-04 (issue #492, operator ruling r5-q42): alternative (a) simulated
+
+Additive; the text above is unchanged. Status stays `proposed`; no spec row or bound is changed. Record:
+`sim/bias-retopo/20261104-ratio-a-492/record.md` (patch `candidate-ratio-a.patch`, plus `../20261104-psrr-ratio-a-492/`, `../20261104-loop-ratio-a-492/`).
+
+Alternative (a) was simulated with one ratio, k = 2: `R_BIAS` `res_high_po` W=0.42 L=750 (half of 1500) and `M_BIASN2` W=2 (mirror 1:0.5), same method, deck, models and
+bounds as the candidate's runs, on the Spot batch fleet:
+
+- **Iq, 63-point matrix, `< 30 uA` unchanged:** (a) exceeds 30 uA at full load at **21 of 63** points (candidate: 10 of 63), worst **34.4 uA** at ll/27C/3.63V (candidate worst 32.4 uA);
+  no-load Iq in budget at all 63. (a) is worse than the candidate at every point (+0.4 to +3.5 uA) because the reference branch carries about twice the current.
+- **PSRR / stability:** the DR-007 gaps are unchanged in kind and slightly worse (worst 1 kHz PSRR 19.6/19.8 dB vs 20.6/20.8 dB; PM < 45 deg at 212 vs 197 leg-points; GM < 10 dB at 0 in both).
+- **EN=0 leakage** (one corner, ff/125C/3.63V, existing `enable-shutdown` deck): 86 pA static, below the ~150 pA floor; other corners not established.
+- **Mirror matching:** the pinned PDK carries a mismatch model for `nfet_g5v0d10v5` (`vth0_slope = 0`, but nonzero `toxe_slope`, `voff_slope`, `nfactor_slope`), so Monte Carlo mismatch is available on this pin and was not run. The ratio error is an assumed range, not a PDK-derived sigma: +-1% moves I_pair by about +-0.05 uA, and even +-30% (about +-1.2 to +-1.65 uA) stays below the 4.4 uA overshoot, so mismatch cannot rescue (a) (calculation, no Monte Carlo).
+- **Area:** a straight L=750 body (751 um) is wider than the 439 um core; it needs the unqualified #263 fold, so the `< 0.1 mm^2` row is **not** met without a fold waiver (the candidate's straight `res_xhigh_po` body needs none).
+
+Consequence for the record: (a) is **not** a better answer than the candidate on Iq, PSRR/PM or area. Both fail the `< 30 uA` bound at the high-VIN, low-R / hot corners, and the
+DR-007 PSRR/stability gaps are independent of the `R_BIAS` change. This points the next ruling at the `< 30 uA` bound (at VIN 3.63 V) and DR-007, not at the resistor choice.
+Not established: a second ratio, Monte Carlo mismatch (available, not run), a measured baseline Iq grid of the schematic of record. This addendum does not ratify DR-013 or DR-009.

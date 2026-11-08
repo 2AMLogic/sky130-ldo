@@ -7,14 +7,13 @@ Current roadmap derived from GitHub lifecycle labels. Maintained by the Loom Gui
 
 Judge-approved PRs under a hold (`loom:blocked` or `loom:operator`) — only a human merge decision is missing.
 
-- **#482**: docs(spec): add ll/hh Iq corners and DR-0033 departure to DR-013 record
-- **#486**: docs(spec): DR-010 stays proposed; point to fresh-ratification path
+- **#500**: docs(spec): DR-012 stays proposed; point to fresh-ratification path
 
 ## Very Important
 
 `loom:very-important` (one counts per workspace); every stage takes these first.
 
-_None._
+- **#467**: Bias re-topology so R_BIAS is not one long resistor: new DR, to meet the < 0.1 mm² Area row without a fold waiver (#461)
 
 ## Important
 
@@ -26,14 +25,13 @@ _None._
 
 Human-approved issues ready for implementation (`loom:issue`).
 
-_None._
+- **#301**: spec: decide whether DR-008 through DR-012 ratified on merge
 
 ## In Progress
 
 Issues currently being built (`loom:building`).
 
-- **#301**: spec: decide whether DR-008 through DR-012 ratified on merge
-- **#478**: DR-013 follow-ups: ll/hh resistor-skew corners missing from the full-loop sweep; write the departure from gf180-ldo DR-0033 against it
+_None._
 
 ## PRs Awaiting Review
 
@@ -45,8 +43,7 @@ _None._
 
 PRs that passed review and are queued for Champion auto-merge (`loom:pr`).
 
-- **#482**: docs(spec): add ll/hh Iq corners and DR-0033 departure to DR-013 record
-- **#486**: docs(spec): DR-010 stays proposed; point to fresh-ratification path
+- **#500**: docs(spec): DR-012 stays proposed; point to fresh-ratification path
 
 ## Proposed
 
@@ -54,16 +51,14 @@ Issues carrying `loom:curated`.
 
 - **#114**: Gap to T1: 6 of 12 ratified rows FAIL — replacement tracker (#58 closed on child-completion, not on verdict) *(curated)*
 - **#131**: Thermal shutdown: track regenerative auto-restart hysteresis design, integration, and qualification *(curated)*
-- **#177**: Seed sim/current-limit's leg-1 operating point to conform to the initial-condition contract *(curated)*
-- **#213**: sim(iq): mint the 45-corner record under #173's seeded deck + #133's regulation gate — deck fixed, matrix not re-run (host contention) *(curated)*
+- **#231**: Thermal hysteresis: qualify the integrated comparator across PVT and refresh downstream evidence *(curated)*
 - **#267**: layout: fix locally-routed official-DRC families (via.1a_b, m2.5, via2.5, nwell.9) found by #260 *(curated)*
 - **#301**: spec: decide whether DR-008 through DR-012 ratified on merge *(curated)*
 - **#314**: PSRR: decide and evidence the binding output-capacitor/ESR condition *(curated)*
-- **#381**: Sim: admit load-regulation cold-start endpoints to the batch backend *(curated)*
+- **#345**: Load transient: mint the COUT/ESR window-grid x 45 PVT campaign via --backend batch (blocked on fleet runner update) *(curated)*
 - **#416**: Re-run folded-resistor MC at n>=1000 to firm up M2 sigma-ratio gate *(curated)*
-- **#423**: T1 items 1, 2, 9, 10: bump the signoff grading pin and attest with artifact-anchored envelopes (klt signoff --attest) *(curated)*
 - **#461**: T1 item 5 area: compact routed ldo_core under 0.1 mm² with capacitors drawn, re-mint records (part of #458) *(curated)*
-- **#478**: DR-013 follow-ups: ll/hh resistor-skew corners missing from the full-loop sweep; write the departure from gf180-ldo DR-0033 against it *(curated)*
+- **#503**: measurements: characterization generator cannot see artifact-store-only sim records (iq 20261105-052332-05df7a01) *(curated)*
 
 ## Proposed (Architect / Hermit)
 
@@ -77,14 +72,14 @@ Issues carrying `loom:curated`.
 
 | Bucket | Count |
 |------|-------|
-| Operator merge-risk holds | 2 |
-| Very important | 0 |
+| Operator merge-risk holds | 1 |
+| Very important | 1 |
 | Important | 1 |
-| Ready (`loom:issue`) | 0 |
-| In Progress (`loom:building`) | 2 |
+| Ready (`loom:issue`) | 1 |
+| In Progress (`loom:building`) | 0 |
 | PRs awaiting review | 0 |
-| Approved PRs awaiting merge | 2 |
-| Curated | 12 |
+| Approved PRs awaiting merge | 1 |
+| Curated | 10 |
 | Architect / Hermit proposals | 1 |
 | Active epics | 1 |
 <!-- guide:plan-body:end -->

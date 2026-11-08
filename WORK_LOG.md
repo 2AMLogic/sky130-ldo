@@ -2,6 +2,51 @@
 
 Chronological record of merged pull requests and closed issues. Maintained by the Loom Guide role.
 
+### 2026-11-07
+
+- **PR #523**: fix(sim): use shared is_finite_number in psrr-cap-sweep-run
+- **Issue #522** (closed): Dedupe: fold six copies of the finite-number predicate into _record_common
+- **PR #518**: Bump Repo Skills 0.25.1 -> 0.25.10
+
+### 2026-11-06
+
+- **PR #505**: sim(load-regulation): record paired local/fleet check and add comparator
+- **PR #504**: fix(measurements): select store-only sim records in latest_sim_record
+- **Issue #381** (closed): Sim: admit load-regulation cold-start endpoints to the batch backend
+
+### 2026-11-05
+
+- **PR #512**: sim(thermal): batch route for the hysteresis staircase
+- **PR #510**: sim(loop-gain): fleet screen of a sub-mA load-sensed adaptive R_CZ
+- **PR #509**: signoff: re-cite item 3 DRC to the clean 3e7f504b envelope
+- **PR #507**: sim(loop-gain): fleet-confirm #365 baseline and R_CZ x16 AC pairs
+- **PR #506**: signoff: grade T1 items 1, 2, 9, 10 from klt --attest envelopes (klt 0.9.0)
+- **PR #502**: sim(iq): mint superseding 45-corner record on batch backend (40/45 PASS)
+- **Issue #511** (closed): sim: batch backend for corner-run.py so the thermal-staircase PVT qualification can run on the Spot fleet
+- **Issue #508** (closed): Follow-on from PR #506: align the GDS cited by signoff items 2, 3, 4 and 11
+- **Issue #423** (closed): T1 items 1, 2, 9, 10: bump the signoff grading pin and attest with artifact-anchored envelopes (klt signoff --attest)
+- **Issue #370** (closed): Stability: confirm zero-load lever on fleet and screen sub-mA adaptive resistance
+- **Issue #213** (closed): sim(iq): mint the 45-corner record under #173's seeded deck + #133's regulation gate
+
+### 2026-11-04
+
+- **PR #501**: sim: record paired line-regulation local/fleet check (engine mismatch, not equivalent)
+- **PR #499**: refactor: drop dead sha256_file and dedupe _sha256_of
+- **PR #498**: refactor(cap-study): remove caller-less rel_path, mim_cap_f, vpp_name_dims
+- **PR #496**: docs(sim): simulate DR-013 alternative (a) mirror-ratio candidate
+- **PR #494**: refactor(sim): share one klt sim runner across record scripts
+- **PR #493**: docs(spec): amend DR-013/DR-010 status and provenance, qualify Iq row's DR-009 cite
+- **PR #490**: docs(spec): DR-011 stays proposed; point to fresh-ratification path
+- **PR #486**: docs(spec): DR-010 stays proposed; point to fresh-ratification path
+- **PR #482**: docs(spec): add ll/hh Iq corners and DR-0033 departure to DR-013 record
+- **Issue #497** (closed): Remove dead sha256_file from _official_drc.py and dedupe _sha256_of
+- **Issue #495** (closed): Remove dead helpers from _cap_study.py: rel_path, mim_cap_f, vpp_name_dims
+- **Issue #492** (closed): DR-013 alternative (a): simulate smaller R_BIAS plus mirror ratio
+- **Issue #491** (closed): Consolidate five duplicated klt sim subprocess wrappers in sim/bin into _record_common
+- **Issue #489** (closed): DR-010/DR-013 record hygiene from the #486/#482 key reviews
+- **Issue #478** (closed): DR-013 follow-ups: ll/hh resistor-skew corners missing from the full-loop sweep
+- **Issue #384** (closed): Line regulation: complete the unperformed numerical-equivalence handoff
+
 ### 2026-11-01
 
 - **PR #483**: feat: PVT PSRR/stability grid and minted Iq record for the DR-013 R_BIAS candidate

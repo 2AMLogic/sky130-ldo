@@ -42,6 +42,7 @@ sys.path.insert(0, str(BIN_DIR))
 import psrr_cap_sweep as pcs  # noqa: E402
 from _record_common import (  # noqa: E402
     assert_klt_read_the_pinned_pdk,
+    is_finite_number,
     load_corner_run_module,
     reserve_record_id,
     run_klt_sim,
@@ -105,7 +106,7 @@ def spot_check(results: list[dict]) -> dict | None:
     for name, v in sorted(row["metrics"].items()):
         b = ref.get(name)
         cmp.append({"metric": name, "this_db": v, "reference_db": b,
-                    "delta_db": (v - b) if pcs._finite(v) and pcs._finite(b) else None})
+                    "delta_db": (v - b) if is_finite_number(v) and is_finite_number(b) else None})
     return {"reference_record": REFERENCE_RECORD, "corner_id": "tt_27c_3.30v",
             "point": {"c_uf": 1.0, "esr_ohm": 0.01}, "comparison": cmp}
 

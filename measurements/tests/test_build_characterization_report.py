@@ -159,6 +159,71 @@ class TestLatestSimRecord(unittest.TestCase):
         self.assertIsNone(bcr.latest_sim_record("no-such-slug"))
 
 
+class TestLatestSimRecordStoreOnly(unittest.TestCase):
+    """Issue #503: a record whose JSON twin lives only in the artifact store
+    (#436) must still be selected, and a failed fetch must fail loud rather
+    than fall back to an older committed record."""
+
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tmp.cleanup)
+        root = Path(self._tmp.name)
+        self._orig = (bcr.SIM_DIR, bcr.ARTIFACT_MANIFEST_DIR, bcr._fetch_store_record)
+        bcr.SIM_DIR = root / "sim"
+        bcr.ARTIFACT_MANIFEST_DIR = root / "manifests"
+        bcr.ARTIFACT_MANIFEST_DIR.mkdir()
+        self.addCleanup(self._restore)
+        d = bcr.SIM_DIR / "s" / "records"
+        d.mkdir(parents=True)
+        (d / "20260101-old.json").write_text(json.dumps({"record_id": "20260101-old"}))
+        (d / "20260101-old.md").write_text("# old\n")
+        (d / "20260202-new.md").write_text("# new\n")
+
+    def _restore(self):
+        bcr.SIM_DIR, bcr.ARTIFACT_MANIFEST_DIR, bcr._fetch_store_record = self._orig
+
+    def _manifest(self, record_id: str) -> None:
+        (bcr.ARTIFACT_MANIFEST_DIR / f"s-{record_id}.manifest.json").write_text(
+            json.dumps({"entries": [{"name": f"sim/s/records/{record_id}.json"}]})
+        )
+
+    def test_store_only_record_is_selected_over_older_committed(self):
+        self._manifest("20260202-new")
+        bcr._fetch_store_record = lambda slug, rid: {"record_id": rid}
+        data, md = bcr.latest_sim_record("s")
+        self.assertEqual(data["record_id"], "20260202-new")
+        self.assertEqual(md.name, "20260202-new.md")
+
+    def test_fetch_failure_fails_loud_without_fallback(self):
+        self._manifest("20260202-new")
+
+        def boom(slug, rid):
+            raise RuntimeError(f"sim/{slug}/records/{rid}.json: store unreachable")
+
+        bcr._fetch_store_record = boom
+        with self.assertRaisesRegex(RuntimeError, "20260202-new"):
+            bcr.latest_sim_record("s")
+
+    def test_md_without_json_or_manifest_is_skipped(self):
+        data, _ = bcr.latest_sim_record("s")
+        self.assertEqual(data["record_id"], "20260101-old")
+
+    def test_store_only_derived_record_is_skipped(self):
+        self._manifest("20260202-new")
+        bcr._fetch_store_record = lambda slug, rid: {"evidence_kind": "yield"}
+        data, _ = bcr.latest_sim_record("s")
+        self.assertEqual(data["record_id"], "20260101-old")
+
+    def test_real_fetch_reports_missing_klt(self):
+        self._manifest("20260202-new")
+        bcr._fetch_store_record = self._orig[2]
+        import unittest.mock as m
+
+        with m.patch.object(bcr.subprocess, "run", side_effect=FileNotFoundError("klt")):
+            with self.assertRaisesRegex(RuntimeError, "20260202-new.*klt"):
+                bcr.latest_sim_record("s")
+
+
 class TestCheckNetlistFreshnessTolerance(unittest.TestCase):
     """Issue #215 (option 3): a record shape this checker doesn't recognize
     (e.g. missing `links.netlist_snapshot`) must produce a diagnosed error
@@ -486,12 +551,93 @@ class TestLvsGeometryFreshness(unittest.TestCase):
         self.assertIn("| LVS | STALE |", bcr.normalize_sim_freshness(text))
 
 
+class TestOfflineCheck(unittest.TestCase):
+    """Issue #503: the CI gate is offline -- it never fetches from the store
+    and fails loud on a missing or digest-mismatched record."""
+
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tmp.cleanup)
+        root = Path(self._tmp.name)
+        self._orig = (bcr.SIM_DIR, bcr.ARTIFACT_MANIFEST_DIR, bcr.REPO_ROOT, bcr._fetch_store_record)
+        bcr.SIM_DIR, bcr.ARTIFACT_MANIFEST_DIR, bcr.REPO_ROOT = root / "sim", root / "manifests", root
+        bcr.ARTIFACT_MANIFEST_DIR.mkdir()
+
+        def no_fetch(slug, rid):
+            raise AssertionError("offline mode must never fetch from the store")
+
+        bcr._fetch_store_record = no_fetch
+        self.addCleanup(lambda: (setattr(bcr, "SIM_DIR", self._orig[0]),
+                                 setattr(bcr, "ARTIFACT_MANIFEST_DIR", self._orig[1]),
+                                 setattr(bcr, "REPO_ROOT", self._orig[2]),
+                                 setattr(bcr, "_fetch_store_record", self._orig[3])))
+        self.rec = bcr.SIM_DIR / "s" / "records"
+        self.rec.mkdir(parents=True)
+        (self.rec / "r1.md").write_text("# r1\n")
+        self.text = "| row | [`r1`](../sim/s/records/r1.md) |\n"
+
+    def _manifest(self, digest):
+        (bcr.ARTIFACT_MANIFEST_DIR / "s-r1.manifest.json").write_text(
+            json.dumps({"entries": [{"name": "sim/s/records/r1.json", "sha256": digest}]})
+        )
+
+    def test_store_only_record_with_digest_passes_without_fetch(self):
+        self._manifest("a" * 64)
+        self.assertEqual(bcr.offline_check(self.text), [])
+
+    def test_missing_record_md_fails(self):
+        (self.rec / "r1.md").unlink()
+        self.assertTrue(any("missing" in e for e in bcr.offline_check(self.text)))
+
+    def test_no_twin_and_no_manifest_fails(self):
+        self.assertTrue(any("neither committed" in e for e in bcr.offline_check(self.text)))
+
+    def test_malformed_digest_fails(self):
+        self._manifest("nothex")
+        self.assertTrue(any("sha256" in e for e in bcr.offline_check(self.text)))
+
+    def test_committed_twin_digest_mismatch_fails(self):
+        (self.rec / "r1.json").write_text("{}")
+        self._manifest("b" * 64)
+        self.assertTrue(any("does not hash" in e for e in bcr.offline_check(self.text)))
+
+    def test_committed_twin_digest_match_passes(self):
+        (self.rec / "r1.json").write_text("{}")
+        self._manifest(bcr.sha256_file(self.rec / "r1.json"))
+        self.assertEqual(bcr.offline_check(self.text), [])
+
+    def test_cli_offline_requires_check(self):
+        with contextlib.redirect_stderr(io.StringIO()):
+            with self.assertRaises(SystemExit):
+                bcr.parse_args(["--offline"])
+
+    def test_cli_exit_codes(self):
+        report = Path(self._tmp.name) / "rep.md"
+        report.write_text(self.text)
+        with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+            self.assertEqual(bcr.main(["--check", "--offline", "--out", str(report)]), 1)
+            self._manifest("a" * 64)
+            self.assertEqual(bcr.main(["--check", "--offline", "--out", str(report)]), 0)
+
+
+def _stub_store_fetch(testcase: unittest.TestCase) -> None:
+    """Replace `_fetch_store_record` for tests that call `generate_report()`
+    against the live repo. Store-only records (#436/#503) need `klt` and a
+    broker, neither of which the headless CI job has; the fail-loud behaviour
+    itself is covered by `TestLatestSimRecordStoreOnly`. The stub returns a
+    campaign-shaped record (no `evidence_kind`), so selection is unchanged."""
+    orig = bcr._fetch_store_record
+    bcr._fetch_store_record = lambda slug, record_id: {"record_id": record_id, "overall_pass": True}
+    testcase.addCleanup(setattr, bcr, "_fetch_store_record", orig)
+
+
 class TestNoSelfReferentialProvenance(unittest.TestCase):
     """PR #49 review: the generated report must not embed the identity of the
     commit that generates it, or `--check` fails by construction on the commit
     that ships the regenerated file."""
 
     def setUp(self):
+        _stub_store_fetch(self)
         self._orig_git = bcr.git
         self.calls: list[tuple[str, ...]] = []
 
@@ -688,6 +834,7 @@ class TestNormalizeSimFreshness(unittest.TestCase):
         """Anti-vacuity: if the report's shape ever changes such that the
         substitutions stop matching, the gate must not quietly become a
         no-op comparison of two un-normalised documents."""
+        _stub_store_fetch(self)
         report = bcr.generate_report(skip_netlist_freshness=True)
         normalized = bcr.normalize_sim_freshness(report)
         self.assertNotEqual(normalized, report)
@@ -699,6 +846,7 @@ class TestCheckCli(unittest.TestCase):
     what `npm run check:ci` invokes on every push/PR."""
 
     def setUp(self):
+        _stub_store_fetch(self)
         self._tmpdir = tempfile.TemporaryDirectory()
         self.addCleanup(self._tmpdir.cleanup)
         self.report_path = Path(self._tmpdir.name) / "characterization.md"

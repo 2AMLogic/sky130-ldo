@@ -1,0 +1,20 @@
+* klt sim -- generated corner deck, do not edit
+.lib /opt/pdk/sky130A/libs.tech/combined/sky130.lib.spice ff
+.include /var/tmp/eda-job-klt-sim-9489754af280/inputs/netlist.cir
+.temp 125.0
+.control
+save all
+setplot new
+echo klt_step_begin 0 $curplot
+tran 10u 200m uic
+echo klt_step_end 0 $curplot
+set klt_plot_0 = $curplot
+meas tran vout_full_load avg v(vout) from=199m to=200m
+let tran2__vout_full_load = vout_full_load
+print tran2__vout_full_load
+meas tran iq_full_load_raw avg i(vvin) from=199m to=200m
+let tran2__iq_full_load_raw = iq_full_load_raw
+print tran2__iq_full_load_raw
+quit
+.endc
+.end

@@ -39,6 +39,7 @@ import tempfile
 from pathlib import Path
 
 import _probe_common as pc
+from _record_common import is_finite_number
 
 EXIT_ACCEPTED, EXIT_OTHER, EXIT_MISMATCH = 0, 1, 3
 MISMATCH_CODE = "batch_runner_version_mismatch"
@@ -62,15 +63,6 @@ def remote_of(response: dict) -> dict:
     env = response.get("environment") if isinstance(response, dict) else None
     remote = env.get("remote") if isinstance(env, dict) else None
     return remote if isinstance(remote, dict) else {}
-
-
-def _finite_number(value) -> bool:
-    return (
-        isinstance(value, (int, float))
-        and not isinstance(value, bool)
-        and value == value
-        and value not in (float("inf"), float("-inf"))
-    )
 
 
 def _exit_code(value):
@@ -131,7 +123,7 @@ def _smoke_corner_problems(corners: list) -> list[str]:
         if (
             not isinstance(c, dict)
             or not isinstance(c.get("process"), str)
-            or not _finite_number(c.get("temperature_c"))
+            or not is_finite_number(c.get("temperature_c"))
             or not isinstance(c.get("status"), str)
         ):
             problems.append(f"malformed corner entry #{i}: {c!r:.200}")

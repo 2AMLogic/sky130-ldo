@@ -25,11 +25,20 @@ IX is a removable physical disturbance current at the sense node xldo.TS_SNS.
 T_reset (falling) = lowest T at which the tripped state is still held;
 T_trip (rising) = highest T at which the untripped state is still held; both by
 a 10 C coarse grid then bisection.  Hysteresis = T_trip - T_reset.
-Runs execute strictly serially (no pools, no background jobs, no corner/MC
-grid): host rules for the shared worker.
+
+Routes (issue #511).  `--backend batch` (default) submits every staircase point
+as an independent single-step `tran` request through `klt sim --batch-set` to
+the Spot batch fleet, over the 15 process x supply corners (or `--corners`),
+with adaptive bisection run as rounds (sim/bin/batch_thermal_staircase.py).
+Each point is an append-only record under <record>/points/; `--resume <record>`
+skips points already recorded and never rewrites one.  There is NO local
+fallback: a capacity refusal is recorded in refusals.jsonl and the run exits
+non-zero.  `--backend local` runs the original strictly serial flow and is
+accepted for exactly one corner (host rules: no local grids).
 
 Usage:
-  python3 sim/thermal/run_hysteresis.py [--out DIR] [--tag TAG]
+  python3 sim/thermal/run_hysteresis.py [--corners tt:3.30,...] [--resume DIR] [--tag TAG]
+  python3 sim/thermal/run_hysteresis.py --backend local --corners tt:3.30 [--out DIR]
 """
 
 from __future__ import annotations
@@ -37,6 +46,7 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -47,7 +57,12 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 REPO_ROOT = HERE.parent.parent
 sys.path.insert(0, str(REPO_ROOT / "sim" / "bin"))
-from _record_common import at, bisect, load_corner_run_module, read_dat, tripped  # noqa: E402
+from _record_common import (  # noqa: E402
+    assert_klt_read_the_pinned_pdk, at, bisect, klt_binary, load_corner_run_module, read_dat, tripped,
+    write_new_text,
+)
+import batch_dropout  # noqa: E402
+import batch_thermal_staircase as bts  # noqa: E402
 
 cr = load_corner_run_module(REPO_ROOT / "sim" / "bin")
 
@@ -159,30 +174,273 @@ class Runner:
         return (not r["forced_tripped"]) and (not r["hold_tripped"])
 
 
+PROCESSES = ["tt", "ss", "ff", "sf", "fs"]
+SUPPLIES = [2.97, 3.30, 3.63]
+
+
+def parse_corners(text: str) -> list[tuple[str, float]]:
+    if not text:
+        return [(p, v) for v in SUPPLIES for p in PROCESSES]
+    out = []
+    for item in text.split(","):
+        proc, _, v = item.partition(":")
+        if proc not in PROCESSES or not v or float(v) not in SUPPLIES:
+            raise SystemExit(f"bad corner {item!r}: want <{'|'.join(PROCESSES)}>:<{'|'.join(map(str, SUPPLIES))}>")
+        out.append((proc, float(v)))
+    return out
+
+
+def netlist_body_for_staircase(pdk, nl: Path) -> tuple[list[str], int]:
+    """Netlist the bench with `klt netlist` (never raw xschem on this host)
+    and drop the IC_SEED `.nodeset` card (see main())."""
+    nl.mkdir(parents=True, exist_ok=True)
+    dest = nl / (SCHEMATIC.stem + ".spice")
+    proc = subprocess.run(
+        [klt_binary("netlist the testbench"), "netlist", str(SCHEMATIC), "-o", str(dest), "--rcfile",
+         str(cr.XSCHEMRC_FILE), "--pdk-root", str(pdk.root), "--pdk", pdk.variant],
+        capture_output=True, text=True, timeout=300, stdin=subprocess.DEVNULL,
+    )
+    if proc.returncode != 0 or not dest.is_file():
+        raise RuntimeError(f"klt netlist failed (rc {proc.returncode})\n{proc.stdout[-800:]}\n{proc.stderr[-800:]}")
+    text, n_expr = eval_xschem_exprs("\n".join(cr.netlist_body(dest, eval_exprs=False)) + "\n")
+    # ngspice 42 honours `.nodeset` as an initial condition under `tran ... uic`
+    # (it pre-charged VOUT to 1.8 V in the first draft), which would make the
+    # "cold start" a seeded one.  Drop it so every node starts at 0.
+    stmts = [x for x in re.split(r"\n(?!\+)", text.rstrip("\n")) if not x.lower().startswith(".nodeset")]
+    return "\n".join(stmts).split("\n"), n_expr
+
+
+# ---- batch route (issue #511) ---------------------------------------------
+
+
+def point_path(out: Path, proc: str, vsup: float, scen: str, temp: float) -> Path:
+    return out / "points" / f"{proc}_{vsup:.2f}V_{scen}_{temp:g}C.json"
+
+
+def load_points(out: Path) -> dict[tuple, dict]:
+    pts = {}
+    for f in sorted((out / "points").glob("*.json")):
+        d = json.loads(f.read_text())
+        pts[(d["process"], d["supply_v"], d["scenario"], d["temp_c"])] = d
+    return pts
+
+
+def append_jsonl(path: Path, obj: dict) -> None:
+    with path.open("a") as fh:  # append-only log: lines are never rewritten
+        fh.write(json.dumps(obj, sort_keys=True) + "\n")
+
+
+def ingest_report(out, report_dir: Path, report: dict, proc, vsup, scen, temps, pdk, pin, req_name):
+    """Record each successful point; return (n_recorded, [failure strings])."""
+    problem = batch_dropout.remote_completion_problem(report)
+    if problem:
+        return 0, [f"{req_name}: {problem}"]
+    assert_klt_read_the_pinned_pdk(report, pdk, pin, False)
+    remote = (report.get("environment") or {}).get("remote") or {}
+    by_t = {float(c["temperature_c"]): c for c in report.get("corners", []) if isinstance(c, dict)}
+    n, fails = 0, []
+    for T in temps:
+        rc = by_t.get(float(T))
+        if rc is None:
+            fails.append(f"{req_name} {T:g}C: corner missing from response")
+            continue
+        reasons = batch_dropout.corner_diagnostic_problems(rc)
+        if rc.get("status") not in ("pass", "fail"):
+            reasons.append(f"klt corner status {rc.get('status')!r}")
+        vals, vr = bts.extract_values(rc.get("measurements") or [])
+        reasons += vr
+        log_ref = (rc.get("artifacts") or {}).get("log")
+        diag = None
+        if isinstance(log_ref, str) and log_ref:
+            lp = Path(log_ref) if Path(log_ref).is_absolute() else report_dir / log_ref
+            try:
+                diag = cr.detect_solver_diagnostic(lp.read_text(errors="replace"))
+            except OSError as exc:
+                reasons.append(f"engine log unreadable: {exc}")
+        else:
+            reasons.append("engine log not retained (artifacts.log absent)")
+        if diag:
+            reasons.append(f"solver diagnostic: {diag}")
+        if reasons:
+            fails.append(f"{req_name} {T:g}C: " + "; ".join(reasons))
+            continue
+        rec = {
+            "process": proc, "supply_v": vsup, "scenario": scen, "temp_c": T,
+            "ix_amp_a": bts.SCENARIOS[scen][0], "ts_cmp_v": vals,
+            "forced_tripped": bts.tripped(vals[f"ts_cmp_{bts.T_FORCED}"], vsup),
+            "hold_tripped": bts.tripped(vals[f"ts_cmp_{bts.T_HOLD}"], vsup),
+            "held": bts.held(scen, vals[f"ts_cmp_{bts.T_FORCED}"], vals[f"ts_cmp_{bts.T_HOLD}"], vsup),
+            "solver_diagnostic": None, "klt_request": req_name,
+            "remote": {k: remote.get(k) for k in ("provider", "job_id", "state", "runner_compatibility")},
+        }
+        (out / "points").mkdir(exist_ok=True)
+        write_new_text(point_path(out, proc, vsup, scen, T), json.dumps(rec, indent=2) + "\n")
+        n += 1
+    return n, fails
+
+
+def run_batch(args, pdk, pin, git, rec_id: str, out: Path, body: list[str], corners) -> int:
+    (out / "points").mkdir(exist_ok=True)
+    work = Path(tempfile.mkdtemp(prefix="thermal-batch-"))
+    model = {"pdk": pdk.variant, "lib": str(pdk.lib_file.relative_to(pdk.dir))}
+    init = cr.spiceinit_lines()
+    klt = klt_binary("run batch PVT grids")
+    failed_pts: set = set()  # points that failed this invocation (never retried in-process)
+    corner_err: dict[tuple, str] = {}
+    refused = False
+    rnd = 0
+    while True:
+        points = load_points(out)
+        todo = []  # (proc, vsup, scen, [temps])
+        for proc, vsup in corners:
+            for scen in bts.SCENARIOS:
+                if (proc, vsup, scen) in corner_err:
+                    continue
+                res = {k[3]: v["held"] for k, v in points.items() if k[:3] == (proc, vsup, scen)}
+                p = bts.plan(res, scen, args.tol)
+                if "error" in p:
+                    corner_err[(proc, vsup, scen)] = p["error"]
+                elif "pending" in p:
+                    if any((proc, vsup, scen, T) in failed_pts for T in p["pending"]):
+                        corner_err[(proc, vsup, scen)] = "a point failed (see failures.jsonl)"
+                    else:
+                        todo.append((proc, vsup, scen, p["pending"]))
+        if not todo:
+            break
+        rnd += 1
+        rdir = work / f"round{rnd:02d}"
+        rdir.mkdir()
+        reqs = []
+        for proc, vsup, scen, temps in todo:
+            name = f"{proc}_{vsup:.2f}V_{scen}"
+            nl = rdir / f"{name}.spice"
+            nl.write_text("\n".join(bts.request_netlist(body, vsup, bts.SCENARIOS[scen][0])) + "\n")
+            req = bts.build_request(nl, proc, temps, model, init, 900, args.capacity_wait_s)
+            rp = rdir / f"{name}.json"
+            rp.write_text(json.dumps(req, indent=2) + "\n")
+            reqs.append((name, rp, proc, vsup, scen, temps))
+        print(f"[round {rnd}] {len(reqs)} request(s), {sum(len(r[5]) for r in reqs)} point(s)", flush=True)
+        cmd = [klt, "sim", "--batch-set", *[str(r[1]) for r in reqs], "--max-in-flight", str(args.max_in_flight),
+               "--capacity-retries", str(args.capacity_retries), "-o", str(rdir / "out"),
+               "--format", "json"]  # PDK via PDK_ROOT: --batch-set rejects --pdk-root
+        env = dict(os.environ, PDK_ROOT=str(pdk.root))
+        proc_ = subprocess.run(cmd, capture_output=True, text=True, env=env, stdin=subprocess.DEVNULL)
+        try:
+            env_json = json.loads(proc_.stdout)
+        except json.JSONDecodeError:
+            append_jsonl(out / "failures.jsonl", {"round": rnd, "error": "klt sim --batch-set produced no JSON",
+                                                  "rc": proc_.returncode, "stderr": proc_.stderr[-1500:]})
+            print(f"klt sim --batch-set failed (rc {proc_.returncode}); NOT falling back to local", file=sys.stderr)
+            return 2
+        by_req = {Path(e["request"]).stem: e for e in env_json.get("requests", [])}
+        for name, rp, proc, vsup, scen, temps in reqs:
+            e = by_req.get(name)
+            err = (e or {}).get("error")
+            code = (err or {}).get("code") if isinstance(err, dict) else None
+            if e is None or err or not e.get("report"):
+                refused = refused or (code in ("batch_no_capacity", "batch_concurrency_cap"))
+                append_jsonl(out / "refusals.jsonl", {"round": rnd, "request": name, "code": code,
+                                                      "error": err, "job_ids": (e or {}).get("job_ids")})
+                for T in temps:
+                    failed_pts.add((proc, vsup, scen, T))
+                continue
+            rpt = Path(e["report"])
+            n, fails = ingest_report(out, rpt.parent, json.loads(rpt.read_text()), proc, vsup, scen, temps,
+                                     pdk, pin, name)
+            for T in temps:
+                if not point_path(out, proc, vsup, scen, T).exists():
+                    failed_pts.add((proc, vsup, scen, T))
+            for f in fails:
+                append_jsonl(out / "failures.jsonl", {"round": rnd, "failure": f})
+                print(f"  FAIL {f}", file=sys.stderr)
+        if refused:
+            print("capacity refusal(s) recorded in refusals.jsonl; stopping (no local fallback); "
+                  f"re-run with --resume {out}", file=sys.stderr)
+            return 3
+    shutil.rmtree(work, ignore_errors=True)
+
+    points = load_points(out)
+    per_corner = {}
+    for proc, vsup in corners:
+        c = {}
+        for scen, key in (("hot", "t_reset_falling_c"), ("cold_exc", "t_trip_rising_c")):
+            res = {k[3]: v["held"] for k, v in points.items() if k[:3] == (proc, vsup, scen)}
+            p = bts.plan(res, scen, args.tol)
+            if p.get("done"):
+                lo, hi = p["bracket"]
+                c[key] = {"bracket": [lo, hi], "midpoint": (lo + hi) / 2}
+            else:
+                c[key] = {"error": corner_err.get((proc, vsup, scen)) or str(p)}
+        if "midpoint" in c["t_reset_falling_c"] and "midpoint" in c["t_trip_rising_c"]:
+            c["hysteresis_c"] = {"midpoint": c["t_trip_rising_c"]["midpoint"] - c["t_reset_falling_c"]["midpoint"],
+                                 "min": c["t_trip_rising_c"]["bracket"][0] - c["t_reset_falling_c"]["bracket"][1],
+                                 "max": c["t_trip_rising_c"]["bracket"][1] - c["t_reset_falling_c"]["bracket"][0]}
+        per_corner[f"{proc}_{vsup:.2f}V"] = c
+    ok = all("error" not in v for c in per_corner.values() for v in (c["t_reset_falling_c"], c["t_trip_rising_c"]))
+    result = {
+        "record_id": rec_id, "issue": 511, "backend": "batch",
+        "corners": per_corner, "bisection_tol_c": args.tol, "n_points": len(points),
+        "jobs": sorted({v["remote"]["job_id"] for v in points.values() if v["remote"].get("job_id")}),
+        "complete": ok,
+        "note": "development evidence; scenarios hot/cold_exc only (cold-start, EN and amplitude-robustness runs are not part of the batch route)",
+        "tools": cr.tool_versions(),
+        "pdk": {"variant": pdk.variant, "installed_commit": pdk.installed_commit,
+                "pinned_commit": pin["open_pdks_commit"], "lib": str(pdk.lib_file)},
+        "repo": git, "command": "python3 sim/thermal/run_hysteresis.py " + " ".join(sys.argv[1:]),
+        "timestamp": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
+    }
+    write_new_text(out / ("result.json" if ok else f"result-incomplete-{dt.datetime.now(dt.timezone.utc):%H%M%S}.json"),
+                   json.dumps(result, indent=2) + "\n")
+    for k, c in per_corner.items():
+        print(k, {a: b.get("midpoint", b.get("error")) for a, b in c.items() if isinstance(b, dict) and a != "hysteresis_c"})
+    return 0 if ok else 1
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", type=Path, default=None)
     ap.add_argument("--tag", default="")
     ap.add_argument("--tol", type=float, default=0.3125, help="bisection bracket width (C)")
+    ap.add_argument("--backend", choices=("batch", "local"), default="batch")
+    ap.add_argument("--corners", default="", help="comma list of <process>:<supply>; default all 15")
+    ap.add_argument("--resume", type=Path, default=None, help="existing record dir to continue (batch)")
+    ap.add_argument("--max-in-flight", type=int, default=4)
+    ap.add_argument("--capacity-retries", type=int, default=2)
+    ap.add_argument("--capacity-wait-s", type=int, default=1800)
     args = ap.parse_args()
+    corners = parse_corners(args.corners)
+    if args.backend == "local" and len(corners) != 1:
+        raise SystemExit("--backend local is for exactly one corner (--corners tt:3.30); grids go to the batch fleet")
+    if args.resume and args.backend != "batch":
+        raise SystemExit("--resume applies to the batch route")
+    global PROCESS, VSUP
+    if args.backend == "local":
+        PROCESS, VSUP = corners[0]
 
-    pdk = cr.resolve_pdk(cr.load_pin())
+    pin = cr.load_pin()
+    pdk = cr.resolve_pdk(pin)
     git = cr.git_state()
     stamp = dt.datetime.now(dt.timezone.utc).strftime("%Y%m%d-%H%M%S")
     rec_id = f"{stamp}-{git['sha']}" + (f"-{args.tag}" if args.tag else "")
-    out = args.out or (HERE / "hysteresis" / rec_id)
-    out.mkdir(parents=True, exist_ok=False)  # append-only: never reuse a record directory
+    if args.resume:
+        out = args.resume
+        rec_id = out.name
+        if (out / "result.json").exists():
+            raise SystemExit(f"{out} is already complete; evidence is append-only, start a new record")
+    else:
+        out = args.out or (HERE / "hysteresis" / rec_id)
+        out.mkdir(parents=True, exist_ok=False)  # append-only: never reuse a record directory
 
     with tempfile.TemporaryDirectory(prefix="thermal-hyst-nl-") as nl:
-        net = cr.netlist_with_xschem(SCHEMATIC, Path(nl), pdk)
-        text, n_expr = eval_xschem_exprs("\n".join(cr.netlist_body(net, eval_exprs=False)) + "\n")
-        # The bench's IC_SEED `.nodeset` card seeds the `dc temp` sweeps (#178/#189).
-        # ngspice 42 also honours it as an initial condition under `tran ... uic`
-        # (it pre-charged VOUT to 1.8 V in the first draft), which would make the
-        # "cold start" a seeded one.  Drop it here so every node starts at 0.
-        stmts = [x for x in re.split(r"\n(?!\+)", text.rstrip("\n")) if not x.lower().startswith(".nodeset")]
-        body = "\n".join(stmts).split("\n")
-        (out / "netlist.spice").write_text("\n".join(body) + "\n")
+        body, n_expr = netlist_body_for_staircase(pdk, Path(nl))
+        if args.resume:
+            if (out / "netlist.spice").read_text() != "\n".join(body) + "\n":
+                raise SystemExit("netlist differs from the record being resumed; start a new record")
+        else:
+            (out / "netlist.spice").write_text("\n".join(body) + "\n")
+
+    if args.backend == "batch":
+        return run_batch(args, pdk, pin, git, rec_id, out, body, corners)
 
     r = Runner(out, pdk, body)
     print(f"record {rec_id}: tt / {VSUP} V, bisection tol {args.tol} C, expr() substitutions {n_expr}", flush=True)

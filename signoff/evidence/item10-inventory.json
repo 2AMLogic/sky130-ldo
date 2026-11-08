@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "kind": "t1-attestation-inventory",
+  "t1_item": 10,
+  "description": "Repo hygiene: README, licence, environment/sim docs, CI workflow; checks are the headless repo lint and the pin re-hash stage.",
+  "hygiene": [
+    "README.md",
+    "LICENSE",
+    "docs/environment-setup.md",
+    "sim/README.md",
+    ".github/workflows/ci.yml"
+  ],
+  "checks": [
+    {
+      "argv": [
+        "npm",
+        "run",
+        "lint"
+      ],
+      "timeout_s": 600,
+      "name": "repo-lint"
+    },
+    {
+      "argv": [
+        "python3",
+        "signoff/verify-pins.py",
+        "signoff/block-manifest.json",
+        "signoff/artifact-pins.json"
+      ],
+      "timeout_s": 120,
+      "name": "pin-rehash"
+    }
+  ]
+}
