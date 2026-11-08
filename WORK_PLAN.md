@@ -26,6 +26,7 @@ Judge-approved PRs under a hold (`loom:blocked` or `loom:operator`) — only a h
 Human-approved issues ready for implementation (`loom:issue`).
 
 - **#301**: spec: decide whether DR-008 through DR-012 ratified on merge
+- **#416**: Re-run folded-resistor MC at n>=1000 to firm up M2 sigma-ratio gate
 
 ## In Progress
 
@@ -75,7 +76,7 @@ Issues carrying `loom:curated`.
 | Operator merge-risk holds | 1 |
 | Very important | 1 |
 | Important | 1 |
-| Ready (`loom:issue`) | 1 |
+| Ready (`loom:issue`) | 2 |
 | In Progress (`loom:building`) | 0 |
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 1 |
