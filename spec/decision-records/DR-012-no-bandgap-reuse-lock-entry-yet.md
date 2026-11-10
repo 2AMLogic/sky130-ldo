@@ -5,6 +5,12 @@
   2026-08-19 canary spec/DR ratification-via-PR standing policy
   ([2AMLogic/2am#357](https://github.com/2AMLogic/2am/issues/357)), the same path
   DR-003/DR-004/DR-005/DR-010 used. Nothing here is binding until that PR merges.
+- **Ratification path**: fresh ratification required — operator ruling on
+  #301, 2026-10-19 (option 2). The historical merge of #144 (`39b25bb`) is cited
+  for context only and is not accepted as this record's ratifying event; the
+  record stays `proposed` until a fresh ratification PR is reviewed and released
+  under the standing process (2AMLogic/2am#357, #372) and merged. This note
+  changes no decision text or target value.
 - **Date**: 2026-09-23
 - **Author**: Builder agent (drafted per #136)
 - **Ratifies against / input to**: #136 (2am reuse rule 9 — the `sky130-ldo` ->
