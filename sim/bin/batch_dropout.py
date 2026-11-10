@@ -70,7 +70,7 @@ class ColdStartDeck:
 def parse_deck(lines: list[str]) -> ColdStartDeck:
     """Parse `deck.analyses` (comments ignored) into its translatable parts, or
     raise DropoutTranslationError naming the first line with no step form."""
-    body = [ln.strip() for ln in lines if ln.strip() and not ln.strip().startswith("*")]
+    body = blr.deck_body(lines)
     if not body:
         raise DropoutTranslationError("deck.analyses declares no analysis")
     m = _TRAN_RE.match(body[0])

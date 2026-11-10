@@ -31,23 +31,17 @@ import re
 from collections.abc import Callable
 
 import batch_line_regulation as blr
-from batch_line_regulation import (  # re-exported helpers
+from batch_line_regulation import (  # re-exported: the names callers reach as `bld.<name>`
     Endpoint,
     EndpointTranslationError,
     card_refs,
-    check_measurements,
-    check_netlist,
     endpoint_body,
     endpoint_source_lines,
-    endpoint_step,
     evaluate,
-    extract_endpoint_values,
-    klt_result_name,
 )
 
 __all__ = [
-    "Endpoint", "EndpointTranslationError", "card_refs", "check_measurements", "check_netlist",
-    "endpoint_step", "evaluate", "extract_endpoint_values", "klt_result_name",
+    "Endpoint", "EndpointTranslationError", "card_refs", "evaluate",
     "parse_deck", "endpoint_source_lines", "endpoint_body", "SUPPLY_LITERAL",
 ]
 
@@ -84,7 +78,7 @@ def parse_two_load_endpoints(
     set that experiment grades. Parse `deck.analyses` into its two endpoints
     (comments ignored), or raise naming the first line with no faithful form.
     """
-    body = [ln.strip() for ln in lines if ln.strip() and not ln.strip().startswith("*")]
+    body = blr.deck_body(lines)
     if not body:
         raise EndpointTranslationError("deck.analyses declares no analysis")
     endpoints: list[Endpoint] = []
@@ -108,14 +102,7 @@ def parse_two_load_endpoints(
             got = body[pos] if pos < len(body) else "end of deck"
             raise EndpointTranslationError(f"endpoint {n}: expected the cold-start `tran <tstep> <tstop> uic`; got {got!r}")
         pos += 1
-        cards: list[tuple[str, str, str]] = []
-        while pos < len(body) and (mm := meas_re.match(body[pos])) is not None:
-            name = mm.group(1)
-            if name.lower() in names:
-                raise EndpointTranslationError(f"meas card name {name!r} is declared twice")
-            names.add(name.lower())
-            cards.append((name, mm.group(2).lower(), body[pos]))
-            pos += 1
+        cards, pos = blr.collect_meas_cards(body, pos, meas_re, names, EndpointTranslationError)
         check_cards(n, cards)
         endpoints.append(Endpoint(n, SUPPLY_LITERAL, iload, f"{tm.group(1)} {tm.group(2)} uic", cards))
     if len(endpoints) != EXPECTED_ENDPOINTS:
