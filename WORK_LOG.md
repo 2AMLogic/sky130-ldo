@@ -2,6 +2,10 @@
 
 Chronological record of merged pull requests and closed issues. Maintained by the Loom Guide role.
 
+### 2026-11-10
+
+- **PR #500**: docs(spec): DR-012 stays proposed; point to fresh-ratification path
+
 ### 2026-11-07
 
 - **PR #523**: fix(sim): use shared is_finite_number in psrr-cap-sweep-run
