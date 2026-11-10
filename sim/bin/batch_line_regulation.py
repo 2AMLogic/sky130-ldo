@@ -84,6 +84,28 @@ class Endpoint:
         return f"{STEP_PREFIX}{self.index}"
 
 
+def deck_body(lines: list[str]) -> list[str]:
+    """The deck's non-blank, non-comment lines, stripped."""
+    return [ln.strip() for ln in lines if ln.strip() and not ln.strip().startswith("*")]
+
+
+def collect_meas_cards(
+    body: list[str], pos: int, meas_re: re.Pattern[str], names: set[str], error_cls: type[Exception],
+) -> tuple[list[tuple[str, str, str]], int]:
+    """Consume consecutive `meas` cards from `body[pos:]`; return
+    `(cards, new_pos)`. `names` (lower-cased) is shared across the whole deck
+    and updated; a repeated card name raises `error_cls`."""
+    cards: list[tuple[str, str, str]] = []
+    while pos < len(body) and (mm := meas_re.match(body[pos])) is not None:
+        name = mm.group(1)
+        if name.lower() in names:
+            raise error_cls(f"meas card name {name!r} is declared twice")
+        names.add(name.lower())
+        cards.append((name, mm.group(2).lower(), body[pos]))
+        pos += 1
+    return cards, pos
+
+
 def parse_deck(lines: list[str], baseline_iload: str) -> list[Endpoint]:
     """Parse `deck.analyses` into its endpoints (comments ignored), or raise
     naming the first line with no faithful form.
@@ -94,7 +116,7 @@ def parse_deck(lines: list[str], baseline_iload: str) -> list[Endpoint]:
     cold-start `tran`, then one or more `avg|min|max` cards. The load current
     at point 1 is `baseline_iload`, the pinned netlist ILOAD value.
     """
-    body = [ln.strip() for ln in lines if ln.strip() and not ln.strip().startswith("*")]
+    body = deck_body(lines)
     if not body:
         raise EndpointTranslationError("deck.analyses declares no analysis")
     endpoints: list[Endpoint] = []
@@ -125,14 +147,7 @@ def parse_deck(lines: list[str], baseline_iload: str) -> list[Endpoint]:
                 f"(full-rail EN at the point's own VIN); got {' '.join(tokens)!r}"
             )
         tm = need(_TRAN_RE, "the cold-start `tran <tstep> <tstop> uic`")
-        cards: list[tuple[str, str, str]] = []
-        while pos < len(body) and (mm := _MEAS_RE.match(body[pos])) is not None:
-            name = mm.group(1)
-            if name.lower() in names:
-                raise EndpointTranslationError(f"meas card name {name!r} is declared twice")
-            names.add(name.lower())
-            cards.append((name, mm.group(2).lower(), body[pos]))
-            pos += 1
+        cards, pos = collect_meas_cards(body, pos, _MEAS_RE, names, EndpointTranslationError)
         if not cards:
             raise EndpointTranslationError(
                 f"endpoint {len(endpoints) + 1}: no `meas tran <name> avg|min|max v(x) from=T1 to=T2` card"

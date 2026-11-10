@@ -35,6 +35,8 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 
+import batch_line_regulation as blr
+
 
 class TranslationError(ValueError):
     """The leg template (or a measurement) has no faithful klt step form."""
@@ -84,7 +86,7 @@ def _inline_plain(text: str, lets: dict[str, str]) -> str:
 def parse_leg_template(lines: list[str]) -> LegTemplate:
     """Parse `window_grid.leg_analyses` into its translatable parts, or raise
     TranslationError naming the first line that has no faithful step form."""
-    body = [ln.strip() for ln in lines if ln.strip() and not ln.strip().startswith("*")]
+    body = blr.deck_body(lines)
     if body[:2] != ["reset", "save all"]:
         raise TranslationError(
             "leg_analyses must open with `reset` then `save all` (each leg becomes its own "
