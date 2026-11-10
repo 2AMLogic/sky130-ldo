@@ -32,6 +32,7 @@ import re
 import sys
 from pathlib import Path
 
+import _paired_compare
 from _record_common import is_finite_number
 
 ENDPOINT_TOL_V = 1e-6
@@ -69,47 +70,16 @@ def compare(
     remote_pass=None,
     local_pass=None,
 ) -> dict:
-    rows, missing, breaches = [], [], []
-    for name in ENDPOINTS + DERIVED:
-        tol, unit = TOLS[name]
-        r, l = remote.get(name), local.get(name)
-        if not (is_finite_number(r) and is_finite_number(l)):
-            missing.append(name)
-            rows.append(
-                dict(name=name, remote=r, local=l, delta=None, tol=tol, unit=unit, ok=False)
-            )
-            continue
-        d = l - r
-        ok = abs(d) <= tol
-        if not ok:
-            breaches.append(name)
-        rows.append(dict(name=name, remote=r, local=l, delta=d, tol=tol, unit=unit, ok=ok))
-    engines_equal = remote_engine is not None and str(remote_engine) == str(local_engine)
-    verdict_match = remote_pass is not None and remote_pass == local_pass
-    if missing or not verdict_match:
-        verdict = "unresolved"
-    elif breaches:
-        verdict = "rejected"
-    elif not engines_equal:
-        verdict = "engine_mismatch"
-    else:
-        verdict = "equivalent"
-    return {
-        "verdict": verdict,
-        "equivalence_claimable": verdict == "equivalent",
-        "engines_equal": engines_equal,
-        "remote_engine": remote_engine,
-        "local_engine": local_engine,
-        "print_resolution_v": PRINT_RESOLUTION_V,
-        "spec_verdicts": {
-            "remote_pass": remote_pass,
-            "local_pass": local_pass,
-            "match": verdict_match,
-        },
-        "missing": missing,
-        "breaches": breaches,
-        "rows": rows,
-    }
+    return _paired_compare.compare(
+        TOLS,
+        remote,
+        local,
+        remote_engine,
+        local_engine,
+        remote_pass,
+        local_pass,
+        extra={"print_resolution_v": PRINT_RESOLUTION_V},
+    )
 
 
 def load_remote(d: Path) -> tuple[dict, str | None, list[str]]:
@@ -153,17 +123,7 @@ def main(argv: list[str]) -> int:
     )
     if a.out:
         a.out.write_text(json.dumps(rep, indent=2) + "\n")
-    for r in rep["rows"]:
-        d = "n/a" if r["delta"] is None else f"{r['delta']:+.6g}"
-        print(
-            f"{r['name']:16s} remote={r['remote']} local={r['local']} "
-            f"d={d} {r['unit']} {'ok' if r['ok'] else 'OUT'}"
-        )
-    print(
-        f"engines remote={rep['remote_engine']} local={rep['local_engine']} "
-        f"-> verdict {rep['verdict']}"
-    )
-    return 0 if rep["verdict"] == "equivalent" else 2
+    return _paired_compare.print_report(rep, 16)
 
 
 if __name__ == "__main__":
