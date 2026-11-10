@@ -7,7 +7,7 @@ Current roadmap derived from GitHub lifecycle labels. Maintained by the Loom Gui
 
 Judge-approved PRs under a hold (`loom:blocked` or `loom:operator`) — only a human merge decision is missing.
 
-- **#500**: docs(spec): DR-012 stays proposed; point to fresh-ratification path
+_None._
 
 ## Very Important
 
@@ -44,7 +44,7 @@ _None._
 
 PRs that passed review and are queued for Champion auto-merge (`loom:pr`).
 
-- **#500**: docs(spec): DR-012 stays proposed; point to fresh-ratification path
+_None._
 
 ## Proposed
 
@@ -52,7 +52,6 @@ Issues carrying `loom:curated`.
 
 - **#114**: Gap to T1: 6 of 12 ratified rows FAIL — replacement tracker (#58 closed on child-completion, not on verdict) *(curated)*
 - **#131**: Thermal shutdown: track regenerative auto-restart hysteresis design, integration, and qualification *(curated)*
-- **#231**: Thermal hysteresis: qualify the integrated comparator across PVT and refresh downstream evidence *(curated)*
 - **#267**: layout: fix locally-routed official-DRC families (via.1a_b, m2.5, via2.5, nwell.9) found by #260 *(curated)*
 - **#301**: spec: decide whether DR-008 through DR-012 ratified on merge *(curated)*
 - **#314**: PSRR: decide and evidence the binding output-capacitor/ESR condition *(curated)*
@@ -73,14 +72,14 @@ Issues carrying `loom:curated`.
 
 | Bucket | Count |
 |------|-------|
-| Operator merge-risk holds | 1 |
+| Operator merge-risk holds | 0 |
 | Very important | 1 |
 | Important | 1 |
 | Ready (`loom:issue`) | 2 |
 | In Progress (`loom:building`) | 0 |
 | PRs awaiting review | 0 |
-| Approved PRs awaiting merge | 1 |
-| Curated | 10 |
+| Approved PRs awaiting merge | 0 |
+| Curated | 9 |
 | Architect / Hermit proposals | 1 |
 | Active epics | 1 |
 <!-- guide:plan-body:end -->
