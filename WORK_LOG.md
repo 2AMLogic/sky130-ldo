@@ -4,6 +4,10 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 
 ### 2026-11-10
 
+- **PR #534**: refactor: share verdict and report logic between paired comparison scripts
+- **PR #531**: refactor: share deck-line filter and meas-card loop across sim batch adapters
+- **Issue #530** (closed): Dedupe parse_deck across sim batch scripts and drop unused re-exports
+- **Issue #529** (closed): Consolidate duplicated compare()/main() in the paired line/load-regulation comparison scripts
 - **Issue #446** (closed): Dedupe batch_iq/batch_load_regulation parse_deck and drop unused re-exports
 - **PR #500**: docs(spec): DR-012 stays proposed; point to fresh-ratification path
 
