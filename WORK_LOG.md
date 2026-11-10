@@ -4,6 +4,7 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 
 ### 2026-11-10
 
+- **Issue #446** (closed): Dedupe batch_iq/batch_load_regulation parse_deck and drop unused re-exports
 - **PR #500**: docs(spec): DR-012 stays proposed; point to fresh-ratification path
 
 ### 2026-11-07
