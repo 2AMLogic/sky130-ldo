@@ -62,7 +62,7 @@ Issues carrying `loom:curated`.
 
 ## Proposed (Architect / Hermit)
 
-- **#446**: Dedupe batch_iq/batch_load_regulation parse_deck and drop unused re-exports *(hermit)*
+- **#529**: Consolidate duplicated compare()/main() in the paired line/load-regulation comparison scripts *(hermit)*
 
 ## Epics
 
