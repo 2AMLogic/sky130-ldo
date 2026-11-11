@@ -4,6 +4,8 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 
 ### 2026-11-10
 
+- **PR #537**: sim: baseline Iq attribution of DR-013 exceedances (7 pre-existing, 3 caused)
+- **Issue #536** (closed): DR-013: baseline Iq run on the 63-point matrix to attribute the candidate's 10 Iq failures (#467)
 - **PR #534**: refactor: share verdict and report logic between paired comparison scripts
 - **PR #531**: refactor: share deck-line filter and meas-card loop across sim batch adapters
 - **Issue #530** (closed): Dedupe parse_deck across sim batch scripts and drop unused re-exports
