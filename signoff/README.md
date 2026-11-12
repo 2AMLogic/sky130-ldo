@@ -126,6 +126,13 @@ enumerated **in the claim**, and is explicit that this is claimant-enforced:
 not evidence that the gaps were disclosed. Quoted verbatim from the cited
 envelope's own `coverage` block:
 
+- Item 3's citation reads `input_verified: null` on a fresh run: the DRC
+  envelope's top-level `file` is the absolute path of the builder's worktree
+  (`…/issue-553/…/ldo_core.gds`), which does not exist on other checkouts or in
+  CI, so the grader cannot re-hash the GDS itself. The pin is still enforced by
+  `signoff/verify-pins.py` (file on disk, envelope claim, manifest pin must
+  agree). The committed record is regenerated from a checkout without that path
+  so it reproduces everywhere; the envelope is left unedited as evidence.
 - Cited envelope (issue #508): [`20260924-221821-a947aa8/drc.json`](../layout/ldo-core/reports/20260924-221821-a947aa8/drc.json)
   — `status: clean`, `violation_count: 0`, on the GDS items 2, 4 and 11 also
   cite (`3e7f504b…`). It replaces the earlier `20260825-123551-3b4e121/drc.json`
