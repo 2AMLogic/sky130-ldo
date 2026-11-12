@@ -1,0 +1,16 @@
+{
+  "schema": "klt.lvs.request/1",
+  "engine": "klayout",
+  "layout": {
+    "file": "ldo_core.gds",
+    "deck": "sky130",
+    "top": "ldo_core",
+    "declared_pins": ["VOUT", "VREF", "EN", "VIN"]
+  },
+  "reference": {
+    "netlist": "reference.spice",
+    "top": "ldo_core",
+    "device_bulk": { "res_high_po": "0", "res_xhigh_po": "0" }
+  },
+  "options": { "combine_devices": true }
+}

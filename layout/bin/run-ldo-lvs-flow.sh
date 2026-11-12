@@ -85,8 +85,9 @@ echo "$LAYOUT_RECORD_ID" > "$OUT_DIR/layout-record-id.txt"
 #         documents for validating the schematic) -----------------------------
 XSCHEM_OUT="$OUT_DIR/xschem_out"
 mkdir -p "$XSCHEM_OUT"
-xschem -n -q -x -s -o "$XSCHEM_OUT" --rcfile "$REPO_ROOT/sim/xschemrc" "$SCHEMATIC"
 SCHEM_NETLIST="$XSCHEM_OUT/ldo_3v3in_1v8out.spice"
+# `klt netlist` owns the headless xschem invocation (forced flags + timeout kill).
+"$KLT" netlist -o "$SCHEM_NETLIST" --rcfile "$REPO_ROOT/sim/xschemrc" "$SCHEMATIC"
 if [[ ! -f "$SCHEM_NETLIST" ]]; then
   echo "run-ldo-lvs-flow.sh: expected $SCHEM_NETLIST after xschem netlisting" >&2
   exit 1
