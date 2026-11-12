@@ -72,6 +72,7 @@ def run_klt(request_path: Path, outdir: Path, backend: str, pdk_root: Path) -> t
     return run_klt_sim(
         request_path, outdir, backend, pdk_root,
         klt_exe=cr.klt_binary(), error_cls=HarnessError, resolve_paths=True,
+        extra_args=("--wait-for-capacity", "600") if backend == "batch" else (),
     )
 
 
