@@ -4,6 +4,11 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 
 ### 2026-11-12
 
+- **PR #570**: test: share FakeSingleStepKlt across batch-adapter tests
+- **Issue #568** (closed): Dedupe FakeKlt subclasses in batch-adapter tests (~120 LOC of copy-paste)
+- **PR #566**: fix: repo-relative GDS path for layout-flow DRC and re-pin signoff item 3
+- **Issue #564** (closed): signoff/README: item 3/4/11 narrative sections still describe pre-#553 records
+- **PR #563**: sim: mint PSRR C_eff x ESR reduced-sweep evidence record
 - **PR #559**: feat(signoff): wrap thermal hysteresis record as the item-5 envelope
 - **Issue #558** (closed): signoff: item-5 Thermal envelope still wraps legacy record; Thermal row now grades the hysteresis record
 - **PR #557**: layout: regenerate core from integrated-comparator netlist and re-pin signoff items 3, 4, 11
