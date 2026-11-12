@@ -319,7 +319,7 @@ def run_batch(args, pdk, pin, git, rec_id: str, out: Path, body: list[str], corn
                 if (proc, vsup, scen) in corner_err:
                     continue
                 res = {k[3]: v["held"] for k, v in points.items() if k[:3] == (proc, vsup, scen)}
-                p = bts.plan(res, scen, args.tol)
+                p = bts.plan(res, scen, args.tol, bts.grid_for(proc, args.grid_top_c))
                 if "error" in p:
                     corner_err[(proc, vsup, scen)] = p["error"]
                 elif "pending" in p:
@@ -396,7 +396,7 @@ def run_batch(args, pdk, pin, git, rec_id: str, out: Path, body: list[str], corn
         c = {}
         for scen, key in (("hot", "t_reset_falling_c"), ("cold_exc", "t_trip_rising_c")):
             res = {k[3]: v["held"] for k, v in points.items() if k[:3] == (proc, vsup, scen)}
-            p = bts.plan(res, scen, args.tol)
+            p = bts.plan(res, scen, args.tol, bts.grid_for(proc, args.grid_top_c))
             if p.get("done"):
                 lo, hi = p["bracket"]
                 c[key] = {"bracket": [lo, hi], "midpoint": (lo + hi) / 2}
@@ -429,7 +429,7 @@ def run_batch(args, pdk, pin, git, rec_id: str, out: Path, body: list[str], corn
         all(not c["dependent_points"].get("skipped") and not c["dependent_points"]["missing"] for c in per_corner.values())
     result = {
         "record_id": rec_id, "issue": 541, "backend": "batch",
-        "corners": per_corner, "bisection_tol_c": args.tol, "n_points": len(points),
+        "corners": per_corner, "bisection_tol_c": args.tol, "grid_top_c": args.grid_top_c, "n_points": len(points),
         "jobs": sorted({v["remote"]["job_id"] for v in points.values() if v["remote"].get("job_id")}),
         "complete": ok,
         "note": "development evidence; staircase (hot/cold_exc) plus dependent cold-start, EN re-enable (DR-005) and amplitude-robustness rounds planned from each corner's recorded bracket; states are recorded, no threshold is applied or relaxed",
@@ -458,8 +458,12 @@ def main() -> int:
     ap.add_argument("--max-in-flight", type=int, default=4)
     ap.add_argument("--capacity-retries", type=int, default=2)
     ap.add_argument("--capacity-wait-s", type=int, default=1800)
+    ap.add_argument("--grid-top", default="", help="per-process bisection upper bound, e.g. ff:180; "
+                    "default is the ff:180 lowered bound of issue #231 (ff does not converge at 190 C)")
     args = ap.parse_args()
     corners = parse_corners(args.corners)
+    args.grid_top_c = (dict((a, float(b)) for a, b in (x.split(":") for x in args.grid_top.split(",")))
+                       if args.grid_top else dict(bts.GRID_TOP_C))
     if args.backend == "local" and len(corners) != 1:
         raise SystemExit("--backend local is for exactly one corner (--corners tt:3.30); grids go to the batch fleet")
     if args.resume and args.backend != "batch":

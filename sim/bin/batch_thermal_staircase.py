@@ -40,6 +40,17 @@ AMPS_HOT, AMPS_COLD = (0.25e-6, 1.0e-6), (-0.25e-6, -1.0e-6)  # amplitude robust
 PROBE = "v(xldo.ts_cmp)"
 STEP_NAME = "tran1"
 GRID = [130, 140, 150, 160, 170, 180, 190]
+# Issue #231 operator ruling (option a): the ff deck does not converge at 190 C
+# (timestep_too_small), so ff's bisection upper bound is lowered to the highest
+# grid point at which it does (180 C).  A PDK-model extrapolation limit, not a
+# spec change; other processes keep the full grid.
+GRID_TOP_C = {"ff": 180}
+
+
+def grid_for(proc: str, top_c: dict[str, float] | None = None) -> list[float]:
+    """Coarse grid for `proc`, truncated at its lowered upper bound if any."""
+    top = (GRID_TOP_C if top_c is None else top_c).get(proc)
+    return [T for T in GRID if top is None or T <= top]
 
 
 def request_netlist(body: list[str], supply_v: float, ix_amp: float, en_dip: str = "vsup") -> list[str]:
