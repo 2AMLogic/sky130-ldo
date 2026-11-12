@@ -1,0 +1,596 @@
+{
+  "schema_version": 1,
+  "netlist": "sim/thermal/hysteresis/20261105-202028-97cd9a9e-qual-15corner/netlist.spice",
+  "status": "pass",
+  "corner_count": 15,
+  "passed": 15,
+  "failed": 0,
+  "errored": 0,
+  "wrapper": "NOT a `klt sim` run. Hand-wrapped by signoff/make_item5_envelope.py from the committed harness-format record named in `source_record`; every value, limit and verdict is copied verbatim and nothing was re-simulated. Measurements tagged with a `spec_row` carry that row's RATIFIED bound (spec/target-spec.md, DR-006), which the script checked against the record's own limit before writing. The input pin is the netlist snapshot the record simulated, not necessarily the current schematic: see measurements/characterization.md for per-record freshness. For a hysteresis record (sim/thermal/hysteresis/<id>/result.json) the record holds bisection brackets, not per-corner verdicts: the envelope carries each corner's conservative edges (trip bracket lower edge, hysteresis min) and grades them with the same rule as measurements/build_characterization_report.py. `temperature_c` is null because temperature is the swept variable, not a corner axis; the input pin is the record's own netlist.spice.",
+  "source_record": {
+    "bench": "thermal",
+    "record_id": "20261105-202028-97cd9a9e-qual-15corner",
+    "path": "sim/thermal/hysteresis/20261105-202028-97cd9a9e-qual-15corner/result.json",
+    "sha256": "sha256:01f6cbca90b0c2101ba29e46a3854bd3f1e3d8531df75eee0f14b4a9c80ca00e",
+    "overall_pass": true,
+    "matrix_is_subset": false
+  },
+  "environment": {
+    "engine": "ngspice",
+    "engine_version": "ngspice-46 : Circuit level simulation program",
+    "pdk": "c6d73a35f524070e85faff4a6a9eef49553ebc2b",
+    "platform": "Linux 7.0.0-1014-aws x86_64",
+    "remote": {
+      "backend": "batch",
+      "jobs": 180
+    }
+  },
+  "provenance": {
+    "input": {
+      "path": "sim/thermal/hysteresis/20261105-202028-97cd9a9e-qual-15corner/netlist.spice",
+      "role": "netlist",
+      "content_hash": "sha256:7d34e5c1619242a0b7f8b7eeb9b332cce473ce04bebc9a18da37ad9e58fe4b2d"
+    }
+  },
+  "metrics": {
+    "sim__corner__count": 15,
+    "sim__corner__passed_count": 15,
+    "sim__corner__failed_count": 0,
+    "sim__corner__errored_count": 0
+  },
+  "coverage": {
+    "schema_version": 1,
+    "known": true,
+    "checked": [
+      "thermal:ff_2.97V:hysteresis_c",
+      "thermal:ff_2.97V:trip_temp_c",
+      "thermal:ff_3.30V:hysteresis_c",
+      "thermal:ff_3.30V:trip_temp_c",
+      "thermal:ff_3.63V:hysteresis_c",
+      "thermal:ff_3.63V:trip_temp_c",
+      "thermal:fs_2.97V:hysteresis_c",
+      "thermal:fs_2.97V:trip_temp_c",
+      "thermal:fs_3.30V:hysteresis_c",
+      "thermal:fs_3.30V:trip_temp_c",
+      "thermal:fs_3.63V:hysteresis_c",
+      "thermal:fs_3.63V:trip_temp_c",
+      "thermal:sf_2.97V:hysteresis_c",
+      "thermal:sf_2.97V:trip_temp_c",
+      "thermal:sf_3.30V:hysteresis_c",
+      "thermal:sf_3.30V:trip_temp_c",
+      "thermal:sf_3.63V:hysteresis_c",
+      "thermal:sf_3.63V:trip_temp_c",
+      "thermal:ss_2.97V:hysteresis_c",
+      "thermal:ss_2.97V:trip_temp_c",
+      "thermal:ss_3.30V:hysteresis_c",
+      "thermal:ss_3.30V:trip_temp_c",
+      "thermal:ss_3.63V:hysteresis_c",
+      "thermal:ss_3.63V:trip_temp_c",
+      "thermal:tt_2.97V:hysteresis_c",
+      "thermal:tt_2.97V:trip_temp_c",
+      "thermal:tt_3.30V:hysteresis_c",
+      "thermal:tt_3.30V:trip_temp_c",
+      "thermal:tt_3.63V:hysteresis_c",
+      "thermal:tt_3.63V:trip_temp_c"
+    ],
+    "skipped": [],
+    "inapplicable": [],
+    "unknown": [],
+    "nothing_checked": false,
+    "nothing_checked_reasons": [],
+    "measurements_declared": 2,
+    "measurements_with_limits": 2
+  },
+  "measurements": [
+    {
+      "name": "trip_temp_c",
+      "unit": "C",
+      "limits": {
+        "min": 125
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "ss_3.63V",
+        "value": 161.875,
+        "margin": 36.875
+      },
+      "spec_row": "thermal"
+    },
+    {
+      "name": "hysteresis_c",
+      "unit": "C",
+      "limits": {
+        "min": 0
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "fs_2.97V",
+        "value": 12.1875,
+        "margin": 12.1875
+      },
+      "spec_row": "thermal"
+    }
+  ],
+  "corners": [
+    {
+      "corner_id": "tt_2.97V",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": null,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "trip_temp_c",
+          "value": 175.625,
+          "unit": "C",
+          "limits": {
+            "min": 125
+          },
+          "status": "pass",
+          "margin": 50.625
+        },
+        {
+          "name": "hysteresis_c",
+          "value": 12.5,
+          "unit": "C",
+          "limits": {
+            "min": 0
+          },
+          "status": "pass",
+          "margin": 12.5
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ss_2.97V",
+      "process": "ss",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": null,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "trip_temp_c",
+          "value": 170.9375,
+          "unit": "C",
+          "limits": {
+            "min": 125
+          },
+          "status": "pass",
+          "margin": 45.9375
+        },
+        {
+          "name": "hysteresis_c",
+          "value": 12.5,
+          "unit": "C",
+          "limits": {
+            "min": 0
+          },
+          "status": "pass",
+          "margin": 12.5
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ff_2.97V",
+      "process": "ff",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": null,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "trip_temp_c",
+          "value": 179.6875,
+          "unit": "C",
+          "limits": {
+            "min": 125
+          },
+          "status": "pass",
+          "margin": 54.6875
+        },
+        {
+          "name": "hysteresis_c",
+          "value": 12.8125,
+          "unit": "C",
+          "limits": {
+            "min": 0
+          },
+          "status": "pass",
+          "margin": 12.8125
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "sf_2.97V",
+      "process": "sf",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": null,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "trip_temp_c",
+          "value": 169.375,
+          "unit": "C",
+          "limits": {
+            "min": 125
+          },
+          "status": "pass",
+          "margin": 44.375
+        },
+        {
+          "name": "hysteresis_c",
+          "value": 12.8125,
+          "unit": "C",
+          "limits": {
+            "min": 0
+          },
+          "status": "pass",
+          "margin": 12.8125
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "fs_2.97V",
+      "process": "fs",
+      "supply_v": {
+        "vvin": 2.97
+      },
+      "temperature_c": null,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "trip_temp_c",
+          "value": 181.25,
+          "unit": "C",
+          "limits": {
+            "min": 125
+          },
+          "status": "pass",
+          "margin": 56.25
+        },
+        {
+          "name": "hysteresis_c",
+          "value": 12.1875,
+          "unit": "C",
+          "limits": {
+            "min": 0
+          },
+          "status": "pass",
+          "margin": 12.1875
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "tt_3.30V",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": null,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "trip_temp_c",
+          "value": 172.1875,
+          "unit": "C",
+          "limits": {
+            "min": 125
+          },
+          "status": "pass",
+          "margin": 47.1875
+        },
+        {
+          "name": "hysteresis_c",
+          "value": 12.8125,
+          "unit": "C",
+          "limits": {
+            "min": 0
+          },
+          "status": "pass",
+          "margin": 12.8125
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ss_3.30V",
+      "process": "ss",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": null,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "trip_temp_c",
+          "value": 166.5625,
+          "unit": "C",
+          "limits": {
+            "min": 125
+          },
+          "status": "pass",
+          "margin": 41.5625
+        },
+        {
+          "name": "hysteresis_c",
+          "value": 12.5,
+          "unit": "C",
+          "limits": {
+            "min": 0
+          },
+          "status": "pass",
+          "margin": 12.5
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ff_3.30V",
+      "process": "ff",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": null,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "trip_temp_c",
+          "value": 176.875,
+          "unit": "C",
+          "limits": {
+            "min": 125
+          },
+          "status": "pass",
+          "margin": 51.875
+        },
+        {
+          "name": "hysteresis_c",
+          "value": 12.8125,
+          "unit": "C",
+          "limits": {
+            "min": 0
+          },
+          "status": "pass",
+          "margin": 12.8125
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "sf_3.30V",
+      "process": "sf",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": null,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "trip_temp_c",
+          "value": 165.9375,
+          "unit": "C",
+          "limits": {
+            "min": 125
+          },
+          "status": "pass",
+          "margin": 40.9375
+        },
+        {
+          "name": "hysteresis_c",
+          "value": 12.8125,
+          "unit": "C",
+          "limits": {
+            "min": 0
+          },
+          "status": "pass",
+          "margin": 12.8125
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "fs_3.30V",
+      "process": "fs",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": null,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "trip_temp_c",
+          "value": 178.125,
+          "unit": "C",
+          "limits": {
+            "min": 125
+          },
+          "status": "pass",
+          "margin": 53.125
+        },
+        {
+          "name": "hysteresis_c",
+          "value": 12.5,
+          "unit": "C",
+          "limits": {
+            "min": 0
+          },
+          "status": "pass",
+          "margin": 12.5
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "tt_3.63V",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": null,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "trip_temp_c",
+          "value": 168.125,
+          "unit": "C",
+          "limits": {
+            "min": 125
+          },
+          "status": "pass",
+          "margin": 43.125
+        },
+        {
+          "name": "hysteresis_c",
+          "value": 12.8125,
+          "unit": "C",
+          "limits": {
+            "min": 0
+          },
+          "status": "pass",
+          "margin": 12.8125
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ss_3.63V",
+      "process": "ss",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": null,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "trip_temp_c",
+          "value": 161.875,
+          "unit": "C",
+          "limits": {
+            "min": 125
+          },
+          "status": "pass",
+          "margin": 36.875
+        },
+        {
+          "name": "hysteresis_c",
+          "value": 12.5,
+          "unit": "C",
+          "limits": {
+            "min": 0
+          },
+          "status": "pass",
+          "margin": 12.5
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "ff_3.63V",
+      "process": "ff",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": null,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "trip_temp_c",
+          "value": 173.4375,
+          "unit": "C",
+          "limits": {
+            "min": 125
+          },
+          "status": "pass",
+          "margin": 48.4375
+        },
+        {
+          "name": "hysteresis_c",
+          "value": 12.8125,
+          "unit": "C",
+          "limits": {
+            "min": 0
+          },
+          "status": "pass",
+          "margin": 12.8125
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "sf_3.63V",
+      "process": "sf",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": null,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "trip_temp_c",
+          "value": 162.1875,
+          "unit": "C",
+          "limits": {
+            "min": 125
+          },
+          "status": "pass",
+          "margin": 37.1875
+        },
+        {
+          "name": "hysteresis_c",
+          "value": 13.125,
+          "unit": "C",
+          "limits": {
+            "min": 0
+          },
+          "status": "pass",
+          "margin": 13.125
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "corner_id": "fs_3.63V",
+      "process": "fs",
+      "supply_v": {
+        "vvin": 3.63
+      },
+      "temperature_c": null,
+      "status": "pass",
+      "measurements": [
+        {
+          "name": "trip_temp_c",
+          "value": 174.0625,
+          "unit": "C",
+          "limits": {
+            "min": 125
+          },
+          "status": "pass",
+          "margin": 49.0625
+        },
+        {
+          "name": "hysteresis_c",
+          "value": 12.5,
+          "unit": "C",
+          "limits": {
+            "min": 0
+          },
+          "status": "pass",
+          "margin": 12.5
+        }
+      ],
+      "diagnostics": []
+    }
+  ]
+}
