@@ -1734,5 +1734,77 @@ class TestWindowGridDisclosure(unittest.TestCase):
         self.assertIsNone(bcr.sim_window_grid_disclosure("no-such-experiment", {}))
 
 
+class TestThermalHysteresisRow(unittest.TestCase):
+    """Issue #551: the Thermal row is graded from the 15-corner hysteresis
+    record's result.json against the experiment.json bounds."""
+
+    ROW = {"parameter": "Thermal", "draft_target": "target"}
+
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tmp.cleanup)
+        self.sim = Path(self._tmp.name) / "sim"
+        self.rec = self.sim / "thermal" / "hysteresis" / bcr.THERMAL_HYSTERESIS_RECORD
+        self.rec.mkdir(parents=True)
+        (self.sim / "thermal" / "experiment.json").write_text(json.dumps({"measurements": [
+            {"name": "trip_temp_c", "min": 125},
+            {"name": "hysteresis_c", "min": 0},
+        ]}))
+        self.addCleanup(setattr, bcr, "SIM_DIR", bcr.SIM_DIR)
+        bcr.SIM_DIR = self.sim
+        self.addCleanup(bcr.EVIDENCE_ERRORS.clear)
+
+    def _write(self, **over):
+        corner = lambda lo, hi, hmin: {  # noqa: E731
+            "t_trip_rising_c": {"bracket": [lo, hi]},
+            "hysteresis_c": {"min": hmin},
+        }
+        result = {
+            "issue": 1, "backend": "batch", "n_points": 3, "complete": True,
+            "bisection_tol_c": 0.3, "grid_top_c": {"ff": 180},
+            "tools": {"on_baseline": False, "ngspice": "ngspice-46 : x", "xschem": "X 3.4.7",
+                      "declared": {"ngspice": "42", "xschem": "3.4.4"}},
+            "corners": {"tt_3.30V": corner(170, 170.3, 12), "ff_2.97V": corner(179.7, 180, 13)},
+        }
+        result.update(over)
+        (self.rec / "result.json").write_text(json.dumps(result))
+
+    def test_pass_discloses_cap_and_toolchain(self):
+        self._write()
+        table, detail = bcr.thermal_hysteresis_row(self.ROW)
+        self.assertIn("**PASS**", table)
+        self.assertIn(bcr.THERMAL_HYSTERESIS_RECORD, table)
+        self.assertIn("2/2 corner(s) PASS", detail)
+        self.assertIn("touches that bound at ff_2.97V", detail)
+        self.assertIn("on_baseline: False", detail)
+        self.assertIn("cold-start, EN-reenable", detail)
+
+    def test_trip_below_bound_fails_on_bracket_lower_edge(self):
+        self._write(corners={"tt_3.30V": {"t_trip_rising_c": {"bracket": [124.9, 130]},
+                                         "hysteresis_c": {"min": 10}}})
+        table, detail = bcr.thermal_hysteresis_row(self.ROW)
+        self.assertIn("**FAIL**", table)
+        self.assertIn("Failing corner(s): tt_3.30V", detail)
+
+    def test_negative_hysteresis_fails(self):
+        self._write(corners={"tt_3.30V": {"t_trip_rising_c": {"bracket": [170, 171]},
+                                         "hysteresis_c": {"min": -0.5}}})
+        self.assertIn("**FAIL**", bcr.thermal_hysteresis_row(self.ROW)[0])
+
+    def test_incomplete_record_is_not_a_pass(self):
+        self._write(complete=False)
+        self.assertIn("**FAIL**", bcr.thermal_hysteresis_row(self.ROW)[0])
+
+    def test_missing_record_is_a_diagnosed_error(self):
+        table, detail = bcr.thermal_hysteresis_row(self.ROW)
+        self.assertIn("**ERROR**", table)
+        self.assertTrue(bcr.EVIDENCE_ERRORS)
+
+    def test_live_record_passes_under_existing_bounds(self):
+        bcr.SIM_DIR = Path(bcr.REPO_ROOT) / "sim"
+        table, _ = bcr.thermal_hysteresis_row(self.ROW)
+        self.assertIn("**PASS**", table)
+
+
 if __name__ == "__main__":
     unittest.main()

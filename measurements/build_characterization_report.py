@@ -1060,6 +1060,12 @@ def build_spec_row_table(
             )
             continue
 
+        if param == THERMAL_ROW:
+            t_line, t_detail = thermal_hysteresis_row(row)
+            table.append(t_line)
+            detail.append(t_detail)
+            continue
+
         slug = EVIDENCE_MAP.get(param)
         if slug is None:
             reason = NA_REASONS.get(param, GENERIC_NA_REASON)
@@ -1143,6 +1149,110 @@ def build_spec_row_table(
         detail.append(detail_line)
 
     return table, detail
+
+
+# --------------------------------------------------------------------------
+# Thermal row: graded from the integrated-comparator hysteresis record
+# --------------------------------------------------------------------------
+
+THERMAL_ROW = "Thermal"
+# The record the Thermal row grades (issue #551): the 15-corner (5 process x 3
+# supply) batch qualification of the integrated regenerative comparator
+# (#511/#231). Named explicitly rather than "latest under hysteresis/" because
+# that directory also holds a tt/3.30 V dev record and two smoke records, none
+# of which is a PVT qualification. Decision note: sim/docs/integrated-regen-comparator.md.
+THERMAL_HYSTERESIS_RECORD = "20261105-202028-97cd9a9e-qual-15corner"
+
+
+def thermal_hysteresis_row(row: dict) -> tuple[str, str]:
+    """(table_line, detail_line) for the Thermal row, graded from
+    `sim/thermal/hysteresis/<THERMAL_HYSTERESIS_RECORD>/result.json`.
+
+    Bounds are read from `sim/thermal/experiment.json` (the existing DR-005
+    bounds on `trip_temp_c` and `hysteresis_c`), never restated here. Each
+    corner is graded on its conservative bracket edge (trip lower edge,
+    hysteresis `min`) so bisection tolerance can only cost margin, not add it.
+    """
+    param = row["parameter"]
+    rec_dir = SIM_DIR / "thermal" / "hysteresis" / THERMAL_HYSTERESIS_RECORD
+    rec_rel = rel(rec_dir / "result.json")
+    try:
+        result = json.loads((rec_dir / "result.json").read_text())
+        manifest = json.loads((SIM_DIR / "thermal" / "experiment.json").read_text())
+        bounds = {m["name"]: m for m in manifest["measurements"]}
+        trip_min = bounds["trip_temp_c"]["min"]
+        hyst_min = bounds["hysteresis_c"]["min"]
+        corners = result["corners"]
+        if not isinstance(corners, dict) or not corners:
+            raise ValueError("no corners")
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        msg = f"cannot read the Thermal hysteresis record `{rec_rel}`: {exc}"
+        EVIDENCE_ERRORS.append(f"{param}: {msg}")
+        return (
+            f"| {param} | {row['draft_target']} | **ERROR** | `{rec_rel}` | — | — |",
+            f"- **{param}**: ERROR — {msg}",
+        )
+
+    failing: list[str] = []
+    at_cap: list[str] = []
+    cap = (result.get("grid_top_c") or {}).get("ff")
+    min_hyst = None
+    min_trip = None
+    for cid, c in corners.items():
+        trip_lo, trip_hi = c["t_trip_rising_c"]["bracket"]
+        h_min = c["hysteresis_c"]["min"]
+        min_hyst = h_min if min_hyst is None else min(min_hyst, h_min)
+        min_trip = trip_lo if min_trip is None else min(min_trip, trip_lo)
+        if trip_lo < trip_min or h_min < hyst_min:
+            failing.append(cid)
+        if cap is not None and cid.startswith("ff_") and trip_hi >= cap:
+            at_cap.append(cid)
+    complete = result.get("complete") is True
+    verdict = "PASS" if (complete and not failing) else "FAIL"
+    tally = f"{len(corners) - len(failing)}/{len(corners)} corner(s) PASS"
+    tools = result.get("tools") or {}
+    decl = tools.get("declared") or {}
+    baseline = (
+        "off the declared toolchain baseline "
+        f"(`on_baseline: {tools.get('on_baseline')}`; ran {tools.get('ngspice', '?').split(' :')[0]} / "
+        f"{tools.get('xschem', '?')}, declared ngspice {decl.get('ngspice', '?')} / "
+        f"xschem {decl.get('xschem', '?')}; recorded as found, not interpreted)"
+        if tools.get("on_baseline") is False
+        else "on the declared toolchain baseline"
+    )
+    table_line = (
+        f"| {param} | {row['draft_target']} | **{verdict}** | "
+        f"[`{THERMAL_HYSTERESIS_RECORD}`]({rel(rec_dir)}/) | "
+        f"unverified | unverified |"
+    )
+    detail = (
+        f"- **{param}**: **{verdict}** (vs the ratified spec row) — `sim/thermal/hysteresis` "
+        f"integrated-comparator qualification record [`{THERMAL_HYSTERESIS_RECORD}`]({rel(rec_dir)}/) "
+        f"(`result.json`, issue #{result.get('issue')}, backend `{result.get('backend')}`, "
+        f"{result.get('n_points')} points, complete: {str(complete).lower()}), {tally}. "
+        f"Graded against the existing `sim/thermal/experiment.json` bounds (trip >= {trip_min} C, "
+        f"hysteresis >= {hyst_min} C), on each corner's conservative bracket edge: lowest trip "
+        f"bracket edge {min_trip:g} C, minimum hysteresis {min_hyst:g} C. "
+        f"Bisection tolerance {result.get('bisection_tol_c')} C. "
+        "Replaces the legacy 15-corner DC-temp `sim/thermal/records/20260926-095154-f6ab418` "
+        "(pre-#230 comparator; a DC `temp` continuation cannot resolve a hysteresis window) as "
+        "the graded evidence; the legacy and dev (`20261008-190150-0275a8b-dev1`, tt/3.30 V, "
+        "non-PVT) records are not graded. "
+        f"Disclosed limits: ff bisection upper bound lowered to {cap} C (190 C aborts with "
+        "`timestep_too_small`), "
+        + (
+            f"and the trip bracket touches that bound at {', '.join(at_cap)} (trip found, no margin above it); "
+            if at_cap
+            else "no ff trip bracket touches it; "
+        )
+        + "hot/cold_exc scenarios only — cold-start, EN-reenable and disturbance amplitude are "
+        f"not covered by this record; toolchain {baseline}. "
+        "Experiment/solver inputs: unverified (no input fingerprint in this record). "
+        "Freshness: unverified (the record is not checked against a live schematic re-netlist)."
+    )
+    if failing:
+        detail += f" Failing corner(s): {', '.join(failing)}."
+    return table_line, detail
 
 
 LDO_CORE_CELL = "ldo_core"  # top cell of the ldo-core flow (run-ldo-layout-flow.sh CELL)

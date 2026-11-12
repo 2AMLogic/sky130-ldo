@@ -101,3 +101,32 @@ Nothing below was re-run or edited by #230 (records are append-only).
 6. **Not stale, by construction:** `sim/thermal-regen-cmp` (standalone cell and
    its replica bench) and the `spec/` tables.
 
+### Decision (#551): what the Thermal row grades
+
+`measurements/characterization.md` grades the Thermal row from
+`sim/thermal/hysteresis/20261105-202028-97cd9a9e-qual-15corner/result.json`
+(issue #511/#231; batch backend, 5 process x 3 supply = 15 corners, 354 points,
+`complete: true`), selected explicitly by `THERMAL_HYSTERESIS_RECORD` in
+`measurements/build_characterization_report.py`. No new simulation was run.
+
+- **Why this record:** it is the only PVT-matrix record of the integrated
+  comparator, and it measures trip and reset by bisection on separate rising /
+  falling runs, which is what a hysteresis window needs.
+- **Not the legacy `sim/thermal/records/20260926-095154-f6ab418`:** it is of the
+  pre-#230 comparator, and a DC `temp` continuation cannot resolve a hysteresis
+  window (#189: it read trip == reset). It is left in place (append-only) and no
+  longer graded.
+- **Not `hysteresis/20261008-190150-0275a8b-dev1`:** tt/3.30 V only, non-PVT,
+  off the pinned toolchain; development evidence.
+- **Verdict rule:** the existing `sim/thermal/experiment.json` bounds
+  (`trip_temp_c` >= 125 C, `hysteresis_c` >= 0 C), applied to each corner's
+  conservative bracket edge (trip lower edge, hysteresis `min`). No spec row,
+  DR-005 threshold or bound changed; a failing corner would read FAIL.
+- **Limits carried into the row:** ff bisection capped at 180 C (the ff_2.97V
+  trip bracket touches the cap); hot/cold_exc scenarios only, so cold-start,
+  EN-reenable and disturbance amplitude are not covered; `tools.on_baseline` is
+  `false` (ngspice-46 / xschem 3.4.7 against declared 42 / 3.4.4), recorded as
+  found. The record has no input fingerprint or schematic snapshot, so Inputs and
+  Freshness read `unverified` rather than `fresh`.
+
+
