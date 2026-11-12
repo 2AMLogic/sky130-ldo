@@ -561,6 +561,83 @@ class FakeKlt:
         return subprocess.CompletedProcess(cmd, self.rc, stdout=out, stderr="")
 
 
+class FakeSingleStepKlt(FakeKlt):
+    """Shared `klt sim` fake for single-step (`analysis_steps`) batch adapters.
+
+    Owns the launch guard, request parse, process x temperature corner loop,
+    log write, `<step>.<name>` measurement records and the response envelope.
+    Subclasses set JOB_ID (and optionally RUNTIME_S / ERROR_MESSAGE) and supply:
+      point_input(req, lines)      -> tuple of per-request inputs from the netlist
+      values(p, t, point)          -> per-corner result object (None = corner error)
+    and may override measurement_value(vals, m) / corner_ok(vals)."""
+
+    JOB_ID = "klt-sim-000000"
+    RUNTIME_S = 9.0
+    ERROR_MESSAGE = "no value"
+
+    def __init__(self, test, pin, log_text=None, **kw):
+        super().__init__(test, pin, **kw)
+        self.log_text = log_text
+
+    def point_input(self, req, lines):
+        raise NotImplementedError
+
+    def values(self, p, t, point):
+        raise NotImplementedError
+
+    def corner_ok(self, vals):
+        return vals is not None
+
+    def measurement_value(self, vals, m):
+        """Default: vals is an (avg, min, max) tuple picked by the .meas kind."""
+        return vals[{"avg": 0, "min": 1, "max": 2}[m["spice"].split()[3]]]
+
+    def __call__(self, cmd, **kw):
+        self.calls.append((cmd, kw))
+        if cmd[0] != "/fake/klt":
+            self.test.fail(f"unexpected launch: {cmd}")
+        if self.raise_exc:
+            raise self.raise_exc
+        req = json.loads(Path(cmd[2]).read_text())
+        self.test.assertNotIn("analysis", req)
+        (step,) = req["analysis_steps"]
+        lines = Path(req["netlist"]).read_text().splitlines()
+        point = self.point_input(req, lines)
+        outdir = Path(cmd[cmd.index("-o") + 1])
+        outdir.mkdir(parents=True, exist_ok=True)
+        corners = []
+        for p in req["corners"]["process"]:
+            for t in req["corners"]["temperature_c"]:
+                vals = self.values(p, t, point)
+                ok = self.corner_ok(vals)
+                logp = outdir / f"{p}_{t}.log"
+                logp.write_text(self.log_text or f"Operating point simulation skipped by 'uic'\n{p} {t}\n")
+                meas = []
+                for m in step["measurements"]:
+                    v = None if vals is None else self.measurement_value(vals, m)
+                    meas.append({"name": f"{step['name']}.{m['name']}", "value": v,
+                                 "status": "pass" if v is not None else "error"})
+                corners.append({
+                    "corner_id": f"{p}/novdd/{t:g}C", "process": p, "temperature_c": t,
+                    "status": "pass" if ok else "error", "runtime_s": self.RUNTIME_S,
+                    "diagnostics": [] if ok else [
+                        {"severity": "error", "code": "measurement", "message": self.ERROR_MESSAGE}],
+                    "artifacts": {"log": str(logp)}, "measurements": meas,
+                })
+        resp = {
+            "status": "pass", "corners": corners,
+            "environment": {"engine": "ngspice", "engine_version": "46",
+                            "remote": {"provider": "aws-batch-fleet", "job_id": self.JOB_ID,
+                                       "state": "done", "exit_code": "0",
+                                       "runner_compatibility": "match"}},
+            "provenance": {"klt_version": "0.7.0", "pdk": {"version": self.pin["open_pdks_commit"]}},
+        }
+        if self.mutate:
+            self.mutate(resp, req)
+        out = self.stdout if self.stdout is not None else json.dumps(resp)
+        return subprocess.CompletedProcess(cmd, self.rc, stdout=out, stderr="")
+
+
 def _fake_commit(self):
     """Stand-in for EvidenceRun.commit(): no broker; copy staged files to
     REPO_ROOT/<store name> and write a manifest with artifact: uris."""
