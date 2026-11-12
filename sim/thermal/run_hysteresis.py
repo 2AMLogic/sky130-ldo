@@ -26,7 +26,7 @@ T_reset (falling) = lowest T at which the tripped state is still held;
 T_trip (rising) = highest T at which the untripped state is still held; both by
 a 10 C coarse grid then bisection.  Hysteresis = T_trip - T_reset.
 
-Routes (issue #511).  `--backend batch` (default) submits every staircase point
+Routes (issues #511, #541).  `--backend batch` (default) submits every staircase point
 as an independent single-step `tran` request through `klt sim --batch-set` to
 the Spot batch fleet, over the 15 process x supply corners (or `--corners`),
 with adaptive bisection run as rounds (sim/bin/batch_thermal_staircase.py).
@@ -34,7 +34,10 @@ Each point is an append-only record under <record>/points/; `--resume <record>`
 skips points already recorded and never rewrites one.  There is NO local
 fallback: a capacity refusal is recorded in refusals.jsonl and the run exits
 non-zero.  `--backend local` runs the original strictly serial flow and is
-accepted for exactly one corner (host rules: no local grids).
+accepted for exactly one corner (host rules: no local grids).  Once a corner's
+two brackets are recorded, one more batch set carries its cold-start, EN re-enable
+(DR-005) and disturbance-amplitude points (batch_thermal_staircase.dependent_points,
+the same point formula as the local flow), as further append-only point records.
 
 Usage:
   python3 sim/thermal/run_hysteresis.py [--corners tt:3.30,...] [--resume DIR] [--tag TAG]
@@ -247,7 +250,8 @@ def ingest_report(out, report_dir: Path, report: dict, proc, vsup, scen, temps, 
         reasons = batch_dropout.corner_diagnostic_problems(rc)
         if rc.get("status") not in ("pass", "fail"):
             reasons.append(f"klt corner status {rc.get('status')!r}")
-        vals, vr = bts.extract_values(rc.get("measurements") or [])
+        params = bts.scenario_params(scen)
+        vals, vr = bts.extract_values(rc.get("measurements") or [], params["cards"])
         reasons += vr
         log_ref = (rc.get("artifacts") or {}).get("log")
         diag = None
@@ -266,17 +270,35 @@ def ingest_report(out, report_dir: Path, report: dict, proc, vsup, scen, temps, 
             continue
         rec = {
             "process": proc, "supply_v": vsup, "scenario": scen, "temp_c": T,
-            "ix_amp_a": bts.SCENARIOS[scen][0], "ts_cmp_v": vals,
+            "ix_amp_a": params["ix_amp"], "en_dip": params["en_dip"], "ts_cmp_v": vals,
             "forced_tripped": bts.tripped(vals[f"ts_cmp_{bts.T_FORCED}"], vsup),
             "hold_tripped": bts.tripped(vals[f"ts_cmp_{bts.T_HOLD}"], vsup),
-            "held": bts.held(scen, vals[f"ts_cmp_{bts.T_FORCED}"], vals[f"ts_cmp_{bts.T_HOLD}"], vsup),
             "solver_diagnostic": None, "klt_request": req_name,
             "remote": {k: remote.get(k) for k in ("provider", "job_id", "state", "runner_compatibility")},
         }
+        if params["base"] in bts.SCENARIOS:  # staircase and amplitude points: the monotone hold predicate
+            rec["held"] = bts.held(params["base"], vals[f"ts_cmp_{bts.T_FORCED}"], vals[f"ts_cmp_{bts.T_HOLD}"], vsup)
+        if scen == "cold":
+            rec["cold_start_tripped"] = bts.tripped(vals[f"ts_cmp_{bts.T_COLD}"], vsup)
+        if scen == "en":  # DR-005 non-latching auto-restart: the raw states, no threshold applied here
+            rec["ts_cmp_while_en_low_v"] = vals[f"ts_cmp_{bts.T_EN_LOW}"]
+            rec["after_en_reenable_tripped"] = bts.tripped(vals[f"ts_cmp_{bts.T_REEN}"], vsup)
         (out / "points").mkdir(exist_ok=True)
         write_new_text(point_path(out, proc, vsup, scen, T), json.dumps(rec, indent=2) + "\n")
         n += 1
     return n, fails
+
+
+def corner_brackets(points: dict, proc: str, vsup: float, tol: float):
+    """(T_reset bracket, T_trip bracket) recorded for a corner, or None until both are done."""
+    out = []
+    for scen in ("hot", "cold_exc"):
+        res = {k[3]: v["held"] for k, v in points.items() if k[:3] == (proc, vsup, scen)}
+        p = bts.plan(res, scen, tol)
+        if not p.get("done"):
+            return None
+        out.append(p["bracket"])
+    return out
 
 
 def run_batch(args, pdk, pin, git, rec_id: str, out: Path, body: list[str], corners) -> int:
@@ -305,6 +327,14 @@ def run_batch(args, pdk, pin, git, rec_id: str, out: Path, body: list[str], corn
                         corner_err[(proc, vsup, scen)] = "a point failed (see failures.jsonl)"
                     else:
                         todo.append((proc, vsup, scen, p["pending"]))
+        if not todo:  # staircases settled: the dependent cold / en / amplitude round (issue #541)
+            for proc, vsup in corners:
+                br = corner_brackets(points, proc, vsup, args.tol)
+                need: dict[str, list] = {}
+                for lab, T in (bts.dependent_points(*br) if br else []):
+                    if (proc, vsup, lab, T) not in points and (proc, vsup, lab, T) not in failed_pts:
+                        need.setdefault(lab, []).append(T)
+                todo += [(proc, vsup, lab, Ts) for lab, Ts in need.items()]
         if not todo:
             break
         rnd += 1
@@ -314,8 +344,9 @@ def run_batch(args, pdk, pin, git, rec_id: str, out: Path, body: list[str], corn
         for proc, vsup, scen, temps in todo:
             name = f"{proc}_{vsup:.2f}V_{scen}"
             nl = rdir / f"{name}.spice"
-            nl.write_text("\n".join(bts.request_netlist(body, vsup, bts.SCENARIOS[scen][0])) + "\n")
-            req = bts.build_request(nl, proc, temps, model, init, 900, args.capacity_wait_s)
+            prm = bts.scenario_params(scen)
+            nl.write_text("\n".join(bts.request_netlist(body, vsup, prm["ix_amp"], prm["en_dip"])) + "\n")
+            req = bts.build_request(nl, proc, temps, model, init, 900, args.capacity_wait_s, prm["cards"])
             rp = rdir / f"{name}.json"
             rp.write_text(json.dumps(req, indent=2) + "\n")
             reqs.append((name, rp, proc, vsup, scen, temps))
@@ -375,14 +406,33 @@ def run_batch(args, pdk, pin, git, rec_id: str, out: Path, body: list[str], corn
             c["hysteresis_c"] = {"midpoint": c["t_trip_rising_c"]["midpoint"] - c["t_reset_falling_c"]["midpoint"],
                                  "min": c["t_trip_rising_c"]["bracket"][0] - c["t_reset_falling_c"]["bracket"][1],
                                  "max": c["t_trip_rising_c"]["bracket"][1] - c["t_reset_falling_c"]["bracket"][0]}
+        br = corner_brackets(points, proc, vsup, args.tol)
+        if br is None:
+            c["dependent_points"] = {"skipped": "bracket missing or errored; cold/en/amplitude points not planned"}
+        else:
+            want = bts.dependent_points(*br)
+            mine = {(k[2], k[3]): v for k, v in points.items() if k[:2] == (proc, vsup)}
+            missing = [f"{lab}@{T:g}C" for lab, T in want if (lab, T) not in mine]
+            c["dependent_points"] = {"planned": len(want), "missing": missing}
+            c["cold_start_by_temp"] = {f"{T:g}": mine[("cold", T)]["cold_start_tripped"]
+                                       for lab, T in want if lab == "cold" and ("cold", T) in mine}
+            c["en_reenable_by_temp"] = {
+                f"{T:g}": {"tripped_before_dip": mine[("en", T)]["hold_tripped"],
+                           "ts_cmp_while_en_low_v": mine[("en", T)]["ts_cmp_while_en_low_v"],
+                           "tripped_after_reenable": mine[("en", T)]["after_en_reenable_tripped"]}
+                for lab, T in want if lab == "en" and ("en", T) in mine}
+            c["amplitude_robustness"] = {
+                f"{lab}@{T:g}C": mine[(lab, T)]["held"]
+                for lab, T in want if lab not in ("cold", "en") and (lab, T) in mine}
         per_corner[f"{proc}_{vsup:.2f}V"] = c
-    ok = all("error" not in v for c in per_corner.values() for v in (c["t_reset_falling_c"], c["t_trip_rising_c"]))
+    ok = all("error" not in v for c in per_corner.values() for v in (c["t_reset_falling_c"], c["t_trip_rising_c"])) and \
+        all(not c["dependent_points"].get("skipped") and not c["dependent_points"]["missing"] for c in per_corner.values())
     result = {
-        "record_id": rec_id, "issue": 511, "backend": "batch",
+        "record_id": rec_id, "issue": 541, "backend": "batch",
         "corners": per_corner, "bisection_tol_c": args.tol, "grid_top_c": args.grid_top_c, "n_points": len(points),
         "jobs": sorted({v["remote"]["job_id"] for v in points.values() if v["remote"].get("job_id")}),
         "complete": ok,
-        "note": "development evidence; scenarios hot/cold_exc only (cold-start, EN and amplitude-robustness runs are not part of the batch route)",
+        "note": "development evidence; staircase (hot/cold_exc) plus dependent cold-start, EN re-enable (DR-005) and amplitude-robustness rounds planned from each corner's recorded bracket; states are recorded, no threshold is applied or relaxed",
         "tools": cr.tool_versions(),
         "pdk": {"variant": pdk.variant, "installed_commit": pdk.installed_commit,
                 "pinned_commit": pin["open_pdks_commit"], "lib": str(pdk.lib_file)},
@@ -392,7 +442,8 @@ def run_batch(args, pdk, pin, git, rec_id: str, out: Path, body: list[str], corn
     write_new_text(out / ("result.json" if ok else f"result-incomplete-{dt.datetime.now(dt.timezone.utc):%H%M%S}.json"),
                    json.dumps(result, indent=2) + "\n")
     for k, c in per_corner.items():
-        print(k, {a: b.get("midpoint", b.get("error")) for a, b in c.items() if isinstance(b, dict) and a != "hysteresis_c"})
+        print(k, {a: b.get("midpoint", b.get("error")) for a, b in c.items() if a in ("t_reset_falling_c", "t_trip_rising_c")})
+        print("   dependent:", c["dependent_points"])
     return 0 if ok else 1
 
 
