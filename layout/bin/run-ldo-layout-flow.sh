@@ -89,7 +89,12 @@ fi
 # tapeout would be checked against. Neither failure aborts the flow here: both
 # results are retained in the record, which renders FAIL and makes this script
 # exit nonzero (see the end).
-"$KLT" drc "$OUT_DIR/$CELL.gds" --deck sky130 --format json > "$OUT_DIR/drc.json" || true
+# klt drc echoes its input path into the envelope's `file`, and `klt signoff`
+# re-hashes that path from its own cwd (the repo root). Run from the repo root
+# with a repo-relative GDS path, as run-ldo-erc-flow.sh does: an absolute path
+# names one machine's checkout and leaves `input_verified: null` elsewhere (#564).
+GDS_REL="${OUT_DIR#"$REPO_ROOT"/}/$CELL.gds"
+(cd "$REPO_ROOT" && "$KLT" drc "$GDS_REL" --deck sky130 --format json) > "$OUT_DIR/drc.json" || true
 
 # Official deck: same invocation and switches as run-cap-rail-demo-flow.sh
 # (FEOL/BEOL/offgrid on; floating-metal and seal off). The run is recorded in
