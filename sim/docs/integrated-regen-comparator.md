@@ -83,6 +83,15 @@ Nothing below was re-run or edited by #230 (records are append-only).
    (trip/reset/hysteresis values are of the old comparator).
 2. **`sim/pex-post-layout`** (schematic-side leg of the post-layout PEX
    compare) and **`sim/mc-ic-screen-*`/`ic-screen-*`** (screening, not signoff).
+   Dispositions decided in #552 (split from #548); no record was edited:
+   - `mc-output-accuracy`: **re-run** (batch job `klt-sim-2a37622e9513`),
+     new record `20261112-110113-820ba8b3` (N=200, seed 20260817): PASS.
+   - **Stale-by-design** (diagnostic screens of one historical finding each,
+     they substantiate no spec row; their older records stay as they are and
+     describe the pre-#230 schematic): `ic-screen-125c-b`, `ic-screen-125c-c`,
+     `ic-screen-125c-v`, `mc-ic-screen-a`, `mc-ic-screen-b`.
+   - `pex-post-layout` schematic leg: **pending on #553** (regenerated layout);
+     not compared against the old layout.
 3. **Layout evidence for the old netlist:** DRC `layout/ldo-core/reports/20260924-221821-a947aa8`,
    LVS (`LATEST-LVS`, `20260924-221912-a947aa8`; its `reference.spice` still lists
    `M_TC*`/`M_TSHYS*`), ERC `20260930-221337-cbfbb54`, area `20261008-161046-f4fbb86`
@@ -100,4 +109,33 @@ Nothing below was re-run or edited by #230 (records are append-only).
    behaviour, and the `Iq` row (comparator branch current changed).
 6. **Not stale, by construction:** `sim/thermal-regen-cmp` (standalone cell and
    its replica bench) and the `spec/` tables.
+
+### Decision (#551): what the Thermal row grades
+
+`measurements/characterization.md` grades the Thermal row from
+`sim/thermal/hysteresis/20261105-202028-97cd9a9e-qual-15corner/result.json`
+(issue #511/#231; batch backend, 5 process x 3 supply = 15 corners, 354 points,
+`complete: true`), selected explicitly by `THERMAL_HYSTERESIS_RECORD` in
+`measurements/build_characterization_report.py`. No new simulation was run.
+
+- **Why this record:** it is the only PVT-matrix record of the integrated
+  comparator, and it measures trip and reset by bisection on separate rising /
+  falling runs, which is what a hysteresis window needs.
+- **Not the legacy `sim/thermal/records/20260926-095154-f6ab418`:** it is of the
+  pre-#230 comparator, and a DC `temp` continuation cannot resolve a hysteresis
+  window (#189: it read trip == reset). It is left in place (append-only) and no
+  longer graded.
+- **Not `hysteresis/20261008-190150-0275a8b-dev1`:** tt/3.30 V only, non-PVT,
+  off the pinned toolchain; development evidence.
+- **Verdict rule:** the existing `sim/thermal/experiment.json` bounds
+  (`trip_temp_c` >= 125 C, `hysteresis_c` >= 0 C), applied to each corner's
+  conservative bracket edge (trip lower edge, hysteresis `min`). No spec row,
+  DR-005 threshold or bound changed; a failing corner would read FAIL.
+- **Limits carried into the row:** ff bisection capped at 180 C (the ff_2.97V
+  trip bracket touches the cap); hot/cold_exc scenarios only, so cold-start,
+  EN-reenable and disturbance amplitude are not covered; `tools.on_baseline` is
+  `false` (ngspice-46 / xschem 3.4.7 against declared 42 / 3.4.4), recorded as
+  found. The record has no input fingerprint or schematic snapshot, so Inputs and
+  Freshness read `unverified` rather than `fresh`.
+
 

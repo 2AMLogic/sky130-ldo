@@ -4,6 +4,10 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 
 ### 2026-11-12
 
+- **PR #555**: feat(report): grade Thermal row from the 15-corner integrated-comparator hysteresis record
+- **Issue #551** (closed): Thermal row: re-grade against the integrated comparator record (split from #548)
+- **PR #549**: sim(thermal): dependent round at all 15 corners, ff brackets planned on the lowered grid
+- **Issue #231** (closed): Thermal hysteresis: qualify the integrated comparator across PVT and refresh downstream evidence
 - **PR #545**: feat: add cold-start, EN re-enable and amplitude points to the thermal batch route
 - **Issue #541** (closed): sim(thermal): cold-start, EN-reenable and disturbance-amplitude runs at 15 corners (not on batch route)
 - **PR #542**: sim(thermal): complete 15-corner staircase with ff bound lowered to 180 C

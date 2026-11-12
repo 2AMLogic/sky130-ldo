@@ -34,8 +34,9 @@ def _rollup() -> dict[str, tuple[str, str]]:
     for line in (ROOT / "measurements" / "characterization.md").read_text().splitlines():
         cells = [c.strip() for c in line.strip("|").split("|")]
         if len(cells) >= 4 and cells[0] in _ROW_BENCH:
-            rec = re.search(r"/records/([\w-]+)\.md", cells[3])
-            out[_ROW_BENCH[cells[0]]] = (rec.group(1), "fail" if "FAIL" in cells[2] else "pass")
+            # `/records/<id>.md` (harness record) or `/<bench>/hysteresis/<id>/` (directory record)
+            rec = re.search(r"/records/([\w-]+)\.md|/hysteresis/([\w-]+)/", cells[3])
+            out[_ROW_BENCH[cells[0]]] = (rec.group(1) or rec.group(2), "fail" if "FAIL" in cells[2] else "pass")
     return out
 
 
