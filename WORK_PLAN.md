@@ -25,15 +25,13 @@ _None._
 
 Human-approved issues ready for implementation (`loom:issue`).
 
-- **#231**: Thermal hysteresis: qualify the integrated comparator across PVT and refresh downstream evidence
 - **#301**: spec: decide whether DR-008 through DR-012 ratified on merge
-- **#416**: Re-run folded-resistor MC at n>=1000 to firm up M2 sigma-ratio gate
 
 ## In Progress
 
 Issues currently being built (`loom:building`).
 
-- **#541**: sim(thermal): cold-start, EN-reenable and disturbance-amplitude runs at 15 corners (not on batch route)
+- **#231**: Thermal hysteresis: qualify the integrated comparator across PVT and refresh downstream evidence
 
 ## PRs Awaiting Review
 
@@ -61,7 +59,6 @@ Issues carrying `loom:curated`.
 - **#416**: Re-run folded-resistor MC at n>=1000 to firm up M2 sigma-ratio gate *(curated)*
 - **#461**: T1 item 5 area: compact routed ldo_core under 0.1 mm² with capacitors drawn, re-mint records (part of #458) *(curated)*
 - **#503**: measurements: characterization generator cannot see artifact-store-only sim records (iq 20261105-052332-05df7a01) *(curated)*
-- **#541**: sim(thermal): cold-start, EN-reenable and disturbance-amplitude runs at 15 corners (not on batch route) *(curated)*
 
 ## Proposed (Architect / Hermit)
 
@@ -78,11 +75,11 @@ _None._
 | Operator merge-risk holds | 0 |
 | Very important | 1 |
 | Important | 1 |
-| Ready (`loom:issue`) | 3 |
+| Ready (`loom:issue`) | 1 |
 | In Progress (`loom:building`) | 1 |
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 0 |
-| Curated | 11 |
+| Curated | 10 |
 | Architect / Hermit proposals | 0 |
 | Active epics | 1 |
 <!-- guide:plan-body:end -->

@@ -4,6 +4,8 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 
 ### 2026-11-12
 
+- **PR #545**: feat: add cold-start, EN re-enable and amplitude points to the thermal batch route
+- **Issue #541** (closed): sim(thermal): cold-start, EN-reenable and disturbance-amplitude runs at 15 corners (not on batch route)
 - **PR #542**: sim(thermal): complete 15-corner staircase with ff bound lowered to 180 C
 - **PR #539**: Bump Repo Skills 0.25.10 -> 0.26.1
 
