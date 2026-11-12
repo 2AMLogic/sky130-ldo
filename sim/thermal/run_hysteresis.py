@@ -289,12 +289,18 @@ def ingest_report(out, report_dir: Path, report: dict, proc, vsup, scen, temps, 
     return n, fails
 
 
-def corner_brackets(points: dict, proc: str, vsup: float, tol: float):
+def above_bound(proc: str, T: float, grid_top_c: dict | None) -> bool:
+    """True when T lies above `proc`'s lowered bisection upper bound (ff: 180 C, issue #231)."""
+    top = (bts.GRID_TOP_C if grid_top_c is None else grid_top_c).get(proc)
+    return top is not None and T > top
+
+
+def corner_brackets(points: dict, proc: str, vsup: float, tol: float, grid_top_c: dict | None = None):
     """(T_reset bracket, T_trip bracket) recorded for a corner, or None until both are done."""
     out = []
     for scen in ("hot", "cold_exc"):
         res = {k[3]: v["held"] for k, v in points.items() if k[:3] == (proc, vsup, scen)}
-        p = bts.plan(res, scen, tol)
+        p = bts.plan(res, scen, tol, bts.grid_for(proc, grid_top_c))
         if not p.get("done"):
             return None
         out.append(p["bracket"])
@@ -329,9 +335,11 @@ def run_batch(args, pdk, pin, git, rec_id: str, out: Path, body: list[str], corn
                         todo.append((proc, vsup, scen, p["pending"]))
         if not todo:  # staircases settled: the dependent cold / en / amplitude round (issue #541)
             for proc, vsup in corners:
-                br = corner_brackets(points, proc, vsup, args.tol)
+                br = corner_brackets(points, proc, vsup, args.tol, args.grid_top_c)
                 need: dict[str, list] = {}
                 for lab, T in (bts.dependent_points(*br) if br else []):
+                    if above_bound(proc, T, args.grid_top_c) and (proc, vsup, lab, T) not in points:
+                        continue  # past the lowered bound: PDK extrapolation limit, not submitted (issue #231)
                     if (proc, vsup, lab, T) not in points and (proc, vsup, lab, T) not in failed_pts:
                         need.setdefault(lab, []).append(T)
                 todo += [(proc, vsup, lab, Ts) for lab, Ts in need.items()]
@@ -406,14 +414,17 @@ def run_batch(args, pdk, pin, git, rec_id: str, out: Path, body: list[str], corn
             c["hysteresis_c"] = {"midpoint": c["t_trip_rising_c"]["midpoint"] - c["t_reset_falling_c"]["midpoint"],
                                  "min": c["t_trip_rising_c"]["bracket"][0] - c["t_reset_falling_c"]["bracket"][1],
                                  "max": c["t_trip_rising_c"]["bracket"][1] - c["t_reset_falling_c"]["bracket"][0]}
-        br = corner_brackets(points, proc, vsup, args.tol)
+        br = corner_brackets(points, proc, vsup, args.tol, args.grid_top_c)
         if br is None:
             c["dependent_points"] = {"skipped": "bracket missing or errored; cold/en/amplitude points not planned"}
         else:
             want = bts.dependent_points(*br)
             mine = {(k[2], k[3]): v for k, v in points.items() if k[:2] == (proc, vsup)}
-            missing = [f"{lab}@{T:g}C" for lab, T in want if (lab, T) not in mine]
+            missing = [f"{lab}@{T:g}C" for lab, T in want if (lab, T) not in mine and not above_bound(proc, T, args.grid_top_c)]
+            beyond = [f"{lab}@{T:g}C" for lab, T in want if (lab, T) not in mine and above_bound(proc, T, args.grid_top_c)]
             c["dependent_points"] = {"planned": len(want), "missing": missing}
+            if beyond:  # disclosed, never silently dropped; ff above the bound is outside what the PDK models solve
+                c["dependent_points"]["beyond_grid_top_not_run"] = beyond
             c["cold_start_by_temp"] = {f"{T:g}": mine[("cold", T)]["cold_start_tripped"]
                                        for lab, T in want if lab == "cold" and ("cold", T) in mine}
             c["en_reenable_by_temp"] = {
