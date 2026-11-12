@@ -12,12 +12,11 @@ from __future__ import annotations
 
 import json
 import math
-import subprocess
 import sys
 import unittest
 from pathlib import Path
 
-from test_corner_run import QUICK, SIM_DIR, BatchHarness, FakeKlt, HarnessErr, corner_run
+from test_corner_run import QUICK, SIM_DIR, BatchHarness, FakeSingleStepKlt, HarnessErr, corner_run
 
 sys.path.insert(0, str(SIM_DIR / "bin"))
 import batch_line_regulation as blr  # noqa: E402
@@ -47,57 +46,20 @@ def default_values(p, t, vin, iload):
     return avg, avg - 0.001, avg + 0.001
 
 
-class FakeLineRegKlt(FakeKlt):
-    def __init__(self, test, pin, values_of=None, log_text=None, **kw):
+class FakeLineRegKlt(FakeSingleStepKlt):
+    JOB_ID = "klt-sim-00ee01"
+
+    def __init__(self, test, pin, values_of=None, **kw):
         super().__init__(test, pin, **kw)
         self.values_of = values_of or default_values
-        self.log_text = log_text
 
-    def __call__(self, cmd, **kw):
-        self.calls.append((cmd, kw))
-        if cmd[0] != "/fake/klt":
-            self.test.fail(f"unexpected launch: {cmd}")
-        if self.raise_exc:
-            raise self.raise_exc
-        req = json.loads(Path(cmd[2]).read_text())
-        self.test.assertNotIn("analysis", req)
-        (step,) = req["analysis_steps"]
-        lines = Path(req["netlist"]).read_text().splitlines()
+    def point_input(self, req, lines):
         vin = float(next(ln for ln in lines if ln.startswith("VVIN ")).split()[3])
         iload = next(ln for ln in lines if ln.startswith("ILOAD ")).split()[3]
-        outdir = Path(cmd[cmd.index("-o") + 1])
-        outdir.mkdir(parents=True, exist_ok=True)
-        corners = []
-        for p in req["corners"]["process"]:
-            for t in req["corners"]["temperature_c"]:
-                vals = self.values_of(p, t, vin, iload)
-                logp = outdir / f"{p}_{t}.log"
-                logp.write_text(self.log_text or f"Operating point simulation skipped by 'uic'\n{p} {t}\n")
-                meas = []
-                for m in step["measurements"]:
-                    kind = m["spice"].split()[3]
-                    v = None if vals is None else vals[{"avg": 0, "min": 1, "max": 2}[kind]]
-                    meas.append({"name": f"{step['name']}.{m['name']}", "value": v,
-                                 "status": "pass" if v is not None else "error"})
-                corners.append({
-                    "corner_id": f"{p}/novdd/{t:g}C", "process": p, "temperature_c": t,
-                    "status": "pass" if vals is not None else "error", "runtime_s": 9.0,
-                    "diagnostics": [] if vals is not None else [
-                        {"severity": "error", "code": "measurement", "message": "no value"}],
-                    "artifacts": {"log": str(logp)}, "measurements": meas,
-                })
-        resp = {
-            "status": "pass", "corners": corners,
-            "environment": {"engine": "ngspice", "engine_version": "46",
-                            "remote": {"provider": "aws-batch-fleet", "job_id": "klt-sim-00ee01",
-                                       "state": "done", "exit_code": "0",
-                                       "runner_compatibility": "match"}},
-            "provenance": {"klt_version": "0.7.0", "pdk": {"version": self.pin["open_pdks_commit"]}},
-        }
-        if self.mutate:
-            self.mutate(resp, req)
-        out = self.stdout if self.stdout is not None else json.dumps(resp)
-        return subprocess.CompletedProcess(cmd, self.rc, stdout=out, stderr="")
+        return vin, iload
+
+    def values(self, p, t, point):
+        return self.values_of(p, t, *point)
 
 
 class LineRegHarness(BatchHarness):

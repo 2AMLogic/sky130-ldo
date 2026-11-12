@@ -17,13 +17,12 @@ from __future__ import annotations
 import json
 import math
 import shutil
-import subprocess
 import sys
 import unittest
 from pathlib import Path
 from unittest import mock
 
-from test_corner_run import QUICK, SIM_DIR, BatchHarness, FakeKlt, HarnessErr, corner_run
+from test_corner_run import QUICK, SIM_DIR, BatchHarness, FakeSingleStepKlt, HarnessErr, corner_run
 
 sys.path.insert(0, str(SIM_DIR / "bin"))
 import batch_dropout as bd  # noqa: E402
@@ -47,61 +46,32 @@ def manifest() -> dict:
     return json.loads((SIM_DIR / SLUG / "experiment.json").read_text())
 
 
-class FakeDropoutKlt(FakeKlt):
+class FakeDropoutKlt(FakeSingleStepKlt):
     """Answers a single-step cold-start request the way klt 0.7 does (see the
     captured fixtures): `<step>.<name>` results, a retained engine log and a
     finished batch job in environment.remote."""
 
-    def __init__(self, test, pin, value_of=None, log_text=None, **kw):
+    JOB_ID = "klt-sim-00dd01"
+    RUNTIME_S = 17.0
+    ERROR_MESSAGE = "measurement 'dropout.dropout_vin_x' produced no value"
+
+    def __init__(self, test, pin, value_of=None, **kw):
         super().__init__(test, pin, **kw)
         self.value_of = value_of or (lambda p, t, vsup: 0.25)
-        self.log_text = log_text
 
-    def __call__(self, cmd, **kw):
-        self.calls.append((cmd, kw))
-        if cmd[0] != "/fake/klt":
-            self.test.fail(f"unexpected launch: {cmd}")
-        if self.raise_exc:
-            raise self.raise_exc
-        req = json.loads(Path(cmd[2]).read_text())
-        self.test.assertNotIn("analysis", req)
-        (step,) = req["analysis_steps"]
-        vsup = float(Path(req["netlist"]).read_text().splitlines()[0].split("=")[1])
-        outdir = Path(cmd[cmd.index("-o") + 1])
-        outdir.mkdir(parents=True, exist_ok=True)
-        corners = []
-        for p in req["corners"]["process"]:
-            for t in req["corners"]["temperature_c"]:
-                d = self.value_of(p, t, vsup)
-                logp = outdir / f"{p}_{t}.log"
-                logp.write_text(self.log_text or f"Operating point simulation skipped by 'uic'\n{p} {t}\n")
-                vals = {"dropout_vin_x": None if d is None else d + 1.764,
-                        "vout_at_max_vin_v": 1.8, "dropout_v": d}
-                corners.append({
-                    "corner_id": f"{p}/novdd/{t:g}C", "process": p, "temperature_c": t,
-                    "status": "pass" if d is not None else "error", "runtime_s": 17.0,
-                    "diagnostics": [] if d is not None else [
-                        {"severity": "error", "code": "measurement",
-                         "message": "measurement 'dropout.dropout_vin_x' produced no value"}],
-                    "artifacts": {"log": str(logp)},
-                    "measurements": [
-                        {"name": f"{step['name']}.{m['name']}", "value": vals[m["name"]],
-                         "status": "pass" if vals[m["name"]] is not None else "error"}
-                        for m in step["measurements"]
-                    ],
-                })
-        resp = {
-            "status": "pass", "corners": corners,
-            "environment": {"engine": "ngspice", "engine_version": "46",
-                            "remote": {"provider": "aws-batch-fleet", "job_id": "klt-sim-00dd01",
-                                       "state": "done", "exit_code": "0",
-                                       "runner_compatibility": "match"}},
-            "provenance": {"klt_version": "0.7.0", "pdk": {"version": self.pin["open_pdks_commit"]}},
-        }
-        if self.mutate:
-            self.mutate(resp, req)
-        out = self.stdout if self.stdout is not None else json.dumps(resp)
-        return subprocess.CompletedProcess(cmd, self.rc, stdout=out, stderr="")
+    def point_input(self, req, lines):
+        return (float(lines[0].split("=")[1]),)
+
+    def values(self, p, t, point):
+        d = self.value_of(p, t, *point)
+        return {"dropout_vin_x": None if d is None else d + 1.764,
+                "vout_at_max_vin_v": 1.8, "dropout_v": d}
+
+    def corner_ok(self, vals):
+        return vals["dropout_v"] is not None
+
+    def measurement_value(self, vals, m):
+        return vals[m["name"]]
 
 
 class DropoutHarness(BatchHarness):
