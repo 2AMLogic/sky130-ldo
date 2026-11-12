@@ -29,17 +29,6 @@ _ROW_BENCH = {
 }
 
 
-#: Rows whose graded record is a directory-style record (a hysteresis `result.json`,
-#: not a harness `records/<id>.json`), which `make_item5_envelope.py` cannot wrap
-#: (it copies per-corner measurements/limits/verdicts verbatim; that record carries
-#: bracket edges only). bench -> (envelope record id, rollup record id). The item-5
-#: envelope still wraps the legacy record; only its verdict is checked against the
-#: row. Re-wrapping onto the graded record is tracked as a follow-up, not done here.
-GRADED_ELSEWHERE = {
-    "thermal": ("20260926-095154-f6ab418", "20261105-202028-97cd9a9e-qual-15corner"),
-}
-
-
 def _rollup() -> dict[str, tuple[str, str]]:
     out = {}
     for line in (ROOT / "measurements" / "characterization.md").read_text().splitlines():
@@ -63,11 +52,7 @@ class Item5Envelopes(unittest.TestCase):
         self.assertEqual(set(rollup), set(_ROW_BENCH.values()))
         for bench, rid in m.RECORDS:
             char_rid, verdict = rollup[bench]
-            if bench in GRADED_ELSEWHERE:
-                # The divergence is pinned exactly: any other id change fails here.
-                self.assertEqual((rid, char_rid), GRADED_ELSEWHERE[bench], bench)
-            else:
-                self.assertEqual(rid, char_rid, bench)
+            self.assertEqual(rid, char_rid, bench)
             env = json.loads(m.output_path(bench, rid).read_text())
             self.assertEqual(env["status"], verdict, bench)
 
