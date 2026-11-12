@@ -784,3 +784,18 @@ describe the pre-#230 schematic and are STALE against it (the regenerated
 was moved (that file was regenerated). The tier stays `null`, 5/11. The full
 inventory is in `sim/README.md`, "Stale artifacts caused by the schematic change";
 re-running them belongs to #231.
+
+## Note from #553 review round (rollup regenerated, item 8 re-pinned)
+
+The DRC/LVS records minted for the regenerated core (`20261112-110205-820ba8b3`,
+`20261112-110237-820ba8b3`) and the new area record
+(`20261112-110316-820ba8b3`) were not yet reflected in
+`measurements/characterization.md`. The layout-verification rows (DRC with its
+freshness detail, LVS, post-layout PEX, now `STALE` against the new GDS) and the
+Area row were regenerated from `measurements/build_characterization_report.py`;
+no other rollup row was touched. Only item 8's pin moved
+(`artifact-pins.json`, `block-manifest.json`,
+`evidence/characterization.generic.json`), and the re-graded
+`records/t1-tier-report.json` differs from the previous one in that
+`content_hash` alone: no item changed status or reason, so no per-item reading
+above needed to change.
