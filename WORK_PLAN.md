@@ -31,13 +31,15 @@ Human-approved issues ready for implementation (`loom:issue`).
 
 Issues currently being built (`loom:building`).
 
-- **#231**: Thermal hysteresis: qualify the integrated comparator across PVT and refresh downstream evidence
+- **#314**: PSRR: decide and evidence the binding output-capacitor/ESR condition
+- **#550**: Re-run signoff-graded benches made stale by the integrated comparator (split from #548)
+- **#553**: Layout evidence: regenerate and re-run DRC/LVS/ERC/area for the integrated comparator netlist (split from #548)
 
 ## PRs Awaiting Review
 
 PRs waiting on Judge (`loom:review-requested`).
 
-_None._
+- **#561**: sim: re-run five batch benches on integrated comparator; refresh characterization and item 8 pin
 
 ## Approved (Awaiting Merge)
 
@@ -51,7 +53,6 @@ Issues carrying `loom:curated`.
 
 - **#114**: Gap to T1: 6 of 12 ratified rows FAIL — replacement tracker (#58 closed on child-completion, not on verdict) *(curated)*
 - **#131**: Thermal shutdown: track regenerative auto-restart hysteresis design, integration, and qualification *(curated)*
-- **#231**: Thermal hysteresis: qualify the integrated comparator across PVT and refresh downstream evidence *(curated)*
 - **#267**: layout: fix locally-routed official-DRC families (via.1a_b, m2.5, via2.5, nwell.9) found by #260 *(curated)*
 - **#301**: spec: decide whether DR-008 through DR-012 ratified on merge *(curated)*
 - **#314**: PSRR: decide and evidence the binding output-capacitor/ESR condition *(curated)*
@@ -59,6 +60,8 @@ Issues carrying `loom:curated`.
 - **#416**: Re-run folded-resistor MC at n>=1000 to firm up M2 sigma-ratio gate *(curated)*
 - **#461**: T1 item 5 area: compact routed ldo_core under 0.1 mm² with capacitors drawn, re-mint records (part of #458) *(curated)*
 - **#503**: measurements: characterization generator cannot see artifact-store-only sim records (iq 20261105-052332-05df7a01) *(curated)*
+- **#550**: Re-run signoff-graded benches made stale by the integrated comparator (split from #548) *(curated)*
+- **#553**: Layout evidence: regenerate and re-run DRC/LVS/ERC/area for the integrated comparator netlist (split from #548) *(curated)*
 
 ## Proposed (Architect / Hermit)
 
@@ -76,10 +79,10 @@ _None._
 | Very important | 1 |
 | Important | 1 |
 | Ready (`loom:issue`) | 1 |
-| In Progress (`loom:building`) | 1 |
-| PRs awaiting review | 0 |
+| In Progress (`loom:building`) | 3 |
+| PRs awaiting review | 1 |
 | Approved PRs awaiting merge | 0 |
-| Curated | 10 |
+| Curated | 11 |
 | Architect / Hermit proposals | 0 |
 | Active epics | 1 |
 <!-- guide:plan-body:end -->
