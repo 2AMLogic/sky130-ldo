@@ -1,7 +1,7 @@
 # ff bisection upper bound lowered to 180 C (issue #231, operator ruling option a)
 
 - ff decks at 190 C abort with `timestep_too_small` (all three supplies, hot and
-  cold_exc; 12 lines in `failures.jsonl`). 190 C is outside what the sky130 device
+  cold_exc; 6 points x 3 rounds = 18 lines in `failures.jsonl`). 190 C is outside what the sky130 device
   models solve for ff: a PDK-model extrapolation limit, not a spec change.
 - ff bisection upper bound lowered to 180 C (highest ff grid point that converges);
   other 12 corners keep the 190 C grid. Solver options untouched. Recorded in
