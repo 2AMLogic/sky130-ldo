@@ -291,7 +291,13 @@ def run_klt_sim(
         pdk_root,
         klt_exe=klt_binary(),
         error_cls=HarnessError,
-        extra_args=("--max-workers", str(max_workers)) if backend == "local-parallel" else (),
+        extra_args=(
+            ("--max-workers", str(max_workers)) if backend == "local-parallel"
+            # batch fleet is vCPU-budgeted: wait with backoff for capacity
+            # instead of failing the submit on a burst (host rule, #552).
+            else ("--wait-for-capacity", "600") if backend == "batch"
+            else ()
+        ),
         require_corners=False,
     )
     return response
