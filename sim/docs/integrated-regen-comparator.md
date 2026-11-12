@@ -83,6 +83,15 @@ Nothing below was re-run or edited by #230 (records are append-only).
    (trip/reset/hysteresis values are of the old comparator).
 2. **`sim/pex-post-layout`** (schematic-side leg of the post-layout PEX
    compare) and **`sim/mc-ic-screen-*`/`ic-screen-*`** (screening, not signoff).
+   Dispositions decided in #552 (split from #548); no record was edited:
+   - `mc-output-accuracy`: **re-run** (batch job `klt-sim-2a37622e9513`),
+     new record `20261112-110113-820ba8b3` (N=200, seed 20260817): PASS.
+   - **Stale-by-design** (diagnostic screens of one historical finding each,
+     they substantiate no spec row; their older records stay as they are and
+     describe the pre-#230 schematic): `ic-screen-125c-b`, `ic-screen-125c-c`,
+     `ic-screen-125c-v`, `mc-ic-screen-a`, `mc-ic-screen-b`.
+   - `pex-post-layout` schematic leg: **pending on #553** (regenerated layout);
+     not compared against the old layout.
 3. **Layout evidence for the old netlist:** DRC `layout/ldo-core/reports/20260924-221821-a947aa8`,
    LVS (`LATEST-LVS`, `20260924-221912-a947aa8`; its `reference.spice` still lists
    `M_TC*`/`M_TSHYS*`), ERC `20260930-221337-cbfbb54`, area `20261008-161046-f4fbb86`
