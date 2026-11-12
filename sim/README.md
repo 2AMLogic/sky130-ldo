@@ -1236,3 +1236,13 @@ PVT qualification: 5 process x 3 supply corners, `hot` (T_reset) and `cold_exc`
   the local record `20261008-190150-0275a8b-dev1`; EN-low comparator voltage
   differs by <= 0.1 mV (interpolated `find ... at` vs nearest sample). No
   disagreement to report.
+- **15-corner qualification (#231)**: `hysteresis/20261112-095143-16b7450c-qual-15corner-dependent`
+  (682 points, `result.json` complete) extends the staircase record
+  `20261105-202028-97cd9a9e-qual-15corner` (left byte-unchanged) with the dependent
+  round at all 15 corners. Minimum hysteresis 12.19 C (> 2 C, tol 0.3125 C), lowest
+  trip 161.9 C (>= 150 C, DR-005); EN re-enable does not latch. ff is bisected only
+  up to 180 C (`--grid-top`, default `ff:180`): ff at 188-190 C fails
+  `timestep_too_small`, a disclosed PDK-model extrapolation limit, and dependent
+  points above a process's bound are not run (`ff-bound-disclosure.md`). No spec row
+  or DR-005 threshold changed. Hysteresis records do not feed
+  `measurements/characterization.md`, so it is not regenerated.
