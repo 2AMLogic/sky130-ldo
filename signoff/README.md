@@ -109,7 +109,7 @@ of the claimant rather than of the tool.
 | 1 | **`met`** | `klt signoff --attest 1 --inventory signoff/evidence/item1-inventory.json` (issue #423): the LDO and thermal-comparator schematics/symbols exist, and the committed headless xschem netlist `layout/ldo-core/reports/20261022-232042-56dd87fe/xschem_out/ldo_3v3in_1v8out.spice` passes its freshness check (`klt netlist --check --ignore-comments` on the klt batch backend, because this worker's xschem 3.4.4 cannot evaluate `expr()`). That command is `local_only`: `check.sh` does not re-run it, it carries the committed outcome; the sources, netlist and inventory are re-hashed on every run. |
 | 2 | **`met`** | `klt signoff --attest 2 --input` (issue #423) on `layout/ldo-core/reports/20260924-221912-a947aa8/ldo_core.gds` — the GDS items 4 and 11 cite: readable, non-empty top cell `ldo_core`, dbu on grid. **Disclosed:** no regeneration claim (the generator has since moved on and the layout flow needs raw xschem and mints new records, out of scope); items 3, 4 and 11 were re-pinned by issue #553 to the integrated-comparator layout regenerated 2026-11-12 (`layout/ldo-core/reports/20261112-110205-820ba8b3/ldo_core.gds`, `5e617187…`; DRC, LVS and ERC re-run on it, new `M_RC*` devices placed, no `M_TC*`/`M_TSHYS*`), so item 2's attestation, still bound to the older `3e7f504b…` GDS, is no longer aligned with them (re-minting it is not part of #553). The newest committed GDS (`1698311e…`, `20261022-232042-56dd87fe`) is deliberately not the alignment target: its LVS (`20261022-231941-56dd87fe/lvs.json`) is `mismatch`, so moving items 4/11 to it would regress them. Remaining divergence: item 7's PEX pin stays on the older `52307a20…` GDS (`20260825-123551-3b4e121`); its errored PEX envelope was not re-run. |
 | 3 | **`met`** | `klt drc` on that GDS, `status: clean`, `violation_count: 0`, pinned to the GDS's own sha256. **Read the coverage disclosure below before treating this as "DRC clean".** |
-| 4 | **`met`** | `klt lvs`, `status: match`, layout vs. the schematic-derived reference netlist. **Three disclosed warnings below.** Re-pointed by issue #127 at a klt 0.6.0 re-run whose `provenance.input.content_hash` is non-null, so the manifest now pins this citation directly instead of relying only on `signoff/artifact-pins.json`. |
+| 4 | **`met`** | `klt lvs`, `status: match`, layout vs. the schematic-derived reference netlist. **Five disclosed warnings below.** Re-pointed by issue #127 at a klt 0.6.0 re-run whose `provenance.input.content_hash` is non-null, so the manifest now pins this citation directly instead of relying only on `signoff/artifact-pins.json`. |
 | 5 | `unmet` / `check_failed` | **Graded from evidence since issue #449.** `signoff/make_item5_envelope.py` wraps the eleven committed corner-matrix records into `klt sim`-shaped envelopes (`signoff/evidence/item5-<bench>-<record>.sim.json`) **without re-simulating** — the *wrap* route, not a `klt sim` re-run. Every value, limit and verdict is copied verbatim from the record; the ratified bound is checked against the record's own limit before anything is written, and each envelope is pinned to the netlist snapshot its record simulated (not necessarily the current schematic — `measurements/characterization.md` reports freshness). `spec_rows."5"` declares 14 rows. Failing rows, named by the grader: `dropout`, `iq`, `load-regulation`, `load-transient`, `psrr`, `stability`. Covered and passing: `current-limit`, `enable-shutdown`, `line-regulation`, `output` (graded at 50 mA over the 45-point matrix via `vout_50ma_v`), `startup`, `thermal`. `iq` is declared `ratified: false` (DR-009 is `proposed`). Declared gaps: `area` (a layout measurement, not a netlist sim; a **failing** row at 0.4519 mm² against the ratified < 0.1 mm², and only a lower bound because the four capacitors C_COMP, C_CL, C_SS and C_TS are not drawn; graded by the layout record `20261023-170539-a8292e91`; `klt economy --budget-um2` can grade it, but no grader envelope kind exists for it) and `output-noise` (waived). The dropout record is a one-corner attribution run (`is_subset`), so its envelope could never be better than `pass_partial`. Input and Load are stimulus conditions, not graded rows. As each row-level issue lands a new record, re-mint its envelope (append-only: a new file, re-point the manifest and pin). Row-level design work: #314, #370, #375, #345, #381, #213. |
 | 6 | **`met`** | Cites a real `klt yield` report (`sim/mc-output-accuracy/klt-responses/20260927-093538-227be3e.yield.json`) over the n=200 Monte Carlo campaign: empirical yield **at least 98.1725 % at 95 % confidence** (100 % of 200 samples inside the ratified ±2 % Output window, so the interval is bounded only from below), Cpk 1.34664, sigma-to-spec 4.04σ, sample size `sufficient`, and a deterministic **negative control graded `detected`** — a seeded known-bad variant (feedback divider mis-ratioed +10 %) whose 0/40 in-window draws the same statistics reject with non-overlapping intervals. Issue #203 minted the report (the evidence *kind* the checklist names, which this repo had none of until then); issue #211 added the negative control the item's text also asks for. **The payload status is `reported`, not `pass` — read "Item 6 is `met` — what it says, and the one thing it does not" below before reading anything into this row.** |
 | 7 | `unmet` / `check_failed` | Cites the real `klt pex` run (`sim/pex-post-layout/klt-responses/20260825-125102-3b4e121.pex.json`), pinned to the same layout GDS items 3 and 4 were run on: `status: error`, **135 of 135 delta rows errored, 0 passed**. Item 7 accepts no other evidence kind, so nothing weaker could stand in. A newer `klt pex` record now exists that does *not* error — **and is deliberately still not cited**; see "Item 7 has a passing record that this manifest declines to cite" below. Tracked as issues #122 and #142. |
@@ -126,78 +126,68 @@ enumerated **in the claim**, and is explicit that this is claimant-enforced:
 not evidence that the gaps were disclosed. Quoted verbatim from the cited
 envelope's own `coverage` block:
 
-- Item 3's citation reads `input_verified: null` on a fresh run: the DRC
-  envelope's top-level `file` is the absolute path of the builder's worktree
-  (`…/issue-553/…/ldo_core.gds`), which does not exist on other checkouts or in
-  CI, so the grader cannot re-hash the GDS itself. The pin is still enforced by
-  `signoff/verify-pins.py` (file on disk, envelope claim, manifest pin must
-  agree). The committed record is regenerated from a checkout without that path
-  so it reproduces everywhere; the envelope is left unedited as evidence.
-- Cited envelope (issue #508): [`20260924-221821-a947aa8/drc.json`](../layout/ldo-core/reports/20260924-221821-a947aa8/drc.json)
-  — `status: clean`, `violation_count: 0`, on the GDS items 2, 4 and 11 also
-  cite (`3e7f504b…`). It replaces the earlier `20260825-123551-3b4e121/drc.json`
-  (`52307a20…`, klt 0.2.0), which stays in place as an append-only record.
-- `layers_checked` — twelve layers: `64/20` (nwell), `65/20` (diff), `65/44`
+- Cited envelope (issue #564): [`20261112-125900-820ba8b3/drc.json`](../layout/ldo-core/reports/20261112-125900-820ba8b3/drc.json)
+  — `status: clean`, `violation_count: 0`, a DRC-only record run with
+  `klt drc` from the repo root on the already-pinned GDS
+  `20261112-110205-820ba8b3/ldo_core.gds` (`5e617187…`, the one items 4 and 11
+  also cite). It records that GDS repo-relative (`file.path`, `scope: repo`), so
+  the grader re-hashes it itself and item 3 reads `input_verified: true` on any
+  checkout. It supersedes `20261112-110205-820ba8b3/drc.json` (same verdict and
+  GDS, but an absolute worktree path in `file`, so `input_verified: null`),
+  which stays in place as an append-only record, as do the older
+  `20260924-221821-a947aa8` and `20260825-123551-3b4e121` envelopes.
+- `layers_checked` — eighteen layers: `64/20` (nwell), `65/20` (diff), `65/44`
   (tap), `66/20` (poly), `66/44` (licon1), `67/20` (li1), `67/44` (mcon),
   `68/20` (met1), `68/44` (via), `69/20` (met2), `69/44` (via2), `70/20`
-  (met3).
-- `layers_in_stream_without_rules` — **seven layers are drawn in this stream
-  that the deck has no rule for**: `66/13` (poly.res marker), `68/5`
-  (met1.pin), `69/5`, `75/20`, `79/20` (urpm), `86/20` (rpm), `94/20` (psdm).
-  The implant masks and the poly-resistor marker that identify this block's
-  precision resistors were not evaluated; a "clean" verdict says nothing about
-  them. (Unlike the earlier envelope, nwell and tap are now checked.)
-- `rules_skipped` — **26 rules the deck carries but this run did not
-  evaluate**, all on layers this block does not draw: the `capm`/`capm2` MIM
-  capacitor rules (`capm.*`, `capm2.*`, `met3.enclosing.capm.1`,
-  `met4.enclosing.capm2.1`), the `met4`/`met5` rules (`met4.area.1`,
-  `met4.space.1`, `met4.width.1`, `met5.*`, …) and `via3.*`/`via4.*`
-  space/width/enclosure. The block routes on met1/met2 (with met3 present), so
-  none of these gates it, but they were not evaluated and are not claimed.
+  (met3), `75/20` (hvi), `79/20` (urpm), `86/20` (rpm), `93/44`, `94/20`
+  (psdm), `95/20`.
+- `layers_in_stream_without_rules` — three layers are drawn in this stream that
+  the deck has no rule for: `66/13` (poly.res marker), `68/5` (met1.pin) and
+  `69/5` (met2.pin). `marker_blind_layers_in_stream` is empty. A "clean"
+  verdict says nothing about these three.
+- `rules_skipped` — **68 rules the deck carries but this run did not
+  evaluate**: the `capm`/`capm2` MIM capacitor rules, the `met4`/`met5` rules,
+  `via3.*`/`via4.*` space/width/angle/ongrid, the `.angle.1`/`.ongrid.1`
+  checks for layers this stream does not draw (`dnwell`, `hvntm`, `hvtp`,
+  `hvtr`, `lvtn`, `mf`, `ncm`, `nsm`, `pad`, `pwbm`, `pwde`, `pwell_rs`,
+  `tunm`, `uhvi`, `vhvi`, `vpp`) and `areaid_re.ongrid.1`. The block routes on
+  met1/met2 (with met3 present), so none of these gates it, but they were not
+  evaluated and are not claimed.
 - `deck_scope` — `cap2m`, `capm`, `ct`, `difftap`, `li`, `licon`, `m1`, `m2`,
-  `m3`, `m4`, `m5`, `nwell`, `poly`, `via`, `via2`, `via3`, `via4`: the DRM
-  chapters this deck transcribes. Everything outside that list (including the
-  implant and resistor-marker chapters) is outside what "clean" was measured
-  inside.
-- `rule_counts` — `null`: the report names no rule inventory.
+  `m3`, `m4`, `m5`, `npc`, `nsdm`, `nwell`, `poly`, `psdm`, `rpm`, `urpm`,
+  `via`, `via2`, `via3`, `via4`, `x`: the DRM chapters this deck transcribes.
+  Everything outside that list is outside what "clean" was measured inside.
+- `rule_counts` — `{}`: the report names no per-rule violation counts (none
+  were found).
 
 ### Item 4 is `met`, and what that compare did and did not ask
 
-`status: match`, 27/27 nets, 47/47 devices, 4/4 pins, engine `klayout`
-0.30.12, layout vs. `reference.spice` (mechanically translated from the
+`status: match`, 27/27 nets, 51/51 devices, 4/4 pins, engine `klayout`
+0.30.13, layout vs. `reference.spice` (mechanically translated from the
 schematic's own xschem netlist by `layout/bin/gen-ldo-reference-netlist.py`,
 so both sides descend from the one schematic). Cited record:
-[`20260924-221912-a947aa8`](../layout/ldo-core/reports/20260924-221912-a947aa8/record.md)
-— re-pointed here by issue #127 from the original `klt` 0.2.0 record
-(`20260825-123628-3b4e121`), which wrote `provenance.input: null` and so could
-never be pinned by the manifest itself; this one carries a real
-`provenance.input.content_hash`, so `signoff/block-manifest.json` now pins
-item 4 directly instead of relying only on `signoff/artifact-pins.json`'s
-repo-side re-hash. It is also the record
-`layout/ldo-core/reports/LATEST-LVS` names — the **current** LVS run, not
-merely the first klt-0.6.0 one. The intermediate klt-0.6.0 record
-`20260924-181216-50554fe` (PR #155) satisfies the provenance requirement
-identically, but it was minted before commit `0c65db2` (issue #163, VIN/VOUT
-sized as spec-derived power rails) redrew the layout; `a947aa8` is the run
-against that updated GDS, and citing `50554fe` would pin item 4 to a layout
-revision `main` has already superseded. The two envelopes' `lvs.json` files
-are byte-identical apart from the layout hash — same `status: match`, same
-three warning-severity mismatches, same `power_connectivity` /
-`body_verification` blocks — so this currency fix changes no verdict and no
-disclosure below. The GDS this record compares is **not** the same revision
-item 3's DRC was run on — re-running item 3 was not in #127's scope — so the
-two items' composed-GDS hashes now legitimately differ; see
-`signoff/artifact-pins.json`'s item-4 notes. Item 4 requires warnings-only
-mismatches to be listed with the claim; there are three, all `severity:
-warning`, unchanged from the superseded record:
+[`20261112-110237-820ba8b3`](../layout/ldo-core/reports/20261112-110237-820ba8b3/record.md)
+(issue #553, the record `layout/ldo-core/reports/LATEST-LVS` names), run on the
+same GDS as items 3 and 11 (`sha256:5e617187…`), so the three items' hashes now
+agree. It carries a real `provenance.input.content_hash`, so
+`signoff/block-manifest.json` pins item 4 directly. It replaces the earlier
+`20260924-221912-a947aa8` record (and the klt 0.2.0 `20260825-123628-3b4e121`
+record before it), which stay in place as append-only history. Item 4 requires
+warnings-only mismatches to be listed with the claim; there are five, all
+`severity: warning`:
 
 - Two `device.bulk_reconciled` — the request added a `W` (bulk) terminal to the
   reference classes `RES_HIGH_PO` (1 instance) and `RES_XHIGH_PO` (3
   instances) and tied it to reference net `0`. **That terminal's connectivity
   was asserted by the request, not read from the reference netlist**, so the
   resistor-body dimension of this compare is not independently verified.
-- One `topology` — a device class with no counterpart on the other side, and no
-  devices of that class extracted either; not a real topology mismatch.
+- Two `device.geometry_not_compared` — `res_high_po` and `res_xhigh_po` are
+  resistor classes whose `A`/`L`/`P`/`W` parameters KLayout declares
+  *secondary*, so they took no part in the compare: **resistor geometry is not
+  verified by this LVS**, and could differ between the two sides by any amount.
+- One `topology` — the `pnp` device class has no counterpart on the other side,
+  and no devices of that class were extracted either; not a real topology
+  mismatch.
 
 Two further questions the superseded klt-0.2.0 record could never ask, and
 this klt-0.6.0 record now answers, both weakly:
@@ -604,18 +594,18 @@ when issue #112's `klt erc` supply spec landed. The manifest entry is a
 **list** of two citations, the compound shape `klt signoff` grades this item
 from:
 
-1. `layout/ldo-core/reports/20260930-193715-dc2823f/erc_supply.json`. This is
+1. `layout/ldo-core/reports/20261112-110312-820ba8b3/erc_supply.json`. This is
    the `klt erc` run of `layout/ldo-core/erc-supply-spec.json` against layout
-   record `20260924-221821-a947aa8`. `erc_status` is `clean` with 0 findings.
+   record `20261112-110205-820ba8b3` (issue #553). `erc_status` is `clean`.
    `VIN` and `0` are both declared `kind: supply` and each resolves to exactly
    one electrical island. Both `ties[]` are checked, none skipped as
    degenerate. The record's four falsification controls each fire the rule
    the clean verdict claims the absence of (`record.md` there).
-2. `layout/ldo-core/reports/20260924-221912-a947aa8/lvs.json`, item 4's own
+2. `layout/ldo-core/reports/20261112-110237-820ba8b3/lvs.json`, item 4's own
    report, `status: match`, with `VIN` and `0` both paired in
    `net_correspondence` against the schematic-derived reference.
 
-Both parts are pinned to one GDS hash (`sha256:3e7f504b…`): the ERC run and
+Both parts are pinned to one GDS hash (`sha256:5e617187…`): the ERC run and
 the LVS compare are provably about the same layout revision.
 `input_verified: true` — the grader re-hashed that GDS itself, which works
 from any checkout because `run-ldo-erc-flow.sh` records repo-relative paths.
