@@ -1104,24 +1104,21 @@ the end of each deck, and its values must match the first run (order independenc
 - `-o` is always passed as an absolute path. A relative `-o` makes `klt sim`'s
   local backend error out before ngspice starts (klayout-tools#2892).
 
-**Status (2026-10-11): no record yet.** One single-corner local spot check ran
-(tt / 27 C / 3.30 V, all 9 points, both loads, about 18 s for one ngspice process).
-In it, the nominal point reproduces record `20260926-033606-4a9ec09` within
-1e-5 dB on all four sub-metrics, including 100 kHz / 50 mA (11.3201 vs
-11.3201 dB). The 0.03 dB gap noted when this tooling first landed did not
-reproduce through this deck. The repeat of the nominal point was identical.
-The three-corner batch submission was attempted from this host. The first four
-attempts were refused at launch by `BATCH_MAX_CONCURRENT_INSTANCES=8`: the fleet was
-saturated and `klt` does not wait out that refusal (klayout-tools#2917). The fifth
-attempt got instances, but all three jobs (`klt-sim-3aad4243db62`,
-`klt-sim-a16bef68e1e2`, `klt-sim-f4edf7efc374`) failed after about 5 s with exit 87,
-`batch_runner_version_mismatch`. The fleet runner is klt 0.5.0 and this host's
-client is 0.7.0, and **the request was not run** (klayout-tools#2948). The 0.5.0
-runner also predates `analysis_steps` and `measurements[].expr`, so this request
-shape cannot run on the fleet until the runner image is updated. Because of that
-failed run, the runner now refuses to mint a record when any corner comes back
-without an engine log, i.e. when the simulation never ran. Single-corner spot-check
-numbers are not evidence records and are not cited as the binding-condition finding.
+**Status (2026-11-12): record minted.** The three-corner sweep ran on the fleet
+(runner klt 0.9.2.dev850, ngspice 46, jobs `klt-sim-3cff2d3e59b5`,
+`klt-sim-3279e45a866d`, `klt-sim-dc42591bb493`, all pass) and minted
+`sim/psrr-dc/records/20261112-123922-1177e742.{json,md}`: the evidence path for
+issue #314 Phase 1. The earlier runner-version wall (klayout-tools#2948) and the
+capacity refusal are gone; the runner now passes `--wait-for-capacity 600` on every
+batch submit. Worst sampled point per sub-metric (min over the 3 corners, fixed
+rule; a sampled-grid finding, not the continuous-window or 45-corner worst case):
+1 kHz / 1 mA at 4.7 uF, 0 ohm (21.304 dB, ff); 100 kHz / 1 mA at 0.33 uF, 0 ohm
+(21.165 dB, ss); 1 kHz / 50 mA at 4.7 uF, 0 ohm (22.536 dB, ff); 100 kHz / 50 mA at
+1 uF, 0 ohm (10.982 dB, ss). The nominal point (tt, 1 uF / 10 mOhm) agrees with
+record `20260926-033606-4a9ec09` within 1e-5 dB on all four sub-metrics, including
+100 kHz / 50 mA (11.3201 vs 11.3201 dB), so the earlier 0.03 dB spot-check gap did
+not reproduce. No threshold or spec row was changed; the decision record (Phase 2)
+and 45-corner qualification (Phase 3) remain separate follow-ups.
 
 #### iq endpoints on the batch backend (issue #213)
 

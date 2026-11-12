@@ -1,0 +1,1103 @@
+{
+  "backend": "batch",
+  "evidence_kind": "psrr-cap-esr-sweep",
+  "evidence_kind_note": "reduced C_eff x ESR characterization for #314 Phase 1; not a campaign record",
+  "execution": [
+    {
+      "corner_id": "tt_27c_3.30v",
+      "engine": "ngspice",
+      "engine_version": "46",
+      "has_log": true,
+      "job_id": "klt-sim-3cff2d3e59b5",
+      "job_ids_seen": [
+        "klt-sim-3cff2d3e59b5"
+      ],
+      "klt_corner_status": "pass",
+      "klt_pdk_names_pin": true,
+      "klt_status": "pass",
+      "klt_version": "0.9.2.dev850+g96e827e94ae4",
+      "pdk_version": "open_pdks c6d73a35f524070e85faff4a6a9eef49553ebc2b",
+      "remote": {
+        "ami_id": "ami-095c25ae241a4d360",
+        "availability_zone": "us-east-1a",
+        "client_collected_at": "2026-11-12T12:40:43.475238Z",
+        "client_klt_version": "0.9.2.dev850+g96e827e94ae4",
+        "client_launched_at": "2026-11-12T12:39:40.785449Z",
+        "client_status_terminal_at": "2026-11-12T12:40:42.770816Z",
+        "client_submitted_at": "2026-11-12T12:39:23.361351Z",
+        "concurrency": "2",
+        "elapsed_seconds": 23,
+        "exit_code": "0",
+        "instance_id": "i-0e57f0f7b0a39f31d",
+        "instance_type": "c7i.8xlarge",
+        "job_ceiling": {
+          "basis": "conservative_serial_bound",
+          "check": "warn",
+          "exceeds_ceiling": false,
+          "job_bound_s": 3520.0,
+          "max_job_seconds": 3600.0,
+          "max_job_seconds_source": "fleet_config",
+          "max_units_per_job": 1,
+          "overhead_s": 120.0,
+          "per_unit_timeout_s": 3400,
+          "recommended_hosts": 1,
+          "unit_count": 1
+        },
+        "job_id": "klt-sim-3cff2d3e59b5",
+        "lifecycle": "spot",
+        "models_lib_comparison": {
+          "status": "match"
+        },
+        "physical_cores": "16",
+        "provider": "aws-batch-fleet",
+        "region": "us-east-1",
+        "runner_compatibility": "match",
+        "runner_klt_version": "0.9.0",
+        "runner_model_inputs": null,
+        "runner_models_lib_sha256": "48de7c677e2c6e7d09b2559279de9f818be71010a4aa933d728eb4db3b133c84",
+        "runner_request_features": {
+          "missing": [],
+          "required": [
+            "analysis_steps",
+            "options.ngspice_init"
+          ],
+          "status": "supported"
+        },
+        "spot": true,
+        "state": "done",
+        "worker_environment": {
+          "capture": "ok",
+          "cpu_model": "Intel(R) Xeon(R) Platinum 8488C",
+          "diagnostics": [],
+          "engine_build_comparison": {
+            "status": "match"
+          },
+          "image_manifest": null,
+          "model_inputs": null,
+          "omp_num_threads": null,
+          "pdk": {
+            "models_staged": false,
+            "root": "/opt/pdk",
+            "stamp_scheme": "sources-sha256",
+            "stamp_scope": "executed",
+            "stamp_sha256": "4ca10280ae9f293aa1ff69f0060a52e0026929111bda881503717469b429ce67",
+            "stamp_text": "open_pdks f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7",
+            "variant": "sky130A"
+          },
+          "pdk_stamp_comparison": {
+            "status": "mismatch",
+            "warning": "the worker's PDK revision stamp for sky130A differs from the one the submitter resolved locally; results may differ from a local run (a matching stamp would not prove identical models)"
+          },
+          "simulator": {
+            "binary_source": "PATH",
+            "requested_binary": "ngspice",
+            "selected_path": "/usr/local/bin/ngspice",
+            "version_banner": "******\n** ngspice-46 : Circuit level simulation program\n** Compiled with KLU Direct Linear Solver\n** The U. C. Berkeley CAD Group\n** Copyright 1985-1994, Regents of the University of California.\n** Copyright 2001-2025, The ngspice team.\n** Please get your ngspice manual from https://ngspice.sourceforge.io/docs.html\n** Please file your bug-reports at http://ngspice.sourceforge.net/bugrep.html\n** Creation Date: Thu Oct  1 23:51:59 UTC 2026\n******\n",
+            "version_probe": "ok"
+          }
+        }
+      },
+      "reported_backend": "aws-batch-fleet",
+      "returncode": 0
+    },
+    {
+      "corner_id": "ss_-40c_2.97v",
+      "engine": "ngspice",
+      "engine_version": "46",
+      "has_log": true,
+      "job_id": "klt-sim-3279e45a866d",
+      "job_ids_seen": [
+        "klt-sim-3279e45a866d"
+      ],
+      "klt_corner_status": "pass",
+      "klt_pdk_names_pin": true,
+      "klt_status": "pass",
+      "klt_version": "0.9.2.dev850+g96e827e94ae4",
+      "pdk_version": "open_pdks c6d73a35f524070e85faff4a6a9eef49553ebc2b",
+      "remote": {
+        "ami_id": "ami-095c25ae241a4d360",
+        "availability_zone": "us-east-1a",
+        "client_collected_at": "2026-11-12T12:42:04.658960Z",
+        "client_klt_version": "0.9.2.dev850+g96e827e94ae4",
+        "client_launched_at": "2026-11-12T12:41:02.061922Z",
+        "client_status_terminal_at": "2026-11-12T12:42:03.976696Z",
+        "client_submitted_at": "2026-11-12T12:40:44.005854Z",
+        "concurrency": "2",
+        "elapsed_seconds": 22,
+        "exit_code": "0",
+        "instance_id": "i-0e783cc48c8d722ca",
+        "instance_type": "c7i.8xlarge",
+        "job_ceiling": {
+          "basis": "conservative_serial_bound",
+          "check": "warn",
+          "exceeds_ceiling": false,
+          "job_bound_s": 3520.0,
+          "max_job_seconds": 3600.0,
+          "max_job_seconds_source": "fleet_config",
+          "max_units_per_job": 1,
+          "overhead_s": 120.0,
+          "per_unit_timeout_s": 3400,
+          "recommended_hosts": 1,
+          "unit_count": 1
+        },
+        "job_id": "klt-sim-3279e45a866d",
+        "lifecycle": "spot",
+        "models_lib_comparison": {
+          "status": "match"
+        },
+        "physical_cores": "16",
+        "provider": "aws-batch-fleet",
+        "region": "us-east-1",
+        "runner_compatibility": "match",
+        "runner_klt_version": "0.9.0",
+        "runner_model_inputs": null,
+        "runner_models_lib_sha256": "48de7c677e2c6e7d09b2559279de9f818be71010a4aa933d728eb4db3b133c84",
+        "runner_request_features": {
+          "missing": [],
+          "required": [
+            "analysis_steps",
+            "options.ngspice_init"
+          ],
+          "status": "supported"
+        },
+        "spot": true,
+        "state": "done",
+        "worker_environment": {
+          "capture": "ok",
+          "cpu_model": "Intel(R) Xeon(R) Platinum 8488C",
+          "diagnostics": [],
+          "engine_build_comparison": {
+            "status": "match"
+          },
+          "image_manifest": null,
+          "model_inputs": null,
+          "omp_num_threads": null,
+          "pdk": {
+            "models_staged": false,
+            "root": "/opt/pdk",
+            "stamp_scheme": "sources-sha256",
+            "stamp_scope": "executed",
+            "stamp_sha256": "4ca10280ae9f293aa1ff69f0060a52e0026929111bda881503717469b429ce67",
+            "stamp_text": "open_pdks f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7",
+            "variant": "sky130A"
+          },
+          "pdk_stamp_comparison": {
+            "status": "mismatch",
+            "warning": "the worker's PDK revision stamp for sky130A differs from the one the submitter resolved locally; results may differ from a local run (a matching stamp would not prove identical models)"
+          },
+          "simulator": {
+            "binary_source": "PATH",
+            "requested_binary": "ngspice",
+            "selected_path": "/usr/local/bin/ngspice",
+            "version_banner": "******\n** ngspice-46 : Circuit level simulation program\n** Compiled with KLU Direct Linear Solver\n** The U. C. Berkeley CAD Group\n** Copyright 1985-1994, Regents of the University of California.\n** Copyright 2001-2025, The ngspice team.\n** Please get your ngspice manual from https://ngspice.sourceforge.io/docs.html\n** Please file your bug-reports at http://ngspice.sourceforge.net/bugrep.html\n** Creation Date: Thu Oct  1 23:51:59 UTC 2026\n******\n",
+            "version_probe": "ok"
+          }
+        }
+      },
+      "reported_backend": "aws-batch-fleet",
+      "returncode": 0
+    },
+    {
+      "corner_id": "ff_125c_3.63v",
+      "engine": "ngspice",
+      "engine_version": "46",
+      "has_log": true,
+      "job_id": "klt-sim-dc42591bb493",
+      "job_ids_seen": [
+        "klt-sim-dc42591bb493"
+      ],
+      "klt_corner_status": "pass",
+      "klt_pdk_names_pin": true,
+      "klt_status": "pass",
+      "klt_version": "0.9.2.dev850+g96e827e94ae4",
+      "pdk_version": "open_pdks c6d73a35f524070e85faff4a6a9eef49553ebc2b",
+      "remote": {
+        "ami_id": "ami-095c25ae241a4d360",
+        "availability_zone": "us-east-1f",
+        "client_collected_at": "2026-11-12T12:43:28.095925Z",
+        "client_klt_version": "0.9.2.dev850+g96e827e94ae4",
+        "client_launched_at": "2026-11-12T12:42:25.376408Z",
+        "client_status_terminal_at": "2026-11-12T12:43:27.358729Z",
+        "client_submitted_at": "2026-11-12T12:42:05.175834Z",
+        "concurrency": "2",
+        "elapsed_seconds": 26,
+        "exit_code": "0",
+        "instance_id": "i-04309f1568991eb14",
+        "instance_type": "c7i.8xlarge",
+        "job_ceiling": {
+          "basis": "conservative_serial_bound",
+          "check": "warn",
+          "exceeds_ceiling": false,
+          "job_bound_s": 3520.0,
+          "max_job_seconds": 3600.0,
+          "max_job_seconds_source": "fleet_config",
+          "max_units_per_job": 1,
+          "overhead_s": 120.0,
+          "per_unit_timeout_s": 3400,
+          "recommended_hosts": 1,
+          "unit_count": 1
+        },
+        "job_id": "klt-sim-dc42591bb493",
+        "lifecycle": "spot",
+        "models_lib_comparison": {
+          "status": "match"
+        },
+        "physical_cores": "16",
+        "provider": "aws-batch-fleet",
+        "region": "us-east-1",
+        "runner_compatibility": "match",
+        "runner_klt_version": "0.9.0",
+        "runner_model_inputs": null,
+        "runner_models_lib_sha256": "48de7c677e2c6e7d09b2559279de9f818be71010a4aa933d728eb4db3b133c84",
+        "runner_request_features": {
+          "missing": [],
+          "required": [
+            "analysis_steps",
+            "options.ngspice_init"
+          ],
+          "status": "supported"
+        },
+        "spot": true,
+        "state": "done",
+        "worker_environment": {
+          "capture": "ok",
+          "cpu_model": "Intel(R) Xeon(R) Platinum 8488C",
+          "diagnostics": [],
+          "engine_build_comparison": {
+            "status": "match"
+          },
+          "image_manifest": null,
+          "model_inputs": null,
+          "omp_num_threads": null,
+          "pdk": {
+            "models_staged": false,
+            "root": "/opt/pdk",
+            "stamp_scheme": "sources-sha256",
+            "stamp_scope": "executed",
+            "stamp_sha256": "4ca10280ae9f293aa1ff69f0060a52e0026929111bda881503717469b429ce67",
+            "stamp_text": "open_pdks f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7",
+            "variant": "sky130A"
+          },
+          "pdk_stamp_comparison": {
+            "status": "mismatch",
+            "warning": "the worker's PDK revision stamp for sky130A differs from the one the submitter resolved locally; results may differ from a local run (a matching stamp would not prove identical models)"
+          },
+          "simulator": {
+            "binary_source": "PATH",
+            "requested_binary": "ngspice",
+            "selected_path": "/usr/local/bin/ngspice",
+            "version_banner": "******\n** ngspice-46 : Circuit level simulation program\n** Compiled with KLU Direct Linear Solver\n** The U. C. Berkeley CAD Group\n** Copyright 1985-1994, Regents of the University of California.\n** Copyright 2001-2025, The ngspice team.\n** Please get your ngspice manual from https://ngspice.sourceforge.io/docs.html\n** Please file your bug-reports at http://ngspice.sourceforge.net/bugrep.html\n** Creation Date: Thu Oct  1 23:51:59 UTC 2026\n******\n",
+            "version_probe": "ok"
+          }
+        }
+      },
+      "reported_backend": "aws-batch-fleet",
+      "returncode": 0
+    }
+  ],
+  "git": {
+    "branch": "feature/issue-314",
+    "dirty": true,
+    "sha": "1177e742"
+  },
+  "independence": {
+    "all_identical": true,
+    "rows": [
+      {
+        "c_uf": 1.0,
+        "corner_id": "tt_27c_3.30v",
+        "esr_ohm": 0.01,
+        "first_db": 33.51854,
+        "identical": true,
+        "metric": "psrr_100khz_1ma_db",
+        "repeat_db": 33.51854
+      },
+      {
+        "c_uf": 1.0,
+        "corner_id": "tt_27c_3.30v",
+        "esr_ohm": 0.01,
+        "first_db": 11.32011,
+        "identical": true,
+        "metric": "psrr_100khz_50ma_db",
+        "repeat_db": 11.32011
+      },
+      {
+        "c_uf": 1.0,
+        "corner_id": "tt_27c_3.30v",
+        "esr_ohm": 0.01,
+        "first_db": 23.23332,
+        "identical": true,
+        "metric": "psrr_1khz_1ma_db",
+        "repeat_db": 23.23332
+      },
+      {
+        "c_uf": 1.0,
+        "corner_id": "tt_27c_3.30v",
+        "esr_ohm": 0.01,
+        "first_db": 23.32967,
+        "identical": true,
+        "metric": "psrr_1khz_50ma_db",
+        "repeat_db": 23.32967
+      },
+      {
+        "c_uf": 1.0,
+        "corner_id": "ss_-40c_2.97v",
+        "esr_ohm": 0.01,
+        "first_db": 31.97388,
+        "identical": true,
+        "metric": "psrr_100khz_1ma_db",
+        "repeat_db": 31.97388
+      },
+      {
+        "c_uf": 1.0,
+        "corner_id": "ss_-40c_2.97v",
+        "esr_ohm": 0.01,
+        "first_db": 11.04905,
+        "identical": true,
+        "metric": "psrr_100khz_50ma_db",
+        "repeat_db": 11.04905
+      },
+      {
+        "c_uf": 1.0,
+        "corner_id": "ss_-40c_2.97v",
+        "esr_ohm": 0.01,
+        "first_db": 23.53894,
+        "identical": true,
+        "metric": "psrr_1khz_1ma_db",
+        "repeat_db": 23.53894
+      },
+      {
+        "c_uf": 1.0,
+        "corner_id": "ss_-40c_2.97v",
+        "esr_ohm": 0.01,
+        "first_db": 23.55744,
+        "identical": true,
+        "metric": "psrr_1khz_50ma_db",
+        "repeat_db": 23.55744
+      },
+      {
+        "c_uf": 1.0,
+        "corner_id": "ff_125c_3.63v",
+        "esr_ohm": 0.01,
+        "first_db": 35.49408,
+        "identical": true,
+        "metric": "psrr_100khz_1ma_db",
+        "repeat_db": 35.49408
+      },
+      {
+        "c_uf": 1.0,
+        "corner_id": "ff_125c_3.63v",
+        "esr_ohm": 0.01,
+        "first_db": 11.71357,
+        "identical": true,
+        "metric": "psrr_100khz_50ma_db",
+        "repeat_db": 11.71357
+      },
+      {
+        "c_uf": 1.0,
+        "corner_id": "ff_125c_3.63v",
+        "esr_ohm": 0.01,
+        "first_db": 22.4002,
+        "identical": true,
+        "metric": "psrr_1khz_1ma_db",
+        "repeat_db": 22.4002
+      },
+      {
+        "c_uf": 1.0,
+        "corner_id": "ff_125c_3.63v",
+        "esr_ohm": 0.01,
+        "first_db": 22.61584,
+        "identical": true,
+        "metric": "psrr_1khz_50ma_db",
+        "repeat_db": 22.61584
+      }
+    ]
+  },
+  "issue": 314,
+  "limits_of_claim": [
+    "The grid SAMPLES the DR-002 window: 3 C_eff x 3 ESR points at 3 corners (the psrr-dc quick_subset). It cannot prove the continuous-window worst case or the all-45-corner worst case; an interior C_eff/ESR value or another PVT corner may be worse.",
+    "The worst sampled point is an evidence finding about this grid only. Which capacitor condition the PSRR row binds at is a specification decision (Phase 2 of #314, a decision record), not decided here.",
+    "No threshold and no spec/target-spec.md row is touched; the bounds quoted by experiment.json are not graded here (this record carries no PASS/FAIL verdict).",
+    "Solver diagnostics are deck-level (one ngspice log per corner covers all points); they are listed, not attributed to individual points."
+  ],
+  "manifest": {
+    "c_eff_uf": [
+      0.33,
+      1.0,
+      4.7
+    ],
+    "corners": [
+      [
+        "tt",
+        27,
+        3.3
+      ],
+      [
+        "ss",
+        -40,
+        2.97
+      ],
+      [
+        "ff",
+        125,
+        3.63
+      ]
+    ],
+    "esr_ohm": [
+      0.0,
+      0.01,
+      0.5
+    ],
+    "independence_check": [
+      1.0,
+      0.01
+    ],
+    "independence_tol_db": 1e-06,
+    "metrics": [
+      "psrr_1khz_1ma_db",
+      "psrr_100khz_1ma_db",
+      "psrr_1khz_50ma_db",
+      "psrr_100khz_50ma_db"
+    ],
+    "path": "sim/psrr-dc/cap-esr-sweep.json",
+    "selection_rule": "Per sub-metric: a point's value is the minimum over the 3 corners; the worst sampled point is the minimum of that over points; ties (|delta| <= 1e-6 dB) go to the lower C_eff, then the lower ESR. Any missing or non-finite cell for the metric yields NO finding (reported, never dropped).",
+    "sha256": "02ce464d4a058362392e6f011d7645ba91b8090a06e12bd5bca86a532e435318"
+  },
+  "netlist_snapshot": "sim/psrr-dc/netlist-snapshots/20261112-123922-1177e742.spice",
+  "netlist_snapshot_sha256": "1dcb1b5aa9fe2500ac3429bc469978723853819b62462a68d11d454ead162c1a",
+  "pdk": {
+    "installed_commit": "c6d73a35f524070e85faff4a6a9eef49553ebc2b",
+    "matches_pin": true,
+    "pin": "c6d73a35f524070e85faff4a6a9eef49553ebc2b",
+    "variant": "sky130A"
+  },
+  "phase": 1,
+  "record_id": "20261112-123922-1177e742",
+  "repeats": [
+    {
+      "c_uf": 1.0,
+      "corner_id": "tt_27c_3.30v",
+      "esr_ohm": 0.01,
+      "metrics": {
+        "psrr_100khz_1ma_db": 33.51854,
+        "psrr_100khz_50ma_db": 11.32011,
+        "psrr_1khz_1ma_db": 23.23332,
+        "psrr_1khz_50ma_db": 23.32967
+      },
+      "ok": true,
+      "reasons": [],
+      "vseed_v": {
+        "1ma": 1.800596,
+        "50ma": 1.798832
+      }
+    },
+    {
+      "c_uf": 1.0,
+      "corner_id": "ss_-40c_2.97v",
+      "esr_ohm": 0.01,
+      "metrics": {
+        "psrr_100khz_1ma_db": 31.97388,
+        "psrr_100khz_50ma_db": 11.04905,
+        "psrr_1khz_1ma_db": 23.53894,
+        "psrr_1khz_50ma_db": 23.55744
+      },
+      "ok": true,
+      "reasons": [],
+      "vseed_v": {
+        "1ma": 1.800302,
+        "50ma": 1.798821
+      }
+    },
+    {
+      "c_uf": 1.0,
+      "corner_id": "ff_125c_3.63v",
+      "esr_ohm": 0.01,
+      "metrics": {
+        "psrr_100khz_1ma_db": 35.49408,
+        "psrr_100khz_50ma_db": 11.71357,
+        "psrr_1khz_1ma_db": 22.4002,
+        "psrr_1khz_50ma_db": 22.61584
+      },
+      "ok": true,
+      "reasons": [],
+      "vseed_v": {
+        "1ma": 1.801249,
+        "50ma": 1.798701
+      }
+    }
+  ],
+  "results": [
+    {
+      "c_uf": 0.33,
+      "corner_id": "tt_27c_3.30v",
+      "esr_ohm": 0.0,
+      "metrics": {
+        "psrr_100khz_1ma_db": 22.85776,
+        "psrr_100khz_50ma_db": 11.88171,
+        "psrr_1khz_1ma_db": 23.37379,
+        "psrr_1khz_50ma_db": 23.3419
+      },
+      "ok": true,
+      "reasons": [],
+      "vseed_v": {
+        "1ma": 1.800596,
+        "50ma": 1.798832
+      }
+    },
+    {
+      "c_uf": 0.33,
+      "corner_id": "tt_27c_3.30v",
+      "esr_ohm": 0.01,
+      "metrics": {
+        "psrr_100khz_1ma_db": 22.86344,
+        "psrr_100khz_50ma_db": 11.88818,
+        "psrr_1khz_1ma_db": 23.3738,
+        "psrr_1khz_50ma_db": 23.3419
+      },
+      "ok": true,
+      "reasons": [],
+      "vseed_v": {
+        "1ma": 1.800596,
+        "50ma": 1.798832
+      }
+    },
+    {
+      "c_uf": 0.33,
+      "corner_id": "tt_27c_3.30v",
+      "esr_ohm": 0.5,
+      "metrics": {
+        "psrr_100khz_1ma_db": 23.0926,
+        "psrr_100khz_50ma_db": 12.21535,
+        "psrr_1khz_1ma_db": 23.37382,
+        "psrr_1khz_50ma_db": 23.3419
+      },
+      "ok": true,
+      "reasons": [],
+      "vseed_v": {
+        "1ma": 1.800596,
+        "50ma": 1.798832
+      }
+    },
+    {
+      "c_uf": 1.0,
+      "corner_id": "tt_27c_3.30v",
+      "esr_ohm": 0.0,
+      "metrics": {
+        "psrr_100khz_1ma_db": 33.51422,
+        "psrr_100khz_50ma_db": 11.25191,
+        "psrr_1khz_1ma_db": 23.23331,
+        "psrr_1khz_50ma_db": 23.32967
+      },
+      "ok": true,
+      "reasons": [],
+      "vseed_v": {
+        "1ma": 1.800596,
+        "50ma": 1.798832
+      }
+    },
+    {
+      "c_uf": 1.0,
+      "corner_id": "tt_27c_3.30v",
+      "esr_ohm": 0.01,
+      "metrics": {
+        "psrr_100khz_1ma_db": 33.51854,
+        "psrr_100khz_50ma_db": 11.32011,
+        "psrr_1khz_1ma_db": 23.23332,
+        "psrr_1khz_50ma_db": 23.32967
+      },
+      "ok": true,
+      "reasons": [],
+      "vseed_v": {
+        "1ma": 1.800596,
+        "50ma": 1.798832
+      }
+    },
+    {
+      "c_uf": 1.0,
+      "corner_id": "tt_27c_3.30v",
+      "esr_ohm": 0.5,
+      "metrics": {
+        "psrr_100khz_1ma_db": 33.32898,
+        "psrr_100khz_50ma_db": 13.78981,
+        "psrr_1khz_1ma_db": 23.2336,
+        "psrr_1khz_50ma_db": 23.3297
+      },
+      "ok": true,
+      "reasons": [],
+      "vseed_v": {
+        "1ma": 1.800596,
+        "50ma": 1.798832
+      }
+    },
+    {
+      "c_uf": 4.7,
+      "corner_id": "tt_27c_3.30v",
+      "esr_ohm": 0.0,
+      "metrics": {
+        "psrr_100khz_1ma_db": 47.39145,
+        "psrr_100khz_50ma_db": 25.97154,
+        "psrr_1khz_1ma_db": 22.4226,
+        "psrr_1khz_50ma_db": 23.26189
+      },
+      "ok": true,
+      "reasons": [],
+      "vseed_v": {
+        "1ma": 1.800596,
+        "50ma": 1.798832
+      }
+    },
+    {
+      "c_uf": 4.7,
+      "corner_id": "tt_27c_3.30v",
+      "esr_ohm": 0.01,
+      "metrics": {
+        "psrr_100khz_1ma_db": 47.39173,
+        "psrr_100khz_50ma_db": 26.01881,
+        "psrr_1khz_1ma_db": 22.42275,
+        "psrr_1khz_50ma_db": 23.2619
+      },
+      "ok": true,
+      "reasons": [],
+      "vseed_v": {
+        "1ma": 1.800596,
+        "50ma": 1.798832
+      }
+    },
+    {
+      "c_uf": 4.7,
+      "corner_id": "tt_27c_3.30v",
+      "esr_ohm": 0.5,
+      "metrics": {
+        "psrr_100khz_1ma_db": 42.56962,
+        "psrr_100khz_50ma_db": 23.31101,
+        "psrr_1khz_1ma_db": 22.43034,
+        "psrr_1khz_50ma_db": 23.26244
+      },
+      "ok": true,
+      "reasons": [],
+      "vseed_v": {
+        "1ma": 1.800596,
+        "50ma": 1.798832
+      }
+    },
+    {
+      "c_uf": 0.33,
+      "corner_id": "ss_-40c_2.97v",
+      "esr_ohm": 0.0,
+      "metrics": {
+        "psrr_100khz_1ma_db": 21.16482,
+        "psrr_100khz_50ma_db": 12.22347,
+        "psrr_1khz_1ma_db": 23.655,
+        "psrr_1khz_50ma_db": 23.56833
+      },
+      "ok": true,
+      "reasons": [],
+      "vseed_v": {
+        "1ma": 1.800302,
+        "50ma": 1.798821
+      }
+    },
+    {
+      "c_uf": 0.33,
+      "corner_id": "ss_-40c_2.97v",
+      "esr_ohm": 0.01,
+      "metrics": {
+        "psrr_100khz_1ma_db": 21.17215,
+        "psrr_100khz_50ma_db": 12.22901,
+        "psrr_1khz_1ma_db": 23.655,
+        "psrr_1khz_50ma_db": 23.56833
+      },
+      "ok": true,
+      "reasons": [],
+      "vseed_v": {
+        "1ma": 1.800302,
+        "50ma": 1.798821
+      }
+    },
+    {
+      "c_uf": 0.33,
+      "corner_id": "ss_-40c_2.97v",
+      "esr_ohm": 0.5,
+      "metrics": {
+        "psrr_100khz_1ma_db": 21.47935,
+        "psrr_100khz_50ma_db": 12.51199,
+        "psrr_1khz_1ma_db": 23.65502,
+        "psrr_1khz_50ma_db": 23.56833
+      },
+      "ok": true,
+      "reasons": [],
+      "vseed_v": {
+        "1ma": 1.800302,
+        "50ma": 1.798821
+      }
+    },
+    {
+      "c_uf": 1.0,
+      "corner_id": "ss_-40c_2.97v",
+      "esr_ohm": 0.0,
+      "metrics": {
+        "psrr_100khz_1ma_db": 31.96844,
+        "psrr_100khz_50ma_db": 10.98169,
+        "psrr_1khz_1ma_db": 23.53894,
+        "psrr_1khz_50ma_db": 23.55744
+      },
+      "ok": true,
+      "reasons": [],
+      "vseed_v": {
+        "1ma": 1.800302,
+        "50ma": 1.798821
+      }
+    },
+    {
+      "c_uf": 1.0,
+      "corner_id": "ss_-40c_2.97v",
+      "esr_ohm": 0.01,
+      "metrics": {
+        "psrr_100khz_1ma_db": 31.97388,
+        "psrr_100khz_50ma_db": 11.04905,
+        "psrr_1khz_1ma_db": 23.53894,
+        "psrr_1khz_50ma_db": 23.55744
+      },
+      "ok": true,
+      "reasons": [],
+      "vseed_v": {
+        "1ma": 1.800302,
+        "50ma": 1.798821
+      }
+    },
+    {
+      "c_uf": 1.0,
+      "corner_id": "ss_-40c_2.97v",
+      "esr_ohm": 0.5,
+      "metrics": {
+        "psrr_100khz_1ma_db": 31.8378,
+        "psrr_100khz_50ma_db": 13.53944,
+        "psrr_1khz_1ma_db": 23.53916,
+        "psrr_1khz_50ma_db": 23.55747
+      },
+      "ok": true,
+      "reasons": [],
+      "vseed_v": {
+        "1ma": 1.800302,
+        "50ma": 1.798821
+      }
+    },
+    {
+      "c_uf": 4.7,
+      "corner_id": "ss_-40c_2.97v",
+      "esr_ohm": 0.0,
+      "metrics": {
+        "psrr_100khz_1ma_db": 45.93204,
+        "psrr_100khz_50ma_db": 25.04628,
+        "psrr_1khz_1ma_db": 22.87406,
+        "psrr_1khz_50ma_db": 23.49712
+      },
+      "ok": true,
+      "reasons": [],
+      "vseed_v": {
+        "1ma": 1.800302,
+        "50ma": 1.798821
+      }
+    },
+    {
+      "c_uf": 4.7,
+      "corner_id": "ss_-40c_2.97v",
+      "esr_ohm": 0.01,
+      "metrics": {
+        "psrr_100khz_1ma_db": 45.93322,
+        "psrr_100khz_50ma_db": 25.10106,
+        "psrr_1khz_1ma_db": 22.87418,
+        "psrr_1khz_50ma_db": 23.49713
+      },
+      "ok": true,
+      "reasons": [],
+      "vseed_v": {
+        "1ma": 1.800302,
+        "50ma": 1.798821
+      }
+    },
+    {
+      "c_uf": 4.7,
+      "corner_id": "ss_-40c_2.97v",
+      "esr_ohm": 0.5,
+      "metrics": {
+        "psrr_100khz_1ma_db": 41.15503,
+        "psrr_100khz_50ma_db": 22.69125,
+        "psrr_1khz_1ma_db": 22.88009,
+        "psrr_1khz_50ma_db": 23.49761
+      },
+      "ok": true,
+      "reasons": [],
+      "vseed_v": {
+        "1ma": 1.800302,
+        "50ma": 1.798821
+      }
+    },
+    {
+      "c_uf": 0.33,
+      "corner_id": "ff_125c_3.63v",
+      "esr_ohm": 0.0,
+      "metrics": {
+        "psrr_100khz_1ma_db": 25.0544,
+        "psrr_100khz_50ma_db": 11.10064,
+        "psrr_1khz_1ma_db": 22.58781,
+        "psrr_1khz_50ma_db": 22.63032
+      },
+      "ok": true,
+      "reasons": [],
+      "vseed_v": {
+        "1ma": 1.801249,
+        "50ma": 1.798701
+      }
+    },
+    {
+      "c_uf": 0.33,
+      "corner_id": "ff_125c_3.63v",
+      "esr_ohm": 0.01,
+      "metrics": {
+        "psrr_100khz_1ma_db": 25.05833,
+        "psrr_100khz_50ma_db": 11.10866,
+        "psrr_1khz_1ma_db": 22.58781,
+        "psrr_1khz_50ma_db": 22.63032
+      },
+      "ok": true,
+      "reasons": [],
+      "vseed_v": {
+        "1ma": 1.801249,
+        "50ma": 1.798701
+      }
+    },
+    {
+      "c_uf": 0.33,
+      "corner_id": "ff_125c_3.63v",
+      "esr_ohm": 0.5,
+      "metrics": {
+        "psrr_100khz_1ma_db": 25.20387,
+        "psrr_100khz_50ma_db": 11.50844,
+        "psrr_1khz_1ma_db": 22.58785,
+        "psrr_1khz_50ma_db": 22.63032
+      },
+      "ok": true,
+      "reasons": [],
+      "vseed_v": {
+        "1ma": 1.801249,
+        "50ma": 1.798701
+      }
+    },
+    {
+      "c_uf": 1.0,
+      "corner_id": "ff_125c_3.63v",
+      "esr_ohm": 0.0,
+      "metrics": {
+        "psrr_100khz_1ma_db": 35.49098,
+        "psrr_100khz_50ma_db": 11.6491,
+        "psrr_1khz_1ma_db": 22.40019,
+        "psrr_1khz_50ma_db": 22.61584
+      },
+      "ok": true,
+      "reasons": [],
+      "vseed_v": {
+        "1ma": 1.801249,
+        "50ma": 1.798701
+      }
+    },
+    {
+      "c_uf": 1.0,
+      "corner_id": "ff_125c_3.63v",
+      "esr_ohm": 0.01,
+      "metrics": {
+        "psrr_100khz_1ma_db": 35.49408,
+        "psrr_100khz_50ma_db": 11.71357,
+        "psrr_1khz_1ma_db": 22.4002,
+        "psrr_1khz_50ma_db": 22.61584
+      },
+      "ok": true,
+      "reasons": [],
+      "vseed_v": {
+        "1ma": 1.801249,
+        "50ma": 1.798701
+      }
+    },
+    {
+      "c_uf": 1.0,
+      "corner_id": "ff_125c_3.63v",
+      "esr_ohm": 0.5,
+      "metrics": {
+        "psrr_100khz_1ma_db": 35.2455,
+        "psrr_100khz_50ma_db": 14.01033,
+        "psrr_1khz_1ma_db": 22.4006,
+        "psrr_1khz_50ma_db": 22.61587
+      },
+      "ok": true,
+      "reasons": [],
+      "vseed_v": {
+        "1ma": 1.801249,
+        "50ma": 1.798701
+      }
+    },
+    {
+      "c_uf": 4.7,
+      "corner_id": "ff_125c_3.63v",
+      "esr_ohm": 0.0,
+      "metrics": {
+        "psrr_100khz_1ma_db": 49.26232,
+        "psrr_100khz_50ma_db": 26.91255,
+        "psrr_1khz_1ma_db": 21.30398,
+        "psrr_1khz_50ma_db": 22.53552
+      },
+      "ok": true,
+      "reasons": [],
+      "vseed_v": {
+        "1ma": 1.801249,
+        "50ma": 1.798701
+      }
+    },
+    {
+      "c_uf": 4.7,
+      "corner_id": "ff_125c_3.63v",
+      "esr_ohm": 0.01,
+      "metrics": {
+        "psrr_100khz_1ma_db": 49.26157,
+        "psrr_100khz_50ma_db": 26.95137,
+        "psrr_1khz_1ma_db": 21.30421,
+        "psrr_1khz_50ma_db": 22.53553
+      },
+      "ok": true,
+      "reasons": [],
+      "vseed_v": {
+        "1ma": 1.801249,
+        "50ma": 1.798701
+      }
+    },
+    {
+      "c_uf": 4.7,
+      "corner_id": "ff_125c_3.63v",
+      "esr_ohm": 0.5,
+      "metrics": {
+        "psrr_100khz_1ma_db": 44.38936,
+        "psrr_100khz_50ma_db": 23.89284,
+        "psrr_1khz_1ma_db": 21.31594,
+        "psrr_1khz_50ma_db": 22.53619
+      },
+      "ok": true,
+      "reasons": [],
+      "vseed_v": {
+        "1ma": 1.801249,
+        "50ma": 1.798701
+      }
+    }
+  ],
+  "selection": {
+    "psrr_100khz_1ma_db": {
+      "finding": {
+        "c_uf": 0.33,
+        "corner_id": "ss_-40c_2.97v",
+        "esr_ohm": 0.0,
+        "psrr_db": 21.16482,
+        "tied_points": [
+          [
+            0.33,
+            0.0
+          ]
+        ]
+      },
+      "missing": []
+    },
+    "psrr_100khz_50ma_db": {
+      "finding": {
+        "c_uf": 1.0,
+        "corner_id": "ss_-40c_2.97v",
+        "esr_ohm": 0.0,
+        "psrr_db": 10.98169,
+        "tied_points": [
+          [
+            1.0,
+            0.0
+          ]
+        ]
+      },
+      "missing": []
+    },
+    "psrr_1khz_1ma_db": {
+      "finding": {
+        "c_uf": 4.7,
+        "corner_id": "ff_125c_3.63v",
+        "esr_ohm": 0.0,
+        "psrr_db": 21.30398,
+        "tied_points": [
+          [
+            4.7,
+            0.0
+          ]
+        ]
+      },
+      "missing": []
+    },
+    "psrr_1khz_50ma_db": {
+      "finding": {
+        "c_uf": 4.7,
+        "corner_id": "ff_125c_3.63v",
+        "esr_ohm": 0.0,
+        "psrr_db": 22.53552,
+        "tied_points": [
+          [
+            4.7,
+            0.0
+          ]
+        ]
+      },
+      "missing": []
+    }
+  },
+  "solver_diagnostics": {
+    "ff_125c_3.63v": null,
+    "ss_-40c_2.97v": null,
+    "tt_27c_3.30v": null
+  },
+  "spot_check": {
+    "comparison": [
+      {
+        "delta_db": -9.999999996068709e-06,
+        "metric": "psrr_100khz_1ma_db",
+        "reference_db": 33.51855,
+        "this_db": 33.51854
+      },
+      {
+        "delta_db": -9.999999999621423e-06,
+        "metric": "psrr_100khz_50ma_db",
+        "reference_db": 11.32012,
+        "this_db": 11.32011
+      },
+      {
+        "delta_db": 0.0,
+        "metric": "psrr_1khz_1ma_db",
+        "reference_db": 23.23332,
+        "this_db": 23.23332
+      },
+      {
+        "delta_db": -9.999999999621423e-06,
+        "metric": "psrr_1khz_50ma_db",
+        "reference_db": 23.32968,
+        "this_db": 23.32967
+      }
+    ],
+    "corner_id": "tt_27c_3.30v",
+    "point": {
+      "c_uf": 1.0,
+      "esr_ohm": 0.01
+    },
+    "reference_record": "20260926-033606-4a9ec09"
+  },
+  "timestamp": "2026-11-12T12:39:22Z",
+  "tools": {
+    "declared": {
+      "ngspice": "42",
+      "xschem": "3.4.4"
+    },
+    "ngspice": "ngspice-46 : Circuit level simulation program",
+    "on_baseline": false,
+    "platform": "Linux 7.0.0-1014-aws x86_64",
+    "python": "3.12.3",
+    "xschem": "XSCHEM V3.4.7"
+  }
+}
