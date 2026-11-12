@@ -66,8 +66,9 @@ SCHEMATIC_SHA="$(git -C "$REPO_ROOT" log -1 --format=%h -- design/ldo_3v3in_1v8o
 # --- 1. Netlist the schematic headlessly (this layout's device set) --------
 XSCHEM_OUT="$OUT_DIR/xschem_out"
 mkdir -p "$XSCHEM_OUT"
-xschem -n -q -x -s -o "$XSCHEM_OUT" --rcfile "$REPO_ROOT/sim/xschemrc" "$SCHEMATIC"
 SCHEM_NETLIST="$XSCHEM_OUT/ldo_3v3in_1v8out.spice"
+# `klt netlist` owns the headless xschem invocation (forced flags + timeout kill).
+"$KLT" netlist -o "$SCHEM_NETLIST" --rcfile "$REPO_ROOT/sim/xschemrc" "$SCHEMATIC"
 if [[ ! -f "$SCHEM_NETLIST" ]]; then
   echo "run-ldo-layout-flow.sh: expected $SCHEM_NETLIST after xschem netlisting" >&2
   exit 1

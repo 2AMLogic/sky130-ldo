@@ -1,0 +1,12 @@
+## LVS Report: ldo_core.gds vs reference.spice
+**Status:** ✅ match
+- Top: ldo_core
+- Engine: klayout
+
+| Category | Severity | Side | Description |
+| --- | --- | --- | --- |
+| device.bulk_reconciled | warning | reference | request.reference.device_bulk reconciled reference device class 'RES_HIGH_PO' with the layout side: a 'W' terminal was added to the reference class (layout: ['A', 'B', 'W'], reference was: ['A', 'B']) and tied to reference net '0' on 1 device instance(s), an existing reference net -- that terminal's connectivity was asserted by the request, not read from the reference netlist, so this dimension of the compare is not independently verified (see docs/cli/lvs.md, 'device.bulk_reconciled') |
+| device.bulk_reconciled | warning | reference | request.reference.device_bulk reconciled reference device class 'RES_XHIGH_PO' with the layout side: a 'W' terminal was added to the reference class (layout: ['A', 'B', 'W'], reference was: ['A', 'B']) and tied to reference net '0' on 3 device instance(s), an existing reference net -- that terminal's connectivity was asserted by the request, not read from the reference netlist, so this dimension of the compare is not independently verified (see docs/cli/lvs.md, 'device.bulk_reconciled') |
+| device.geometry_not_compared | warning | both | device class 'res_high_po' is a resistor class, whose ['A', 'L', 'P', 'W'] parameter(s) KLayout declares *secondary*: kdb.NetlistComparer compares primary parameters only, so none of them took part in this compare and each is NOT verified -- this resistor's geometry could differ between the two sides by any amount and this run would still report 'match'. The compared parameter(s) were ['R']. Name them in options.compare_parameters to compare them (see docs/cli/lvs.md, 'device.geometry_not_compared') |
+| device.geometry_not_compared | warning | both | device class 'res_xhigh_po' is a resistor class, whose ['A', 'L', 'P', 'W'] parameter(s) KLayout declares *secondary*: kdb.NetlistComparer compares primary parameters only, so none of them took part in this compare and each is NOT verified -- this resistor's geometry could differ between the two sides by any amount and this run would still report 'match'. The compared parameter(s) were ['R']. Name them in options.compare_parameters to compare them (see docs/cli/lvs.md, 'device.geometry_not_compared') |
+| topology | warning | layout | device class has no counterpart on the other side, but no devices of this class were extracted either -- not a real topology mismatch: 'pnp' |
