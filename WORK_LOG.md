@@ -4,6 +4,12 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 
 ### 2026-11-12
 
+- **PR #559**: feat(signoff): wrap thermal hysteresis record as the item-5 envelope
+- **Issue #558** (closed): signoff: item-5 Thermal envelope still wraps legacy record; Thermal row now grades the hysteresis record
+- **PR #557**: layout: regenerate core from integrated-comparator netlist and re-pin signoff items 3, 4, 11
+- **Issue #553** (closed): Layout evidence: regenerate and re-run DRC/LVS/ERC/area for the integrated comparator netlist (split from #548)
+- **PR #556**: sim: re-run mc-output-accuracy on batch after comparator change; mark screening benches stale-by-design
+- **Issue #552** (closed): Screening benches: decide and re-run those stale after the integrated comparator (split from #548)
 - **PR #555**: feat(report): grade Thermal row from the 15-corner integrated-comparator hysteresis record
 - **Issue #551** (closed): Thermal row: re-grade against the integrated comparator record (split from #548)
 - **PR #549**: sim(thermal): dependent round at all 15 corners, ff brackets planned on the lowered grid
