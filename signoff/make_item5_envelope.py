@@ -56,6 +56,11 @@ import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
+# The Thermal row is graded by measurements/build_characterization_report.py; the
+# hysteresis branch below imports that rule rather than restating it.
+sys.path.insert(0, str(REPO_ROOT / "measurements"))
+import build_characterization_report as _report  # noqa: E402
+
 OUT_DIR = REPO_ROOT / "signoff" / "evidence"
 
 #: (bench, record id) -- the record `measurements/characterization.md` cites
@@ -71,7 +76,7 @@ RECORDS = [
     ("current-limit", "20260825-105322-933dfdd"),
     ("startup", "20260825-110456-933dfdd"),
     ("enable-shutdown", "20260825-111526-933dfdd"),
-    ("thermal", "20260926-095154-f6ab418"),
+    ("thermal", "20261105-202028-97cd9a9e-qual-15corner"),
     ("loop-gain", "20260926-040338-4a9ec09"),
 ]
 
@@ -165,6 +170,16 @@ WRAPPER = (
     "measurements/characterization.md for per-record freshness."
 )
 
+HYSTERESIS_WRAPPER = (
+    " For a hysteresis record (sim/thermal/hysteresis/<id>/result.json) the "
+    "record holds bisection brackets, not per-corner verdicts: the envelope "
+    "carries each corner's conservative edges (trip bracket lower edge, "
+    "hysteresis min) and grades them with the same rule as "
+    "measurements/build_characterization_report.py. `temperature_c` is null "
+    "because temperature is the swept variable, not a corner axis; the input "
+    "pin is the record's own netlist.spice."
+)
+
 
 class WrapError(Exception):
     """A record does not say what the ratified row requires; nothing is written."""
@@ -195,7 +210,132 @@ def _load(bench: str, rid: str) -> tuple[dict, Path]:
     return json.loads(path.read_text()), path
 
 
+def _hysteresis_dir(bench: str, rid: str) -> Path:
+    return REPO_ROOT / "sim" / bench / "hysteresis" / rid
+
+
+def _is_hysteresis(bench: str, rid: str) -> bool:
+    return (_hysteresis_dir(bench, rid) / "result.json").is_file()
+
+
+def build_hysteresis_envelope(bench: str, rid: str) -> dict:
+    """Wrap a directory-style hysteresis record (`result.json` with per-corner
+    bracket edges) into the envelope shape.
+
+    Each corner contributes two measurements on the conservative edges the
+    characterization rollup grades (`thermal_corner_edges`): the trip bracket's
+    lower edge as ``trip_temp_c`` and ``hysteresis_c.min`` as ``hysteresis_c``.
+    Pass/fail uses ``thermal_corner_fails`` from the same module, so the two
+    cannot disagree. Bounds come from ``sim/<bench>/experiment.json`` and must
+    equal the ratified ``RATIFIED[bench]`` bounds.
+    """
+    rec_dir = _hysteresis_dir(bench, rid)
+    rec_path = rec_dir / "result.json"
+    rec = json.loads(rec_path.read_text())
+    tags = RATIFIED[bench]
+    exp = {m["name"]: m for m in json.loads((REPO_ROOT / "sim" / bench / "experiment.json").read_text())["measurements"]}
+    for name, (row, bound) in tags.items():
+        if _limits(exp[name]) != bound:
+            raise WrapError(
+                f"{bench} {rid}: experiment.json carries limits {_limits(exp[name])} for {name} "
+                f"but the ratified '{row}' row requires {bound}"
+            )
+    trip_min = tags["trip_temp_c"][1]["min"]
+    hyst_min = tags["hysteresis_c"][1]["min"]
+    snap = rec_dir / "netlist.spice"
+
+    corners, checked = [], []
+    for cid, c in rec["corners"].items():
+        process, supply = cid.split("_")
+        supply_v = float(supply.rstrip("V"))
+        trip_lo, h_min = _report.thermal_corner_edges(c)
+        ms = []
+        for name, value in (("trip_temp_c", trip_lo), ("hysteresis_c", h_min)):
+            lim = tags[name][1]
+            ms.append({
+                "name": name, "value": value, "unit": "C", "limits": lim,
+                "status": "pass" if _margin(value, lim) >= 0 else "fail",
+                "margin": _margin(value, lim),
+            })
+            checked.append(f"{bench}:{cid}:{name}")
+        corners.append({
+            "corner_id": cid, "process": process, "supply_v": {"vvin": supply_v},
+            "temperature_c": None,
+            "status": "fail" if _report.thermal_corner_fails(c, trip_min, hyst_min) else "pass",
+            "measurements": ms, "diagnostics": [],
+        })
+    rollup = []
+    for name in tags:
+        pts = [(c["corner_id"], m) for c in corners for m in c["measurements"] if m["name"] == name]
+        wc_id, wc = min(pts, key=lambda p: p[1]["margin"])
+        rollup.append({
+            "name": name, "unit": "C", "limits": wc["limits"],
+            "status": "fail" if any(m["status"] == "fail" for _, m in pts) else "pass",
+            "worst_case": {"corner_id": wc_id, "value": wc["value"], "margin": wc["margin"]},
+            "spec_row": tags[name][0],
+        })
+    n_fail = sum(1 for c in corners if c["status"] == "fail")
+    n_pass = len(corners) - n_fail
+    complete = rec.get("complete") is True
+    skipped = [] if complete else [{"id": f"{bench}:hysteresis", "reason": "record is not complete"}]
+    status = "fail" if n_fail else ("pass" if complete else "pass_partial")
+    return {
+        "schema_version": 1,
+        "netlist": snap.relative_to(REPO_ROOT).as_posix(),
+        "status": status,
+        "corner_count": len(corners),
+        "passed": n_pass,
+        "failed": n_fail,
+        "errored": 0,
+        "wrapper": WRAPPER + HYSTERESIS_WRAPPER,
+        "source_record": {
+            "bench": bench,
+            "record_id": rid,
+            "path": rec_path.relative_to(REPO_ROOT).as_posix(),
+            "sha256": _sha(rec_path),
+            "overall_pass": status == "pass",
+            "matrix_is_subset": False,
+        },
+        "environment": {
+            "engine": "ngspice",
+            "engine_version": rec["tools"].get("ngspice"),
+            "pdk": rec["pdk"].get("pinned_commit"),
+            "platform": rec["tools"].get("platform"),
+            "remote": {"backend": rec.get("backend"), "jobs": len(rec.get("jobs") or [])},
+        },
+        "provenance": {
+            "input": {
+                "path": snap.relative_to(REPO_ROOT).as_posix(),
+                "role": "netlist",
+                "content_hash": _sha(snap),
+            },
+        },
+        "metrics": {
+            "sim__corner__count": len(corners),
+            "sim__corner__passed_count": n_pass,
+            "sim__corner__failed_count": n_fail,
+            "sim__corner__errored_count": 0,
+        },
+        "coverage": {
+            "schema_version": 1,
+            "known": True,
+            "checked": sorted(checked),
+            "skipped": skipped,
+            "inapplicable": [],
+            "unknown": [],
+            "nothing_checked": False,
+            "nothing_checked_reasons": [],
+            "measurements_declared": len(rollup),
+            "measurements_with_limits": len(rollup),
+        },
+        "measurements": rollup,
+        "corners": corners,
+    }
+
+
 def build_envelope(bench: str, rid: str) -> dict:
+    if _is_hysteresis(bench, rid):
+        return build_hysteresis_envelope(bench, rid)
     rec, rec_path = _load(bench, rid)
     tags = RATIFIED[bench]
     snap = REPO_ROOT / rec["links"]["netlist_snapshot"]

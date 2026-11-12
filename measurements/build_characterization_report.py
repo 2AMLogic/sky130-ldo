@@ -1164,6 +1164,22 @@ THERMAL_ROW = "Thermal"
 THERMAL_HYSTERESIS_RECORD = "20261105-202028-97cd9a9e-qual-15corner"
 
 
+def thermal_corner_edges(corner: dict) -> tuple[float, float]:
+    """(trip lower bracket edge, hysteresis `min`) of one hysteresis-record corner.
+
+    The conservative edges the Thermal row is graded on: bisection tolerance can
+    only cost margin, never add it. Shared with `signoff/make_item5_envelope.py`
+    so the rollup and the item-5 envelope cannot grade a corner differently.
+    """
+    return corner["t_trip_rising_c"]["bracket"][0], corner["hysteresis_c"]["min"]
+
+
+def thermal_corner_fails(corner: dict, trip_min: float, hyst_min: float) -> bool:
+    """True if the corner's conservative edges miss the `experiment.json` bounds."""
+    trip_lo, h_min = thermal_corner_edges(corner)
+    return trip_lo < trip_min or h_min < hyst_min
+
+
 def thermal_hysteresis_row(row: dict) -> tuple[str, str]:
     """(table_line, detail_line) for the Thermal row, graded from
     `sim/thermal/hysteresis/<THERMAL_HYSTERESIS_RECORD>/result.json`.
@@ -1203,7 +1219,7 @@ def thermal_hysteresis_row(row: dict) -> tuple[str, str]:
         h_min = c["hysteresis_c"]["min"]
         min_hyst = h_min if min_hyst is None else min(min_hyst, h_min)
         min_trip = trip_lo if min_trip is None else min(min_trip, trip_lo)
-        if trip_lo < trip_min or h_min < hyst_min:
+        if thermal_corner_fails(c, trip_min, hyst_min):
             failing.append(cid)
         if cap is not None and cid.startswith("ff_") and trip_hi >= cap:
             at_cap.append(cid)
