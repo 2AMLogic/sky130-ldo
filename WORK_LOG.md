@@ -4,6 +4,7 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 
 ### 2026-11-12
 
+- **PR #542**: sim(thermal): complete 15-corner staircase with ff bound lowered to 180 C
 - **PR #539**: Bump Repo Skills 0.25.10 -> 0.26.1
 
 ### 2026-11-10

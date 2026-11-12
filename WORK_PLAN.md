@@ -25,6 +25,7 @@ _None._
 
 Human-approved issues ready for implementation (`loom:issue`).
 
+- **#231**: Thermal hysteresis: qualify the integrated comparator across PVT and refresh downstream evidence
 - **#301**: spec: decide whether DR-008 through DR-012 ratified on merge
 - **#416**: Re-run folded-resistor MC at n>=1000 to firm up M2 sigma-ratio gate
 
@@ -32,7 +33,7 @@ Human-approved issues ready for implementation (`loom:issue`).
 
 Issues currently being built (`loom:building`).
 
-_None._
+- **#541**: sim(thermal): cold-start, EN-reenable and disturbance-amplitude runs at 15 corners (not on batch route)
 
 ## PRs Awaiting Review
 
@@ -52,6 +53,7 @@ Issues carrying `loom:curated`.
 
 - **#114**: Gap to T1: 6 of 12 ratified rows FAIL — replacement tracker (#58 closed on child-completion, not on verdict) *(curated)*
 - **#131**: Thermal shutdown: track regenerative auto-restart hysteresis design, integration, and qualification *(curated)*
+- **#231**: Thermal hysteresis: qualify the integrated comparator across PVT and refresh downstream evidence *(curated)*
 - **#267**: layout: fix locally-routed official-DRC families (via.1a_b, m2.5, via2.5, nwell.9) found by #260 *(curated)*
 - **#301**: spec: decide whether DR-008 through DR-012 ratified on merge *(curated)*
 - **#314**: PSRR: decide and evidence the binding output-capacitor/ESR condition *(curated)*
@@ -59,6 +61,7 @@ Issues carrying `loom:curated`.
 - **#416**: Re-run folded-resistor MC at n>=1000 to firm up M2 sigma-ratio gate *(curated)*
 - **#461**: T1 item 5 area: compact routed ldo_core under 0.1 mm² with capacitors drawn, re-mint records (part of #458) *(curated)*
 - **#503**: measurements: characterization generator cannot see artifact-store-only sim records (iq 20261105-052332-05df7a01) *(curated)*
+- **#541**: sim(thermal): cold-start, EN-reenable and disturbance-amplitude runs at 15 corners (not on batch route) *(curated)*
 
 ## Proposed (Architect / Hermit)
 
@@ -75,11 +78,11 @@ _None._
 | Operator merge-risk holds | 0 |
 | Very important | 1 |
 | Important | 1 |
-| Ready (`loom:issue`) | 2 |
-| In Progress (`loom:building`) | 0 |
+| Ready (`loom:issue`) | 3 |
+| In Progress (`loom:building`) | 1 |
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 0 |
-| Curated | 9 |
+| Curated | 11 |
 | Architect / Hermit proposals | 0 |
 | Active epics | 1 |
 <!-- guide:plan-body:end -->
