@@ -1,0 +1,136 @@
+{
+  "record_id": "20261112-083033-8b03ff5f-batch-dependent-smoke",
+  "issue": 541,
+  "backend": "batch",
+  "corners": {
+    "tt_3.30V": {
+      "t_reset_falling_c": {
+        "bracket": [
+          159.0625,
+          159.375
+        ],
+        "midpoint": 159.21875
+      },
+      "t_trip_rising_c": {
+        "bracket": [
+          172.1875,
+          172.5
+        ],
+        "midpoint": 172.34375
+      },
+      "hysteresis_c": {
+        "midpoint": 13.125,
+        "min": 12.8125,
+        "max": 13.4375
+      },
+      "dependent_points": {
+        "planned": 22,
+        "missing": []
+      },
+      "cold_start_by_temp": {
+        "151": false,
+        "158": false,
+        "161": true,
+        "166": true,
+        "170": true,
+        "173": true,
+        "180": true
+      },
+      "en_reenable_by_temp": {
+        "151": {
+          "tripped_before_dip": false,
+          "ts_cmp_while_en_low_v": 3.29998,
+          "tripped_after_reenable": false
+        },
+        "158": {
+          "tripped_before_dip": false,
+          "ts_cmp_while_en_low_v": 3.299968,
+          "tripped_after_reenable": false
+        },
+        "161": {
+          "tripped_before_dip": true,
+          "ts_cmp_while_en_low_v": 3.29996,
+          "tripped_after_reenable": true
+        },
+        "166": {
+          "tripped_before_dip": true,
+          "ts_cmp_while_en_low_v": 3.299945,
+          "tripped_after_reenable": true
+        },
+        "170": {
+          "tripped_before_dip": true,
+          "ts_cmp_while_en_low_v": 3.299927,
+          "tripped_after_reenable": true
+        },
+        "173": {
+          "tripped_before_dip": true,
+          "ts_cmp_while_en_low_v": 3.299912,
+          "tripped_after_reenable": true
+        },
+        "180": {
+          "tripped_before_dip": true,
+          "ts_cmp_while_en_low_v": 3.299866,
+          "tripped_after_reenable": true
+        }
+      },
+      "amplitude_robustness": {
+        "hot_ix+0.25uA@159.375C": true,
+        "hot_ix+0.25uA@159.062C": false,
+        "hot_ix+1uA@159.375C": true,
+        "hot_ix+1uA@159.062C": false,
+        "cold_exc_ix-0.25uA@172.188C": true,
+        "cold_exc_ix-0.25uA@172.5C": false,
+        "cold_exc_ix-1uA@172.188C": true,
+        "cold_exc_ix-1uA@172.5C": false
+      }
+    }
+  },
+  "bisection_tol_c": 0.3125,
+  "n_points": 46,
+  "jobs": [
+    "klt-sim-232543977b0d",
+    "klt-sim-2afb70f6b2c1",
+    "klt-sim-2c7ad24a3a47",
+    "klt-sim-2da86d3b365b",
+    "klt-sim-2de4bf91730c",
+    "klt-sim-32baeefd48ef",
+    "klt-sim-5ad06214cc54",
+    "klt-sim-60c6e925d413",
+    "klt-sim-763b92aab492",
+    "klt-sim-782221f48493",
+    "klt-sim-8f1e370f8d3b",
+    "klt-sim-93441fb93fe5",
+    "klt-sim-a553f6dfcae3",
+    "klt-sim-b04cd5c57c4a",
+    "klt-sim-c47bbebc2f58",
+    "klt-sim-cfb8c0ca29df",
+    "klt-sim-db298cdad49e",
+    "klt-sim-f2cf910a5093"
+  ],
+  "complete": true,
+  "note": "development evidence; staircase (hot/cold_exc) plus dependent cold-start, EN re-enable (DR-005) and amplitude-robustness rounds planned from each corner's recorded bracket; states are recorded, no threshold is applied or relaxed",
+  "tools": {
+    "ngspice": "ngspice-46 : Circuit level simulation program",
+    "xschem": "XSCHEM V3.4.7",
+    "platform": "Linux 7.0.0-1014-aws x86_64",
+    "python": "3.12.3",
+    "declared": {
+      "ngspice": "42",
+      "xschem": "3.4.4"
+    },
+    "on_baseline": false
+  },
+  "pdk": {
+    "variant": "sky130A",
+    "installed_commit": "c6d73a35f524070e85faff4a6a9eef49553ebc2b",
+    "pinned_commit": "c6d73a35f524070e85faff4a6a9eef49553ebc2b",
+    "lib": "/home/ubuntu/.volare/sky130A/libs.tech/combined/sky130.lib.spice"
+  },
+  "repo": {
+    "sha": "8b03ff5f",
+    "branch": "feature/issue-541",
+    "dirty": true
+  },
+  "command": "python3 sim/thermal/run_hysteresis.py --corners tt:3.30 --tag batch-dependent-smoke --capacity-wait-s 600",
+  "timestamp": "2026-11-12T08:44:29+00:00"
+}

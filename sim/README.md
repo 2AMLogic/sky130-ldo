@@ -1221,9 +1221,18 @@ PVT qualification: 5 process x 3 supply corners, `hot` (T_reset) and `cold_exc`
   plus the request's `capacity_wait_s`) is recorded and the run exits 3.
   `--backend local` is accepted for exactly one corner (`--corners tt:3.30`).
   A solver diagnostic (#171) or a runner-version mismatch fails the point.
-- **Not covered**: the cold-start, EN-reenable and disturbance-amplitude runs of
-  the local flow are not part of the batch route. `klt netlist` replaces raw
-  `xschem` for netlisting.
+- **Dependent round (#541)**: once a corner's T_reset and T_trip brackets are
+  recorded, one more `--batch-set` carries its cold-start (`cold`), EN re-enable
+  (`en`, `en_dip=0`, DR-005) and amplitude (`hot_ix+0.25uA`, ... `cold_exc_ix-1uA`)
+  points, chosen by the local flow's formula (`dependent_points`) and recorded
+  like the staircase points (the scenario label is part of the key). States are
+  recorded; no threshold is applied. `klt netlist` replaces raw `xschem`.
 - **Smoke**: `hysteresis/20261105-191708-3609d978-batch-smoke` (tt / 3.30 V) gives
   T_reset 159.21875 C and T_trip 172.34375 C, brackets identical to the local
   record `20261008-190150-0275a8b-dev1`.
+- **Smoke (#541)**: `hysteresis/20261112-083033-8b03ff5f-batch-dependent-smoke`
+  (tt / 3.30 V, 22 dependent points, 18 fleet jobs under `result.json` `jobs`):
+  same brackets, and every cold-start, EN re-enable and amplitude outcome equals
+  the local record `20261008-190150-0275a8b-dev1`; EN-low comparator voltage
+  differs by <= 0.1 mV (interpolated `find ... at` vs nearest sample). No
+  disagreement to report.
