@@ -132,6 +132,25 @@ class TestCornerBrackets(unittest.TestCase):
         pts = {("tt", 3.3, "hot_ix+1uA", T): {"held": True} for T in bts.GRID}
         self.assertIsNone(rh.corner_brackets(pts, "tt", 3.3, 0.3125))
 
+    def test_ff_uses_lowered_grid_top(self):
+        # ff stops at 180 C (issue #231): a staircase that settles on the lowered grid
+        # must count as bracketed, not wait for the unreachable 190 C point.
+        pts = {}
+        for T in bts.grid_for("ff"):
+            pts[("ff", 3.3, "hot", T)] = {"held": T >= 160}
+            pts[("ff", 3.3, "cold_exc", T)] = {"held": T <= 170}
+        self.assertNotIn(190, bts.grid_for("ff"))
+        self.assertEqual(rh.corner_brackets(pts, "ff", 3.3, 10.0), [[150, 160], [170, 180]])
+        # a non-ff process still needs the full 190 C grid
+        self.assertIsNone(rh.corner_brackets(
+            {("tt", 3.3, sc, T): v for (_, _, sc, T), v in pts.items()}, "tt", 3.3, 10.0))
+
+    def test_above_bound_only_for_lowered_process(self):
+        self.assertTrue(rh.above_bound("ff", 188, None))
+        self.assertFalse(rh.above_bound("ff", 180, None))
+        self.assertFalse(rh.above_bound("tt", 188, None))
+        self.assertFalse(rh.above_bound("ff", 188, {}))
+
 
 if __name__ == "__main__":
     unittest.main()
