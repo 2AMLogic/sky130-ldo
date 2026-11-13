@@ -2,6 +2,10 @@
 
 Chronological record of merged pull requests and closed issues. Maintained by the Loom Guide role.
 
+### 2026-11-13
+
+- **Issue #267** (closed): layout: fix locally-routed official-DRC families (via.1a_b, m2.5, via2.5, nwell.9) found by #260
+
 ### 2026-11-12
 
 - **PR #570**: test: share FakeSingleStepKlt across batch-adapter tests
