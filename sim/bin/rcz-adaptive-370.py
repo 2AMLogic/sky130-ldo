@@ -26,6 +26,9 @@ text-edited (the same variant-netlist approach as sim/bin/rcz-fleet-confirm.py):
 
 Grading never converts a missing crossing, a non-regulating point, a solver failure or an unrun case
 into a PASS.
+
+The netlist / request / submit core shared with the other batch-fleet campaign drivers lives in
+sim/bin/_fleet_campaign.py (issue #574); only this campaign's families and grading are here.
 """
 
 from __future__ import annotations
@@ -33,17 +36,17 @@ from __future__ import annotations
 import argparse
 import importlib.util
 import json
-import os
 import shutil
 import sys
-from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
+import _fleet_campaign as fc  # noqa: E402
 
 
 def _load(name: str, fname: str):
+    """Load a hyphen-named sibling script as a module (it cannot be `import`ed)."""
     spec = importlib.util.spec_from_file_location(name, HERE / fname)
     mod = importlib.util.module_from_spec(spec)
     sys.modules[name] = mod
@@ -51,7 +54,7 @@ def _load(name: str, fname: str):
     return mod
 
 
-brp = _load("bias_retopo_pvt", "bias-retopo-pvt.py")
+# Stage 1's own campaign data (`LEGS`, `edit_rcz`, `grade`), not generic helpers.
 rc = _load("rcz_fleet_confirm", "rcz-fleet-confirm.py")
 
 VSUP = 3.30
@@ -145,45 +148,20 @@ def probe_lines(design: str) -> list[str]:
     return out
 
 
-def insert_in_subckt(body: str, line: str) -> str:
-    lines = body.splitlines()
-    i = max(k for k, ln in enumerate(lines) if ln.strip().lower().startswith(".ends"))
-    lines.insert(i, line)
-    return "\n".join(lines) + "\n"
-
-
 def load_body(root: Path, pdk_root: str) -> str:
-    body = brp.netlist("tb_loop_gain", "record", root, pdk_root)
-    (root / "tb_loop_gain.raw.spice").unlink()
-    return body
+    return fc.netlist("tb_loop_gain", root, pdk_root)
 
 
 def with_load(body: str, new: str) -> str:
-    return brp.sub_line(body, "RLOAD", new)
-
-
-def meas_transfer() -> list[dict]:
-    return [
-        {
-            "name": n,
-            "unit": u,
-            "transfer": {"num": "v(xldo.fb)", "den": "v(xldo.lg_den)", "metric": m},
-        }
-        for n, m, u in (
-            ("pm", "phase_margin_deg", "deg"),
-            ("gm", "gain_margin_db", "dB"),
-            ("fc", "unity_crossing_hz", "Hz"),
-            ("dc", "low_frequency_magnitude", ""),
-        )
-    ]
+    return fc.sub_line(body, "RLOAD", new)
 
 
 # ---------------------------------------------------------------- request builders
 def req_ac(body, design, leg, corners, out: Path, pdk, prefix="ac"):
     _cl, cv, esr, _ll, rl, label = leg
-    b = insert_in_subckt(variant(body, design), "ELG_DEN LG_DEN 0 VREF FB 1")
-    b = brp.sub_line(b, "COUT", f"COUT VOUT VESR {cv} m=1")
-    b = brp.sub_line(b, "HESR", f"HESR VESRS 0 VESRSENSE {esr:g}")
+    b = fc.insert_loop_gain_probe(variant(body, design))
+    b = fc.sub_line(b, "COUT", f"COUT VOUT VESR {cv} m=1")
+    b = fc.sub_line(b, "HESR", f"HESR VESRS 0 VESRSENSE {esr:g}")
     b = with_load(b, f"RLOAD VOUT 0 {rl} m=1")
     return _write(
         out,
@@ -193,7 +171,7 @@ def req_ac(body, design, leg, corners, out: Path, pdk, prefix="ac"):
         corners,
         {
             "analysis": {"kind": "ac", "args": "dec 30 1e-2 1e9"},
-            "measurements": meas_transfer(),
+            "measurements": fc.LOOP_TRANSFER_MEAS,
         },
     )
 
@@ -216,8 +194,8 @@ def op_exprs(design: str) -> list[tuple[str, str, str]]:
 
 def req_op(body, design, out: Path, pdk):
     b = variant(body, design) + "\n".join(probe_lines(design)) + "\n"
-    b = brp.sub_line(b, "COUT", "COUT VOUT VESR 4.7u m=1")
-    b = brp.sub_line(b, "HESR", "HESR VESRS 0 VESRSENSE 0.010")
+    b = fc.sub_line(b, "COUT", "COUT VOUT VESR 4.7u m=1")
+    b = fc.sub_line(b, "HESR", "HESR VESRS 0 VESRSENSE 0.010")
     b = with_load(b, "ILOAD VOUT 0 DC 0")
     steps = [
         {
@@ -249,7 +227,7 @@ def req_tran(body, design, case, out: Path, pdk):
     lo, hi, rising = TRAN_CASES[case]
     a, b2 = (lo, hi) if rising else (hi, lo)
     b = variant(body, design)
-    b = brp.sub_line(b, "HESR", "HESR VESRS 0 VESRSENSE 0.010")
+    b = fc.sub_line(b, "HESR", "HESR VESRS 0 VESRSENSE 0.010")
     b = with_load(b, f"ILOAD VOUT 0 PULSE({a:g} {b2:g} {T_STEP:g} 1u 1u 1 2)")
     steps = [
         {
@@ -275,10 +253,8 @@ def _write(
     out: Path, key: str, body: str, pdk, corners, shape: dict, cout_literal=False
 ):
     net = out / "requests" / f"{key}.spice"
-    net.write_text(brp.deck(body, VSUP))
-    req = brp.base_request(net.resolve(), pdk, corners, {"kind": "op", "args": ""}, [])
-    req.pop("analysis"), req.pop("measurements")
-    req.update(shape)
+    net.write_text(fc.deck(body, VSUP))
+    req = fc.base_request(net.resolve(), pdk, corners, shape=shape)
     rp = out / "requests" / f"{key}.json"
     rp.write_text(json.dumps(req, indent=2) + "\n")
     return key, rp
@@ -341,18 +317,14 @@ def main() -> int:
         "--dry-run", action="store_true", help="write requests only; submit nothing"
     )
     args = ap.parse_args()
-    if args.workers > 2:
-        sys.exit("host rule: no more than 2 workers")
     fam = set(args.only.split(","))
     out = Path(args.outdir).resolve()
-    prior = {"rows": [], "errors": []}
-    if out.exists():
-        if not args.resume:
-            sys.exit(f"refusing to overwrite existing record {out}")
-        prior = json.loads((out / "summary.json").read_text())
-    pdk = json.loads((brp.SIM / "pdk.json").read_text())
-    pdk_root = os.environ.get("PDK_ROOT") or str(Path.home() / ".volare")
-    env = {**os.environ, "PDK_ROOT": pdk_root}
+    pdk, pdk_root, env = fc.preamble(args.workers, out, allow_existing=args.resume)
+    prior = (
+        json.loads((out / "summary.json").read_text())
+        if args.resume and out.exists()
+        else {"rows": [], "errors": []}
+    )
     (out / "requests").mkdir(parents=True, exist_ok=args.resume)
     body = load_body(out / "requests", pdk_root)
 
@@ -396,40 +368,19 @@ def main() -> int:
         return 0
 
     rows, errors = list(prior["rows"]), []
-    with ThreadPoolExecutor(max_workers=args.workers) as ex:
-        futs = [(k, m, ex.submit(brp.submit, k, rp, out, env)) for k, m, rp in jobs]
-        for k, m, f in futs:
-            r = f.result()
-            if "error" in r:
-                errors.append({"key": k, "error": r["error"]})
-                print(
-                    f"{k}: SUBMIT FAILED (no local fallback): {r['error'][:300]}",
-                    flush=True,
-                )
-                continue
-            resp = r["resp"]
-            job = resp.get("environment", {}).get("remote", {}).get("job_id")
-            for c in resp["corners"]:
-                rows.append(
-                    {
-                        **m,
-                        "key": k,
-                        "process": c["process"],
-                        "temp_c": c["temperature_c"],
-                        "status": c["status"],
-                        "job_id": job,
-                        "measurements": {
-                            x["name"]: x.get("value") for x in c.get("measurements", [])
-                        },
-                    }
-                )
-            print(
-                f"{k}: {resp['status']} ({resp['corner_count']} corners) job {job}",
-                flush=True,
+    for k, m, resp, job in fc.submit_all(jobs, out, env, args.workers, errors):
+        for c in resp["corners"]:
+            rows.append(
+                {
+                    **fc.corner_base(k, m, c, job),
+                    "measurements": {
+                        x["name"]: x.get("value") for x in c.get("measurements", [])
+                    },
+                }
             )
-            (out / "summary.json").write_text(
-                json.dumps({"rows": rows, "errors": errors}, indent=1) + "\n"
-            )
+        (out / "summary.json").write_text(  # partial progress survives an interrupt
+            json.dumps({"rows": rows, "errors": errors}, indent=1) + "\n"
+        )
     (out / "summary.json").write_text(
         json.dumps({"rows": rows, "errors": errors}, indent=1) + "\n"
     )

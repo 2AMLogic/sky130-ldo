@@ -440,6 +440,26 @@ writes `ngspice.log`), `git_provenance()` and `load_results()`. Existing
 diagnostics run-id directories are append-only evidence and keep their own
 copies unedited; the helper is forward-only. Tests: `sim/tests/test_probe_common.py`.
 
+### Writing a new batch-fleet campaign driver (issue #574)
+
+A campaign driver — one that netlists a testbench once, text-edits a per-case
+variant of that body, writes one `klt sim` request per case and sends the lot to
+the batch fleet — should import `sim/bin/_fleet_campaign.py` rather than copy an
+earlier driver. It holds the whole shared core: `preamble()` (host worker cap,
+refuse-to-overwrite, `pdk.json` + `PDK_ROOT`), `netlist()` (optionally with a
+candidate patch applied for netlisting only), `sub_line()`, `insert_in_subckt()` /
+`insert_loop_gain_probe()` + `LOOP_GAIN_PROBE` / `LOOP_TRANSFER_MEAS`, `deck()`,
+`base_request()`, `submit()` and `submit_all()` (the executor, the status print and
+the `SUBMIT FAILED (no local fallback)` branch — host rule: a refused submit is
+reported, never re-run as a local grid).
+
+Row shaping stays in the driver on purpose: `submit_all()` yields
+`(key, meta, response, job_id)` and `corner_base()` supplies only the fields every
+record shares, so each campaign keeps emitting the `summary.json` shape its own
+append-only record family already uses. `sim/bin/bias-retopo-pvt.py`,
+`sim/bin/rcz-fleet-confirm.py` and `sim/bin/rcz-adaptive-370.py` are the three
+drivers on it. Tests: `sim/tests/test_fleet_campaign_574.py`.
+
 ### Runner options
 
 | Flag | Effect |

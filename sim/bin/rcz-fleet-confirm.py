@@ -5,8 +5,9 @@
 re-expresses the same 10 legs, for the baseline and the R_CZ L 52 -> 832 um (x16) netlist
 edit, as plain `klt sim` AC requests and sends each to the batch fleet; there is NO local
 fallback (a refused submit is reported and exits non-zero). Reuses the #467 translation
-(sim/bin/bias-retopo-pvt.py): LG = v(fb)/(1-v(fb)) via ONE linear VCVS, PM/GM/fc/DC gain
-as klt `transfer` metrics, per-leg COUT / HESR / RLOAD line rewrites.
+(now in the shared sim/bin/_fleet_campaign.py core, issue #574): LG = v(fb)/(1-v(fb)) via
+ONE linear VCVS, PM/GM/fc/DC gain as klt `transfer` metrics, per-leg COUT / HESR / RLOAD
+line rewrites.
 
 Writes a NEW append-only dir (requests/, responses/, summary.json, comparison.md); the
 design schematic and every earlier record are untouched. Grading never turns a missing
@@ -18,22 +19,14 @@ crossing or a failed/errored corner into a PASS.
 from __future__ import annotations
 
 import argparse
-import importlib.util
 import json
-import os
 import sys
-from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parent.parent
 sys.path.insert(0, str(HERE))
-_spec = importlib.util.spec_from_file_location(
-    "bias_retopo_pvt", HERE / "bias-retopo-pvt.py"
-)
-brp = importlib.util.module_from_spec(_spec)
-sys.modules["bias_retopo_pvt"] = brp
-_spec.loader.exec_module(brp)
+import _fleet_campaign as fc  # noqa: E402
 
 CORNER = ("tt", 27.0)
 VSUP = 3.30
@@ -88,51 +81,28 @@ def main() -> int:
     ap.add_argument("--outdir", required=True)
     ap.add_argument("--workers", type=int, default=2)
     args = ap.parse_args()
-    if args.workers > 2:
-        sys.exit("host rule: no more than 2 workers")
     out = Path(args.outdir).resolve()
-    if out.exists():
-        sys.exit(f"refusing to overwrite existing record {out}")
-    pdk = json.loads((brp.SIM / "pdk.json").read_text())
-    pdk_root = os.environ.get("PDK_ROOT") or str(Path.home() / ".volare")
-    env = {**os.environ, "PDK_ROOT": pdk_root}
+    pdk, pdk_root, env = fc.preamble(args.workers, out)
     (out / "requests").mkdir(parents=True)
 
-    body = brp.netlist("tb_loop_gain", "record", out / "requests", pdk_root)
-    (out / "requests" / "tb_loop_gain.raw.spice").unlink()
-    lines = body.splitlines()
-    i = max(k for k, ln in enumerate(lines) if ln.strip().lower().startswith(".ends"))
-    lines.insert(
-        i, "ELG_DEN LG_DEN 0 VREF FB 1"
-    )  # instrumentation only: v(lg_den) = 1 - v(fb)
-    body = "\n".join(lines) + "\n"
-    meas = [
-        {
-            "name": n,
-            "unit": u,
-            "transfer": {"num": "v(xldo.fb)", "den": "v(xldo.lg_den)", "metric": m},
-        }
-        for n, m, u in (
-            ("pm", "phase_margin_deg", "deg"),
-            ("gm", "gain_margin_db", "dB"),
-            ("fc", "unity_crossing_hz", "Hz"),
-            ("dc", "low_frequency_magnitude", ""),
-        )
-    ]
+    body = fc.insert_loop_gain_probe(
+        fc.netlist("tb_loop_gain", out / "requests", pdk_root)
+    )
+    meas = fc.LOOP_TRANSFER_MEAS
     jobs = []
     for dn, scale in DESIGNS.items():
         for cl, cv, esr, ll, rl, label in LEGS:
             key = f"{dn}__{label.replace('/', '_')}"
             b = edit_rcz(body, scale) if scale != 1 else body
-            b = brp.sub_line(b, "COUT", f"COUT VOUT VESR {cv} m=1")
-            b = brp.sub_line(b, "HESR", f"HESR VESRS 0 VESRSENSE {esr:g}")
-            b = brp.sub_line(b, "RLOAD", f"RLOAD VOUT 0 {rl} m=1")
+            b = fc.sub_line(b, "COUT", f"COUT VOUT VESR {cv} m=1")
+            b = fc.sub_line(b, "HESR", f"HESR VESRS 0 VESRSENSE {esr:g}")
+            b = fc.sub_line(b, "RLOAD", f"RLOAD VOUT 0 {rl} m=1")
             net = out / "requests" / f"{key}.spice"
-            net.write_text(brp.deck(b, VSUP))
+            net.write_text(fc.deck(b, VSUP))
             rp = out / "requests" / f"{key}.json"
             rp.write_text(
                 json.dumps(
-                    brp.base_request(
+                    fc.base_request(
                         net.resolve(),
                         pdk,
                         [CORNER],
@@ -146,36 +116,10 @@ def main() -> int:
             jobs.append((key, {"design": dn, "leg": label}, rp))
 
     rows, errors = [], []
-    with ThreadPoolExecutor(max_workers=args.workers) as ex:
-        futs = [(k, m, ex.submit(brp.submit, k, rp, out, env)) for k, m, rp in jobs]
-        for k, m, f in futs:
-            r = f.result()
-            if "error" in r:
-                errors.append({"key": k, "error": r["error"]})
-                print(
-                    f"{k}: SUBMIT FAILED (no local fallback): {r['error'][:300]}",
-                    flush=True,
-                )
-                continue
-            resp = r["resp"]
-            job = resp.get("environment", {}).get("remote", {}).get("job_id")
-            for c in resp["corners"]:
-                vals = {x["name"]: x["value"] for x in c["measurements"]}
-                rows.append(
-                    {
-                        **m,
-                        "key": k,
-                        "process": c["process"],
-                        "temp_c": c["temperature_c"],
-                        "status": c["status"],
-                        "job_id": job,
-                        **vals,
-                    }
-                )
-            print(
-                f"{k}: {resp['status']} ({resp['corner_count']} corners) job {job}",
-                flush=True,
-            )
+    for k, m, resp, job in fc.submit_all(jobs, out, env, args.workers, errors):
+        for c in resp["corners"]:
+            vals = {x["name"]: x["value"] for x in c["measurements"]}
+            rows.append({**fc.corner_base(k, m, c, job), **vals})
     for row in rows:
         row["grade"] = grade(row)
     (out / "summary.json").write_text(
@@ -187,7 +131,7 @@ def main() -> int:
 
 
 def prior_points() -> dict:
-    base = brp.SIM / "loop-gain" / "diagnostics" / PRIOR_DIR / "runs"
+    base = fc.SIM / "loop-gain" / "diagnostics" / PRIOR_DIR / "runs"
     res = {}
     for dn, run in PRIOR.items():
         d = json.loads((base / run / "result.json").read_text())

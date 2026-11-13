@@ -25,6 +25,10 @@ Grading is local, from raw responses, against the unchanged spec bounds
 (PSRR > 50 dB @1 kHz, > 20 dB @100 kHz, strict; PM >= 45 deg, GM >= 10 dB).
 It writes a NEW append-only record dir `sim/bias-retopo/<record-id>/`.
 
+The netlist / request / submit core it shares with the other batch-fleet campaign
+drivers lives in `sim/bin/_fleet_campaign.py` (issue #574); only this campaign's
+grid, grading and record rendering are here.
+
 Usage:
     python3 sim/bin/bias-retopo-pvt.py psrr|loop [--record-id ID] [--design dr013|record]
                                        [--corners tt:27:3.30,...] [--workers 2]
@@ -34,25 +38,21 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
-import subprocess
 import sys
-from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent.parent
 SIM = REPO / "sim"
 sys.path.insert(0, str(SIM / "bin"))
-from _record_common import klt_binary, run_klt_sim
-from xschem_exprs import eval_xschem_exprs
+import _fleet_campaign as fc  # noqa: E402
 
 PATCH = (
     SIM / "bias-retopo" / "20261029-fullloop-467" / "candidate-R_BIAS.patch"
 )  # default; --patch overrides
 SCH = "design/ldo_3v3in_1v8out.sch"
 SUPPLIES = [2.97, 3.30, 3.63]
-PROCESS = ["tt", "ss", "ff", "sf", "fs"]
+PROCESS = fc.PROCESS
 TEMPS = [-40.0, 27.0, 125.0]
 PSRR_LOADS = {"1ma": "1.8k", "50ma": "36"}
 PSRR_MEAS = [("p1k", 1e3, 50.0), ("p100k", 1e5, 20.0)]
@@ -60,103 +60,6 @@ LOOP_COUT = {"c033": "0.33u", "c47": "4.7u"}
 LOOP_ESR = {"esr10m": 0.01, "esr500m": 0.5, "esr0": 0.0}
 LOOP_LOAD = {"50ma": "36", "1ma": "1.8k", "0ma": "1e12"}
 PM_MIN, GM_MIN = 45.0, 10.0
-
-
-def run(cmd, **kw):
-    return subprocess.run(cmd, capture_output=True, text=True, **kw)
-
-
-def netlist(tb: str, design: str, outdir: Path, pdk_root: str) -> str:
-    """Netlist the testbench (candidate patch applied only while netlisting)."""
-    patched = design == "dr013"
-    if patched:
-        p = run(["git", "-C", str(REPO), "apply", str(PATCH)])
-        if p.returncode:
-            sys.exit(f"cannot apply candidate patch: {p.stderr}")
-    try:
-        raw = outdir / f"{tb}.raw.spice"
-        p = run(
-            [
-                "klt",
-                "netlist",
-                "--allow-unevaluated-expr",
-                "--rcfile",
-                str(SIM / "xschemrc"),
-                "--pdk",
-                "sky130A",
-                "--pdk-root",
-                pdk_root,
-                "-o",
-                str(raw),
-                str(
-                    SIM
-                    / tb.replace("tb_", "").replace("_", "-")
-                    / "testbench"
-                    / f"{tb}.sch"
-                ),
-            ]
-        )
-        if p.returncode:
-            sys.exit(f"klt netlist failed: {p.stdout} {p.stderr}")
-    finally:
-        if patched:
-            run(["git", "-C", str(REPO), "apply", "-R", str(PATCH)])
-    text = raw.read_text().replace(str(REPO) + os.sep, "")
-    text, _ = eval_xschem_exprs(text)
-    if "expr(" in text:
-        sys.exit("unevaluated expr() left in netlist")
-    return (
-        "\n".join(ln for ln in text.splitlines() if ln.strip().lower() != ".end") + "\n"
-    )
-
-
-def sub_line(body: str, prefix: str, new: str) -> str:
-    out, n = [], 0
-    for ln in body.splitlines():
-        if ln.split(" ")[0].upper() == prefix:
-            ln, n = new, n + 1
-        out.append(ln)
-    if n != 1:
-        sys.exit(f"expected exactly one {prefix} line, found {n}")
-    return "\n".join(out) + "\n"
-
-
-def deck(body: str, vsup: float) -> str:
-    return f"* DR-013 candidate PVT bench (issue #467)\n.param vsup={vsup}\n.option wnflag=1\n{body}.end\n"
-
-
-def base_request(
-    net: Path, pdk: dict, corners: list[tuple[str, float]], analysis: dict, meas: list
-) -> dict:
-    procs = sorted({p for p, _ in corners}, key=PROCESS.index)
-    temps = sorted({t for _, t in corners})
-    return {
-        "netlist": str(net),
-        "engine": "ngspice",
-        "models": {"pdk": pdk["variant"], "lib": pdk["ngspice_lib"]},
-        "corners": {"process": procs, "temperature_c": temps},
-        "analysis": analysis,
-        "measurements": meas,
-        "options": {"timeout_s": 300, "keep_artifacts": True},
-        "batch": {"capacity_wait_s": 3 * 3600},
-    }
-
-
-def submit(key: str, req_path: Path, out: Path, env: dict) -> dict:
-    od = out / "responses" / key
-    od.mkdir(parents=True)
-    try:
-        resp, _meta = run_klt_sim(
-            req_path,
-            od,
-            "batch",
-            env["PDK_ROOT"],
-            klt_exe=klt_binary("submit batch grids"),
-            require_corners=False,
-        )
-    except RuntimeError as exc:
-        return {"key": key, "error": str(exc)[-1500:] or "no JSON from klt sim"}
-    return {"key": key, "resp": resp}
 
 
 def main() -> int:
@@ -179,14 +82,8 @@ def main() -> int:
     if args.patch:
         global PATCH
         PATCH = Path(args.patch).resolve()
-    if args.workers > 2:
-        sys.exit("host rule: no more than 2 workers")
     out = REPO / "sim" / "bias-retopo" / args.record_id
-    if out.exists():
-        sys.exit(f"refusing to overwrite existing record {out}")
-    pdk = json.loads((SIM / "pdk.json").read_text())
-    pdk_root = os.environ.get("PDK_ROOT") or str(Path.home() / ".volare")
-    env = {**os.environ, "PDK_ROOT": pdk_root}
+    pdk, pdk_root, env = fc.preamble(args.workers, out)
     (out / "requests").mkdir(parents=True)
 
     if args.corners:
@@ -200,17 +97,12 @@ def main() -> int:
     for p, t, v in pts:
         by_v.setdefault(v, []).append((p, t))
 
-    body = netlist(
+    body = fc.netlist(
         "tb_psrr_dc" if args.kind == "psrr" else "tb_loop_gain",
-        args.design,
         out / "requests",
         pdk_root,
+        patch=PATCH if args.design == "dr013" else None,
     )
-    (
-        out
-        / "requests"
-        / f"{'tb_psrr_dc' if args.kind == 'psrr' else 'tb_loop_gain'}.raw.spice"
-    ).unlink()
     jobs = []  # (key, meta, request path)
     if args.kind == "psrr":
         meas = [
@@ -222,12 +114,12 @@ def main() -> int:
                 key = f"psrr-{load}-v{v:.2f}"
                 net = out / "requests" / f"{key}.spice"
                 net.write_text(
-                    deck(sub_line(body, "RLOAD", f"RLOAD VOUT 0 {r} m=1"), v)
+                    fc.deck(fc.sub_line(body, "RLOAD", f"RLOAD VOUT 0 {r} m=1"), v)
                 )
                 rp = out / "requests" / f"{key}.json"
                 rp.write_text(
                     json.dumps(
-                        base_request(
+                        fc.base_request(
                             net.resolve(),
                             pdk,
                             cs,
@@ -240,39 +132,22 @@ def main() -> int:
                 )
                 jobs.append((key, {"vsup": v, "load": load}, rp))
     else:
-        lines = body.splitlines()
-        i = max(
-            k for k, ln in enumerate(lines) if ln.strip().lower().startswith(".ends")
-        )
-        lines.insert(
-            i, "ELG_DEN LG_DEN 0 VREF FB 1"
-        )  # instrumentation only: v(lg_den) = v(vref) - v(fb)
-        body = "\n".join(lines) + "\n"
-        T = lambda n, m, u="": {
-            "name": n,
-            "unit": u,
-            "transfer": {"num": "v(xldo.fb)", "den": "v(xldo.lg_den)", "metric": m},
-        }
-        meas = [
-            T("pm", "phase_margin_deg", "deg"),
-            T("gm", "gain_margin_db", "dB"),
-            T("fc", "unity_crossing_hz", "Hz"),
-            T("dc", "low_frequency_magnitude"),
-        ]
+        body = fc.insert_loop_gain_probe(body)
+        meas = fc.LOOP_TRANSFER_MEAS
         for v, cs in by_v.items():
             for cn, cv in LOOP_COUT.items():
                 for en, ev in LOOP_ESR.items():
                     for ln_, lr in LOOP_LOAD.items():
                         key = f"loop-{cn}-{en}-{ln_}-v{v:.2f}"
-                        b = sub_line(body, "COUT", f"COUT VOUT VESR {cv} m=1")
-                        b = sub_line(b, "HESR", f"HESR VESRS 0 VESRSENSE {ev:g}")
-                        b = sub_line(b, "RLOAD", f"RLOAD VOUT 0 {lr} m=1")
+                        b = fc.sub_line(body, "COUT", f"COUT VOUT VESR {cv} m=1")
+                        b = fc.sub_line(b, "HESR", f"HESR VESRS 0 VESRSENSE {ev:g}")
+                        b = fc.sub_line(b, "RLOAD", f"RLOAD VOUT 0 {lr} m=1")
                         net = out / "requests" / f"{key}.spice"
-                        net.write_text(deck(b, v))
+                        net.write_text(fc.deck(b, v))
                         rp = out / "requests" / f"{key}.json"
                         rp.write_text(
                             json.dumps(
-                                base_request(
+                                fc.base_request(
                                     net.resolve(),
                                     pdk,
                                     cs,
@@ -288,36 +163,10 @@ def main() -> int:
                         )
 
     rows, errors = [], []
-    with ThreadPoolExecutor(max_workers=args.workers) as ex:
-        futs = [(k, m, ex.submit(submit, k, rp, out, env)) for k, m, rp in jobs]
-        for k, m, f in futs:
-            r = f.result()
-            if "error" in r:
-                errors.append({"key": k, "error": r["error"]})
-                print(
-                    f"{k}: SUBMIT FAILED (no local fallback): {r['error'][:300]}",
-                    flush=True,
-                )
-                continue
-            resp = r["resp"]
-            job = resp.get("environment", {}).get("remote", {}).get("job_id")
-            for c in resp["corners"]:
-                vals = {x["name"]: x["value"] for x in c["measurements"]}
-                rows.append(
-                    {
-                        **m,
-                        "key": k,
-                        "process": c["process"],
-                        "temp_c": c["temperature_c"],
-                        "status": c["status"],
-                        "job_id": job,
-                        **vals,
-                    }
-                )
-            print(
-                f"{k}: {resp['status']} ({resp['corner_count']} corners) job {job}",
-                flush=True,
-            )
+    for k, m, resp, job in fc.submit_all(jobs, out, env, args.workers, errors):
+        for c in resp["corners"]:
+            vals = {x["name"]: x["value"] for x in c["measurements"]}
+            rows.append({**fc.corner_base(k, m, c, job), **vals})
 
     (out / "summary.json").write_text(
         json.dumps({"design": args.design, "rows": rows, "errors": errors}, indent=1)
