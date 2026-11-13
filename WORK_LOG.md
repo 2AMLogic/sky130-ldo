@@ -2,8 +2,14 @@
 
 Chronological record of merged pull requests and closed issues. Maintained by the Loom Guide role.
 
+## Archives
+
+- [2026-09](work_log/WORK_LOG_2026-09.md)
+
 ### 2026-11-13
 
+- **PR #575**: refactor(sim): extract the batch-fleet campaign core into _fleet_campaign.py
+- **Issue #574** (closed): Deduplicate the batch-fleet driver core copied across bias-retopo-pvt / rcz-fleet-confirm / rcz-adaptive-370
 - **Issue #267** (closed): layout: fix locally-routed official-DRC families (via.1a_b, m2.5, via2.5, nwell.9) found by #260
 
 ### 2026-11-12
@@ -478,7 +484,3 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 - **PR #108**: docs(design): document DR-007 outcome for #70, spin off #107
 - **PR #106**: docs(spec): add DR-007 recommending PSRR/Stability rows be superseded
 
-### 2026-09-10
-
-- **Issue #104** (closed): LDO: run the full 45-point PVT matrix for the line-regulation, load-regulation and Iq testbenches (issue #64's three benches, mirroring #74)
-- **PR #105**: sim: run the full 45-point PVT matrix for line-regulation, load-regulation and Iq (#104)

@@ -7,7 +7,8 @@ Current roadmap derived from GitHub lifecycle labels. Maintained by the Loom Gui
 
 Judge-approved PRs under a hold (`loom:blocked` or `loom:operator`) — only a human merge decision is missing.
 
-_None._
+- **#569**: docs: propose DR-014 binding capacitor condition for the PSRR row
+- **#573**: docs(spec): reconcile DR-009's ratifying-act wording with the #301 ruling
 
 ## Very Important
 
@@ -25,27 +26,28 @@ _None._
 
 Human-approved issues ready for implementation (`loom:issue`).
 
-- **#301**: spec: decide whether DR-008 through DR-012 ratified on merge
+_None._
 
 ## In Progress
 
 Issues currently being built (`loom:building`).
 
+- **#301**: spec: decide whether DR-008 through DR-012 ratified on merge
 - **#314**: PSRR: decide and evidence the binding output-capacitor/ESR condition
 - **#550**: Re-run signoff-graded benches made stale by the integrated comparator (split from #548)
-- **#553**: Layout evidence: regenerate and re-run DRC/LVS/ERC/area for the integrated comparator netlist (split from #548)
 
 ## PRs Awaiting Review
 
 PRs waiting on Judge (`loom:review-requested`).
 
-- **#561**: sim: re-run five batch benches on integrated comparator; refresh characterization and item 8 pin
+_None._
 
 ## Approved (Awaiting Merge)
 
 PRs that passed review and are queued for Champion auto-merge (`loom:pr`).
 
-_None._
+- **#569**: docs: propose DR-014 binding capacitor condition for the PSRR row
+- **#573**: docs(spec): reconcile DR-009's ratifying-act wording with the #301 ruling
 
 ## Proposed
 
@@ -53,7 +55,6 @@ Issues carrying `loom:curated`.
 
 - **#114**: Gap to T1: 6 of 12 ratified rows FAIL — replacement tracker (#58 closed on child-completion, not on verdict) *(curated)*
 - **#131**: Thermal shutdown: track regenerative auto-restart hysteresis design, integration, and qualification *(curated)*
-- **#267**: layout: fix locally-routed official-DRC families (via.1a_b, m2.5, via2.5, nwell.9) found by #260 *(curated)*
 - **#301**: spec: decide whether DR-008 through DR-012 ratified on merge *(curated)*
 - **#314**: PSRR: decide and evidence the binding output-capacitor/ESR condition *(curated)*
 - **#345**: Load transient: mint the COUT/ESR window-grid x 45 PVT campaign via --backend batch (blocked on fleet runner update) *(curated)*
@@ -61,11 +62,10 @@ Issues carrying `loom:curated`.
 - **#461**: T1 item 5 area: compact routed ldo_core under 0.1 mm² with capacitors drawn, re-mint records (part of #458) *(curated)*
 - **#503**: measurements: characterization generator cannot see artifact-store-only sim records (iq 20261105-052332-05df7a01) *(curated)*
 - **#550**: Re-run signoff-graded benches made stale by the integrated comparator (split from #548) *(curated)*
-- **#553**: Layout evidence: regenerate and re-run DRC/LVS/ERC/area for the integrated comparator netlist (split from #548) *(curated)*
 
 ## Proposed (Architect / Hermit)
 
-_None._
+- **#576**: Collapse layout/'s three klt pins into one: the main pin now descends from both the ERC and cap-rail pins *(hermit)*
 
 ## Epics
 
@@ -75,14 +75,14 @@ _None._
 
 | Bucket | Count |
 |------|-------|
-| Operator merge-risk holds | 0 |
+| Operator merge-risk holds | 2 |
 | Very important | 1 |
 | Important | 1 |
-| Ready (`loom:issue`) | 1 |
+| Ready (`loom:issue`) | 0 |
 | In Progress (`loom:building`) | 3 |
-| PRs awaiting review | 1 |
-| Approved PRs awaiting merge | 0 |
-| Curated | 11 |
-| Architect / Hermit proposals | 0 |
+| PRs awaiting review | 0 |
+| Approved PRs awaiting merge | 2 |
+| Curated | 9 |
+| Architect / Hermit proposals | 1 |
 | Active epics | 1 |
 <!-- guide:plan-body:end -->
