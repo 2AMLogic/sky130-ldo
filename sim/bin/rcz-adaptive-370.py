@@ -54,7 +54,7 @@ def _load(name: str, fname: str):
     return mod
 
 
-# Stage 1's own campaign data (`LEGS`, `edit_rcz`, `grade`), not generic helpers.
+# Stage 1's own campaign data (`LEGS`, `edit_rcz`), not generic helpers.
 rc = _load("rcz_fleet_confirm", "rcz-fleet-confirm.py")
 
 VSUP = 3.30
@@ -261,10 +261,6 @@ def _write(
 
 
 # ---------------------------------------------------------------- grading
-def grade_ac(row: dict) -> dict:
-    return rc.grade(row)
-
-
 def r_eff(design: str, v: dict) -> float | None:
     """Effective R_CZ (ohm) at a DC operating point from the instrumentation conductances."""
     try:
