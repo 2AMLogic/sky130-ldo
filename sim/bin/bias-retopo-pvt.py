@@ -50,7 +50,6 @@ import _fleet_campaign as fc  # noqa: E402
 PATCH = (
     SIM / "bias-retopo" / "20261029-fullloop-467" / "candidate-R_BIAS.patch"
 )  # default; --patch overrides
-SCH = "design/ldo_3v3in_1v8out.sch"
 SUPPLIES = [2.97, 3.30, 3.63]
 PROCESS = fc.PROCESS
 TEMPS = [-40.0, 27.0, 125.0]

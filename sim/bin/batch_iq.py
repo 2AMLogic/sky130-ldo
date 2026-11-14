@@ -32,7 +32,6 @@ from batch_load_regulation import (  # shared source state (identical stimulus)
 
 __all__ = ["parse_deck", "endpoint_source_lines", "endpoint_body", "SUPPLY_LITERAL"]
 
-EXPECTED_ENDPOINTS = 2
 # per endpoint, in order: (kind, probe)
 EXPECTED_CARDS = [("avg", "v(vout)"), ("avg", "i(vvin)")]
 
