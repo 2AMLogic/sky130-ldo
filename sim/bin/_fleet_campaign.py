@@ -1,26 +1,29 @@
 """Shared batch-fleet campaign core for the `sim/bin/` `klt sim --backend batch`
 drivers (issue #574).
 
-`bias-retopo-pvt.py` (#467 / DR-013), `rcz-fleet-confirm.py` (#370 stage 1) and
-`rcz-adaptive-370.py` (#370 stage 2) all express a campaign the same way: netlist
-one testbench schematic once, text-edit a per-case variant of that body, write one
-`klt sim` request per case, then submit every request to the batch fleet with NO
-local fallback (host rule: a refused submit is reported, never re-run as a local
-grid). That core was copy-pasted three times -- the two later drivers even loaded
-`bias-retopo-pvt.py` through an importlib-by-path dance just to reach it, and the
-copies had already drifted. This module is the single copy.
+`bias-retopo-pvt.py` (#467 / DR-013), `rcz-fleet-confirm.py` (#370 stage 1),
+`rcz-adaptive-370.py` (#370 stage 2) and `bias-retopo-grid.py` (#467 / DR-013, folded
+on by #586) all express a campaign the same way: netlist one testbench schematic once
+(or, for the bias grid, write a small hand-built deck), text-edit a per-case variant
+of that body, write one `klt sim` request per case, then submit every request to the
+batch fleet with NO local fallback (host rule: a refused submit is reported, never
+re-run as a local grid). That core was copy-pasted four times -- two of the drivers
+even loaded `bias-retopo-pvt.py` through an importlib-by-path dance just to reach it,
+and the copies had already drifted. This module is the single copy.
 
 Pure extraction, no behaviour change: every request each driver writes is
 byte-identical to the one it wrote before (verified with a request-only comparison
 of the whole `requests/` tree -- netlisting is a single local `klt netlist`, and
-nothing is submitted). The three drivers keep their own script paths, CLIs, grids,
+nothing is submitted; #586 pinned that for the bias grid against its committed
+`requests/` as a test). The drivers keep their own script paths, CLIs, grids,
 grading and record rendering.
 
-Row shaping deliberately stays with each caller: the three records' `summary.json`
-formats differ (two flatten measurements into the row, one nests them under
-`"measurements"`), and those records are append-only evidence, so a re-run must
-keep emitting the format its own record family already uses. `submit_all()` yields
-the raw response and `corner_base()` supplies only the fields all three share.
+Row shaping deliberately stays with each caller: the records' `summary.json`
+formats differ (three flatten measurements into the row, one nests them under
+`"measurements"`; the bias grid drops `key`, which its committed rows never
+carried), and those records are append-only evidence, so a re-run must keep
+emitting the format its own record family already uses. `submit_all()` yields the
+raw response and `corner_base()` supplies only the fields they all share.
 
 Standard library only, matching every other `sim/bin/` script's convention. Mirrors
 the `sim/bin/_record_common.py` shared-helper convention (issues #46 / #51 / #96 /
@@ -191,6 +194,7 @@ def base_request(
     analysis: dict | None = None,
     meas: list | None = None,
     shape: dict | None = None,
+    order: list[str] | None = None,
 ) -> dict:
     """One `klt sim` batch request over `corners` (a list of `(process, temp_C)`).
 
@@ -199,8 +203,19 @@ def base_request(
     it replaces that pair and is merged in after `options`/`batch`, which is
     exactly where the callers' former `req.pop(...)` + `req.update(shape)`
     workaround left it, so the emitted JSON is unchanged.
+
+    `order` is the process-section ordering the request tabulates, defaulting to
+    `PROCESS`. A campaign whose grid is a deliberate superset of `PROCESS` passes
+    its own ordering -- `bias-retopo-grid.py` adds the resistor-only skew corners
+    `ll`/`hh`, which `pdk.json`'s `process_corners` declares but the MOS-corner
+    campaigns do not run. The ordering must cover every process in `corners`;
+    a process missing from it is named rather than left to raise from `.index`.
     """
-    procs = sorted({p for p, _ in corners}, key=PROCESS.index)
+    order = PROCESS if order is None else order
+    unknown = sorted({p for p, _ in corners} - set(order))
+    if unknown:
+        sys.exit(f"process corner(s) {unknown} are not in the ordering {order}")
+    procs = sorted({p for p, _ in corners}, key=order.index)
     temps = sorted({t for _, t in corners})
     req: dict = {
         "netlist": str(net),
