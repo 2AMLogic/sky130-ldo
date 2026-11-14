@@ -647,6 +647,17 @@ own runner, `mc-run.py`) — and any edited smoke, window-grid or dropout shape
 is **refused before netlisting, submission or local ngspice**. The other
 regulation grids stay deferred on translating their measurement cards.
 
+**Where the code lives.** The backend itself is `sim/bin/_batch_backend.py`, an
+importable sibling module (issue #580); `corner-run.py` drives it and re-exports
+its names, so `corner_run.<name>` still resolves. A consumer that needs
+`prepare_batch_requests()`, `normalize_batch_response()`, `check_batch_supported()`,
+`batch_remote_info()` or `run_batch()` should `import _batch_backend` rather than
+reach `corner-run.py` through `_record_common.load_corner_run_module()`. The types
+and graders the runner and the backend share — `Experiment`, `Corner`,
+`Measurement`, `Pdk`, `HarnessError`, `grade_bounds()`, `window_legs()`,
+`leg_values()`, `detect_solver_diagnostic()` — live in `sim/bin/_corner_model.py`;
+neither of those two modules imports the other.
+
 - **Requests.** The supply is the netlist's `.param vsup`, not a klt corner
   axis (klt's supply override alters sources, which is not this harness's
   parameter). A full or CLI-overridden Cartesian matrix is therefore split

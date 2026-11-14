@@ -14,7 +14,7 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
-from test_corner_run import corner_run
+from test_corner_run import _batch_backend, corner_run
 
 CAP = (
     "batch-fleet-provision.sh launch failed (exit 1): 8 instance(s) already "
@@ -35,7 +35,7 @@ class CapacityRetry(unittest.TestCase):
         req.write_text("{}")
         run = mock.Mock(side_effect=results)
         sleep = mock.Mock()
-        with mock.patch.object(corner_run, "klt_binary", return_value="/fake/klt"), \
+        with mock.patch.object(_batch_backend, "klt_binary", return_value="/fake/klt"), \
                 mock.patch.object(corner_run.subprocess, "run", run), \
                 mock.patch.object(corner_run.time, "sleep", sleep):
             try:
