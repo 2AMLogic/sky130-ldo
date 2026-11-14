@@ -28,7 +28,6 @@ the record id it would mint already exists on disk.
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import os
 import platform
@@ -62,6 +61,7 @@ from _record_common import (
     reserve_record_id,
     render_record_footer,
     render_record_header,
+    spiceinit_sha256,
     write_new_text,
 )
 import _evidence_store
@@ -236,11 +236,6 @@ def tool_versions() -> dict:
 # --------------------------------------------------------------------------
 
 
-def spiceinit_digest(text: str) -> str:
-    """sha256 of a set of ngspice init settings."""
-    return hashlib.sha256(text.encode("utf-8")).hexdigest()
-
-
 def spiceinit_provenance() -> dict:
     """Identify the `.spiceinit` this run puts in front of ngspice.
 
@@ -253,7 +248,7 @@ def spiceinit_provenance() -> dict:
     """
     return {
         "spiceinit_file": str(SPICEINIT_FILE.relative_to(REPO_ROOT)),
-        "spiceinit_sha256": spiceinit_digest(SPICEINIT_FILE.read_text()),
+        "spiceinit_sha256": spiceinit_sha256(SPICEINIT_FILE.read_text()),
     }
 
 
@@ -276,7 +271,7 @@ def spiceinit_log_section(run_dir: Path) -> list[str]:
     text = path.read_text()
     return [
         header,
-        f"# sha256: {spiceinit_digest(text)}",
+        f"# sha256: {spiceinit_sha256(text)}",
         *[f"| {ln}" for ln in text.splitlines()],
     ]
 
