@@ -460,6 +460,14 @@ append-only record family already uses. `sim/bin/bias-retopo-pvt.py`,
 `sim/bin/rcz-fleet-confirm.py` and `sim/bin/rcz-adaptive-370.py` are the three
 drivers on it. Tests: `sim/tests/test_fleet_campaign_574.py`.
 
+The same split applies one layer up, to the batch endpoint-adapter *tests*: a new
+adapter test file should mix in `sim/tests/_endpoint_adapter_contract.py` rather
+than copy an earlier one — it holds `baseline_netlist(slug)`, the
+`EndpointShapeGate` manifest-gate helpers and renewal tripwires, the
+`BackendContract` response-envelope and structural-abort assertions and the
+`RecordProvenance` record head, while each adapter's own admission rules,
+mutation tables, card lists and grading maths stay in its own file (issue #587).
+
 ### Runner options
 
 | Flag | Effect |

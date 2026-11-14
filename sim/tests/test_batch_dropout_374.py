@@ -22,28 +22,16 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
+from _endpoint_adapter_contract import EndpointShapeGate, RecordProvenance, baseline_netlist
 from test_corner_run import QUICK, SIM_DIR, BatchHarness, FakeSingleStepKlt, HarnessErr, corner_run
 
 sys.path.insert(0, str(SIM_DIR / "bin"))
 import batch_dropout as bd  # noqa: E402
-from _record_common import pvt_input_sections  # noqa: E402
 
 FIXTURES = Path(__file__).resolve().parent / "fixtures" / "issue-374"
 SLUG = "dropout-vs-load"
 STIMULUS = corner_run.BATCH_ALLOWLIST[SLUG]["stimulus"]
-DT_NETLIST = (
-    "** sch_path: x\n"
-    + "\n".join(
-        [STIMULUS[0], ".save i(vvin)", STIMULUS[1], "VVREF VREF 0 1.2",
-         "xldo VOUT VREF EN VIN ldo_3v3in_1v8out", "COUT VOUT VESR 1u m=1", "RESR VESR 0 10m m=1",
-         STIMULUS[2], ".subckt ldo_3v3in_1v8out VOUT VREF EN VIN", "R1 VIN VOUT 1", ".ends"]
-    )
-    + "\n.end\n"
-)
-
-
-def manifest() -> dict:
-    return json.loads((SIM_DIR / SLUG / "experiment.json").read_text())
+DT_NETLIST = baseline_netlist(SLUG)
 
 
 class FakeDropoutKlt(FakeSingleStepKlt):
@@ -264,19 +252,8 @@ class TestDropoutStructuralFailures(DropoutHarness):
         self.assertEqual(rc, 0, out)
 
 
-class TestDropoutShapeGate(DropoutHarness):
-    def refused(self, edit, expect="validated cold-start crossing shape"):
-        raw = manifest()
-        edit(raw)
-        self.write_manifest(raw)
-        err, _, _ = self.run_main("--backend", "batch", *QUICK, expect_exit=HarnessErr)
-        self.assertIn(expect, str(err))
-        self.assertEqual(self.fake.calls, [])
-        corner_run.netlist_with_xschem.assert_not_called()
-        return str(err)
-
-    def code_lines(self, raw):
-        return [i for i, ln in enumerate(raw["deck"]["analyses"]) if not ln.lstrip().startswith("*")]
+class TestDropoutShapeGate(EndpointShapeGate, DropoutHarness):
+    REFUSAL_TEXT = "validated cold-start crossing shape"
 
     def test_structural_edits_are_refused_before_netlisting(self):
         def set_line(i, text):
@@ -313,21 +290,6 @@ class TestDropoutShapeGate(DropoutHarness):
         for name, edit in edits.items():
             self.assertIn("re-validate", self.refused(edit), name)
 
-    def test_prose_only_edits_keep_the_validated_shape(self):
-        raw = manifest()
-        raw["claim"] += " (edited)"
-        raw["measurements"][0]["note"] = "short"
-        raw["deck"]["analyses"].insert(0, "* an added comment")
-        self.write_manifest(raw)
-        rc, _, _ = self.run_main("--backend", "batch", *QUICK, "--no-write")
-        self.assertEqual(rc, 0)
-
-    def test_pins_equal_the_committed_manifest(self):
-        # Renewal tripwire: editing the manifest's execution sections fails
-        # this test until the adapter is re-validated and the pins updated.
-        want = corner_run.BATCH_ALLOWLIST[SLUG]["manifest_sections"]
-        self.assertEqual(pvt_input_sections(manifest(), None), want)
-
 
 class TestDropoutNetlistGate(DropoutHarness):
     def refused_netlist(self, netlist):
@@ -350,16 +312,10 @@ class TestDropoutNetlistGate(DropoutHarness):
             self.assertIn(card.split()[0], msg)
 
 
-class TestDropoutRecord(DropoutHarness):
+class TestDropoutRecord(RecordProvenance, DropoutHarness):
     def test_record_keeps_provenance_fingerprint_subset_and_append_only(self):
-        rc, out, _ = self.run_main("--backend", "batch", *QUICK)
-        self.assertEqual(rc, 0, out)
-        (rec_path,) = self.records()
-        rec = json.loads(rec_path.read_text())
-        self.assertEqual(rec["backend"], "batch")
+        rec_path, rec = self.run_and_load_record()
         self.assertEqual(rec["matrix"]["subset_reason"], "test")
-        self.assertTrue(rec["matrix"]["is_subset"])
-        self.assertEqual([r["corner_id"] for r in rec["corners"]], rec["matrix"]["point_ids"])
         self.assertEqual(rec["input_fingerprint"]["sections"]["analyses"],
                          corner_run.BATCH_ALLOWLIST[SLUG]["manifest_sections"]["analyses"])
         ad = rec["execution"]["adapter"]
