@@ -404,6 +404,49 @@ a routing result; it is filed generically as klayout-tools#4061. `r_cut` 0
 and 9.3 gave the same `unsupported` verdict. Item 7 stays unciteable, and no
 spec, bound or rail sizing was changed.
 
+**Update (2026-11-14, issue #583): the regenerated core re-measured, one
+build ahead — 0 of 28 on the pin, 1 of 28 on release 0.9.1, and no build
+says why the rest fall back.** Extraction only (`klt pex --extract-only
+--resistance-graph --resistance-graph-r-cut 9.3`, the same arguments
+`run-pex.sh` passes; no corner grid, no record minted), run twice against
+the *same* GDS — `LATEST-LVS` `20261112-110237-820ba8b3`'s `ldo_core.gds`,
+sha256 `5e6171873b24b8d4c7af6f55d59600d84099cd13790c8320d8ccf074e657c1ca`
+(byte-identical to the `LATEST` record's copy), i.e. the PR #557-regenerated
+core that record `20261022-232148-56dd87fe` predates. Evidence:
+`diagnostics/20261114-193718-fabcb0c6-rgraph-recheck/` (full JSON response,
+stderr log, `klt --version` and a derived per-net table per leg).
+
+- **Pinned build (`dc136150`, `klt 0.7.1.dev2457+gdc136150a49e`): 0 of 28
+  nets graph-derived**, every net `legacy` at its legacy value — unchanged
+  from the 2026-10-22 record, as expected for a build that predates
+  #4061's fix.
+- **Newest release (`klt 0.9.1`): 1 of 28 nets graph-derived** — `N_FBB`
+  (the feedback divider node), 768.47 Ω legacy → 806.42 Ω graph. The other
+  27 nets, `VIN` and `VOUT` included, remain `legacy` at their legacy
+  values. #4061's fix (closed-completed 2026-10-23) therefore lands
+  *partially* on this geometry: it works for a small signal net, not for
+  the strapped power rails the item-7 numbers turn on.
+- **No per-net fallback reason is emitted by either build** — the
+  `resistance_graph.nets[]` entries carry exactly the five fields
+  (`net`, `net_id`, `resistance_source`, `selected_resistance_ohm`,
+  `legacy_resistance_ohm`) and both stderr logs are empty. The
+  `unsupported_geometry` text and the 4542/5648 interior-landing counts
+  quoted in the 2026-10-22 update above came from that run's gitignored
+  stdout/stderr, not from committed evidence. Whether the 27 still-legacy
+  nets are blocked by `unsupported_geometry` or by `graph_too_large`
+  (#4061's own "known risk" puts rails with 4,500–5,700 interior landings
+  over the 4096-cell/5000-node caps) **cannot be determined from tool
+  output**. Filed generically as
+  [klayout-tools#5747](https://github.com/2AMLogic/klayout-tools/issues/5747)
+  (friction protocol, generic); #4061 was not re-filed.
+
+**What this means for item 7** (see `signoff/README.md`, "What would move
+the needle", point 2, updated to match): the tool blocker has narrowed but
+not cleared. A `klt` pin bump is now *necessary but not sufficient* — at
+`0.9.1` it would change one small-signal net's R and leave the full-load
+rows non-physical (a pin bump remains out of scope here). The 27 legacy
+nets' mechanism is unknowable until #5747's per-net reason exists.
+
 **Limits are declared as of this record (issue #154).** All three measurements
 now carry `limits`, so a `delta[]` row's `pass` means the extracted value sits
 inside a bound rather than merely being non-null. The `vout_*_v` bounds are
