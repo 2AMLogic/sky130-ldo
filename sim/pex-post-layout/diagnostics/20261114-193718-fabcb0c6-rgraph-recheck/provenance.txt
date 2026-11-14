@@ -1,0 +1,96 @@
+--- diagnosis: `klt pex --resistance-graph` fallback re-measure on the regenerated core (issue #583)
+captured_utc: 2026-11-14T19:37Z
+git_head: fabcb0c6 (main; branch feature/issue-583, no source changes at capture time)
+layout_record: 20261112-110237-820ba8b3 (layout/ldo-core/reports/LATEST-LVS)
+gds_sha256: 5e6171873b24b8d4c7af6f55d59600d84099cd13790c8320d8ccf074e657c1ca
+  (byte-identical to the LATEST record 20261112-110205-820ba8b3's ldo_core.gds)
+pdk: sky130A, open_pdks c6d73a35f524070e85faff4a6a9eef49553ebc2b (sim/pdk.json), PDK_ROOT=~/.volare
+  (both legs ran against this same PDK install; note both responses' provenance
+  record a deck-expected open_pdks f6eeac7 mismatch against it — pre-existing,
+  identical on both legs, so the build comparison is fair)
+ngspice: not run (extraction only; --extract-only runs no simulation leg)
+xschem: not run
+
+=== EXPERIMENT (issue #583) ===
+
+Question: with the core GDS regenerated (PR #557, 2026-11-12) and the upstream
+#4061 fix landed (closed-completed 2026-10-23, one day after record
+20261022-232148-56dd87fe was cut at pin dc136150), is T1 item 7 still blocked,
+and by what?
+
+Same command twice against the same GDS, differing only in the klt build:
+
+  klt pex <GDS> --extract-only --deck sky130 --top ldo_core --pdk sky130A \
+      --resistance-graph --resistance-graph-r-cut 9.3 --format json
+
+(r_cut 9.3 = sim/pex-post-layout/bin/run-pex.sh's default; --critical-net and
+--distributed-rc left off, as run-pex.sh does. Exit 4 is --extract-only's
+documented success code; both legs exited 4 with an empty stderr.)
+
+Legs:
+  pinned/       klt 0.7.1.dev2457+gdc136150a49e — layout/.venv (layout/requirements.txt pin dc136150)
+  release-0.9.1/ klt 0.9.1 (klayout_git_commit 4d0d29be4fd9) — uvx throwaway env, newest release
+  (the ambient host klt 0.9.2.dev1029+g76f47afa48f1 is neither named build and was not used)
+
+=== MEASURED ===
+
+1. pinned (dc136150): 0 of 28 nets graph-derived — every net
+   `resistance_source: legacy` at its legacy value. Unchanged from record
+   20261022-232148-56dd87fe (same build family, regenerated GDS, same verdict).
+
+2. release-0.9.1: **1 of 28 nets graph-derived** — `N_FBB` (the feedback
+   divider node), 768.4729 Ω legacy -> 806.4216 Ω graph. The other 27 nets,
+   `VIN` and `VOUT` included, remain `legacy` at their legacy values.
+   #4061's fix therefore lands *partially* on this geometry: it works for a
+   small signal net, not for the strapped power rails.
+
+3. **Neither build emits any per-net fallback reason.** The
+   `resistance_graph.nets[]` entries carry exactly `net`, `net_id`,
+   `resistance_source`, `selected_resistance_ohm`, `legacy_resistance_ohm`
+   in both responses (0.9.1 is schema_version 2), and both stderr logs are
+   0 bytes. The `unsupported_geometry` text and the 4542/5648 interior
+   landing counts quoted in the 2026-10-22 README update came from that
+   run's gitignored stdout/stderr, not from committed evidence — and the
+   current builds emit no such diagnostic at all. Which mechanism blocks
+   the 27 still-legacy nets (unsupported_geometry vs graph_too_large —
+   #4061's own "known risk" puts the 4,500-5,700-landing rails over the
+   DEFAULT_MAX_DECOMPOSITION_CELLS (4096) / MAX_GRAPH_NODES (5000) caps —
+   vs something else) is **not observable from tool output**.
+
+4. Upstream: klayout-tools#4061 is closed-completed (2026-10-23) and is
+   partially vindicated — 1/28 nets flipped to graph on 0.9.1. No open
+   upstream issue covered the missing per-net reason (searched 2026-11-14);
+   filed generically as klayout-tools#5747.
+
+=== READING (per issue #583's outcome table) ===
+
+A mix of the table's row 1 and its row 4:
+
+- Item 7's *tool* blocker has narrowed but not cleared. The pin (dc136150)
+  predates #4061's fix entirely (0/28); the newest release carries it and
+  flips exactly one small net (1/28). The power rails the item-7 numbers
+  actually turn on (VIN/VOUT lumped R) are still legacy on both builds.
+- A pin bump is now a *necessary but not sufficient* step for item 7: it
+  would change one small-signal net's R and leave the full-load rows
+  non-physical. Pin bumps are out of scope here (issue #583 Out of Scope);
+  no pin was touched.
+- The per-net fallback reason is missing from the tool's output on both
+  builds, so the caps-vs-geometry question cannot be settled from outside.
+  That diagnostic gap is filed (klayout-tools#5747); the caps themselves
+  stay out of scope until the diagnostic can name them.
+
+T1 item 7 stays unmet on both builds. No record was minted (this directory
+is diagnostics, not a records/ entry); measurements/characterization.md's
+STALE flag for 20261022-232148-56dd87fe is correct and unchanged.
+
+=== FILES ===
+
+  pinned/                     leg 1: klt-version.txt, pex.json (full response),
+                              pex.stderr.log (empty), ldo_core.pex.spice, outdir/ (empty),
+                              per-net-resistance-source.md (derived)
+  release-0.9.1/              leg 2: same file set
+  per-net tables              derived from each leg's pex.json by the assistant run
+                              (resistance_source per net + explicit absence-of-reason record)
+
+Nothing under records/ was written or modified; this directory is append-only
+diagnosis evidence, not a PEX record, and supersedes nothing.
