@@ -17,25 +17,34 @@ record directory `sim/bias-retopo/<record-id>/` (request files, raw responses,
 This is a bias-generator screening grid. It is NOT a PSRR / stability / Iq
 record of the full LDO (those are `sim/psrr-dc`, `sim/loop-gain`, `sim/iq`).
 
+The request / submit core it shares with the other batch-fleet campaign drivers
+lives in `sim/bin/_fleet_campaign.py` (issue #574; this driver was folded onto it
+by #586). Only this campaign's deck, grid, grading and record rendering are here.
+Unlike its siblings this bench builds its deck by hand instead of netlisting a
+testbench schematic, so it uses the shared core's request and submit halves and
+not `fc.netlist()` / `fc.deck()`.
+
 Usage:
-    python3 sim/bin/bias-retopo-grid.py [--record-id ID]
+    python3 sim/bin/bias-retopo-grid.py [--record-id ID] [--workers 2]
 """
 
 from __future__ import annotations
 
 import argparse
 import json
-import os
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(REPO / "sim" / "bin"))
-from _record_common import klt_binary, run_klt_sim  # noqa: E402
-PDK_JSON = REPO / "sim" / "pdk.json"
+import _fleet_campaign as fc  # noqa: E402
+
 SUPPLIES = [2.97, 3.30, 3.63]
-PROCESS = ["tt", "ss", "ff", "sf", "fs", "ll", "hh"]
+# A deliberate superset of `fc.PROCESS`: ll/hh are the resistor-only skew corners
+# this bench adds (they move R_BIAS, which is what DR-013 changes). `pdk.json`
+# declares them in `process_corners`; the MOS-corner campaigns do not run them.
+PROCESS = [*fc.PROCESS, "ll", "hh"]
 TEMPS = [-40.0, 27.0, 125.0]
 DESIGNS = {
     "record": ("sky130_fd_pr__res_high_po", 1500),
@@ -69,60 +78,61 @@ VTAIL EA_TAIL 0 1.0
 
 
 def request(path: Path, pdk: dict) -> dict:
-    return {
-        "netlist": str(path),
-        "engine": "ngspice",
-        "models": {"pdk": pdk["variant"], "lib": pdk["ngspice_lib"]},
-        "corners": {"process": PROCESS, "temperature_c": TEMPS},
-        "analysis": {"kind": "op", "args": ""},
-        "measurements": [{"name": f"meas_{n}", "expr": e, "unit": u} for n, e, u in MEAS],
-        "options": {"timeout_s": 300, "keep_artifacts": True},
-        "batch": {"capacity_wait_s": 3 * 3600},
-    }
+    """This bench's `klt sim` batch request, built on the shared core.
+
+    `order=PROCESS` is the only departure from the sibling drivers: the shared
+    core tabulates process sections in the ordering it is given, and this grid's
+    ordering is `fc.PROCESS` plus ll/hh. The emitted JSON is byte-identical to
+    the one the committed `20261029-bias-grid-467/requests/` tree holds, which
+    `sim/tests/test_bias_retopo_grid_586.py` pins.
+    """
+    return fc.base_request(
+        path,
+        pdk,
+        [(p, t) for p in PROCESS for t in TEMPS],
+        {"kind": "op", "args": ""},
+        [{"name": f"meas_{n}", "expr": e, "unit": u} for n, e, u in MEAS],
+        order=PROCESS,
+    )
 
 
-def main() -> int:
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--record-id", default=datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S"))
-    args = ap.parse_args()
-    out = REPO / "sim" / "bias-retopo" / args.record_id
-    if out.exists():
-        sys.exit(f"refusing to overwrite existing record {out}")
-    pdk = json.loads(PDK_JSON.read_text())
-    pdk_root = os.environ.get("PDK_ROOT") or str(Path.home() / ".volare")
-    (out / "requests").mkdir(parents=True)
-    rows = []
-    for name, (res, length) in DESIGNS.items():
-        for vsup in SUPPLIES:
-            key = f"{name}-v{vsup:.2f}"
-            net = out / "requests" / f"{key}.spice"
-            net.write_text(netlist(res, length, vsup))
-            req = out / "requests" / f"{key}.json"
-            req.write_text(json.dumps(request(net.resolve(), pdk), indent=2) + "\n")
-            od = out / "responses" / key
-            od.mkdir(parents=True)
-            try:
-                resp, _meta = run_klt_sim(
-                    req, od, "batch", pdk_root,
-                    klt_exe=klt_binary("submit batch grids"), require_corners=False,
-                )
-            except RuntimeError as exc:
-                sys.exit(f"{key}: klt sim batch submit failed; NOT falling back to local.\n{str(exc)[:2000]}")
-            remote = resp.get("environment", {}).get("remote", {})
-            for c in resp["corners"]:
-                m = {x["name"].replace("meas_", ""): x["value"] for x in c["measurements"]}
-                rows.append({"design": name, "vsup": vsup, "process": c["process"],
-                             "temp_c": c["temperature_c"], "status": c["status"],
-                             "job_id": remote.get("job_id"), **m})
-            print(f"{key}: {resp['status']} ({resp['corner_count']} corners) job {remote.get('job_id')}", flush=True)
-    (out / "summary.json").write_text(json.dumps(rows, indent=1) + "\n")
-    # A/B table
+def row(key: str, meta: dict, corner: dict, job: str | None) -> dict:
+    """One `summary.json` row, in the shape this record family already uses.
+
+    `fc.corner_base()` additionally carries `key`; this record family's committed
+    rows do not, and `sim/` records are append-only evidence, so a re-run keeps
+    emitting its own format (`_fleet_campaign.py`'s row-shaping note). Nothing is
+    lost: `key` here is exactly `f"{design}-v{vsup:.2f}"`, both of which the row
+    already carries.
+    """
+    base = fc.corner_base(key, meta, corner, job)
+    del base["key"]
+    vals = {x["name"].replace("meas_", ""): x["value"] for x in corner["measurements"]}
+    return {**base, **vals}
+
+
+def render(record_id: str, rows: list[dict], errors: list[dict]) -> str:
+    """The A/B shift table. With no failed submits this is byte-for-byte the
+    record the pre-#586 driver rendered; failed submits add named lines, because
+    the shared core now reports a refusal and carries on instead of exiting."""
+    lines = [
+        f"# Bias-generator PVT grid: {record_id}",
+        "",
+        "Issue #467 / DR-013. `record` = res_high_po L=1500; `dr013` = res_xhigh_po L=211.",
+        "Executed through `klt sim --backend batch` (no local fallback). Bias generator + one M_TAIL copy only.",
+    ]
+    if errors:
+        lines.append("")
+        lines += [
+            f"- NOT ESTABLISHED: `{e['key']}` submit failed: {e['error'][:200]!r}"
+            for e in errors
+        ]
+    lines += [
+        "",
+        "| process | T(C) | VIN | I_pair record (uA) | I_pair dr013 (uA) | shift % | I_tail record | I_tail dr013 | tail shift % |",
+        "|---|---|---|---|---|---|---|---|---|",
+    ]
     idx = {(r["design"], r["vsup"], r["process"], r["temp_c"]): r for r in rows}
-    lines = [f"# Bias-generator PVT grid: {args.record_id}", "",
-             "Issue #467 / DR-013. `record` = res_high_po L=1500; `dr013` = res_xhigh_po L=211.",
-             "Executed through `klt sim --backend batch` (no local fallback). Bias generator + one M_TAIL copy only.", "",
-             "| process | T(C) | VIN | I_pair record (uA) | I_pair dr013 (uA) | shift % | I_tail record | I_tail dr013 | tail shift % |",
-             "|---|---|---|---|---|---|---|---|---|"]
     worst = 0.0
     worst_t = 0.0
     bad = 0
@@ -144,9 +154,40 @@ def main() -> int:
         lines.append(f"| {p} | {t:g} | {v:.2f} | {r['i_bias_pair_ua']:.4f} | {c['i_bias_pair_ua']:.4f} | {s:+.2f} | "
                      f"{r['i_tail_ua']:.4f} | {c['i_tail_ua']:.4f} | {st:+.2f} |")
     lines += ["", f"Worst |I_pair shift| = {worst:.2f} %; worst |I_tail shift| = {worst_t:.2f} %; unusable points = {bad}."]
-    (out / "record.md").write_text("\n".join(lines) + "\n")
-    print("\n".join(lines[-3:]))
-    return 0
+    if errors:
+        lines.append(
+            f"Failed submits: {len(errors)} (reported above, NOT re-run locally; those points are not established)."
+        )
+    return "\n".join(lines) + "\n"
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--record-id", default=datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S"))
+    ap.add_argument("--workers", type=int, default=2)
+    args = ap.parse_args()
+    out = REPO / "sim" / "bias-retopo" / args.record_id
+    pdk, _pdk_root, env = fc.preamble(args.workers, out)
+    (out / "requests").mkdir(parents=True)
+    jobs = []  # (key, meta, request path)
+    for name, (res, length) in DESIGNS.items():
+        for vsup in SUPPLIES:
+            key = f"{name}-v{vsup:.2f}"
+            net = out / "requests" / f"{key}.spice"
+            net.write_text(netlist(res, length, vsup))
+            rp = out / "requests" / f"{key}.json"
+            rp.write_text(json.dumps(request(net.resolve(), pdk), indent=2) + "\n")
+            jobs.append((key, {"design": name, "vsup": vsup}, rp))
+
+    rows, errors = [], []
+    for k, m, resp, job in fc.submit_all(jobs, out, env, args.workers, errors):
+        rows += [row(k, m, c, job) for c in resp["corners"]]
+    (out / "summary.json").write_text(json.dumps(rows, indent=1) + "\n")
+    text = render(args.record_id, rows, errors)
+    (out / "record.md").write_text(text)
+    print("\n".join(text.splitlines()[-3:]))
+    print(f"record: {out}")
+    return 1 if errors else 0
 
 
 if __name__ == "__main__":

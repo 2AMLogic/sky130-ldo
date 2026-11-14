@@ -456,9 +456,17 @@ reported, never re-run as a local grid).
 Row shaping stays in the driver on purpose: `submit_all()` yields
 `(key, meta, response, job_id)` and `corner_base()` supplies only the fields every
 record shares, so each campaign keeps emitting the `summary.json` shape its own
-append-only record family already uses. `sim/bin/bias-retopo-pvt.py`,
-`sim/bin/rcz-fleet-confirm.py` and `sim/bin/rcz-adaptive-370.py` are the three
-drivers on it. Tests: `sim/tests/test_fleet_campaign_574.py`.
+append-only record family already uses — `bias-retopo-grid.py`, for instance, drops
+`corner_base()`'s `key` because its committed rows never carried one.
+`sim/bin/bias-retopo-pvt.py`, `sim/bin/rcz-fleet-confirm.py`,
+`sim/bin/rcz-adaptive-370.py` and `sim/bin/bias-retopo-grid.py` (folded on by #586)
+are the four drivers on it. A campaign whose grid is a deliberate superset of
+`fc.PROCESS` passes `base_request(..., order=…)` with its own process ordering: the
+bias grid adds the resistor-only skew corners `ll`/`hh`, which `pdk.json` declares
+but the MOS-corner campaigns do not run. Tests:
+`sim/tests/test_fleet_campaign_574.py`, and
+`sim/tests/test_bias_retopo_grid_586.py` for the bias grid's requests against the
+committed `sim/bias-retopo/20261029-bias-grid-467/requests/` golden reference.
 
 ### Runner options
 
