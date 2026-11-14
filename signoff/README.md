@@ -752,7 +752,17 @@ In dependency order, not effort order:
    nets is the device generator's own local-interconnect pads, which no knob
    this flow has can change. Tracked as #162. See "Item 7 has a passing record
    that this manifest declines to cite" above.
-3. **Item 11** needs a `klt erc` supply spec and report (issue #112).
+3. **Item 11** is `met` as of issue #112: the `klt erc` supply spec and report
+   this list previously asked for exist, ran, and are cited — the compound
+   citation is that `erc_supply.json` plus item 4's own LVS report on the
+   byte-identical GDS. Nothing remains to build. Two disclosures remain on that
+   row, and neither is a build task: one of the two ties rests on an asserted
+   substrate region (sky130 NMOS sit in the native p-substrate and this stream
+   draws no pwell, so the region is declared rather than drawn —
+   klayout-tools#2255), and the antenna half is `clean_partial` because `klt`
+   has no sky130 limit for the 18 gate × met3 pairs #154's VIN rail adds
+   (klayout-tools#1994). Both move through the tool, not through this design.
+   See "Item 11 is `met` — what it says, and what it does not" above.
 4. **Item 6** is `met` as of issue #203, and as of issue #211 the
    **deterministic negative control** this list previously asked for exists,
    ran, and is cited: `detected`, on a seeded +10 % divider mis-ratio the
@@ -765,8 +775,17 @@ In dependency order, not effort order:
    decision record, and a number invented to make the row read `pass` would be
    worse than the honest `reported`. See "Item 6 is `met` — what it says, and
    the one thing it does not" above.
-5. **Items 1, 2, 9 and 10** need nothing built. They stay `unmet` by choice,
-   not by gap.
+5. **Items 1, 2, 9 and 10** need nothing built, and since issue #423 they are
+   all four `met` — graded from tool-produced envelopes (`klt signoff --attest`)
+   rather than from an author's assertion. They were left uncited before that,
+   by choice and not by gap; the choice is now moot. Disclosures remain on three
+   of the rows, and none is a build task: item 1's netlist freshness check is
+   `local_only` and carries its committed outcome, item 2's attestation is still
+   bound to the older GDS and so is no longer aligned with items 3, 4 and 11
+   (re-minting it was out of scope for #553), and item 9's declared cold start is
+   the PDK-free harness unit suite rather than the PDK-gated end-to-end smoke
+   run. See "Items 1, 2, 9 and 10 are graded from tool-produced envelopes" above
+   and each item's row in the table at the top.
 
 Filing the tool-side friction this surfaces belongs at
 `2AMLogic/klayout-tools`, per this repo's friction protocol in `CLAUDE.md` —
@@ -781,6 +800,12 @@ describe the pre-#230 schematic and are STALE against it (the regenerated
 was moved (that file was regenerated). The tier stays `null`, 5/11. The full
 inventory is in `sim/README.md`, "Stale artifacts caused by the schematic change";
 re-running them belongs to #231.
+
+*Added 2026-11-14 (issue #582):* the sentences above are left as written, as the
+record of what was true at #230. The count has since moved — issue #423 brought
+items 1, 2, 9 and 10 to `met`, so the verdict of record now reads **9/11**. The
+tier is still `null`. Read `records/t1-tier-report.json` for the current verdict
+rather than any count in this note.
 
 ## Note from #553 review round (rollup regenerated, item 8 re-pinned)
 
