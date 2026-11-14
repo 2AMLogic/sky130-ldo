@@ -8,18 +8,27 @@ Validates every `manifests/artifacts/*.manifest.json`:
 and fails when a stored object's sha256 equals a tracked file under `sim/` or
 `layout/` -- the bytes must live in the store OR in git, not both.
 
-Standard library only. Usage: check_artifact_manifests.py [--root DIR]
+Standard library only, plus this repo's shared digest contract
+(`layout/bin/_digest.py`), so the digest it re-hashes with is the same one
+every record was written with.
+
+Usage: check_artifact_manifests.py [--root DIR]
 """
 
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import re
 import subprocess
 import sys
 from pathlib import Path
+
+# The repo's one content-digest contract (issue #589): this guard re-hashes
+# tracked files, so it must agree byte-for-byte with every other site that
+# records a digest.
+sys.path.append(str(Path(__file__).resolve().parents[1] / "layout" / "bin"))
+from _digest import sha256_file  # noqa: E402
 
 SHA_RE = re.compile(r"^[0-9a-f]{64}$")
 TREES = ("sim", "layout")
@@ -65,14 +74,6 @@ def tracked_files(root: Path) -> list[Path]:
         capture_output=True, text=True, check=True,
     )
     return [root / p for p in res.stdout.split("\0") if p]
-
-
-def sha256_file(path: Path) -> str:
-    h = hashlib.sha256()
-    with path.open("rb") as fh:
-        for chunk in iter(lambda: fh.read(1 << 20), b""):
-            h.update(chunk)
-    return h.hexdigest()
 
 
 def check(root: Path) -> list[str]:
