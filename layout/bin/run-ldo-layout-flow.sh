@@ -23,8 +23,10 @@
 # --pdk sky130 <sha>`).
 set -euo pipefail
 
-LAYOUT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-REPO_ROOT="$(cd "$LAYOUT_DIR/.." && pwd)"
+# LAYOUT_DIR/REPO_ROOT, the klt/PDK guards, the record mint and the headless
+# netlist step are shared with the other layout/bin/run-*-flow.sh drivers
+# (issue #599).
+source "$(dirname "${BASH_SOURCE[0]}")/_flow_common.sh"
 BLOCK_DIR="$LAYOUT_DIR/ldo-core"
 KLT="$LAYOUT_DIR/.venv/bin/klt"
 CELL=ldo_core
@@ -32,27 +34,15 @@ PDK_VARIANT=sky130A
 SCHEMATIC="$REPO_ROOT/design/ldo_3v3in_1v8out.sch"
 PINS="VOUT,VREF,EN,VIN"
 
-if [[ ! -x "$KLT" ]]; then
-  echo "run-ldo-layout-flow.sh: $KLT not found -- run layout/bin/setup-venv.sh first" >&2
-  exit 1
-fi
-
-if ! "$KLT" pdk find --pdk "$PDK_VARIANT" >/dev/null; then
-  echo "run-ldo-layout-flow.sh: no resolvable $PDK_VARIANT PDK -- see sim/pdk.json for the pin" >&2
-  exit 1
-fi
+flow_require_klt run-ldo-layout-flow.sh "$KLT"
+flow_require_pdk run-ldo-layout-flow.sh "$PDK_VARIANT" "see sim/pdk.json for the pin" "$KLT"
 
 if ! command -v xschem >/dev/null; then
   echo "run-ldo-layout-flow.sh: xschem not found on PATH -- needed to netlist the schematic this layout is generated from" >&2
   exit 1
 fi
 
-TS_UTC="$(date -u +%Y%m%d-%H%M%S)"
-SHORT_SHA="$(git -C "$REPO_ROOT" rev-parse --short HEAD)"
-RECORD_ID="${TS_UTC}-${SHORT_SHA}"
-OUT_DIR="$BLOCK_DIR/reports/$RECORD_ID"
-mkdir -p "$OUT_DIR"
-echo "run-ldo-layout-flow.sh: record $RECORD_ID -> $OUT_DIR"
+flow_mint_record run-ldo-layout-flow.sh "$BLOCK_DIR/reports"
 
 # Schematic-only: tracks the exact same path `measurements/
 # build_characterization_report.py`'s freshness check compares against
@@ -64,15 +54,7 @@ echo "run-ldo-layout-flow.sh: record $RECORD_ID -> $OUT_DIR"
 SCHEMATIC_SHA="$(git -C "$REPO_ROOT" log -1 --format=%h -- design/ldo_3v3in_1v8out.sch)"
 
 # --- 1. Netlist the schematic headlessly (this layout's device set) --------
-XSCHEM_OUT="$OUT_DIR/xschem_out"
-mkdir -p "$XSCHEM_OUT"
-SCHEM_NETLIST="$XSCHEM_OUT/ldo_3v3in_1v8out.spice"
-# `klt netlist` owns the headless xschem invocation (forced flags + timeout kill).
-"$KLT" netlist -o "$SCHEM_NETLIST" --rcfile "$REPO_ROOT/sim/xschemrc" "$SCHEMATIC"
-if [[ ! -f "$SCHEM_NETLIST" ]]; then
-  echo "run-ldo-layout-flow.sh: expected $SCHEM_NETLIST after xschem netlisting" >&2
-  exit 1
-fi
+flow_netlist_schematic run-ldo-layout-flow.sh "$SCHEMATIC" "$OUT_DIR/xschem_out" "$KLT"
 
 # --- 2. Generate every device's klt gen block, compose, and route ----------
 # Run under layout/.venv: the router draws its own wiring with `klayout.db`,
