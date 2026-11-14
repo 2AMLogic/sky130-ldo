@@ -44,12 +44,15 @@ import json
 import pathlib
 import sys
 
-
-def norm(value):
-    """Both hash spellings this repo's envelopes use, reduced to bare hex."""
-    if not isinstance(value, str):
-        return None
-    return value[len("sha256:"):] if value.startswith("sha256:") else value
+# The repo's one content-digest contract (issue #589): `normalize_sha256` is
+# what "a recorded sha256" means on the read side, and `sha256_file` is the
+# hasher every write side used. This stage is the verdict of record, so it
+# must not carry a second, weaker opinion about either -- the `norm` that used
+# to live here passed `"sha256:TBD"` through as `"TBD"` and compared an
+# uppercase or whitespace-padded digest verbatim. Appended to sys.path, so
+# layout/bin's `_record_common` cannot shadow another tree's.
+sys.path.append(str(pathlib.Path(__file__).resolve().parents[1] / "layout" / "bin"))
+from _digest import normalize_sha256, sha256_file  # noqa: E402
 
 
 def manifest_parts(entry):
@@ -88,7 +91,8 @@ def verify_input_set(pin, item: str, expected: str, root: pathlib.Path) -> list[
     names: set[str] = set()
     for member in members:
         name = dotted(member, "path.path")
-        recorded = norm(member.get("content_hash")) if isinstance(member, dict) else None
+        recorded = (normalize_sha256(member.get("content_hash"))
+                    if isinstance(member, dict) else None)
         if not isinstance(name, str) or recorded is None:
             failures.append(f"item {item}: malformed provenance.input.paths member {member!r}")
             continue
@@ -97,7 +101,7 @@ def verify_input_set(pin, item: str, expected: str, root: pathlib.Path) -> list[
         if not path.is_file():
             failures.append(f"item {item}: input-set member {name!r} does not exist")
             continue
-        actual = hashlib.sha256(path.read_bytes()).hexdigest()
+        actual = sha256_file(path)
         if actual != recorded:
             failures.append(
                 f"item {item}: input-set member {name!r} hashes to sha256:{actual} "
@@ -119,11 +123,11 @@ def verify_input_set(pin, item: str, expected: str, root: pathlib.Path) -> list[
             f"item {item}: input set digests to sha256:{digest} today, but "
             f"signoff/artifact-pins.json pins sha256:{expected}"
         )
-    claimed = norm(dotted(envelope, "provenance.input.content_hash"))
-    if claimed != expected:
+    raw_claim = dotted(envelope, "provenance.input.content_hash")
+    if normalize_sha256(raw_claim) != expected:
         failures.append(
             f"item {item}: {pin['cited_envelope']!r} claims provenance.input.content_hash="
-            f"{claimed!r}, but the pin is sha256:{expected}"
+            f"{raw_claim!r}, but the pin is sha256:{expected}"
         )
     return failures
 
@@ -153,7 +157,15 @@ def verify(manifest, pins, root: pathlib.Path) -> list[str]:
     for pin in pins:
         item = str(pin["item"])
         artifact = root / pin["artifact"]
-        expected = norm(pin["sha256"])
+        expected = normalize_sha256(pin["sha256"])
+        if expected is None:
+            failures.append(
+                f"item {item}: signoff/artifact-pins.json pins {pin['sha256']!r} "
+                f"for {pin['artifact']!r}, which is not a sha256 digest -- "
+                f"malformed provenance cannot be freshness-checked against "
+                f"anything, so this citation is unverified"
+            )
+            continue
 
         if pin.get("input_set"):
             # Item 1 (`klt signoff --attest 1`) binds a SET of files: the
@@ -167,7 +179,7 @@ def verify(manifest, pins, root: pathlib.Path) -> list[str]:
         if not artifact.is_file():
             failures.append(f"item {item}: artifact {pin['artifact']!r} does not exist")
             continue
-        actual = hashlib.sha256(artifact.read_bytes()).hexdigest()
+        actual = sha256_file(artifact)
         if actual != expected:
             failures.append(
                 f"item {item}: {pin['artifact']!r} hashes to sha256:{actual} today, "
@@ -186,7 +198,7 @@ def verify(manifest, pins, root: pathlib.Path) -> list[str]:
 
         field = pin.get("envelope_field")
         if field:
-            claimed = norm(dotted(envelope, field))
+            claimed = normalize_sha256(dotted(envelope, field))
             if claimed != expected:
                 failures.append(
                     f"item {item}: {pin['cited_envelope']!r} claims {field}="
@@ -217,15 +229,16 @@ def verify(manifest, pins, root: pathlib.Path) -> list[str]:
                 f"nothing the manifest pins is actually backed by this artifact"
             )
             continue
-        if any(norm(p.get("content_hash")) is None for p in own):
+        if any(normalize_sha256(p.get("content_hash")) is None for p in own):
             failures.append(
                 f"item {item}: artifact-pins.json says manifest_pinned for "
                 f"{cited!r}, but the manifest's citation of that file pins no "
-                f"content_hash"
+                f"usable content_hash (absent, or not a sha256 digest)"
             )
             continue
         wrong = sorted({
-            h for h in (norm(p.get("content_hash")) for p in own) if h != expected
+            h for h in (normalize_sha256(p.get("content_hash")) for p in own)
+            if h != expected
         })
         if wrong:
             failures.append(
@@ -240,15 +253,26 @@ def verify(manifest, pins, root: pathlib.Path) -> list[str]:
     # citation cannot lean on its sibling half's pin (#222).
     for item, entry in sorted(evidence.items()):
         for part in manifest_parts(entry):
-            manifest_hash = norm(part.get("content_hash"))
-            if manifest_hash is None:
-                continue
             part_file = part.get("file")
+            raw_hash = part.get("content_hash")
+            if raw_hash is None:
+                # This citation pins no hash, so there is nothing to back.
+                continue
+            manifest_hash = normalize_sha256(raw_hash)
+            if manifest_hash is None:
+                # Present but malformed is NOT the absent case: skipping it
+                # would let a citation carry an unverifiable hash unchallenged.
+                failures.append(
+                    f"manifest item {item}: its {part_file!r} citation records "
+                    f"content_hash={raw_hash!r}, which is not a sha256 digest -- "
+                    f"malformed provenance is unverified, never a match"
+                )
+                continue
             backing = [
                 p for p in pins
                 if str(p["item"]) == item and p.get("manifest_pinned")
                 and p.get("cited_envelope") == part_file
-                and norm(p["sha256"]) == manifest_hash
+                and normalize_sha256(p["sha256"]) == manifest_hash
             ]
             if not backing:
                 failures.append(

@@ -145,7 +145,7 @@ from _record_common import (  # shared helpers (issues #51, #96, #237)
 _LAYOUT_BIN_DIR = str(LAYOUT_DIR / "bin")
 if _LAYOUT_BIN_DIR not in sys.path:
     sys.path.insert(0, _LAYOUT_BIN_DIR)
-from _gds_area import sha256_file
+from _digest import normalize_sha256, sha256_file  # the repo's one digest contract (#589)
 from _official_drc import official_result  # fail-closed official-deck reader (issue #260)
 
 SCHEMATIC_FILE = "design/ldo_3v3in_1v8out.sch"
@@ -799,27 +799,6 @@ def check_lvs_geometry_freshness(lvs_dir: Path) -> str:
         f"STALE (the routed GDS in the current `LATEST` record `{latest_id}` differs from "
         "the one LVS checked; re-run LVS)"
     )
-
-
-_SHA256_HEX_RE = re.compile(r"^[0-9a-f]{64}$")
-
-
-def normalize_sha256(value: object) -> str | None:
-    """A recorded sha256 reduced to bare lowercase hex, or None if malformed.
-
-    Accepts both spellings this repo's envelopes use -- bare hex
-    (`lvs.json`'s `layout_sha256`) and the `sha256:`-prefixed form (`klt`
-    provenance `content_hash`) -- the same convention as
-    `signoff/verify-pins.py`'s `norm`. Anything else (another algorithm's
-    prefix, a truncated digest, a non-string) is malformed provenance, which a
-    caller must report as unverified, never coerce into a match.
-    """
-    if not isinstance(value, str):
-        return None
-    v = value.strip().lower()
-    if v.startswith("sha256:"):
-        v = v[len("sha256:"):]
-    return v if _SHA256_HEX_RE.match(v) else None
 
 
 def check_drc_input_freshness(drc_dir: Path) -> str:

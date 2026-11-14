@@ -109,7 +109,6 @@ Two consequences worth stating plainly:
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import platform
 import subprocess
@@ -118,7 +117,12 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+# The repo's one content-digest contract (issue #589). APPENDED, never
+# inserted ahead of sim/bin: layout/bin carries its own `_record_common`, and
+# shadowing this tree's module with it would be a silent wrong-module import.
+sys.path.append(str(Path(__file__).resolve().parents[2] / "layout" / "bin"))
 
+from _digest import sha256_file_prefixed  # noqa: E402
 from _record_common import (  # noqa: E402
     copy_new,
     git,
@@ -193,10 +197,6 @@ def native_extension_version(exe: str) -> str:
         ).stdout.strip()
     except (subprocess.SubprocessError, OSError):
         return ""
-
-
-def sha256_file(path: Path) -> str:
-    return "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
 
 
 # --------------------------------------------------------------------------
@@ -1028,7 +1028,7 @@ def main(argv: list[str]) -> int:
                 "record_id": nc_record_id,
                 "record": rel(nc_exp_dir / "records" / f"{nc_record_id}.md"),
                 "response": rel(nc_samples),
-                "response_sha256": sha256_file(nc_samples),
+                "response_sha256": sha256_file_prefixed(nc_samples),
                 "netlist_snapshot": rel(
                     nc_exp_dir / "netlist-snapshots" / f"{nc_record_id}.spice"
                 ),
@@ -1061,7 +1061,7 @@ def main(argv: list[str]) -> int:
                 {
                     "nominal": {
                         "response": rel(samples),
-                        "sha256": sha256_file(samples),
+                        "sha256": sha256_file_prefixed(samples),
                         "record": rel(exp_dir / "records" / f"{source_record_id}.md"),
                         "engine_version": (
                             (nominal_report.get("environment") or {}).get("engine_version")
@@ -1119,7 +1119,7 @@ def main(argv: list[str]) -> int:
                 "record_id": source_record_id,
                 "record": rel(exp_dir / "records" / f"{source_record_id}.md"),
                 "response": rel(samples),
-                "response_sha256": sha256_file(samples),
+                "response_sha256": sha256_file_prefixed(samples),
                 "netlist_snapshot": rel(
                     exp_dir / "netlist-snapshots" / f"{source_record_id}.spice"
                 ),
@@ -1139,7 +1139,7 @@ def main(argv: list[str]) -> int:
             "negative_control": negative_control,
             "analysed_document": {
                 "file": lab(sample_set_path) if negative_control else rel(samples),
-                "sha256": sha256_file(sample_set_path if negative_control else samples),
+                "sha256": sha256_file_prefixed(sample_set_path if negative_control else samples),
                 "kind": "derived sample-set document" if negative_control else "klt sim response",
                 "note": (
                     (
