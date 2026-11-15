@@ -78,12 +78,13 @@ def git(repo_root: Path, *args: str) -> str:
 # `note`s, `corners_note`, `unit`, ... -- can be edited freely without
 # invalidating a simulation. Bump INPUT_FINGERPRINT_VERSION whenever an
 # allow-list or the serialization changes: the checker reports a version
-# mismatch as "unverified", never as a (false) match or mismatch.
+# mismatch as "unverified", never as a (false) match or mismatch. The actual
+# allow-lists are built inline in `pvt_input_sections()` (sections: analyses,
+# measurements, matrix, plus a conditional ramp_monotonicity when the manifest
+# declares one and a conditional solver when sim/spiceinit is present) and
+# `mc_input_sections()` (analyses, measurements, matrix, netlist_patch).
 
 INPUT_FINGERPRINT_VERSION = 1
-
-PVT_FINGERPRINT_SECTIONS = ("analyses", "measurements", "matrix", "solver")
-MC_FINGERPRINT_SECTIONS = ("analyses", "measurements", "matrix", "netlist_patch")
 
 
 def _canon(value):
