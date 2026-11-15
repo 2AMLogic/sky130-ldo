@@ -75,8 +75,9 @@ PROCESS = "tt"
 T_STOP_US = 170
 TSTEP = "400n"
 # observation instants (us): end of cold start / during disturbance / hold after
-# release / EN low / after EN re-enable
-T_COLD, T_FORCED, T_HOLD, T_EN_LOW, T_REEN = 19, 39, 90, 108, 165
+# release / EN low / after EN re-enable.  Single source: batch_thermal_staircase,
+# which also derives the batch cards' record field names from them (issue #613).
+T_COLD, T_FORCED, T_HOLD, T_EN_LOW, T_REEN = bts.T_COLD, bts.T_FORCED, bts.T_HOLD, bts.T_EN_LOW, bts.T_REEN
 PROGRESS_RE = re.compile(r"\s*Reference value :\s*[-+0-9.eE]+")
 EXTRA_MARKERS = ("source stepping failed", "timestep too small", "Transient op", "Error:")
 IX_HOT, IX_COLD = +0.5e-6, -0.5e-6  # sink on TS_SNS (hotter) / injection (colder), amperes
