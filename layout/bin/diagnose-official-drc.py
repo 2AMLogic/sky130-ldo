@@ -92,15 +92,9 @@ def main() -> int:
         b = inst.dbbox()
         blocks[inst.cell.name] = (inst.cell, b)
 
-    def owner_of(x: float, y: float) -> str:
-        for name, (_, b) in blocks.items():
-            if b.left <= x <= b.right and b.bottom <= y <= b.top:
-                return name
-        return "ldo_core (local routing)"
-
     fams = summarize_marker_families(markers, args.max_samples)
 
-    # --- via.1a_b: every via1 in the layout, by drawn size and owner -------
+    # --- via.1a_b: every via1, by drawn size, top-cell-own vs in-block ------
     for name in ("via1", "via2", "mcon", "licon"):
         top_own = _size_hist(top.shapes(lidx[name]).each(), dbu)
         in_blocks: Counter[str] = Counter()

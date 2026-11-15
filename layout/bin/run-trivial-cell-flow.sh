@@ -15,29 +15,17 @@
 # install (same pin as sim/pdk.json; `volare enable --pdk sky130 <sha>`).
 set -euo pipefail
 
-LAYOUT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-REPO_ROOT="$(cd "$LAYOUT_DIR/.." && pwd)"
+# LAYOUT_DIR/REPO_ROOT, the two guards and the record mint are shared with
+# the other layout/bin/run-*-flow.sh drivers (issue #599).
+source "$(dirname "${BASH_SOURCE[0]}")/_flow_common.sh"
 CELL_DIR="$LAYOUT_DIR/trivial-cell"
 KLT="$LAYOUT_DIR/.venv/bin/klt"
 CELL=trivial_mos_array
 PDK_VARIANT=sky130A
 
-if [[ ! -x "$KLT" ]]; then
-  echo "run-trivial-cell-flow.sh: $KLT not found -- run layout/bin/setup-venv.sh first" >&2
-  exit 1
-fi
-
-if ! "$KLT" pdk find --pdk "$PDK_VARIANT" >/dev/null; then
-  echo "run-trivial-cell-flow.sh: no resolvable $PDK_VARIANT PDK -- see sim/pdk.json for the pin" >&2
-  exit 1
-fi
-
-TS_UTC="$(date -u +%Y%m%d-%H%M%S)"
-SHORT_SHA="$(git -C "$REPO_ROOT" rev-parse --short HEAD)"
-RECORD_ID="${TS_UTC}-${SHORT_SHA}"
-OUT_DIR="$CELL_DIR/reports/$RECORD_ID"
-mkdir -p "$OUT_DIR"
-echo "run-trivial-cell-flow.sh: record $RECORD_ID -> $OUT_DIR"
+flow_require_klt run-trivial-cell-flow.sh "$KLT"
+flow_require_pdk run-trivial-cell-flow.sh "$PDK_VARIANT" "see sim/pdk.json for the pin" "$KLT"
+flow_mint_record run-trivial-cell-flow.sh "$CELL_DIR/reports"
 
 # --- 1. Generate the trivial known-good cell -------------------------------
 "$KLT" gen mos_array --pdk "$PDK_VARIANT" --cell-name "$CELL" \

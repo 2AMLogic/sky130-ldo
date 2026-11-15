@@ -25,8 +25,11 @@
 # environment; this script never installs anything host-wide).
 set -euo pipefail
 
-LAYOUT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-REPO_ROOT="$(cd "$LAYOUT_DIR/.." && pwd)"
+# LAYOUT_DIR/REPO_ROOT, the PDK guard, the record mint and the headless
+# netlist step are shared with the other layout/bin/run-*-flow.sh drivers
+# (issue #599). The uvx fallback below stays local to this script: it is the
+# only driver with one.
+source "$(dirname "${BASH_SOURCE[0]}")/_flow_common.sh"
 BLOCK_DIR="$LAYOUT_DIR/cap-rail-demo"
 CELL=cap_rail_demo
 PDK_VARIANT=sky130A
@@ -51,28 +54,19 @@ fi
 for tool in xschem klayout; do
   command -v "$tool" >/dev/null || { echo "run-cap-rail-demo-flow.sh: $tool not on PATH" >&2; exit 1; }
 done
-"${KLT[@]}" pdk find --pdk "$PDK_VARIANT" >/dev/null || {
-  echo "run-cap-rail-demo-flow.sh: no resolvable $PDK_VARIANT PDK -- see sim/pdk.json" >&2; exit 1; }
+flow_require_pdk run-cap-rail-demo-flow.sh "$PDK_VARIANT" "see sim/pdk.json" "${KLT[@]}"
 PDK_KLAYOUT="$("${KLT[@]}" pdk find --pdk "$PDK_VARIANT" --format json | python3 -c 'import json,sys; print(json.load(sys.stdin)["assets"]["klayout"])')"
 MR_DECK="$PDK_KLAYOUT/drc/sky130A_mr.drc"
 [[ -f "$MR_DECK" ]] || { echo "run-cap-rail-demo-flow.sh: $MR_DECK not found" >&2; exit 1; }
 
 cd "$REPO_ROOT"
-TS_UTC="$(date -u +%Y%m%d-%H%M%S)"
-SHORT_SHA="$(git rev-parse --short HEAD)"
-RECORD_ID="${TS_UTC}-${SHORT_SHA}"
-OUT_REL="layout/cap-rail-demo/reports/$RECORD_ID"
-OUT_DIR="$REPO_ROOT/$OUT_REL"
-mkdir -p "$OUT_DIR"
-echo "run-cap-rail-demo-flow.sh: record $RECORD_ID -> $OUT_REL"
+flow_mint_record run-cap-rail-demo-flow.sh "$BLOCK_DIR/reports" --rel
 SCHEMATIC_SHA="$(git log -1 --format=%h -- design/ldo_3v3in_1v8out.sch)"
 
 # --- 1. schematic netlist (the capacitor list comes from here) --------------
-mkdir -p "$OUT_DIR/xschem_out"
-xschem -n -q -x -s -o "$OUT_DIR/xschem_out" --rcfile sim/xschemrc design/ldo_3v3in_1v8out.sch \
-  >/dev/null 2>&1
-NETLIST_REL="$OUT_REL/xschem_out/ldo_3v3in_1v8out.spice"
-[[ -f "$NETLIST_REL" ]] || { echo "run-cap-rail-demo-flow.sh: xschem produced no netlist" >&2; exit 1; }
+flow_netlist_schematic run-cap-rail-demo-flow.sh \
+  "$REPO_ROOT/design/ldo_3v3in_1v8out.sch" "$OUT_DIR/xschem_out" "${KLT[@]}"
+NETLIST_REL="${SCHEM_NETLIST#"$REPO_ROOT"/}"
 
 # --- 2. draw ----------------------------------------------------------------
 "${PY[@]}" layout/bin/gen-cap-rail-demo.py \

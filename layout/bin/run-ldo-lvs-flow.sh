@@ -33,8 +33,10 @@
 # gaps it root-caused are what #33 closed.
 set -euo pipefail
 
-LAYOUT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-REPO_ROOT="$(cd "$LAYOUT_DIR/.." && pwd)"
+# LAYOUT_DIR/REPO_ROOT, the klt/PDK guards, the record mint and the headless
+# netlist step are shared with the other layout/bin/run-*-flow.sh drivers
+# (issue #599).
+source "$(dirname "${BASH_SOURCE[0]}")/_flow_common.sh"
 BLOCK_DIR="$LAYOUT_DIR/ldo-core"
 KLT="$LAYOUT_DIR/.venv/bin/klt"
 CELL=ldo_core
@@ -43,15 +45,8 @@ SCHEMATIC="$REPO_ROOT/design/ldo_3v3in_1v8out.sch"
 PORTS="VOUT VREF EN VIN"
 PIN_LIST="VOUT,VREF,EN,VIN"
 
-if [[ ! -x "$KLT" ]]; then
-  echo "run-ldo-lvs-flow.sh: $KLT not found -- run layout/bin/setup-venv.sh first" >&2
-  exit 1
-fi
-
-if ! "$KLT" pdk find --pdk "$PDK_VARIANT" >/dev/null; then
-  echo "run-ldo-lvs-flow.sh: no resolvable $PDK_VARIANT PDK -- see sim/pdk.json for the pin" >&2
-  exit 1
-fi
+flow_require_klt run-ldo-lvs-flow.sh "$KLT"
+flow_require_pdk run-ldo-lvs-flow.sh "$PDK_VARIANT" "see sim/pdk.json for the pin" "$KLT"
 
 if ! command -v xschem >/dev/null; then
   echo "run-ldo-lvs-flow.sh: xschem not found on PATH -- needed to netlist the schematic" >&2
@@ -65,12 +60,8 @@ if [[ ! -f "$LAYOUT_RECORD_DIR/$CELL.gds" ]]; then
   exit 1
 fi
 
-TS_UTC="$(date -u +%Y%m%d-%H%M%S)"
-SHORT_SHA="$(git -C "$REPO_ROOT" rev-parse --short HEAD)"
-RECORD_ID="${TS_UTC}-${SHORT_SHA}"
-OUT_DIR="$BLOCK_DIR/reports/$RECORD_ID"
-mkdir -p "$OUT_DIR"
-echo "run-ldo-lvs-flow.sh: record $RECORD_ID -> $OUT_DIR (layout from $LAYOUT_RECORD_ID)"
+flow_mint_record run-ldo-lvs-flow.sh "$BLOCK_DIR/reports" \
+  --suffix " (layout from $LAYOUT_RECORD_ID)"
 
 # Schematic-only, matching measurements/build_characterization_report.py's
 # own freshness check (SCHEMATIC_FILE, the .sch alone) -- see
@@ -83,15 +74,7 @@ echo "$LAYOUT_RECORD_ID" > "$OUT_DIR/layout-record-id.txt"
 
 # --- 1. Netlist the schematic headlessly (same invocation design/README.md
 #         documents for validating the schematic) -----------------------------
-XSCHEM_OUT="$OUT_DIR/xschem_out"
-mkdir -p "$XSCHEM_OUT"
-SCHEM_NETLIST="$XSCHEM_OUT/ldo_3v3in_1v8out.spice"
-# `klt netlist` owns the headless xschem invocation (forced flags + timeout kill).
-"$KLT" netlist -o "$SCHEM_NETLIST" --rcfile "$REPO_ROOT/sim/xschemrc" "$SCHEMATIC"
-if [[ ! -f "$SCHEM_NETLIST" ]]; then
-  echo "run-ldo-lvs-flow.sh: expected $SCHEM_NETLIST after xschem netlisting" >&2
-  exit 1
-fi
+flow_netlist_schematic run-ldo-lvs-flow.sh "$SCHEMATIC" "$OUT_DIR/xschem_out" "$KLT"
 MISSING_COUNT="$(grep -c MISSING "$SCHEM_NETLIST" || true)"
 echo "run-ldo-lvs-flow.sh: schematic netlist MISSING count = $MISSING_COUNT"
 

@@ -655,6 +655,17 @@ own runner, `mc-run.py`) — and any edited smoke, window-grid or dropout shape
 is **refused before netlisting, submission or local ngspice**. The other
 regulation grids stay deferred on translating their measurement cards.
 
+**Where the code lives.** The backend itself is `sim/bin/_batch_backend.py`, an
+importable sibling module (issue #580); `corner-run.py` drives it and re-exports
+its names, so `corner_run.<name>` still resolves. A consumer that needs
+`prepare_batch_requests()`, `normalize_batch_response()`, `check_batch_supported()`,
+`batch_remote_info()` or `run_batch()` should `import _batch_backend` rather than
+reach `corner-run.py` through `_record_common.load_corner_run_module()`. The types
+and graders the runner and the backend share — `Experiment`, `Corner`,
+`Measurement`, `Pdk`, `HarnessError`, `grade_bounds()`, `window_legs()`,
+`leg_values()`, `detect_solver_diagnostic()` — live in `sim/bin/_corner_model.py`;
+neither of those two modules imports the other.
+
 - **Requests.** The supply is the netlist's `.param vsup`, not a klt corner
   axis (klt's supply override alters sources, which is not this harness's
   parameter). A full or CLI-overridden Cartesian matrix is therefore split
@@ -815,14 +826,15 @@ shows "Operating point simulation skipped by 'uic'" and no solver
 diagnostic. This validates the translation on this host. **It is not a
 remote result.**
 
-**Live fleet qualification: NOT performed (blocked).** `batch-preflight.py`
-was run twice on 2026-10-11 (shortly after 22:06 UTC and at 22:16 UTC). Both times it exited
-`1` before any job existed:
-`batch-fleet-provision.sh launch failed (exit 1): error: 12 instance(s)
-already running + 1 requested exceeds BATCH_MAX_CONCURRENT_INSTANCES=8`
-(fleet concurrency cap, 2AMLogic/klayout-tools#2917). The runner/client
-version question (2AMLogic/klayout-tools#2948) was therefore not reached.
-The paired check is tracked in #375 and runs after the preflight exits `0`:
+**Live fleet qualification: performed 2026-11-14 (issue #375).**
+`batch-preflight.py` was first refused by the fleet concurrency cap (twice on
+2026-10-11, `BATCH_MAX_CONCURRENT_INSTANCES=8`,
+2AMLogic/klayout-tools#2917; the runner/client question,
+2AMLogic/klayout-tools#2948, was not reached). After both closed, the
+re-probe exited `0` (job `klt-sim-724db05b8a1c`, runner klt 0.9.0 /
+client 0.9.2.dev1029+g76f47afa48f1, `runner_compatibility` `match`) and the
+paired check ran at one commit, one corner (tt / 27 °C / 3.30 V), both legs
+`--no-write`:
 
 ```bash
 python3 sim/bin/batch-preflight.py                       # must exit 0 first
@@ -834,14 +846,24 @@ python3 sim/bin/corner-run.py sim/dropout-vs-load \
     --subset-reason "issue #374 paired local/remote baseline check" --no-write
 ```
 
-Run both at the same commit. **Comparison tolerance:** equal at the printed
-precision, |Δ| ≤ 1 µV on `dropout_v` and `vout_at_max_vin_v`, when the
-remote `engine_version` equals the local ngspice. If the engine versions
-differ, report Δ together with both versions and the request netlist sha256
-(klt `environment.netlist_sha256`), and do not claim equivalence. Do not
-widen the tolerance to absorb tool drift. A failed or incompatible preflight
-only defers this check. It does not permit a local multi-corner campaign.
-After a passing paired check, the full campaign is
+Verdict (`sim/bin/compare_dropout_paired.py`, artifacts and provenance in
+`sim/dropout-vs-load/diagnostics/issue-375/`): the remote job
+`klt-sim-1d3242e701fb` and the local leg both ran **ngspice 47** — the fleet
+image has since moved past the ngspice-46 of the earlier records, so the
+engines-match branch of the **comparison tolerance** applies: |Δ| ≤ 1 µV on
+`dropout_vin_x`, `vout_at_max_vin_v` and the derived `dropout_v`, with
+equivalence claimable only when the remote `engine_version` equals the local
+ngspice (if they ever differ again, report Δ with both versions and the
+request netlist sha256, klt `environment.netlist_sha256`, and do not claim
+equivalence). Here all three metrics agree with Δ = 0. Both legs graded FAIL
+(0.397658 V vs the ratified < 0.3 V bound) — matching FAIL verdicts support
+execution parity only, never spec compliance (the #114 gap). Agreement is
+demonstrated at the remote's 7-significant-digit print resolution — exactly
+the tolerance — not below it, and the worker's PDK-stamp mismatch warning is
+recorded in the diagnostic, not absorbed. Tolerances were not widened. A
+failed or incompatible preflight only defers a re-check; it does not permit
+a local multi-corner campaign. After this passing paired check, the full
+campaign is
 `python3 sim/bin/corner-run.py sim/dropout-vs-load --backend batch`. That is
 the batch command above without `--process/--temp/--supply`,
 `--subset-reason` or `--no-write`.
