@@ -292,11 +292,12 @@ class TestAttestedItems(unittest.TestCase):
                 dst = root / m["path"]["path"]
                 dst.parent.mkdir(parents=True, exist_ok=True)
                 dst.write_bytes((REPO_ROOT / m["path"]["path"]).read_bytes())
-            self.assertEqual(verify_pins.verify_input_set(
-                pin, "1", verify_pins.norm(pin["sha256"]), root), [])
+            expected = verify_pins.normalize_sha256(pin["sha256"])
+            self.assertEqual(
+                verify_pins.verify_input_set(pin, "1", expected, root), [])
             (root / "design/ldo_3v3in_1v8out.sch").write_bytes(b"drift")
-            self.assertTrue(verify_pins.verify_input_set(
-                pin, "1", verify_pins.norm(pin["sha256"]), root))
+            self.assertTrue(
+                verify_pins.verify_input_set(pin, "1", expected, root))
 
 
 class TestManifestParts(unittest.TestCase):
@@ -314,10 +315,91 @@ class TestManifestParts(unittest.TestCase):
         self.assertEqual(verify_pins.manifest_parts(None), [])
         self.assertEqual(verify_pins.manifest_parts(["a.json", 7]), [])
 
-    def test_norm_accepts_both_hash_spellings(self):
-        self.assertEqual(verify_pins.norm("sha256:abc"), "abc")
-        self.assertEqual(verify_pins.norm("abc"), "abc")
-        self.assertIsNone(verify_pins.norm(None))
+
+class TestDigestContract(unittest.TestCase):
+    """This stage reads recorded hashes through the repo's ONE normalizer (#589).
+
+    It used to carry its own `norm`, strictly weaker than
+    `measurements/build_characterization_report.py`'s `normalize_sha256`
+    despite that function's docstring claiming parity: `norm` passed
+    `"sha256:TBD"` through as the comparable string `"TBD"`, and left an
+    uppercase or whitespace-padded digest un-canonicalised -- inside the gate
+    that is the verdict of record. The full case-by-case contract is pinned in
+    `layout/tests/test_digest.py`; what matters here is that this stage uses
+    that same function object and nothing else.
+    """
+
+    def test_stage_uses_the_shared_normalizer(self):
+        sys.path.append(str(REPO_ROOT / "layout" / "bin"))
+        import _digest
+
+        self.assertIs(verify_pins.normalize_sha256, _digest.normalize_sha256)
+        self.assertIs(verify_pins.sha256_file, _digest.sha256_file)
+
+    def test_the_weaker_normalizer_is_gone(self):
+        self.assertFalse(hasattr(verify_pins, "norm"))
+
+    def test_both_spellings_still_read_as_the_same_digest(self):
+        sha = "a" * 64
+        self.assertEqual(verify_pins.normalize_sha256(sha), sha)
+        self.assertEqual(verify_pins.normalize_sha256("sha256:" + sha), sha)
+
+    def test_malformed_recorded_hashes_are_not_comparable(self):
+        for bad in ("sha256:TBD", "sha256:", "deadbeef", None, 7):
+            self.assertIsNone(verify_pins.normalize_sha256(bad), bad)
+
+
+class TestMalformedProvenanceIsUnverified(unittest.TestCase):
+    """A hash that is not a digest must be reported as such, not compared.
+
+    Both halves of the pin/manifest correlation are covered: a malformed pin
+    (`artifact-pins.json`) and a malformed manifest citation. Under `norm`
+    these did not pass silently -- `norm("sha256:TBD")` returned the truthy
+    string `"TBD"`, which then failed some *other* comparison -- but they were
+    diagnosed as drift or as a missing backing pin, which sends a reader
+    looking for the wrong defect. The assertions below pin the diagnosis, not
+    just the exit status.
+    """
+
+    def test_a_pin_whose_sha256_is_a_placeholder_fails(self):
+        pins = _pins()
+        target = next(p for p in pins if not p.get("input_set"))
+        target["sha256"] = "sha256:TBD"
+        failures = _verify(_manifest(), pins)
+        self.assertTrue(
+            any("not a sha256 digest" in f for f in failures), failures)
+
+    def test_a_pin_whose_sha256_is_truncated_fails(self):
+        pins = _pins()
+        target = next(p for p in pins if not p.get("input_set"))
+        target["sha256"] = target["sha256"][:20]
+        self.assertTrue(_verify(_manifest(), pins))
+
+    def test_a_manifest_citation_with_a_malformed_hash_fails(self):
+        manifest = _manifest()
+        item = next(
+            i for i, e in sorted(manifest["evidence"].items())
+            if isinstance(e, dict) and "content_hash" in e
+        )
+        manifest["evidence"][item] = {
+            **manifest["evidence"][item],
+            "content_hash": "sha256:TBD",
+        }
+        failures = _verify(manifest, _pins())
+        self.assertTrue(
+            any("not a sha256 digest" in f for f in failures), failures)
+
+    def test_an_uppercase_pin_still_matches_its_artifact(self):
+        """Canonicalisation, not weakening: same bytes, different typing.
+
+        `norm` compared an uppercase pin verbatim against a lowercase
+        `hexdigest()`, so this spelling used to be reported as drift.
+        """
+        pins = _pins()
+        for pin in pins:
+            pin["sha256"] = pin["sha256"].upper().replace("SHA256:", "sha256:")
+        manifest = _manifest()
+        self.assertEqual(_verify(manifest, pins), [])
 
 
 if __name__ == "__main__":

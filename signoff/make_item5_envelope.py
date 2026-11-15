@@ -50,7 +50,6 @@ re-pointed at it.
 
 from __future__ import annotations
 
-import hashlib
 import json
 import sys
 from pathlib import Path
@@ -60,6 +59,11 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 # hysteresis branch below imports that rule rather than restating it.
 sys.path.insert(0, str(REPO_ROOT / "measurements"))
 import build_characterization_report as _report  # noqa: E402
+
+# The repo's one content-digest contract (issue #589). Appended, so neither
+# tree's `_record_common` can shadow the other's.
+sys.path.append(str(REPO_ROOT / "layout" / "bin"))
+from _digest import sha256_file_prefixed  # noqa: E402
 
 OUT_DIR = REPO_ROOT / "signoff" / "evidence"
 
@@ -185,10 +189,6 @@ class WrapError(Exception):
     """A record does not say what the ratified row requires; nothing is written."""
 
 
-def _sha(path: Path) -> str:
-    return "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
-
-
 def _limits(m: dict) -> dict | None:
     lim = {k: m[k] for k in ("min", "max") if m.get(k) is not None}
     return lim or None
@@ -292,7 +292,7 @@ def build_hysteresis_envelope(bench: str, rid: str) -> dict:
             "bench": bench,
             "record_id": rid,
             "path": rec_path.relative_to(REPO_ROOT).as_posix(),
-            "sha256": _sha(rec_path),
+            "sha256": sha256_file_prefixed(rec_path),
             "overall_pass": status == "pass",
             "matrix_is_subset": False,
         },
@@ -307,7 +307,7 @@ def build_hysteresis_envelope(bench: str, rid: str) -> dict:
             "input": {
                 "path": snap.relative_to(REPO_ROOT).as_posix(),
                 "role": "netlist",
-                "content_hash": _sha(snap),
+                "content_hash": sha256_file_prefixed(snap),
             },
         },
         "metrics": {
@@ -430,7 +430,7 @@ def build_envelope(bench: str, rid: str) -> dict:
             "bench": bench,
             "record_id": rid,
             "path": rec_path.relative_to(REPO_ROOT).as_posix(),
-            "sha256": _sha(rec_path),
+            "sha256": sha256_file_prefixed(rec_path),
             "overall_pass": rec["overall_pass"],
             "matrix_is_subset": subset,
         },
@@ -444,7 +444,7 @@ def build_envelope(bench: str, rid: str) -> dict:
             "input": {
                 "path": snap.relative_to(REPO_ROOT).as_posix(),
                 "role": "netlist",
-                "content_hash": _sha(snap),
+                "content_hash": sha256_file_prefixed(snap),
             },
         },
         "metrics": {
@@ -508,7 +508,7 @@ def main(argv: list[str] | None = None) -> int:
             return 1
         out.parent.mkdir(parents=True, exist_ok=True)
         out.write_text(text)
-        print(f"wrote {rel} {_sha(out)}")
+        print(f"wrote {rel} {sha256_file_prefixed(out)}")
     return rc
 
 
