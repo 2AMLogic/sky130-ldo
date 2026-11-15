@@ -185,9 +185,10 @@ def main() -> int:
     a("## Flow")
     a("")
     a(
-        "1. `xschem -n -q -x -s ...` -- headless netlist of "
-        "`design/ldo_3v3in_1v8out.sch`, the single source this layout's "
-        "device set and connectivity are both derived from."
+        "1. `klt netlist -o <file.spice> --rcfile sim/xschemrc ...` -- "
+        "headless netlist of `design/ldo_3v3in_1v8out.sch`, the single "
+        "source this layout's device set and connectivity are both "
+        "derived from."
     )
     a(
         "2. `layout/bin/gen-ldo-blocks.py` runs `klt gen mos_array` / "
