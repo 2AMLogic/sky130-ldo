@@ -183,18 +183,29 @@ class ReplayAgainstTheCommittedRecord(unittest.TestCase):
     """The whole driver, replayed offline against the record it minted.
 
     `run_klt_sim` is stubbed with responses synthesized from the committed
-    `summary.json`, so nothing is submitted and no PDK is needed. This is the
-    end-to-end counterpart of the per-request checks above: it also pins the row
-    shaping (Blocker 2 of #586 -- `key` dropped) and the record rendering, both
-    of which a request-only comparison cannot see.
+    `summary.json`, so nothing is submitted and no PDK is needed. The replay is
+    also hermetic w.r.t. the `klt` binary itself: `klt_binary` is stubbed
+    alongside, because the core resolves it inside `submit()`'s `try` before
+    `run_klt_sim` is reached, and both CI jobs run without any `klt` on PATH.
+    This is the end-to-end counterpart of the per-request checks above: it also
+    pins the row shaping (Blocker 2 of #586 -- `key` dropped) and the record
+    rendering, both of which a request-only comparison cannot see.
     """
 
     def replay(self):
         committed = json.loads((GOLD.parent / "summary.json").read_text())
         names = [n for n, _e, _u in bg.MEAS]
 
+        resolves = []  # (this is what makes a klt-less host green: see docstring)
+        stub_exe = "klt-stub-replay"
+
+        def klt_stub(_usage):
+            resolves.append(_usage)
+            return stub_exe
+
         def stub(req_path, od, backend, pdk_root, klt_exe=None, require_corners=True):
             self.assertEqual(backend, "batch")  # host rule: never a local grid
+            self.assertEqual(klt_exe, stub_exe)  # the resolve came from klt_stub
             design, vtxt = Path(req_path).stem.split("-v")
             rows = [
                 r
@@ -224,12 +235,16 @@ class ReplayAgainstTheCommittedRecord(unittest.TestCase):
         argv = ["bias-retopo-grid.py", "--record-id", GOLD.parent.name]
         with (
             mock.patch.object(fc, "run_klt_sim", stub),
+            mock.patch.object(fc, "klt_binary", klt_stub),
             mock.patch.object(bg, "REPO", Path(tmp.name)),
             mock.patch.object(sys, "argv", argv),
             contextlib.redirect_stdout(io.StringIO()),
         ):
             rc = bg.main()
         self.assertEqual(rc, 0)
+        # One resolve per submitted request: if this were 0, the green would be
+        # an ambient `klt` on PATH, not the stub (how this test first failed).
+        self.assertEqual(len(resolves), len(bg.DESIGNS) * len(bg.SUPPLIES))
         return Path(tmp.name) / "sim" / "bias-retopo" / GOLD.parent.name
 
     def test_requests_summary_and_record_all_match(self):
