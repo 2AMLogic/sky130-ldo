@@ -6,8 +6,25 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 
 - [2026-09](work_log/WORK_LOG_2026-09.md)
 
+### 2026-11-15
+
+- **PR #612**: sim: paired dropout local/fleet baseline check passes (equivalent, ngspice-47 both sides)
+- **Issue #375** (closed): Dropout: run the paired local/remote baseline check for the cold-start batch adapter once the fleet preflight accepts
+- **PR #611**: refactor(sim): share the thermal staircase Runner and deck frame in _record_common
+- **Issue #597** (closed): Collapse the duplicated thermal Runner and deck frame onto _record_common.py's #297 block
+- **PR #610**: sim: remove six dead module-level constants in sim/bin
+- **Issue #605** (closed): Remove six dead module-level constants in sim/bin: the residue pyflakes cannot see
+- **PR #608**: diagnostics: re-measure the pex resistance-graph blocker on the regenerated core
+- **Issue #583** (closed): Item 7: re-measure the extraction blocker on the regenerated core (extraction only, no corner grid)
+- **PR #594**: refactor(sim): extract the klt sim batch backend into _batch_backend.py
+- **Issue #580** (closed): Split sim/bin/corner-run.py: extract the 845-line klt sim batch backend into an importable sibling module
+
 ### 2026-11-14
 
+- **PR #601**: refactor(layout): one shared preamble for the five run-*-flow.sh drivers
+- **Issue #599** (closed): layout/bin: the five run-*-flow.sh drivers duplicate their preamble, and two copies have drifted
+- **PR #590**: refactor: drop never-called owner_of and grade_ac helpers
+- **Issue #585** (closed): Remove two never-called helpers: owner_of in diagnose-official-drc.py and grade_ac in rcz-adaptive-370.py
 - **PR #592**: refactor: one shared file-SHA-256 helper and one strict digest normalizer
 - **Issue #589** (closed): Consolidate five file-SHA-256 helpers and two divergent digest normalizers into one contract
 - **PR #581**: docs: roadmap as of 2026-11-13
