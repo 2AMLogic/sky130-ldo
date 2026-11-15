@@ -118,19 +118,19 @@ pending DR-007's own market-comparison mechanism.
 
 | Parameter | Target | Stretch |
 |---|---|---|
-| Input | 3.3 V ±10% (2.97–3.63 V) | 5 V flavor — separate follow-on variant (DR-001) |
+| Input | 3.3 V ±10% (2.97–3.63 V) | 5 V flavor as a separate follow-on variant |
 | Output | 1.8 V ±2% (fixed; divider as a unit-resistor string) | programmable 1.2–3.0 V — deferred |
 | Load | 0–50 mA (0 mA = no external load; feedback divider is the only inherent preload) | 100 mA |
 | Dropout @ 50 mA | < 300 mV (note 1) | < 200 mV |
 | Line regulation | < 5 mV/V over 2.97–3.63 V, at 1 mA and 50 mA (note 2) | — |
 | Load regulation (0–50 mA) | < 1% (18 mV), counted inside the ±2% window (note 2) | — |
 | Load transient | 1↔50 mA step, ~1 µs edges: peak excursion ≤ 150 mV, recover to ±1% in ≤ 20 µs, over the ratified C_out/ESR window (note 3) | peak ≤ 100 mV |
-| PSRR | > 50 dB @ 1 kHz and > 20 dB @ 100 kHz, at 1 mA and 50 mA (note 4) | > 60 dB @ 1 kHz, > 30 dB @ 100 kHz |
-| Iq (excl. load current) | < 30 µA at no load and at full load (50 mA), every PVT corner (note 5) | < 10 µA |
+| PSRR | > 50 dB @ 1 kHz and > 20 dB @ 100 kHz, at 1 mA (light-load, binding) and at 50 mA (note 4) | > 60 dB @ 1 kHz, > 30 dB @ 100 kHz |
+| Iq (excl. load current) | < 30 µA at no load **and** at full load (50 mA), every PVT corner; Iq = total VIN current minus load current, EN asserted (note 5) | < 10 µA — subordinate to DR-002's C_out/ESR window; not to be bought back by reintroducing a minimum ESR |
 | Current limit | constant-current (brickwall) clamp, window TBD over PVT; never engages for I_load ≤ 50 mA; survives continuous Vout = 0 short at Vin_max (note 6) | — |
 | Startup / soft-start | monotonic into any load 0–50 mA and any C_out in the stability window; controlled ramp; inside ±2% within a few ms of enable; overshoot ≤ +2% (note 6) | — |
 | Enable / shutdown | shutdown Iq < 3 µA worst corner; disabled output = pass device fully off, no active discharge; Vin→Vout leakage ≤ 1 µA (note 6) | — |
-| Thermal | continuous worst-case dissipation set by Vin_max × I_load; specified to Tj ≤ 125 °C; fault-only shutdown backstop 150 °C trip / 135 °C reset (note 7) | — |
+| Thermal | continuous worst-case dissipation set by Vin_max × I_load; short-circuit ceiling set by the current limit; specified to Tj ≤ 125 °C (rated-operation ceiling, unchanged); θJA delegated to package/integration (note 7) | — |
 | Output noise | not specified — waived unless a consumer states a requirement | µVrms row if a consumer asks |
 | Area | < 0.1 mm² total core area, pass FET included, excluding pads and sealring | — |
 | Stability | stable 0–50 mA over the ratified C_out/ESR window; PM ≥ 45°, GM ≥ 10 dB worst corner (note 4) | capless variant (separate fork) |
@@ -157,8 +157,9 @@ Notes — these are part of the ratified spec, not commentary:
    0 mA end of Stability is the binding, unresolved gap. Current verdicts and
    freshness: see the characterization report.
 5. **Iq** is set by
-   [`DR-009`](spec/decision-records/DR-009-iq-budget.md) (`proposed`; it
-   ratifies on merge of its PR, per 2AMLogic/2am#357). The number comes from
+   [`DR-009`](spec/decision-records/DR-009-iq-budget.md) (`proposed`; fresh
+   ratification pending under #301 — DR-009 does not ratify itself). The
+   number comes from
    gf180-ldo parity, checked against a sky130 device-fact budget and public
    comps, not from the measured result. It closes the item DR-003/DR-006 left
    open. No named binding corner (DR-004 caveat). Current verdict: see the
@@ -177,8 +178,9 @@ current pass/fail state of the evidence behind it — for that, see
 generated (not hand-maintained) rollup that cites the exact `sim/<slug>/records/`
 record behind every row's current verdict. Regenerate it with
 `python3 measurements/build_characterization_report.py` after any `sim/`
-record lands or `design/` changes; this table (the ratified spec + notes
-above) stays the authority on what is required, `measurements/characterization.md`
+record lands or `design/` changes; [`spec/target-spec.md`](spec/target-spec.md)
+stays the authority on what is required (the table above is its mirror, not the
+authority itself), `measurements/characterization.md`
 on what the evidence currently shows. Verdict and freshness are separate:
 a PASS on a `STALE` record is not qualification of the current integrated
 schematic, and this README makes no such claim. Check that the committed report
