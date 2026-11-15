@@ -218,6 +218,90 @@ def _is_hysteresis(bench: str, rid: str) -> bool:
     return (_hysteresis_dir(bench, rid) / "result.json").is_file()
 
 
+def _envelope(
+    *,
+    bench: str,
+    rid: str,
+    rec: dict,
+    rec_path: Path,
+    snap: Path,
+    status: str,
+    corners: list[dict],
+    rollup: list[dict],
+    checked: list[str],
+    skipped: list[dict],
+    n_pass: int,
+    n_fail: int,
+    wrapper: str,
+    overall_pass: bool,
+    matrix_is_subset: bool,
+    remote: dict | None,
+    measurements_declared: int,
+    measurements_with_limits: int,
+) -> dict:
+    """The one item-5 envelope literal, shared by both wrap paths.
+
+    Key insertion order is the on-disk byte order (`envelope_text()` dumps
+    with ``json.dumps(..., indent=2)``), so keys must stay in this order and
+    `remote` is appended as the last `environment` key only when the caller
+    passes one — exactly the split between the two wrap paths.
+    """
+    env: dict = {
+        "schema_version": 1,
+        "netlist": snap.relative_to(REPO_ROOT).as_posix(),
+        "status": status,
+        "corner_count": len(corners),
+        "passed": n_pass,
+        "failed": n_fail,
+        "errored": 0,
+        "wrapper": wrapper,
+        "source_record": {
+            "bench": bench,
+            "record_id": rid,
+            "path": rec_path.relative_to(REPO_ROOT).as_posix(),
+            "sha256": sha256_file_prefixed(rec_path),
+            "overall_pass": overall_pass,
+            "matrix_is_subset": matrix_is_subset,
+        },
+        "environment": {
+            "engine": "ngspice",
+            "engine_version": rec["tools"].get("ngspice"),
+            "pdk": rec["pdk"].get("pinned_commit"),
+            "platform": rec["tools"].get("platform"),
+        },
+        "provenance": {
+            "input": {
+                "path": snap.relative_to(REPO_ROOT).as_posix(),
+                "role": "netlist",
+                "content_hash": sha256_file_prefixed(snap),
+            },
+        },
+        "metrics": {
+            "sim__corner__count": len(corners),
+            "sim__corner__passed_count": n_pass,
+            "sim__corner__failed_count": n_fail,
+            "sim__corner__errored_count": 0,
+        },
+        "coverage": {
+            "schema_version": 1,
+            "known": True,
+            "checked": sorted(checked),
+            "skipped": skipped,
+            "inapplicable": [],
+            "unknown": [],
+            "nothing_checked": False,
+            "nothing_checked_reasons": [],
+            "measurements_declared": measurements_declared,
+            "measurements_with_limits": measurements_with_limits,
+        },
+        "measurements": rollup,
+        "corners": corners,
+    }
+    if remote is not None:
+        env["environment"]["remote"] = remote
+    return env
+
+
 def build_hysteresis_envelope(bench: str, rid: str) -> dict:
     """Wrap a directory-style hysteresis record (`result.json` with per-corner
     bracket edges) into the envelope shape.
@@ -279,58 +363,17 @@ def build_hysteresis_envelope(bench: str, rid: str) -> dict:
     complete = rec.get("complete") is True
     skipped = [] if complete else [{"id": f"{bench}:hysteresis", "reason": "record is not complete"}]
     status = "fail" if n_fail else ("pass" if complete else "pass_partial")
-    return {
-        "schema_version": 1,
-        "netlist": snap.relative_to(REPO_ROOT).as_posix(),
-        "status": status,
-        "corner_count": len(corners),
-        "passed": n_pass,
-        "failed": n_fail,
-        "errored": 0,
-        "wrapper": WRAPPER + HYSTERESIS_WRAPPER,
-        "source_record": {
-            "bench": bench,
-            "record_id": rid,
-            "path": rec_path.relative_to(REPO_ROOT).as_posix(),
-            "sha256": sha256_file_prefixed(rec_path),
-            "overall_pass": status == "pass",
-            "matrix_is_subset": False,
-        },
-        "environment": {
-            "engine": "ngspice",
-            "engine_version": rec["tools"].get("ngspice"),
-            "pdk": rec["pdk"].get("pinned_commit"),
-            "platform": rec["tools"].get("platform"),
-            "remote": {"backend": rec.get("backend"), "jobs": len(rec.get("jobs") or [])},
-        },
-        "provenance": {
-            "input": {
-                "path": snap.relative_to(REPO_ROOT).as_posix(),
-                "role": "netlist",
-                "content_hash": sha256_file_prefixed(snap),
-            },
-        },
-        "metrics": {
-            "sim__corner__count": len(corners),
-            "sim__corner__passed_count": n_pass,
-            "sim__corner__failed_count": n_fail,
-            "sim__corner__errored_count": 0,
-        },
-        "coverage": {
-            "schema_version": 1,
-            "known": True,
-            "checked": sorted(checked),
-            "skipped": skipped,
-            "inapplicable": [],
-            "unknown": [],
-            "nothing_checked": False,
-            "nothing_checked_reasons": [],
-            "measurements_declared": len(rollup),
-            "measurements_with_limits": len(rollup),
-        },
-        "measurements": rollup,
-        "corners": corners,
-    }
+    return _envelope(
+        bench=bench, rid=rid, rec=rec, rec_path=rec_path, snap=snap,
+        status=status, corners=corners, rollup=rollup, checked=checked,
+        skipped=skipped, n_pass=n_pass, n_fail=n_fail,
+        wrapper=WRAPPER + HYSTERESIS_WRAPPER,
+        overall_pass=status == "pass",
+        matrix_is_subset=False,
+        remote={"backend": rec.get("backend"), "jobs": len(rec.get("jobs") or [])},
+        measurements_declared=len(rollup),
+        measurements_with_limits=len(rollup),
+    )
 
 
 def build_envelope(bench: str, rid: str) -> dict:
@@ -417,57 +460,17 @@ def build_envelope(bench: str, rid: str) -> dict:
 
     declared = len(rollup)
     with_limits = sum(1 for m in rollup if m["limits"])
-    return {
-        "schema_version": 1,
-        "netlist": snap.relative_to(REPO_ROOT).as_posix(),
-        "status": status,
-        "corner_count": len(corners),
-        "passed": n_pass,
-        "failed": n_fail,
-        "errored": 0,
-        "wrapper": WRAPPER,
-        "source_record": {
-            "bench": bench,
-            "record_id": rid,
-            "path": rec_path.relative_to(REPO_ROOT).as_posix(),
-            "sha256": sha256_file_prefixed(rec_path),
-            "overall_pass": rec["overall_pass"],
-            "matrix_is_subset": subset,
-        },
-        "environment": {
-            "engine": "ngspice",
-            "engine_version": rec["tools"].get("ngspice"),
-            "pdk": rec["pdk"].get("pinned_commit"),
-            "platform": rec["tools"].get("platform"),
-        },
-        "provenance": {
-            "input": {
-                "path": snap.relative_to(REPO_ROOT).as_posix(),
-                "role": "netlist",
-                "content_hash": sha256_file_prefixed(snap),
-            },
-        },
-        "metrics": {
-            "sim__corner__count": len(corners),
-            "sim__corner__passed_count": n_pass,
-            "sim__corner__failed_count": n_fail,
-            "sim__corner__errored_count": 0,
-        },
-        "coverage": {
-            "schema_version": 1,
-            "known": True,
-            "checked": sorted(checked),
-            "skipped": skipped,
-            "inapplicable": [],
-            "unknown": [],
-            "nothing_checked": False,
-            "nothing_checked_reasons": [],
-            "measurements_declared": declared,
-            "measurements_with_limits": with_limits,
-        },
-        "measurements": rollup,
-        "corners": corners,
-    }
+    return _envelope(
+        bench=bench, rid=rid, rec=rec, rec_path=rec_path, snap=snap,
+        status=status, corners=corners, rollup=rollup, checked=checked,
+        skipped=skipped, n_pass=n_pass, n_fail=n_fail,
+        wrapper=WRAPPER,
+        overall_pass=rec["overall_pass"],
+        matrix_is_subset=subset,
+        remote=None,
+        measurements_declared=declared,
+        measurements_with_limits=with_limits,
+    )
 
 
 def output_path(bench: str, rid: str) -> Path:
