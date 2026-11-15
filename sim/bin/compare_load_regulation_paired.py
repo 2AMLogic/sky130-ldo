@@ -43,7 +43,6 @@ VNOM = 1.8
 ENDPOINTS = [
     f"vout_{ld}{sfx}" for ld in ("0ma", "50ma") for sfx in ("", "_min", "_max")
 ]
-DERIVED = ["load_reg_v", "load_reg_pct"]
 TOLS = {
     **{n: (ENDPOINT_TOL_V, "V") for n in ENDPOINTS},
     "load_reg_v": (LOAD_REG_V_TOL, "V"),

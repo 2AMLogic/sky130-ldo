@@ -10,6 +10,12 @@
 # issue #384: paired line-regulation local/fleet diagnostic -- the raw local and remote
 # corner-run / ngspice logs are the source records behind comparison.json.
 !sim/line-regulation/diagnostics/issue-384/**/*.log
+# issue #375: paired dropout cold-start local/fleet diagnostic -- the raw local and remote
+# corner-run / ngspice logs are the source records behind comparison.json.
+!sim/dropout-vs-load/diagnostics/issue-375/**/*.log
+# issue #583: the pex re-measure legs' klt stderr (empty, and the emptiness
+# itself is the finding — committed evidence per the diagnostics convention).
+!sim/pex-post-layout/diagnostics/*/*/pex.stderr.log
 __pycache__/
 .DS_Store
 

@@ -744,14 +744,23 @@ In dependency order, not effort order:
    did that), nor the request to declare limits (issue #154 did that), nor the
    power rails to stop being drawn as 0.30 µm signal trunks (#154 did that
    too, and the layout is still DRC-clean and LVS-matched). What it needs now
-   is **not in this repo**: a `klt` build whose `--parasitics` lumped-R model
-   can tell a sized power rail from a signal trunk at all —
-   [klayout-tools#2391](https://github.com/2AMLogic/klayout-tools/issues/2391)
-   and [#2458](https://github.com/2AMLogic/klayout-tools/issues/2458). At this
-   repo's pin, 98–99 % of the modelled per-net resistance on the load-current
-   nets is the device generator's own local-interconnect pads, which no knob
-   this flow has can change. Tracked as #162. See "Item 7 has a passing record
-   that this manifest declines to cite" above.
+   is **not in this repo**: the `--resistance-graph` extractor still falls
+   back to the legacy lumped-R model (klayout-tools#2391/#2458's series-sum,
+   both closed) on the load-current nets — measured on the regenerated core
+   (2026-11-12, PR #557) in
+   `sim/pex-post-layout/diagnostics/20261114-193718-fabcb0c6-rgraph-recheck/`:
+   **0 of 28 nets graph-derived at this repo's pin** (`dc136150`) and **1 of
+   28 on releases `0.9.1` and `0.9.2`** (a small signal net, identical on
+   both releases; `VIN`/`VOUT` still legacy),
+   so #4061's interior-landing fix (closed-completed 2026-10-23) covers only
+   part of this geometry. Which mechanism blocks the other 27 nets
+   (`unsupported_geometry` vs the `graph_too_large` caps) is not observable
+   from tool output — no per-net fallback reason is emitted — filed
+   generically as
+   [klayout-tools#5747](https://github.com/2AMLogic/klayout-tools/issues/5747).
+   Until that diagnostic (and the fix it will point to) lands, the full-load
+   rows stay non-physical on every build measured. See "Item 7 has a passing
+   record that this manifest declines to cite" above.
 3. **Item 11** is `met` as of issue #112: the `klt erc` supply spec and report
    this list previously asked for exist, ran, and are cited — the compound
    citation is that `erc_supply.json` plus item 4's own LVS report on the
