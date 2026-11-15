@@ -24,7 +24,6 @@ import sys
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-REPO = HERE.parent.parent
 sys.path.insert(0, str(HERE))
 import _fleet_campaign as fc  # noqa: E402
 

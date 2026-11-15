@@ -6,6 +6,12 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 
 - [2026-09](work_log/WORK_LOG_2026-09.md)
 
+### 2026-11-14
+
+- **PR #592**: refactor: one shared file-SHA-256 helper and one strict digest normalizer
+- **Issue #589** (closed): Consolidate five file-SHA-256 helpers and two divergent digest normalizers into one contract
+- **PR #581**: docs: roadmap as of 2026-11-13
+
 ### 2026-11-13
 
 - **PR #575**: refactor(sim): extract the batch-fleet campaign core into _fleet_campaign.py

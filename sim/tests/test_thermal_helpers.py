@@ -8,6 +8,7 @@ from pathlib import Path
 SIM = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SIM / "bin"))
 import _record_common as rc  # noqa: E402
+import batch_thermal_staircase as bts  # noqa: E402
 from _sim_script_loader import load_script  # noqa: E402
 
 
@@ -133,6 +134,18 @@ class TestRunnerWiring(unittest.TestCase):
         for m in (self.hyst, self.demo):
             for fn in ("read_dat", "at", "tripped", "bisect"):
                 self.assertIs(getattr(m, fn), getattr(rc, fn))
+            # issue #597: the Runner shell is shared too, and no local PROGRESS_RE
+            self.assertTrue(issubclass(m.Runner, rc.ThermalRunner))
+            self.assertFalse(hasattr(m, "PROGRESS_RE"))
+
+    def test_hysteresis_instants_single_source(self):
+        names = ("T_COLD", "T_FORCED", "T_HOLD", "T_EN_LOW", "T_REEN")
+        # instants live on each bench's Runner class (issue #597), not at module level
+        self.assertEqual(tuple(getattr(self.hyst.Runner, n) for n in names),
+                         tuple(getattr(bts, n) for n in names))
+        # the regen-cmp demo is a DIFFERENT bench: its instants must NOT be pinned to these
+        self.assertNotEqual(tuple(getattr(self.demo.Runner, n) for n in names),
+                            tuple(getattr(bts, n) for n in names))
 
     def test_vector_schemas(self):
         self.assertEqual(self.hyst.KEYS, ["ts_cmp", "rc_a", "rc_b", "ea_out", "vout", "en", "ts_sns", "ts_ref"])
