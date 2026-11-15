@@ -24,6 +24,7 @@ from unittest import mock
 
 SIM_DIR = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(SIM_DIR / "bin"))
+import _batch_backend  # noqa: E402  # the batch backend is its own module (issue #580)
 import _evidence_store  # noqa: E402  # corner-run.py imports _record_common (issue #46)
 from _sim_script_loader import load_script  # noqa: E402
 corner_run = load_script("corner_run", SIM_DIR / "bin" / "corner-run.py", register=True)
@@ -697,6 +698,11 @@ class BatchHarness(unittest.TestCase):
             mock.patch.object(corner_run, "REPO_ROOT", self.tmp),
             mock.patch.object(corner_run, "BUILD_DIR", self.tmp / "build"),
             mock.patch.object(corner_run, "SPICEINIT_FILE", sim / "spiceinit"),
+            # The batch backend lives in its own module (issue #580) and reads
+            # these from its own globals, so the runner-side patch above does
+            # not reach it -- patch both, or a batch run escapes the fixture.
+            mock.patch.object(_batch_backend, "SPICEINIT_FILE", sim / "spiceinit"),
+            mock.patch.object(_batch_backend, "klt_binary", return_value="/fake/klt"),
             mock.patch.object(corner_run, "load_pin", return_value=self.pin),
             mock.patch.object(corner_run, "resolve_pdk", side_effect=lambda pin: self.pdk),
             mock.patch.object(corner_run, "netlist_with_xschem", side_effect=fake_netlist),
