@@ -104,8 +104,10 @@ class Runner(rc.ThermalRunner):
     AMP_KEY = "ix_amp_a"
     HOT_AMP, COLD_AMP = IX_HOT, IX_COLD
     # observation instants (us): end of cold start / during disturbance / hold
-    # after release / EN low / after EN re-enable
-    T_COLD, T_FORCED, T_HOLD, T_EN_LOW, T_REEN = 19, 39, 90, 108, 165
+    # after release / EN low / after EN re-enable.  Single source:
+    # batch_thermal_staircase, which also derives the batch cards' record field
+    # names from them (issue #613).
+    T_COLD, T_FORCED, T_HOLD, T_EN_LOW, T_REEN = bts.T_COLD, bts.T_FORCED, bts.T_HOLD, bts.T_EN_LOW, bts.T_REEN
     # this bench's netlist echoes its `option SCALE` card into the log
     LOG_DROP_PREFIXES = ("option SCALE",)
 
