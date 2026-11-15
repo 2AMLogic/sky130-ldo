@@ -134,13 +134,17 @@ class TestRunnerWiring(unittest.TestCase):
         for m in (self.hyst, self.demo):
             for fn in ("read_dat", "at", "tripped", "bisect"):
                 self.assertIs(getattr(m, fn), getattr(rc, fn))
+            # issue #597: the Runner shell is shared too, and no local PROGRESS_RE
+            self.assertTrue(issubclass(m.Runner, rc.ThermalRunner))
+            self.assertFalse(hasattr(m, "PROGRESS_RE"))
 
     def test_hysteresis_instants_single_source(self):
         names = ("T_COLD", "T_FORCED", "T_HOLD", "T_EN_LOW", "T_REEN")
-        self.assertEqual(tuple(getattr(self.hyst, n) for n in names),
+        # instants live on each bench's Runner class (issue #597), not at module level
+        self.assertEqual(tuple(getattr(self.hyst.Runner, n) for n in names),
                          tuple(getattr(bts, n) for n in names))
         # the regen-cmp demo is a DIFFERENT bench: its instants must NOT be pinned to these
-        self.assertNotEqual(tuple(getattr(self.demo, n) for n in names),
+        self.assertNotEqual(tuple(getattr(self.demo.Runner, n) for n in names),
                             tuple(getattr(bts, n) for n in names))
 
     def test_vector_schemas(self):
