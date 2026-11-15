@@ -133,6 +133,9 @@ class TestRunnerWiring(unittest.TestCase):
         for m in (self.hyst, self.demo):
             for fn in ("read_dat", "at", "tripped", "bisect"):
                 self.assertIs(getattr(m, fn), getattr(rc, fn))
+            # issue #597: the Runner shell is shared too, and no local PROGRESS_RE
+            self.assertTrue(issubclass(m.Runner, rc.ThermalRunner))
+            self.assertFalse(hasattr(m, "PROGRESS_RE"))
 
     def test_vector_schemas(self):
         self.assertEqual(self.hyst.KEYS, ["ts_cmp", "rc_a", "rc_b", "ea_out", "vout", "en", "ts_sns", "ts_ref"])
