@@ -45,7 +45,6 @@ LEGS = [
 DESIGNS = {"baseline": 1, "rcz16": 16}
 PRIOR = {"baseline": "base_tt", "rcz16": "rcz16_tt"}
 PRIOR_DIR = "20261011-190000-860f93f-lightload-phase-dip"
-PM_MIN, GM_MIN = 45.0, 10.0
 PM_TOL_DEG, GM_TOL_DB = (
     2.0,
     2.0,
@@ -72,7 +71,7 @@ def grade(row: dict) -> dict:
         and row.get("gm") is not None
     )
     pm, gm = row.get("pm"), row.get("gm")
-    return {"valid": ok, "pm_pass": ok and pm >= PM_MIN, "gm_pass": ok and gm >= GM_MIN}
+    return {"valid": ok, "pm_pass": ok and pm >= fc.PM_MIN, "gm_pass": ok and gm >= fc.GM_MIN}
 
 
 def main() -> int:

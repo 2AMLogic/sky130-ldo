@@ -74,6 +74,12 @@ LOOP_TRANSFER_MEAS = [
     )
 ]
 
+# The ratified stability thresholds (spec/target-spec.md, `Stability` row:
+# "PM >= 45 deg, GM >= 10 dB worst corner"). Single home for the campaign
+# drivers' pass/fail grading; do not hand-copy into a driver — a decision
+# record that moves these numbers moves them here, once.
+PM_MIN, GM_MIN = 45.0, 10.0
+
 
 def run(cmd, **kw):
     return subprocess.run(cmd, capture_output=True, text=True, **kw)
