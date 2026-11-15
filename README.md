@@ -197,18 +197,20 @@ That number is not prose — it is
 the output of `klt signoff --manifest` against
 [`signoff/block-manifest.json`](signoff/block-manifest.json), re-run by CI on
 every push so it fails rather than goes stale when either this block's
-evidence or the klayout-tools T1 checklist moves. Items 1 (design sources), 2
-(layout), 3 (DRC clean), 4 (LVS match), 6 (a `klt yield` report over the Monte
-Carlo campaign), 8 (characterization report), 9 (testbenches shipped), 10 (repo
-hygiene) and 11 (power delivery, structural: a `klt erc` supply-spec run plus
-the LVS report) are `met`. The other two — 5 (full corner verification) and 7
-(post-layout verification) — are `unmet`, each with a machine-readable reason.
-[`signoff/README.md`](signoff/README.md) carries the per-item reading and the
-coverage disclosures the grader structurally cannot check — read it before
-drawing any conclusion from either the nine `met` rows or the two `unmet`
-ones. Item 6 in particular: its yield report's status is `reported`, not
-`pass`, because this block's spec ratifies no yield target — reported yield
-is not a ratified yield target. The campaign does carry a recorded
+evidence or the klayout-tools T1 checklist moves. `npm run check:ci` also
+compares this very headline against that record
+(`signoff/check-t1-headline.py`), so the two cannot diverge silently. Items 1
+(design sources), 2 (layout), 3 (DRC clean), 4 (LVS match), 6 (a `klt yield`
+report over the Monte Carlo campaign), 8 (characterization report), 9
+(testbenches shipped), 10 (repo hygiene) and 11 (power delivery, structural: a
+`klt erc` supply-spec run plus the LVS report) are `met`. The other two — 5
+(full corner verification) and 7 (post-layout verification) — are `unmet`, each
+with a machine-readable reason. [`signoff/README.md`](signoff/README.md) carries
+the per-item reading and the coverage disclosures the grader structurally cannot
+check — read it before drawing any conclusion from either the nine `met` rows or
+the two `unmet` ones. Item 6 in particular: its yield report's status is
+`reported`, not `pass`, because this block's spec ratifies no yield target —
+reported yield is not a ratified yield target. The campaign does carry a recorded
 deterministic negative control (issue #211, a seeded known-bad variant graded
 `detected`); see `signoff/README.md` for what it does and does not show.
 
