@@ -56,11 +56,22 @@ Machine-readable form: `comparison.json` alongside this README.
   `a947aa8` dirty; record `main` + harness commit), and backend moved (local
   → fleet). The comparison evidences **route completion plus drift**, which
   is what the acceptance criterion asks this record to carry.
-- **Fleet/local parity** (free corroboration from the supersede target
-  `20261022-232148-56dd87fe`, a local run): the fleet leg reproduces that
-  local run's failing corners and values exactly — same three corners, same
-  values to the response's print resolution — so the batch route is not
-  skewing results.
+- **Fleet-run reproducibility** (free corroboration from the supersede
+  target `20261022-232148-56dd87fe` — which is itself a **fleet** record,
+  job `klt-sim-6c1a144ebdb0`, runner klt 0.7.0, m7i.4xlarge — not a local
+  run): the fleet leg reproduces that run's failing corners and values
+  exactly — same three corners, same values to the response's print
+  resolution. That is **fleet-vs-fleet reproducibility across runner
+  versions** (klt 0.7.0 → 0.9.0; m7i → m6i) — a worthwhile result, but a
+  different one from backend parity.
+- **PDK-stamp caveat, disclosed:** this record's envelope carries
+  `environment.remote.worker_environment.pdk_stamp_comparison.status =
+  mismatch` — the worker's sky130A PDK revision stamp differs from the one
+  the submitter resolved locally (the 10-22 predecessor's stamp was
+  `match`). Per the envelope's own warning, results may differ from a
+  local run, so **fleet-vs-local agreement is unestablished** for this
+  record; no claim is made here that the batch route is not skewing
+  results.
 
 ## Provenance
 

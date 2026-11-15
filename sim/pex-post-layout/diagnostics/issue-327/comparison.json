@@ -2,7 +2,7 @@
   "purpose": "issue #327 acceptance criterion 3: the standalone 45-corner schematic-side record minted on the batch fleet (20261115-133911-1caff9b9) compared with baseline 20260924-230726-a947aa8",
   "record": "20261115-133911-1caff9b9",
   "baseline": "20260924-230726-a947aa8",
-  "superseded_local_predecessor": "20261022-232148-56dd87fe",
+  "superseded_predecessor": "20261022-232148-56dd87fe",
   "comparability_caveats": [
     "different layout records: baseline 20260924-221912-a947aa8 vs record 20261112-110237-820ba8b3 (official-DRC via fixes #267/#267-PR merged 2026-10-16 in between)",
     "different repo state: baseline feature/issue-154 @ a947aa8 dirty; record feature/issue-327 @ 1caff9b9 (main 4746bc4b + harness capacity-wait commit)",
@@ -28,11 +28,18 @@
     "delta_errored": 0,
     "undefined_or_parse_errors": 0
   },
-  "fleet_local_parity": {
-    "compared_with": "20261022-232148-56dd87fe (local, supersedes-target)",
+  "fleet_run_reproducibility": {
+    "compared_with": "20261022-232148-56dd87fe (batch fleet job klt-sim-6c1a144ebdb0, runner klt 0.7.0, m7i.4xlarge -- the supersedes-target)",
+    "compared_with_backend": "batch fleet (envelope environment.remote: aws-batch-fleet) -- NOT local; this is a fleet-vs-fleet comparison",
+    "comparison_kind": "fleet reproducibility across runner versions and instance types (klt 0.7.0 -> 0.9.0, m7i.4xlarge -> m6i.4xlarge); fleet-vs-local parity is unestablished by this comparison",
     "sim_leg_failed_corners_identical": true,
     "failed_values_match_to_print_resolution": true,
-    "note": "the fleet leg's three failing corners and their values (2.77719 / 2.64591 / 2.68576 V full-load vout) reproduce the local predecessor's exactly at the response's print resolution"
+    "note": "two independent fleet runs on the same schematic state reproduce the three failing corners and their values (2.77719 / 2.64591 / 2.68576 V full-load vout) exactly at the response's print resolution -- evidence of fleet determinism across runner versions, not backend parity",
+    "pdk_stamp_comparison": {
+      "status": "mismatch",
+      "detail": "this record's envelope carries environment.remote.worker_environment.pdk_stamp_comparison.status = mismatch: the worker's PDK revision stamp for sky130A differs from the one the submitter resolved locally, so results may differ from a local run (the 20261022 predecessor's stamp was match)",
+      "consequence": "fleet-vs-local agreement is unestablished for this record"
+    }
   },
   "verdict": "completes: 45/45 corners simulated on both legs with zero parse/undefined-parameter errors; remaining failures are declared-limit electrical failures, reported honestly"
 }
