@@ -16,30 +16,19 @@ import sys
 import unittest
 from pathlib import Path
 
+from _endpoint_adapter_contract import (BackendContract, EndpointShapeGate, RecordProvenance,
+                                        SiblingBenchGate, baseline_netlist, manifest)
 from test_corner_run import QUICK, SIM_DIR, BatchHarness, FakeSingleStepKlt, HarnessErr, corner_run
 
 sys.path.insert(0, str(SIM_DIR / "bin"))
 import batch_load_regulation as bld  # noqa: E402
-from _record_common import pvt_input_sections  # noqa: E402
 
 SLUG = "load-regulation"
 STIMULUS = corner_run.BATCH_ALLOWLIST[SLUG]["stimulus"]
 SUPPLY = "'vsup'"
-LD_NETLIST = (
-    "** sch_path: x\n"
-    + "\n".join(
-        [STIMULUS[0], ".save i(vvin)", STIMULUS[1], "VVREF VREF 0 1.2",
-         "xldo VOUT VREF EN VIN ldo_3v3in_1v8out", "COUT VOUT VESR 1u m=1", "RESR VESR 0 10m m=1",
-         STIMULUS[2], ".subckt ldo_3v3in_1v8out VOUT VREF EN VIN", "R1 VIN VOUT 1", ".ends"]
-    )
-    + "\n.end\n"
-)
+LD_NETLIST = baseline_netlist(SLUG)
 ENDPOINTS = [("tran1", SUPPLY, "0"), ("tran2", SUPPLY, "50m")]
 CARDS = ["vout_0ma", "vout_0ma_min", "vout_0ma_max", "vout_50ma", "vout_50ma_min", "vout_50ma_max"]
-
-
-def manifest() -> dict:
-    return json.loads((SIM_DIR / SLUG / "experiment.json").read_text())
 
 
 def default_values(p, t, iload):
@@ -249,84 +238,13 @@ class TestEndpointGrading(LoadRegHarness):
                 bld.evaluate(bad, {}, refs)
 
 
-class TestEndpointNegativeControls(LoadRegHarness):
-    def test_missing_duplicate_nonfinite_or_unexpected_values_cannot_pass(self):
-        edits = {
-            "missing": lambda c: c["measurements"].pop(1),
-            "duplicate": lambda c: c["measurements"].append(dict(c["measurements"][0])),
-            "nan": lambda c: c["measurements"][2].update(value=float("nan")),
-            "null": lambda c: c["measurements"][0].update(value=None),
-            "string": lambda c: c["measurements"][0].update(value="1.8"),
-            "unexpected identity": lambda c: c["measurements"].append(
-                {"name": "tran1.not_requested", "value": 1.8, "status": "pass"}),
-            "wrong step": lambda c: c["measurements"][0].update(name="dropout.vout_0ma"),
-            "unqualified name": lambda c: c["measurements"][0].update(name="vout_0ma"),
-            "errored value": lambda c: c["measurements"][0].update(status="error"),
-        }
-        for name, edit in edits.items():
-            def m(resp, req, edit=edit):
-                edit(resp["corners"][0])
-            rc, out, err = self.quick(mutate=m)
-            self.assertEqual(rc, 2, name)
-            self.assertIn("FAIL", out, name)
-
-    def test_errored_or_incomplete_corner_cannot_pass(self):
-        rc, out, err = self.quick(values_of=lambda p, t, i: None if p == "ss" else default_values(p, t, i))
-        self.assertEqual(rc, 2)
-        self.assertIn("ss_-40c_2.97v        FAIL", out)
-        self.assertIn("not a completed result", err)
-        for edit in (lambda c: c.update(status="error"),
-                     lambda c: c.update(diagnostics=[{"severity": "warning", "code": "step_failed", "message": "x"}]),
-                     lambda c: c.update(artifacts={})):  # missing log
-            rc, _, _ = self.quick(mutate=lambda r, q, edit=edit: edit(r["corners"][0]))
-            self.assertEqual(rc, 2)
-
-    def test_solver_diagnostic_in_any_endpoint_log_fails(self):
-        for marker in corner_run.SOLVER_DIAGNOSTIC_MARKERS:
-            rc, _, err = self.quick(log_text=f"tran\n{marker} here\n")
-            self.assertEqual(rc, 2, marker)
-            self.assertIn("solver diagnostic", err)
-
-    def test_structural_failures_abort_without_record_or_fallback(self):
-        cases = {
-            "missing corner": lambda r, q: r["corners"].clear(),
-            "duplicate corner": lambda r, q: r["corners"].append(dict(r["corners"][0])),
-            "unexpected corner": lambda r, q: r["corners"][0].update(process="ss"),
-            "running": lambda r, q: r["environment"]["remote"].update(state="running", exit_code=""),
-            "mismatch": lambda r, q: r["environment"]["remote"].update(runner_compatibility="mismatch"),
-            "no remote": lambda r, q: r["environment"].pop("remote"),
-        }
-        for name, mutate in cases.items():
-            self.fake = FakeLoadRegKlt(self, self.pin, mutate=mutate)
-            err, _, _ = self.run_main("--backend", "batch", *QUICK, expect_exit=HarnessErr)
-            self.assertIn("no evidence record written", str(err), name)
-            self.assertFalse((self.exp_dir / "records").exists())
-            self.assertEqual(len(self.klt_calls()), 1, name)  # no retry, no local fallback
-
-    def test_error_envelope_aborts(self):
-        env = {"schema_version": 1, "error": {"command": "sim", "message": "batch backend failed"}}
-        self.fake = FakeLoadRegKlt(self, self.pin, stdout=json.dumps(env), rc=1)
-        err, _, _ = self.run_main("--backend", "batch", *QUICK, expect_exit=HarnessErr)
-        self.assertIn("error envelope", str(err))
+class TestEndpointNegativeControls(BackendContract, LoadRegHarness):
+    FIRST_CARD = "vout_0ma"
+    DEFAULT_VALUES = staticmethod(default_values)
 
 
-class TestEndpointShapeGate(LoadRegHarness):
-    def refused(self, edit, expect="validated load-regulation endpoint shape"):
-        raw = manifest()
-        edit(raw)
-        self.write_manifest(raw)
-        err, _, _ = self.run_main("--backend", "batch", *QUICK, expect_exit=HarnessErr)
-        self.assertIn(expect, str(err))
-        self.assertEqual(self.fake.calls, [])
-        corner_run.netlist_with_xschem.assert_not_called()
-        return str(err)
-
-    def code_lines(self, raw):
-        return [i for i, ln in enumerate(raw["deck"]["analyses"]) if not ln.lstrip().startswith("*")]
-
-    def find(self, raw, prefix, nth=0):
-        hits = [i for i in self.code_lines(raw) if raw["deck"]["analyses"][i].startswith(prefix)]
-        return hits[nth]
+class TestEndpointShapeGate(EndpointShapeGate, SiblingBenchGate, LoadRegHarness):
+    REFUSAL_TEXT = "validated load-regulation endpoint shape"
 
     def test_unsupported_cards_and_altered_stimulus_are_refused_before_netlisting(self):
         def setl(prefix, text, nth=0):
@@ -377,23 +295,6 @@ class TestEndpointShapeGate(LoadRegHarness):
         for name, edit in edits.items():
             self.assertIn("re-validate", self.refused(edit), name)
 
-    def test_prose_only_edits_keep_the_validated_shape(self):
-        raw = manifest()
-        raw["claim"] += " (edited)"
-        raw["measurements"][0]["note"] = "short"
-        raw["deck"]["analyses"].insert(0, "* an added comment")
-        self.write_manifest(raw)
-        rc, _, _ = self.run_main("--backend", "batch", *QUICK, "--no-write")
-        self.assertEqual(rc, 0)
-
-    def test_pins_equal_the_committed_manifest(self):
-        want = corner_run.BATCH_ALLOWLIST[SLUG]["manifest_sections"]
-        self.assertEqual(pvt_input_sections(manifest(), None), want)
-
-    def test_sibling_regulation_benches_stay_refused(self):
-        for slug in ("psrr-dc", "startup"):
-            self.assertNotIn(slug, corner_run.BATCH_ALLOWLIST)
-
 
 class TestEndpointNetlistGate(LoadRegHarness):
     def refused_netlist(self, netlist):
@@ -423,15 +324,9 @@ class TestEndpointNetlistGate(LoadRegHarness):
         self.refused_netlist(LD_NETLIST.replace(STIMULUS[0], lr).replace(STIMULUS[2], "ILOAD VOUT 0 1m"))
 
 
-class TestEndpointRecord(LoadRegHarness):
+class TestEndpointRecord(RecordProvenance, LoadRegHarness):
     def test_record_keeps_provenance_fingerprint_subset_and_adapter(self):
-        rc, out, _ = self.run_main("--backend", "batch", *QUICK)
-        self.assertEqual(rc, 0, out)
-        (rec_path,) = self.records()
-        rec = json.loads(rec_path.read_text())
-        self.assertEqual(rec["backend"], "batch")
-        self.assertTrue(rec["matrix"]["is_subset"])
-        self.assertEqual([r["corner_id"] for r in rec["corners"]], rec["matrix"]["point_ids"])
+        rec_path, rec = self.run_and_load_record()
         sections = corner_run.BATCH_ALLOWLIST[SLUG]["manifest_sections"]
         for k, v in sections.items():
             self.assertEqual(rec["input_fingerprint"]["sections"][k], v)
@@ -447,7 +342,7 @@ class TestEndpointRecord(LoadRegHarness):
             self.assertEqual(r["engine"], "ngspice")
         c0 = rec["corners"][0]
         self.assertEqual(len(c0["klt_request"]), 2)
-        self.assertEqual(len(c0["measurements"]), len(manifest()["measurements"]))
+        self.assertEqual(len(c0["measurements"]), len(manifest(SLUG)["measurements"]))
         md = rec_path.with_suffix(".md").read_text()
         self.assertIn("do not establish local/fleet numerical equivalence", md)
         log = (self.exp_dir / "corners" / rec["record_id"]).iterdir()
