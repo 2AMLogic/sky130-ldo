@@ -750,7 +750,8 @@ In dependency order, not effort order:
    (2026-11-12, PR #557) in
    `sim/pex-post-layout/diagnostics/20261114-193718-fabcb0c6-rgraph-recheck/`:
    **0 of 28 nets graph-derived at this repo's pin** (`dc136150`) and **1 of
-   28 on release `0.9.1`** (a small signal net; `VIN`/`VOUT` still legacy),
+   28 on releases `0.9.1` and `0.9.2`** (a small signal net, identical on
+   both releases; `VIN`/`VOUT` still legacy),
    so #4061's interior-landing fix (closed-completed 2026-10-23) covers only
    part of this geometry. Which mechanism blocks the other 27 nets
    (`unsupported_geometry` vs the `graph_too_large` caps) is not observable
