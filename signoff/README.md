@@ -655,6 +655,72 @@ instead of the author's assertion.
   (item 1 needs the klt batch backend or xschem ≥ 3.4.5), then re-pin and
   `bash signoff/check.sh --write`.
 
+### Attested hygiene files: a content edit is drift
+
+Item 10's inventory
+([`evidence/item10-inventory.json`](evidence/item10-inventory.json)) carries a
+`hygiene` list of root-level docs and the CI workflow, and this document states
+the item above as those files **existing**. The tool is stricter than that
+wording. `klt signoff --attest` stamps a `content_hash`
+onto every inventoried file, and `--check` diffs the whole fresh envelope
+against the committed one (excluding only the producing build's version
+strings). So **any byte change to any inventoried hygiene file is attestation
+drift**, and the branch that makes it must carry a re-minted
+`item10-attestation.generic.json` or stage 1b fails:
+
+```
+signoff/check.sh: item 10 attestation drifted -- re-mint with klt signoff --attest 10
+```
+
+Nothing about this is specific to `README.md`. In practice the file it bites is
+`sim/README.md` — the sim-harness design log, and the most-edited prose file in
+the repo: all six re-mints of the item-10 envelope between 2026-11-05 and
+2026-11-14 were driven by it, and every one was *reactive*, landing after a red
+`T1 tier report` job had already cost a CI round trip (issue #579).
+
+`npm run check:ci` now catches it before the push.
+`signoff/check-attested-hygiene.sh` diffs your branch against `origin/main`,
+reads the hygiene list out of the inventory at runtime (it holds no copy of
+that list, so a path added to the inventory is covered the day it is added),
+and fails if the diff touches a hygiene file while the
+attestation envelope is not also in the diff. It needs only `git` and
+`python3` — no klt, no network, about a second. It checks only that question:
+whether a re-mint is *correct* is stage 1b's job, authoritatively.
+
+The re-mint, from the repo root:
+
+```bash
+uvx --from klayout-tools==0.9.0 klt signoff --attest 10 \
+  --inventory signoff/evidence/item10-inventory.json \
+  -o signoff/evidence/item10-attestation.generic.json
+```
+
+Commit the re-minted envelope in the same branch as the edit that caused it.
+
+Narrowing the inventory so prose docs were attested by presence rather than
+content hash would change what this block attests, so it is **not** something
+to reach for here — it needs its own decision record under `spec/`. It is also
+not expressible in `klt` today: inventory entries are bare path strings with no
+per-entry options, and `_file_check()` always stamps a `content_hash`. Filed as
+a capability gap on the tool
+([klayout-tools#5615](https://github.com/2AMLogic/klayout-tools/issues/5615)).
+
+### The T1 headline in the root README is checked, not asserted
+
+`README.md`'s evidence-ladder headline — the `### Where this block sits on the
+evidence ladder: **T1 <met>/<total>, tier: <tier>**` line — claims of itself
+that it "is not prose" and that CI makes it "fail rather than go stale". Until
+issue #579 nothing compared it with `signoff/records/t1-tier-report.json`, and
+it sat four items stale.
+`signoff/check-t1-headline.py`, in `npm run check:ci`, now recomputes
+`met`/`total` from the record and fails on a mismatch.
+
+The denominator is the number of `items` entries carrying a **numeric** `id`.
+The record also holds trailing entries with `id: null` — those are the T2/T3/T4
+*tier* rows, not T1 items — so the correct total is 11, not the file's 14
+entries. When a re-grade (`bash signoff/check.sh --write`) moves either number,
+update the README headline in the same branch.
+
 ### Freshness, and the two independent places it is pinned
 
 **Every one of the six citations now carries a manifest `content_hash`**
