@@ -1,0 +1,116 @@
+{
+  "amendments": [],
+  "notes": {
+    "1": {
+      "hash": "253b06ffb633414ab8e4d74286fc194fdd1f7e795d7f596007d24aba4e9d1fa7",
+      "text": "**Dropout**, test point `V_in = V_out + dropout`, binding corners `{ss, sf}` at 125 °C (DR-003). Current verdict and freshness: see the characterization report."
+    },
+    "2": {
+      "hash": "0b8ec5cd9f221c4a959902029db0e37d69dc0614612f35234a3aa0c01e343099",
+      "text": "**Line regulation / Load regulation** have no dedicated sky130 porting note beyond the ratified numbers themselves. Current verdicts: see the characterization report."
+    },
+    "3": {
+      "hash": "fe3a35a41fe0cf19eddfe5d510a348a4f1848119d905637a0019f3784ce11d99",
+      "text": "**Load transient**, over the ratified C_out/ESR window (0.33–4.7 µF, 0–500 mΩ, no minimum ESR, ceramic-stable — DR-002). Current verdict: see the characterization report."
+    },
+    "4": {
+      "hash": "73f1b260567e824045ad074a7d7fe4e67cde663bfcd1bdc7ddc947135b9cc548",
+      "text": "**PSRR and Stability** both have a topology-level root cause and a named superseding proposal, unlike the other rows: [`DR-007`](spec/decision-records/DR-007-psrr-stability-vs-iq.md) (`proposed`) recommends PSRR ≥ 18 dB @ 1 kHz / ≥ 28 dB @ 100 kHz and a Stability floor scoped to `I_load ≥ 1 mA` only — not adopted here, and pending its own ratification via the two-key market-comparison mechanism. PSRR is measured at both ratified load points with the `ac` linearization point seeded per `sim/README.md`'s initial-condition contract (#179); the 0 mA end of Stability is the binding, unresolved gap. Current verdicts and freshness: see the characterization report."
+    },
+    "5": {
+      "hash": "0256a94c5ddc6b67c0c897c87a78f191050e84349a52c67ce0d5b09b2096a9e9",
+      "text": "**Iq** is set by [`DR-009`](spec/decision-records/DR-009-iq-budget.md) (`proposed`; fresh ratification pending under #301 — DR-009 does not ratify itself). The number comes from gf180-ldo parity, checked against a sky130 device-fact budget and public comps, not from the measured result. It closes the item DR-003/DR-006 left open. No named binding corner (DR-004 caveat). Current verdict: see the characterization report; DR-009's Consequences discuss the non-regulating DC operating points among failing corners."
+    },
+    "6": {
+      "hash": "c6e2abc7975e98d59f4d7341e024c443f838eddead1f637791f6271cab13e175",
+      "text": "**Current limit, Startup/soft-start, and Enable/shutdown** — current verdicts and freshness: see the characterization report."
+    },
+    "7": {
+      "hash": "bfab483cf8238a2b6b65435716b76d466eff80c4262eea82c3a1962c2868f1a3",
+      "text": "**Thermal**'s fault-only 150 °C/135 °C trip/reset backstop is internally-generated (not `VREF`, not a bandgap), auto-restart, per DR-005; it sits outside this repo's characterized 125 °C temperature ceiling and is PVT-loose. Current verdict: see the characterization report."
+    }
+  },
+  "rows": {
+    "Area": {
+      "hash": "66d809c73266f9f569bf68a4b53412111f8573c45f9b5efc3ba4f735a833ea78",
+      "stretch": "—",
+      "target": "< 0.1 mm² total core area, pass FET included, excluding pads and sealring"
+    },
+    "Current limit": {
+      "hash": "2703f043deb553dd9683f97d1a9fac96486d2627da6d35850aa0f8a244506651",
+      "stretch": "—",
+      "target": "constant-current (brickwall) clamp, window TBD over PVT; never engages for I_load ≤ 50 mA; survives continuous Vout = 0 short at Vin_max (note 6)"
+    },
+    "Dropout @ 50 mA": {
+      "hash": "136771d2a2c749bd676ab80e1dba406763c61a8c1d4b3b9101034a8c406bdd86",
+      "stretch": "< 200 mV",
+      "target": "< 300 mV (note 1)"
+    },
+    "Enable / shutdown": {
+      "hash": "c109d76b0cff6e5055305e457dd47b035591552c2d5bc8772b5e4cd44e7c996e",
+      "stretch": "—",
+      "target": "shutdown Iq < 3 µA worst corner; disabled output = pass device fully off, no active discharge; Vin→Vout leakage ≤ 1 µA (note 6)"
+    },
+    "Input": {
+      "hash": "42bf57e9e6c4cf2063e322a68c0df0c9797f94a7889b20a2930372af31d884b6",
+      "stretch": "5 V flavor as a separate follow-on variant",
+      "target": "3.3 V ±10% (2.97–3.63 V)"
+    },
+    "Iq (excl. load current)": {
+      "hash": "3d00b801791358046f51ac3df19d51e382eb7cd234d740382a89c0ff7791a458",
+      "stretch": "< 10 µA — subordinate to DR-002's C_out/ESR window; not to be bought back by reintroducing a minimum ESR",
+      "target": "< 30 µA at no load **and** at full load (50 mA), every PVT corner; Iq = total VIN current minus load current, EN asserted (note 5)"
+    },
+    "Line regulation": {
+      "hash": "266a48e20dfff23387cc030837acbb74db7f059470232d4e8c79872aafa4fd52",
+      "stretch": "—",
+      "target": "< 5 mV/V over 2.97–3.63 V, at 1 mA and 50 mA (note 2)"
+    },
+    "Load": {
+      "hash": "e6f5b8ee79f409e88f1742eec32d473787a95ac857d5451a7d403890941628cf",
+      "stretch": "100 mA",
+      "target": "0–50 mA (0 mA = no external load; feedback divider is the only inherent preload)"
+    },
+    "Load regulation (0–50 mA)": {
+      "hash": "4ec440403af4fb0e529f9ca624eb6b633b3b41fcee6f8bab20958373fa71c996",
+      "stretch": "—",
+      "target": "< 1% (18 mV), counted inside the ±2% window (note 2)"
+    },
+    "Load transient": {
+      "hash": "41d181c0c62fb7f00c92412b01c1d47ae2372adbd917f59968fca6bf60de15f4",
+      "stretch": "peak ≤ 100 mV",
+      "target": "1↔50 mA step, ~1 µs edges: peak excursion ≤ 150 mV, recover to ±1% in ≤ 20 µs, over the ratified C_out/ESR window (note 3)"
+    },
+    "Output": {
+      "hash": "109a5bbe4e2cf4bcad041e8c4a04d93347fd2a59c057e753447d56426230a38a",
+      "stretch": "programmable 1.2–3.0 V — deferred",
+      "target": "1.8 V ±2% (fixed; divider as a unit-resistor string)"
+    },
+    "Output noise": {
+      "hash": "c0dbe6a52ed8e019cc0e8c56df4e7ba9ec8baef5fc9702a31636479e2cc9ce2d",
+      "stretch": "µVrms row if a consumer asks",
+      "target": "not specified — waived unless a consumer states a requirement"
+    },
+    "PSRR": {
+      "hash": "692364a50b6f2c224c0a98c70275f5ad1ddfb3120e723131fe7dca3884c80387",
+      "stretch": "> 60 dB @ 1 kHz, > 30 dB @ 100 kHz",
+      "target": "> 50 dB @ 1 kHz and > 20 dB @ 100 kHz, at 1 mA (light-load, binding) and at 50 mA (note 4)"
+    },
+    "Stability": {
+      "hash": "acb8774b9cc7c4889fe1c5409a81a439b976f458337ccd84aee3027c8247209e",
+      "stretch": "capless variant (separate fork)",
+      "target": "stable 0–50 mA over the ratified C_out/ESR window; PM ≥ 45°, GM ≥ 10 dB worst corner (note 4)"
+    },
+    "Startup / soft-start": {
+      "hash": "71d244b00c076397dda7f526e1fc2468385316fdcfead7d60165d7cf06750823",
+      "stretch": "—",
+      "target": "monotonic into any load 0–50 mA and any C_out in the stability window; controlled ramp; inside ±2% within a few ms of enable; overshoot ≤ +2% (note 6)"
+    },
+    "Thermal": {
+      "hash": "2e6127138bbd6959d656ef6613b76735a66a803955fe5acf9943fff73ae50bbb",
+      "stretch": "—",
+      "target": "continuous worst-case dissipation set by Vin_max × I_load; short-circuit ceiling set by the current limit; specified to Tj ≤ 125 °C (rated-operation ceiling, unchanged); θJA delegated to package/integration (note 7)"
+    }
+  },
+  "schema_version": 2
+}

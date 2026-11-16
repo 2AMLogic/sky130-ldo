@@ -107,6 +107,22 @@ jobs:
         # to end rather than tracking whatever uv release is newest.
         run: python3 -m pip install "uv==0.12.23"
 
+      - name: Verify the ratified spec table matches its lock (current tree)
+        if: github.event_name != 'pull_request'
+        run: python3 spec/check_spec_table.py --check
+        # Push/schedule/manual: README's Parameter/Target/Stretch mirror and its
+        # ratified notes vs spec/spec-table-lock.json consistency (#618). The
+        # authorization diff is supplied by the PR run below.
+
+      - name: Verify spec-table changes carry fresh decision-record amendments (PR only)
+        if: github.event_name == 'pull_request'
+        run: python3 spec/check_spec_table.py --check --base "${{ github.event.pull_request.base.sha }}"
+        # The PR checkout is GitHub's merge commit: that is the candidate being
+        # validated, compared against the merge-base with the PR's base SHA
+        # (full history from fetch-depth: 0). Structural audit trail only; it
+        # is not operator ratification. Tests:
+        # measurements/tests/test_check_spec_table.py (#618).
+
       - name: npm run check:ci
         run: npm run check:ci
 
