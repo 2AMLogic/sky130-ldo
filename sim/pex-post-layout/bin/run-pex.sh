@@ -160,10 +160,21 @@ cp "$TESTBENCH_DIR/ldo_core_schematic_dut.spice" "$NETLIST_DUT_PATH"
 BUILD_DIR="$REPO_ROOT/sim/build/pex-post-layout/$RECORD_ID"
 mkdir -p "$BUILD_DIR/sim" "$BUILD_DIR/pex"
 
+# Batch-fleet capacity wait (worker-host policy): a batch submission must
+# wait with backoff for fleet capacity instead of failing the run on a
+# `batch_no_capacity` / `batch_concurrency_cap` refusal, so a capacity burst
+# parks nobody. Applied to both legs' batch submissions; a no-op when the
+# backend resolves local. Override the seconds with PEX_CAPACITY_WAIT_S.
+CAPACITY_WAIT_ARGS=()
+if [[ "${KLT_SIM_BACKEND:-}" == "batch" ]]; then
+  CAPACITY_WAIT_ARGS=(--wait-for-capacity "${PEX_CAPACITY_WAIT_S:-600}")
+fi
+
 echo "run-pex.sh: running the schematic-side leg standalone (klt sim) for its own record"
 set +e
 "$KLT" sim "$TESTBENCH_DIR/tb_pex_post_layout.request.json" \
   --outdir "$BUILD_DIR/sim" \
+  "${CAPACITY_WAIT_ARGS[@]}" \
   --format json > "$RESP_SIM_PATH" 2> "$BUILD_DIR/sim-schematic.stderr.log"
 SIM_EXIT=$?
 set -e
@@ -175,6 +186,7 @@ set +e
   --deck sky130 --top "$CELL" --pdk "$PDK_VARIANT" \
   --resistance-graph --resistance-graph-r-cut "$PEX_R_CUT_OHM" \
   --outdir "$BUILD_DIR/pex" \
+  "${CAPACITY_WAIT_ARGS[@]}" \
   -o "$NETLIST_EXTRACT_PATH" \
   --format json > "$RESP_PEX_PATH" 2> "$BUILD_DIR/pex.stderr.log"
 PEX_EXIT=$?
