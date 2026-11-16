@@ -46,9 +46,10 @@ Machine-readable form: `comparison.json` alongside this README.
   out of their declared limits at `ss/2.970V/27C` (2.77719 V),
   `ff/2.970V/27C` (2.64591 V), `sf/2.970V/125C` (2.68576 V) against the
   1.764–1.836 V window: the LDO leaves regulation at full load / low supply
-  there. This is the schematic-side Output-row gap
-  `measurements/characterization.md` already tracks; the issue explicitly
-  allows these to remain.
+  there. This is the Output row's ratified window, failed at full load —
+  tracked as the `Dropout @ 50 mA` / `Load regulation (0–50 mA)` FAILs in
+  `measurements/characterization.md` (whose Output row itself is graded from
+  light-load-only MC evidence); the issue explicitly allows these to remain.
 - The baseline→record delta is **not** an apples-to-apples electrical
   regression claim: layout record moved (`20260924-221912-a947aa8` →
   `20261112-110237-820ba8b3`, the #267 official-DRC via fixes merged
