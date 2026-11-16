@@ -45,6 +45,30 @@
     "read it against the same corner's schematic_value in delta[] before",
     "attributing it to the layout."
   ],
+  "_batch_comment": [
+    "This request is submitted to the batch fleet, whose whole-job ceiling is",
+    "max_job_seconds: 3600 (fleet_config). klt computes the conservative",
+    "fully-serial bound as options.timeout_s x unit_count + 120 overhead, so",
+    "the invariant a future editor must preserve is:",
+    "  options.timeout_s x unit_count + 120 <= batch.max_job_seconds",
+    "At timeout_s: 120 the 45-unit corner matrix below bounds at",
+    "120 x 45 + 120 = 5520 s -- already over the ceiling. batch.job_ceiling_check:",
+    "\"split\" is what keeps the invariant true as the matrix grows: each submit",
+    "is sharded into the fewest balanced jobs that each fit, holding at most",
+    "max_units_per_job = floor((3600 - 120) / 120) = 29 units (here 2 jobs of",
+    "23/22), recomputed from max_job_seconds and timeout_s on every submit --",
+    "no hardcoded host count to re-check when corners are added. Sharding",
+    "changes only which job runs a unit, never any unit's own value.",
+    "Do NOT clear the ceiling by lowering timeout_s instead: that retunes a",
+    "per-corner measurement parameter on an evidence-producing testbench to",
+    "solve a scheduling problem, and breaks again at the next matrix growth.",
+    "The failure mode avoided without \"split\": a whole-job kill at the",
+    "ceiling reports EVERY unit batch_job_timeout -- finished units included --",
+    "so a mostly-complete run mints no usable record at all.",
+    "Validate pre-submit with `klt sim --batch-set <request> --dry-run` (the",
+    "plain `--dry-run` does not check the batch block)."
+  ],
+  "batch": { "job_ceiling_check": "split" },
   "measurements": [
     {
       "name": "vout_light_load_v",
