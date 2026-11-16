@@ -178,6 +178,41 @@ class RecordRendering(unittest.TestCase):
         self.assertIn("unusable points = 1", out)
         self.assertNotIn("| ll | 27 | 3.30 |", out)
 
+    def test_a_non_pass_reference_row_is_counted_unusable_not_graded(self):
+        # Two distinct non-`pass` strings: a later change to the status set
+        # must not be able to pass on a single hardcoded case (#625).
+        for status in ("fail", "error"):
+            with self.subTest(status=status):
+                rows = [
+                    {**r, "status": status} if r["design"] == "record" else r
+                    for r in self.ROWS
+                ]
+                out = bg.render("r", rows, [])
+                self.assertIn("unusable points = 1", out)
+                self.assertNotIn("| ll | 27 | 3.30 |", out)
+
+    def test_a_non_pass_counterpart_row_is_counted_unusable_not_graded(self):
+        for status in ("fail", "error"):
+            with self.subTest(status=status):
+                rows = [
+                    {**r, "status": status} if r["design"] == "dr013" else r
+                    for r in self.ROWS
+                ]
+                out = bg.render("r", rows, [])
+                self.assertIn("unusable points = 1", out)
+                self.assertNotIn("| ll | 27 | 3.30 |", out)
+
+    def test_a_missing_counterpart_and_a_non_pass_reference_count_one_not_two(self):
+        out = bg.render("r", [{**self.ROWS[0], "status": "timeout"}], [])
+        self.assertIn("unusable points = 1", out)
+        self.assertNotIn("| ll | 27 | 3.30 |", out)
+
+    def test_a_pass_row_with_a_none_number_is_still_counted_unusable(self):
+        rows = [{**self.ROWS[0], "i_bias_pair_ua": None}, self.ROWS[1]]
+        out = bg.render("r", rows, [])
+        self.assertIn("unusable points = 1", out)
+        self.assertNotIn("| ll | 27 | 3.30 |", out)
+
 
 class ReplayAgainstTheCommittedRecord(unittest.TestCase):
     """The whole driver, replayed offline against the record it minted.
