@@ -806,6 +806,70 @@ produced real extracted-side numbers (no `unavailable_comparison` rows), so the
 request now uses it. The model identity is unchanged: both forms resolve to the
 same `combined/sky130.lib.spice` under the pinned `sky130A` PDK.
 
+## Why the request shards its batch jobs (`job_ceiling_check: "split"`, issue #623)
+
+`tb_pex_post_layout.request.json` carries a `batch` block setting
+`job_ceiling_check: "split"`. This is scheduling only -- it changes which
+fleet job runs a unit, never any unit's own value; `options.timeout_s`, the
+45-unit corner matrix (5 process x 3 `vvin` x 3 temperature) and all three
+`measurements[]` are untouched by it.
+
+The problem it solves: on the batch backend `klt sim` computes a
+conservative **fully-serial** whole-job bound of
+`options.timeout_s x unit_count + 120` overhead and compares it against the
+fleet's per-job ceiling `max_job_seconds: 3600` (`fleet_config`). At
+`timeout_s: 120` the 45-unit matrix bounds at `120 x 45 + 120 = 5520 s` --
+already over the ceiling, so under the default `"warn"` check every submit
+warned and went through anyway (the advisory fires three times per
+`run-pex.sh` invocation: once for the standalone schematic leg and once per
+`klt pex` side; see record `20261115-133911-1caff9b9`'s
+`environment.remote.job_ceiling` on PR #616).
+
+The failure mode avoided is not slowness but **total evidence loss**: if a
+job is killed at the ceiling, the incomplete `report.json` makes **every**
+unit of that job come back `batch_job_timeout` -- units that had already
+finished included -- so a 45-corner leg that was mostly done mints no usable
+record at all. The advisory was latent rather than active (that run
+completed 45/45 units serially in 30 s, ~184x under the bound), but the
+bound is a worst case, not an estimate: a slower-converging matrix would
+have hit it.
+
+Why `"split"` rather than the alternatives considered:
+
+- **Not `remote.hosts: 2`** (the advisory's literal recommendation): valid,
+  but it hardcodes a host count correct only while the matrix stays under
+  `2 x 29 = 58` units -- exactly the manual re-check burden this would
+  otherwise impose on every future corner addition. `"split"` recomputes the
+  shard size from `max_job_seconds` and `timeout_s` on **every** submit
+  (at most `floor((3600 - 120) / 120) = 29` units per job, here 2 balanced
+  jobs of 23/22), so the invariant holds structurally as the matrix grows.
+  Both produce 2 jobs today; the capacity cost is identical.
+- **Not "accept and document the warning"**: cheapest, but it leaves the
+  whole-job kill as the failure mode and trains readers to ignore a warning
+  firing 3x per run.
+- **Not lowering `options.timeout_s`** (to <= 77 s, which would fit one
+  job): retuning a *measurement* parameter on an evidence-producing
+  testbench to solve a *scheduling* problem, and fragile besides (two added
+  corners break it again). Sharding provably does not change any unit's
+  value -- concatenated shards reproduce the unsharded unit list exactly.
+
+The invariant a future editor of the request must preserve is recorded
+in-file, in the `_batch_comment` key (same ignored-top-level-key convention
+as `_limits_comment`): `options.timeout_s x unit_count + 120` must stay
+satisfiable by `"split"`'s shards, which it is by construction as long as
+`timeout_s` and the matrix are edited with the arithmetic in view.
+
+Pre-submit validation: use `klt sim --batch-set <request> --dry-run`, which
+runs the batch preflight (verified 2026-11-16: accepts the `"split"` block,
+exit 0; rejects an invalid `job_ceiling_check` value pre-submit with
+`request.batch.job_ceiling_check must be one of 'warn', 'enforce', 'split'`,
+exit 1, nothing submitted). The plain `klt sim <request> --dry-run` does
+**not** check the batch block -- tracked upstream as
+[2AMLogic/klayout-tools#5674](https://github.com/2AMLogic/klayout-tools/issues/5674).
+Capacity: the split submits 2 concurrent jobs per leg where there was 1; on
+a `batch_concurrency_cap` / `lost_shard` refusal the documented lever is
+`batch.max_concurrent_jobs` -- add it then, not pre-emptively.
+
 ## `klt` pin used for the recorded runs
 
 - `klt` commit: `a482d3934bd644b763cf925f6344ac05f54a1623` (2AMLogic/klayout-tools
