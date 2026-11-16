@@ -180,7 +180,8 @@ record behind every row's current verdict. Regenerate it with
 `python3 measurements/build_characterization_report.py` after any `sim/`
 record lands or `design/` changes; [`spec/target-spec.md`](spec/target-spec.md)
 stays the authority on what is required (the table above is its mirror, not the
-authority itself), `measurements/characterization.md`
+authority itself — and the mirror is now pinned against silent drift: see the
+spec-table guard below), `measurements/characterization.md`
 on what the evidence currently shows. Verdict and freshness are separate:
 a PASS on a `STALE` record is not qualification of the current integrated
 schematic, and this README makes no such claim. Check that the committed report
@@ -191,6 +192,36 @@ shuttle seat → measured silicon over temperature. **Current position:
 spec-ratified** — simulation and layout work are underway, but no ratified row
 is qualified on the current integrated schematic (see the report's Freshness
 column).
+
+### Spec-table guard
+
+The Parameter/Target/Stretch table above is pinned by
+`spec/spec-table-lock.json` and checked by `spec/check_spec_table.py` (stdlib
+only, no PDK) in CI's `checks` job:
+
+```
+python3 spec/check_spec_table.py --check                      # table vs lock
+python3 spec/check_spec_table.py --check --base origin/main   # + authorization diff
+python3 spec/check_spec_table.py --write --base origin/main --dr DR-NNN
+```
+
+Editing a row, or a numbered ratified note (including a `5a`-style id), without
+a matching, freshly appended lock amendment fails CI. An amendment must cite a
+decision record that is either new in the PR (status proposed or ratified) or
+flipped from proposed to ratified in the PR. This is a structural audit trail
+only: eligibility is **not** operator ratification (a proposed record may be
+approved on the same PR) and the reviewer still confirms the record actually
+authorizes the named rows. The guard also locks the numbered ratified notes
+under the table, keyed by their literal ids and whitespace-normalized (wording,
+numbers, units, links and punctuation are preserved, so editing historical
+context or evidence references inside a note is an amendment too; a note id
+change counts as removal plus addition). The lock is schema version 2; a
+version 1 (table-only) lock is accepted only as a base, and migrating it passes
+only if the notes are unchanged, so a migration cannot hide a note edit.
+Deleting the notes lock or downgrading the schema, duplicate note ids and a
+missing notes section all fail. Workflow:
+`spec/decision-records/TEMPLATE.md`. On PRs, CI validates GitHub's merge
+checkout against the PR's base SHA.
 
 ### Where this block sits on the evidence ladder: **T1 9/11, `tier: null`**
 
