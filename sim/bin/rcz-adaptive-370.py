@@ -58,7 +58,6 @@ def _load(name: str, fname: str):
 rc = _load("rcz_fleet_confirm", "rcz-fleet-confirm.py")
 
 VSUP = 3.30
-PM_MIN, GM_MIN = 45.0, 10.0
 VNOM, BAND = 1.8, 0.018  # +-1% recovery band around the 1.8 V nominal
 CAND_REF_L = {
     "candA": 11,

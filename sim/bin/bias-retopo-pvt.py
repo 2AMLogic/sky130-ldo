@@ -58,7 +58,6 @@ PSRR_MEAS = [("p1k", 1e3, 50.0), ("p100k", 1e5, 20.0)]
 LOOP_COUT = {"c033": "0.33u", "c47": "4.7u"}
 LOOP_ESR = {"esr10m": 0.01, "esr500m": 0.5, "esr0": 0.0}
 LOOP_LOAD = {"50ma": "36", "1ma": "1.8k", "0ma": "1e12"}
-PM_MIN, GM_MIN = 45.0, 10.0
 
 
 def main() -> int:
@@ -249,8 +248,8 @@ def render(args, rows, errors, pts) -> str:
         at = lambda r: f"{r['process']}/{r['temp_c']:g}C/{r['vsup']:.2f}V"
         wp = min(okp, key=lambda r: r["pm"]) if okp else None
         wg = min(okg, key=lambda r: r["gm"]) if okg else None
-        npm = sum(r["pm"] < PM_MIN for r in okp)
-        ngm = sum(r["gm"] < GM_MIN for r in okg)
+        npm = sum(r["pm"] < fc.PM_MIN for r in okp)
+        ngm = sum(r["gm"] < fc.GM_MIN for r in okg)
         pm_fail += npm
         gm_fail += ngm
         head.append(
@@ -261,7 +260,7 @@ def render(args, rows, errors, pts) -> str:
     unav_gm = sum(r.get("gm") is None for r in rows)
     head += [
         "",
-        f"Total PM<{PM_MIN:g} deg points: {pm_fail}; GM<{GM_MIN:g} dB points: {gm_fail}. "
+        f"Total PM<{fc.PM_MIN:g} deg points: {pm_fail}; GM<{fc.GM_MIN:g} dB points: {gm_fail}. "
         f"Unavailable (reported, not inferred, never counted as pass): PM at {unav_pm} points, GM at {unav_gm} points "
         "(klt `transfer_metric_unavailable`, typically `no_downward_phase_crossing`: the loop phase never reaches -180 deg in the band).",
         "Every per-point value is in `summary.json`.",
