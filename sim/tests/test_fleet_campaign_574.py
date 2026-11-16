@@ -149,6 +149,39 @@ class Request(unittest.TestCase):
         self.assertNotIn("analysis", req)
         self.assertNotIn("measurements", req)
 
+    def test_order_defaults_to_PROCESS_for_every_existing_caller(self):
+        """The three #574 drivers pass no `order=`, so their requests must stay
+        byte-identical to the ones their committed records hold (issue #586)."""
+        cs = [("fs", 27.0), ("tt", 27.0), ("ss", 27.0)]
+        self.assertEqual(
+            fc.base_request(Path("/n/x.spice"), PDK, cs, {"kind": "op"}, []),
+            fc.base_request(
+                Path("/n/x.spice"), PDK, cs, {"kind": "op"}, [], order=fc.PROCESS
+            ),
+        )
+
+    def test_an_extended_order_tabulates_the_extra_corners_last(self):
+        """`bias-retopo-grid.py`'s grid is `PROCESS` plus the resistor-only skew
+        corners ll/hh, which `PROCESS.index` cannot order."""
+        order = [*fc.PROCESS, "ll", "hh"]
+        req = fc.base_request(
+            Path("/n/x.spice"),
+            PDK,
+            [(p, 27.0) for p in ("hh", "ss", "ll", "tt")],
+            {"kind": "op"},
+            [],
+            order=order,
+        )
+        self.assertEqual(req["corners"]["process"], ["tt", "ss", "ll", "hh"])
+
+    def test_a_process_outside_the_ordering_is_named_not_a_bare_ValueError(self):
+        with self.assertRaises(SystemExit) as cm:
+            fc.base_request(
+                Path("/n/x.spice"), PDK, [("tt", 27.0), ("ll", 27.0)], {"kind": "op"}, []
+            )
+        self.assertIn("'ll'", str(cm.exception))
+        self.assertIn("not in the ordering", str(cm.exception))
+
 
 class NetlistEdits(unittest.TestCase):
     BODY = ".subckt inner a b\nR1 a b 1k\n.ends\n.subckt ldo vin vout\nR2 vin vout 1k\n.ends\n"

@@ -70,3 +70,25 @@ Executed through `klt sim --backend batch` (no local fallback). Bias generator +
 | tt | 125 | 3.63 | 4.6026 | 4.8577 | +5.54 | 4.0259 | 4.2420 | +5.37 |
 
 Worst |I_pair shift| = 8.40 %; worst |I_tail shift| = 8.24 %; unusable points = 0.
+
+## Harness / Reproduce
+
+Harness: `sim/bin/bias-retopo-grid.py`. The deck above (bias generator + one
+`M_TAIL` copy), the 7 x 3 x 3 grid including the resistor-only skew corners
+`ll`/`hh`, the local grading and this A/B table are all that script's; the
+`klt sim` request/submit core it runs on is `sim/bin/_fleet_campaign.py` (issue
+#574, which this driver was folded onto by #586 — the `requests/` tree below is
+the golden reference that fold is pinned against, in
+`sim/tests/test_bias_retopo_grid_586.py`, so a re-run still emits byte-identical
+requests). Every point here came back from the Spot batch fleet; no local grid
+and no local fallback was used (host rule), and `requests/` plus `responses/`
+hold the submitted requests and the raw `klt sim` responses the numbers are read
+from.
+
+```bash
+python3 sim/bin/bias-retopo-grid.py --record-id <new>   # mints a NEW record dir; this one is never rewritten
+```
+
+Append-only: the command above cannot overwrite this directory (the driver
+refuses an existing record id), so a re-run is a new record that references this
+one rather than an edit of it.
