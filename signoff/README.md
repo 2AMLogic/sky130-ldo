@@ -679,13 +679,19 @@ the repo: all six re-mints of the item-10 envelope between 2026-11-05 and
 `T1 tier report` job had already cost a CI round trip (issue #579).
 
 `npm run check:ci` now catches it before the push.
-`signoff/check-attested-hygiene.sh` diffs your branch against `origin/main`,
-reads the hygiene list out of the inventory at runtime (it holds no copy of
-that list, so a path added to the inventory is covered the day it is added),
-and fails if the diff touches a hygiene file while the
-attestation envelope is not also in the diff. It needs only `git` and
-`python3` — no klt, no network, about a second. It checks only that question:
-whether a re-mint is *correct* is stage 1b's job, authoritatively.
+`signoff/check-attested-hygiene.sh` compares each inventoried hygiene file's
+sha256 against that path's `content_hash` pin in the committed
+`item10-attestation.generic.json` — an exact envelope-vs-tree comparison, so
+any byte change, any deleted inventoried file, and any inventoried file with
+no pin in the envelope fail the guard with the path named, until the envelope
+is re-minted against the current tree. It reads the hygiene list out of the
+inventory at runtime (it holds no copy of that list, so a path added to the
+inventory is covered the day it is added) and the klt pin out of
+`signoff/check.sh`. It needs only `python3` — no klt, no network, about a
+second — and carries a `--self-test` fixture suite that `check:ci` runs
+before the check itself. It checks only that one question — whether the
+envelope describes the tree; whether a re-mint is *correct* is stage 1b's
+job, authoritatively.
 
 The re-mint, from the repo root:
 
