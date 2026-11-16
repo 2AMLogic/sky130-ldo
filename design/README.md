@@ -1110,8 +1110,9 @@ removable disturbance current `IX` at `xldo.TS_SNS` and an `EN` source that is
 Everything below was run against the pinned PDK (`sky130A`, open_pdks
 `c6d73a35f524070e85faff4a6a9eef49553ebc2b`, same pin as `sim/pdk.json`), `tt`
 corner, 27°C, `VREF = 1.2V` (placeholder, see above), **from the committed
-schematic's own xschem-generated netlist** (`xschem -n … -o /tmp/… ; .include`
-that `.spice` file into a throwaway deck). Nothing here is committed under
+schematic's own xschem-generated netlist** (`klt netlist -o
+/tmp/ldo_3v3in_1v8out.spice` ; `.include` that `.spice` file into a
+throwaway deck). Nothing here is committed under
 `sim/`: these issues are design sources only. The corner-swept versions live
 under `sim/` — `load-transient` / `psrr-dc` / `dropout-vs-load` from #18 and
 `loop-gain` from #25, each re-run against this revision — with the full
@@ -1470,8 +1471,8 @@ is archived verbatim in [`investigation-log.md`](investigation-log.md).
 source sim/bin/pdk-env.sh
 xschem --rcfile "$XSCHEM_RCFILE" design/ldo_3v3in_1v8out.sch   # interactive open
 
-# headless netlist check (same invocation the sim harness uses):
-xschem -n -q -x -s -o /tmp/ldo_out --rcfile sim/xschemrc design/ldo_3v3in_1v8out.sch
+# headless netlist check (`klt netlist` forces the headless flags and kills a hung run):
+klt netlist -o /tmp/ldo_out/ldo_3v3in_1v8out.spice --rcfile sim/xschemrc design/ldo_3v3in_1v8out.sch
 grep -c MISSING /tmp/ldo_out/ldo_3v3in_1v8out.spice   # expect 0
 ```
 

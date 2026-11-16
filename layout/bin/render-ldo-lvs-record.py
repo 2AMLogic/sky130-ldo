@@ -105,9 +105,10 @@ def main() -> int:
     a("## Flow")
     a("")
     a(
-        "1. `xschem -n -q -x -s -o ... design/ldo_3v3in_1v8out.sch` -- "
-        "headless netlist, same invocation `design/README.md`'s "
-        "\"Validating this schematic\" section documents."
+        "1. `klt netlist -o <file.spice> --rcfile sim/xschemrc "
+        "design/ldo_3v3in_1v8out.sch` -- headless netlist, same "
+        "invocation `design/README.md`'s \"Validating this schematic\" "
+        "section documents."
     )
     a(
         "2. `layout/bin/gen-ldo-reference-netlist.py` translates that "
