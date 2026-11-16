@@ -32,7 +32,8 @@ of verified open-PDK analog blocks.
   agents do not relax a spec line to make a result pass. A row that proves
   unmeetable is superseded by a new decision record, never silently loosened.
   The table in `spec/target-spec.md` is RATIFIED (issue #1 / DR-006; the Iq row
-  is set by `DR-009`, which is `proposed` and ratifies on its own PR merge).
+  is set by `DR-009`, which is `proposed` — fresh ratification pending under
+  #301; DR-009 does not ratify itself).
   Treat its values as settled targets and change them only through a new
   decision record — and where a ratified row deliberately carries no number
   (e.g. a window still marked TBD over PVT), leave it open rather than inventing

@@ -57,12 +57,7 @@ Can start today, one pull request each.
    release, and count graph-derived nets (0 of 28 on the last record). Done
    when a diagnostic record exists under `sim/pex-post-layout/diagnostics/` and
    both READMEs name the current blocker. No issue yet.
-3. **Finish the #301 wording.** `README.md`, `spec/target-spec.md` (two places)
-   and `CLAUDE.md` still say DR-009 "ratifies on" merge; the ruling says fresh
-   ratification. Done when `grep -n 'ratifies on' README.md CLAUDE.md
-   spec/target-spec.md` is empty. Issue #301 (in progress; the DR-009 file
-   itself is PR #573, approved and held).
-4. **Re-probe the batch backend for the parked runs.** #375 and #327 are parked
+3. **Re-probe the batch backend for the parked runs.** #375 and #327 are parked
    on a runner/client version mismatch seen on 2026-10-11, yet batch records
    were minted on 2026-11-12 (PR #556, #561). Done when
    `python3 sim/bin/batch-preflight.py` exits 0 and #375's paired local/remote
