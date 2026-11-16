@@ -140,7 +140,17 @@ def render(record_id: str, rows: list[dict], errors: list[dict]) -> str:
         if d != "record":
             continue
         c = idx.get(("dr013", v, p, t))
-        if c is None or r["status"] != "ok" and r["status"] != "passed" and r["i_bias_pair_ua"] is None:
+        # Stricter than the repo-wide COMPLETED_STATUSES = ("pass", "fail"): this
+        # bench requests measurements with no limits, so `fail` cannot mean
+        # "limit violated, number valid" here -- any non-`pass` status is a
+        # non-completed corner whose numbers must not enter the shift table. Do
+        # not "harmonize" this to ("pass", "fail") (#625).
+        if (
+            c is None
+            or r["status"] != "pass"
+            or c["status"] != "pass"
+            or r["i_bias_pair_ua"] is None
+        ):
             bad += 1
             continue
         try:
