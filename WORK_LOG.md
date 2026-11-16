@@ -6,8 +6,30 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 
 - [2026-09](work_log/WORK_LOG_2026-09.md)
 
+### 2026-11-16
+
+- **PR #628**: sim/pex-post-layout: shard batch jobs via job_ceiling_check split
+- **PR #622**: refactor: collapse the triplicated PM/GM spec thresholds onto _fleet_campaign.py
+- **Issue #596** (closed): Collapse the triplicated PM/GM spec thresholds in sim/bin onto _fleet_campaign.py
+- **PR #593**: refactor(sim): build the bias grid's requests and submits on _fleet_campaign
+- **Issue #586** (closed): Fold sim/bin/bias-retopo-grid.py onto _fleet_campaign.py: the one batch-fleet driver #574's dedup missed
+
 ### 2026-11-15
 
+- **PR #620**: refactor(signoff): collapse duplicated item-5 envelope literal into one _envelope() helper
+- **Issue #606** (closed): Collapse the duplicated 51-line item-5 envelope literal in signoff/make_item5_envelope.py
+- **PR #619**: docs: make README's ratified spec-table mirror faithful to the gate
+- **Issue #607** (closed): README.md's 16-row spec table is a second copy of the ratified gate and has drifted in four rows
+- **PR #614**: refactor(sim): derive hysteresis observation instants from batch_thermal_staircase
+- **Issue #613** (closed): Thermal observation instants (T_COLD..T_REEN) are duplicated between run_hysteresis.py and batch_thermal_staircase.py
+- **PR #603**: refactor(sim): extract one shared batch endpoint-adapter test contract
+- **Issue #587** (closed): Deduplicate the batch adapter test scaffolding: 113 identical lines across three test files
+- **PR #602**: refactor(sim): use _record_common.spiceinit_sha256 in corner-run.py
+- **Issue #598** (closed): Remove corner-run.py's spiceinit_digest: byte-identical duplicate of _record_common.spiceinit_sha256
+- **PR #600**: docs(signoff): correct "What would move the needle" for items 11 and 1/2/9/10
+- **Issue #582** (closed): README and signoff/README still say T1 5/11; the verdict of record says 9/11
+- **PR #584**: feat(signoff): catch item-10 hygiene drift and T1 headline staleness in check:ci
+- **Issue #579** (closed): Docs PRs touching README.md always fail signoff stage 1b (item 10 attestation drift)
 - **PR #612**: sim: paired dropout local/fleet baseline check passes (equivalent, ngspice-47 both sides)
 - **Issue #375** (closed): Dropout: run the paired local/remote baseline check for the cold-start batch adapter once the fleet preflight accepts
 - **PR #611**: refactor(sim): share the thermal staircase Runner and deck frame in _record_common
