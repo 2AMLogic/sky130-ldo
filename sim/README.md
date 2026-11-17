@@ -1267,6 +1267,41 @@ cold-start crossing).
   (`BATCH_ALLOWLIST["current-limit"]["stimulus"]`); the manifest is pinned by
   digest, and `sim/tests/test_batch_current_limit_177.py` is headless.
 
+**Status (2026-11-17): record `20261117-173516-d843d914`, FAIL, 41/45
+corners PASS** (`--supersedes 20260825-105322-933dfdd`; JSON twin store-only,
+issue #436). `batch-preflight.py` exited 0 (runner klt 0.9.0, ngspice 47) and
+the full 45-point matrix ran as 3 chained-legs requests. Results against the
+#177-seeded deck:
+
+- **Solver-diagnostic gate (#171): 4/45 corners FAIL, every one from leg 2's
+  `dc vforce` sweep, every one on the 3.63 V (Vin_max) column**:
+  `tt_27c_3.63v` / `ff_27c_3.63v` / `fs_27c_3.63v` hit
+  `Warning: singular matrix` (node `xldo.ea_cz` on tt/ff, `xldo.n_fbb` on fs)
+  and `fs_125c_3.63v` hits `Warning: Dynamic gmin stepping failed`, all inside
+  the dc step's gmin continuation — where ngspice recovers each point via
+  *true* gmin stepping, completes the sweep, and every measured value stays
+  healthy; the gate grades those corners FAIL regardless of bounds, as
+  designed. This is the leg-2 exposure the deck's own claim already names —
+  "the one analysis that still solves with EN at its dc value" — now measured:
+  at 2.97 V and 3.3 V its gmin stepping completes at all 30 corners; at 3.63 V
+  it does not always. **The two transient legs #177 seeded are clean at all 45
+  corners** — the hazard this issue fixed (the DC-valued transient operating
+  point both `uic`-less legs solved from nowhere) no longer fires anywhere.
+- **Verdict deltas vs the superseded record.** That record read 45/45 PASS
+  because it predates the #171 gate: 16 of its logs already carry solver
+  diagnostics that were simply not detected then — under the gate it would
+  not read 45/45. The measured values also move for two honest reasons that
+  are not this fix: the DUT changed between the records (the integrated
+  comparator, #230) and the deck changed (issue #76's EN edge on leg 3,
+  PR #185's `uic` + leg-1 conversion). Illustrative at the equivalence
+  corner: the clamp window reads 129-207 mA across PVT now.
+- **Paired local/fleet equivalence (#612 precedent).** One corner
+  (`tt_27c_3.30v`) was also run through the local backend on the same commit:
+  all 10 measurements agree with the fleet's values to every printed digit
+  (vout_50ma_v 1.79883 V, ilim_short_ma 153.306 mA, ishort_sustained_ma
+  153.349 mA, ...) — the chained-steps translation is numerically the local
+  deck.
+
 ## Bound inclusivity (issue #335)
 
 A measurement's `min` / `max` are inclusive by default (value == bound passes).
