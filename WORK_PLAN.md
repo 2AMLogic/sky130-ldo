@@ -10,6 +10,7 @@ Judge-approved PRs under a hold (`loom:blocked` or `loom:operator`) — only a h
 - **#569**: docs: propose DR-014 binding capacitor condition for the PSRR row
 - **#573**: docs(spec): reconcile DR-009's ratifying-act wording with the #301 ruling
 - **#630**: docs: align DR-009 status wording with the #301 ruling across CLAUDE.md and target spec
+- **#635**: chore(loom): resync installed Loom to v0.19.1305
 
 ## Very Important
 
@@ -50,6 +51,7 @@ PRs that passed review and are queued for Champion auto-merge (`loom:pr`).
 - **#569**: docs: propose DR-014 binding capacitor condition for the PSRR row
 - **#573**: docs(spec): reconcile DR-009's ratifying-act wording with the #301 ruling
 - **#630**: docs: align DR-009 status wording with the #301 ruling across CLAUDE.md and target spec
+- **#635**: chore(loom): resync installed Loom to v0.19.1305
 
 ## Proposed
 
@@ -82,13 +84,13 @@ Issues carrying `loom:curated`.
 
 | Bucket | Count |
 |------|-------|
-| Operator merge-risk holds | 3 |
+| Operator merge-risk holds | 4 |
 | Very important | 1 |
 | Important | 1 |
 | Ready (`loom:issue`) | 2 |
 | In Progress (`loom:building`) | 2 |
 | PRs awaiting review | 0 |
-| Approved PRs awaiting merge | 3 |
+| Approved PRs awaiting merge | 4 |
 | Curated | 12 |
 | Architect / Hermit proposals | 3 |
 | Active epics | 1 |
