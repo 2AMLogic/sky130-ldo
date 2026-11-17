@@ -655,11 +655,12 @@ single `op` analysis and two scalar measurements (`vgs`, `isup`),
 #374, below) and `sim/line-regulation`'s four cold-start endpoints in their
 validated shape (issue #379, below) and `sim/load-regulation`'s two
 cold-start endpoints in their validated shape (issue #381, below) and `sim/iq`'s
-two cold-start endpoints (issue #213, below). Every other
-manifest — `current-limit`,
-`enable-shutdown`, `ic-screen-125c-*`, `loop-gain`,
+two cold-start endpoints (issue #213, below) and `sim/current-limit`'s three
+chained legs as one three-step request per supply (issue #177, below). Every
+other manifest — `enable-shutdown`, `ic-screen-125c-*`, `loop-gain`,
 `psrr-dc`, `startup`, `thermal`, and the `mc-*` experiments (which have their
-own runner, `mc-run.py`) — and any edited smoke, window-grid or dropout shape
+own runner, `mc-run.py`) — and any edited smoke, window-grid, dropout,
+endpoint or chained-legs shape
 is **refused before netlisting, submission or local ngspice**. The other
 regulation grids stay deferred on translating their measurement cards.
 
@@ -1223,6 +1224,48 @@ The record's JSON twin lives in the artifact store (issue #436), so
 `records/*.json`) does not yet see this record: the Iq row of
 `measurements/characterization.md` and the signoff item 8 pins were **not**
 regenerated here and still cite `20260910-034648-6c0436d`.
+
+#### Current limit's chained legs on the batch backend (issue #177)
+
+`python3 sim/bin/corner-run.py sim/current-limit --backend batch` runs the
+current-limit matrix off-host. `sim/bin/batch_current_limit.py` (PDK-free)
+translates the deck's THREE chained legs into **one three-step
+`analysis_steps[]` request per supply group** (3 requests of 5 process × 3
+temperatures for the full 45-point matrix; 3 singletons under `--quick`),
+enabled by klayout-tools#2482 (`analysis_steps[]`). The legs are chained on
+purpose — the alters are cumulative (leg 3 keeps the DC leg's
+`rforce = 1m`), and each solve starts from the previous one's solution —
+which is exactly klt's no-`reset` step sequence, so the three legs are one
+request, **not** three independent ones (that chaining is also why the
+window-grid rule "never pack legs as steps of one request" does not apply
+here: those legs `reset` between legs, these deliberately do not).
+
+| local deck (`deck.analyses`) | klt request |
+|---|---|
+| `tran 5u 1.0m uic` (leg 1) | step `tran1`: `analysis` verbatim (`uic` cold start, EN edge); its five window cards as step `spice` measurements |
+| `alter rload = 1e12`, `alter rforce = 1m`, `dc vforce 0 1.75 0.125` (leg 2) | step `dc1`: the alters as the step's `alter` map (`{rload: 1e12, rforce: 0.001}`), the sweep as `analysis`, its two `find i(vforce) at=` cards as `spice` |
+| `alter rload = 36`, `tran 500n 3.0m uic` (leg 3) | step `tran2`: **only `rload` changes** — RFORCE staying at the DC leg's 1 mOhm is the point (the pre-fault window is a live loop delivering into the forcing source's 1.8 V); the short is VFORCE's own PWL, already in the netlist |
+| `let meas_<name> = tran1.vout_50ma`, `1000*dc1.ilim_short`, ... | the manifest's graded rows travel **verbatim** as klt top-level derived measurements named `meas_<name>` — the deck was already written plot-qualified, and klt renders `<step>.<card>` as ngspice plot-qualified vectors |
+
+Results come back as `tran1.<card>` / `dc1.<card>` / `tran2.<card>` plus the
+`meas_<name>` derived rows, and are graded **locally** with the manifest's own
+bounds and the strict solver-diagnostic gate over the one retained engine log
+(all three legs of a corner share it, so a diagnostic in any leg fails the
+corner). The response's result set is checked by name and count against the
+request — every card present exactly once, nothing unrequested — a klt-side
+error diagnostic or failed step cannot PASS, and an unfinished or
+runner-incompatible remote job aborts with no record (same gate as the
+cold-start crossing).
+
+- **Shape gate (before netlisting).** The deck must be exactly the three legs
+  in declaration order — leg 1: `tran <tstep> <tstop> uic` + window cards;
+  leg 2: `alter rload`, `alter rforce`, `dc vforce <a> <b> <step>` + find
+  cards; leg 3: `alter rload` (only), `tran <tstep> <tstop> uic` + window
+  cards — with `uic` load-bearing on both transient legs (a non-`uic` tran
+  solves the DC-valued operating point first: the exact hazard #177 fixed).
+  The request netlist's stimulus/load lines are pinned
+  (`BATCH_ALLOWLIST["current-limit"]["stimulus"]`); the manifest is pinned by
+  digest, and `sim/tests/test_batch_current_limit_177.py` is headless.
 
 ## Bound inclusivity (issue #335)
 
