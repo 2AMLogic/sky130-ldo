@@ -16,8 +16,8 @@ def eval_xschem_exprs(text: str) -> tuple[str, int]:
     """Evaluate `expr('...')` geometry parameters (ad/as/pd/ps/nrd/nrs).
 
     The pinned toolchain (xschem 3.4.7) writes these sky130 symbol parameters
-    as numbers. An older xschem (3.4.4, what Ubuntu's apt ships -- the CI
-    `pdk-smoke` job and the dispatch workers) writes the symbol's raw
+    as numbers. An older xschem (3.4.4, what Ubuntu's apt ships -- the
+    dispatch workers) writes the symbol's raw
     `expr('...')` template, which ngspice cannot evaluate: the whole deck then
     fails to parse and every measurement is unavailable (issue #288). This
     applies the PDK symbol's own formulae to each device's own instance
