@@ -8,6 +8,16 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 
 ### 2026-11-16
 
+- **PR #632**: fix(sim): make the bias grid's unusable-point guard a real disjunction on status
+- **Issue #625** (closed): bias-retopo-grid.py's unusable-point guard: the status test is dead code (operator precedence), so a non-pass corner is graded
+- **PR #627**: chore(loom): resync installed Loom to v0.19.1302
+- **PR #626**: feat: pin README's ratified spec table with a DR-gated lock guard
+- **Issue #618** (closed): Port gf180-ldo's spec-table guard so README's ratified mirror cannot drift again
+- **PR #621**: fix(signoff): check attested hygiene exactly against the tree, not the branch diff
+- **Issue #588** (closed): check-attested-hygiene.sh: detect stale re-mints, not just absent ones (+ a --self-test)
+- **PR #617**: docs: point netlist prose at klt netlist instead of raw xschem
+- **PR #616**: evidence: standalone 45-corner pex-post-layout schematic leg completes on the batch fleet (#327)
+- **Issue #327** (closed): sim(pex): run the 45-corner schematic-side PEX leg once the batch fleet runner accepts klt 0.7.x clients (split from #277)
 - **PR #628**: sim/pex-post-layout: shard batch jobs via job_ceiling_check split
 - **PR #622**: refactor: collapse the triplicated PM/GM spec thresholds onto _fleet_campaign.py
 - **Issue #596** (closed): Collapse the triplicated PM/GM spec thresholds in sim/bin onto _fleet_campaign.py
