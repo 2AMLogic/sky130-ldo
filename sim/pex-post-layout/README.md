@@ -523,8 +523,10 @@ whose `delta[]` rows are graded against declared limits.
   time here, and the 7 failures are 4 corners where the design misses the
   ratified `Output` row at full load (plus its derived headroom window) and 3
   where it misses it at light load. They are the design's own, already-known
-  spec gap (`measurements/characterization.md`, Output row FAIL), not an
-  extraction artefact. No `timeout` errors.
+  spec gap — the Output row's ratified 1.764–1.836 V window, failed at full
+  load, tracked as the `Dropout @ 50 mA` / `Load regulation (0–50 mA)` FAILs
+  in `measurements/characterization.md` — not an extraction artefact. No
+  `timeout` errors.
 - `klt pex` (schematic + extracted legs + delta): `status=fail, passed=39,
   failed=96, errored=0, pin_count_mismatch=None`, exit code `3` (a delta row
   failed its own declared limits — the documented "ran, graded, something is

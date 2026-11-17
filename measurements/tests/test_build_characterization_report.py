@@ -325,6 +325,44 @@ class TestSubsetReason(unittest.TestCase):
         self.assertEqual(bcr.sim_subset_reason(rec), "(the record states no reason)")
 
 
+class TestMcScope(unittest.TestCase):
+    """A verdict extracted from a single-point Monte Carlo record must say so:
+    "200/200 individual sample(s) PASS" at one process/temp/supply point
+    otherwise reads exactly like matrix coverage next to a row citing a
+    45-corner sweep (issue #629)."""
+
+    def test_pvt_record_has_no_mc_scope(self):
+        self.assertIsNone(bcr.sim_mc_scope({"corners": [], "matrix": {"is_subset": False}}))
+        self.assertIsNone(
+            bcr.sim_mc_scope({"input_fingerprint": {"kind": "pvt"},
+                              "mc_corner": {"process": "tt"}})
+        )
+
+    def test_mc_record_states_its_single_point(self):
+        rec = {"mc_corner": {"process": "tt_mm", "temperature_c": 27, "vsup": 3.3}}
+        text = bcr.sim_mc_scope(rec)
+        self.assertIn("tt_mm/27C/3.3V", text)
+        self.assertIn("single", text)
+
+    def test_mc_kind_without_coordinates_is_still_flagged(self):
+        """An MC record that states no `mc_corner` coordinates still gets the
+        scope note -- the missing coordinates must not silently drop the
+        qualifier any more than a subset record's missing reason text does."""
+        self.assertIn("single", bcr.sim_mc_scope({"klt_request": {}, "mc_corner": {}}))
+        self.assertIn("single", bcr.sim_mc_scope({"input_fingerprint": {"kind": "mc"}}))
+
+    def test_partial_coordinates_are_still_listed(self):
+        text = bcr.sim_mc_scope({"mc_corner": {"process": "tt_mm"}})
+        self.assertIn("tt_mm", text)
+        self.assertIn("single", text)
+
+    def test_full_matrix_record_is_untouched(self):
+        """Edge case: a full-matrix PVT record (e.g. Line regulation's) must
+        render unchanged -- no MC qualifier, no subset qualifier."""
+        rec = {"corners": [{"pass": True}], "matrix": {"is_subset": False}}
+        self.assertIsNone(bcr.sim_mc_scope(rec))
+
+
 class TestVerdictExtraction(unittest.TestCase):
     def test_overall_verdict_md(self):
         text = "# record\n\nprose\n\n## Overall verdict: PASS (0 violations)\n\nmore\n"
@@ -1679,6 +1717,27 @@ class TestMalformedCampaignVerdict(unittest.TestCase):
         self.assertIn("(PVT subset)", row)
         self.assertIn("3-point subset", detail)
         self.assertIn("unverified: --no-netlist-freshness passed", detail)
+
+    def test_mc_record_verdict_is_scoped_not_bare(self):
+        """Issue #629: an MC record's verdict carries the single-point scope
+        qualifier next to it, and the detail names the record's own point."""
+        self._write("20260101-000000-mc", True,
+                    klt_request={"analysis": {"kind": "tran"}},
+                    mc_corner={"process": "tt_mm", "temperature_c": 27, "vsup": 3.3})
+        row, detail = self._row()
+        self.assertIn("**PASS** (single-point MC)", row)
+        self.assertNotIn("**PASS** |", row)
+        self.assertIn("Single-point MC", detail)
+        self.assertIn("tt_mm/27C/3.3V", detail)
+
+    def test_full_matrix_record_renders_without_either_qualifier(self):
+        """Edge case: a full-matrix PVT record keeps its bare verdict."""
+        self._write("20260101-000000-full", True,
+                    matrix={"is_subset": False}, corners=[{"pass": True}])
+        row, _ = self._row()
+        self.assertIn("**PASS** |", row)
+        self.assertNotIn("(single-point MC)", row)
+        self.assertNotIn("(PVT subset)", row)
 
     def test_cli_exits_nonzero_on_malformed_verdict(self):
         self._write("20260101-000000-bad", "false")

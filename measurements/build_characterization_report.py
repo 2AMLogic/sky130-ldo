@@ -377,6 +377,53 @@ def sim_subset_reason(record: dict) -> str | None:
     return reason or "(the record states no reason)"
 
 
+def sim_mc_scope(record: dict) -> str | None:
+    """A single-point scope note for an MC-kind record, or None for a record
+    that carries PVT-matrix evidence.
+
+    A Monte Carlo record samples per-instance device mismatch at one declared
+    process/temp/supply point — no PVT sweep, no load sweep — so "200/200
+    individual sample(s) PASS" next to a neighbour's 45-corner row reads, at a
+    glance, like matrix coverage it does not have (issue #629). Like
+    `sim_subset_reason` this extracts what the record's own shape states (the
+    `mc_corner` coordinates when present); the verdict itself is never
+    re-derived."""
+    explicit_pvt = (
+        isinstance(record.get("input_fingerprint"), dict)
+        and record["input_fingerprint"].get("kind") == "pvt"
+    )
+    mc = record.get("mc_corner")
+    if explicit_pvt:
+        return None
+    if not isinstance(mc, dict) and _record_kind(record) != "mc":
+        return None
+    if not isinstance(mc, dict):
+        return (
+            "the record samples device mismatch at a single declared operating "
+            "point (it states no `mc_corner` coordinates); the verdict covers "
+            "that one point, not a PVT or load sweep"
+        )
+    bits = []
+    if mc.get("process"):
+        bits.append(str(mc["process"]))
+    if isinstance(mc.get("temperature_c"), (int, float)):
+        bits.append(f"{mc['temperature_c']:g}C")
+    if isinstance(mc.get("vsup"), (int, float)):
+        bits.append(f"{mc['vsup']:g}V")
+    point = "/".join(bits)
+    if point:
+        return (
+            "the record samples device mismatch at the single declared point "
+            f"`{point}` (its `mc_corner`); the verdict covers that one "
+            "operating point, not a PVT or load sweep"
+        )
+    return (
+        "the record samples device mismatch at a single declared operating "
+        "point (its `mc_corner` states no coordinates); the verdict covers "
+        "that one point, not a PVT or load sweep"
+    )
+
+
 def sim_failing_measurements(record: dict) -> str | None:
     """Which bounded measurement(s) a corner-matrix record's FAIL corners
     actually failed on, as the record's own per-measurement `pass` flags state
@@ -1103,9 +1150,11 @@ def build_spec_row_table(
 
         subset_reason = sim_subset_reason(record)
         subset_flag = " (PVT subset)" if subset_reason else ""
+        mc_scope = sim_mc_scope(record)
+        mc_flag = " (single-point MC)" if mc_scope else ""
 
         table.append(
-            f"| {param} | {row['draft_target']} | **{verdict}**{subset_flag} | "
+            f"| {param} | {row['draft_target']} | **{verdict}**{subset_flag}{mc_flag} | "
             f"[`{record_id}`]({record_rel}) | {inputs_short} | {freshness_short} |"
         )
         detail_line = (
@@ -1125,6 +1174,8 @@ def build_spec_row_table(
                 " **PVT subset, not the full matrix this experiment declares** — "
                 f"the record's own stated reason: {subset_reason}"
             )
+        if mc_scope:
+            detail_line += f" **Single-point MC, not a PVT or load sweep** — {mc_scope}"
         detail.append(detail_line)
 
     return table, detail
