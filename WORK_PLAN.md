@@ -28,7 +28,6 @@ Judge-approved PRs under a hold (`loom:blocked` or `loom:operator`) — only a h
 Human-approved issues ready for implementation (`loom:issue`).
 
 - **#301**: spec: decide whether DR-008 through DR-012 ratified on merge
-- **#336**: Startup: extend cold-enable coverage to the ratified ESR boundaries
 - **#550**: Re-run signoff-graded benches made stale by the integrated comparator (split from #548)
 
 ## In Progress
@@ -36,6 +35,7 @@ Human-approved issues ready for implementation (`loom:issue`).
 Issues currently being built (`loom:building`).
 
 - **#177**: Seed sim/current-limit's leg-1 operating point to conform to the initial-condition contract
+- **#336**: Startup: extend cold-enable coverage to the ratified ESR boundaries
 - **#624**: CLAUDE.md:35 still claims DR-009 'ratifies on its own PR merge' — the same stale claim #607 removed from README
 - **#629**: characterization.md Output row reads PASS on light-load-only evidence; record 20261115-133911-1caff9b9 is full-load evidence against that same window
 - **#639**: xschem pin migration: migrate sky130-ldo to the fleet 3.4.7
@@ -90,8 +90,8 @@ Issues carrying `loom:curated`.
 | Operator merge-risk holds | 3 |
 | Very important | 1 |
 | Important | 1 |
-| Ready (`loom:issue`) | 3 |
-| In Progress (`loom:building`) | 4 |
+| Ready (`loom:issue`) | 2 |
+| In Progress (`loom:building`) | 5 |
 | PRs awaiting review | 1 |
 | Approved PRs awaiting merge | 3 |
 | Curated | 14 |
