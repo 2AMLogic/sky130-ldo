@@ -8,6 +8,8 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 
 ### 2026-11-17
 
+- **PR #643**: ci: declare repo-local run-pdk-smoke label in labels.yml
+- **Issue #642** (closed): CI: documented 'run-pdk-smoke' PR opt-in label does not exist
 - **PR #637**: chore(loom): resync installed Loom to v0.19.1306
 
 ### 2026-11-16
