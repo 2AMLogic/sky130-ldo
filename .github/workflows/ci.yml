@@ -174,14 +174,17 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install ngspice + xschem
+      - name: Install ngspice + build pinned xschem
         run: |
           sudo apt-get update
-          sudo apt-get install -y ngspice xschem
+          sudo apt-get install -y ngspice
+          .github/scripts/install-xschem
 
-      # issue #291: the apt package source gives no version choice, so the
-      # install above cannot be pinned. Log what resolved, against what
-      # sim/pdk.json declares; selftest --require-pdk below FAILs on drift.
+      # issue #639: xschem is source-built at the fleet pin (3.4.7) by
+      # .github/scripts/install-xschem, exported to later steps via
+      # GITHUB_PATH; only ngspice comes from apt. Log what resolved,
+      # against what sim/pdk.json declares; selftest --require-pdk below
+      # FAILs on drift (issue #291).
       - name: Show resolved toolchain versions vs sim/pdk.json
         run: |
           python3 -c "import json;print('declared:', json.load(open('sim/pdk.json')).get('tools'))"
