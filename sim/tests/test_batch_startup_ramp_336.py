@@ -23,7 +23,6 @@ from test_corner_run import SIM_DIR, BatchHarness, FakeKlt, HarnessErr
 from _sim_script_loader import load_script
 
 import _batch_backend  # noqa: E402  (imported before corner-run.py, so both share one module)
-import batch_startup_ramp  # noqa: E402
 
 corner_run = load_script("corner_run_batch_startup", SIM_DIR / "bin" / "corner-run.py", register=True)
 
@@ -233,7 +232,7 @@ class TestStartupLegRequests(StartupBatchHarness):
             self.assertTrue(r["options"]["waveforms"])
             self.assertTrue(r["options"]["keep_artifacts"])
             body = Path(r["netlist"]).read_text().splitlines()
-            vsup = next(float(l.split("=")[1]) for l in body if l.startswith(".param vsup"))
+            self.assertTrue(any(ln.startswith(".param vsup=") for ln in body))
             leg_id = next(k for k in legs if f"-{k}.spice" in r["netlist"])
             seen.add(leg_id)
             vals = corner_run.leg_values(exp.raw["window_grid"], legs[leg_id])

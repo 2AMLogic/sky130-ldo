@@ -57,13 +57,17 @@ class Item5Envelopes(unittest.TestCase):
             self.assertEqual(env["status"], verdict, bench)
 
     def test_tagged_measurements_carry_ratified_bounds(self):
+        # The ratified row's own fields must match exactly; a record may add
+        # its own extra guards (iq's `min: 0`, kept verbatim by the wrapper).
         for bench, rid in m.RECORDS:
             env = json.loads(m.output_path(bench, rid).read_text())
             for meas in env["measurements"]:
                 if "spec_row" in meas:
                     row, bound = m.RATIFIED[bench][meas["name"]]
                     self.assertEqual(meas["spec_row"], row)
-                    self.assertEqual(meas["limits"], bound)
+                    lim = meas["limits"] or {}
+                    for k, v in bound.items():
+                        self.assertEqual(lim.get(k), v, f"{bench}/{meas['name']}:{k}")
 
     def test_every_citation_has_its_own_manifest_pin(self):
         man = json.loads((ROOT / "signoff" / "block-manifest.json").read_text())
