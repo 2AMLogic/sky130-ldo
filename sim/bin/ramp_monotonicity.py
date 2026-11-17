@@ -50,6 +50,14 @@ def _result(status, reasons, settings, **extra) -> dict:
     return out
 
 
+def invalid_result(settings: dict, reasons: list[str]) -> dict:
+    """A caller-shaped INVALID result for a trace the checker never saw (e.g.
+    the batch waveform artifact is missing or unusable, issue #336): same
+    shape, checker-owned, never a PASS."""
+    common = {k: v for k, v in settings.items() if k not in ("legs", "signal")}
+    return _result("INVALID", reasons, common)
+
+
 def check_ramp_monotonicity(times, volts, settings: dict) -> dict:
     """Evaluate one startup trace. Never raises on bad data; returns INVALID."""
     s = {"tolerance_v": 0.0, **settings}

@@ -116,8 +116,13 @@ class SiblingBenchGate:
     """
 
     def test_sibling_regulation_benches_stay_refused(self):
-        for slug in ("psrr-dc", "startup"):
-            self.assertNotIn(slug, corner_run.BATCH_ALLOWLIST)
+        # issue #336 admits sim/startup through its own ramp-trace shape
+        # (sim/tests/test_batch_startup_ramp_336.py); the remaining sibling
+        # stays local-only.
+        self.assertNotIn("psrr-dc", corner_run.BATCH_ALLOWLIST)
+        self.assertEqual(
+            corner_run.BATCH_ALLOWLIST.get("startup"), {"window_grid": True, "ramp_traces": True}
+        )
 
 
 class BackendContract:

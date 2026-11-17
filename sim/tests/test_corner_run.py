@@ -1740,6 +1740,14 @@ class TestBatchWindowGrid(BatchHarness):
             (self.exp_dir / "experiment.json").write_text(json.dumps(raw))
             err, _, _ = self.run_main("--backend", "batch", *QUICK, expect_exit=HarnessErr)
             self.assertIn("bounded", str(err), slug)
+        # issue #336: startup itself is admitted, but only WITH its ramp
+        # block — a foreign manifest under that slug refuses on the missing
+        # ramp_monotonicity (it would qualify no trace condition).
+        raw = json.loads((SIM_DIR / self.SLUG / "experiment.json").read_text())
+        raw["slug"] = "startup"
+        (self.exp_dir / "experiment.json").write_text(json.dumps(raw))
+        err, _, _ = self.run_main("--backend", "batch", *QUICK, expect_exit=HarnessErr)
+        self.assertIn("declares no ramp_monotonicity", str(err))
         # issue #374: dropout-vs-load is admitted only in its validated
         # cold-start shape; a foreign manifest under that slug is refused.
         raw = json.loads((SIM_DIR / self.SLUG / "experiment.json").read_text())

@@ -141,11 +141,17 @@ class TestWiring(unittest.TestCase):
         self.assertIn("wrdata tt_27c_3.30v.c4u7_50ma_esr500m.trace.dat v(vout)", deck)
         self.assertNotIn("{corner_id}", deck)
 
-    def test_batch_refuses_ramp_manifest(self):
+    def test_batch_admits_ramp_manifest_only_with_its_block(self):
+        # issue #336: the trace-returning batch shape admits the committed
+        # startup manifest; without the ramp block it would qualify nothing
+        # and refuses instead.
         exp = self.cr.Experiment(dir=Path("."), raw=self.manifest)
         exp.measurements = []
-        with self.assertRaises(self.cr.HarnessError):
-            self.cr.check_batch_supported(exp)
+        self.cr.check_batch_supported(exp)
+        no_ramp = {k: v for k, v in self.manifest.items() if k != "ramp_monotonicity"}
+        with self.assertRaises(self.cr.HarnessError) as cm:
+            self.cr.check_batch_supported(self.cr.Experiment(dir=Path("."), raw=no_ramp))
+        self.assertIn("declares no ramp_monotonicity", str(cm.exception))
 
     def test_ramp_changes_input_fingerprint_only_when_present(self):
         from _record_common import pvt_input_sections
