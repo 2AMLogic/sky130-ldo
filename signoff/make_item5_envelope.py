@@ -41,6 +41,14 @@ Usage (from the repo root):
 
     python3 signoff/make_item5_envelope.py           # write (append-only)
     python3 signoff/make_item5_envelope.py --check   # exit 1 on drift
+    python3 signoff/make_item5_envelope.py --check --offline
+    #   headless structural check (the build_characterization_report.py
+    #   --offline mode, issue #503): verifies every committed envelope's
+    #   citation chain with no store fetch. Records whose JSON twin is
+    #   committed still get the full byte-exact rebuild; records held in the
+    #   artifact store get their manifest digest chain checked instead --
+    #   coverage, not a skip. Only a host with `klt` + store access can
+    #   confirm a store-held envelope byte-for-byte.
 
 Output files are named ``signoff/evidence/item5-<bench>-<record id>.sim.json``.
 An existing file with different content is never overwritten: a newer record
@@ -51,6 +59,7 @@ re-pointed at it.
 from __future__ import annotations
 
 import json
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -248,6 +257,117 @@ def _store_fetch_bytes(manifest: Path, name: str) -> bytes:
             f"{proc.stderr.decode(errors='replace').strip()[-300:]}"
         )
     return proc.stdout
+
+
+_HEX64_RE = re.compile(r"[0-9a-f]{64}")
+
+
+def _offline_store_record_problems(bench: str, rid: str) -> list[str]:
+    """Structural verification of a store-held record's committed envelope
+    with no store fetch (headless CI mode; the offline_check() pattern of
+    build_characterization_report.py, issue #503).
+
+    Rebuilding the envelope needs the record's JSON twin, which lives in the
+    artifact broker behind the committed store manifest -- only hosts with
+    `klt` + store access can read it. Offline, verify the citation chain
+    instead: the manifest entry for the record JSON is present with a
+    well-formed sha256 and the committed envelope pins exactly that digest;
+    the netlist-snapshot pin agrees with the materialised file when it is
+    committed, else with the manifest's own digest for it. Returns one
+    message per problem (empty = consistent).
+    """
+    ref = _report._store_manifest_entry(bench, rid)
+    where = f"sim/{bench}/records/{rid}.json"
+    if ref is None:
+        return [f"{where}: not committed and no store manifest entry -- cannot verify offline"]
+    manifest, name = ref
+    try:
+        entries = json.loads(manifest.read_text()).get("entries", [])
+    except (OSError, json.JSONDecodeError, AttributeError):
+        return [f"{manifest.name}: unreadable -- cannot verify {where} offline"]
+    rec_entry = next((e for e in entries if isinstance(e, dict) and e.get("name") == name), None)
+    if rec_entry is None:
+        return [f"{manifest.name}: no entry {name}"]
+    digest = rec_entry.get("sha256")
+    if not isinstance(digest, str) or not _HEX64_RE.fullmatch(digest):
+        return [f"{manifest.name}: entry {name} has no well-formed sha256 digest"]
+
+    out = output_path(bench, rid)
+    rel = out.relative_to(REPO_ROOT).as_posix()
+    env = json.loads(out.read_text())
+    errors: list[str] = []
+    claimed = env.get("source_record", {}).get("sha256")
+    if claimed != f"sha256:{digest}":
+        errors.append(
+            f"{rel}: source_record.sha256 pins {claimed} but {manifest.name} "
+            f"digests {name} as sha256:{digest}"
+        )
+    pin = env.get("provenance", {}).get("input", {})
+    snap_rel, claimed_snap = pin.get("path"), pin.get("content_hash")
+    snap_file = REPO_ROOT / snap_rel
+    snap_entry = next((e for e in entries if isinstance(e, dict) and e.get("name") == snap_rel), None)
+    if snap_file.is_file():
+        actual = sha256_file_prefixed(snap_file)
+        if claimed_snap != actual:
+            errors.append(f"{snap_rel}: hashes to {actual} but {rel} pins {claimed_snap}")
+        snap_digest = (snap_entry or {}).get("sha256")
+        if isinstance(snap_digest, str) and _HEX64_RE.fullmatch(snap_digest) \
+                and f"sha256:{snap_digest}" != claimed_snap:
+            errors.append(
+                f"{manifest.name}: entry {snap_rel} digests sha256:{snap_digest} "
+                f"but {rel} pins {claimed_snap}"
+            )
+    elif snap_entry is None:
+        errors.append(
+            f"{snap_rel}: neither committed nor listed in {manifest.name} -- "
+            f"{rel}'s input pin is unverifiable offline"
+        )
+    else:
+        snap_digest = snap_entry.get("sha256")
+        if not isinstance(snap_digest, str) or not _HEX64_RE.fullmatch(snap_digest):
+            errors.append(f"{manifest.name}: entry {snap_rel} has no well-formed sha256 digest")
+        elif f"sha256:{snap_digest}" != claimed_snap:
+            errors.append(
+                f"{manifest.name}: entry {snap_rel} digests sha256:{snap_digest} "
+                f"but {rel} pins {claimed_snap}"
+            )
+    return errors
+
+
+def offline_check() -> list[str]:
+    """Offline structural check of the committed item-5 envelopes (headless
+    CI mode; mirrors build_characterization_report.offline_check, issue #503).
+
+    Never fetches from the artifact store. For every record it verifies what
+    is verifiable without one: a record whose JSON twin is committed on disk
+    gets the FULL currency check (envelope_text vs the committed file -- no
+    store-backed step is involved for those); a store-held record gets its
+    citation chain verified instead. It cannot re-derive a store-held
+    envelope's measurements from bytes it cannot read, so it cannot say
+    whether that envelope still equals a fresh wrap -- that stays the
+    store-backed `--check`'s job. Returns one message per problem (empty =
+    consistent).
+    """
+    errors: list[str] = []
+    for bench, rid in RECORDS:
+        out = output_path(bench, rid)
+        rel = out.relative_to(REPO_ROOT).as_posix()
+        if not out.is_file():
+            errors.append(f"{rel}: missing -- run python3 signoff/make_item5_envelope.py")
+            continue
+        if _is_hysteresis(bench, rid) or (REPO_ROOT / "sim" / bench / "records" / f"{rid}.json").is_file():
+            try:
+                text = envelope_text(bench, rid)
+            except WrapError as e:
+                errors.append(f"{rel}: {e}")
+                continue
+            if out.read_text() != text:
+                errors.append(
+                    f"{rel}: committed text is not what make_item5_envelope.py would write"
+                )
+            continue
+        errors.extend(_offline_store_record_problems(bench, rid))
+    return errors
 
 
 def _hysteresis_dir(bench: str, rid: str) -> Path:
@@ -559,6 +679,18 @@ def envelope_text(bench: str, rid: str) -> str:
 def main(argv: list[str] | None = None) -> int:
     argv = sys.argv[1:] if argv is None else argv
     check = "--check" in argv
+    offline = "--offline" in argv
+    if offline and not check:
+        print("FATAL: --offline is only meaningful together with --check", file=sys.stderr)
+        return 2
+    if offline:
+        problems = offline_check()
+        if problems:
+            for p in problems:
+                print(f"FAIL: {p}", file=sys.stderr)
+            return 1
+        print("OK: committed item-5 envelopes consistent with their citation chains (offline; no store fetch).")
+        return 0
     rc = 0
     for bench, rid in RECORDS:
         out = output_path(bench, rid)

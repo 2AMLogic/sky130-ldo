@@ -328,7 +328,7 @@
           "reason": "check_failed"
         },
         {
-          "citation": "signoff/evidence/item5-psrr-dc-20260926-033606-4a9ec09.sim.json",
+          "citation": "signoff/evidence/item5-psrr-dc-20261029-092008-5ba605f.sim.json",
           "rows": [
             "psrr"
           ],
@@ -336,7 +336,7 @@
           "reason": "check_failed"
         },
         {
-          "citation": "signoff/evidence/item5-iq-20260910-034648-6c0436d.sim.json",
+          "citation": "signoff/evidence/item5-iq-20261110-223334-f66373a0.sim.json",
           "rows": [
             "iq"
           ],
@@ -353,12 +353,12 @@
           "reason": null
         },
         {
-          "citation": "signoff/evidence/item5-startup-20260825-110456-933dfdd.sim.json",
+          "citation": "signoff/evidence/item5-startup-20261117-221657-efb6bd6b.sim.json",
           "rows": [
             "startup"
           ],
-          "status": "met",
-          "reason": null
+          "status": "unmet",
+          "reason": "check_failed"
         },
         {
           "citation": "signoff/evidence/item5-enable-shutdown-20260825-111526-933dfdd.sim.json",
@@ -377,7 +377,7 @@
           "reason": null
         },
         {
-          "citation": "signoff/evidence/item5-loop-gain-20260926-040338-4a9ec09.sim.json",
+          "citation": "signoff/evidence/item5-loop-gain-20261029-092024-5ba605f.sim.json",
           "rows": [
             "stability"
           ],
@@ -397,9 +397,10 @@
           "signoff/evidence/item5-dropout-vs-load-20261011-092557-7a4e0cc.sim.json",
           "signoff/evidence/item5-load-regulation-20260926-010432-228fbc7.sim.json",
           "signoff/evidence/item5-load-transient-20260926-013955-6449a98.sim.json",
-          "signoff/evidence/item5-psrr-dc-20260926-033606-4a9ec09.sim.json",
-          "signoff/evidence/item5-iq-20260910-034648-6c0436d.sim.json",
-          "signoff/evidence/item5-loop-gain-20260926-040338-4a9ec09.sim.json"
+          "signoff/evidence/item5-psrr-dc-20261029-092008-5ba605f.sim.json",
+          "signoff/evidence/item5-iq-20261110-223334-f66373a0.sim.json",
+          "signoff/evidence/item5-startup-20261117-221657-efb6bd6b.sim.json",
+          "signoff/evidence/item5-loop-gain-20261029-092024-5ba605f.sim.json"
         ],
         "failed_rows": [
           "dropout",
@@ -407,7 +408,8 @@
           "load-regulation",
           "load-transient",
           "psrr",
-          "stability"
+          "stability",
+          "startup"
         ],
         "uncovered_rows": [],
         "declared_gaps": [
@@ -428,7 +430,6 @@
           "enable-shutdown": "derived",
           "line-regulation": "derived",
           "output": "derived",
-          "startup": "derived",
           "thermal": "derived"
         }
       }
