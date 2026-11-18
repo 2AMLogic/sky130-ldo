@@ -8,6 +8,10 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 
 ### 2026-11-18
 
+- **PR #658**: docs(signoff): scope check.sh re-hash claim to committed artifacts; seed verify() counts keys
+- **Issue #657** (closed): signoff/check.sh header still claims the gate "re-hashes every artifact" (post-#654 residual)
+- **PR #656**: fix(signoff): report store-manifest-verified pins as such, not as re-hashed
+- **Issue #654** (closed): verify-pins: a store-manifest-verified pin is reported as if its bytes were re-hashed
 - **PR #652**: sim(startup): mint the 12-leg ESR-grid x 45-PVT campaign on the batch fleet
 - **Issue #336** (closed): Startup: extend cold-enable coverage to the ratified ESR boundaries
 - **PR #651**: evidence: pex-post-layout batch legs run as ceiling-split shards (#623)
