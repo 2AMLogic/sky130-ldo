@@ -8,6 +8,8 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 
 ### 2026-11-18
 
+- **PR #667**: refactor: consolidate the two batch adapters' measurement-expression evaluators
+- **Issue #666** (closed): Consolidate duplicate measurement-expression evaluators in sim batch adapters
 - **Issue #663** (closed): WORK_PLAN.md 'In Progress' still lists closed #336 (no loom:building label)
 - **PR #661**: docs(signoff): qualify the gate's "re-hashes every artifact" claims in --help, README and ci.yml
 - **Issue #659** (closed): verify-pins "--help", signoff/README.md and ci.yml still claim the gate "re-hashes every artifact" (post-#658 residual)
