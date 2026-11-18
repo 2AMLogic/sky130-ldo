@@ -8,6 +8,8 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 
 ### 2026-11-18
 
+- **PR #661**: docs(signoff): qualify the gate's "re-hashes every artifact" claims in --help, README and ci.yml
+- **Issue #659** (closed): verify-pins "--help", signoff/README.md and ci.yml still claim the gate "re-hashes every artifact" (post-#658 residual)
 - **PR #658**: docs(signoff): scope check.sh re-hash claim to committed artifacts; seed verify() counts keys
 - **Issue #657** (closed): signoff/check.sh header still claims the gate "re-hashes every artifact" (post-#654 residual)
 - **PR #656**: fix(signoff): report store-manifest-verified pins as such, not as re-hashed
