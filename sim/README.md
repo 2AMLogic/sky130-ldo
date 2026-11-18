@@ -489,7 +489,7 @@ mutation tables, card lists and grading maths stay in its own file (issue #587).
 | `--supersedes <record-id>` | record which prior record this replaces |
 | `--author`, `--timeout` | record author (default `git config user.email`), per-corner ngspice timeout |
 | `--allow-pdk-mismatch` | run against a non-pinned PDK; the record flags it |
-| `--backend {local,batch}` | `local` (default) runs ngspice here. `batch` is the opt-in `klt sim` batch backend, **`sim/pdk-smoke` and the `sim/load-transient` window grid only** — see "Batch backend" below |
+| `--backend {local,batch}` | `local` (default) runs ngspice here. `batch` is the opt-in `klt sim` batch backend, **`sim/pdk-smoke`, the `sim/load-transient` window grid, the validated `sim/dropout-vs-load` cold-start crossing, the validated `sim/line-regulation` / `sim/load-regulation` / `sim/iq` endpoints and the validated `sim/startup` ramp-trace grid only** — see "Batch backend" below |
 | `--dry-run` | netlist, print the corner list and one deck, run nothing, write nothing (with `--backend batch`: print the `klt sim` requests, submit nothing) |
 | `--no-write` | run every corner for real (ngspice included) but skip writing an evidence record — for CI/selftest liveness runs that should not mint new evidence on every push |
 
@@ -636,13 +636,28 @@ the strict 0 V monotonicity tolerance and the sampled-trace scope are unchanged.
   forward and reversed leg order give identical measurements and byte-identical
   traces. It also shows strict monotonicity FAILing on all twelve legs at 2-32 uV
   (the open decision-record question in "Startup ramp monotonicity" above).
-- **Campaign (step 2, NOT done).** The append-only 45-point PVT record has not been
-  minted. `--backend batch` still refuses `ramp_monotonicity` (it needs the raw
-  `V(VOUT)` traces back, which the batch path does not hand back in the
-  `wrdata` form the checker reads; klt can retain rawfiles but the converter is
-  tracked upstream as 2AMLogic/klayout-tools#3360), and a 540-transient
-  grid must not be hand-launched on a shared worker. Run it on an authorised capable
-  runner once trace-returning execution exists; coordinate the rerun with #231.
+- **Campaign (step 2, done 2026-11-17, issue #336).** The append-only 45-point
+  PVT record is minted on the batch backend: `sim/startup/records/20261117-221657-efb6bd6b`
+  (36 scalar per-leg `klt sim` requests, 540 leg transients, ngspice-47 on the Spot
+  fleet, runner klt 0.9.0, `runner_compatibility: match`; the single-unit preflight
+  `batch-preflight.py` exited 0 first — job `klt-sim-410e0b9bf1a9` — and a one-corner
+  `--no-write` smoke confirmed the request shape and trace return before the matrix).
+  The grid is **COMPLETE**: all 2160 (corner x leg x electrical/ramp) conditions
+  evaluated, every leg's `V(VOUT)` trace returned and graded — 1620 electrical
+  conditions PASS (vpk <= 1.8246 V against the 1.836 V ceiling; vfloor >= 1.79836 V
+  against the 1.764 V floor; ramp 0.205-0.605 ms), and all 540 ramp-monotonicity
+  conditions FAIL the strict 0 V tolerance with drawdowns of 0.016-66 uV in the first
+  ~20 us after the enable edge — the same sub-mV pre-ramp behaviour #309 recorded at
+  tt/27 C/3.30 V, at every PVT corner and at every ESR sample (the ESR boundaries do
+  not worsen it; ESR changes a given (C_out, load) pair's drawdown by well under an
+  order of magnitude). The ESR = 0/10 mOhm legs agree with the #309-era local numbers
+  to within the ngspice 42 -> 47 drift at the pilot corner. The tolerance was NOT
+  raised: the open decision-record question from "Startup ramp monotonicity" above
+  stays open, so the record's grid verdict is **FAIL** and the ratified Startup row's
+  monotonicity claim remains unqualified at the sampled points. 10 of the 45 corners
+  additionally carry ngspice singular-matrix warnings, recorded by the strict
+  solver-diagnostic gate. Traces, per-corner logs, requests and responses are staged
+  in the evidence store (the record's sha256s pin them).
 
 ### Batch backend (issue #298)
 
@@ -655,7 +670,8 @@ single `op` analysis and two scalar measurements (`vgs`, `isup`),
 #374, below) and `sim/line-regulation`'s four cold-start endpoints in their
 validated shape (issue #379, below) and `sim/load-regulation`'s two
 cold-start endpoints in their validated shape (issue #381, below) and `sim/iq`'s
-two cold-start endpoints (issue #213, below). Every other
+two cold-start endpoints (issue #213, below) and `sim/startup`'s ramp-trace
+grid in its validated shape (issue #336, "Startup ESR grid" above). Every other
 manifest — `current-limit`,
 `enable-shutdown`, `ic-screen-125c-*`, `loop-gain`,
 `psrr-dc`, `startup`, `thermal`, and the `mc-*` experiments (which have their
@@ -875,6 +891,57 @@ campaign is
 `python3 sim/bin/corner-run.py sim/dropout-vs-load --backend batch`. That is
 the batch command above without `--process/--temp/--supply`,
 `--subset-reason` or `--no-write`.
+
+#### Startup ramp-trace grid on the batch backend (issue #336)
+
+`python3 sim/bin/corner-run.py sim/startup --backend batch` runs the twelve-leg
+startup grid off-host. `sim/bin/batch_startup_ramp.py` (PDK-free) builds one
+**scalar-`tran` request per supply × leg** (default run: 36 requests of 5
+process × 3 temperatures; `--quick`: one singleton per explicit tuple × leg),
+because `analysis_steps` requests can never return a rawfile — klt refuses
+`options.waveforms` for a step sequence (one waveform artifact per corner
+cannot represent several analyses). What travels where:
+
+| local deck (per-leg `leg_analyses`) | batch request |
+|---|---|
+| `reset`, `save all` | nothing to translate: each (corner, leg) is its own ngspice process, so isolation is at least the local in-process `reset` |
+| `alter cout/resr/cdir/rload = {placeholder}` | the leg's values baked into that request's netlist (the `COUT`/`RESR`/`CDIR`/`RLOAD` value field rewritten to exactly what the `alter` would set; ESR = 0 keeps the `leg_values()` topology — series branch 0 F, `CDIR` carries COUT, `RESR` parked) |
+| `tran 10u 4m` | the request's scalar `analysis` (`kind: tran`, args verbatim) |
+| `meas tran vpk/vfloor/tset ...` | request `measurements[]` with the card as `spice`; the `when`-threshold `tset` card carries `on_unreached: "null"` so a ramp that never reaches the window is a missing value, not an error-grade diagnostic |
+| `wrdata {corner_id}.{leg_id}.trace.dat v(vout)` | replaced by `options.waveforms: true` + `keep_artifacts`: klt returns each corner's waveform JSON artifact and the harness rebuilds the same `<corner>.<leg>.trace.dat` locally |
+
+The three manifest measurements (`vpk_v`, `vfloor_v`, `tramp_ms`) are graded
+**locally** over the returned card values with the manifest's own expressions
+(`tramp_ms` = `1000*(tset - 100u)`), the same inclusive bounds as the local
+path. The ramp-monotonicity condition is graded from the returned waveform
+artifact by the same `ramp_monotonicity.py`, at the same strict `tolerance_v
+= 0`; the rebuilt traces are staged beside the per-corner logs and their
+sha256s recorded per leg.
+
+- **Shape gate (before netlisting).** `check_ramp_trace_shape` pins the
+  shape the translation relies on: the leg block must open with
+  `reset`/`save all`, carry exactly one `wrdata` whose signal equals
+  `ramp_monotonicity.signal`, no `let` helpers, and `ramp_monotonicity.legs`
+  must be exactly the declared `window_grid` legs in order. A `startup`
+  manifest without the `ramp_monotonicity` block refuses outright (it would
+  qualify no trace condition). The element rewrite refuses unless each of
+  `cout`/`resr`/`cdir`/`rload` appears exactly once in the netlist.
+- **Never PASS without a completed, compatible remote run.** Same rule as
+  dropout: the response must name a remote job whose state is `done` (or
+  `failed` with a ran-to-report exit 0/3/4) and `runner_compatibility` must
+  be `match` — an old runner might ignore `options.waveforms`, which would
+  turn every leg INVALID.
+- **A missing trace can only lower the verdict.** A leg whose waveform
+  artifact is absent, unreadable, decimated away (`waveform_too_large`) or
+  without the declared signal records an INVALID ramp condition with the
+  reason and FAILs the corner; the grid's 36 electrical + 12 ramp conditions
+  per corner count it as failing/missing. No missing trace silently
+  qualifies.
+- **Fixtures.** `sim/tests/test_batch_startup_ramp_336.py` is headless. It
+  covers the shape-gate refusals, the scalar request + per-leg netlist
+  content, all-pass records with staged traces (sha256-verified), missing and
+  wrong-shaped artifacts, a strict-monotonicity FAIL lowering the grid, an
+  unreached `tset`, the runner-compatibility abort and cross-leg merging.
 
 #### Line regulation endpoints on the batch backend (issue #379)
 

@@ -188,15 +188,15 @@ class TestManifestCards(unittest.TestCase):
         # issue #379 admits sim/line-regulation and issue #381 admits
         # sim/load-regulation, each only at its pinned endpoint-adapter shape
         # (see test_batch_line_regulation_379.py / test_batch_load_regulation_381.py);
-        # the sibling regulation benches stay local-only.
+        # the sibling regulation benches stay local-only. sim/startup is
+        # admitted through its own ramp-trace shape since issue #336.
         for slug in ENDPOINTS:
             self.assertTrue(corner_run.BATCH_ALLOWLIST[slug].get("endpoint_adapter"), slug)
             corner_run.check_batch_supported(corner_run.load_experiment(SIM_DIR / slug))
-        for slug in ("psrr-dc", "startup"):
-            exp = corner_run.load_experiment(SIM_DIR / slug)
-            with self.assertRaises(corner_run.HarnessError) as cm:
-                corner_run.check_batch_supported(exp)
-            self.assertIn("does not support experiment", str(cm.exception))
+        exp = corner_run.load_experiment(SIM_DIR / "psrr-dc")
+        with self.assertRaises(corner_run.HarnessError) as cm:
+            corner_run.check_batch_supported(exp)
+        self.assertIn("does not support experiment", str(cm.exception))
 
 
 class TestProductionGrading(unittest.TestCase):

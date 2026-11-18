@@ -1,6 +1,10 @@
 """Item 5 envelopes (issue #449) must agree with the rollup they wrap.
 
-Needs nothing but python3. Checks that signoff/make_item5_envelope.py's
+Needs nothing but python3: on a host with `klt` + store access a store-held
+record's currency check fetches its twin from the broker; without them the
+store-backed citation chain is verified structurally instead (no fetch), so a
+missing binary is never a silent skip.
+ Checks that signoff/make_item5_envelope.py's
 committed output is current, that each envelope cites the record
 measurements/characterization.md cites, and that each envelope's verdict equals
 that record's verdict there -- a wrap must never grade a row differently from
@@ -11,6 +15,7 @@ from __future__ import annotations
 
 import json
 import re
+import shutil
 import sys
 import unittest
 from pathlib import Path
@@ -42,6 +47,15 @@ def _rollup() -> dict[str, tuple[str, str]]:
 
 class Item5Envelopes(unittest.TestCase):
     def test_committed_envelopes_are_current(self):
+        if shutil.which("klt") is None:
+            # Headless CI (no klt, no store access): records committed on
+            # disk still get the full byte-exact rebuild, and the store-held
+            # records get their manifest digest chain verified instead of a
+            # fetch -- real coverage of the store-backed citation path, not a
+            # skip (issue #503 pattern).
+            problems = m.offline_check()
+            self.assertEqual(problems, [], "\n".join(problems))
+            return
         for bench, rid in m.RECORDS:
             path = m.output_path(bench, rid)
             self.assertTrue(path.is_file(), path)
@@ -57,13 +71,17 @@ class Item5Envelopes(unittest.TestCase):
             self.assertEqual(env["status"], verdict, bench)
 
     def test_tagged_measurements_carry_ratified_bounds(self):
+        # The ratified row's own fields must match exactly; a record may add
+        # its own extra guards (iq's `min: 0`, kept verbatim by the wrapper).
         for bench, rid in m.RECORDS:
             env = json.loads(m.output_path(bench, rid).read_text())
             for meas in env["measurements"]:
                 if "spec_row" in meas:
                     row, bound = m.RATIFIED[bench][meas["name"]]
                     self.assertEqual(meas["spec_row"], row)
-                    self.assertEqual(meas["limits"], bound)
+                    lim = meas["limits"] or {}
+                    for k, v in bound.items():
+                        self.assertEqual(lim.get(k), v, f"{bench}/{meas['name']}:{k}")
 
     def test_every_citation_has_its_own_manifest_pin(self):
         man = json.loads((ROOT / "signoff" / "block-manifest.json").read_text())

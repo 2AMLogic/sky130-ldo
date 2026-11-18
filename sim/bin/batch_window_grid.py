@@ -26,6 +26,14 @@ This module maps one leg onto one single-step request body:
 * `let <name> = <expr>` helpers -> inlined, parenthesised, into every
   measurement expression that uses them (a klt step measurement is graded
   and must be a scalar, so ungraded vector helpers cannot be declared).
+* `wrdata {corner_id}.{leg_id}.trace.dat <signal>` -> NO step form: the
+  `{corner_id}` placeholder cannot be instantiated (one request covers many
+  corners) and klt owns the control block. Recognised and REMEMBERED as the
+  leg's trace signal, never emitted: a trace-returning experiment (issue
+  #336 startup, `ramp_traces` in `_batch_backend.BATCH_ALLOWLIST`) runs each
+  leg as its own scalar-analysis request with `options.waveforms`, and the
+  harness rebuilds the identical `.trace.dat` from the returned waveform
+  artifact (see `batch_startup_ramp.py`).
 
 Anything else in the template is refused rather than guessed at.
 """
@@ -47,6 +55,17 @@ _ALTER_RE = re.compile(rf"^alter\s+([A-Za-z][A-Za-z0-9_]*)\s*=\s*\{{({_IDENT})\}
 _TRAN_RE = re.compile(r"^tran\s+(\S.*)$", re.IGNORECASE)
 _MEAS_RE = re.compile(rf"^meas\s+tran\s+({_IDENT})\s+\S.*$", re.IGNORECASE)
 _LET_RE = re.compile(rf"^let\s+({_IDENT})\s*=\s*(\S.*)$", re.IGNORECASE)
+# The per-leg trace dump (issue #336 startup): `wrdata
+# {corner_id}.{leg_id}.trace.dat <signal>`. It has NO klt step form (a step's
+# control block is klt's own), and its `{corner_id}` placeholder cannot even be
+# instantiated — one klt request covers 15 corners. A trace-returning request
+# carries the signal back as each corner's waveform artifact
+# (`options.waveforms`, klayout-tools#3488/#3360) instead; the signal is
+# remembered on the template so the request builder can pin the artifact's
+# variable and the harness reconstructs the same `.trace.dat` locally.
+_WRDATA_RE = re.compile(
+    r"^wrdata\s+\{corner_id\}\.\{leg_id\}\.trace\.dat\s+(\S+)\s*$", re.IGNORECASE
+)
 # A signal accessor (v(x), i(vdd), vdb(out)): its argument is a node/branch
 # name, never a helper reference, so it is passed through untouched.
 _SIGNAL_RE = re.compile(r"\b[vi][a-z]{0,2}\s*\([^()]*\)", re.IGNORECASE)
@@ -61,6 +80,7 @@ class LegTemplate:
     tran_args: str
     meas_cards: list[tuple[str, str]]  # (name, ".meas tran ..." card)
     lets: dict[str, str] = field(default_factory=dict)  # name -> fully inlined expr
+    wrdata_signal: str | None = None  # per-leg trace signal (issue #336), never emitted
 
 
 def _inline(expr: str, lets: dict[str, str]) -> str:
@@ -96,6 +116,7 @@ def parse_leg_template(lines: list[str]) -> LegTemplate:
     tran_args: str | None = None
     meas_cards: list[tuple[str, str]] = []
     lets: dict[str, str] = {}
+    template_wrdata = [None]  # boxed: the loop's wrdata branch assigns it
     for ln in body[2:]:
         if (m := _ALTER_RE.match(ln)) is not None:
             if tran_args is not None:
@@ -109,6 +130,18 @@ def parse_leg_template(lines: list[str]) -> LegTemplate:
             if tran_args is None:
                 raise TranslationError(f"`{ln}` precedes the leg's tran")
             meas_cards.append((m.group(1), "." + ln))
+        elif (m := _WRDATA_RE.match(ln)) is not None:
+            if tran_args is None:
+                raise TranslationError(f"`{ln}` precedes the leg's tran")
+            if template_wrdata[0] is not None:
+                raise TranslationError("a leg may dump exactly one wrdata trace")
+            signal = m.group(1)
+            if _SIGNAL_RE.fullmatch(signal) is None:
+                raise TranslationError(
+                    f"wrdata signal `{signal}` is not a single signal accessor "
+                    "(v(x)/i(vdd)-shaped); refusing to guess what to return"
+                )
+            template_wrdata[0] = signal
         elif (m := _LET_RE.match(ln)) is not None:
             if tran_args is None:
                 raise TranslationError(f"`{ln}` precedes the leg's tran")
@@ -116,7 +149,7 @@ def parse_leg_template(lines: list[str]) -> LegTemplate:
         else:
             raise TranslationError(
                 f"leg_analyses line `{ln}` has no klt step form (supported: reset, save all, "
-                "alter <elem> = {placeholder}, one tran, meas tran, let)"
+                "alter <elem> = {placeholder}, one tran, meas tran, let, one wrdata trace)"
             )
     if tran_args is None:
         raise TranslationError("leg_analyses declares no tran")
@@ -125,7 +158,7 @@ def parse_leg_template(lines: list[str]) -> LegTemplate:
     names = [n.lower() for n, _ in meas_cards] + [n.lower() for n in lets]
     if len(set(names)) != len(names):
         raise TranslationError("leg_analyses reuses a meas/let name")
-    return LegTemplate(alters, tran_args, meas_cards, lets)
+    return LegTemplate(alters, tran_args, meas_cards, lets, template_wrdata[0])
 
 
 def leg_step(
