@@ -7,7 +7,12 @@ klt 0.6.0 says so on every pinned citation it prints ("input: not re-hashed
 ... the artifact itself was not read"). Two hand-written files agreeing with
 each other proves nothing on its own, so this stage re-hashes every artifact
 named in signoff/artifact-pins.json and cross-checks it against the envelope's
-own claim and against the manifest's pin.
+own claim and against the manifest's pin. A store-held artifact (the batch
+backend's evidence, which keeps its bytes in the artifact store only --
+committing a copy is what scripts/check_artifact_manifests.py forbids) is
+verified against the sha256 its committed manifests/artifacts store manifest
+records instead, the same claim `klt artifact get` sha-verifies a fetch
+against.
 
 Split out of the `python3 - <<'PY'` heredoc that used to live inside
 signoff/check.sh so that signoff/tests/test_verify_pins.py can drive it
@@ -75,6 +80,35 @@ def dotted(doc, path):
             return None
         cur = cur[part]
     return cur
+
+
+def _store_manifest_digest(root: pathlib.Path, rel: str) -> str | None:
+    """The sha256 a committed artifact-store manifest records for `rel`.
+
+    Store-held evidence (the batch backend's netlist snapshots and record
+    JSON twins) intentionally has no committed bytes -- a tracked file that
+    duplicates a stored object is what scripts/check_artifact_manifests.py
+    exists to reject -- so offline verification reads the digest from the
+    committed manifests/artifacts/*.manifest.json entry naming the object,
+    the same claim `klt artifact get` sha-verifies a fetch against. Returns
+    None when no manifest lists the path with a well-formed digest.
+    """
+    manifests_dir = root / "manifests" / "artifacts"
+    if not manifests_dir.is_dir():
+        return None
+    for manifest in sorted(manifests_dir.glob("*.manifest.json")):
+        try:
+            entries = json.loads(manifest.read_text()).get("entries", [])
+        except (OSError, json.JSONDecodeError, AttributeError):
+            continue
+        if not isinstance(entries, list):
+            continue
+        for entry in entries:
+            if isinstance(entry, dict) and entry.get("name") == rel:
+                digest = normalize_sha256(entry.get("sha256"))
+                if digest is not None:
+                    return digest
+    return None
 
 
 def verify_input_set(pin, item: str, expected: str, root: pathlib.Path) -> list[str]:
@@ -176,10 +210,24 @@ def verify(manifest, pins, root: pathlib.Path) -> list[str]:
             failures.extend(verify_input_set(pin, item, expected, root))
             continue
 
-        if not artifact.is_file():
-            failures.append(f"item {item}: artifact {pin['artifact']!r} does not exist")
-            continue
-        actual = sha256_file(artifact)
+        actual = None
+        if artifact.is_file():
+            actual = sha256_file(artifact)
+        else:
+            # A store-held artifact (the batch backend's evidence) keeps its
+            # bytes in the artifact store only: committing a copy is exactly
+            # what scripts/check_artifact_manifests.py forbids, so "re-hash
+            # the artifact" reads the digest from the committed store
+            # manifest naming it -- the same committed claim `klt artifact
+            # get` sha-verifies every fetch against.
+            actual = _store_manifest_digest(root, pin["artifact"])
+            if actual is None:
+                failures.append(
+                    f"item {item}: artifact {pin['artifact']!r} does not exist "
+                    f"(neither committed nor listed in a manifests/artifacts "
+                    f"store manifest)"
+                )
+                continue
         if actual != expected:
             failures.append(
                 f"item {item}: {pin['artifact']!r} hashes to sha256:{actual} today, "
