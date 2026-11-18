@@ -82,16 +82,18 @@ def dotted(doc, path):
     return cur
 
 
-def _store_manifest_digest(root: pathlib.Path, rel: str) -> str | None:
-    """The sha256 a committed artifact-store manifest records for `rel`.
+def _store_manifest_entry(root: pathlib.Path, rel: str) -> tuple[str, str] | None:
+    """`(manifest_relpath, sha256)` of the committed store manifest entry for `rel`.
 
     Store-held evidence (the batch backend's netlist snapshots and record
     JSON twins) intentionally has no committed bytes -- a tracked file that
     duplicates a stored object is what scripts/check_artifact_manifests.py
     exists to reject -- so offline verification reads the digest from the
     committed manifests/artifacts/*.manifest.json entry naming the object,
-    the same claim `klt artifact get` sha-verifies a fetch against. Returns
-    None when no manifest lists the path with a well-formed digest.
+    the same claim `klt artifact get` sha-verifies a fetch against. The
+    manifest's own path is returned alongside the digest so failure reports
+    can name where the digest came from rather than implying a re-hash.
+    Returns None when no manifest lists the path with a well-formed digest.
     """
     manifests_dir = root / "manifests" / "artifacts"
     if not manifests_dir.is_dir():
@@ -107,8 +109,14 @@ def _store_manifest_digest(root: pathlib.Path, rel: str) -> str | None:
             if isinstance(entry, dict) and entry.get("name") == rel:
                 digest = normalize_sha256(entry.get("sha256"))
                 if digest is not None:
-                    return digest
+                    return (manifest.relative_to(root).as_posix(), digest)
     return None
+
+
+def _store_manifest_digest(root: pathlib.Path, rel: str) -> str | None:
+    """The sha256 a committed artifact-store manifest records for `rel`."""
+    found = _store_manifest_entry(root, rel)
+    return found[1] if found is not None else None
 
 
 def verify_input_set(pin, item: str, expected: str, root: pathlib.Path) -> list[str]:
@@ -166,8 +174,14 @@ def verify_input_set(pin, item: str, expected: str, root: pathlib.Path) -> list[
     return failures
 
 
-def verify(manifest, pins, root: pathlib.Path) -> list[str]:
-    """Every way this block's pins can disagree with what they claim to cover."""
+def verify(manifest, pins, root: pathlib.Path, *, counts=None) -> list[str]:
+    """Every way this block's pins can disagree with what they claim to cover.
+
+    `counts`, when a dict, is filled with how many pins were verified by
+    re-hashing committed bytes (`counts["disk"]`) versus against their
+    committed store manifest (`counts["store"]`) -- the split the success
+    summary reports, so stdout cannot claim every match was a re-hash.
+    """
     failures: list[str] = []
     evidence = manifest.get("evidence") or {}
 
@@ -207,10 +221,14 @@ def verify(manifest, pins, root: pathlib.Path) -> list[str]:
             # over every member (sha256 of "<hex>  <path>" lines, sorted
             # bytewise by path). Re-hash every member on disk and recompute it,
             # so a drifted source or netlist fails here rather than only in klt.
-            failures.extend(verify_input_set(pin, item, expected, root))
+            item_failures = verify_input_set(pin, item, expected, root)
+            failures.extend(item_failures)
+            if not item_failures and counts is not None:
+                counts["disk"] += 1
             continue
 
         actual = None
+        store_manifest = None
         if artifact.is_file():
             actual = sha256_file(artifact)
         else:
@@ -220,21 +238,35 @@ def verify(manifest, pins, root: pathlib.Path) -> list[str]:
             # the artifact" reads the digest from the committed store
             # manifest naming it -- the same committed claim `klt artifact
             # get` sha-verifies every fetch against.
-            actual = _store_manifest_digest(root, pin["artifact"])
-            if actual is None:
+            found = _store_manifest_entry(root, pin["artifact"])
+            if found is None:
                 failures.append(
                     f"item {item}: artifact {pin['artifact']!r} does not exist "
                     f"(neither committed nor listed in a manifests/artifacts "
                     f"store manifest)"
                 )
                 continue
+            store_manifest, actual = found
         if actual != expected:
-            failures.append(
-                f"item {item}: {pin['artifact']!r} hashes to sha256:{actual} today, "
-                f"but signoff/artifact-pins.json pins {pin['sha256']} -- the cited "
-                f"evidence moved and the citation was not re-pinned"
-            )
+            if store_manifest is not None:
+                # No bytes were hashed on this path: the digest is a committed
+                # store manifest's claim, and the message must say so rather
+                # than implying a fresh re-hash (#654).
+                failures.append(
+                    f"item {item}: the committed {store_manifest} digests "
+                    f"{pin['artifact']!r} as sha256:{actual}, but "
+                    f"signoff/artifact-pins.json pins {pin['sha256']} -- the "
+                    f"cited evidence moved and the citation was not re-pinned"
+                )
+            else:
+                failures.append(
+                    f"item {item}: {pin['artifact']!r} hashes to sha256:{actual} today, "
+                    f"but signoff/artifact-pins.json pins {pin['sha256']} -- the cited "
+                    f"evidence moved and the citation was not re-pinned"
+                )
             continue
+        if counts is not None:
+            counts["store" if store_manifest is not None else "disk"] += 1
 
         envelope_path = root / pin["cited_envelope"]
         if not envelope_path.is_file():
@@ -352,14 +384,25 @@ def main(argv: list[str] | None = None) -> int:
     manifest = json.loads(args.manifest.read_text())
     pins = json.loads(args.pins.read_text())["pins"]
 
-    failures = verify(manifest, pins, root)
+    counts = {"disk": 0, "store": 0}
+    failures = verify(manifest, pins, root, counts=counts)
     if failures:
         print("signoff/check.sh: pinned-hash verification FAILED", file=sys.stderr)
         for line in failures:
             print(f"  - {line}", file=sys.stderr)
         return 1
 
-    print(f"signoff/check.sh: {len(pins)} pinned artifact(s) match their citations")
+    summary = (
+        f"signoff/check.sh: {len(pins)} pinned artifact(s) match their citations "
+        f"({counts['disk']} re-hashed on disk, {counts['store']} verified "
+        f"against their committed store manifest)"
+    )
+    if counts["store"]:
+        summary += (
+            " -- only a host with klt + store access can confirm those "
+            "byte-for-byte"
+        )
+    print(summary)
     return 0
 
 

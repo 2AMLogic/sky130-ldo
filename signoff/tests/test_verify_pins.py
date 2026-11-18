@@ -531,6 +531,139 @@ class TestStoreHeldPins(unittest.TestCase):
             self.assertIn("netlist-snapshots", proc.stderr)
 
 
+class TestVerificationStrengthReporting(unittest.TestCase):
+    """Issue #654: stdout must not claim a stronger check than was performed.
+
+    A store-held pin's digest came out of a committed store manifest, not out
+    of hashing bytes, so the mismatch message must name that manifest -- "hashes
+    to ... today" is reserved for the branch that actually re-hashed a file --
+    and the success summary must split the count by strength instead of
+    reporting all pins as re-hashed.
+    """
+
+    def _flip_sha(self, pins: list[dict], target: dict) -> list[dict]:
+        good = verify_pins.normalize_sha256(target["sha256"])
+        bad = ("0" * 64) if good != "0" * 64 else ("1" * 64)
+        return [
+            p if p is not target else {**p, "sha256": f"sha256:{bad}"}
+            for p in pins
+        ]
+
+    def test_a_store_held_mismatch_names_the_manifest_not_a_rehash(self):
+        pins = _pins()
+        target = next(
+            p for p in pins
+            if "/netlist-snapshots/" in str(p.get("artifact", ""))
+            and not (REPO_ROOT / str(p["artifact"])).is_file()
+        )
+        failures = _verify(_manifest(), self._flip_sha(pins, target))
+        msg = next(f for f in failures if str(target["artifact"]) in f)
+        self.assertNotIn(
+            "hashes to", msg,
+            f"nothing was hashed for a store-held pin: {msg}",
+        )
+        self.assertIn(".manifest.json", msg)
+
+    def test_an_on_disk_mismatch_keeps_the_rehash_wording(self):
+        pins = _pins()
+        target = next(
+            p for p in pins
+            if not p.get("input_set")
+            and (REPO_ROOT / str(p["artifact"])).is_file()
+        )
+        failures = _verify(_manifest(), self._flip_sha(pins, target))
+        msg = next(f for f in failures if str(target["artifact"]) in f)
+        self.assertIn("hashes to", msg)
+        self.assertIn(" today", msg)
+
+    def test_summary_splits_the_count_on_the_real_pin_set(self):
+        """Mixed set: N re-hashed + M store-verified, plus the caveat."""
+        pins = _pins()
+        n_store = sum(
+            1 for p in pins if not (REPO_ROOT / str(p["artifact"])).is_file()
+        )
+        self.assertGreater(
+            n_store, 0,
+            "fixture drained: every pin's artifact is committed, so the "
+            "split summary is untested",
+        )
+        n_disk = len(pins) - n_store
+        proc = subprocess.run(
+            [sys.executable, str(SCRIPT), str(MANIFEST), str(PINS)],
+            cwd=REPO_ROOT,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertIn(
+            f"({n_disk} re-hashed on disk, {n_store} verified against "
+            f"their committed store manifest",
+            proc.stdout,
+        )
+        self.assertIn("klt + store access", proc.stdout)
+
+    def _scratch_run(self, *, artifact_committed: bool):
+        """The real CLI over a minimal fabricated one-pin set in a tempdir."""
+        import hashlib
+
+        content = b"evidence bytes"
+        digest = hashlib.sha256(content).hexdigest()
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "env.json").write_text("{}")
+            manifest_path = root / "block-manifest.json"
+            manifest_path.write_text(
+                json.dumps({"evidence": {"1": {"file": "env.json"}}})
+            )
+            if artifact_committed:
+                (root / "snap.spice").write_bytes(content)
+            else:
+                store = root / "manifests" / "artifacts"
+                store.mkdir(parents=True)
+                (store / "bench-rid.manifest.json").write_text(json.dumps(
+                    {"entries": [
+                        {"name": "snap.spice", "sha256": digest,
+                         "size": len(content)},
+                    ]}
+                ))
+            pins_path = root / "artifact-pins.json"
+            pins_path.write_text(json.dumps({"pins": [{
+                "item": 1,
+                "artifact": "snap.spice",
+                "sha256": f"sha256:{digest}",
+                "cited_envelope": "env.json",
+            }]}))
+            return subprocess.run(
+                [
+                    sys.executable, str(SCRIPT),
+                    str(manifest_path), str(pins_path),
+                    "--root", str(root),
+                ],
+                capture_output=True,
+                text=True,
+            )
+
+    def test_all_on_disk_summary_reports_zero_store(self):
+        proc = self._scratch_run(artifact_committed=True)
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertIn(
+            "(1 re-hashed on disk, 0 verified against their committed "
+            "store manifest)",
+            proc.stdout,
+        )
+        self.assertNotIn("klt + store access", proc.stdout)
+
+    def test_all_store_summary_carries_the_caveat(self):
+        proc = self._scratch_run(artifact_committed=False)
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertIn(
+            "(0 re-hashed on disk, 1 verified against their committed "
+            "store manifest)",
+            proc.stdout,
+        )
+        self.assertIn("klt + store access", proc.stdout)
+
+
 class TestStoreManifestDigest(unittest.TestCase):
     """Unit coverage for the digest lookup the fallback rests on."""
 
