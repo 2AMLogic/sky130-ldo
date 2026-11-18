@@ -40,7 +40,8 @@ def manifest_entries(path: Path) -> list[dict]:
     """A manifest's `entries` as a list of its objects; `[]` when unreadable.
 
     "Unreadable" is the union every caller must tolerate: missing file,
-    undecodable JSON, JSON that is not an object, an `entries` that is not
+    undecodable JSON (invalid JSON, or bytes that are not UTF-8 at all),
+    JSON that is not an object, an `entries` that is not
     a list -- plus non-object members dropped from an otherwise readable
     list. An empty result is the caller's signal to report the evidence as
     unverified / not held rather than crash; a caller that wants to say
@@ -48,7 +49,7 @@ def manifest_entries(path: Path) -> list[dict]:
     """
     try:
         entries = json.loads(Path(path).read_text()).get("entries", [])
-    except (OSError, json.JSONDecodeError, AttributeError):
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError, AttributeError):
         return []
     if not isinstance(entries, list):
         return []
