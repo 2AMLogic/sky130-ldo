@@ -38,6 +38,7 @@ Issues currently being built (`loom:building`).
 - **#624**: CLAUDE.md:35 still claims DR-009 'ratifies on its own PR merge' — the same stale claim #607 removed from README
 - **#629**: characterization.md Output row reads PASS on light-load-only evidence; record 20261115-133911-1caff9b9 is full-load evidence against that same window
 - **#639**: xschem pin migration: migrate sky130-ldo to the fleet 3.4.7
+- **#671**: Consolidate duplicated artifact-store manifest read/fetch helpers
 
 ## PRs Awaiting Review
 
@@ -89,7 +90,7 @@ Issues carrying `loom:curated`.
 | Very important | 1 |
 | Important | 1 |
 | Ready (`loom:issue`, net of holds/building/merge-pending) | 2 |
-| In Progress (`loom:building`) | 4 |
+| In Progress (`loom:building`) | 5 |
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 3 |
 | Curated | 13 |
