@@ -301,6 +301,15 @@ class BaseTests(Base):
         self.r.bootstrap()
         self.bad("--check", "--base", "nope", msg="git")
 
+    def test_empty_base_fails_closed(self):
+        # merge queue (#668): an event whose base sha arrives EMPTY must fail
+        # explicitly here too, never fall into run_check's `base_ref is None`
+        # current-tree branch (an empty string is not None). Mirrors
+        # sky130-comparator#332's "merge_group without a base fails
+        # explicitly"; the workflow guards the same thing in shell.
+        self.r.bootstrap()
+        self.bad("--check", "--base", "", msg="git merge-base")
+
     def test_table_and_lock_edit_with_old_dr_fails(self):
         self.r.bootstrap()
         self.branch()
@@ -814,6 +823,64 @@ class NoteTests(Base):
         self.bad("--write", msg="duplicate ratified note id")
         self.r.write("README.md", TABLE.replace("Notes — these are part", "Other — these are part"))
         self.bad("--write", msg="notes section")
+
+
+class CiWorkflowMergeGroupTests(unittest.TestCase):
+    """The ci.yml wiring that runs this gate on merge-queue commits (#668).
+
+    Stdlib-only, text-level assertions on .github/workflows/ci.yml (no YAML
+    dependency): the merge_group trigger is declared, the single spec-table
+    step selects the base per event through env values, and no `${{ }}`
+    context is interpolated directly into the gate's command line (an empty
+    interpolation would vanish before the gate could fail closed).
+    """
+
+    def setUp(self):
+        self.text = (REPO / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+
+    def _merge_group_block(self) -> str:
+        """Text of the merge_group trigger entry: from its `key:` line
+        through its indented continuations, up to the next key. Text-level,
+        no YAML dependency; empty when the entry is absent."""
+        lines = self.text.splitlines(keepends=True)
+        try:
+            start = lines.index("  merge_group:\n")
+        except ValueError:
+            return ""
+        out = []
+        for ln in lines[start + 1:]:
+            if ln.strip() and not ln.startswith("    "):
+                break  # next key (or comment) at or above trigger level
+            out.append(ln)
+        return "".join(out)
+
+    def test_merge_group_trigger_declared(self):
+        self.assertIn("  merge_group:", self.text)
+        block = self._merge_group_block()
+        self.assertTrue(block, "merge_group trigger entry not found in ci.yml")
+        self.assertIn("types: [checks_requested]", block)
+        # no path/branch filters narrow the trigger away from the queue —
+        # scoped to the merge_group entry, not the whole file
+        self.assertNotIn("paths:", block)
+        self.assertNotIn("branches:", block)
+
+    def test_spec_table_step_selects_base_from_env(self):
+        self.assertIn("PR_BASE: ${{ github.event.pull_request.base.sha }}", self.text)
+        self.assertIn("MG_BASE: ${{ github.event.merge_group.base_sha }}", self.text)
+
+    def test_no_context_interpolated_into_gate_command(self):
+        # the base reaches the gate through env, never `${{ }}` on the
+        # command line — any spelling: bare, single- or double-quoted
+        self.assertNotRegex(self.text, r"--base\s*['\"]?\$\{\{")
+
+    def test_event_gated_spec_table_steps_gone(self):
+        # the two old steps ran the weaker current-tree check on merge_group
+        # (silent downgrade) and skipped the authorization diff (silent drop)
+        self.assertNotIn("github.event_name != 'pull_request'", self.text)
+        self.assertNotIn("if: github.event_name == 'pull_request'", self.text)
+
+    def test_merge_group_empty_base_guard_present(self):
+        self.assertIn("refusing to claim the spec table was verified", self.text)
 
 
 if __name__ == "__main__":
