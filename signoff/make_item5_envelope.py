@@ -60,7 +60,6 @@ from __future__ import annotations
 
 import json
 import re
-import subprocess
 import sys
 from pathlib import Path
 
@@ -74,6 +73,11 @@ import build_characterization_report as _report  # noqa: E402
 # tree's `_record_common` can shadow the other's.
 sys.path.append(str(REPO_ROOT / "layout" / "bin"))
 from _digest import sha256_file_prefixed  # noqa: E402
+from _store_manifest import (  # noqa: E402 -- the one store-manifest contract (issue #671)
+    StoreFetchError,
+    fetch_entry_bytes,
+    manifest_entries,
+)
 
 OUT_DIR = REPO_ROOT / "signoff" / "evidence"
 
@@ -233,8 +237,8 @@ def _load(bench: str, rid: str) -> tuple[dict, Path]:
     via `klt artifact get` (sha256-verified against the committed store
     manifest) when the evidence went to the artifact broker instead -- the
     batch backend's shape, whose committed `records/<rid>.md` links both the
-    JSON and the netlist snapshot into the store (mirrors
-    build_characterization_report._fetch_store_record)."""
+    JSON and the netlist snapshot into the store (fetch delegated to the
+    shared _store_manifest helper)."""
     path = REPO_ROOT / "sim" / bench / "records" / f"{rid}.json"
     if path.is_file():
         return json.loads(path.read_text()), path
@@ -243,20 +247,10 @@ def _load(bench: str, rid: str) -> tuple[dict, Path]:
         raise WrapError(
             f"{bench} {rid}: no records/{rid}.json on disk and no store manifest entry"
         )
-    return json.loads(_store_fetch_bytes(*ref)), path
-
-
-def _store_fetch_bytes(manifest: Path, name: str) -> bytes:
-    proc = subprocess.run(
-        ["klt", "artifact", "get", f"{manifest}#{name}", "-o", "-"],
-        capture_output=True, timeout=120,
-    )
-    if proc.returncode != 0:
-        raise WrapError(
-            f"`klt artifact get {manifest}#{name}` failed ({proc.returncode}): "
-            f"{proc.stderr.decode(errors='replace').strip()[-300:]}"
-        )
-    return proc.stdout
+    try:
+        return json.loads(fetch_entry_bytes(*ref)), path
+    except StoreFetchError as exc:
+        raise WrapError(f"{bench} {rid}: {exc}") from exc
 
 
 _HEX64_RE = re.compile(r"[0-9a-f]{64}")
@@ -281,13 +275,10 @@ def _offline_store_record_problems(bench: str, rid: str) -> list[str]:
     if ref is None:
         return [f"{where}: not committed and no store manifest entry -- cannot verify offline"]
     manifest, name = ref
-    try:
-        entries = json.loads(manifest.read_text()).get("entries", [])
-    except (OSError, json.JSONDecodeError, AttributeError):
-        return [f"{manifest.name}: unreadable -- cannot verify {where} offline"]
-    rec_entry = next((e for e in entries if isinstance(e, dict) and e.get("name") == name), None)
+    entries = manifest_entries(manifest)
+    rec_entry = next((e for e in entries if e.get("name") == name), None)
     if rec_entry is None:
-        return [f"{manifest.name}: no entry {name}"]
+        return [f"{manifest.name}: unreadable or has no entry {name} -- cannot verify {where} offline"]
     digest = rec_entry.get("sha256")
     if not isinstance(digest, str) or not _HEX64_RE.fullmatch(digest):
         return [f"{manifest.name}: entry {name} has no well-formed sha256 digest"]
@@ -305,7 +296,7 @@ def _offline_store_record_problems(bench: str, rid: str) -> list[str]:
     pin = env.get("provenance", {}).get("input", {})
     snap_rel, claimed_snap = pin.get("path"), pin.get("content_hash")
     snap_file = REPO_ROOT / snap_rel
-    snap_entry = next((e for e in entries if isinstance(e, dict) and e.get("name") == snap_rel), None)
+    snap_entry = next((e for e in entries if e.get("name") == snap_rel), None)
     if snap_file.is_file():
         actual = sha256_file_prefixed(snap_file)
         if claimed_snap != actual:
@@ -561,15 +552,18 @@ def build_envelope(bench: str, rid: str) -> dict:
                 "store manifest entry carries it"
             )
         manifest, _ = ref
-        rec_sha = "sha256:" + hashlib.sha256(
-            _store_fetch_bytes(manifest, f"sim/{bench}/records/{rid}.json")
-        ).hexdigest()
-        if snap.is_file():
-            snap_sha = "sha256:" + hashlib.sha256(snap.read_bytes()).hexdigest()
-        else:
-            snap_sha = "sha256:" + hashlib.sha256(
-                _store_fetch_bytes(manifest, rec["links"]["netlist_snapshot"])
+        try:
+            rec_sha = "sha256:" + hashlib.sha256(
+                fetch_entry_bytes(manifest, f"sim/{bench}/records/{rid}.json")
             ).hexdigest()
+            if snap.is_file():
+                snap_sha = "sha256:" + hashlib.sha256(snap.read_bytes()).hexdigest()
+            else:
+                snap_sha = "sha256:" + hashlib.sha256(
+                    fetch_entry_bytes(manifest, rec["links"]["netlist_snapshot"])
+                ).hexdigest()
+        except StoreFetchError as e:
+            raise WrapError(f"{bench} {rid}: {e}") from e
     matrix = rec.get("matrix") or {}
     subset = bool(matrix.get("is_subset"))
 

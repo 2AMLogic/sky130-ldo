@@ -119,7 +119,7 @@ import json
 import os
 import re
 import shutil
-import subprocess
+import subprocess  # noqa: F401 -- kept importable here; tests patch bcr.subprocess.run
 import sys
 from pathlib import Path
 
@@ -147,6 +147,11 @@ if _LAYOUT_BIN_DIR not in sys.path:
     sys.path.insert(0, _LAYOUT_BIN_DIR)
 from _digest import normalize_sha256, sha256_file  # the repo's one digest contract (#589)
 from _official_drc import official_result  # fail-closed official-deck reader (issue #260)
+from _store_manifest import (  # the one store-manifest read/fetch contract (issue #671)
+    StoreFetchError,
+    fetch_entry_bytes,
+    manifest_entries,
+)
 
 SCHEMATIC_FILE = "design/ldo_3v3in_1v8out.sch"
 DEFAULT_OUT = MEASUREMENTS_DIR / "characterization.md"
@@ -314,11 +319,7 @@ def _store_manifest_entry(slug: str, record_id: str) -> tuple[Path, str] | None:
     artifact store per `manifests/artifacts/<slug>-<id>.manifest.json`."""
     manifest = ARTIFACT_MANIFEST_DIR / f"{slug}-{record_id}.manifest.json"
     name = f"sim/{slug}/records/{record_id}.json"
-    try:
-        entries = json.loads(manifest.read_text()).get("entries", [])
-    except (OSError, json.JSONDecodeError, AttributeError):
-        return None
-    if any(isinstance(e, dict) and e.get("name") == name for e in entries):
+    if any(e.get("name") == name for e in manifest_entries(manifest)):
         return manifest, name
     return None
 
@@ -333,18 +334,11 @@ def _fetch_store_record(slug: str, record_id: str) -> dict:
         raise RuntimeError(f"{where}: no artifact manifest entry")
     manifest, name = ref
     try:
-        proc = subprocess.run(
-            ["klt", "artifact", "get", f"{manifest}#{name}", "-o", "-"],
-            capture_output=True,
-            timeout=120,
-        )
-    except (OSError, subprocess.SubprocessError) as exc:
-        raise RuntimeError(f"{where}: cannot run `klt artifact get`: {exc}") from exc
-    if proc.returncode != 0:
-        detail = proc.stderr.decode(errors="replace").strip()[-300:]
-        raise RuntimeError(f"{where}: `klt artifact get` failed ({proc.returncode}): {detail}")
+        raw = fetch_entry_bytes(manifest, name)
+    except StoreFetchError as exc:
+        raise RuntimeError(f"{where}: {exc}") from exc
     try:
-        data = json.loads(proc.stdout)
+        data = json.loads(raw)
     except json.JSONDecodeError as exc:
         raise RuntimeError(f"{where}: fetched twin is not valid JSON: {exc}") from exc
     if not isinstance(data, dict):
@@ -1646,11 +1640,8 @@ def offline_check(report_text: str) -> list[str]:
         digest = None
         manifest = ARTIFACT_MANIFEST_DIR / f"{slug}-{rid}.manifest.json"
         name = f"{where}.json"
-        try:
-            entries = json.loads(manifest.read_text()).get("entries", [])
-        except (OSError, json.JSONDecodeError, AttributeError):
-            entries = []
-        entry = next((e for e in entries if isinstance(e, dict) and e.get("name") == name), None)
+        entries = manifest_entries(manifest)
+        entry = next((e for e in entries if e.get("name") == name), None)
         if entry is not None:
             digest = entry.get("sha256")
             if not isinstance(digest, str) or not _HEX64_RE.fullmatch(digest):
