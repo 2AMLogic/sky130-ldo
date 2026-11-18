@@ -275,7 +275,8 @@ def _offline_store_record_problems(bench: str, rid: str) -> list[str]:
     if ref is None:
         return [f"{where}: not committed and no store manifest entry -- cannot verify offline"]
     manifest, name = ref
-    rec_entry = next((e for e in manifest_entries(manifest) if e.get("name") == name), None)
+    entries = manifest_entries(manifest)
+    rec_entry = next((e for e in entries if e.get("name") == name), None)
     if rec_entry is None:
         return [f"{manifest.name}: unreadable or has no entry {name} -- cannot verify {where} offline"]
     digest = rec_entry.get("sha256")
@@ -295,7 +296,7 @@ def _offline_store_record_problems(bench: str, rid: str) -> list[str]:
     pin = env.get("provenance", {}).get("input", {})
     snap_rel, claimed_snap = pin.get("path"), pin.get("content_hash")
     snap_file = REPO_ROOT / snap_rel
-    snap_entry = next((e for e in entries if isinstance(e, dict) and e.get("name") == snap_rel), None)
+    snap_entry = next((e for e in entries if e.get("name") == snap_rel), None)
     if snap_file.is_file():
         actual = sha256_file_prefixed(snap_file)
         if claimed_snap != actual:
