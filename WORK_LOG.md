@@ -6,6 +6,11 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 
 - [2026-09](work_log/WORK_LOG_2026-09.md)
 
+### 2026-11-18
+
+- **PR #651**: evidence: pex-post-layout batch legs run as ceiling-split shards (#623)
+- **Issue #623** (closed): pex-post-layout batch runs: serial job-ceiling estimate can exceed the fleet's 3600 s max_job_seconds (shard via request.remote.hosts)
+
 ### 2026-11-17
 
 - **PR #643**: ci: declare repo-local run-pdk-smoke label in labels.yml
