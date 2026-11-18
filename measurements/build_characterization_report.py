@@ -1640,11 +1640,8 @@ def offline_check(report_text: str) -> list[str]:
         digest = None
         manifest = ARTIFACT_MANIFEST_DIR / f"{slug}-{rid}.manifest.json"
         name = f"{where}.json"
-        try:
-            entries = json.loads(manifest.read_text()).get("entries", [])
-        except (OSError, json.JSONDecodeError, AttributeError):
-            entries = []
-        entry = next((e for e in entries if isinstance(e, dict) and e.get("name") == name), None)
+        entries = manifest_entries(manifest)
+        entry = next((e for e in entries if e.get("name") == name), None)
         if entry is not None:
             digest = entry.get("sha256")
             if not isinstance(digest, str) or not _HEX64_RE.fullmatch(digest):
