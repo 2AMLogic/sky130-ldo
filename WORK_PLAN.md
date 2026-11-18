@@ -3,6 +3,7 @@
 Current roadmap derived from GitHub lifecycle labels. Maintained by the Loom Guide role.
 
 <!-- guide:plan-body:start -->
+_Generated: 2026-11-18T20:30:24Z (snapshot; compare against live labels)_
 ## Operator Attention: Merge-Risk-Hold Pileup
 
 Judge-approved PRs under a hold (`loom:blocked` or `loom:operator`) — only a human merge decision is missing.
@@ -38,7 +39,6 @@ Issues currently being built (`loom:building`).
 - **#624**: CLAUDE.md:35 still claims DR-009 'ratifies on its own PR merge' — the same stale claim #607 removed from README
 - **#629**: characterization.md Output row reads PASS on light-load-only evidence; record 20261115-133911-1caff9b9 is full-load evidence against that same window
 - **#639**: xschem pin migration: migrate sky130-ldo to the fleet 3.4.7
-- **#671**: Consolidate duplicated artifact-store manifest read/fetch helpers
 
 ## PRs Awaiting Review
 
@@ -90,7 +90,7 @@ Issues carrying `loom:curated`.
 | Very important | 1 |
 | Important | 1 |
 | Ready (`loom:issue`, net of holds/building/merge-pending) | 2 |
-| In Progress (`loom:building`) | 5 |
+| In Progress (`loom:building`) | 4 |
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 3 |
 | Curated | 13 |
