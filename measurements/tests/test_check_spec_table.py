@@ -838,11 +838,31 @@ class CiWorkflowMergeGroupTests(unittest.TestCase):
     def setUp(self):
         self.text = (REPO / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
 
+    def _merge_group_block(self) -> str:
+        """Text of the merge_group trigger entry: from its `key:` line
+        through its indented continuations, up to the next key. Text-level,
+        no YAML dependency; empty when the entry is absent."""
+        lines = self.text.splitlines(keepends=True)
+        try:
+            start = lines.index("  merge_group:\n")
+        except ValueError:
+            return ""
+        out = []
+        for ln in lines[start + 1:]:
+            if ln.strip() and not ln.startswith("    "):
+                break  # next key (or comment) at or above trigger level
+            out.append(ln)
+        return "".join(out)
+
     def test_merge_group_trigger_declared(self):
         self.assertIn("  merge_group:", self.text)
-        self.assertIn("types: [checks_requested]", self.text)
-        # no path/branch filters narrow the trigger away from the queue
-        self.assertNotIn("paths:", self.text)
+        block = self._merge_group_block()
+        self.assertTrue(block, "merge_group trigger entry not found in ci.yml")
+        self.assertIn("types: [checks_requested]", block)
+        # no path/branch filters narrow the trigger away from the queue —
+        # scoped to the merge_group entry, not the whole file
+        self.assertNotIn("paths:", block)
+        self.assertNotIn("branches:", block)
 
     def test_spec_table_step_selects_base_from_env(self):
         self.assertIn("PR_BASE: ${{ github.event.pull_request.base.sha }}", self.text)
@@ -850,8 +870,8 @@ class CiWorkflowMergeGroupTests(unittest.TestCase):
 
     def test_no_context_interpolated_into_gate_command(self):
         # the base reaches the gate through env, never `${{ }}` on the
-        # command line
-        self.assertNotIn('--base "${{', self.text)
+        # command line — any spelling: bare, single- or double-quoted
+        self.assertNotRegex(self.text, r"--base\s*['\"]?\$\{\{")
 
     def test_event_gated_spec_table_steps_gone(self):
         # the two old steps ran the weaker current-tree check on merge_group
