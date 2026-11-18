@@ -58,6 +58,7 @@ import sys
 # layout/bin's `_record_common` cannot shadow another tree's.
 sys.path.append(str(pathlib.Path(__file__).resolve().parents[1] / "layout" / "bin"))
 from _digest import normalize_sha256, sha256_file  # noqa: E402
+from _store_manifest import manifest_entries  # noqa: E402 -- one manifest-read contract (#671)
 
 
 def manifest_parts(entry):
@@ -99,14 +100,8 @@ def _store_manifest_entry(root: pathlib.Path, rel: str) -> tuple[str, str] | Non
     if not manifests_dir.is_dir():
         return None
     for manifest in sorted(manifests_dir.glob("*.manifest.json")):
-        try:
-            entries = json.loads(manifest.read_text()).get("entries", [])
-        except (OSError, json.JSONDecodeError, AttributeError):
-            continue
-        if not isinstance(entries, list):
-            continue
-        for entry in entries:
-            if isinstance(entry, dict) and entry.get("name") == rel:
+        for entry in manifest_entries(manifest):
+            if entry.get("name") == rel:
                 digest = normalize_sha256(entry.get("sha256"))
                 if digest is not None:
                     return (manifest.relative_to(root).as_posix(), digest)
