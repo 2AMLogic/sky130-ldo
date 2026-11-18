@@ -14,8 +14,12 @@
 #    and klt 0.6.0 says so on every pinned citation it prints ("input: not
 #    re-hashed ... the artifact itself was not read"). Two hand-written files
 #    agreeing with each other proves nothing on its own, so this step re-hashes
-#    every artifact named in signoff/artifact-pins.json and cross-checks it
-#    against the envelope's own claim and against the manifest's pin. Touch the
+#    every committed artifact named in signoff/artifact-pins.json and
+#    cross-checks it against the envelope's own claim and against the
+#    manifest's pin; a store-held artifact (batch-backend evidence with no
+#    committed bytes) is checked against the sha256 its committed store
+#    manifest records instead, and only a host with klt + store access can
+#    confirm those byte-for-byte. Touch the
 #    layout GDS, the LVS reference netlist, the MC netlist snapshot or
 #    measurements/characterization.md without re-pinning, and this fails --
 #    which is the whole point: a citation that cannot rot is a citation that

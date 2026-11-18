@@ -181,7 +181,11 @@ def verify(manifest, pins, root: pathlib.Path, *, counts=None) -> list[str]:
     re-hashing committed bytes (`counts["disk"]`) versus against their
     committed store manifest (`counts["store"]`) -- the split the success
     summary reports, so stdout cannot claim every match was a re-hash.
+    Missing keys are seeded to 0, so a fresh `counts={}` is accepted.
     """
+    if counts is not None:
+        counts.setdefault("disk", 0)
+        counts.setdefault("store", 0)
     failures: list[str] = []
     evidence = manifest.get("evidence") or {}
 
