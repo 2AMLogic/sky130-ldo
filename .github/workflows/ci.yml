@@ -23,7 +23,7 @@ name: CI
 #     and -- via `check:characterization` -- a structural re-check of the
 #     committed measurements/characterization.md rollup against a fresh run
 #     of its own generator, #220)
-#     -> `checks` job below, every push/PR. Headless, no PDK, no `klt`
+#     -> `checks` job below, every push/PR/merge group. Headless, no PDK, no `klt`
 #     install needed, but it DOES need full git history (see the job's
 #     fetch-depth below).
 #   - `measurements/build_characterization_report.py --check` (byte-exact:
@@ -39,7 +39,7 @@ name: CI
 #     signoff/block-manifest.json via `klt signoff --manifest`, and fails if a
 #     pinned content_hash no longer matches the artifact it covers or if the
 #     committed signoff/records/t1-tier-report.json no longer matches a fresh
-#     run) -> `signoff-tier-report` job below, every push/PR. Needs `klt` but
+#     run) -> `signoff-tier-report` job below, every push/PR/merge group. Needs `klt` but
 #     NOT the PDK/KLayout/ngspice: --manifest mode only reads committed JSON
 #     envelopes and the tier doc bundled inside the klt wheel. See
 #     signoff/README.md.
@@ -71,6 +71,8 @@ on:
     branches: [main]
   pull_request:
     types: [opened, synchronize, reopened, labeled]
+  merge_group:
+    types: [checks_requested]
   schedule:
     # 06:00 UTC daily
     - cron: "0 6 * * *"
@@ -107,21 +109,45 @@ jobs:
         # to end rather than tracking whatever uv release is newest.
         run: python3 -m pip install "uv==0.12.23"
 
-      - name: Verify the ratified spec table matches its lock (current tree)
-        if: github.event_name != 'pull_request'
-        run: python3 spec/check_spec_table.py --check
-        # Push/schedule/manual: README's Parameter/Target/Stretch mirror and its
-        # ratified notes vs spec/spec-table-lock.json consistency (#618). The
-        # authorization diff is supplied by the PR run below.
-
-      - name: Verify spec-table changes carry fresh decision-record amendments (PR only)
-        if: github.event_name == 'pull_request'
-        run: python3 spec/check_spec_table.py --check --base "${{ github.event.pull_request.base.sha }}"
-        # The PR checkout is GitHub's merge commit: that is the candidate being
-        # validated, compared against the merge-base with the PR's base SHA
-        # (full history from fetch-depth: 0). Structural audit trail only; it
-        # is not operator ratification. Tests:
-        # measurements/tests/test_check_spec_table.py (#618).
+      - name: Verify the ratified spec table matches its lock (+ authorization diff on PR / merge group)
+        # Merge queue (#668; event/base plumbing pattern from
+        # sky130-comparator#332): on `merge_group` the checkout is the queue's
+        # trial-merge commit and the base arrives in the event payload. The
+        # event -> base selection lives in this shell (values through `env:`,
+        # never `${{ }}` interpolated into the command), and an event that
+        # requires a base but carries none FAILS rather than silently
+        # downgrading to the current-tree check. Tests:
+        # measurements/tests/test_check_spec_table.py (#618, merge-group cases).
+        env:
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          MG_BASE: ${{ github.event.merge_group.base_sha }}
+        run: |
+          BASE=""
+          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
+            BASE="$PR_BASE"
+          elif [ "$GITHUB_EVENT_NAME" = "merge_group" ]; then
+            BASE="$MG_BASE"
+          fi
+          case "$GITHUB_EVENT_NAME" in
+            pull_request|merge_group)
+              [ -n "$BASE" ] || {
+                echo "FAIL: $GITHUB_EVENT_NAME event carries no base sha: refusing to claim the spec table was verified" >&2
+                exit 1
+              } ;;
+          esac
+          if [ -n "$BASE" ]; then
+            # The checkout is GitHub's merge commit (PR) or trial merge
+            # (merge_group): the candidate being validated, compared against
+            # the merge-base with the event's base SHA (full history from
+            # fetch-depth: 0). Structural audit trail only; it is not
+            # operator ratification.
+            python3 spec/check_spec_table.py --check --base "$BASE"
+          else
+            # Push/schedule/manual: README's Parameter/Target/Stretch mirror
+            # and its ratified notes vs spec/spec-table-lock.json consistency
+            # (#618).
+            python3 spec/check_spec_table.py --check
+          fi
 
       - name: npm run check:ci
         run: npm run check:ci
