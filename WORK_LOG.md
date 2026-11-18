@@ -8,6 +8,8 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 
 ### 2026-11-18
 
+- **PR #670**: ci: report the spec-table gate on merge_group commits (merge queue step)
+- **Issue #668** (closed): Merge queue: add the merge_group trigger and adapt the PR-metadata gates
 - **PR #667**: refactor: consolidate the two batch adapters' measurement-expression evaluators
 - **Issue #666** (closed): Consolidate duplicate measurement-expression evaluators in sim batch adapters
 - **Issue #663** (closed): WORK_PLAN.md 'In Progress' still lists closed #336 (no loom:building label)
