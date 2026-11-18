@@ -8,6 +8,8 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 
 ### 2026-11-18
 
+- **PR #673**: refactor: one shared artifact-store manifest read/fetch helper
+- **Issue #671** (closed): Consolidate duplicated artifact-store manifest read/fetch helpers
 - **PR #670**: ci: report the spec-table gate on merge_group commits (merge queue step)
 - **Issue #668** (closed): Merge queue: add the merge_group trigger and adapt the PR-metadata gates
 - **PR #667**: refactor: consolidate the two batch adapters' measurement-expression evaluators
@@ -543,23 +545,4 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 ### 2026-09-19
 
 - **Issue #58** (closed): Track the gap to T1 sim-validated / bronze (klayout-tools design-evidence tiers)
-
-### 2026-09-18
-
-- **Issue #1** (closed): Ratify the target spec
-- **PR #50**: docs(spec): draft DR-006 spec ratification — ratify DR-002/003/004/005
-
-### 2026-09-16
-
-- **Issue #109** (closed): merge-pr.sh silently fails on every PR without a prior champion:hold-state marker (pipefail bug)
-
-### 2026-09-15
-
-- **Issue #107** (closed): Two-stage/cascoded amplifier redesign to close PSRR and light-load stability (per DR-007)
-- **Issue #70** (closed): PSRR fails everywhere and light-load stability shortfall is pervasive: bias-generator/compensation redesign needed
-- **Issue #60** (closed): LDO fails its own DRAFT PVT-corner spec: Output, Dropout, Load-transient, PSRR and Stability all FAIL (T1 re-read #58, items 5+6)
-- **PR #111**: docs(design): document verified-negative cascode screening for PSRR/stability
-- **PR #110**: docs(design): close out #60, root-cause/decomposition complete
-- **PR #108**: docs(design): document DR-007 outcome for #70, spin off #107
-- **PR #106**: docs(spec): add DR-007 recommending PSRR/Stability rows be superseded
 
