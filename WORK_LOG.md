@@ -8,6 +8,8 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 
 ### 2026-11-18
 
+- **PR #677**: test: pin the shared store-manifest read contract in layout/tests
+- **Issue #675** (closed): Add layout/tests/test_store_manifest.py for the shared store-manifest read contract
 - **PR #673**: refactor: one shared artifact-store manifest read/fetch helper
 - **Issue #671** (closed): Consolidate duplicated artifact-store manifest read/fetch helpers
 - **PR #670**: ci: report the spec-table gate on merge_group commits (merge queue step)
