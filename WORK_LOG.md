@@ -8,6 +8,8 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 
 ### 2026-11-18
 
+- **PR #652**: sim(startup): mint the 12-leg ESR-grid x 45-PVT campaign on the batch fleet
+- **Issue #336** (closed): Startup: extend cold-enable coverage to the ratified ESR boundaries
 - **PR #651**: evidence: pex-post-layout batch legs run as ceiling-split shards (#623)
 - **Issue #623** (closed): pex-post-layout batch runs: serial job-ceiling estimate can exceed the fleet's 3600 s max_job_seconds (shard via request.remote.hosts)
 
