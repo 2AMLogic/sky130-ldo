@@ -29,7 +29,7 @@ signoff/
   evidence/characterization.generic.json  item 8's generic evidence envelope
   records/t1-tier-report.json             the verdict of record (generated)
   check.sh                                re-grade + freshness gate (CI runs this)
-  verify-pins.py                          check.sh stage 1: re-hash every pinned artifact
+  verify-pins.py                          check.sh stage 1: verify each pinned artifact (re-hash or store manifest)
   tests/test_verify_pins.py               mutation coverage for that stage (runs in check:ci)
 ```
 

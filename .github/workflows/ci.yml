@@ -146,7 +146,8 @@ jobs:
         # signoff/records/t1-tier-report.json is the verdict of record that
         # issue #114 (the gap-to-T1 tracker) cites instead of keeping its own
         # hand-maintained item checklist. It is only worth citing if it cannot
-        # rot: this step re-hashes every artifact behind every citation, then
+        # rot: this step re-verifies each artifact behind every citation
+        # (re-hash, or the committed store manifest digest), then
         # re-runs `klt signoff --manifest` and fails when the committed record
         # no longer matches a fresh run. Both are real news -- either this
         # block's evidence moved, or the T1 checklist did (it grew an eleventh

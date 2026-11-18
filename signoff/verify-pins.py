@@ -366,8 +366,10 @@ def verify(manifest, pins, root: pathlib.Path, *, counts=None) -> list[str]:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
-        description="Re-hash every pinned artifact and cross-check it against "
-                    "the envelope and manifest citation that name it.",
+        description="Re-hash each committed pinned artifact and cross-check it "
+                    "against the envelope and manifest citation that name it; "
+                    "a store-held artifact is verified against the digest its "
+                    "committed store manifest records instead.",
     )
     parser.add_argument("manifest", type=pathlib.Path)
     parser.add_argument("pins", type=pathlib.Path)
