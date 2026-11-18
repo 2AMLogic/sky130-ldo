@@ -37,6 +37,7 @@ from pathlib import Path
 
 import batch_window_grid as bwg
 import ramp_monotonicity as rm
+import _meas_expr
 from _corner_model import Experiment, leg_values
 
 # A scalar request measurement's card that thresholds a crossing: a ramp that
@@ -261,18 +262,7 @@ def adapter_info(exp: Experiment) -> dict:
     }
 
 
-_NUM_RE = re.compile(r"([-+]?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?)([a-zA-Z]*)")
-_SCALE = {"": 1.0, "t": 1e12, "g": 1e9, "meg": 1e6, "k": 1e3, "m": 1e-3, "u": 1e-6,
-          "n": 1e-9, "p": 1e-12, "f": 1e-15}
-_TOKEN_RE = re.compile(r"\s*(?:(abs)\b|([A-Za-z_][A-Za-z0-9_]*)|"
-                       r"((?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?[a-zA-Z]*)|([-+*/()]))")
-
-
-def _num(text: str) -> float:
-    m = _NUM_RE.fullmatch(text)
-    if m is None or m.group(2).lower() not in _SCALE:
-        raise StartupRampError(f"unsupported number {text!r} in startup measurement expression")
-    return float(m.group(1)) * _SCALE[m.group(2).lower()]
+_EXPR = _meas_expr.MeasExprEvaluator(_meas_expr.IDENT, StartupRampError)
 
 
 def evaluate_measurement(expr: str, card_values: dict[str, float | None]) -> float | None:
@@ -280,96 +270,4 @@ def evaluate_measurement(expr: str, card_values: dict[str, float | None]) -> flo
     card values: card-name references, spice-suffixed numbers, `abs(...)`,
     `+ - * / ( )`. A missing card value (or a division by zero) yields None —
     the measurement is then missing, never guessed."""
-    toks: list[tuple[str, str]] = []
-    text, pos = expr.strip(), 0
-    if not text or "\n" in text or "\r" in text:
-        raise StartupRampError(f"expression {expr!r} must be one non-empty line")
-    lowered = {k.lower() for k in card_values}
-    while pos < len(text):
-        m = _TOKEN_RE.match(text, pos)
-        if m is None or m.end() == pos:
-            raise StartupRampError(f"expression {expr!r}: unsupported token at {text[pos:]!r}")
-        if m.group(1) is not None:
-            toks.append(("fn", "abs"))
-        elif m.group(2) is not None:
-            if m.group(2).lower() not in lowered:
-                raise StartupRampError(
-                    f"expression {expr!r} references {m.group(2)!r}, which is not a "
-                    "leg meas card"
-                )
-            toks.append(("ref", m.group(2)))
-        elif m.group(3) is not None:
-            toks.append(("num", m.group(3)))
-        else:
-            toks.append(("op", m.group(4)))
-        pos = m.end()
-
-    values = {k.lower(): v for k, v in card_values.items()}
-    p = 0
-
-    def peek():
-        return toks[p] if p < len(toks) else (None, None)
-
-    def take():
-        nonlocal p
-        out = toks[p]
-        p += 1
-        return out
-
-    def factor():
-        kind, val = peek()
-        if (kind, val) == ("op", "-"):
-            take()
-            v = factor()
-            return None if v is None else -v
-        if (kind, val) == ("op", "+"):
-            take()
-            return factor()
-        if kind == "num":
-            take()
-            return _num(val)
-        if kind == "fn":
-            take()
-            if peek() != ("op", "("):
-                raise StartupRampError(f"expression {expr!r}: abs needs parentheses")
-            take()
-            v = expr_()
-            if peek() != ("op", ")"):
-                raise StartupRampError(f"expression {expr!r}: unbalanced parentheses")
-            take()
-            return None if v is None else abs(v)
-        if kind == "ref":
-            take()
-            return values[val.lower()]
-        if kind == "op" and val == "(":
-            take()
-            v = expr_()
-            if peek() != ("op", ")"):
-                raise StartupRampError(f"expression {expr!r}: unbalanced parentheses")
-            take()
-            return v
-        raise StartupRampError(f"expression {expr!r}: unexpected {val!r}")
-
-    def term():
-        v = factor()
-        while peek() in (("op", "*"), ("op", "/")):
-            op = take()[1]
-            r = factor()
-            if v is None or r is None or (op == "/" and r == 0):
-                v = None
-            else:
-                v = v * r if op == "*" else v / r
-        return v
-
-    def expr_() -> float | None:
-        v = term()
-        while peek() in (("op", "+"), ("op", "-")):
-            op = take()[1]
-            r = term()
-            v = None if v is None or r is None else (v + r if op == "+" else v - r)
-        return v
-
-    out = expr_()
-    if p != len(toks):
-        raise StartupRampError(f"expression {expr!r}: trailing tokens")
-    return out
+    return _EXPR.evaluate(expr, card_values, set(card_values))

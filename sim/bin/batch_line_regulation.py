@@ -39,6 +39,8 @@ import math
 import re
 from dataclasses import dataclass
 
+import _meas_expr
+
 STEP_PREFIX = "tran"
 LOAD_ELEMENT = "ILOAD"
 
@@ -177,40 +179,10 @@ def klt_result_name(ep: Endpoint, card: str) -> str:
 
 # ---- expressions (cross-endpoint slopes, identities) --------------------------------
 
-_UNSIGNED_NUM = r"(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?[a-zA-Z]*"
-_TOKEN_RE = re.compile(rf"\s*(?:({_IDENT}\.{_IDENT})|(abs)\b|({_UNSIGNED_NUM})|([-+*/()]))")
-
-
-def _tokens(expr: str, refs_ok: set[str]) -> list[tuple[str, str]]:
-    text, pos, out = expr.strip(), 0, []
-    if not text or "\n" in text or "\r" in text:
-        raise EndpointTranslationError(f"expression {expr!r} must be one non-empty line")
-    while pos < len(text):
-        m = _TOKEN_RE.match(text, pos)
-        if m is None or m.end() == pos:
-            raise EndpointTranslationError(f"expression {expr!r}: unsupported token at {text[pos:]!r}")
-        if m.group(1) is not None:
-            if m.group(1).lower() not in refs_ok:
-                raise EndpointTranslationError(
-                    f"expression {expr!r} references {m.group(1)!r}, which is not an endpoint card"
-                )
-            out.append(("ref", m.group(1).lower()))
-        elif m.group(2) is not None:
-            out.append(("fn", "abs"))
-        elif m.group(3) is not None:
-            out.append(("num", m.group(3)))
-        else:
-            out.append(("op", m.group(4)))
-        pos = m.end()
-    return out
-
-
-def _num(text: str) -> float:
-    m = re.fullmatch(r"([-+]?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?)([a-zA-Z]*)", text)
-    scale = {"": 1.0, "m": 1e-3, "u": 1e-6, "n": 1e-9, "p": 1e-12, "k": 1e3}
-    if m is None or m.group(2).lower() not in scale:
-        raise EndpointTranslationError(f"unsupported number {text!r} in expression")
-    return float(m.group(1)) * scale[m.group(2).lower()]
+# The shared recursive-descent evaluator (sim/bin/_meas_expr.py, issue #666):
+# this adapter's two parameters are the dotted `tranN.card` reference grammar
+# and its own error class. The SPICE suffix table is the unified superset.
+_EXPR = _meas_expr.MeasExprEvaluator(rf"{_IDENT}\.{_IDENT}", EndpointTranslationError)
 
 
 def card_refs(endpoints: list[Endpoint]) -> set[str]:
@@ -222,78 +194,8 @@ def evaluate(expr: str, values: dict[str, float | None], refs_ok: set[str]) -> f
     `tran<N>.<card>`, numbers, `abs(...)`, `+ - * / ( )`. A missing value or a
     division by zero yields None (the measurement is then missing, never
     guessed). Anything else raises EndpointTranslationError."""
-    toks = _tokens(expr, refs_ok)
-    lowvals = {k.lower(): v for k, v in values.items()}
-    pos = 0
-
-    def peek():
-        return toks[pos] if pos < len(toks) else (None, None)
-
-    def take():
-        nonlocal pos
-        pos += 1
-        return toks[pos - 1]
-
-    def expr_():
-        v = term()
-        while peek() in (("op", "+"), ("op", "-")):
-            op = take()[1]
-            r = term()
-            v = None if v is None or r is None else (v + r if op == "+" else v - r)
-        return v
-
-    def term():
-        v = factor()
-        while peek() in (("op", "*"), ("op", "/")):
-            op = take()[1]
-            r = factor()
-            if v is None or r is None or (op == "/" and r == 0):
-                v = None
-            else:
-                v = v * r if op == "*" else v / r
-        return v
-
-    def factor():
-        kind, val = peek()
-        if (kind, val) == ("op", "-"):
-            take()
-            v = factor()
-            return None if v is None else -v
-        if (kind, val) == ("op", "+"):
-            take()
-            return factor()
-        if kind == "num":
-            take()
-            return _num(val)
-        if kind == "ref":
-            take()
-            return lowvals.get(val)
-        if kind == "fn":
-            take()
-            if take() != ("op", "("):
-                raise EndpointTranslationError(f"expression {expr!r}: abs needs parentheses")
-            v = expr_()
-            if take() != ("op", ")"):
-                raise EndpointTranslationError(f"expression {expr!r}: unbalanced parentheses")
-            return None if v is None else abs(v)
-        if (kind, val) == ("op", "("):
-            take()
-            v = expr_()
-            if peek() != ("op", ")"):
-                raise EndpointTranslationError(f"expression {expr!r}: unbalanced parentheses")
-            take()
-            return v
-        raise EndpointTranslationError(f"expression {expr!r}: unexpected token {val!r}")
-
-    try:
-        v = expr_()
-    except IndexError as exc:
-        raise EndpointTranslationError(f"expression {expr!r}: incomplete") from exc
-    if pos != len(toks):
-        raise EndpointTranslationError(f"expression {expr!r}: trailing tokens")
-    if v is not None and not math.isfinite(v):
-        return None
-    return v
+    v = _EXPR.evaluate(expr, values, refs_ok)
+    return None if v is not None and not math.isfinite(v) else v
 
 
 def check_measurements(endpoints: list[Endpoint], measurements: list[tuple[str, str, str]]) -> dict[str, str]:
@@ -304,7 +206,7 @@ def check_measurements(endpoints: list[Endpoint], measurements: list[tuple[str, 
     for name, expr, unit in measurements:
         if not re.fullmatch(_IDENT, name):
             raise EndpointTranslationError(f"measurement name {name!r} is not a vector name")
-        toks = _tokens(expr, refs)
+        toks = _EXPR.tokenize(expr, refs)
         evaluate(expr, {}, refs)  # grammar check
         if len(toks) == 1 and toks[0][0] == "ref":
             units[toks[0][1]] = unit
