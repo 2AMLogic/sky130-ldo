@@ -25,8 +25,7 @@ exercise the LDO core-regulation-loop schematic from issue #14
 symbol `design/ldo_3v3in_1v8out.sym`) against a row of
 `spec/target-spec.md`. That table is **RATIFIED** (issue #1 / DR-006; the Iq
 row is the one row DR-006 left open, and is set by `DR-009`, which is still
-`proposed` — fresh ratification pending under #301, historical #134 merge
-context only), so every measurement bound
+`proposed` and ratifies on its own PR merge), so every measurement bound
 these testbenches use cites a ratified spec row verbatim rather than an
 invented "final" number, and each experiment's `claim` says so. Records
 minted before ratification quote the manifest `claim` as it then read, in

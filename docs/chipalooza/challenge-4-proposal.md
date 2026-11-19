@@ -228,8 +228,7 @@ live surfaces are §5's sign-off table, `measurements/characterization.md`,
 and the `sim/` records cited per row. What has changed since: issue #1
 closed `completed` 2026-09-18 and `spec/target-spec.md` is now headed
 `Status: RATIFIED` (DR-006), with the one row DR-006 left open — Iq — set
-separately by `DR-009` (`proposed`; fresh ratification pending under #301
-— the 2026-10-19 operator ruling; its historical #134 merge is context only).
+separately by `DR-009` (`proposed`; it ratifies on its own PR merge).
 DR-006 ratified Option A (ratify unchanged, disclose the gap), so
 ratification fixes what the target numbers *are* rather than changing them,
 and it certifies nothing about conformance — the FAILs below stand as
