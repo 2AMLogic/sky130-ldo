@@ -6,6 +6,10 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 
 - [2026-09](work_log/WORK_LOG_2026-09.md)
 
+### 2026-11-19
+
+- **Issue #609** (closed): docs: four prose copies still instruct a raw headless `xschem -n -q -x -s` where `klt netlist` is the decided path
+
 ### 2026-11-18
 
 - **PR #677**: test: pin the shared store-manifest read contract in layout/tests
