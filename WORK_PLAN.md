@@ -3,14 +3,13 @@
 Current roadmap derived from GitHub lifecycle labels. Maintained by the Loom Guide role.
 
 <!-- guide:plan-body:start -->
-_Generated: 2026-11-18T20:30:24Z (snapshot; compare against live labels)_
+_Generated: 2026-11-19T22:15:10Z (snapshot; compare against live labels)_
 ## Operator Attention: Merge-Risk-Hold Pileup
 
 Judge-approved PRs under a hold (`loom:blocked` or `loom:operator`) — only a human merge decision is missing.
 
 - **#569**: docs: propose DR-014 binding capacitor condition for the PSRR row
 - **#573**: docs(spec): reconcile DR-009's ratifying-act wording with the #301 ruling
-- **#630**: docs: align DR-009 status wording with the #301 ruling across CLAUDE.md and target spec
 
 ## Very Important
 
@@ -36,7 +35,6 @@ Human-approved issues (`loom:issue`) ready for implementation — excluding held
 Issues currently being built (`loom:building`).
 
 - **#177**: Seed sim/current-limit's leg-1 operating point to conform to the initial-condition contract
-- **#624**: CLAUDE.md:35 still claims DR-009 'ratifies on its own PR merge' — the same stale claim #607 removed from README
 - **#629**: characterization.md Output row reads PASS on light-load-only evidence; record 20261115-133911-1caff9b9 is full-load evidence against that same window
 - **#639**: xschem pin migration: migrate sky130-ldo to the fleet 3.4.7
 
@@ -52,7 +50,6 @@ PRs that passed review and are queued for Champion auto-merge (`loom:pr`).
 
 - **#569**: docs: propose DR-014 binding capacitor condition for the PSRR row — closes #314
 - **#573**: docs(spec): reconcile DR-009's ratifying-act wording with the #301 ruling
-- **#630**: docs: align DR-009 status wording with the #301 ruling across CLAUDE.md and target spec — closes #624
 
 ## Proposed
 
@@ -67,7 +64,6 @@ Issues carrying `loom:curated`.
 - **#461**: T1 item 5 area: compact routed ldo_core under 0.1 mm² with capacitors drawn, re-mint records (part of #458) *(curated)* *(held)*
 - **#503**: measurements: characterization generator cannot see artifact-store-only sim records (iq 20261105-052332-05df7a01) *(curated)* *(held)*
 - **#550**: Re-run signoff-graded benches made stale by the integrated comparator (split from #548) *(curated)*
-- **#624**: CLAUDE.md:35 still claims DR-009 'ratifies on its own PR merge' — the same stale claim #607 removed from README *(curated)*
 - **#629**: characterization.md Output row reads PASS on light-load-only evidence; record 20261115-133911-1caff9b9 is full-load evidence against that same window *(curated)*
 - **#639**: xschem pin migration: migrate sky130-ldo to the fleet 3.4.7 *(curated)*
 - **#645**: CI: nightly pdk-smoke red for 6+ nights — declared ngspice pin 42 vs resolved 45.2 (CI) / 47 (workers) *(curated)* *(held)*
@@ -86,14 +82,14 @@ Issues carrying `loom:curated`.
 
 | Bucket | Count |
 |------|-------|
-| Operator merge-risk holds | 3 |
+| Operator merge-risk holds | 2 |
 | Very important | 1 |
 | Important | 1 |
 | Ready (`loom:issue`, net of holds/building/merge-pending) | 2 |
-| In Progress (`loom:building`) | 4 |
+| In Progress (`loom:building`) | 3 |
 | PRs awaiting review | 0 |
-| Approved PRs awaiting merge | 3 |
-| Curated | 13 |
+| Approved PRs awaiting merge | 2 |
+| Curated | 12 |
 | Architect / Hermit proposals | 3 |
 | Active epics | 1 |
 <!-- guide:plan-body:end -->
