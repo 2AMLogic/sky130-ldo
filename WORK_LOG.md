@@ -8,6 +8,8 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 
 ### 2026-11-20
 
+- **PR #686**: docs(sim): align iq manifest claim with the #301 fresh-ratification ruling
+- **Issue #683** (closed): docs(sim): reconcile sim/iq/experiment.json's DR-009 ratifying-act claim with the #301 ruling
 - **PR #682**: docs: move live DR-009 citations to the fresh-ratification wording (split from #681)
 
 ### 2026-11-19
