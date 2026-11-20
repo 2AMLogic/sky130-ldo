@@ -8,6 +8,8 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 
 ### 2026-11-20
 
+- **PR #686**: docs(sim): align iq manifest claim with the #301 fresh-ratification ruling
+- **Issue #683** (closed): docs(sim): reconcile sim/iq/experiment.json's DR-009 ratifying-act claim with the #301 ruling
 - **PR #682**: docs: move live DR-009 citations to the fresh-ratification wording (split from #681)
 
 ### 2026-11-19
@@ -554,8 +556,4 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 - **PR #137**: docs: record the error amplifier as kept in-tree vs sky130-opamp (DR-010 + reuse.lock.json)
 - **PR #134**: spec: ratify the Iq row at < 30 µA via DR-008
 - **PR #130**: docs(design): stability binding mechanism, feedforward-zero screen (verified-negative), coupling-thesis test (#115)
-
-### 2026-09-19
-
-- **Issue #58** (closed): Track the gap to T1 sim-validated / bronze (klayout-tools design-evidence tiers)
 
