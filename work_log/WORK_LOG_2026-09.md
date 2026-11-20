@@ -2,6 +2,10 @@
 
 Sections moved byte-for-byte from [WORK_LOG.md](../WORK_LOG.md) by `loom-daemon work-docs archive`.
 
+### 2026-09-19
+
+- **Issue #58** (closed): Track the gap to T1 sim-validated / bronze (klayout-tools design-evidence tiers)
+
 ### 2026-09-18
 
 - **Issue #1** (closed): Ratify the target spec
