@@ -1,0 +1,21 @@
+batch preflight : FAILED (exit 1)
+job id          : none
+runner klt      : unknown
+client klt      : unknown
+compatibility   : unreported
+reason          : klt sim produced no stdout (rc 1)
+  cmd: /home/loom/.local/bin/klt sim /workspace/work/2amlogic-sky130-ldo-ff05b865/.loom/worktrees/2amlogic-sky130-ldo-ff05b865/issue-691/sim/loop-gain/diagnostics/20261120-223530-542c11e-rcz-shelf/preflight/batch-preflight-dn9wqeue/klt-requests/q1-tt_27c_1.80v.json -o /workspace/work/2amlogic-sky130-ldo-ff05b865/.loom/worktrees/2amlogic-sky130-ldo-ff05b865/issue-691/sim/loop-gain/diagnostics/20261120-223530-542c11e-rcz-shelf/preflight/batch-preflight-dn9wqeue/klt-out/q1-tt_27c_1.80v --backend batch --format json
+  remote job id(s) seen: klt-sim-8c101d9cf1e8
+  stdout:
+  stderr: klt: warning: 2 installs provide PDK variant 'sky130A'; read /home/loom/.volare (PDK_ROOT environment variable), skipped /home/loom/.ciel (search root: ~/.ciel). Resolution is first-match-wins, so a pinned open_pdks build may not be the one this run read -- pin the root explicitly (--pdk-root, or a request's models.pdk_root) to disable the search and choose deliberately.
+klt: batch job klt-sim-8c101d9cf1e8 submitting to s3://<bucket>/jobs/klt-sim-8c101d9cf1e8
+{
+  "schema_version": 1,
+  "error": {
+    "command": "sim",
+    "message": "batch backend failed: aws s3 cp (netlist input) failed (exit 255): The config profile (batch-runner-submit) could not be found"
+  }
+}
+  diagnostics kept in /workspace/work/2amlogic-sky130-ldo-ff05b865/.loom/worktrees/2amlogic-sky130-ldo-ff05b865/issue-691/sim/loop-gain/diagnostics/20261120-223530-542c11e-rcz-shelf/preflight/batch-preflight
+{"client_klt_version": null, "exit": 1, "job_id": null, "job_state": null, "reason": "klt sim produced no stdout (rc 1)\n  cmd: /home/loom/.local/bin/klt sim /workspace/work/2amlogic-sky130-ldo-ff05b865/.loom/worktrees/2amlogic-sky130-ldo-ff05b865/issue-691/sim/loop-gain/diagnostics/20261120-223530-542c11e-rcz-shelf/preflight/batch-preflight-dn9wqeue/klt-requests/q1-tt_27c_1.80v.json -o /workspace/work/2amlogic-sky130-ldo-ff05b865/.loom/worktrees/2amlogic-sky130-ldo-ff05b865/issue-691/sim/loop-gain/diagnostics/20261120-223530-542c11e-rcz-shelf/preflight/batch-preflight-dn9wqeue/klt-out/q1-tt_27c_1.80v --backend batch --format json\n  remote job id(s) seen: klt-sim-8c101d9cf1e8\n  stdout: \n  stderr: klt: warning: 2 installs provide PDK variant 'sky130A'; read /home/loom/.volare (PDK_ROOT environment variable), skipped /home/loom/.ciel (search root: ~/.ciel). Resolution is first-match-wins, so a pinned open_pdks build may not be the one this run read -- pin the root explicitly (--pdk-root, or a request's models.pdk_root) to disable the search and choose deliberately.\nklt: batch job klt-sim-8c101d9cf1e8 submitting to s3://<bucket>/jobs/klt-sim-8c101d9cf1e8\n{\n  \"schema_version\": 1,\n  \"error\": {\n    \"command\": \"sim\",\n    \"message\": \"batch backend failed: aws s3 cp (netlist input) failed (exit 255): The config profile (batch-runner-submit) could not be found\"\n  }\n}\n  diagnostics kept in /workspace/work/2amlogic-sky130-ldo-ff05b865/.loom/worktrees/2amlogic-sky130-ldo-ff05b865/issue-691/sim/loop-gain/diagnostics/20261120-223530-542c11e-rcz-shelf/preflight/batch-preflight", "runner_compatibility": null, "runner_klt_version": null}
+scratch dir     : /workspace/work/2amlogic-sky130-ldo-ff05b865/.loom/worktrees/2amlogic-sky130-ldo-ff05b865/issue-691/sim/loop-gain/diagnostics/20261120-223530-542c11e-rcz-shelf/preflight/batch-preflight-dn9wqeue

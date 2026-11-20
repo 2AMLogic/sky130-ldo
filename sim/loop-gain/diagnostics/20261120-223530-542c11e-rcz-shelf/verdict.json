@@ -1,0 +1,33 @@
+{
+  "mechanism": "Split R_CZ into 26 and 806 \u00b5m xhigh_po sections and shunt the longer section with 18 pF. Below the nominal 1.9 kHz bypass pole the series length approaches the 832 \u00b5m light-load repair. Above the pole the bypass impedance falls toward a 26 \u00b5m residual. The lower crossover at 4.7 \u00b5F should retain more resistance in the 10\u2013300 \u00b5A band. The faster 0.33 \u00b5F loop should see less, including at 50 mA. The passive branch uses no switch, bias current source or CL_SNS connection.",
+  "ac": {
+    "tt": {
+      "baseline": {
+        "valid": 0,
+        "total": 42,
+        "worst": {
+          "pm": null,
+          "gm": null
+        },
+        "failed": []
+      },
+      "shelf": {
+        "valid": 0,
+        "total": 42,
+        "worst": {
+          "pm": null,
+          "gm": null
+        },
+        "failed": []
+      }
+    }
+  },
+  "not_run": [
+    "42 tt points per design require an accepted batch preflight.",
+    "56 ss/ff points per design require 42 passing shelf tt points with valid matched baseline data.",
+    "Iq and load transients require both paired AC stages to clear."
+  ],
+  "ac_evidence_complete": false,
+  "verdict": "REVISE",
+  "next_action": "Restore fleet submission access and rerun this same candidate. Circuit performance is unmeasured."
+}
