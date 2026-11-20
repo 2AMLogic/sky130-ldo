@@ -6,8 +6,13 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 
 - [2026-09](work_log/WORK_LOG_2026-09.md)
 
+### 2026-11-20
+
+- **PR #682**: docs: move live DR-009 citations to the fresh-ratification wording (split from #681)
+
 ### 2026-11-19
 
+- **PR #573**: docs(spec): reconcile DR-009's ratifying-act wording with the #301 ruling
 - **PR #630**: docs: align DR-009 status wording with the #301 ruling across CLAUDE.md and target spec
 - **Issue #624** (closed): CLAUDE.md:35 still claims DR-009 'ratifies on its own PR merge' — the same stale claim #607 removed from README
 - **Issue #609** (closed): docs: four prose copies still instruct a raw headless `xschem -n -q -x -s` where `klt netlist` is the decided path
