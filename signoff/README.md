@@ -539,7 +539,10 @@ mean nothing"), and `CLAUDE.md`'s "no claim without a testbench" rule reads the
 same way. The citation should move when a `klt` build whose parasitic-R model
 can distinguish the two GDS files above produces a record whose full-load rows
 are physical — not before. That is tracked as **#162**, blocked on the two
-upstream issues.
+upstream issues. *(2026-11-20, issue #690: #162 and #583 have since closed;
+the closed #2391/#2458 filings are history, and the live upstream covers are
+2AMLogic/klayout-tools#6964 and #6899 — see "What would move the needle"
+item 2 for the per-net reason census that named them.)*
 
 ### Item 8 is `met`, and what that verdict does and does not say
 
@@ -816,23 +819,32 @@ In dependency order, not effort order:
    did that), nor the request to declare limits (issue #154 did that), nor the
    power rails to stop being drawn as 0.30 µm signal trunks (#154 did that
    too, and the layout is still DRC-clean and LVS-matched). What it needs now
-   is **not in this repo**: the `--resistance-graph` extractor still falls
-   back to the legacy lumped-R model (klayout-tools#2391/#2458's series-sum,
-   both closed) on the load-current nets — measured on the regenerated core
+   is **not in this repo**, and since issue #690's re-measure the blocker is
+   two named gaps, both at the tool. Measured on the regenerated core
    (2026-11-12, PR #557) in
-   `sim/pex-post-layout/diagnostics/20261114-193718-fabcb0c6-rgraph-recheck/`:
-   **0 of 28 nets graph-derived at this repo's pin** (`dc136150`) and **1 of
-   28 on releases `0.9.1` and `0.9.2`** (a small signal net, identical on
-   both releases; `VIN`/`VOUT` still legacy),
-   so #4061's interior-landing fix (closed-completed 2026-10-23) covers only
-   part of this geometry. Which mechanism blocks the other 27 nets
-   (`unsupported_geometry` vs the `graph_too_large` caps) is not observable
-   from tool output — no per-net fallback reason is emitted — filed
-   generically as
-   [klayout-tools#5747](https://github.com/2AMLogic/klayout-tools/issues/5747).
-   Until that diagnostic (and the fix it will point to) lands, the full-load
-   rows stay non-physical on every build measured. See "Item 7 has a passing
-   record that this manifest declines to cite" above.
+   `sim/pex-post-layout/diagnostics/20261120-223209-542c11e1-rgraph-recheck/`
+   (first build carrying klayout-tools#6130's per-net `fallback_reason`,
+   pinned `main` @ `6bd18bbc8637` — no release contains it yet):
+   **still 1 of 28 nets graph-derived** (`N_FBB`, unchanged from the
+   2026-11-14 diagnostic's release legs), but every legacy net now carries a
+   reason. `VIN` and `VOUT` fall back with **`graph_too_large`**, not
+   `terminal_count_not_two`: `VIN` has 77 terminals over the
+   `MAX_GRAPH_TERMINALS = 64` cap, and `VOUT`'s `metal1` polygon needs up to
+   85,680 mesh cells against `DEFAULT_MAX_DECOMPOSITION_CELLS = 4096` — caps
+   that no `klt extract`/`klt pex` flag can raise, filed as
+   [klayout-tools#6964](https://github.com/2AMLogic/klayout-tools/issues/6964)
+   (newly filed from that diagnostic; `klt power` got its own knob in #3124).
+   The other 22 legacy multi-terminal nets solve `ok` and fall back only for
+   `terminal_count_not_two` — the selection rule #5894's curation inferred,
+   whose removal is
+   [klayout-tools#6899](https://github.com/2AMLogic/klayout-tools/issues/6899)'s
+   opt-in graph netlist mode (in scope for `klt pex`; #5894 / PR #6053 echo
+   and document only). Both must land before the full-load rows measure the
+   layout rather than the extractor's series sum; the re-mint condition — a
+   build where `VIN`/`VOUT` are graph-derived and the 45 full-load rows
+   return a physical extracted `VOUT` — is recorded in that diagnostic's
+   README. See "Item 7 has a passing record that this manifest declines to
+   cite" above.
 3. **Item 11** is `met` as of issue #112: the `klt erc` supply spec and report
    this list previously asked for exist, ran, and are cited — the compound
    citation is that `erc_supply.json` plus item 4's own LVS report on the
