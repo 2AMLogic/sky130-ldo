@@ -1453,7 +1453,7 @@ decisions: `spec/decision-records/`):
   characterization report for the live verdicts and DR-007 / DR-011 for the
   PSRR/Stability and pass-device-sizing decisions. Iq currently fails
   `iq_full_load_ua` at 9 of 45 corners; its row is set by DR-009, which is
-  still `proposed` (ratifies on its own PR merge).
+  still `proposed` (fresh ratification pending under #301).
 - **`C_CL` is a placeholder**: the current-limit comparator pole is not sized
   against a loop-gain sim (screened only as a smoke test).
 - **No on-chip voltage reference**: `VREF` is an external port (see "VREF
