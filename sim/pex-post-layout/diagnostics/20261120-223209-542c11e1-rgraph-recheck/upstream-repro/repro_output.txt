@@ -1,0 +1,10 @@
+caps in this build: MAX_GRAPH_TERMINALS=64 MAX_GRAPH_NODES=5000 MAX_GRAPH_EDGES=20000 DEFAULT_MAX_DECOMPOSITION_CELLS=4096
+
+A1: 20x4 um plate, 64 terminal ports: status=ok nodes=192 edges=563
+A2: same plate, 65 terminal ports: status=unsupported nodes=0 edges=0
+    graph_too_large: 65 terminals exceed the 64 cap
+A3: same plate, 65 ports, max_terminals=128: status=ok nodes=194 edges=571
+
+B1: 100x10-hole plate, 2 terminals, default cap: status=unsupported nodes=0 edges=0
+    graph_too_large: role 'metal1' polygon 0: decomposing it needs up to 4669 mesh cells, over this build's 4096-mesh-cell cap (MAX_DECOMPOSITION_CELLS)
+B2: same plate, 2 terminals, max_cells=65536: status=ok nodes=3560 edges=4784

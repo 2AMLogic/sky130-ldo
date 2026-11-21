@@ -455,7 +455,55 @@ not cleared. A `klt` pin bump is now *necessary but not sufficient* — at
 `0.9.2` (as at `0.9.1`) it would change one small-signal net's R and leave
 the full-load
 rows non-physical (a pin bump remains out of scope here). The 27 legacy
-nets' mechanism is unknowable until #5747's per-net reason exists.
+nets' mechanism was unknowable until #5747's per-net reason existed — it
+does now (merged as #6130, 2026-11-17); see the 2026-11-20 update below.
+
+**Update (2026-11-20, issue #690): the per-net reasons are measured — `VIN`
+and `VOUT` fall back with `graph_too_large`, not `terminal_count_not_two`.**
+Extraction only, same GDS/flags as the 2026-11-14 legs, on the first build
+carrying #6130 (no release does yet; pinned 2AMLogic/klayout-tools `main` @
+`6bd18bbc8637`, klt `0.9.3.dev2575+g6bd18bbc8637`, throwaway `uvx` env — the
+repo pin is untouched). Evidence:
+`diagnostics/20261120-223209-542c11e1-rgraph-recheck/` (pex + companion
+`klt extract` legs, per-net tables, and the layout-free reproduction behind
+the new upstream filing).
+
+- Reason census (28 nets): 1 graph (still only `N_FBB`), 22
+  `terminal_count_not_two` (graphs all `ok` — the #5894-curation inference of
+  the two-terminal selection rule is confirmed for these), 3
+  `graph_too_large` (`VIN`, `VOUT`, `EA_OUT`), 1 `graph_status_skipped`
+  (`EA_CZ`, single-terminal), 1 `pair_resistance_unavailable` (`VREF`,
+  disconnected pair).
+- **The rails never reach the terminal-count check.** `VIN`: 77 terminals
+  over the `MAX_GRAPH_TERMINALS = 64` cap. `VOUT`: ≤ 64 terminals, but its
+  `metal1` polygon needs up to 85,680 mesh cells (metal2: 12,876) against
+  `DEFAULT_MAX_DECOMPOSITION_CELLS = 4096`. Those caps are keyword-only
+  parameters on `build_resistance_graph` that no `klt extract`/`klt pex`
+  flag reaches — filed generically as
+  [klayout-tools#6964](https://github.com/2AMLogic/klayout-tools/issues/6964)
+  (the `klt power` verb got its own knob in #3124; the graph is the remaining
+  capped surface).
+- Live upstream mapping (replacing the closed #2391/#2458/#5747 as *the*
+  covers for item 7's tool gap): `graph_too_large` →
+  [klayout-tools#6964](https://github.com/2AMLogic/klayout-tools/issues/6964)
+  (newly filed, the actual `VIN`/`VOUT` blocker);
+  `terminal_count_not_two` →
+  [klayout-tools#6899](https://github.com/2AMLogic/klayout-tools/issues/6899)
+  (opt-in graph netlist mode, explicitly reachable from `klt pex` — #5894 /
+  PR #6053 echo and document only and do not remove it);
+  `via_resistance_unknown` did not appear here (`--resistance-graph-r-cut
+  9.3` stamps every landing) — that mechanism is
+  [klayout-tools#6917](https://github.com/2AMLogic/klayout-tools/issues/6917),
+  which is also #6899's declared dependency. A per-net census table was
+  posted on #5894 as cross-confirmation of its inferred selection rule.
+- **Re-mint condition (unchanged in substance, now with named
+  prerequisites):** a klt build on which `VIN` and `VOUT` are graph-derived
+  and the 45 full-load rows return a physical extracted `VOUT` — which needs
+  #6964 (caps reachable), #6899 (a graph-derived value for a ≥3-terminal net
+  reaching the written netlist) and a per-cut value (r-cut flag or #6917's
+  deck values). Then the 45-corner record mints via the batch backend
+  (sharding per closed #623) as a *new* append-only record, and the item-7
+  citation moves through its own issue — nothing was re-pointed here.
 
 **Limits are declared as of this record (issue #154).** All three measurements
 now carry `limits`, so a `delta[]` row's `pass` means the extracted value sits
