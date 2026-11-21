@@ -6,8 +6,17 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 
 - [2026-09](work_log/WORK_LOG_2026-09.md)
 
+### 2026-11-21
+
+- **PR #701**: refactor: share the engine-log check across the batch response handlers
+- **PR #695**: feat(sim): screen a frequency-dependent compensation resistor on the batch fleet
+- **Issue #699** (closed): Share the engine-log check across the three batch response handlers
+- **Issue #697** (closed): Correct the klayout-tools#5894 cross-confirmation comment: it swaps which graph_too_large net hit which cap
+
 ### 2026-11-20
 
+- **PR #696**: pex: measure per-net resistance-graph fallback reasons; map rails' graph_too_large to klayout-tools#6964 (item 7)
+- **Issue #690** (closed): Item 7: re-run the resistance-graph recheck with per-net fallback reasons and file the upstream gap that actually blocks VIN/VOUT
 - **PR #686**: docs(sim): align iq manifest claim with the #301 fresh-ratification ruling
 - **Issue #683** (closed): docs(sim): reconcile sim/iq/experiment.json's DR-009 ratifying-act claim with the #301 ruling
 - **PR #682**: docs: move live DR-009 citations to the fresh-ratification wording (split from #681)
