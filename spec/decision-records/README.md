@@ -53,4 +53,5 @@ table names a record that does not exist.
 | [DR-010](DR-010-error-amp-stays-in-tree.md) | proposed | fresh ratification required — #301 ruling, 2026-10-19 (historical #137 context only) | error amplifier stays in-tree (reuse rule 9) |
 | [DR-011](DR-011-pass-device-resize.md) | proposed | fresh ratification required — #301 ruling, 2026-10-19 (historical #139 context only) | pass-device re-sizing (DR-003 sizing point) |
 | [DR-012](DR-012-no-bandgap-reuse-lock-entry-yet.md) | proposed | fresh ratification required — #301 ruling, 2026-10-19 (historical #144 context only) | no `reuse.lock.json` entry for the bandgap edge yet (reuse rule 9) |
+| [DR-014](DR-014-psrr-binding-capacitor-condition.md) | proposed | operator approval of the PR adding it (#314, Phase 2) | PSRR row: which output-capacitor / ESR condition it binds at |
 | [DR-013](DR-013-bias-retopology.md) | proposed | operator-ratified 2026-11-01 on #470 (r5-q34); #482 (2026-11-04) ratified the #478 additions only — see the 2026-11-04 status amendment (#489); the record's own status line still reads `proposed`, kept as written | bias re-topology: `R_BIAS` as a straight `res_xhigh_po` body (core Area row) |
