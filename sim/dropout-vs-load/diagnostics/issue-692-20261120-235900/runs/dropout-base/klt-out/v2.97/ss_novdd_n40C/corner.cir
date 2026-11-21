@@ -1,0 +1,47 @@
+* klt sim -- generated corner deck, do not edit
+.lib /opt/pdk/sky130A/libs.tech/combined/sky130.lib.spice ss
+.include /var/tmp/eda-job-klt-sim-51ef20128e0f/inputs/netlist.cir
+.temp -40.0
+.control
+save all
+setplot new
+echo klt_step_begin 0 $curplot
+tran 10u 14m uic
+echo klt_step_end 0 $curplot
+set klt_plot_0 = $curplot
+meas tran dropout_vin_x find v(vin) when v(vout)=1.764 fall=1 td=6m
+let dropout__dropout_vin_x = dropout_vin_x
+print dropout__dropout_vin_x
+meas tran vout_at_max_vin_v avg v(vout) from=5.5m to=6m
+let dropout__vout_at_max_vin_v = vout_at_max_vin_v
+print dropout__vout_at_max_vin_v
+let dropout_v = dropout_vin_x - 1.764
+let dropout__dropout_v = dropout_v
+print dropout__dropout_v
+meas tran ea_out_at_x find v(xldo.ea_out) when v(vout)=1.764 fall=1 td=6m
+let dropout__ea_out_at_x = ea_out_at_x
+print dropout__ea_out_at_x
+meas tran tail_i_at_x find @m.xldo.xm_tail.msky130_fd_pr__pfet_g5v0d10v5[id] when v(vout)=1.764 fall=1 td=6m
+let dropout__tail_i_at_x = tail_i_at_x
+print dropout__tail_i_at_x
+meas tran mclim_i_at_x find @m.xldo.xm_clim.msky130_fd_pr__pfet_g5v0d10v5[id] when v(vout)=1.764 fall=1 td=6m
+let dropout__mclim_i_at_x = mclim_i_at_x
+print dropout__mclim_i_at_x
+meas tran vout_at_2v064 find v(vout) when v(vin)=2.064 fall=1 td=6m
+let dropout__vout_at_2v064 = vout_at_2v064
+print dropout__vout_at_2v064
+meas tran mclim_vgs_at_2v064 find @m.xldo.xm_clim.msky130_fd_pr__pfet_g5v0d10v5[vgs] when v(vin)=2.064 fall=1 td=6m
+let dropout__mclim_vgs_at_2v064 = mclim_vgs_at_2v064
+print dropout__mclim_vgs_at_2v064
+meas tran mclim_i_at_2v064 find @m.xldo.xm_clim.msky130_fd_pr__pfet_g5v0d10v5[id] when v(vin)=2.064 fall=1 td=6m
+let dropout__mclim_i_at_2v064 = mclim_i_at_2v064
+print dropout__mclim_i_at_2v064
+meas tran tail_i_set avg @m.xldo.xm_tail.msky130_fd_pr__pfet_g5v0d10v5[id] from=5.5m to=6m
+let dropout__tail_i_set = tail_i_set
+print dropout__tail_i_set
+meas tran biasref_i_set avg @m.xldo.xm_biasp1.msky130_fd_pr__pfet_g5v0d10v5[id] from=5.5m to=6m
+let dropout__biasref_i_set = biasref_i_set
+print dropout__biasref_i_set
+quit
+.endc
+.end
