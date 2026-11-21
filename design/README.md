@@ -631,6 +631,27 @@ screening showed keeps improving that corner, because the `Iq < 30 µA` row
 (set by DR-009, `proposed`) is the binding constraint — 6× measured 33.6 µA
 at 50 mA, over the row; 2× measures 24.9 µA (table below), inside it.
 
+**A larger `R_CZ` was re-qualified and rejected (#709).** Issue #693's
+attribution traced the startup ramp-monotonicity drawdown to a fixed charge
+packet leaving `C_out` through `C_COMP`/`R_CZ`, and its screen found
+`L=52 → 180` removes 85-88 % of that packet with every startup bound passing.
+The #709 co-verification re-measured loop gain over the full 45-corner ×
+18-leg grid on both values (`sim/bias-retopo/20261121-165832-rczL52` = L=52,
+`.../20261121-171327-rczL180` = L=180) and load-transient on matched DUTs
+(`sim/load-transient/records/20261121-173242-303d2449` vs
+`.../20261121-173321-7fd5183b`): the zero moves ~3.5 kHz → ~1 kHz and the
+two-sided optimum shows its other side — the no-load legs improve
+(+0..+13°) but the loaded legs collapse uniformly (`c033`/1 mA: 74° → 27°
+at all 45 PVT points; `c4u7`/50 mA: 73.7° → 27.0°; sub-45° PM points
+203 → 489 of 810), while load-transient shows only marginal change on a row
+that already fails at L=52. The EA_OUT wake-shaping alternatives the
+attribution opened (soft-release of `M_ENP`, `M_MIRP2` slew trade) were
+screened on the same conditions and do not qualify either (≤16 % packet
+reduction with bounds intact, or regulation broken). Adoption of a
+compensation change therefore stays **open** at L=52; the schematic keeps the
+#25 value and the startup record of record is unchanged. Full tables:
+`sim/startup/pilots/20261121-709-rcz-l180-loopgain-rejection.md`.
+
 **Measured result** (`sim/loop-gain` record `20260818-014128-01b7905`, the
 `--quick` 3-corner subset; ratified bound is `spec/target-spec.md`'s Stability
 row, PM ≥ 45° and GM ≥ 10 dB worst corner):
