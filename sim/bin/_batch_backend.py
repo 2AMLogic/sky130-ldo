@@ -617,6 +617,35 @@ def _index_response_corners(
     return want, seen
 
 
+def _engine_log_check(rc: dict, outdir: Path, prefix: str) -> tuple[str | None, str | None, list[str]]:
+    """Read one remote corner's engine log artifact and check its text for a
+    solver diagnostic (a relative artifact path resolves against `outdir`).
+    Returns (log text or None, solver diagnostic or None, failure reasons): a
+    log missing from the response or unreadable on disk yields no text and one
+    `prefix`-bearing reason, while a readable log — an empty one included —
+    yields its text and a diagnostic reason only if a marker matched."""
+    reasons: list[str] = []
+    log_text: str | None = None
+    art = rc.get("artifacts")
+    log_ref = art.get("log") if isinstance(art, dict) else None
+    if isinstance(log_ref, str) and log_ref:
+        lp = Path(log_ref)
+        if not lp.is_absolute():
+            lp = outdir / lp
+        try:
+            log_text = lp.read_text(errors="replace")
+        except OSError as exc:
+            reasons.append(f"{prefix}engine log unreadable ({lp}: {exc})")
+    else:
+        reasons.append(f"{prefix}engine log not retained in klt sim response (artifacts.log absent)")
+    solver_diagnostic = None
+    if log_text is not None:
+        solver_diagnostic = detect_solver_diagnostic(log_text)
+        if solver_diagnostic is not None:
+            reasons.append(f"{prefix}solver diagnostic: {solver_diagnostic}")
+    return log_text, solver_diagnostic, reasons
+
+
 def normalize_batch_response(
     exp: Experiment, group: BatchGroup, response: dict, outdir: Path, timeout: int
 ) -> tuple[list[dict], dict[str, str]]:
@@ -684,26 +713,10 @@ def normalize_batch_response(
                    if m.leg is not None else {}),
             })
 
-        solver_diagnostic, log_text, log_note = None, None, None
-        art = rc.get("artifacts")
-        log_ref = art.get("log") if isinstance(art, dict) else None
-        if isinstance(log_ref, str) and log_ref:
-            lp = Path(log_ref)
-            if not lp.is_absolute():
-                lp = outdir / lp
-            try:
-                log_text = lp.read_text(errors="replace")
-            except OSError as exc:
-                log_note = f"{tag}engine log unreadable ({lp}: {exc})"
-        else:
-            log_note = f"{tag}engine log not retained in klt sim response (artifacts.log absent)"
+        log_text, solver_diagnostic, log_reasons = _engine_log_check(rc, outdir, tag)
         if log_text is not None:
-            solver_diagnostic = detect_solver_diagnostic(log_text)
             logs[corner.id] = log_text
-        else:
-            reasons.append(log_note)
-        if solver_diagnostic is not None:
-            reasons.append(f"{tag}solver diagnostic: {solver_diagnostic}")
+        reasons.extend(log_reasons)
 
         runtime = rc.get("runtime_s")
         ok = (not reasons) and all(c["pass"] for c in checks)
@@ -802,26 +815,10 @@ def normalize_startup_response(
                 "direction": m.direction,
             })
 
-        solver_diagnostic, log_text, log_note = None, None, None
-        art = rc.get("artifacts")
-        log_ref = art.get("log") if isinstance(art, dict) else None
-        if isinstance(log_ref, str) and log_ref:
-            lp = Path(log_ref)
-            if not lp.is_absolute():
-                lp = outdir / lp
-            try:
-                log_text = lp.read_text(errors="replace")
-            except OSError as exc:
-                log_note = f"{tag}engine log unreadable ({lp}: {exc})"
-        else:
-            log_note = f"{tag}engine log not retained in klt sim response (artifacts.log absent)"
+        log_text, solver_diagnostic, log_reasons = _engine_log_check(rc, outdir, tag)
         if log_text is not None:
-            solver_diagnostic = detect_solver_diagnostic(log_text)
             logs[corner.id] = log_text
-        else:
-            reasons.append(log_note)
-        if solver_diagnostic is not None:
-            reasons.append(f"{tag}solver diagnostic: {solver_diagnostic}")
+        reasons.extend(log_reasons)
 
         ramp_legs: list[dict] = []
         leg_result, trace_path, structural = bsr.leg_ramp_condition(
@@ -887,24 +884,11 @@ def normalize_endpoint_response(
         reasons.extend(f"[{ep.step_name}] {r}" for r in batch_dropout.corner_diagnostic_problems(rc))
         values, vreasons = blr.extract_endpoint_values(ep, rc["measurements"])
         reasons.extend(vreasons)
-        log_text, solver_diagnostic = None, None
-        art = rc.get("artifacts")
-        log_ref = art.get("log") if isinstance(art, dict) else None
-        if isinstance(log_ref, str) and log_ref:
-            lp = Path(log_ref)
-            if not lp.is_absolute():
-                lp = outdir / lp
-            try:
-                log_text = lp.read_text(errors="replace")
-            except OSError as exc:
-                reasons.append(f"[{ep.step_name}] engine log unreadable ({lp}: {exc})")
-        else:
-            reasons.append(f"[{ep.step_name}] engine log not retained in klt sim response (artifacts.log absent)")
+        log_text, solver_diagnostic, log_reasons = _engine_log_check(
+            rc, outdir, f"[{ep.step_name}] ")
         if log_text is not None:
-            solver_diagnostic = detect_solver_diagnostic(log_text)
             logs[corner.id] = log_text
-        if solver_diagnostic is not None:
-            reasons.append(f"[{ep.step_name}] solver diagnostic: {solver_diagnostic}")
+        reasons.extend(log_reasons)
         runtime = rc.get("runtime_s")
         parts.append({
             "corner": corner, "endpoint": ep.step_name, "values": values, "reasons": reasons,
