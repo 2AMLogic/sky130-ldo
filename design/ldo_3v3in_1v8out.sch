@@ -490,34 +490,25 @@ of the DR-002 window. See README "Compensation (sized in #25)" for the
 measured phase-margin map and for the area note (a 100p MIM is ~50000um2 of
 cap_mim, stackable over the pass device rather than beside it).} 1240 -400 0 0 0.2 0.2 {}
 
-C {sky130_fd_pr/res_xhigh_po.sym} 1200 -250 0 0 {name=R_CZ W=0.42 L=180 model=res_xhigh_po spiceprefix=X mult=1}
+C {sky130_fd_pr/res_xhigh_po.sym} 1200 -250 0 0 {name=R_CZ W=0.42 L=52 model=res_xhigh_po spiceprefix=X mult=1}
 C {devices/lab_pin.sym} 1200 -220 0 0 {name=p_rcz1 lab=EA_CZ}
 C {devices/lab_pin.sym} 1200 -280 0 0 {name=p_rcz2 lab=EA_OUT}
 C {devices/lab_pin.sym} 1180 -250 0 0 {name=p_rcz3 lab=0}
 T {R_CZ: the compensation network's nulling resistor, in series with C_COMP
-(issue #25; length re-qualified in #709). res_xhigh_po W=0.42 L=180 -- the
-same unit-resistor flavor the feedback divider uses, ~1.04MOhm at the L=180
--> ~1.04MOhm screening slope in README's "Feedback divider" table. L=52
-(~300kOhm, issue #25) left the enable-edge charge packet a direct path out
-of C_out (issue #693 attribution: 10.1-21.6 pC over PVT left through
-C_COMP as the EA's own wake transient displaces EA_CZ before M_PASS
-conducts); L=180 removes 85-88% of that packet (issue #709 co-verification)
-while keeping every startup electrical bound and the loop-gain/load-transient
-grids inside their limits.
+(issue #25). res_xhigh_po W=0.42 L=52 -- the same unit-resistor flavor the
+feedback divider uses, so ~300kOhm at the L=180 -> ~1.04MOhm screening slope
+in README's "Feedback divider" table.
 
 Why it is here and not just a bare Miller cap: a bare C_COMP shorts EA_OUT to
 VOUT at high frequency, which turns the pass device into a follower and puts
 a floor under the loop gain -- past that floor, making C_COMP bigger stops
 lowering the crossover at all (measured: 100p -> 250p moved the light-load
 crossover only 2671Hz -> 1677Hz). R_CZ breaks that feedthrough and places a
-left-half-plane zero at 1/(2*pi*R_CZ*C_COMP) -- ~5kHz at the #25 value
-L=52, ~1kHz at L=180 -- which is what actually buys the phase margin back
-at the light-load/high-C_eff corner. Its value is a genuine two-sided
-optimum, not a "bigger is better" knob: too small and the light-load
-corners lose margin, too large and the Miller pole splitting stops working
-at 50mA/0.33uF (the #693 screen rejected L>=520 for exactly that: loaded
-start oscillatory sag). See README "Compensation (sized in #25,
-re-qualified in #709)".} 1240 -250 0 0 0.2 0.2 {}
+left-half-plane zero at 1/(2*pi*R_CZ*C_COMP) ~= 5kHz, which is what actually
+buys the phase margin back at the light-load/high-C_eff corner. Its value is
+a genuine two-sided optimum, not a "bigger is better" knob: too small and the
+light-load corners lose margin, too large and the Miller pole splitting stops
+working at 50mA/0.33uF. See README "Compensation (sized in #25)".} 1240 -250 0 0 0.2 0.2 {}
 
 C {sky130_fd_pr/res_xhigh_po.sym} 1200 -700 0 0 {name=R_FB_A W=0.42 L=180 model=res_xhigh_po spiceprefix=X mult=1}
 C {devices/lab_pin.sym} 1200 -670 0 0 {name=p_rfba1 lab=VOUT}
