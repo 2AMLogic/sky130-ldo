@@ -218,10 +218,73 @@ class Reporting(unittest.TestCase):
             for result in verdict["ac"]["tt"].values():
                 self.assertEqual((result["valid"], result["total"]), (0, 42))
                 self.assertIsNone(result["worst"]["pm"])
-            for name in ("tables.md", "verdict.json"):
-                self.assertEqual((out / name).read_bytes(), (rec / name).read_bytes())
+            # The archived record stays untouched; this render publishes the full
+            # possible-request grid that the archived hand tally understated, keeps
+            # the refusal and its skipped stages explicit, and is deterministic.
+            self.assertEqual(
+                verdict["possible_requests"],
+                {"tt_ac": 84, "pvt_ac": 28, "op": 4, "survivor": 6, "total": 122},
+            )
+            tables = (out / "tables.md").read_text()
+            self.assertIn("**Total if all gates pass** | **122**", tables)
+            for stage in screen.CORNERS:
+                for design in screen.DESIGNS:
+                    self.assertIn(f"`{screen.op_key(stage, design)}`", tables)
+            self.assertIn("preflight refused", tables)
+            self.assertIn("require an accepted batch preflight", tables)
+            self.assertIn(
+                "Iq and load transients require both paired AC stages to clear.",
+                tables,
+            )
+            first = (
+                (out / "tables.md").read_bytes(),
+                (out / "verdict.json").read_bytes(),
+            )
+            report.render(out)
+            self.assertEqual(
+                (
+                    (out / "tables.md").read_bytes(),
+                    (out / "verdict.json").read_bytes(),
+                ),
+                first,
+            )
             with self.assertRaises(ValueError):
                 report.render(out, adoption_issue=1)
+
+    def test_published_inventory_matches_the_request_builders(self):
+        # The published counts are derived, not hand-tallied: enumerate the real
+        # builders into a scratch directory and compare every key by category.
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp)
+            (out / "requests").mkdir()
+            pdk = {"variant": "sky130A", "ngspice_lib": "model"}
+            built = {stage: set() for stage in screen.CORNERS}
+            op, survivor = set(), set()
+            for stage in screen.CORNERS:
+                for design in screen.DESIGNS:
+                    built[stage].update(
+                        k for k, _ in screen.ac_requests(out, pdk, BODY, stage, design)
+                    )
+                    op.update(
+                        k for k, _ in screen.op_requests(out, pdk, BODY, stage, design)
+                    )
+            for design in screen.DESIGNS:
+                survivor.update(
+                    k for k, _ in screen.survivor_requests(out, pdk, BODY, design)
+                )
+            inv = report.request_inventory()
+            self.assertEqual({s: set(v) for s, v in inv["ac"].items()}, built)
+            self.assertEqual(set(inv["op"]), op)
+            self.assertEqual(set(inv["survivor"]), survivor)
+            every = [
+                k for v in inv["ac"].values() for k in v
+            ] + inv["op"] + inv["survivor"]
+            self.assertEqual(len(every), len(set(every)))
+            self.assertEqual(
+                (len(inv["ac"]["tt"]), len(inv["ac"]["pvt"])), (84, 28)
+            )
+            self.assertEqual((len(inv["op"]), len(inv["survivor"])), (4, 6))
+            self.assertEqual(len(every), 122)
 
     def test_transient_crossings_must_match_observed_excursions(self):
         m = {
