@@ -12,6 +12,37 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 screen = importlib.import_module("rcz-shelf-691")
 adaptive = screen.adaptive
 
+# Mirrors the case subset in screen.survivor_requests(); the test suite enumerates
+# the real builders and compares, so the two cannot drift apart silently.
+SURVIVOR_CASES = ("r1to50mA", "f50to1mA")
+
+
+def request_inventory():
+    """Every batch request the driver can build if all stage gates pass.
+
+    Keys derive from the driver's own enumeration (grid(), key_for(), op_key()),
+    not a hand tally, so a new request builder changes the published count.
+    """
+    ac = {
+        stage: [
+            screen.key_for(stage, design, cap, esr, load)
+            for design in screen.DESIGNS
+            for cap, esr, load in screen.grid(stage)
+        ]
+        for stage in screen.CORNERS
+    }
+    op = [
+        screen.op_key(stage, design)
+        for stage in screen.CORNERS
+        for design in screen.DESIGNS
+    ]
+    survivor = [
+        f"{prefix}__{design}"
+        for design in screen.DESIGNS
+        for prefix in ("iq", *SURVIVOR_CASES)
+    ]
+    return {"ac": ac, "op": op, "survivor": survivor}
+
 
 def fmt(value, digits=2):
     return "—" if value is None else f"{value:.{digits}f}"
@@ -308,7 +339,43 @@ def render(out, adoption_issue=None):
         for stages in summary.values()
         for result in stages.values()
     )
+    inv = request_inventory()
+    counts = {
+        "tt_ac": len(inv["ac"]["tt"]),
+        "pvt_ac": len(inv["ac"]["pvt"]),
+        "op": len(inv["op"]),
+        "survivor": len(inv["survivor"]),
+    }
+    counts["total"] = sum(counts.values())
+    verdict["possible_requests"] = counts
     verdict.update(verdict="ADOPT" if adoption_issue else "REVISE", next_action=action)
+    op_keys = ", ".join(f"`{key}`" for key in inv["op"][:-1]) + f" and `{inv['op'][-1]}`"
+    lines.extend(
+        [
+            "",
+            "## Possible batch requests",
+            "",
+            f"The screen can build {counts['total']} batch requests if every stage gate "
+            "passes. The counts below derive from the driver's request builders, not a "
+            "hand tally.",
+            "",
+            "| Possible batch requests | Across baseline and shelf |",
+            "|---|---:|",
+            f"| Typical-corner AC | {counts['tt_ac']} |",
+            f"| PVT AC | {counts['pvt_ac']} |",
+            f"| DC operating point, one per stage and design | {counts['op']} |",
+            f"| Survivor Iq and transients | {counts['survivor']} |",
+            f"| **Total if all gates pass** | **{counts['total']}** |",
+            "",
+            f"Each PVT AC request covers {len(adaptive.PVT_CORNERS)} corners; each "
+            f"operating-point request covers {len(screen.LOADS)} loads through reset "
+            f"`RLOAD` steps. The operating-point requests {op_keys} bias the AC "
+            "linearization grid. This is the grid the driver can build, not a claim "
+            "about this record's submissions; the NOT run section states what this "
+            "run attempted.",
+            "",
+        ]
+    )
     lines.extend(
         [
             "",
