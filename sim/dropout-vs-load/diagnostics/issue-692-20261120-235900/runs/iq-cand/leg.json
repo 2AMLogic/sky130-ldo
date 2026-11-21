@@ -1,0 +1,4505 @@
+{
+ "candidate_rev": 1,
+ "corner_ids": [
+  "tt_-40c_2.97v",
+  "tt_-40c_3.30v",
+  "tt_-40c_3.63v",
+  "tt_27c_2.97v",
+  "tt_27c_3.30v",
+  "tt_27c_3.63v",
+  "tt_125c_2.97v",
+  "tt_125c_3.30v",
+  "tt_125c_3.63v",
+  "ss_-40c_2.97v",
+  "ss_-40c_3.30v",
+  "ss_-40c_3.63v",
+  "ss_27c_2.97v",
+  "ss_27c_3.30v",
+  "ss_27c_3.63v",
+  "ss_125c_2.97v",
+  "ss_125c_3.30v",
+  "ss_125c_3.63v",
+  "ff_-40c_2.97v",
+  "ff_-40c_3.30v",
+  "ff_-40c_3.63v",
+  "ff_27c_2.97v",
+  "ff_27c_3.30v",
+  "ff_27c_3.63v",
+  "ff_125c_2.97v",
+  "ff_125c_3.30v",
+  "ff_125c_3.63v",
+  "sf_-40c_2.97v",
+  "sf_-40c_3.30v",
+  "sf_-40c_3.63v",
+  "sf_27c_2.97v",
+  "sf_27c_3.30v",
+  "sf_27c_3.63v",
+  "sf_125c_2.97v",
+  "sf_125c_3.30v",
+  "sf_125c_3.63v",
+  "fs_-40c_2.97v",
+  "fs_-40c_3.30v",
+  "fs_-40c_3.63v",
+  "fs_27c_2.97v",
+  "fs_27c_3.30v",
+  "fs_27c_3.63v",
+  "fs_125c_2.97v",
+  "fs_125c_3.30v",
+  "fs_125c_3.63v"
+ ],
+ "execution": {
+  "requests": [
+   {
+    "endpoint": "tran1",
+    "engine": "ngspice",
+    "engine_version": "47",
+    "job_id": "klt-sim-cff8604a732b",
+    "key": "v2.97-tran1",
+    "klt_pdk_names_pin": true,
+    "klt_status": "pass",
+    "klt_version": "0.9.3.dev2575+g6bd18bbc8637",
+    "n_points": 15,
+    "pdk_version": "open_pdks c6d73a35f524070e85faff4a6a9eef49553ebc2b",
+    "remote": {
+     "ami_id": "ami-09c14f55df4958cbd",
+     "availability_zone": "us-east-1f",
+     "client_collected_at": "2026-11-21T00:16:31.966325Z",
+     "client_klt_version": "0.9.3.dev2575+g6bd18bbc8637",
+     "client_launched_at": "2026-11-21T00:15:27.457328Z",
+     "client_status_terminal_at": "2026-11-21T00:16:30.545090Z",
+     "client_submitted_at": "2026-11-21T00:15:00.909270Z",
+     "concurrency": "1",
+     "elapsed_seconds": 23,
+     "exit_code": "0",
+     "instance_id": "i-04256fa1ffebb1804",
+     "instance_type": "c7i.4xlarge",
+     "job_ceiling": {
+      "basis": "conservative_serial_bound",
+      "check": "warn",
+      "exceeds_ceiling": true,
+      "job_bound_s": 4620.0,
+      "max_job_seconds": 3600.0,
+      "max_job_seconds_source": "fleet_config",
+      "max_units_per_job": 11,
+      "overhead_s": 120.0,
+      "per_unit_timeout_s": 300,
+      "recommended_hosts": 2,
+      "unit_count": 15,
+      "warning": "batch job bound 4620s (options.timeout_s 300s x 15 units + 120s; a conservative fully-serial upper bound, not a runtime estimate) exceeds the fleet's whole-job ceiling of 3600s (max_job_seconds from fleet_config); a job still running at the ceiling is killed and every unit is reported batch_job_timeout. Set request.remote.hosts to at least 2 to run one job per shard of at most 11 units, each within the ceiling"
+     },
+     "job_id": "klt-sim-cff8604a732b",
+     "lifecycle": "spot",
+     "models_lib_comparison": {
+      "status": "match"
+     },
+     "physical_cores": "8",
+     "provider": "aws-batch-fleet",
+     "region": "us-east-1",
+     "runner_compatibility": "match",
+     "runner_klt_version": "0.9.0",
+     "runner_model_inputs": null,
+     "runner_models_lib_sha256": "48de7c677e2c6e7d09b2559279de9f818be71010a4aa933d728eb4db3b133c84",
+     "runner_osdi_preload": null,
+     "runner_request_features": {
+      "missing": [],
+      "required": [
+       "analysis_steps",
+       "options.ngspice_init"
+      ],
+      "status": "supported"
+     },
+     "spot": true,
+     "state": "done",
+     "worker_environment": {
+      "capture": "ok",
+      "cpu_model": "Intel(R) Xeon(R) Platinum 8488C",
+      "diagnostics": [],
+      "engine_build_comparison": {
+       "status": "match"
+      },
+      "image_manifest": null,
+      "model_inputs": null,
+      "ngspice_init": null,
+      "omp_num_threads": null,
+      "pdk": {
+       "models_staged": false,
+       "root": "/opt/pdk",
+       "stamp_scheme": "sources-sha256",
+       "stamp_scope": "executed",
+       "stamp_sha256": "4ca10280ae9f293aa1ff69f0060a52e0026929111bda881503717469b429ce67",
+       "stamp_text": "open_pdks f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7",
+       "variant": "sky130A"
+      },
+      "pdk_stamp_comparison": {
+       "status": "mismatch",
+       "warning": "the worker's PDK revision stamp for sky130A differs from the one the submitter resolved locally; results may differ from a local run (a matching stamp would not prove identical models)"
+      },
+      "simulator": {
+       "binary_source": "PATH",
+       "requested_binary": "ngspice",
+       "selected_path": "/usr/local/bin/ngspice",
+       "version_banner": "******\n** ngspice-47 : Circuit level simulation program\n** Compiled with KLU Direct Linear Solver\n** The U. C. Berkeley CAD Group\n** Copyright 1985-1994, Regents of the University of California.\n** Copyright 2001-2026, The ngspice team.\n** Please get your ngspice manual from https://ngspice.sourceforge.io/docs.html\n** Please file your bug-reports at http://ngspice.sourceforge.net/bugrep.html\n** Creation Date: Fri Nov 13 23:19:32 UTC 2026\n******\n",
+       "version_probe": "ok"
+      },
+      "threads_per_worker": 1
+     }
+    },
+    "reported_backend": "aws-batch-fleet",
+    "request_file": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-692/sim/dropout-vs-load/diagnostics/issue-692-20261120-235900/runs/iq-cand/klt-requests/v2.97-tran1.json",
+    "response_file": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-692/sim/dropout-vs-load/diagnostics/issue-692-20261120-235900/runs/iq-cand/klt-out/v2.97-tran1/response.json",
+    "returncode": 0,
+    "supply_v": 2.97
+   },
+   {
+    "endpoint": "tran2",
+    "engine": "ngspice",
+    "engine_version": "47",
+    "job_id": "klt-sim-81b53403b92c",
+    "key": "v2.97-tran2",
+    "klt_pdk_names_pin": true,
+    "klt_status": "pass",
+    "klt_version": "0.9.3.dev2575+g6bd18bbc8637",
+    "n_points": 15,
+    "pdk_version": "open_pdks c6d73a35f524070e85faff4a6a9eef49553ebc2b",
+    "remote": {
+     "ami_id": "ami-09c14f55df4958cbd",
+     "availability_zone": "us-east-1d",
+     "client_collected_at": "2026-11-21T00:17:41.703343Z",
+     "client_klt_version": "0.9.3.dev2575+g6bd18bbc8637",
+     "client_launched_at": "2026-11-21T00:17:01.430977Z",
+     "client_status_terminal_at": "2026-11-21T00:17:36.442846Z",
+     "client_submitted_at": "2026-11-21T00:16:32.933949Z",
+     "concurrency": "1",
+     "elapsed_seconds": 23,
+     "exit_code": "0",
+     "instance_id": "i-0c215f7417ae2b7e6",
+     "instance_type": "c7i.4xlarge",
+     "job_ceiling": {
+      "basis": "conservative_serial_bound",
+      "check": "warn",
+      "exceeds_ceiling": true,
+      "job_bound_s": 4620.0,
+      "max_job_seconds": 3600.0,
+      "max_job_seconds_source": "fleet_config",
+      "max_units_per_job": 11,
+      "overhead_s": 120.0,
+      "per_unit_timeout_s": 300,
+      "recommended_hosts": 2,
+      "unit_count": 15,
+      "warning": "batch job bound 4620s (options.timeout_s 300s x 15 units + 120s; a conservative fully-serial upper bound, not a runtime estimate) exceeds the fleet's whole-job ceiling of 3600s (max_job_seconds from fleet_config); a job still running at the ceiling is killed and every unit is reported batch_job_timeout. Set request.remote.hosts to at least 2 to run one job per shard of at most 11 units, each within the ceiling"
+     },
+     "job_id": "klt-sim-81b53403b92c",
+     "lifecycle": "spot",
+     "models_lib_comparison": {
+      "status": "match"
+     },
+     "physical_cores": "8",
+     "provider": "aws-batch-fleet",
+     "region": "us-east-1",
+     "runner_compatibility": "match",
+     "runner_klt_version": "0.9.0",
+     "runner_model_inputs": null,
+     "runner_models_lib_sha256": "48de7c677e2c6e7d09b2559279de9f818be71010a4aa933d728eb4db3b133c84",
+     "runner_osdi_preload": null,
+     "runner_request_features": {
+      "missing": [],
+      "required": [
+       "analysis_steps",
+       "options.ngspice_init"
+      ],
+      "status": "supported"
+     },
+     "spot": true,
+     "state": "done",
+     "worker_environment": {
+      "capture": "ok",
+      "cpu_model": "Intel(R) Xeon(R) Platinum 8488C",
+      "diagnostics": [],
+      "engine_build_comparison": {
+       "status": "match"
+      },
+      "image_manifest": null,
+      "model_inputs": null,
+      "ngspice_init": null,
+      "omp_num_threads": null,
+      "pdk": {
+       "models_staged": false,
+       "root": "/opt/pdk",
+       "stamp_scheme": "sources-sha256",
+       "stamp_scope": "executed",
+       "stamp_sha256": "4ca10280ae9f293aa1ff69f0060a52e0026929111bda881503717469b429ce67",
+       "stamp_text": "open_pdks f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7",
+       "variant": "sky130A"
+      },
+      "pdk_stamp_comparison": {
+       "status": "mismatch",
+       "warning": "the worker's PDK revision stamp for sky130A differs from the one the submitter resolved locally; results may differ from a local run (a matching stamp would not prove identical models)"
+      },
+      "simulator": {
+       "binary_source": "PATH",
+       "requested_binary": "ngspice",
+       "selected_path": "/usr/local/bin/ngspice",
+       "version_banner": "******\n** ngspice-47 : Circuit level simulation program\n** Compiled with KLU Direct Linear Solver\n** The U. C. Berkeley CAD Group\n** Copyright 1985-1994, Regents of the University of California.\n** Copyright 2001-2026, The ngspice team.\n** Please get your ngspice manual from https://ngspice.sourceforge.io/docs.html\n** Please file your bug-reports at http://ngspice.sourceforge.net/bugrep.html\n** Creation Date: Fri Nov 13 23:19:32 UTC 2026\n******\n",
+       "version_probe": "ok"
+      },
+      "threads_per_worker": 1
+     }
+    },
+    "reported_backend": "aws-batch-fleet",
+    "request_file": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-692/sim/dropout-vs-load/diagnostics/issue-692-20261120-235900/runs/iq-cand/klt-requests/v2.97-tran2.json",
+    "response_file": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-692/sim/dropout-vs-load/diagnostics/issue-692-20261120-235900/runs/iq-cand/klt-out/v2.97-tran2/response.json",
+    "returncode": 0,
+    "supply_v": 2.97
+   },
+   {
+    "endpoint": "tran1",
+    "engine": "ngspice",
+    "engine_version": "47",
+    "job_id": "klt-sim-18c6e44ea618",
+    "key": "v3.30-tran1",
+    "klt_pdk_names_pin": true,
+    "klt_status": "pass",
+    "klt_version": "0.9.3.dev2575+g6bd18bbc8637",
+    "n_points": 15,
+    "pdk_version": "open_pdks c6d73a35f524070e85faff4a6a9eef49553ebc2b",
+    "remote": {
+     "ami_id": "ami-09c14f55df4958cbd",
+     "availability_zone": "us-east-1d",
+     "client_collected_at": "2026-11-21T00:20:07.174610Z",
+     "client_klt_version": "0.9.3.dev2575+g6bd18bbc8637",
+     "client_launched_at": "2026-11-21T00:19:01.896310Z",
+     "client_status_terminal_at": "2026-11-21T00:20:05.539376Z",
+     "client_submitted_at": "2026-11-21T00:17:46.763849Z",
+     "concurrency": "1",
+     "elapsed_seconds": 34,
+     "exit_code": "0",
+     "instance_id": "i-0d7627da4b58e5b36",
+     "instance_type": "c7i.4xlarge",
+     "job_ceiling": {
+      "basis": "conservative_serial_bound",
+      "check": "warn",
+      "exceeds_ceiling": true,
+      "job_bound_s": 4620.0,
+      "max_job_seconds": 3600.0,
+      "max_job_seconds_source": "fleet_config",
+      "max_units_per_job": 11,
+      "overhead_s": 120.0,
+      "per_unit_timeout_s": 300,
+      "recommended_hosts": 2,
+      "unit_count": 15,
+      "warning": "batch job bound 4620s (options.timeout_s 300s x 15 units + 120s; a conservative fully-serial upper bound, not a runtime estimate) exceeds the fleet's whole-job ceiling of 3600s (max_job_seconds from fleet_config); a job still running at the ceiling is killed and every unit is reported batch_job_timeout. Set request.remote.hosts to at least 2 to run one job per shard of at most 11 units, each within the ceiling"
+     },
+     "job_id": "klt-sim-18c6e44ea618",
+     "lifecycle": "spot",
+     "models_lib_comparison": {
+      "status": "match"
+     },
+     "physical_cores": "8",
+     "provider": "aws-batch-fleet",
+     "region": "us-east-1",
+     "runner_compatibility": "match",
+     "runner_klt_version": "0.9.0",
+     "runner_model_inputs": null,
+     "runner_models_lib_sha256": "48de7c677e2c6e7d09b2559279de9f818be71010a4aa933d728eb4db3b133c84",
+     "runner_osdi_preload": null,
+     "runner_request_features": {
+      "missing": [],
+      "required": [
+       "analysis_steps",
+       "options.ngspice_init"
+      ],
+      "status": "supported"
+     },
+     "spot": true,
+     "state": "done",
+     "worker_environment": {
+      "capture": "ok",
+      "cpu_model": "Intel(R) Xeon(R) Platinum 8488C",
+      "diagnostics": [],
+      "engine_build_comparison": {
+       "status": "match"
+      },
+      "image_manifest": null,
+      "model_inputs": null,
+      "ngspice_init": null,
+      "omp_num_threads": null,
+      "pdk": {
+       "models_staged": false,
+       "root": "/opt/pdk",
+       "stamp_scheme": "sources-sha256",
+       "stamp_scope": "executed",
+       "stamp_sha256": "4ca10280ae9f293aa1ff69f0060a52e0026929111bda881503717469b429ce67",
+       "stamp_text": "open_pdks f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7",
+       "variant": "sky130A"
+      },
+      "pdk_stamp_comparison": {
+       "status": "mismatch",
+       "warning": "the worker's PDK revision stamp for sky130A differs from the one the submitter resolved locally; results may differ from a local run (a matching stamp would not prove identical models)"
+      },
+      "simulator": {
+       "binary_source": "PATH",
+       "requested_binary": "ngspice",
+       "selected_path": "/usr/local/bin/ngspice",
+       "version_banner": "******\n** ngspice-47 : Circuit level simulation program\n** Compiled with KLU Direct Linear Solver\n** The U. C. Berkeley CAD Group\n** Copyright 1985-1994, Regents of the University of California.\n** Copyright 2001-2026, The ngspice team.\n** Please get your ngspice manual from https://ngspice.sourceforge.io/docs.html\n** Please file your bug-reports at http://ngspice.sourceforge.net/bugrep.html\n** Creation Date: Fri Nov 13 23:19:32 UTC 2026\n******\n",
+       "version_probe": "ok"
+      },
+      "threads_per_worker": 1
+     }
+    },
+    "reported_backend": "aws-batch-fleet",
+    "request_file": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-692/sim/dropout-vs-load/diagnostics/issue-692-20261120-235900/runs/iq-cand/klt-requests/v3.30-tran1.json",
+    "response_file": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-692/sim/dropout-vs-load/diagnostics/issue-692-20261120-235900/runs/iq-cand/klt-out/v3.30-tran1/response.json",
+    "returncode": 0,
+    "supply_v": 3.3
+   },
+   {
+    "endpoint": "tran2",
+    "engine": "ngspice",
+    "engine_version": "47",
+    "job_id": "klt-sim-fdee5150ee8a",
+    "key": "v3.30-tran2",
+    "klt_pdk_names_pin": true,
+    "klt_status": "pass",
+    "klt_version": "0.9.3.dev2575+g6bd18bbc8637",
+    "n_points": 15,
+    "pdk_version": "open_pdks c6d73a35f524070e85faff4a6a9eef49553ebc2b",
+    "remote": {
+     "ami_id": "ami-09c14f55df4958cbd",
+     "availability_zone": "us-east-1f",
+     "client_collected_at": "2026-11-21T00:21:37.998415Z",
+     "client_klt_version": "0.9.3.dev2575+g6bd18bbc8637",
+     "client_launched_at": "2026-11-21T00:20:34.068350Z",
+     "client_status_terminal_at": "2026-11-21T00:21:36.703391Z",
+     "client_submitted_at": "2026-11-21T00:20:08.144424Z",
+     "concurrency": "1",
+     "elapsed_seconds": 22,
+     "exit_code": "0",
+     "instance_id": "i-05350a15571d55ecd",
+     "instance_type": "m7i.4xlarge",
+     "job_ceiling": {
+      "basis": "conservative_serial_bound",
+      "check": "warn",
+      "exceeds_ceiling": true,
+      "job_bound_s": 4620.0,
+      "max_job_seconds": 3600.0,
+      "max_job_seconds_source": "fleet_config",
+      "max_units_per_job": 11,
+      "overhead_s": 120.0,
+      "per_unit_timeout_s": 300,
+      "recommended_hosts": 2,
+      "unit_count": 15,
+      "warning": "batch job bound 4620s (options.timeout_s 300s x 15 units + 120s; a conservative fully-serial upper bound, not a runtime estimate) exceeds the fleet's whole-job ceiling of 3600s (max_job_seconds from fleet_config); a job still running at the ceiling is killed and every unit is reported batch_job_timeout. Set request.remote.hosts to at least 2 to run one job per shard of at most 11 units, each within the ceiling"
+     },
+     "job_id": "klt-sim-fdee5150ee8a",
+     "lifecycle": "spot",
+     "models_lib_comparison": {
+      "status": "match"
+     },
+     "physical_cores": "8",
+     "provider": "aws-batch-fleet",
+     "region": "us-east-1",
+     "runner_compatibility": "match",
+     "runner_klt_version": "0.9.0",
+     "runner_model_inputs": null,
+     "runner_models_lib_sha256": "48de7c677e2c6e7d09b2559279de9f818be71010a4aa933d728eb4db3b133c84",
+     "runner_osdi_preload": null,
+     "runner_request_features": {
+      "missing": [],
+      "required": [
+       "analysis_steps",
+       "options.ngspice_init"
+      ],
+      "status": "supported"
+     },
+     "spot": true,
+     "state": "done",
+     "worker_environment": {
+      "capture": "ok",
+      "cpu_model": "Intel(R) Xeon(R) Platinum 8488C",
+      "diagnostics": [],
+      "engine_build_comparison": {
+       "status": "match"
+      },
+      "image_manifest": null,
+      "model_inputs": null,
+      "ngspice_init": null,
+      "omp_num_threads": null,
+      "pdk": {
+       "models_staged": false,
+       "root": "/opt/pdk",
+       "stamp_scheme": "sources-sha256",
+       "stamp_scope": "executed",
+       "stamp_sha256": "4ca10280ae9f293aa1ff69f0060a52e0026929111bda881503717469b429ce67",
+       "stamp_text": "open_pdks f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7",
+       "variant": "sky130A"
+      },
+      "pdk_stamp_comparison": {
+       "status": "mismatch",
+       "warning": "the worker's PDK revision stamp for sky130A differs from the one the submitter resolved locally; results may differ from a local run (a matching stamp would not prove identical models)"
+      },
+      "simulator": {
+       "binary_source": "PATH",
+       "requested_binary": "ngspice",
+       "selected_path": "/usr/local/bin/ngspice",
+       "version_banner": "******\n** ngspice-47 : Circuit level simulation program\n** Compiled with KLU Direct Linear Solver\n** The U. C. Berkeley CAD Group\n** Copyright 1985-1994, Regents of the University of California.\n** Copyright 2001-2026, The ngspice team.\n** Please get your ngspice manual from https://ngspice.sourceforge.io/docs.html\n** Please file your bug-reports at http://ngspice.sourceforge.net/bugrep.html\n** Creation Date: Fri Nov 13 23:19:32 UTC 2026\n******\n",
+       "version_probe": "ok"
+      },
+      "threads_per_worker": 1
+     }
+    },
+    "reported_backend": "aws-batch-fleet",
+    "request_file": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-692/sim/dropout-vs-load/diagnostics/issue-692-20261120-235900/runs/iq-cand/klt-requests/v3.30-tran2.json",
+    "response_file": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-692/sim/dropout-vs-load/diagnostics/issue-692-20261120-235900/runs/iq-cand/klt-out/v3.30-tran2/response.json",
+    "returncode": 0,
+    "supply_v": 3.3
+   },
+   {
+    "endpoint": "tran1",
+    "engine": "ngspice",
+    "engine_version": "47",
+    "job_id": "klt-sim-60ca4f01634c",
+    "key": "v3.63-tran1",
+    "klt_pdk_names_pin": true,
+    "klt_status": "pass",
+    "klt_version": "0.9.3.dev2575+g6bd18bbc8637",
+    "n_points": 15,
+    "pdk_version": "open_pdks c6d73a35f524070e85faff4a6a9eef49553ebc2b",
+    "remote": {
+     "ami_id": "ami-09c14f55df4958cbd",
+     "availability_zone": "us-east-1f",
+     "client_collected_at": "2026-11-21T00:24:01.014900Z",
+     "client_klt_version": "0.9.3.dev2575+g6bd18bbc8637",
+     "client_launched_at": "2026-11-21T00:22:49.227414Z",
+     "client_status_terminal_at": "2026-11-21T00:23:57.182572Z",
+     "client_submitted_at": "2026-11-21T00:21:39.081225Z",
+     "concurrency": "1",
+     "elapsed_seconds": 25,
+     "exit_code": "0",
+     "instance_id": "i-0819c1e8f0b41538b",
+     "instance_type": "c7i.4xlarge",
+     "job_ceiling": {
+      "basis": "conservative_serial_bound",
+      "check": "warn",
+      "exceeds_ceiling": true,
+      "job_bound_s": 4620.0,
+      "max_job_seconds": 3600.0,
+      "max_job_seconds_source": "fleet_config",
+      "max_units_per_job": 11,
+      "overhead_s": 120.0,
+      "per_unit_timeout_s": 300,
+      "recommended_hosts": 2,
+      "unit_count": 15,
+      "warning": "batch job bound 4620s (options.timeout_s 300s x 15 units + 120s; a conservative fully-serial upper bound, not a runtime estimate) exceeds the fleet's whole-job ceiling of 3600s (max_job_seconds from fleet_config); a job still running at the ceiling is killed and every unit is reported batch_job_timeout. Set request.remote.hosts to at least 2 to run one job per shard of at most 11 units, each within the ceiling"
+     },
+     "job_id": "klt-sim-60ca4f01634c",
+     "lifecycle": "spot",
+     "models_lib_comparison": {
+      "status": "match"
+     },
+     "physical_cores": "8",
+     "provider": "aws-batch-fleet",
+     "region": "us-east-1",
+     "runner_compatibility": "match",
+     "runner_klt_version": "0.9.0",
+     "runner_model_inputs": null,
+     "runner_models_lib_sha256": "48de7c677e2c6e7d09b2559279de9f818be71010a4aa933d728eb4db3b133c84",
+     "runner_osdi_preload": null,
+     "runner_request_features": {
+      "missing": [],
+      "required": [
+       "analysis_steps",
+       "options.ngspice_init"
+      ],
+      "status": "supported"
+     },
+     "spot": true,
+     "state": "done",
+     "worker_environment": {
+      "capture": "ok",
+      "cpu_model": "Intel(R) Xeon(R) Platinum 8488C",
+      "diagnostics": [],
+      "engine_build_comparison": {
+       "status": "match"
+      },
+      "image_manifest": null,
+      "model_inputs": null,
+      "ngspice_init": null,
+      "omp_num_threads": null,
+      "pdk": {
+       "models_staged": false,
+       "root": "/opt/pdk",
+       "stamp_scheme": "sources-sha256",
+       "stamp_scope": "executed",
+       "stamp_sha256": "4ca10280ae9f293aa1ff69f0060a52e0026929111bda881503717469b429ce67",
+       "stamp_text": "open_pdks f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7",
+       "variant": "sky130A"
+      },
+      "pdk_stamp_comparison": {
+       "status": "mismatch",
+       "warning": "the worker's PDK revision stamp for sky130A differs from the one the submitter resolved locally; results may differ from a local run (a matching stamp would not prove identical models)"
+      },
+      "simulator": {
+       "binary_source": "PATH",
+       "requested_binary": "ngspice",
+       "selected_path": "/usr/local/bin/ngspice",
+       "version_banner": "******\n** ngspice-47 : Circuit level simulation program\n** Compiled with KLU Direct Linear Solver\n** The U. C. Berkeley CAD Group\n** Copyright 1985-1994, Regents of the University of California.\n** Copyright 2001-2026, The ngspice team.\n** Please get your ngspice manual from https://ngspice.sourceforge.io/docs.html\n** Please file your bug-reports at http://ngspice.sourceforge.net/bugrep.html\n** Creation Date: Fri Nov 13 23:19:32 UTC 2026\n******\n",
+       "version_probe": "ok"
+      },
+      "threads_per_worker": 1
+     }
+    },
+    "reported_backend": "aws-batch-fleet",
+    "request_file": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-692/sim/dropout-vs-load/diagnostics/issue-692-20261120-235900/runs/iq-cand/klt-requests/v3.63-tran1.json",
+    "response_file": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-692/sim/dropout-vs-load/diagnostics/issue-692-20261120-235900/runs/iq-cand/klt-out/v3.63-tran1/response.json",
+    "returncode": 0,
+    "supply_v": 3.63
+   },
+   {
+    "endpoint": "tran2",
+    "engine": "ngspice",
+    "engine_version": "47",
+    "job_id": "klt-sim-1f1978d50346",
+    "key": "v3.63-tran2",
+    "klt_pdk_names_pin": true,
+    "klt_status": "pass",
+    "klt_version": "0.9.3.dev2575+g6bd18bbc8637",
+    "n_points": 15,
+    "pdk_version": "open_pdks c6d73a35f524070e85faff4a6a9eef49553ebc2b",
+    "remote": {
+     "ami_id": "ami-09c14f55df4958cbd",
+     "availability_zone": "us-east-1f",
+     "client_collected_at": "2026-11-21T00:25:54.672986Z",
+     "client_klt_version": "0.9.3.dev2575+g6bd18bbc8637",
+     "client_launched_at": "2026-11-21T00:24:48.696193Z",
+     "client_status_terminal_at": "2026-11-21T00:25:53.126263Z",
+     "client_submitted_at": "2026-11-21T00:24:04.354287Z",
+     "concurrency": "1",
+     "elapsed_seconds": 27,
+     "exit_code": "0",
+     "instance_id": "i-0a2253458b47aa068",
+     "instance_type": "c7i.4xlarge",
+     "job_ceiling": {
+      "basis": "conservative_serial_bound",
+      "check": "warn",
+      "exceeds_ceiling": true,
+      "job_bound_s": 4620.0,
+      "max_job_seconds": 3600.0,
+      "max_job_seconds_source": "fleet_config",
+      "max_units_per_job": 11,
+      "overhead_s": 120.0,
+      "per_unit_timeout_s": 300,
+      "recommended_hosts": 2,
+      "unit_count": 15,
+      "warning": "batch job bound 4620s (options.timeout_s 300s x 15 units + 120s; a conservative fully-serial upper bound, not a runtime estimate) exceeds the fleet's whole-job ceiling of 3600s (max_job_seconds from fleet_config); a job still running at the ceiling is killed and every unit is reported batch_job_timeout. Set request.remote.hosts to at least 2 to run one job per shard of at most 11 units, each within the ceiling"
+     },
+     "job_id": "klt-sim-1f1978d50346",
+     "lifecycle": "spot",
+     "models_lib_comparison": {
+      "status": "match"
+     },
+     "physical_cores": "8",
+     "provider": "aws-batch-fleet",
+     "region": "us-east-1",
+     "runner_compatibility": "match",
+     "runner_klt_version": "0.9.0",
+     "runner_model_inputs": null,
+     "runner_models_lib_sha256": "48de7c677e2c6e7d09b2559279de9f818be71010a4aa933d728eb4db3b133c84",
+     "runner_osdi_preload": null,
+     "runner_request_features": {
+      "missing": [],
+      "required": [
+       "analysis_steps",
+       "options.ngspice_init"
+      ],
+      "status": "supported"
+     },
+     "spot": true,
+     "state": "done",
+     "worker_environment": {
+      "capture": "ok",
+      "cpu_model": "Intel(R) Xeon(R) Platinum 8488C",
+      "diagnostics": [],
+      "engine_build_comparison": {
+       "status": "match"
+      },
+      "image_manifest": null,
+      "model_inputs": null,
+      "ngspice_init": null,
+      "omp_num_threads": null,
+      "pdk": {
+       "models_staged": false,
+       "root": "/opt/pdk",
+       "stamp_scheme": "sources-sha256",
+       "stamp_scope": "executed",
+       "stamp_sha256": "4ca10280ae9f293aa1ff69f0060a52e0026929111bda881503717469b429ce67",
+       "stamp_text": "open_pdks f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7",
+       "variant": "sky130A"
+      },
+      "pdk_stamp_comparison": {
+       "status": "mismatch",
+       "warning": "the worker's PDK revision stamp for sky130A differs from the one the submitter resolved locally; results may differ from a local run (a matching stamp would not prove identical models)"
+      },
+      "simulator": {
+       "binary_source": "PATH",
+       "requested_binary": "ngspice",
+       "selected_path": "/usr/local/bin/ngspice",
+       "version_banner": "******\n** ngspice-47 : Circuit level simulation program\n** Compiled with KLU Direct Linear Solver\n** The U. C. Berkeley CAD Group\n** Copyright 1985-1994, Regents of the University of California.\n** Copyright 2001-2026, The ngspice team.\n** Please get your ngspice manual from https://ngspice.sourceforge.io/docs.html\n** Please file your bug-reports at http://ngspice.sourceforge.net/bugrep.html\n** Creation Date: Fri Nov 13 23:19:32 UTC 2026\n******\n",
+       "version_probe": "ok"
+      },
+      "threads_per_worker": 1
+     }
+    },
+    "reported_backend": "aws-batch-fleet",
+    "request_file": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-692/sim/dropout-vs-load/diagnostics/issue-692-20261120-235900/runs/iq-cand/klt-requests/v3.63-tran2.json",
+    "response_file": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-692/sim/dropout-vs-load/diagnostics/issue-692-20261120-235900/runs/iq-cand/klt-out/v3.63-tran2/response.json",
+    "returncode": 0,
+    "supply_v": 3.63
+   }
+  ]
+ },
+ "experiment": "iq",
+ "leg": "iq-cand",
+ "matrix": [
+  [
+   "tt",
+   -40.0,
+   2.97
+  ],
+  [
+   "tt",
+   -40.0,
+   3.3
+  ],
+  [
+   "tt",
+   -40.0,
+   3.63
+  ],
+  [
+   "tt",
+   27.0,
+   2.97
+  ],
+  [
+   "tt",
+   27.0,
+   3.3
+  ],
+  [
+   "tt",
+   27.0,
+   3.63
+  ],
+  [
+   "tt",
+   125.0,
+   2.97
+  ],
+  [
+   "tt",
+   125.0,
+   3.3
+  ],
+  [
+   "tt",
+   125.0,
+   3.63
+  ],
+  [
+   "ss",
+   -40.0,
+   2.97
+  ],
+  [
+   "ss",
+   -40.0,
+   3.3
+  ],
+  [
+   "ss",
+   -40.0,
+   3.63
+  ],
+  [
+   "ss",
+   27.0,
+   2.97
+  ],
+  [
+   "ss",
+   27.0,
+   3.3
+  ],
+  [
+   "ss",
+   27.0,
+   3.63
+  ],
+  [
+   "ss",
+   125.0,
+   2.97
+  ],
+  [
+   "ss",
+   125.0,
+   3.3
+  ],
+  [
+   "ss",
+   125.0,
+   3.63
+  ],
+  [
+   "ff",
+   -40.0,
+   2.97
+  ],
+  [
+   "ff",
+   -40.0,
+   3.3
+  ],
+  [
+   "ff",
+   -40.0,
+   3.63
+  ],
+  [
+   "ff",
+   27.0,
+   2.97
+  ],
+  [
+   "ff",
+   27.0,
+   3.3
+  ],
+  [
+   "ff",
+   27.0,
+   3.63
+  ],
+  [
+   "ff",
+   125.0,
+   2.97
+  ],
+  [
+   "ff",
+   125.0,
+   3.3
+  ],
+  [
+   "ff",
+   125.0,
+   3.63
+  ],
+  [
+   "sf",
+   -40.0,
+   2.97
+  ],
+  [
+   "sf",
+   -40.0,
+   3.3
+  ],
+  [
+   "sf",
+   -40.0,
+   3.63
+  ],
+  [
+   "sf",
+   27.0,
+   2.97
+  ],
+  [
+   "sf",
+   27.0,
+   3.3
+  ],
+  [
+   "sf",
+   27.0,
+   3.63
+  ],
+  [
+   "sf",
+   125.0,
+   2.97
+  ],
+  [
+   "sf",
+   125.0,
+   3.3
+  ],
+  [
+   "sf",
+   125.0,
+   3.63
+  ],
+  [
+   "fs",
+   -40.0,
+   2.97
+  ],
+  [
+   "fs",
+   -40.0,
+   3.3
+  ],
+  [
+   "fs",
+   -40.0,
+   3.63
+  ],
+  [
+   "fs",
+   27.0,
+   2.97
+  ],
+  [
+   "fs",
+   27.0,
+   3.3
+  ],
+  [
+   "fs",
+   27.0,
+   3.63
+  ],
+  [
+   "fs",
+   125.0,
+   2.97
+  ],
+  [
+   "fs",
+   125.0,
+   3.3
+  ],
+  [
+   "fs",
+   125.0,
+   3.63
+  ]
+ ],
+ "provenance": {
+  "candidate_invariant_problems": [],
+  "candidate_py_sha256": "89ff4550264fe9bc7d8e11b352dbb393f110d68051bee7c876d32903807f3304",
+  "driver_sha256": "ffa72f2834585840258f7651f6e1fb0775a1bc1ce78bacee8a49b026425c9e0b",
+  "dut_sch_sha256": "1378c2d440e6ffc2224091972a162357c2634600e6e56cb51e4d6f96159fd2e3",
+  "edit_notes": [
+   "removed XM_IN2S",
+   "removed XM_MIRP2",
+   "removed XM_MIRP1",
+   "removed XM_MIR4",
+   "removed XM_MIR3",
+   "removed XM_MIR2",
+   "removed XM_MIR1",
+   "removed XM_IN2",
+   "removed XM_IN1",
+   "removed XM_TAIL",
+   "rewired XM_ENP5: 'XM_ENP5 PB EN VIN VIN' -> 'XM_ENP5 ND1 EN VIN VIN'",
+   "rewired XM_CLP: 'XM_CLP CL_CMP BIASP VIN VIN' -> 'XM_CLP CL_CMP PBR VIN VIN'",
+   "added XM_VRF",
+   "added XR_VR",
+   "added XM_PBR",
+   "added XM_PBN",
+   "added XM_NBR",
+   "added XM_NTAIL",
+   "added XM_NIN1",
+   "added XM_NIN1C",
+   "added XM_NIN2",
+   "added XM_NIN2S",
+   "added XM_PD1",
+   "added XM_PO1",
+   "added XM_PD2",
+   "added XM_PO2",
+   "added XM_NMD",
+   "added XM_NMO",
+   "added XM_ENP6",
+   "added XM_ENP7"
+  ],
+  "experiment_json_sha256": "4fac2b7e75a96942595d5ae71ac3a91d24a4ff021f1e7e7c5ea3e4543ab534ae",
+  "netlist_sha256": "14afe619cfbca247a3eb28f1398043fc6ff0b6d7cb4e79dfd790669cbbf3719b",
+  "pdk": {
+   "lib_sha256": "48de7c677e2c6e7d09b2559279de9f818be71010a4aa933d728eb4db3b133c84",
+   "matches_pin": true,
+   "open_pdks_commit": "c6d73a35f524070e85faff4a6a9eef49553ebc2b"
+  },
+  "source_commit": "218e3e998679f569dbefa539db6627c69013f968",
+  "testbench_sha256": "b04bb670ff9515bbf1130750f20299c533c66492ffb402cb25f32fc4d31ebaca",
+  "tools": {
+   "declared": {
+    "ngspice": "42",
+    "xschem": "3.4.4"
+   },
+   "ngspice": "ngspice-47 : Circuit level simulation program",
+   "on_baseline": false,
+   "platform": "Linux 7.0.0-1017-aws x86_64",
+   "python": "3.12.3",
+   "xschem": "XSCHEM V3.4.7"
+  }
+ },
+ "results": [
+  {
+   "batch_reasons": [],
+   "corner_id": "tt_-40c_2.97v",
+   "elapsed_s": 15.52,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "tt/novdd/-40C",
+    "tt/novdd/-40C"
+   ],
+   "klt_request": [
+    "v2.97-tran1",
+    "v2.97-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "-1e6*tran1.iq_no_load_raw",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_no_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 12.6619
+    },
+    {
+     "expr": "1e6*(-tran2.iq_full_load_raw - 0.05)",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_full_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 26.89999999999637
+    },
+    {
+     "expr": "tran1.vout_no_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_no_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803039
+    },
+    {
+     "expr": "tran2.vout_full_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_full_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.801164
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "tt",
+   "solver_diagnostic": null,
+   "supply_v": 2.97,
+   "temperature_c": -40.0,
+   "timed_out": false,
+   "timeout_s": 300
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "tt_-40c_3.30v",
+   "elapsed_s": 13.79,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "tt/novdd/-40C",
+    "tt/novdd/-40C"
+   ],
+   "klt_request": [
+    "v3.30-tran1",
+    "v3.30-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "-1e6*tran1.iq_no_load_raw",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_no_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 13.7643
+    },
+    {
+     "expr": "1e6*(-tran2.iq_full_load_raw - 0.05)",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_full_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 27.69999999999856
+    },
+    {
+     "expr": "tran1.vout_no_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_no_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803814
+    },
+    {
+     "expr": "tran2.vout_full_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_full_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.801965
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "tt",
+   "solver_diagnostic": null,
+   "supply_v": 3.3,
+   "temperature_c": -40.0,
+   "timed_out": false,
+   "timeout_s": 300
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "tt_-40c_3.63v",
+   "elapsed_s": 15.835999999999999,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "tt/novdd/-40C",
+    "tt/novdd/-40C"
+   ],
+   "klt_request": [
+    "v3.63-tran1",
+    "v3.63-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "-1e6*tran1.iq_no_load_raw",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_no_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 14.8717
+    },
+    {
+     "expr": "1e6*(-tran2.iq_full_load_raw - 0.05)",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_full_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 28.599999999996683
+    },
+    {
+     "expr": "tran1.vout_no_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_no_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.804612
+    },
+    {
+     "expr": "tran2.vout_full_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_full_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.802743
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "tt",
+   "solver_diagnostic": null,
+   "supply_v": 3.63,
+   "temperature_c": -40.0,
+   "timed_out": false,
+   "timeout_s": 300
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "tt_27c_2.97v",
+   "elapsed_s": 13.985,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "tt/novdd/27C",
+    "tt/novdd/27C"
+   ],
+   "klt_request": [
+    "v2.97-tran1",
+    "v2.97-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "-1e6*tran1.iq_no_load_raw",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_no_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 14.012
+    },
+    {
+     "expr": "1e6*(-tran2.iq_full_load_raw - 0.05)",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_full_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 28.00000000000025
+    },
+    {
+     "expr": "tran1.vout_no_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_no_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.80434
+    },
+    {
+     "expr": "tran2.vout_full_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_full_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.801694
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "tt",
+   "solver_diagnostic": null,
+   "supply_v": 2.97,
+   "temperature_c": 27.0,
+   "timed_out": false,
+   "timeout_s": 300
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "tt_27c_3.30v",
+   "elapsed_s": 14.238,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "tt/novdd/27C",
+    "tt/novdd/27C"
+   ],
+   "klt_request": [
+    "v3.30-tran1",
+    "v3.30-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "-1e6*tran1.iq_no_load_raw",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_no_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 15.0925
+    },
+    {
+     "expr": "1e6*(-tran2.iq_full_load_raw - 0.05)",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_full_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 28.799999999995496
+    },
+    {
+     "expr": "tran1.vout_no_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_no_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.805211
+    },
+    {
+     "expr": "tran2.vout_full_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_full_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.802573
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "tt",
+   "solver_diagnostic": null,
+   "supply_v": 3.3,
+   "temperature_c": 27.0,
+   "timed_out": false,
+   "timeout_s": 300
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "tt_27c_3.63v",
+   "elapsed_s": 15.774999999999999,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "tt/novdd/27C",
+    "tt/novdd/27C"
+   ],
+   "klt_request": [
+    "v3.63-tran1",
+    "v3.63-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "-1e6*tran1.iq_no_load_raw",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_no_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 16.176
+    },
+    {
+     "expr": "1e6*(-tran2.iq_full_load_raw - 0.05)",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_full_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 29.70000000000056
+    },
+    {
+     "expr": "tran1.vout_no_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_no_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.806143
+    },
+    {
+     "expr": "tran2.vout_full_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_full_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803428
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "tt",
+   "solver_diagnostic": null,
+   "supply_v": 3.63,
+   "temperature_c": 27.0,
+   "timed_out": false,
+   "timeout_s": 300
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "tt_125c_2.97v",
+   "elapsed_s": 13.975,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "tt/novdd/125C",
+    "tt/novdd/125C"
+   ],
+   "klt_request": [
+    "v2.97-tran1",
+    "v2.97-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "-1e6*tran1.iq_no_load_raw",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_no_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 15.599599999999999
+    },
+    {
+     "expr": "1e6*(-tran2.iq_full_load_raw - 0.05)",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_full_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 29.399999999998872
+    },
+    {
+     "expr": "tran1.vout_no_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_no_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.808544
+    },
+    {
+     "expr": "tran2.vout_full_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_full_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.802732
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "tt",
+   "solver_diagnostic": null,
+   "supply_v": 2.97,
+   "temperature_c": 125.0,
+   "timed_out": false,
+   "timeout_s": 300
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "tt_125c_3.30v",
+   "elapsed_s": 14.199000000000002,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "tt/novdd/125C",
+    "tt/novdd/125C"
+   ],
+   "klt_request": [
+    "v3.30-tran1",
+    "v3.30-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "-1e6*tran1.iq_no_load_raw",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_no_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 16.6327
+    },
+    {
+     "expr": "1e6*(-tran2.iq_full_load_raw - 0.05)",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_full_load_ua",
+     "pass": false,
+     "reason": "above max 30",
+     "unit": "uA",
+     "value": 30.19999999999412
+    },
+    {
+     "expr": "tran1.vout_no_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_no_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.80984
+    },
+    {
+     "expr": "tran2.vout_full_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_full_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803742
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": false,
+   "process": "tt",
+   "solver_diagnostic": null,
+   "supply_v": 3.3,
+   "temperature_c": 125.0,
+   "timed_out": false,
+   "timeout_s": 300
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "tt_125c_3.63v",
+   "elapsed_s": 15.75,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "tt/novdd/125C",
+    "tt/novdd/125C"
+   ],
+   "klt_request": [
+    "v3.63-tran1",
+    "v3.63-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "-1e6*tran1.iq_no_load_raw",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_no_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 17.6661
+    },
+    {
+     "expr": "1e6*(-tran2.iq_full_load_raw - 0.05)",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_full_load_ua",
+     "pass": false,
+     "reason": "above max 30",
+     "unit": "uA",
+     "value": 30.99999999999631
+    },
+    {
+     "expr": "tran1.vout_no_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_no_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.811339
+    },
+    {
+     "expr": "tran2.vout_full_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_full_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.804724
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": false,
+   "process": "tt",
+   "solver_diagnostic": null,
+   "supply_v": 3.63,
+   "temperature_c": 125.0,
+   "timed_out": false,
+   "timeout_s": 300
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "ss_-40c_2.97v",
+   "elapsed_s": 13.495000000000001,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "ss/novdd/-40C",
+    "ss/novdd/-40C"
+   ],
+   "klt_request": [
+    "v2.97-tran1",
+    "v2.97-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "-1e6*tran1.iq_no_load_raw",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_no_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 12.3454
+    },
+    {
+     "expr": "1e6*(-tran2.iq_full_load_raw - 0.05)",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_full_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 24.39999999999387
+    },
+    {
+     "expr": "tran1.vout_no_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_no_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.802816
+    },
+    {
+     "expr": "tran2.vout_full_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_full_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.800951
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "ss",
+   "solver_diagnostic": null,
+   "supply_v": 2.97,
+   "temperature_c": -40.0,
+   "timed_out": false,
+   "timeout_s": 300
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "ss_-40c_3.30v",
+   "elapsed_s": 13.915,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "ss/novdd/-40C",
+    "ss/novdd/-40C"
+   ],
+   "klt_request": [
+    "v3.30-tran1",
+    "v3.30-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "-1e6*tran1.iq_no_load_raw",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_no_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 13.4506
+    },
+    {
+     "expr": "1e6*(-tran2.iq_full_load_raw - 0.05)",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_full_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 25.299999999998935
+    },
+    {
+     "expr": "tran1.vout_no_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_no_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803588
+    },
+    {
+     "expr": "tran2.vout_full_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_full_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.801753
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "ss",
+   "solver_diagnostic": null,
+   "supply_v": 3.3,
+   "temperature_c": -40.0,
+   "timed_out": false,
+   "timeout_s": 300
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "ss_-40c_3.63v",
+   "elapsed_s": 15.687000000000001,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "ss/novdd/-40C",
+    "ss/novdd/-40C"
+   ],
+   "klt_request": [
+    "v3.63-tran1",
+    "v3.63-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "-1e6*tran1.iq_no_load_raw",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_no_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 14.561399999999999
+    },
+    {
+     "expr": "1e6*(-tran2.iq_full_load_raw - 0.05)",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_full_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 26.299999999999933
+    },
+    {
+     "expr": "tran1.vout_no_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_no_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.804376
+    },
+    {
+     "expr": "tran2.vout_full_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_full_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.802531
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "ss",
+   "solver_diagnostic": null,
+   "supply_v": 3.63,
+   "temperature_c": -40.0,
+   "timed_out": false,
+   "timeout_s": 300
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "ss_27c_2.97v",
+   "elapsed_s": 13.527000000000001,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "ss/novdd/27C",
+    "ss/novdd/27C"
+   ],
+   "klt_request": [
+    "v2.97-tran1",
+    "v2.97-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "-1e6*tran1.iq_no_load_raw",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_no_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 13.7259
+    },
+    {
+     "expr": "1e6*(-tran2.iq_full_load_raw - 0.05)",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_full_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 25.69999999999656
+    },
+    {
+     "expr": "tran1.vout_no_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_no_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.804046
+    },
+    {
+     "expr": "tran2.vout_full_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_full_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.801444
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "ss",
+   "solver_diagnostic": null,
+   "supply_v": 2.97,
+   "temperature_c": 27.0,
+   "timed_out": false,
+   "timeout_s": 300
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "ss_27c_3.30v",
+   "elapsed_s": 14.24,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "ss/novdd/27C",
+    "ss/novdd/27C"
+   ],
+   "klt_request": [
+    "v3.30-tran1",
+    "v3.30-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "-1e6*tran1.iq_no_load_raw",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_no_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 14.8108
+    },
+    {
+     "expr": "1e6*(-tran2.iq_full_load_raw - 0.05)",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_full_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 26.599999999994683
+    },
+    {
+     "expr": "tran1.vout_no_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_no_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.804906
+    },
+    {
+     "expr": "tran2.vout_full_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_full_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.802324
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "ss",
+   "solver_diagnostic": null,
+   "supply_v": 3.3,
+   "temperature_c": 27.0,
+   "timed_out": false,
+   "timeout_s": 300
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "ss_27c_3.63v",
+   "elapsed_s": 15.674,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "ss/novdd/27C",
+    "ss/novdd/27C"
+   ],
+   "klt_request": [
+    "v3.63-tran1",
+    "v3.63-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "-1e6*tran1.iq_no_load_raw",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_no_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 15.899199999999999
+    },
+    {
+     "expr": "1e6*(-tran2.iq_full_load_raw - 0.05)",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_full_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 27.499999999999748
+    },
+    {
+     "expr": "tran1.vout_no_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_no_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.805817
+    },
+    {
+     "expr": "tran2.vout_full_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_full_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803176
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "ss",
+   "solver_diagnostic": null,
+   "supply_v": 3.63,
+   "temperature_c": 27.0,
+   "timed_out": false,
+   "timeout_s": 300
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "ss_125c_2.97v",
+   "elapsed_s": 13.89,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "ss/novdd/125C",
+    "ss/novdd/125C"
+   ],
+   "klt_request": [
+    "v2.97-tran1",
+    "v2.97-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "-1e6*tran1.iq_no_load_raw",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_no_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 15.3606
+    },
+    {
+     "expr": "1e6*(-tran2.iq_full_load_raw - 0.05)",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_full_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 27.19999999999806
+    },
+    {
+     "expr": "tran1.vout_no_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_no_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.80746
+    },
+    {
+     "expr": "tran2.vout_full_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_full_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.802416
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "ss",
+   "solver_diagnostic": null,
+   "supply_v": 2.97,
+   "temperature_c": 125.0,
+   "timed_out": false,
+   "timeout_s": 300
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "ss_125c_3.30v",
+   "elapsed_s": 13.874,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "ss/novdd/125C",
+    "ss/novdd/125C"
+   ],
+   "klt_request": [
+    "v3.30-tran1",
+    "v3.30-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "-1e6*tran1.iq_no_load_raw",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_no_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 16.401799999999998
+    },
+    {
+     "expr": "1e6*(-tran2.iq_full_load_raw - 0.05)",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_full_load_ua",
+     "pass": false,
+     "reason": "above max 30",
+     "unit": "uA",
+     "value": 59.39999999999418
+    },
+    {
+     "expr": "tran1.vout_no_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_no_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.808591
+    },
+    {
+     "expr": "tran2.vout_full_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_full_load_v",
+     "pass": false,
+     "reason": "above max 1.836",
+     "unit": "V",
+     "value": 3.152
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": false,
+   "process": "ss",
+   "solver_diagnostic": null,
+   "supply_v": 3.3,
+   "temperature_c": 125.0,
+   "timed_out": false,
+   "timeout_s": 300
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "ss_125c_3.63v",
+   "elapsed_s": 15.684000000000001,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "ss/novdd/125C",
+    "ss/novdd/125C"
+   ],
+   "klt_request": [
+    "v3.63-tran1",
+    "v3.63-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "-1e6*tran1.iq_no_load_raw",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_no_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 17.444100000000002
+    },
+    {
+     "expr": "1e6*(-tran2.iq_full_load_raw - 0.05)",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_full_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 28.99999999999431
+    },
+    {
+     "expr": "tran1.vout_no_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_no_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.80987
+    },
+    {
+     "expr": "tran2.vout_full_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_full_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.804402
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "ss",
+   "solver_diagnostic": null,
+   "supply_v": 3.63,
+   "temperature_c": 125.0,
+   "timed_out": false,
+   "timeout_s": 300
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "ff_-40c_2.97v",
+   "elapsed_s": 14.850000000000001,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "ff/novdd/-40C",
+    "ff/novdd/-40C"
+   ],
+   "klt_request": [
+    "v2.97-tran1",
+    "v2.97-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "-1e6*tran1.iq_no_load_raw",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_no_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 12.948
+    },
+    {
+     "expr": "1e6*(-tran2.iq_full_load_raw - 0.05)",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_full_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 29.599999999997685
+    },
+    {
+     "expr": "tran1.vout_no_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_no_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803274
+    },
+    {
+     "expr": "tran2.vout_full_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_full_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.801384
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "ff",
+   "solver_diagnostic": null,
+   "supply_v": 2.97,
+   "temperature_c": -40.0,
+   "timed_out": false,
+   "timeout_s": 300
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "ff_-40c_3.30v",
+   "elapsed_s": 13.909,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "ff/novdd/-40C",
+    "ff/novdd/-40C"
+   ],
+   "klt_request": [
+    "v3.30-tran1",
+    "v3.30-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "-1e6*tran1.iq_no_load_raw",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_no_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 14.047699999999999
+    },
+    {
+     "expr": "1e6*(-tran2.iq_full_load_raw - 0.05)",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_full_load_ua",
+     "pass": false,
+     "reason": "above max 30",
+     "unit": "uA",
+     "value": 30.39999999999987
+    },
+    {
+     "expr": "tran1.vout_no_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_no_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.804055
+    },
+    {
+     "expr": "tran2.vout_full_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_full_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.802184
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": false,
+   "process": "ff",
+   "solver_diagnostic": null,
+   "supply_v": 3.3,
+   "temperature_c": -40.0,
+   "timed_out": false,
+   "timeout_s": 300
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "ff_-40c_3.63v",
+   "elapsed_s": 15.774000000000001,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "ff/novdd/-40C",
+    "ff/novdd/-40C"
+   ],
+   "klt_request": [
+    "v3.63-tran1",
+    "v3.63-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "-1e6*tran1.iq_no_load_raw",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_no_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 15.1521
+    },
+    {
+     "expr": "1e6*(-tran2.iq_full_load_raw - 0.05)",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_full_load_ua",
+     "pass": false,
+     "reason": "above max 30",
+     "unit": "uA",
+     "value": 31.19999999999512
+    },
+    {
+     "expr": "tran1.vout_no_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_no_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.804866
+    },
+    {
+     "expr": "tran2.vout_full_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_full_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.802963
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": false,
+   "process": "ff",
+   "solver_diagnostic": null,
+   "supply_v": 3.63,
+   "temperature_c": -40.0,
+   "timed_out": false,
+   "timeout_s": 300
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "ff_27c_2.97v",
+   "elapsed_s": 13.501999999999999,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "ff/novdd/27C",
+    "ff/novdd/27C"
+   ],
+   "klt_request": [
+    "v2.97-tran1",
+    "v2.97-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "-1e6*tran1.iq_no_load_raw",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_no_load_ua",
+     "pass": false,
+     "reason": "below min 0",
+     "unit": "uA",
+     "value": -663.1285
+    },
+    {
+     "expr": "1e6*(-tran2.iq_full_load_raw - 0.05)",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_full_load_ua",
+     "pass": false,
+     "reason": "above max 30",
+     "unit": "uA",
+     "value": 30.499999999995808
+    },
+    {
+     "expr": "tran1.vout_no_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_no_load_v",
+     "pass": false,
+     "reason": "above max 1.836",
+     "unit": "V",
+     "value": 3.421026
+    },
+    {
+     "expr": "tran2.vout_full_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_full_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.801951
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": false,
+   "process": "ff",
+   "solver_diagnostic": null,
+   "supply_v": 2.97,
+   "temperature_c": 27.0,
+   "timed_out": false,
+   "timeout_s": 300
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "ff_27c_3.30v",
+   "elapsed_s": 13.924,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "ff/novdd/27C",
+    "ff/novdd/27C"
+   ],
+   "klt_request": [
+    "v3.30-tran1",
+    "v3.30-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "-1e6*tran1.iq_no_load_raw",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_no_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 15.3468
+    },
+    {
+     "expr": "1e6*(-tran2.iq_full_load_raw - 0.05)",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_full_load_ua",
+     "pass": false,
+     "reason": "above max 30",
+     "unit": "uA",
+     "value": 31.299999999997997
+    },
+    {
+     "expr": "tran1.vout_no_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_no_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.805543
+    },
+    {
+     "expr": "tran2.vout_full_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_full_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.802831
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": false,
+   "process": "ff",
+   "solver_diagnostic": null,
+   "supply_v": 3.3,
+   "temperature_c": 27.0,
+   "timed_out": false,
+   "timeout_s": 300
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "ff_27c_3.63v",
+   "elapsed_s": 16.113999999999997,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "ff/novdd/27C",
+    "ff/novdd/27C"
+   ],
+   "klt_request": [
+    "v3.63-tran1",
+    "v3.63-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "-1e6*tran1.iq_no_load_raw",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_no_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 16.425800000000002
+    },
+    {
+     "expr": "1e6*(-tran2.iq_full_load_raw - 0.05)",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_full_load_ua",
+     "pass": false,
+     "reason": "above max 30",
+     "unit": "uA",
+     "value": 32.100000000000186
+    },
+    {
+     "expr": "tran1.vout_no_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_no_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.806503
+    },
+    {
+     "expr": "tran2.vout_full_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_full_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803689
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": false,
+   "process": "ff",
+   "solver_diagnostic": null,
+   "supply_v": 3.63,
+   "temperature_c": 27.0,
+   "timed_out": false,
+   "timeout_s": 300
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "ff_125c_2.97v",
+   "elapsed_s": 12.454,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "ff/novdd/125C",
+    "ff/novdd/125C"
+   ],
+   "klt_request": [
+    "v2.97-tran1",
+    "v2.97-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "-1e6*tran1.iq_no_load_raw",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_no_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 15.792200000000001
+    },
+    {
+     "expr": "1e6*(-tran2.iq_full_load_raw - 0.05)",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_full_load_ua",
+     "pass": false,
+     "reason": "above max 30",
+     "unit": "uA",
+     "value": 31.69999999999562
+    },
+    {
+     "expr": "tran1.vout_no_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_no_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.811071
+    },
+    {
+     "expr": "tran2.vout_full_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_full_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803047
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": false,
+   "process": "ff",
+   "solver_diagnostic": null,
+   "supply_v": 2.97,
+   "temperature_c": 125.0,
+   "timed_out": false,
+   "timeout_s": 300
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "ff_125c_3.30v",
+   "elapsed_s": 12.335,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "ff/novdd/125C",
+    "ff/novdd/125C"
+   ],
+   "klt_request": [
+    "v3.30-tran1",
+    "v3.30-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "-1e6*tran1.iq_no_load_raw",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_no_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 16.8081
+    },
+    {
+     "expr": "1e6*(-tran2.iq_full_load_raw - 0.05)",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_full_load_ua",
+     "pass": false,
+     "reason": "above max 30",
+     "unit": "uA",
+     "value": 32.39999999999493
+    },
+    {
+     "expr": "tran1.vout_no_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_no_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.813061
+    },
+    {
+     "expr": "tran2.vout_full_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_full_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.804061
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": false,
+   "process": "ff",
+   "solver_diagnostic": null,
+   "supply_v": 3.3,
+   "temperature_c": 125.0,
+   "timed_out": false,
+   "timeout_s": 300
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "ff_125c_3.63v",
+   "elapsed_s": 13.81,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "ff/novdd/125C",
+    "ff/novdd/125C"
+   ],
+   "klt_request": [
+    "v3.63-tran1",
+    "v3.63-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "-1e6*tran1.iq_no_load_raw",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_no_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 17.8206
+    },
+    {
+     "expr": "1e6*(-tran2.iq_full_load_raw - 0.05)",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_full_load_ua",
+     "pass": false,
+     "reason": "above max 30",
+     "unit": "uA",
+     "value": 33.19999999999712
+    },
+    {
+     "expr": "tran1.vout_no_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_no_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.815483
+    },
+    {
+     "expr": "tran2.vout_full_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_full_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.805051
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": false,
+   "process": "ff",
+   "solver_diagnostic": null,
+   "supply_v": 3.63,
+   "temperature_c": 125.0,
+   "timed_out": false,
+   "timeout_s": 300
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "sf_-40c_2.97v",
+   "elapsed_s": 12.102,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "sf/novdd/-40C",
+    "sf/novdd/-40C"
+   ],
+   "klt_request": [
+    "v2.97-tran1",
+    "v2.97-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "-1e6*tran1.iq_no_load_raw",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_no_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 13.4686
+    },
+    {
+     "expr": "1e6*(-tran2.iq_full_load_raw - 0.05)",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_full_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 25.999999999998245
+    },
+    {
+     "expr": "tran1.vout_no_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_no_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.802836
+    },
+    {
+     "expr": "tran2.vout_full_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_full_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.801016
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "sf",
+   "solver_diagnostic": null,
+   "supply_v": 2.97,
+   "temperature_c": -40.0,
+   "timed_out": false,
+   "timeout_s": 300
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "sf_-40c_3.30v",
+   "elapsed_s": 12.309999999999999,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "sf/novdd/-40C",
+    "sf/novdd/-40C"
+   ],
+   "klt_request": [
+    "v3.30-tran1",
+    "v3.30-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "-1e6*tran1.iq_no_load_raw",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_no_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 14.5909
+    },
+    {
+     "expr": "1e6*(-tran2.iq_full_load_raw - 0.05)",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_full_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 26.800000000000434
+    },
+    {
+     "expr": "tran1.vout_no_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_no_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803594
+    },
+    {
+     "expr": "tran2.vout_full_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_full_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.801808
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "sf",
+   "solver_diagnostic": null,
+   "supply_v": 3.3,
+   "temperature_c": -40.0,
+   "timed_out": false,
+   "timeout_s": 300
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "sf_-40c_3.63v",
+   "elapsed_s": 14.085,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "sf/novdd/-40C",
+    "sf/novdd/-40C"
+   ],
+   "klt_request": [
+    "v3.63-tran1",
+    "v3.63-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "-1e6*tran1.iq_no_load_raw",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_no_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 15.7168
+    },
+    {
+     "expr": "1e6*(-tran2.iq_full_load_raw - 0.05)",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_full_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 27.69999999999856
+    },
+    {
+     "expr": "tran1.vout_no_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_no_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.804366
+    },
+    {
+     "expr": "tran2.vout_full_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_full_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.802575
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "sf",
+   "solver_diagnostic": null,
+   "supply_v": 3.63,
+   "temperature_c": -40.0,
+   "timed_out": false,
+   "timeout_s": 300
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "sf_27c_2.97v",
+   "elapsed_s": 12.404,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "sf/novdd/27C",
+    "sf/novdd/27C"
+   ],
+   "klt_request": [
+    "v2.97-tran1",
+    "v2.97-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "-1e6*tran1.iq_no_load_raw",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_no_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 14.81
+    },
+    {
+     "expr": "1e6*(-tran2.iq_full_load_raw - 0.05)",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_full_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 27.299999999993997
+    },
+    {
+     "expr": "tran1.vout_no_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_no_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.804063
+    },
+    {
+     "expr": "tran2.vout_full_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_full_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.801531
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "sf",
+   "solver_diagnostic": null,
+   "supply_v": 2.97,
+   "temperature_c": 27.0,
+   "timed_out": false,
+   "timeout_s": 300
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "sf_27c_3.30v",
+   "elapsed_s": 12.547,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "sf/novdd/27C",
+    "sf/novdd/27C"
+   ],
+   "klt_request": [
+    "v3.30-tran1",
+    "v3.30-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "-1e6*tran1.iq_no_load_raw",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_no_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 15.9077
+    },
+    {
+     "expr": "1e6*(-tran2.iq_full_load_raw - 0.05)",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_full_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 28.099999999996182
+    },
+    {
+     "expr": "tran1.vout_no_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_no_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.804909
+    },
+    {
+     "expr": "tran2.vout_full_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_full_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.802403
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "sf",
+   "solver_diagnostic": null,
+   "supply_v": 3.3,
+   "temperature_c": 27.0,
+   "timed_out": false,
+   "timeout_s": 300
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "sf_27c_3.63v",
+   "elapsed_s": 13.939,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "sf/novdd/27C",
+    "sf/novdd/27C"
+   ],
+   "klt_request": [
+    "v3.63-tran1",
+    "v3.63-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "-1e6*tran1.iq_no_load_raw",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_no_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 17.007099999999998
+    },
+    {
+     "expr": "1e6*(-tran2.iq_full_load_raw - 0.05)",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_full_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 28.99999999999431
+    },
+    {
+     "expr": "tran1.vout_no_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_no_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.805801
+    },
+    {
+     "expr": "tran2.vout_full_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_full_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803248
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "sf",
+   "solver_diagnostic": null,
+   "supply_v": 3.63,
+   "temperature_c": 27.0,
+   "timed_out": false,
+   "timeout_s": 300
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "sf_125c_2.97v",
+   "elapsed_s": 12.402000000000001,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "sf/novdd/125C",
+    "sf/novdd/125C"
+   ],
+   "klt_request": [
+    "v2.97-tran1",
+    "v2.97-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "-1e6*tran1.iq_no_load_raw",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_no_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 16.3829
+    },
+    {
+     "expr": "1e6*(-tran2.iq_full_load_raw - 0.05)",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_full_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 28.799999999995496
+    },
+    {
+     "expr": "tran1.vout_no_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_no_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.807252
+    },
+    {
+     "expr": "tran2.vout_full_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_full_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.802551
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "sf",
+   "solver_diagnostic": null,
+   "supply_v": 2.97,
+   "temperature_c": 125.0,
+   "timed_out": false,
+   "timeout_s": 300
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "sf_125c_3.30v",
+   "elapsed_s": 12.404,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "sf/novdd/125C",
+    "sf/novdd/125C"
+   ],
+   "klt_request": [
+    "v3.30-tran1",
+    "v3.30-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "-1e6*tran1.iq_no_load_raw",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_no_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 17.4332
+    },
+    {
+     "expr": "1e6*(-tran2.iq_full_load_raw - 0.05)",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_full_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 29.599999999997685
+    },
+    {
+     "expr": "tran1.vout_no_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_no_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.808334
+    },
+    {
+     "expr": "tran2.vout_full_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_full_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803555
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "sf",
+   "solver_diagnostic": null,
+   "supply_v": 3.3,
+   "temperature_c": 125.0,
+   "timed_out": false,
+   "timeout_s": 300
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "sf_125c_3.63v",
+   "elapsed_s": 13.734,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "sf/novdd/125C",
+    "sf/novdd/125C"
+   ],
+   "klt_request": [
+    "v3.63-tran1",
+    "v3.63-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "-1e6*tran1.iq_no_load_raw",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_no_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 18.4833
+    },
+    {
+     "expr": "1e6*(-tran2.iq_full_load_raw - 0.05)",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_full_load_ua",
+     "pass": false,
+     "reason": "above max 30",
+     "unit": "uA",
+     "value": 30.39999999999987
+    },
+    {
+     "expr": "tran1.vout_no_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_no_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.809551
+    },
+    {
+     "expr": "tran2.vout_full_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_full_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.804527
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": false,
+   "process": "sf",
+   "solver_diagnostic": null,
+   "supply_v": 3.63,
+   "temperature_c": 125.0,
+   "timed_out": false,
+   "timeout_s": 300
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "fs_-40c_2.97v",
+   "elapsed_s": 12.052,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "fs/novdd/-40C",
+    "fs/novdd/-40C"
+   ],
+   "klt_request": [
+    "v2.97-tran1",
+    "v2.97-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "-1e6*tran1.iq_no_load_raw",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_no_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 11.7762
+    },
+    {
+     "expr": "1e6*(-tran2.iq_full_load_raw - 0.05)",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_full_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 27.799999999994498
+    },
+    {
+     "expr": "tran1.vout_no_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_no_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803278
+    },
+    {
+     "expr": "tran2.vout_full_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_full_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.801331
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "fs",
+   "solver_diagnostic": null,
+   "supply_v": 2.97,
+   "temperature_c": -40.0,
+   "timed_out": false,
+   "timeout_s": 300
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "fs_-40c_3.30v",
+   "elapsed_s": 13.879,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "fs/novdd/-40C",
+    "fs/novdd/-40C"
+   ],
+   "klt_request": [
+    "v3.30-tran1",
+    "v3.30-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "-1e6*tran1.iq_no_load_raw",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_no_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 12.8583
+    },
+    {
+     "expr": "1e6*(-tran2.iq_full_load_raw - 0.05)",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_full_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 28.69999999999956
+    },
+    {
+     "expr": "tran1.vout_no_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_no_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.804076
+    },
+    {
+     "expr": "tran2.vout_full_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_full_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.802145
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "fs",
+   "solver_diagnostic": null,
+   "supply_v": 3.3,
+   "temperature_c": -40.0,
+   "timed_out": false,
+   "timeout_s": 300
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "fs_-40c_3.63v",
+   "elapsed_s": 17.086,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "fs/novdd/-40C",
+    "fs/novdd/-40C"
+   ],
+   "klt_request": [
+    "v3.63-tran1",
+    "v3.63-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "-1e6*tran1.iq_no_load_raw",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_no_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 13.9467
+    },
+    {
+     "expr": "1e6*(-tran2.iq_full_load_raw - 0.05)",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_full_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 29.599999999997685
+    },
+    {
+     "expr": "tran1.vout_no_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_no_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.804907
+    },
+    {
+     "expr": "tran2.vout_full_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_full_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.802937
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "fs",
+   "solver_diagnostic": null,
+   "supply_v": 3.63,
+   "temperature_c": -40.0,
+   "timed_out": false,
+   "timeout_s": 300
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "fs_27c_2.97v",
+   "elapsed_s": 12.251999999999999,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "fs/novdd/27C",
+    "fs/novdd/27C"
+   ],
+   "klt_request": [
+    "v2.97-tran1",
+    "v2.97-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "-1e6*tran1.iq_no_load_raw",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_no_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 13.158399999999999
+    },
+    {
+     "expr": "1e6*(-tran2.iq_full_load_raw - 0.05)",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_full_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 28.69999999999956
+    },
+    {
+     "expr": "tran1.vout_no_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_no_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.804678
+    },
+    {
+     "expr": "tran2.vout_full_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_full_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.801876
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "fs",
+   "solver_diagnostic": null,
+   "supply_v": 2.97,
+   "temperature_c": 27.0,
+   "timed_out": false,
+   "timeout_s": 300
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "fs_27c_3.30v",
+   "elapsed_s": 12.712,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "fs/novdd/27C",
+    "fs/novdd/27C"
+   ],
+   "klt_request": [
+    "v3.30-tran1",
+    "v3.30-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "-1e6*tran1.iq_no_load_raw",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_no_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 14.221499999999999
+    },
+    {
+     "expr": "1e6*(-tran2.iq_full_load_raw - 0.05)",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_full_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 29.599999999997685
+    },
+    {
+     "expr": "tran1.vout_no_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_no_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.805581
+    },
+    {
+     "expr": "tran2.vout_full_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_full_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.802765
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "fs",
+   "solver_diagnostic": null,
+   "supply_v": 3.3,
+   "temperature_c": 27.0,
+   "timed_out": false,
+   "timeout_s": 300
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "fs_27c_3.63v",
+   "elapsed_s": 13.717,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "fs/novdd/27C",
+    "fs/novdd/27C"
+   ],
+   "klt_request": [
+    "v3.63-tran1",
+    "v3.63-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "-1e6*tran1.iq_no_load_raw",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_no_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 15.289299999999999
+    },
+    {
+     "expr": "1e6*(-tran2.iq_full_load_raw - 0.05)",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_full_load_ua",
+     "pass": false,
+     "reason": "above max 30",
+     "unit": "uA",
+     "value": 30.499999999995808
+    },
+    {
+     "expr": "tran1.vout_no_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_no_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.806564
+    },
+    {
+     "expr": "tran2.vout_full_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_full_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803632
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": false,
+   "process": "fs",
+   "solver_diagnostic": null,
+   "supply_v": 3.63,
+   "temperature_c": 27.0,
+   "timed_out": false,
+   "timeout_s": 300
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "fs_125c_2.97v",
+   "elapsed_s": 12.254999999999999,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "fs/novdd/125C",
+    "fs/novdd/125C"
+   ],
+   "klt_request": [
+    "v2.97-tran1",
+    "v2.97-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "-1e6*tran1.iq_no_load_raw",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_no_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 14.7045
+    },
+    {
+     "expr": "1e6*(-tran2.iq_full_load_raw - 0.05)",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_full_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 29.899999999999373
+    },
+    {
+     "expr": "tran1.vout_no_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_no_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.815349
+    },
+    {
+     "expr": "tran2.vout_full_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_full_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.802908
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "fs",
+   "solver_diagnostic": null,
+   "supply_v": 2.97,
+   "temperature_c": 125.0,
+   "timed_out": false,
+   "timeout_s": 300
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "fs_125c_3.30v",
+   "elapsed_s": 12.48,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "fs/novdd/125C",
+    "fs/novdd/125C"
+   ],
+   "klt_request": [
+    "v3.30-tran1",
+    "v3.30-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "-1e6*tran1.iq_no_load_raw",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_no_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 15.692499999999999
+    },
+    {
+     "expr": "1e6*(-tran2.iq_full_load_raw - 0.05)",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_full_load_ua",
+     "pass": false,
+     "reason": "above max 30",
+     "unit": "uA",
+     "value": 30.799999999997496
+    },
+    {
+     "expr": "tran1.vout_no_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_no_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.818666
+    },
+    {
+     "expr": "tran2.vout_full_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_full_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803927
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": false,
+   "process": "fs",
+   "solver_diagnostic": null,
+   "supply_v": 3.3,
+   "temperature_c": 125.0,
+   "timed_out": false,
+   "timeout_s": 300
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "fs_125c_3.63v",
+   "elapsed_s": 13.919,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "fs/novdd/125C",
+    "fs/novdd/125C"
+   ],
+   "klt_request": [
+    "v3.63-tran1",
+    "v3.63-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "-1e6*tran1.iq_no_load_raw",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_no_load_ua",
+     "pass": true,
+     "reason": "",
+     "unit": "uA",
+     "value": 16.6747
+    },
+    {
+     "expr": "1e6*(-tran2.iq_full_load_raw - 0.05)",
+     "max": 30,
+     "max_inclusive": false,
+     "min": 0,
+     "min_inclusive": true,
+     "name": "iq_full_load_ua",
+     "pass": false,
+     "reason": "above max 30",
+     "unit": "uA",
+     "value": 31.599999999999685
+    },
+    {
+     "expr": "tran1.vout_no_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_no_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.822669
+    },
+    {
+     "expr": "tran2.vout_full_load",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_full_load_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.804923
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": false,
+   "process": "fs",
+   "solver_diagnostic": null,
+   "supply_v": 3.63,
+   "temperature_c": 125.0,
+   "timed_out": false,
+   "timeout_s": 300
+  }
+ ],
+ "variant": "cand"
+}

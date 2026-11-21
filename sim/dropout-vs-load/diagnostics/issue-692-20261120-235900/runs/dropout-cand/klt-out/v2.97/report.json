@@ -1,0 +1,2998 @@
+{
+  "schema_version": 3,
+  "netlist": {
+    "path": "sim/dropout-vs-load/diagnostics/issue-692-20261120-235900/runs/dropout-cand/klt-requests/v2.97.spice",
+    "scope": "repo"
+  },
+  "status": "pass",
+  "corner_count": 15,
+  "passed": 15,
+  "failed": 0,
+  "errored": 0,
+  "inconclusive": 0,
+  "diagnostic_counts": {
+    "by_code": {},
+    "by_severity": {},
+    "corners_with_diagnostics": 0
+  },
+  "metrics": {
+    "sim__corner__count": 15,
+    "sim__corner__passed_count": 15,
+    "sim__corner__failed_count": 0,
+    "sim__corner__errored_count": 0,
+    "sim__corner__inconclusive_count": 0
+  },
+  "environment": {
+    "engine": "ngspice",
+    "engine_version": "47",
+    "ngspice_binary": "/usr/local/bin/ngspice",
+    "engine_build": {
+      "version_banner": "******\n** ngspice-47 : Circuit level simulation program\n** Compiled with KLU Direct Linear Solver\n** The U. C. Berkeley CAD Group\n** Copyright 1985-1994, Regents of the University of California.\n** Copyright 2001-2026, The ngspice team.\n** Please get your ngspice manual from https://ngspice.sourceforge.io/docs.html\n** Please file your bug-reports at http://ngspice.sourceforge.net/bugrep.html\n** Creation Date: Fri Nov 13 23:19:32 UTC 2026\n******",
+      "binary_sha256": null,
+      "probe": "ok",
+      "reason": null
+    },
+    "ngspice_init": {
+      "source": "runner",
+      "lines": null,
+      "sha256": null
+    },
+    "models_lib": {
+      "path": null,
+      "scope": "external"
+    },
+    "models_lib_sha256": "48de7c677e2c6e7d09b2559279de9f818be71010a4aa933d728eb4db3b133c84",
+    "models_lib_sha256_scope": "client",
+    "netlist_sha256": "dc4a620cebeced743a442b0371c6796019861e3a1fe034436ad9396d827490c6",
+    "netlist_sha256_scope": "staged",
+    "netlist_closure": [
+      {
+        "path": "sim/dropout-vs-load/diagnostics/issue-692-20261120-235900/runs/dropout-cand/klt-requests/v2.97.spice",
+        "scope": "repo",
+        "sha256": "dc4a620cebeced743a442b0371c6796019861e3a1fe034436ad9396d827490c6"
+      }
+    ],
+    "netlist_identity": "sha256:84ec795da57a706bd1584a58148488168410800804cb9cb1487ca615a8df06e3",
+    "remote": {
+      "provider": "aws-batch-fleet",
+      "job_id": "klt-sim-b79572650788",
+      "region": "us-east-1",
+      "instance_id": "i-0567922b954851338",
+      "instance_type": "c7i.4xlarge",
+      "availability_zone": "us-east-1f",
+      "ami_id": "ami-09c14f55df4958cbd",
+      "lifecycle": "spot",
+      "spot": true,
+      "state": "done",
+      "exit_code": "0",
+      "concurrency": "1",
+      "physical_cores": "8",
+      "elapsed_seconds": 16,
+      "client_submitted_at": "2026-11-21T00:02:30.804509Z",
+      "client_launched_at": "2026-11-21T00:03:07.879931Z",
+      "client_status_terminal_at": "2026-11-21T00:03:40.486569Z",
+      "client_collected_at": "2026-11-21T00:03:42.093269Z",
+      "runner_klt_version": "0.9.0",
+      "client_klt_version": "0.9.3.dev2575+g6bd18bbc8637",
+      "runner_compatibility": "match",
+      "runner_request_features": {
+        "required": [
+          "analysis_steps",
+          "options.ngspice_init"
+        ],
+        "missing": [],
+        "status": "supported"
+      },
+      "worker_environment": {
+        "capture": "ok",
+        "simulator": {
+          "requested_binary": "ngspice",
+          "binary_source": "PATH",
+          "selected_path": "/usr/local/bin/ngspice",
+          "version_banner": "******\n** ngspice-47 : Circuit level simulation program\n** Compiled with KLU Direct Linear Solver\n** The U. C. Berkeley CAD Group\n** Copyright 1985-1994, Regents of the University of California.\n** Copyright 2001-2026, The ngspice team.\n** Please get your ngspice manual from https://ngspice.sourceforge.io/docs.html\n** Please file your bug-reports at http://ngspice.sourceforge.net/bugrep.html\n** Creation Date: Fri Nov 13 23:19:32 UTC 2026\n******\n",
+          "version_probe": "ok"
+        },
+        "pdk": {
+          "variant": "sky130A",
+          "root": "/opt/pdk",
+          "stamp_scheme": "sources-sha256",
+          "stamp_sha256": "4ca10280ae9f293aa1ff69f0060a52e0026929111bda881503717469b429ce67",
+          "stamp_text": "open_pdks f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7",
+          "models_staged": false,
+          "stamp_scope": "executed"
+        },
+        "cpu_model": "Intel(R) Xeon(R) Platinum 8488C",
+        "omp_num_threads": null,
+        "image_manifest": null,
+        "model_inputs": null,
+        "diagnostics": [],
+        "pdk_stamp_comparison": {
+          "status": "mismatch",
+          "warning": "the worker's PDK revision stamp for sky130A differs from the one the submitter resolved locally; results may differ from a local run (a matching stamp would not prove identical models)"
+        },
+        "ngspice_init": null,
+        "threads_per_worker": 1,
+        "engine_build_comparison": {
+          "status": "match"
+        }
+      },
+      "runner_model_inputs": null,
+      "runner_models_lib_sha256": "48de7c677e2c6e7d09b2559279de9f818be71010a4aa933d728eb4db3b133c84",
+      "runner_osdi_preload": null,
+      "job_ceiling": {
+        "basis": "conservative_serial_bound",
+        "unit_count": 15,
+        "per_unit_timeout_s": 300,
+        "overhead_s": 120.0,
+        "job_bound_s": 4620.0,
+        "max_job_seconds": 3600.0,
+        "max_job_seconds_source": "fleet_config",
+        "exceeds_ceiling": true,
+        "check": "warn",
+        "max_units_per_job": 11,
+        "recommended_hosts": 2,
+        "warning": "batch job bound 4620s (options.timeout_s 300s x 15 units + 120s; a conservative fully-serial upper bound, not a runtime estimate) exceeds the fleet's whole-job ceiling of 3600s (max_job_seconds from fleet_config); a job still running at the ceiling is killed and every unit is reported batch_job_timeout. Set request.remote.hosts to at least 2 to run one job per shard of at most 11 units, each within the ceiling"
+      },
+      "models_lib_comparison": {
+        "status": "match"
+      }
+    },
+    "engine_host": "worker",
+    "client_ngspice_binary": "/home/ubuntu/.local/bin/ngspice",
+    "client_engine_build": {
+      "version_banner": "******\n** ngspice-47 : Circuit level simulation program\n** Compiled with KLU Direct Linear Solver\n** The U. C. Berkeley CAD Group\n** Copyright 1985-1994, Regents of the University of California.\n** Copyright 2001-2026, The ngspice team.\n** Please get your ngspice manual from https://ngspice.sourceforge.io/docs.html\n** Please file your bug-reports at http://ngspice.sourceforge.net/bugrep.html\n** Creation Date: Fri Nov 13 23:19:32 UTC 2026\n******",
+      "binary_sha256": "39ca1adb826660324c3626f72bd946ec40704f0f3fc8e243c623f76e24b3eee2",
+      "probe": "ok",
+      "reason": null
+    },
+    "backend": {
+      "resolved": "batch",
+      "source": "flag",
+      "requested": "batch"
+    }
+  },
+  "coverage": {
+    "corners_simulated": 15,
+    "measurements_declared": 11,
+    "measurements_with_limits": 0,
+    "unrecognized_limit_keys": [],
+    "schema_version": 1,
+    "known": true,
+    "checked": [
+      "measurement:[0,\"tt/novdd/-40C\",\"dropout.biasref_i_set\"]/observation",
+      "measurement:[0,\"tt/novdd/-40C\",\"dropout.dropout_v\"]/observation",
+      "measurement:[0,\"tt/novdd/-40C\",\"dropout.dropout_vin_x\"]/observation",
+      "measurement:[0,\"tt/novdd/-40C\",\"dropout.ea_out_at_x\"]/observation",
+      "measurement:[0,\"tt/novdd/-40C\",\"dropout.mclim_i_at_2v064\"]/observation",
+      "measurement:[0,\"tt/novdd/-40C\",\"dropout.mclim_i_at_x\"]/observation",
+      "measurement:[0,\"tt/novdd/-40C\",\"dropout.mclim_vgs_at_2v064\"]/observation",
+      "measurement:[0,\"tt/novdd/-40C\",\"dropout.tail_i_at_x\"]/observation",
+      "measurement:[0,\"tt/novdd/-40C\",\"dropout.tail_i_set\"]/observation",
+      "measurement:[0,\"tt/novdd/-40C\",\"dropout.vout_at_2v064\"]/observation",
+      "measurement:[0,\"tt/novdd/-40C\",\"dropout.vout_at_max_vin_v\"]/observation",
+      "measurement:[1,\"tt/novdd/27C\",\"dropout.biasref_i_set\"]/observation",
+      "measurement:[1,\"tt/novdd/27C\",\"dropout.dropout_v\"]/observation",
+      "measurement:[1,\"tt/novdd/27C\",\"dropout.dropout_vin_x\"]/observation",
+      "measurement:[1,\"tt/novdd/27C\",\"dropout.ea_out_at_x\"]/observation",
+      "measurement:[1,\"tt/novdd/27C\",\"dropout.mclim_i_at_2v064\"]/observation",
+      "measurement:[1,\"tt/novdd/27C\",\"dropout.mclim_i_at_x\"]/observation",
+      "measurement:[1,\"tt/novdd/27C\",\"dropout.mclim_vgs_at_2v064\"]/observation",
+      "measurement:[1,\"tt/novdd/27C\",\"dropout.tail_i_at_x\"]/observation",
+      "measurement:[1,\"tt/novdd/27C\",\"dropout.tail_i_set\"]/observation",
+      "measurement:[1,\"tt/novdd/27C\",\"dropout.vout_at_2v064\"]/observation",
+      "measurement:[1,\"tt/novdd/27C\",\"dropout.vout_at_max_vin_v\"]/observation",
+      "measurement:[10,\"sf/novdd/27C\",\"dropout.biasref_i_set\"]/observation",
+      "measurement:[10,\"sf/novdd/27C\",\"dropout.dropout_v\"]/observation",
+      "measurement:[10,\"sf/novdd/27C\",\"dropout.dropout_vin_x\"]/observation",
+      "measurement:[10,\"sf/novdd/27C\",\"dropout.ea_out_at_x\"]/observation",
+      "measurement:[10,\"sf/novdd/27C\",\"dropout.mclim_i_at_2v064\"]/observation",
+      "measurement:[10,\"sf/novdd/27C\",\"dropout.mclim_i_at_x\"]/observation",
+      "measurement:[10,\"sf/novdd/27C\",\"dropout.mclim_vgs_at_2v064\"]/observation",
+      "measurement:[10,\"sf/novdd/27C\",\"dropout.tail_i_at_x\"]/observation",
+      "measurement:[10,\"sf/novdd/27C\",\"dropout.tail_i_set\"]/observation",
+      "measurement:[10,\"sf/novdd/27C\",\"dropout.vout_at_2v064\"]/observation",
+      "measurement:[10,\"sf/novdd/27C\",\"dropout.vout_at_max_vin_v\"]/observation",
+      "measurement:[11,\"sf/novdd/125C\",\"dropout.biasref_i_set\"]/observation",
+      "measurement:[11,\"sf/novdd/125C\",\"dropout.dropout_v\"]/observation",
+      "measurement:[11,\"sf/novdd/125C\",\"dropout.dropout_vin_x\"]/observation",
+      "measurement:[11,\"sf/novdd/125C\",\"dropout.ea_out_at_x\"]/observation",
+      "measurement:[11,\"sf/novdd/125C\",\"dropout.mclim_i_at_2v064\"]/observation",
+      "measurement:[11,\"sf/novdd/125C\",\"dropout.mclim_i_at_x\"]/observation",
+      "measurement:[11,\"sf/novdd/125C\",\"dropout.mclim_vgs_at_2v064\"]/observation",
+      "measurement:[11,\"sf/novdd/125C\",\"dropout.tail_i_at_x\"]/observation",
+      "measurement:[11,\"sf/novdd/125C\",\"dropout.tail_i_set\"]/observation",
+      "measurement:[11,\"sf/novdd/125C\",\"dropout.vout_at_2v064\"]/observation",
+      "measurement:[11,\"sf/novdd/125C\",\"dropout.vout_at_max_vin_v\"]/observation",
+      "measurement:[12,\"fs/novdd/-40C\",\"dropout.biasref_i_set\"]/observation",
+      "measurement:[12,\"fs/novdd/-40C\",\"dropout.dropout_v\"]/observation",
+      "measurement:[12,\"fs/novdd/-40C\",\"dropout.dropout_vin_x\"]/observation",
+      "measurement:[12,\"fs/novdd/-40C\",\"dropout.ea_out_at_x\"]/observation",
+      "measurement:[12,\"fs/novdd/-40C\",\"dropout.mclim_i_at_2v064\"]/observation",
+      "measurement:[12,\"fs/novdd/-40C\",\"dropout.mclim_i_at_x\"]/observation",
+      "measurement:[12,\"fs/novdd/-40C\",\"dropout.mclim_vgs_at_2v064\"]/observation",
+      "measurement:[12,\"fs/novdd/-40C\",\"dropout.tail_i_at_x\"]/observation",
+      "measurement:[12,\"fs/novdd/-40C\",\"dropout.tail_i_set\"]/observation",
+      "measurement:[12,\"fs/novdd/-40C\",\"dropout.vout_at_2v064\"]/observation",
+      "measurement:[12,\"fs/novdd/-40C\",\"dropout.vout_at_max_vin_v\"]/observation",
+      "measurement:[13,\"fs/novdd/27C\",\"dropout.biasref_i_set\"]/observation",
+      "measurement:[13,\"fs/novdd/27C\",\"dropout.dropout_v\"]/observation",
+      "measurement:[13,\"fs/novdd/27C\",\"dropout.dropout_vin_x\"]/observation",
+      "measurement:[13,\"fs/novdd/27C\",\"dropout.ea_out_at_x\"]/observation",
+      "measurement:[13,\"fs/novdd/27C\",\"dropout.mclim_i_at_2v064\"]/observation",
+      "measurement:[13,\"fs/novdd/27C\",\"dropout.mclim_i_at_x\"]/observation",
+      "measurement:[13,\"fs/novdd/27C\",\"dropout.mclim_vgs_at_2v064\"]/observation",
+      "measurement:[13,\"fs/novdd/27C\",\"dropout.tail_i_at_x\"]/observation",
+      "measurement:[13,\"fs/novdd/27C\",\"dropout.tail_i_set\"]/observation",
+      "measurement:[13,\"fs/novdd/27C\",\"dropout.vout_at_2v064\"]/observation",
+      "measurement:[13,\"fs/novdd/27C\",\"dropout.vout_at_max_vin_v\"]/observation",
+      "measurement:[14,\"fs/novdd/125C\",\"dropout.biasref_i_set\"]/observation",
+      "measurement:[14,\"fs/novdd/125C\",\"dropout.dropout_v\"]/observation",
+      "measurement:[14,\"fs/novdd/125C\",\"dropout.dropout_vin_x\"]/observation",
+      "measurement:[14,\"fs/novdd/125C\",\"dropout.ea_out_at_x\"]/observation",
+      "measurement:[14,\"fs/novdd/125C\",\"dropout.mclim_i_at_2v064\"]/observation",
+      "measurement:[14,\"fs/novdd/125C\",\"dropout.mclim_i_at_x\"]/observation",
+      "measurement:[14,\"fs/novdd/125C\",\"dropout.mclim_vgs_at_2v064\"]/observation",
+      "measurement:[14,\"fs/novdd/125C\",\"dropout.tail_i_at_x\"]/observation",
+      "measurement:[14,\"fs/novdd/125C\",\"dropout.tail_i_set\"]/observation",
+      "measurement:[14,\"fs/novdd/125C\",\"dropout.vout_at_2v064\"]/observation",
+      "measurement:[14,\"fs/novdd/125C\",\"dropout.vout_at_max_vin_v\"]/observation",
+      "measurement:[2,\"tt/novdd/125C\",\"dropout.biasref_i_set\"]/observation",
+      "measurement:[2,\"tt/novdd/125C\",\"dropout.dropout_v\"]/observation",
+      "measurement:[2,\"tt/novdd/125C\",\"dropout.dropout_vin_x\"]/observation",
+      "measurement:[2,\"tt/novdd/125C\",\"dropout.ea_out_at_x\"]/observation",
+      "measurement:[2,\"tt/novdd/125C\",\"dropout.mclim_i_at_2v064\"]/observation",
+      "measurement:[2,\"tt/novdd/125C\",\"dropout.mclim_i_at_x\"]/observation",
+      "measurement:[2,\"tt/novdd/125C\",\"dropout.mclim_vgs_at_2v064\"]/observation",
+      "measurement:[2,\"tt/novdd/125C\",\"dropout.tail_i_at_x\"]/observation",
+      "measurement:[2,\"tt/novdd/125C\",\"dropout.tail_i_set\"]/observation",
+      "measurement:[2,\"tt/novdd/125C\",\"dropout.vout_at_2v064\"]/observation",
+      "measurement:[2,\"tt/novdd/125C\",\"dropout.vout_at_max_vin_v\"]/observation",
+      "measurement:[3,\"ss/novdd/-40C\",\"dropout.biasref_i_set\"]/observation",
+      "measurement:[3,\"ss/novdd/-40C\",\"dropout.dropout_v\"]/observation",
+      "measurement:[3,\"ss/novdd/-40C\",\"dropout.dropout_vin_x\"]/observation",
+      "measurement:[3,\"ss/novdd/-40C\",\"dropout.ea_out_at_x\"]/observation",
+      "measurement:[3,\"ss/novdd/-40C\",\"dropout.mclim_i_at_2v064\"]/observation",
+      "measurement:[3,\"ss/novdd/-40C\",\"dropout.mclim_i_at_x\"]/observation",
+      "measurement:[3,\"ss/novdd/-40C\",\"dropout.mclim_vgs_at_2v064\"]/observation",
+      "measurement:[3,\"ss/novdd/-40C\",\"dropout.tail_i_at_x\"]/observation",
+      "measurement:[3,\"ss/novdd/-40C\",\"dropout.tail_i_set\"]/observation",
+      "measurement:[3,\"ss/novdd/-40C\",\"dropout.vout_at_2v064\"]/observation",
+      "measurement:[3,\"ss/novdd/-40C\",\"dropout.vout_at_max_vin_v\"]/observation",
+      "measurement:[4,\"ss/novdd/27C\",\"dropout.biasref_i_set\"]/observation",
+      "measurement:[4,\"ss/novdd/27C\",\"dropout.dropout_v\"]/observation",
+      "measurement:[4,\"ss/novdd/27C\",\"dropout.dropout_vin_x\"]/observation",
+      "measurement:[4,\"ss/novdd/27C\",\"dropout.ea_out_at_x\"]/observation",
+      "measurement:[4,\"ss/novdd/27C\",\"dropout.mclim_i_at_2v064\"]/observation",
+      "measurement:[4,\"ss/novdd/27C\",\"dropout.mclim_i_at_x\"]/observation",
+      "measurement:[4,\"ss/novdd/27C\",\"dropout.mclim_vgs_at_2v064\"]/observation",
+      "measurement:[4,\"ss/novdd/27C\",\"dropout.tail_i_at_x\"]/observation",
+      "measurement:[4,\"ss/novdd/27C\",\"dropout.tail_i_set\"]/observation",
+      "measurement:[4,\"ss/novdd/27C\",\"dropout.vout_at_2v064\"]/observation",
+      "measurement:[4,\"ss/novdd/27C\",\"dropout.vout_at_max_vin_v\"]/observation",
+      "measurement:[5,\"ss/novdd/125C\",\"dropout.biasref_i_set\"]/observation",
+      "measurement:[5,\"ss/novdd/125C\",\"dropout.dropout_v\"]/observation",
+      "measurement:[5,\"ss/novdd/125C\",\"dropout.dropout_vin_x\"]/observation",
+      "measurement:[5,\"ss/novdd/125C\",\"dropout.ea_out_at_x\"]/observation",
+      "measurement:[5,\"ss/novdd/125C\",\"dropout.mclim_i_at_2v064\"]/observation",
+      "measurement:[5,\"ss/novdd/125C\",\"dropout.mclim_i_at_x\"]/observation",
+      "measurement:[5,\"ss/novdd/125C\",\"dropout.mclim_vgs_at_2v064\"]/observation",
+      "measurement:[5,\"ss/novdd/125C\",\"dropout.tail_i_at_x\"]/observation",
+      "measurement:[5,\"ss/novdd/125C\",\"dropout.tail_i_set\"]/observation",
+      "measurement:[5,\"ss/novdd/125C\",\"dropout.vout_at_2v064\"]/observation",
+      "measurement:[5,\"ss/novdd/125C\",\"dropout.vout_at_max_vin_v\"]/observation",
+      "measurement:[6,\"ff/novdd/-40C\",\"dropout.biasref_i_set\"]/observation",
+      "measurement:[6,\"ff/novdd/-40C\",\"dropout.dropout_v\"]/observation",
+      "measurement:[6,\"ff/novdd/-40C\",\"dropout.dropout_vin_x\"]/observation",
+      "measurement:[6,\"ff/novdd/-40C\",\"dropout.ea_out_at_x\"]/observation",
+      "measurement:[6,\"ff/novdd/-40C\",\"dropout.mclim_i_at_2v064\"]/observation",
+      "measurement:[6,\"ff/novdd/-40C\",\"dropout.mclim_i_at_x\"]/observation",
+      "measurement:[6,\"ff/novdd/-40C\",\"dropout.mclim_vgs_at_2v064\"]/observation",
+      "measurement:[6,\"ff/novdd/-40C\",\"dropout.tail_i_at_x\"]/observation",
+      "measurement:[6,\"ff/novdd/-40C\",\"dropout.tail_i_set\"]/observation",
+      "measurement:[6,\"ff/novdd/-40C\",\"dropout.vout_at_2v064\"]/observation",
+      "measurement:[6,\"ff/novdd/-40C\",\"dropout.vout_at_max_vin_v\"]/observation",
+      "measurement:[7,\"ff/novdd/27C\",\"dropout.biasref_i_set\"]/observation",
+      "measurement:[7,\"ff/novdd/27C\",\"dropout.dropout_v\"]/observation",
+      "measurement:[7,\"ff/novdd/27C\",\"dropout.dropout_vin_x\"]/observation",
+      "measurement:[7,\"ff/novdd/27C\",\"dropout.ea_out_at_x\"]/observation",
+      "measurement:[7,\"ff/novdd/27C\",\"dropout.mclim_i_at_2v064\"]/observation",
+      "measurement:[7,\"ff/novdd/27C\",\"dropout.mclim_i_at_x\"]/observation",
+      "measurement:[7,\"ff/novdd/27C\",\"dropout.mclim_vgs_at_2v064\"]/observation",
+      "measurement:[7,\"ff/novdd/27C\",\"dropout.tail_i_at_x\"]/observation",
+      "measurement:[7,\"ff/novdd/27C\",\"dropout.tail_i_set\"]/observation",
+      "measurement:[7,\"ff/novdd/27C\",\"dropout.vout_at_2v064\"]/observation",
+      "measurement:[7,\"ff/novdd/27C\",\"dropout.vout_at_max_vin_v\"]/observation",
+      "measurement:[8,\"ff/novdd/125C\",\"dropout.biasref_i_set\"]/observation",
+      "measurement:[8,\"ff/novdd/125C\",\"dropout.dropout_v\"]/observation",
+      "measurement:[8,\"ff/novdd/125C\",\"dropout.dropout_vin_x\"]/observation",
+      "measurement:[8,\"ff/novdd/125C\",\"dropout.ea_out_at_x\"]/observation",
+      "measurement:[8,\"ff/novdd/125C\",\"dropout.mclim_i_at_2v064\"]/observation",
+      "measurement:[8,\"ff/novdd/125C\",\"dropout.mclim_i_at_x\"]/observation",
+      "measurement:[8,\"ff/novdd/125C\",\"dropout.mclim_vgs_at_2v064\"]/observation",
+      "measurement:[8,\"ff/novdd/125C\",\"dropout.tail_i_at_x\"]/observation",
+      "measurement:[8,\"ff/novdd/125C\",\"dropout.tail_i_set\"]/observation",
+      "measurement:[8,\"ff/novdd/125C\",\"dropout.vout_at_2v064\"]/observation",
+      "measurement:[8,\"ff/novdd/125C\",\"dropout.vout_at_max_vin_v\"]/observation",
+      "measurement:[9,\"sf/novdd/-40C\",\"dropout.biasref_i_set\"]/observation",
+      "measurement:[9,\"sf/novdd/-40C\",\"dropout.dropout_v\"]/observation",
+      "measurement:[9,\"sf/novdd/-40C\",\"dropout.dropout_vin_x\"]/observation",
+      "measurement:[9,\"sf/novdd/-40C\",\"dropout.ea_out_at_x\"]/observation",
+      "measurement:[9,\"sf/novdd/-40C\",\"dropout.mclim_i_at_2v064\"]/observation",
+      "measurement:[9,\"sf/novdd/-40C\",\"dropout.mclim_i_at_x\"]/observation",
+      "measurement:[9,\"sf/novdd/-40C\",\"dropout.mclim_vgs_at_2v064\"]/observation",
+      "measurement:[9,\"sf/novdd/-40C\",\"dropout.tail_i_at_x\"]/observation",
+      "measurement:[9,\"sf/novdd/-40C\",\"dropout.tail_i_set\"]/observation",
+      "measurement:[9,\"sf/novdd/-40C\",\"dropout.vout_at_2v064\"]/observation",
+      "measurement:[9,\"sf/novdd/-40C\",\"dropout.vout_at_max_vin_v\"]/observation"
+    ],
+    "skipped": [],
+    "inapplicable": [
+      {
+        "id": "measurement:[0,\"tt/novdd/-40C\",\"dropout.biasref_i_set\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/-40C\",\"dropout.dropout_v\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/-40C\",\"dropout.dropout_vin_x\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/-40C\",\"dropout.ea_out_at_x\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/-40C\",\"dropout.mclim_i_at_2v064\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/-40C\",\"dropout.mclim_i_at_x\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/-40C\",\"dropout.mclim_vgs_at_2v064\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/-40C\",\"dropout.tail_i_at_x\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/-40C\",\"dropout.tail_i_set\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/-40C\",\"dropout.vout_at_2v064\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/-40C\",\"dropout.vout_at_max_vin_v\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[1,\"tt/novdd/27C\",\"dropout.biasref_i_set\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[1,\"tt/novdd/27C\",\"dropout.dropout_v\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[1,\"tt/novdd/27C\",\"dropout.dropout_vin_x\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[1,\"tt/novdd/27C\",\"dropout.ea_out_at_x\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[1,\"tt/novdd/27C\",\"dropout.mclim_i_at_2v064\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[1,\"tt/novdd/27C\",\"dropout.mclim_i_at_x\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[1,\"tt/novdd/27C\",\"dropout.mclim_vgs_at_2v064\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[1,\"tt/novdd/27C\",\"dropout.tail_i_at_x\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[1,\"tt/novdd/27C\",\"dropout.tail_i_set\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[1,\"tt/novdd/27C\",\"dropout.vout_at_2v064\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[1,\"tt/novdd/27C\",\"dropout.vout_at_max_vin_v\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[10,\"sf/novdd/27C\",\"dropout.biasref_i_set\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[10,\"sf/novdd/27C\",\"dropout.dropout_v\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[10,\"sf/novdd/27C\",\"dropout.dropout_vin_x\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[10,\"sf/novdd/27C\",\"dropout.ea_out_at_x\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[10,\"sf/novdd/27C\",\"dropout.mclim_i_at_2v064\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[10,\"sf/novdd/27C\",\"dropout.mclim_i_at_x\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[10,\"sf/novdd/27C\",\"dropout.mclim_vgs_at_2v064\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[10,\"sf/novdd/27C\",\"dropout.tail_i_at_x\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[10,\"sf/novdd/27C\",\"dropout.tail_i_set\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[10,\"sf/novdd/27C\",\"dropout.vout_at_2v064\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[10,\"sf/novdd/27C\",\"dropout.vout_at_max_vin_v\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[11,\"sf/novdd/125C\",\"dropout.biasref_i_set\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[11,\"sf/novdd/125C\",\"dropout.dropout_v\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[11,\"sf/novdd/125C\",\"dropout.dropout_vin_x\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[11,\"sf/novdd/125C\",\"dropout.ea_out_at_x\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[11,\"sf/novdd/125C\",\"dropout.mclim_i_at_2v064\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[11,\"sf/novdd/125C\",\"dropout.mclim_i_at_x\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[11,\"sf/novdd/125C\",\"dropout.mclim_vgs_at_2v064\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[11,\"sf/novdd/125C\",\"dropout.tail_i_at_x\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[11,\"sf/novdd/125C\",\"dropout.tail_i_set\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[11,\"sf/novdd/125C\",\"dropout.vout_at_2v064\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[11,\"sf/novdd/125C\",\"dropout.vout_at_max_vin_v\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[12,\"fs/novdd/-40C\",\"dropout.biasref_i_set\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[12,\"fs/novdd/-40C\",\"dropout.dropout_v\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[12,\"fs/novdd/-40C\",\"dropout.dropout_vin_x\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[12,\"fs/novdd/-40C\",\"dropout.ea_out_at_x\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[12,\"fs/novdd/-40C\",\"dropout.mclim_i_at_2v064\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[12,\"fs/novdd/-40C\",\"dropout.mclim_i_at_x\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[12,\"fs/novdd/-40C\",\"dropout.mclim_vgs_at_2v064\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[12,\"fs/novdd/-40C\",\"dropout.tail_i_at_x\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[12,\"fs/novdd/-40C\",\"dropout.tail_i_set\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[12,\"fs/novdd/-40C\",\"dropout.vout_at_2v064\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[12,\"fs/novdd/-40C\",\"dropout.vout_at_max_vin_v\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[13,\"fs/novdd/27C\",\"dropout.biasref_i_set\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[13,\"fs/novdd/27C\",\"dropout.dropout_v\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[13,\"fs/novdd/27C\",\"dropout.dropout_vin_x\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[13,\"fs/novdd/27C\",\"dropout.ea_out_at_x\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[13,\"fs/novdd/27C\",\"dropout.mclim_i_at_2v064\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[13,\"fs/novdd/27C\",\"dropout.mclim_i_at_x\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[13,\"fs/novdd/27C\",\"dropout.mclim_vgs_at_2v064\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[13,\"fs/novdd/27C\",\"dropout.tail_i_at_x\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[13,\"fs/novdd/27C\",\"dropout.tail_i_set\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[13,\"fs/novdd/27C\",\"dropout.vout_at_2v064\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[13,\"fs/novdd/27C\",\"dropout.vout_at_max_vin_v\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[14,\"fs/novdd/125C\",\"dropout.biasref_i_set\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[14,\"fs/novdd/125C\",\"dropout.dropout_v\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[14,\"fs/novdd/125C\",\"dropout.dropout_vin_x\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[14,\"fs/novdd/125C\",\"dropout.ea_out_at_x\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[14,\"fs/novdd/125C\",\"dropout.mclim_i_at_2v064\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[14,\"fs/novdd/125C\",\"dropout.mclim_i_at_x\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[14,\"fs/novdd/125C\",\"dropout.mclim_vgs_at_2v064\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[14,\"fs/novdd/125C\",\"dropout.tail_i_at_x\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[14,\"fs/novdd/125C\",\"dropout.tail_i_set\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[14,\"fs/novdd/125C\",\"dropout.vout_at_2v064\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[14,\"fs/novdd/125C\",\"dropout.vout_at_max_vin_v\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[2,\"tt/novdd/125C\",\"dropout.biasref_i_set\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[2,\"tt/novdd/125C\",\"dropout.dropout_v\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[2,\"tt/novdd/125C\",\"dropout.dropout_vin_x\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[2,\"tt/novdd/125C\",\"dropout.ea_out_at_x\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[2,\"tt/novdd/125C\",\"dropout.mclim_i_at_2v064\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[2,\"tt/novdd/125C\",\"dropout.mclim_i_at_x\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[2,\"tt/novdd/125C\",\"dropout.mclim_vgs_at_2v064\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[2,\"tt/novdd/125C\",\"dropout.tail_i_at_x\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[2,\"tt/novdd/125C\",\"dropout.tail_i_set\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[2,\"tt/novdd/125C\",\"dropout.vout_at_2v064\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[2,\"tt/novdd/125C\",\"dropout.vout_at_max_vin_v\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[3,\"ss/novdd/-40C\",\"dropout.biasref_i_set\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[3,\"ss/novdd/-40C\",\"dropout.dropout_v\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[3,\"ss/novdd/-40C\",\"dropout.dropout_vin_x\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[3,\"ss/novdd/-40C\",\"dropout.ea_out_at_x\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[3,\"ss/novdd/-40C\",\"dropout.mclim_i_at_2v064\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[3,\"ss/novdd/-40C\",\"dropout.mclim_i_at_x\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[3,\"ss/novdd/-40C\",\"dropout.mclim_vgs_at_2v064\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[3,\"ss/novdd/-40C\",\"dropout.tail_i_at_x\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[3,\"ss/novdd/-40C\",\"dropout.tail_i_set\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[3,\"ss/novdd/-40C\",\"dropout.vout_at_2v064\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[3,\"ss/novdd/-40C\",\"dropout.vout_at_max_vin_v\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[4,\"ss/novdd/27C\",\"dropout.biasref_i_set\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[4,\"ss/novdd/27C\",\"dropout.dropout_v\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[4,\"ss/novdd/27C\",\"dropout.dropout_vin_x\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[4,\"ss/novdd/27C\",\"dropout.ea_out_at_x\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[4,\"ss/novdd/27C\",\"dropout.mclim_i_at_2v064\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[4,\"ss/novdd/27C\",\"dropout.mclim_i_at_x\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[4,\"ss/novdd/27C\",\"dropout.mclim_vgs_at_2v064\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[4,\"ss/novdd/27C\",\"dropout.tail_i_at_x\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[4,\"ss/novdd/27C\",\"dropout.tail_i_set\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[4,\"ss/novdd/27C\",\"dropout.vout_at_2v064\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[4,\"ss/novdd/27C\",\"dropout.vout_at_max_vin_v\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[5,\"ss/novdd/125C\",\"dropout.biasref_i_set\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[5,\"ss/novdd/125C\",\"dropout.dropout_v\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[5,\"ss/novdd/125C\",\"dropout.dropout_vin_x\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[5,\"ss/novdd/125C\",\"dropout.ea_out_at_x\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[5,\"ss/novdd/125C\",\"dropout.mclim_i_at_2v064\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[5,\"ss/novdd/125C\",\"dropout.mclim_i_at_x\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[5,\"ss/novdd/125C\",\"dropout.mclim_vgs_at_2v064\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[5,\"ss/novdd/125C\",\"dropout.tail_i_at_x\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[5,\"ss/novdd/125C\",\"dropout.tail_i_set\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[5,\"ss/novdd/125C\",\"dropout.vout_at_2v064\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[5,\"ss/novdd/125C\",\"dropout.vout_at_max_vin_v\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[6,\"ff/novdd/-40C\",\"dropout.biasref_i_set\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[6,\"ff/novdd/-40C\",\"dropout.dropout_v\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[6,\"ff/novdd/-40C\",\"dropout.dropout_vin_x\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[6,\"ff/novdd/-40C\",\"dropout.ea_out_at_x\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[6,\"ff/novdd/-40C\",\"dropout.mclim_i_at_2v064\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[6,\"ff/novdd/-40C\",\"dropout.mclim_i_at_x\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[6,\"ff/novdd/-40C\",\"dropout.mclim_vgs_at_2v064\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[6,\"ff/novdd/-40C\",\"dropout.tail_i_at_x\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[6,\"ff/novdd/-40C\",\"dropout.tail_i_set\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[6,\"ff/novdd/-40C\",\"dropout.vout_at_2v064\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[6,\"ff/novdd/-40C\",\"dropout.vout_at_max_vin_v\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[7,\"ff/novdd/27C\",\"dropout.biasref_i_set\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[7,\"ff/novdd/27C\",\"dropout.dropout_v\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[7,\"ff/novdd/27C\",\"dropout.dropout_vin_x\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[7,\"ff/novdd/27C\",\"dropout.ea_out_at_x\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[7,\"ff/novdd/27C\",\"dropout.mclim_i_at_2v064\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[7,\"ff/novdd/27C\",\"dropout.mclim_i_at_x\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[7,\"ff/novdd/27C\",\"dropout.mclim_vgs_at_2v064\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[7,\"ff/novdd/27C\",\"dropout.tail_i_at_x\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[7,\"ff/novdd/27C\",\"dropout.tail_i_set\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[7,\"ff/novdd/27C\",\"dropout.vout_at_2v064\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[7,\"ff/novdd/27C\",\"dropout.vout_at_max_vin_v\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[8,\"ff/novdd/125C\",\"dropout.biasref_i_set\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[8,\"ff/novdd/125C\",\"dropout.dropout_v\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[8,\"ff/novdd/125C\",\"dropout.dropout_vin_x\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[8,\"ff/novdd/125C\",\"dropout.ea_out_at_x\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[8,\"ff/novdd/125C\",\"dropout.mclim_i_at_2v064\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[8,\"ff/novdd/125C\",\"dropout.mclim_i_at_x\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[8,\"ff/novdd/125C\",\"dropout.mclim_vgs_at_2v064\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[8,\"ff/novdd/125C\",\"dropout.tail_i_at_x\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[8,\"ff/novdd/125C\",\"dropout.tail_i_set\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[8,\"ff/novdd/125C\",\"dropout.vout_at_2v064\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[8,\"ff/novdd/125C\",\"dropout.vout_at_max_vin_v\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[9,\"sf/novdd/-40C\",\"dropout.biasref_i_set\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[9,\"sf/novdd/-40C\",\"dropout.dropout_v\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[9,\"sf/novdd/-40C\",\"dropout.dropout_vin_x\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[9,\"sf/novdd/-40C\",\"dropout.ea_out_at_x\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[9,\"sf/novdd/-40C\",\"dropout.mclim_i_at_2v064\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[9,\"sf/novdd/-40C\",\"dropout.mclim_i_at_x\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[9,\"sf/novdd/-40C\",\"dropout.mclim_vgs_at_2v064\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[9,\"sf/novdd/-40C\",\"dropout.tail_i_at_x\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[9,\"sf/novdd/-40C\",\"dropout.tail_i_set\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[9,\"sf/novdd/-40C\",\"dropout.vout_at_2v064\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[9,\"sf/novdd/-40C\",\"dropout.vout_at_max_vin_v\"]/limits",
+        "reason": "characterization_without_limits"
+      }
+    ],
+    "unknown": [],
+    "nothing_checked": false,
+    "nothing_checked_reasons": []
+  },
+  "provenance": {
+    "klt_version": "0.9.3.dev2575+g6bd18bbc8637",
+    "klt_git_commit": "6bd18bbc8637f6d767b3c24e77bd5db7a39e4bbe",
+    "klt_reinstall_spec": "klayout-tools @ git+https://github.com/2AMLogic/klayout-tools@6bd18bbc8637f6d767b3c24e77bd5db7a39e4bbe",
+    "klayout_version": "0.30.12",
+    "pdk": {
+      "name": "sky130A",
+      "source": "PDK_ROOT environment variable",
+      "version": "open_pdks c6d73a35f524070e85faff4a6a9eef49553ebc2b",
+      "ambiguous_sources": [
+        "search root: ~/.ciel"
+      ],
+      "compatibility": {
+        "status": "mismatch",
+        "package": "open_pdks-sky130",
+        "expected": "open_pdks f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7"
+      }
+    },
+    "deck": {
+      "name": "sky130.lib.spice",
+      "content_hash": "sha256:48de7c677e2c6e7d09b2559279de9f818be71010a4aa933d728eb4db3b133c84",
+      "released": false
+    },
+    "input": {
+      "content_hash": "sha256:dc4a620cebeced743a442b0371c6796019861e3a1fe034436ad9396d827490c6",
+      "role": "netlist"
+    }
+  },
+  "measurements": [
+    {
+      "name": "dropout.dropout_vin_x",
+      "unit": null,
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/-40C",
+        "value": 1.939303,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "ss/novdd/-40C",
+        "value": 1.919212
+      },
+      "max": {
+        "corner_id": "ff/novdd/-40C",
+        "value": 1.983241
+      },
+      "step": "dropout"
+    },
+    {
+      "name": "dropout.vout_at_max_vin_v",
+      "unit": "V",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/-40C",
+        "value": 1.801164,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "ss/novdd/-40C",
+        "value": 1.800951
+      },
+      "max": {
+        "corner_id": "ff/novdd/125C",
+        "value": 1.803047
+      },
+      "step": "dropout"
+    },
+    {
+      "name": "dropout.dropout_v",
+      "unit": "V",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/-40C",
+        "value": 0.175303,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "ss/novdd/-40C",
+        "value": 0.155212
+      },
+      "max": {
+        "corner_id": "ff/novdd/-40C",
+        "value": 0.219241
+      },
+      "step": "dropout"
+    },
+    {
+      "name": "dropout.ea_out_at_x",
+      "unit": null,
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/-40C",
+        "value": 0.2348228,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "ss/novdd/-40C",
+        "value": 0.05833502
+      },
+      "max": {
+        "corner_id": "fs/novdd/-40C",
+        "value": 0.4546489
+      },
+      "step": "dropout"
+    },
+    {
+      "name": "dropout.tail_i_at_x",
+      "unit": null,
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/-40C",
+        "value": 2.347052e-06,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "fs/novdd/-40C",
+        "value": 2.159719e-06
+      },
+      "max": {
+        "corner_id": "sf/novdd/125C",
+        "value": 3.626605e-06
+      },
+      "step": "dropout"
+    },
+    {
+      "name": "dropout.mclim_i_at_x",
+      "unit": null,
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/-40C",
+        "value": 5.182366e-07,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "sf/novdd/27C",
+        "value": 5.728196e-14
+      },
+      "max": {
+        "corner_id": "ff/novdd/-40C",
+        "value": 5.81723e-07
+      },
+      "step": "dropout"
+    },
+    {
+      "name": "dropout.vout_at_2v064",
+      "unit": null,
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/-40C",
+        "value": 1.794508,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "ss/novdd/125C",
+        "value": 1.790103
+      },
+      "max": {
+        "corner_id": "ff/novdd/-40C",
+        "value": 1.795034
+      },
+      "step": "dropout"
+    },
+    {
+      "name": "dropout.mclim_vgs_at_2v064",
+      "unit": null,
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/-40C",
+        "value": 0.08224556,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "ss/novdd/27C",
+        "value": 0.04647365
+      },
+      "max": {
+        "corner_id": "ff/novdd/-40C",
+        "value": 0.4295668
+      },
+      "step": "dropout"
+    },
+    {
+      "name": "dropout.mclim_i_at_2v064",
+      "unit": null,
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/-40C",
+        "value": 2.665749e-17,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "sf/novdd/-40C",
+        "value": 1.086252e-18
+      },
+      "max": {
+        "corner_id": "fs/novdd/125C",
+        "value": 5.695273e-10
+      },
+      "step": "dropout"
+    },
+    {
+      "name": "dropout.tail_i_set",
+      "unit": null,
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/-40C",
+        "value": 2.580095e-06,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "fs/novdd/-40C",
+        "value": 2.369464e-06
+      },
+      "max": {
+        "corner_id": "sf/novdd/125C",
+        "value": 3.908108e-06
+      },
+      "step": "dropout"
+    },
+    {
+      "name": "dropout.biasref_i_set",
+      "unit": null,
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/-40C",
+        "value": 6.005048e-07,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "fs/novdd/-40C",
+        "value": 4.852975e-07
+      },
+      "max": {
+        "corner_id": "sf/novdd/125C",
+        "value": 9.968484e-07
+      },
+      "step": "dropout"
+    }
+  ],
+  "corners": [
+    {
+      "corner_id": "tt/novdd/-40C",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": -40.0,
+      "status": "pass",
+      "runtime_s": 4.111,
+      "peak_rss_bytes": 185262080,
+      "engine_exit_code": 0,
+      "engine_killed_by_signal": null,
+      "measurements": [
+        {
+          "name": "dropout.dropout_vin_x",
+          "value": 1.939303,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.vout_at_max_vin_v",
+          "value": 1.801164,
+          "unit": "V",
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.dropout_v",
+          "value": 0.175303,
+          "unit": "V",
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.ea_out_at_x",
+          "value": 0.2348228,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.tail_i_at_x",
+          "value": 2.347052e-06,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.mclim_i_at_x",
+          "value": 5.182366e-07,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.vout_at_2v064",
+          "value": 1.794508,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.mclim_vgs_at_2v064",
+          "value": 0.08224556,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.mclim_i_at_2v064",
+          "value": 2.665749e-17,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.tail_i_set",
+          "value": 2.580095e-06,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.biasref_i_set",
+          "value": 6.005048e-07,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-692/sim/dropout-vs-load/diagnostics/issue-692-20261120-235900/runs/dropout-cand/klt-out/v2.97/tt_novdd_n40C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-692/sim/dropout-vs-load/diagnostics/issue-692-20261120-235900/runs/dropout-cand/klt-out/v2.97/tt_novdd_n40C/corner.cir"
+      },
+      "monte_carlo": null,
+      "steps": [
+        {
+          "name": "dropout",
+          "kind": "tran",
+          "status": "ok"
+        }
+      ]
+    },
+    {
+      "corner_id": "tt/novdd/27C",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27.0,
+      "status": "pass",
+      "runtime_s": 4.099,
+      "peak_rss_bytes": 185262080,
+      "engine_exit_code": 0,
+      "engine_killed_by_signal": null,
+      "measurements": [
+        {
+          "name": "dropout.dropout_vin_x",
+          "value": 1.927419,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.vout_at_max_vin_v",
+          "value": 1.801694,
+          "unit": "V",
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.dropout_v",
+          "value": 0.163419,
+          "unit": "V",
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.ea_out_at_x",
+          "value": 0.1039838,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.tail_i_at_x",
+          "value": 2.827334e-06,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.mclim_i_at_x",
+          "value": 1.444173e-07,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.vout_at_2v064",
+          "value": 1.793286,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.mclim_vgs_at_2v064",
+          "value": 0.06240584,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.mclim_i_at_2v064",
+          "value": 7.399819e-14,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.tail_i_set",
+          "value": 3.094383e-06,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.biasref_i_set",
+          "value": 7.297893e-07,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-692/sim/dropout-vs-load/diagnostics/issue-692-20261120-235900/runs/dropout-cand/klt-out/v2.97/tt_novdd_27C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-692/sim/dropout-vs-load/diagnostics/issue-692-20261120-235900/runs/dropout-cand/klt-out/v2.97/tt_novdd_27C/corner.cir"
+      },
+      "monte_carlo": null,
+      "steps": [
+        {
+          "name": "dropout",
+          "kind": "tran",
+          "status": "ok"
+        }
+      ]
+    },
+    {
+      "corner_id": "tt/novdd/125C",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 125.0,
+      "status": "pass",
+      "runtime_s": 4.069,
+      "peak_rss_bytes": 185061376,
+      "engine_exit_code": 0,
+      "engine_killed_by_signal": null,
+      "measurements": [
+        {
+          "name": "dropout.dropout_vin_x",
+          "value": 1.948506,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.vout_at_max_vin_v",
+          "value": 1.802732,
+          "unit": "V",
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.dropout_v",
+          "value": 0.184506,
+          "unit": "V",
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.ea_out_at_x",
+          "value": 0.1280019,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.tail_i_at_x",
+          "value": 3.453079e-06,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.mclim_i_at_x",
+          "value": 4.033125e-10,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.vout_at_2v064",
+          "value": 1.791242,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.mclim_vgs_at_2v064",
+          "value": 0.06347488,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.mclim_i_at_2v064",
+          "value": 1.138135e-10,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.tail_i_set",
+          "value": 3.742838e-06,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.biasref_i_set",
+          "value": 8.872106e-07,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-692/sim/dropout-vs-load/diagnostics/issue-692-20261120-235900/runs/dropout-cand/klt-out/v2.97/tt_novdd_125C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-692/sim/dropout-vs-load/diagnostics/issue-692-20261120-235900/runs/dropout-cand/klt-out/v2.97/tt_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null,
+      "steps": [
+        {
+          "name": "dropout",
+          "kind": "tran",
+          "status": "ok"
+        }
+      ]
+    },
+    {
+      "corner_id": "ss/novdd/-40C",
+      "process": "ss",
+      "supply_v": {},
+      "temperature_c": -40.0,
+      "status": "pass",
+      "runtime_s": 4.091,
+      "peak_rss_bytes": 185106432,
+      "engine_exit_code": 0,
+      "engine_killed_by_signal": null,
+      "measurements": [
+        {
+          "name": "dropout.dropout_vin_x",
+          "value": 1.919212,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.vout_at_max_vin_v",
+          "value": 1.800951,
+          "unit": "V",
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.dropout_v",
+          "value": 0.155212,
+          "unit": "V",
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.ea_out_at_x",
+          "value": 0.05833502,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.tail_i_at_x",
+          "value": 2.260436e-06,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.mclim_i_at_x",
+          "value": 2.313849e-09,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.vout_at_2v064",
+          "value": 1.79391,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.mclim_vgs_at_2v064",
+          "value": 0.04860785,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.mclim_i_at_2v064",
+          "value": 2.060063e-18,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.tail_i_set",
+          "value": 2.499069e-06,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.biasref_i_set",
+          "value": 5.613115e-07,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-692/sim/dropout-vs-load/diagnostics/issue-692-20261120-235900/runs/dropout-cand/klt-out/v2.97/ss_novdd_n40C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-692/sim/dropout-vs-load/diagnostics/issue-692-20261120-235900/runs/dropout-cand/klt-out/v2.97/ss_novdd_n40C/corner.cir"
+      },
+      "monte_carlo": null,
+      "steps": [
+        {
+          "name": "dropout",
+          "kind": "tran",
+          "status": "ok"
+        }
+      ]
+    },
+    {
+      "corner_id": "ss/novdd/27C",
+      "process": "ss",
+      "supply_v": {},
+      "temperature_c": 27.0,
+      "status": "pass",
+      "runtime_s": 4.091,
+      "peak_rss_bytes": 185262080,
+      "engine_exit_code": 0,
+      "engine_killed_by_signal": null,
+      "measurements": [
+        {
+          "name": "dropout.dropout_vin_x",
+          "value": 1.940356,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.vout_at_max_vin_v",
+          "value": 1.801444,
+          "unit": "V",
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.dropout_v",
+          "value": 0.176356,
+          "unit": "V",
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.ea_out_at_x",
+          "value": 0.08403686,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.tail_i_at_x",
+          "value": 2.764304e-06,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.mclim_i_at_x",
+          "value": 6.314029e-14,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.vout_at_2v064",
+          "value": 1.792499,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.mclim_vgs_at_2v064",
+          "value": 0.04647365,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.mclim_i_at_2v064",
+          "value": 1.525848e-14,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.tail_i_set",
+          "value": 3.019094e-06,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.biasref_i_set",
+          "value": 6.945237e-07,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-692/sim/dropout-vs-load/diagnostics/issue-692-20261120-235900/runs/dropout-cand/klt-out/v2.97/ss_novdd_27C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-692/sim/dropout-vs-load/diagnostics/issue-692-20261120-235900/runs/dropout-cand/klt-out/v2.97/ss_novdd_27C/corner.cir"
+      },
+      "monte_carlo": null,
+      "steps": [
+        {
+          "name": "dropout",
+          "kind": "tran",
+          "status": "ok"
+        }
+      ]
+    },
+    {
+      "corner_id": "ss/novdd/125C",
+      "process": "ss",
+      "supply_v": {},
+      "temperature_c": 125.0,
+      "status": "pass",
+      "runtime_s": 4.092,
+      "peak_rss_bytes": 185262080,
+      "engine_exit_code": 0,
+      "engine_killed_by_signal": null,
+      "measurements": [
+        {
+          "name": "dropout.dropout_vin_x",
+          "value": 1.965309,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.vout_at_max_vin_v",
+          "value": 1.802416,
+          "unit": "V",
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.dropout_v",
+          "value": 0.201309,
+          "unit": "V",
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.ea_out_at_x",
+          "value": 0.1254332,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.tail_i_at_x",
+          "value": 3.400024e-06,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.mclim_i_at_x",
+          "value": 6.682167e-11,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.vout_at_2v064",
+          "value": 1.790103,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.mclim_vgs_at_2v064",
+          "value": 0.05108716,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.mclim_i_at_2v064",
+          "value": 3.767554e-11,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.tail_i_set",
+          "value": 3.675085e-06,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.biasref_i_set",
+          "value": 8.577707e-07,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-692/sim/dropout-vs-load/diagnostics/issue-692-20261120-235900/runs/dropout-cand/klt-out/v2.97/ss_novdd_125C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-692/sim/dropout-vs-load/diagnostics/issue-692-20261120-235900/runs/dropout-cand/klt-out/v2.97/ss_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null,
+      "steps": [
+        {
+          "name": "dropout",
+          "kind": "tran",
+          "status": "ok"
+        }
+      ]
+    },
+    {
+      "corner_id": "ff/novdd/-40C",
+      "process": "ff",
+      "supply_v": {},
+      "temperature_c": -40.0,
+      "status": "pass",
+      "runtime_s": 4.1,
+      "peak_rss_bytes": 185262080,
+      "engine_exit_code": 0,
+      "engine_killed_by_signal": null,
+      "measurements": [
+        {
+          "name": "dropout.dropout_vin_x",
+          "value": 1.983241,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.vout_at_max_vin_v",
+          "value": 1.801384,
+          "unit": "V",
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.dropout_v",
+          "value": 0.219241,
+          "unit": "V",
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.ea_out_at_x",
+          "value": 0.4465882,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.tail_i_at_x",
+          "value": 2.425849e-06,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.mclim_i_at_x",
+          "value": 5.81723e-07,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.vout_at_2v064",
+          "value": 1.795034,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.mclim_vgs_at_2v064",
+          "value": 0.4295668,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.mclim_i_at_2v064",
+          "value": 2.354681e-12,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.tail_i_set",
+          "value": 2.643924e-06,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.biasref_i_set",
+          "value": 6.374642e-07,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-692/sim/dropout-vs-load/diagnostics/issue-692-20261120-235900/runs/dropout-cand/klt-out/v2.97/ff_novdd_n40C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-692/sim/dropout-vs-load/diagnostics/issue-692-20261120-235900/runs/dropout-cand/klt-out/v2.97/ff_novdd_n40C/corner.cir"
+      },
+      "monte_carlo": null,
+      "steps": [
+        {
+          "name": "dropout",
+          "kind": "tran",
+          "status": "ok"
+        }
+      ]
+    },
+    {
+      "corner_id": "ff/novdd/27C",
+      "process": "ff",
+      "supply_v": {},
+      "temperature_c": 27.0,
+      "status": "pass",
+      "runtime_s": 4.078,
+      "peak_rss_bytes": 185061376,
+      "engine_exit_code": 0,
+      "engine_killed_by_signal": null,
+      "measurements": [
+        {
+          "name": "dropout.dropout_vin_x",
+          "value": 1.950212,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.vout_at_max_vin_v",
+          "value": 1.801951,
+          "unit": "V",
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.dropout_v",
+          "value": 0.186212,
+          "unit": "V",
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.ea_out_at_x",
+          "value": 0.3177859,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.tail_i_at_x",
+          "value": 2.899979e-06,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.mclim_i_at_x",
+          "value": 5.044699e-07,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.vout_at_2v064",
+          "value": 1.793983,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.mclim_vgs_at_2v064",
+          "value": 0.09277144,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.mclim_i_at_2v064",
+          "value": 4.996492e-13,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.tail_i_set",
+          "value": 3.155751e-06,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.biasref_i_set",
+          "value": 7.627564e-07,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-692/sim/dropout-vs-load/diagnostics/issue-692-20261120-235900/runs/dropout-cand/klt-out/v2.97/ff_novdd_27C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-692/sim/dropout-vs-load/diagnostics/issue-692-20261120-235900/runs/dropout-cand/klt-out/v2.97/ff_novdd_27C/corner.cir"
+      },
+      "monte_carlo": null,
+      "steps": [
+        {
+          "name": "dropout",
+          "kind": "tran",
+          "status": "ok"
+        }
+      ]
+    },
+    {
+      "corner_id": "ff/novdd/125C",
+      "process": "ff",
+      "supply_v": {},
+      "temperature_c": 125.0,
+      "status": "pass",
+      "runtime_s": 3.463,
+      "peak_rss_bytes": 185290752,
+      "engine_exit_code": 0,
+      "engine_killed_by_signal": null,
+      "measurements": [
+        {
+          "name": "dropout.dropout_vin_x",
+          "value": 1.940585,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.vout_at_max_vin_v",
+          "value": 1.803047,
+          "unit": "V",
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.dropout_v",
+          "value": 0.176585,
+          "unit": "V",
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.ea_out_at_x",
+          "value": 0.1863027,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.tail_i_at_x",
+          "value": 3.501764e-06,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.mclim_i_at_x",
+          "value": 2.58382e-07,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.vout_at_2v064",
+          "value": 1.792228,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.mclim_vgs_at_2v064",
+          "value": 0.08061936,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.mclim_i_at_2v064",
+          "value": 3.75149e-10,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.tail_i_set",
+          "value": 3.799603e-06,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.biasref_i_set",
+          "value": 9.143411e-07,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-692/sim/dropout-vs-load/diagnostics/issue-692-20261120-235900/runs/dropout-cand/klt-out/v2.97/ff_novdd_125C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-692/sim/dropout-vs-load/diagnostics/issue-692-20261120-235900/runs/dropout-cand/klt-out/v2.97/ff_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null,
+      "steps": [
+        {
+          "name": "dropout",
+          "kind": "tran",
+          "status": "ok"
+        }
+      ]
+    },
+    {
+      "corner_id": "sf/novdd/-40C",
+      "process": "sf",
+      "supply_v": {},
+      "temperature_c": -40.0,
+      "status": "pass",
+      "runtime_s": 3.454,
+      "peak_rss_bytes": 185290752,
+      "engine_exit_code": 0,
+      "engine_killed_by_signal": null,
+      "measurements": [
+        {
+          "name": "dropout.dropout_vin_x",
+          "value": 1.924415,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.vout_at_max_vin_v",
+          "value": 1.801016,
+          "unit": "V",
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.dropout_v",
+          "value": 0.160415,
+          "unit": "V",
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.ea_out_at_x",
+          "value": 0.05887961,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.tail_i_at_x",
+          "value": 2.483243e-06,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.mclim_i_at_x",
+          "value": 1.1219e-08,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.vout_at_2v064",
+          "value": 1.794332,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.mclim_vgs_at_2v064",
+          "value": 0.06220966,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.mclim_i_at_2v064",
+          "value": 1.086252e-18,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.tail_i_set",
+          "value": 2.729122e-06,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.biasref_i_set",
+          "value": 7.188697e-07,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-692/sim/dropout-vs-load/diagnostics/issue-692-20261120-235900/runs/dropout-cand/klt-out/v2.97/sf_novdd_n40C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-692/sim/dropout-vs-load/diagnostics/issue-692-20261120-235900/runs/dropout-cand/klt-out/v2.97/sf_novdd_n40C/corner.cir"
+      },
+      "monte_carlo": null,
+      "steps": [
+        {
+          "name": "dropout",
+          "kind": "tran",
+          "status": "ok"
+        }
+      ]
+    },
+    {
+      "corner_id": "sf/novdd/27C",
+      "process": "sf",
+      "supply_v": {},
+      "temperature_c": 27.0,
+      "status": "pass",
+      "runtime_s": 3.419,
+      "peak_rss_bytes": 185262080,
+      "engine_exit_code": 0,
+      "engine_killed_by_signal": null,
+      "measurements": [
+        {
+          "name": "dropout.dropout_vin_x",
+          "value": 1.944065,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.vout_at_max_vin_v",
+          "value": 1.801531,
+          "unit": "V",
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.dropout_v",
+          "value": 0.180065,
+          "unit": "V",
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.ea_out_at_x",
+          "value": 0.08359971,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.tail_i_at_x",
+          "value": 2.992613e-06,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.mclim_i_at_x",
+          "value": 5.728196e-14,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.vout_at_2v064",
+          "value": 1.793018,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.mclim_vgs_at_2v064",
+          "value": 0.05685142,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.mclim_i_at_2v064",
+          "value": 8.427105e-15,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.tail_i_set",
+          "value": 3.254685e-06,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.biasref_i_set",
+          "value": 8.451856e-07,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-692/sim/dropout-vs-load/diagnostics/issue-692-20261120-235900/runs/dropout-cand/klt-out/v2.97/sf_novdd_27C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-692/sim/dropout-vs-load/diagnostics/issue-692-20261120-235900/runs/dropout-cand/klt-out/v2.97/sf_novdd_27C/corner.cir"
+      },
+      "monte_carlo": null,
+      "steps": [
+        {
+          "name": "dropout",
+          "kind": "tran",
+          "status": "ok"
+        }
+      ]
+    },
+    {
+      "corner_id": "sf/novdd/125C",
+      "process": "sf",
+      "supply_v": {},
+      "temperature_c": 125.0,
+      "status": "pass",
+      "runtime_s": 3.432,
+      "peak_rss_bytes": 185290752,
+      "engine_exit_code": 0,
+      "engine_killed_by_signal": null,
+      "measurements": [
+        {
+          "name": "dropout.dropout_vin_x",
+          "value": 1.967064,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.vout_at_max_vin_v",
+          "value": 1.802551,
+          "unit": "V",
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.dropout_v",
+          "value": 0.203064,
+          "unit": "V",
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.ea_out_at_x",
+          "value": 0.1241088,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.tail_i_at_x",
+          "value": 3.626605e-06,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.mclim_i_at_x",
+          "value": 4.482232e-11,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.vout_at_2v064",
+          "value": 1.79082,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.mclim_vgs_at_2v064",
+          "value": 0.06091136,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.mclim_i_at_2v064",
+          "value": 2.321385e-11,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.tail_i_set",
+          "value": 3.908108e-06,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.biasref_i_set",
+          "value": 9.968484e-07,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-692/sim/dropout-vs-load/diagnostics/issue-692-20261120-235900/runs/dropout-cand/klt-out/v2.97/sf_novdd_125C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-692/sim/dropout-vs-load/diagnostics/issue-692-20261120-235900/runs/dropout-cand/klt-out/v2.97/sf_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null,
+      "steps": [
+        {
+          "name": "dropout",
+          "kind": "tran",
+          "status": "ok"
+        }
+      ]
+    },
+    {
+      "corner_id": "fs/novdd/-40C",
+      "process": "fs",
+      "supply_v": {},
+      "temperature_c": -40.0,
+      "status": "pass",
+      "runtime_s": 3.444,
+      "peak_rss_bytes": 185290752,
+      "engine_exit_code": 0,
+      "engine_killed_by_signal": null,
+      "measurements": [
+        {
+          "name": "dropout.dropout_vin_x",
+          "value": 1.973685,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.vout_at_max_vin_v",
+          "value": 1.801331,
+          "unit": "V",
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.dropout_v",
+          "value": 0.209685,
+          "unit": "V",
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.ea_out_at_x",
+          "value": 0.4546489,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.tail_i_at_x",
+          "value": 2.159719e-06,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.mclim_i_at_x",
+          "value": 5.152217e-07,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.vout_at_2v064",
+          "value": 1.794507,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.mclim_vgs_at_2v064",
+          "value": 0.2722516,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.mclim_i_at_2v064",
+          "value": 7.787216e-14,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.tail_i_set",
+          "value": 2.369464e-06,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.biasref_i_set",
+          "value": 4.852975e-07,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-692/sim/dropout-vs-load/diagnostics/issue-692-20261120-235900/runs/dropout-cand/klt-out/v2.97/fs_novdd_n40C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-692/sim/dropout-vs-load/diagnostics/issue-692-20261120-235900/runs/dropout-cand/klt-out/v2.97/fs_novdd_n40C/corner.cir"
+      },
+      "monte_carlo": null,
+      "steps": [
+        {
+          "name": "dropout",
+          "kind": "tran",
+          "status": "ok"
+        }
+      ]
+    },
+    {
+      "corner_id": "fs/novdd/27C",
+      "process": "fs",
+      "supply_v": {},
+      "temperature_c": 27.0,
+      "status": "pass",
+      "runtime_s": 3.417,
+      "peak_rss_bytes": 185290752,
+      "engine_exit_code": 0,
+      "engine_killed_by_signal": null,
+      "measurements": [
+        {
+          "name": "dropout.dropout_vin_x",
+          "value": 1.94281,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.vout_at_max_vin_v",
+          "value": 1.801876,
+          "unit": "V",
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.dropout_v",
+          "value": 0.17881,
+          "unit": "V",
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.ea_out_at_x",
+          "value": 0.3056568,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.tail_i_at_x",
+          "value": 2.640317e-06,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.mclim_i_at_x",
+          "value": 4.462851e-07,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.vout_at_2v064",
+          "value": 1.79337,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.mclim_vgs_at_2v064",
+          "value": 0.07349717,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.mclim_i_at_2v064",
+          "value": 7.328132e-13,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.tail_i_set",
+          "value": 2.890102e-06,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.biasref_i_set",
+          "value": 6.169494e-07,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-692/sim/dropout-vs-load/diagnostics/issue-692-20261120-235900/runs/dropout-cand/klt-out/v2.97/fs_novdd_27C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-692/sim/dropout-vs-load/diagnostics/issue-692-20261120-235900/runs/dropout-cand/klt-out/v2.97/fs_novdd_27C/corner.cir"
+      },
+      "monte_carlo": null,
+      "steps": [
+        {
+          "name": "dropout",
+          "kind": "tran",
+          "status": "ok"
+        }
+      ]
+    },
+    {
+      "corner_id": "fs/novdd/125C",
+      "process": "fs",
+      "supply_v": {},
+      "temperature_c": 125.0,
+      "status": "pass",
+      "runtime_s": 3.414,
+      "peak_rss_bytes": 185290752,
+      "engine_exit_code": 0,
+      "engine_killed_by_signal": null,
+      "measurements": [
+        {
+          "name": "dropout.dropout_vin_x",
+          "value": 1.934612,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.vout_at_max_vin_v",
+          "value": 1.802908,
+          "unit": "V",
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.dropout_v",
+          "value": 0.170612,
+          "unit": "V",
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.ea_out_at_x",
+          "value": 0.1472582,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.tail_i_at_x",
+          "value": 3.253405e-06,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.mclim_i_at_x",
+          "value": 7.603487e-08,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.vout_at_2v064",
+          "value": 1.791405,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.mclim_vgs_at_2v064",
+          "value": 0.0675076,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.mclim_i_at_2v064",
+          "value": 5.695273e-10,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.tail_i_set",
+          "value": 3.548236e-06,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        },
+        {
+          "name": "dropout.biasref_i_set",
+          "value": 7.79528e-07,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dropout"
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-692/sim/dropout-vs-load/diagnostics/issue-692-20261120-235900/runs/dropout-cand/klt-out/v2.97/fs_novdd_125C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-692/sim/dropout-vs-load/diagnostics/issue-692-20261120-235900/runs/dropout-cand/klt-out/v2.97/fs_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null,
+      "steps": [
+        {
+          "name": "dropout",
+          "kind": "tran",
+          "status": "ok"
+        }
+      ]
+    }
+  ],
+  "diagnostics": [
+    {
+      "severity": "warning",
+      "code": "model_bin_range_preflight",
+      "message": "preflight: instance 'XM_PASS' (sky130_fd_pr__pfet_g5v0d10v5) has w=100u nf=25, at/above the ~100 um per-instance width bin range some PDKs enforce (keyed on w as written; nf= does not widen it); ngspice may abort with \"could not find a valid modelname\". Use m= to parallel smaller-width instances (see issue #4976)",
+      "instance": "XM_PASS",
+      "model": "sky130_fd_pr__pfet_g5v0d10v5",
+      "w_um": 100.0,
+      "nf": 25.0
+    }
+  ]
+}

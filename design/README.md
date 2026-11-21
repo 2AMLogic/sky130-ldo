@@ -556,6 +556,20 @@ without restoring drive, because `EA_OUT`'s floor barely moves with it
 change into a dropout fix would also have confounded the very measurement that
 had to be taken. Preserved as a follow-up issue rather than discarded.
 
+> **Update (2026-11-20, issues #323/#339/#357/#692): the tail-headroom reading
+> above is the measured mechanism after all — at low `VIN`, not at the divider.**
+> #323 attributed the tt/27 °C/50 mA limit to amplifier tail/bias headroom
+> collapse plus the current-limit clamp conducting as `VIN` falls, not to pass
+> gate headroom (`sim/dropout-vs-load/diagnostics/issue-323/`); #339 showed the
+> two interventions together reach 0.164 V with ideal sources
+> (`.../issue-339/`); #357 screened the physical candidate — NMOS-input OTA +
+> VREF-referenced clamp, pass device unchanged — at **0.163237 V** against the
+> 0.397658 V baseline (`.../issue-357/`); and #692's paired 45-point PVT
+> campaign holds the row at **every corner** (rev2 binding ff/-40 °C/2.97 V,
+> 0.2202 V, verdict ADOPT-REVIEW; the production-adoption review owns the
+> remaining rows) (`.../issue-692-20261120-235900/`). Do not pick up the
+> pre-#323 "`EA_OUT` floor is the open limiter" reading above without those.
+
 ### Amplifier sizing revision (#22)
 
 The corrected pass device is 25× wider, so the amplifier has to throttle it
