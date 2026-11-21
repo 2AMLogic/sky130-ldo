@@ -13,6 +13,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 import _fleet_campaign as fc  # noqa: E402
+from _corner_model import detect_solver_diagnostic  # noqa: E402
 from _record_common import JOB_ID_RE, is_finite_number  # noqa: E402
 
 adaptive = importlib.import_module("rcz-adaptive-370")
@@ -26,6 +27,9 @@ LOADS = {
     "1mA": "1800",
     "50mA": "36",
 }
+# Operating-point validity window for an AC linearization: the loop-gain bench's seeded
+# VOUT gate (sim/loop-gain/experiment.json, vout_seed_p1_v), 1.8 V +/- 10 %.
+VOUT_OP_MIN, VOUT_OP_MAX = 1.62, 1.98
 ESRS = {"0": 0, "10m": 0.010, "500m": 0.500}
 CORNERS = {"tt": [("tt", 27.0)], "pvt": adaptive.PVT_CORNERS}
 MECHANISM = (
@@ -71,6 +75,14 @@ def key_for(stage, design, cap, esr, load):
     return f"{stage}__{design}__{cap}_{esr}_{load}"
 
 
+def ohms(text):
+    return float(text[:-1]) * 1e3 if text.endswith("k") else float(text)
+
+
+def op_key(stage, design):
+    return f"{stage}__{design}__op"
+
+
 def write_request(out, pdk, key, body, corners, shape):
     net = out / "requests" / f"{key}.spice"
     net.write_text(fc.deck(body, adaptive.VSUP))
@@ -102,6 +114,38 @@ def ac_requests(out, pdk, body, stage, design):
             )
         )
     return jobs
+
+
+def op_requests(out, pdk, body, stage, design):
+    """The DC bias VOUT of every load the AC grid linearizes around, for one design.
+
+    COUT and the ESR sense do not move the bias, so one reset step per load covers the grid.
+    """
+    steps = [
+        {
+            "name": "op_" + load,
+            "reset": True,
+            "analysis": {"kind": "op", "args": ""},
+            "alter": {"RLOAD": ohms(LOADS[load])},
+            "measurements": [{"name": "vout", "expr": "v(vout)", "unit": "V"}],
+        }
+        for load in LOADS
+    ]
+    b = fc.sub_line(
+        fc.insert_loop_gain_probe(variant(body, design)),
+        "RLOAD",
+        "RLOAD VOUT 0 1800 m=1",
+    )
+    return [
+        write_request(
+            out,
+            pdk,
+            op_key(stage, design),
+            b,
+            CORNERS[stage],
+            {"analysis_steps": steps},
+        )
+    ]
 
 
 def survivor_requests(out, pdk, body, design):
@@ -203,9 +247,19 @@ def measurements(corner):
     return values
 
 
+def solver_reason(corner):
+    """The solver-contract marker (initial-condition-contract.md), at any diagnostic severity."""
+    for diag in corner.get("diagnostics", []):
+        line = detect_solver_diagnostic(str(diag.get("message", "")))
+        if line:
+            return f"solver diagnostic: {line}"
+    return None
+
+
 def margins(resp, process, temp):
     c, job, reason = corner_data(resp, process, temp)
     values = measurements(c)
+    reason = reason or solver_reason(c)
     for diag in c.get("diagnostics", []):
         if diag.get("severity") == "error":
             reason = (
@@ -218,6 +272,22 @@ def margins(resp, process, temp):
     if missing:
         reason = reason or f"missing or invalid {', '.join(missing)}"
     return {"pm": pm, "gm": gm, "job_id": job, "reason": reason}
+
+
+def bias_reason(out, stage, design, load, process, temp):
+    """Why the AC linearization point is not a regulating state, or None."""
+    c, _, reason = corner_data(response(out, op_key(stage, design)), process, temp)
+    if reason:
+        return f"operating point: {reason}"
+    reason = solver_reason(c)
+    if reason:
+        return f"operating point {reason}"
+    vout = measurements(c).get(f"op_{load}.vout")
+    if vout is None:
+        return "operating point: missing VOUT"
+    if not VOUT_OP_MIN <= vout <= VOUT_OP_MAX:
+        return f"operating point: non-regulating VOUT {vout:.3f} V"
+    return None
 
 
 def ac_rows(out, stage, meta):
@@ -236,6 +306,11 @@ def ac_rows(out, stage, meta):
                 )
             )
         for process, temp in CORNERS[stage]:
+            row = margins(resp, process, temp)
+            # An AC failure is reported first. The bias check adds a reason only when the AC
+            # corner is otherwise valid, so an absent response never reads as a bias fault.
+            if not row["reason"]:
+                row["reason"] = bias_reason(out, stage, design, load, process, temp)
             rows.append(
                 {
                     "design": design,
@@ -244,7 +319,7 @@ def ac_rows(out, stage, meta):
                     "load": load,
                     "process": process,
                     "temp": temp,
-                    **margins(resp, process, temp),
+                    **row,
                 }
             )
     return rows
@@ -357,7 +432,9 @@ def main():
     body = fc.netlist("tb_loop_gain", out / "requests", root)
     for stage in CORNERS:
         for design in DESIGNS:
-            jobs = ac_requests(out, pdk, body, stage, design)
+            jobs = ac_requests(out, pdk, body, stage, design) + op_requests(
+                out, pdk, body, stage, design
+            )
             meta["errors"].update(submit(jobs, out, env, args.workers))
             checkpoint()
         rows = ac_rows(out, stage, meta)

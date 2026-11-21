@@ -69,6 +69,8 @@ def ac_table(lines, stage, rows):
 def survivor_corner(out, key, process, temp, transient=False):
     c, job, error = screen.corner_data(screen.response(out, key), process, temp)
     values = screen.measurements(c)
+    # The solver contract applies at any severity: a warning-only singular matrix is invalid.
+    error = error or screen.solver_reason(c)
     errors = [d for d in c.get("diagnostics", []) if d.get("severity") == "error"]
     # klt reports the corner as error when a valid tran has no band crossing.
     crossing_names = {
@@ -88,17 +90,37 @@ def survivor_corner(out, key, process, temp, transient=False):
     return values, job, error
 
 
+def _d(value):
+    # Decimal of the shortest repr: grade at the precision the simulator reported.
+    return Decimal(str(value))
+
+
 def tran_result(m):
-    grade = adaptive.grade_tran(m)
-    # For an excursion that settles, each visited boundary needs a post-step crossing.
-    if grade["valid"] and abs(m["vfin"] - adaptive.VNOM) <= adaptive.BAND:
-        for excursion, card in (
-            (m["vmin"] < adaptive.VNOM - adaptive.BAND, "tlo"),
-            (m["vmax"] > adaptive.VNOM + adaptive.BAND, "thi"),
-        ):
-            if excursion and (m.get(card) is None or m[card] < adaptive.T_STEP):
-                return dict(grade, valid=False, recovered=False, rec_us=None)
-    return grade
+    """Grade one transient with inclusive limits, free of binary-float noise at the band edges."""
+    if any(m.get(k) is None for k in ("pre", "vmin", "vmax", "vfin")):
+        return {"valid": False, "recovered": False, "peak_v": None, "rec_us": None}
+    nom, band, t_step = _d(adaptive.VNOM), _d(adaptive.BAND), _d(adaptive.T_STEP)
+    pre, lo, hi, fin = (_d(m[k]) for k in ("pre", "vmin", "vmax", "vfin"))
+    peak = float(max(pre - lo, hi - pre))
+    if lo >= nom - band and hi <= nom + band:
+        return {"valid": True, "recovered": True, "peak_v": peak, "rec_us": 0.0}
+    unrecovered = {"valid": True, "recovered": False, "peak_v": peak, "rec_us": None}
+    if abs(fin - nom) > band:
+        return unrecovered
+    # An excursion that settles needs a post-step crossing of each boundary it visited.
+    crossings = []
+    for visited, card in ((lo < nom - band, "tlo"), (hi > nom + band, "thi")):
+        t = m.get(card)
+        if visited and (t is None or _d(t) < t_step):
+            return dict(unrecovered, valid=False)
+    for card in ("tlo", "thi"):
+        if m.get(card) is not None:
+            crossings.append(_d(m[card]))
+    if not crossings:
+        return unrecovered
+    return dict(
+        unrecovered, recovered=True, rec_us=float((max(crossings) - t_step) * 1_000_000)
+    )
 
 
 def survivor_tables(out, lines):

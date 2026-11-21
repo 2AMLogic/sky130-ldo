@@ -102,6 +102,105 @@ class Grid(unittest.TestCase):
             self.assertIn(fragment, screen.margins(r, "tt", 27)["reason"])
 
 
+def corner_response(measures, diagnostics=(), process="tt", temp=27):
+    return {
+        "environment": {"remote": {"job_id": "job"}},
+        "corners": [
+            {
+                "process": process,
+                "temperature_c": temp,
+                "status": "pass",
+                "measurements": [
+                    {"name": k, "value": v, "status": "pass"}
+                    for k, v in measures.items()
+                ],
+                "diagnostics": list(diagnostics),
+            }
+        ],
+    }
+
+
+SINGULAR = {
+    "severity": "warning",
+    "code": "singular_matrix",
+    "message": "Warning: singular matrix:  check node xldo.ea_cz",
+}
+
+
+class Validity(unittest.TestCase):
+    def test_warning_severity_solver_diagnostics_invalidate_ac(self):
+        resp = corner_response({"pm": 45, "gm": 10}, [SINGULAR])
+        reason = screen.margins(resp, "tt", 27)["reason"]
+        self.assertIn("solver diagnostic", reason)
+        self.assertIn("singular matrix", reason)
+        resp = corner_response({"pm": 45, "gm": 10}, [dict(SINGULAR, message="note")])
+        self.assertIsNone(screen.margins(resp, "tt", 27)["reason"])
+
+    def test_op_request_covers_every_load_per_design_and_stage(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp)
+            (out / "requests").mkdir()
+            for stage in ("tt", "pvt"):
+                for design in screen.DESIGNS:
+                    ((key, path),) = screen.op_requests(
+                        out,
+                        {"variant": "sky130A", "ngspice_lib": "model"},
+                        BODY,
+                        stage,
+                        design,
+                    )
+                    self.assertEqual(key, screen.op_key(stage, design))
+                    req = json.loads(path.read_text())
+                    steps = req["analysis_steps"]
+                    self.assertEqual(
+                        [x["name"] for x in steps], ["op_" + k for k in screen.LOADS]
+                    )
+                    self.assertTrue(all(x["reset"] for x in steps))
+                    self.assertEqual(
+                        [x["alter"]["RLOAD"] for x in steps],
+                        [screen.ohms(v) for v in screen.LOADS.values()],
+                    )
+
+    def test_bias_window_gates_every_ac_row_before_advance(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp)
+            meta = {"preflight": {"exit": 0}, "errors": {}}
+            ac = corner_response({"pm": 62, "gm": 39})
+            for design in screen.DESIGNS:
+                for cap, esr, load in screen.grid("tt"):
+                    key = screen.key_for("tt", design, cap, esr, load)
+                    (out / "responses" / key).mkdir(parents=True)
+                    (out / "responses" / key / "klt.stdout").write_text(json.dumps(ac))
+
+            def write_op(design, vout, diagnostics=()):
+                values = (
+                    {} if vout is None else {f"op_{k}.vout": vout for k in screen.LOADS}
+                )
+                path = out / "responses" / screen.op_key("tt", design)
+                path.mkdir(parents=True, exist_ok=True)
+                (path / "klt.stdout").write_text(
+                    json.dumps(corner_response(values, diagnostics))
+                )
+
+            def rows():
+                return screen.ac_rows(out, "tt", meta)
+
+            # no operating-point data at all
+            self.assertTrue(all("operating point" in r["reason"] for r in rows()))
+            for design in screen.DESIGNS:
+                write_op(design, 1.8)
+            self.assertTrue(all(r["reason"] is None for r in rows()))
+            self.assertTrue(screen.advance(rows(), "tt"))
+            for vout, ok in ((1.62, True), (1.98, True), (1.6199, False), (3.3, False)):
+                write_op("shelf", vout)
+                self.assertEqual(screen.advance(rows(), "tt"), ok, vout)
+            write_op("shelf", 1.8, [SINGULAR])
+            self.assertFalse(screen.advance(rows(), "tt"))
+            self.assertTrue(
+                any("solver diagnostic" in (r["reason"] or "") for r in rows())
+            )
+
+
 report = load_script("rcz_shelf_report_691", BIN / "rcz-shelf-691-report.py")
 
 
@@ -141,6 +240,51 @@ class Reporting(unittest.TestCase):
         self.assertAlmostEqual(
             report.tran_result(dict(m, vmin=1.70, tlo=0.00014))["rec_us"], 40
         )
+
+    def test_transient_limits_are_inclusive_at_reported_precision(self):
+        m = {
+            "pre": 1.8,
+            "vmin": 1.8,
+            "vmax": 1.8,
+            "vfin": 1.8,
+            "tlo": None,
+            "thi": None,
+        }
+        down = report.tran_result(dict(m, pre=1.8, vmin=1.65, vfin=1.8, tlo=0.00012))
+        up = report.tran_result(dict(m, vmax=1.95, vfin=1.8, thi=0.00012))
+        self.assertEqual(down["peak_v"], up["peak_v"])
+        self.assertEqual(down["peak_v"], 0.15)
+        self.assertEqual(down["rec_us"], 20.0)
+        # the strict inequality on peak and recovery lives in the table; these sit on the limit
+        self.assertFalse(
+            report.tran_result(dict(m, vmin=1.6499, tlo=0.00012))["peak_v"] <= 0.15
+        )
+        for edge in (1.782, 1.818):
+            r = report.tran_result(
+                dict(m, vmin=1.7, vfin=edge, tlo=0.00014, thi=0.00014)
+            )
+            self.assertTrue(r["recovered"], edge)
+        for edge in (1.7819, 1.8181):
+            r = report.tran_result(
+                dict(m, vmin=1.7, vfin=edge, tlo=0.00014, thi=0.00014)
+            )
+            self.assertFalse(r["recovered"], edge)
+        self.assertEqual(
+            report.tran_result(dict(m, vmin=1.782, vmax=1.818))["rec_us"], 0.0
+        )
+
+    def test_survivor_warning_diagnostics_invalidate_the_corner(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp)
+            path = out / "responses" / "iq__baseline"
+            path.mkdir(parents=True)
+            resp = corner_response({"iq_0mA.ivin": 1e-5}, [SINGULAR], "ss", -40)
+            (path / "klt.stdout").write_text(json.dumps(resp))
+            _, _, error = report.survivor_corner(out, "iq__baseline", "ss", -40)
+            self.assertIn("singular matrix", error)
+            resp["corners"][0]["diagnostics"] = []
+            (path / "klt.stdout").write_text(json.dumps(resp))
+            self.assertIsNone(report.survivor_corner(out, "iq__baseline", "ss", -40)[2])
 
     def test_survivor_iq_delta_and_strict_limit(self):
         with tempfile.TemporaryDirectory() as tmp:
