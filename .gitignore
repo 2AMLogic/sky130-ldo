@@ -133,3 +133,7 @@ layout/.venv-cap/
 
 # Repo Skills Codex-side machine-local install metadata (never committed)
 .agents/skills/repo/.install-local.json
+# issue #706 paired campaign diagnostics: the raw per-corner engine logs and
+# batch outputs are committed evidence (same convention as issue #357/#692's
+# diagnostics dirs), so they escape the *.log rule.
+!sim/iq/diagnostics/issue-706/**/*.log
