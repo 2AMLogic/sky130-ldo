@@ -8,6 +8,8 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 
 ### 2026-11-21
 
+- **PR #713**: ci: stop re-running CI on PR label writes; split smoke into pdk-smoke.yml
+- **Issue #707** (closed): ci.yml triggers a full CI run on every label change (pull_request: types includes 'labeled')
 - **PR #712**: fix: derive the rcz-shelf report's possible-request inventory from the driver's builders
 - **Issue #700** (closed): Diagnostic record states 118 dry-run-validated batch requests; the #691 screen now generates 122
 - **PR #701**: refactor: share the engine-log check across the batch response handlers
