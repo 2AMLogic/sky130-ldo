@@ -662,7 +662,8 @@ instead of the author's assertion.
 
 Item 10's inventory
 ([`evidence/item10-inventory.json`](evidence/item10-inventory.json)) carries a
-`hygiene` list of root-level docs and the CI workflow, and this document states
+`hygiene` list of root-level docs and the CI workflows (`ci.yml` and the
+`pdk-smoke.yml` it calls), and this document states
 the item above as those files **existing**. The tool is stricter than that
 wording. `klt signoff --attest` stamps a `content_hash`
 onto every inventoried file, and `--check` diffs the whole fresh envelope
