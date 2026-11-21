@@ -547,7 +547,7 @@ The observation behind it is **correct and worth keeping**. With the shipped
 `M_TAIL` has **6.7 mV** of `V_sd` — the tail current source is collapsed at the
 exact operating point the row is measured at.
 
-It simply is not this row's root cause, which is why it is not in this change:
+It is simply not this row's root cause, which is why it is not in this change:
 built and screened (`tt`/27 °C, `VIN` = 2.100 V, 50 mA) it moves `VOUT` from
 1.6738 V to 1.6805 V — **7 mV**, against the ~90 mV needed to reach the 1.764 V
 departure threshold. It restores tail headroom (`V_sd(M_TAIL)` 6.7 mV → 351 mV)

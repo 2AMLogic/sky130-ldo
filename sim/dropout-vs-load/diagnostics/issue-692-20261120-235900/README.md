@@ -11,9 +11,9 @@ own batch backend library). The ratified rows are unchanged: dropout @ 50 mA < 3
 
 **Verdict: ADOPT-REVIEW** — with the single permitted revision (rev2) the candidate
 holds < 300 mV at **all 45 corners** (binding corner **ff/-40C/2.97 V at 0.2202 V**,
-80 mV of margin) and the Iq row passes at all 45 corners, one of them with **zero
-effective margin** (ff/125C/3.63 V, 29.999999999995 uA). It goes to a separate
-production-adoption review issue, not to adoption here.
+79.8 mV of margin). Rev2 passes Iq at **44/45 corners**. At ff/125C/3.63 V,
+full-load Iq reads **30.0 uA** at 0.1 uA resolution. The strict < 30 uA row
+remains unproven there. Production-adoption review #702 owns the remeasurement.
 
 ## 1. Files
 
@@ -60,11 +60,17 @@ v(vin)=2.064 fall=1 td=6m` at the 0.300 V edge; `avg ... from=5.5m to=6m` settle
 windows) plus deck-level `.save` cards for the device currents they read. The
 validated request shape (analysis, stimulus, graded cards) is untouched; the extras
 ride along in the same single step. klt reports device-current step measurements at
-~2 significant digits (voluges at 7); that is the tool's report resolution and is
-recorded as such. Validity gates are the harness's own: remote job done, runner
-compatibility `match`, corner status completed, no solver diagnostic in the engine
-log, finite graded values. A missing crossing, non-regulating start or diagnostic is
-INVALID, never a pass.
+~2 significant digits (voltages at 7); that is the tool's report resolution and is
+recorded as such. The batch harness records job completion, runner compatibility
+and engine diagnostics in each leg. The campaign grades a dropout crossing only
+when the settled VOUT at the top of the sweep is within 1.764–1.836 V. Iq requires
+VOUT in that same window at both load endpoints. A missing required value,
+non-regulating point, timeout, batch error or solver diagnostic yields `INVALID`.
+The full-load VIN current is printed to 0.1 uA at 50 mA. The analysis compares
+the load-subtracted Iq at that resolution. A full-load reading of 30.0 uA with
+an otherwise passing endpoint pair receives `AT_BOUND`, with `pass: false`.
+The no-load channel retains its own precision. Counts in `verdict.json` are
+mutually exclusive, and extrema use valid measurements.
 
 Grid actually run (both benches, both variants): process {tt,ss,ff,sf,fs} x
 temperature {-40, 27, 125} C x supply {2.97, 3.30, 3.63} V = the manifest's full
@@ -81,43 +87,46 @@ the same host drift #357 recorded; the tt pair above shows the numbers are unaff
 
 ## 4. Dropout results (issue step 2)
 
-Full table: `tables/dropout_pair.csv`. All 45 corners valid for all three designs; the
-baseline fails its ratified row at every corner (known T1 gap, #114).
+The paired table in `tables/dropout_pair.csv` retains all 45 measurements per design.
+The baseline exceeds the dropout bound at every corner (#114). The minimum and
+binding dropout below use valid crossings.
 
-| design | min [V] | binding corner | binding dropout [V] | n < 300 mV |
+| design | min valid [V] | binding corner | binding dropout [V] | valid passes / corners |
 |---|---|---|---|---|
 | baseline | 0.3300 | ff/125C/3.63 V | 0.6731 | 0/45 |
-| **rev1** | 0.0779 | ff/-40C/2.97 V | **0.2192** | **45/45** |
+| **rev1** | 0.1551 | ff/-40C/2.97 V | **0.2192** | **44/45** |
 | **rev2** | 0.1547 | ff/-40C/2.97 V | **0.2202** | **45/45** |
 
-EA_OUT at the crossing: baseline 0.586-1.195 V (the collapsed tail), rev1 0.058-0.455 V,
-rev2 0.055-0.457 V. Tail current at the crossing: rev1 2.16-3.64 uA, rev2 1.24-2.14 uA
-(baseline's PMOS tail collapses to 0.11 uA at its crossing). M_CLIM at the crossing:
-rev1 <= 0.58 uA, rev2 <= 0.36 uA (worst ff/-40C/3.63 V — the deep-dropout clamp onset
-#357 named as floor mechanism (ii); it conducts, it does not gate the crossing).
+Across valid crossings, EA_OUT spans 0.586–1.195 V for the baseline,
+0.058–0.455 V for rev1 and 0.055–0.457 V for rev2. Baseline tail current reaches
+a minimum of 0.11 uA. Rev1 spans 2.16–3.64 uA and rev2 spans 1.24–2.14 uA.
+M_CLIM peaks at 0.582 uA for rev1 and 0.357 uA for rev2, both at ff/-40C/3.63 V.
 
-One rev1 anomaly, recorded as measured: at ss/-40C/3.30 V rev1 reads dropout
-0.077944 V with the clamp FULLY on at the edge (Vsg 2.01 V, 0.95 mA) and VOUT@edge
-1.991 V — that crossing is clamp-mediated (its 2.97/3.63 V siblings read 0.155 V with
-the clamp off). rev2 at the same corner is clean: 0.1548 V, edge Vsg 0.048 V.
+The excluded rev1 crossing at ss/-40C/3.30 V reads 0.077944 V. VOUT started
+at 3.143523 V, outside the regulation window. At the crossing EA_OUT was
+−0.898949 V and M_CLIM carried 607 uA. At the 0.300 V edge the clamp carried
+0.95 mA (Vsg 2.01 V, VOUT 1.991 V). This clamp-mediated crossing is `INVALID`.
+Rev2 starts in regulation at the same corner and measures 0.1548 V dropout.
 
 ## 5. The #357 section-7 limits over PVT (issue step 3)
 
-- **Iq, 0 and 50 mA vs < 30 uA** (full table `tables/iq_pair.csv`, batch endpoint
-  adapter): baseline 10.81-16.72 uA no-load / 23.90-**31.30** uA full-load (fails its
-  own row at the five 3.63 V ff/fs corners — the row is not met by the production
-  design either). rev1: 15.09-**18.48** / 24.40-**59.40** uA — fails at 15 corners
-  (below). rev2: 9.73-15.15 / 22.30-**29.999999999995** uA — 45/45 pass, but the
-  ff/125C/3.63 V corner sits at the bound to 11 decimal places: **zero effective
-  margin**, recorded as an at-bound finding for the adoption review, not headroom.
+- **Iq at 0 and 50 mA.** The baseline measures 10.81–16.72 uA at no load and
+  23.9–31.3 uA at full load, with five failures at 3.63 V across ff and fs.
+  Across rev1's 43 regulating corners the corresponding ranges are 11.78–18.48 uA
+  and 24.4–33.2 uA. The two excluded corners include a −663.129 uA no-load reading
+  and a 59.4 uA full-load reading (section 6). Rev2 spans 9.73–15.15 uA at no load
+  and 22.3–30.0 uA at full load. At ff/125C/3.63 V the reported VIN current
+  magnitude is 0.0500300 A. Subtracting 50 mA gives 30.0 uA, exactly the strict
+  bound at the channel's 0.1 uA resolution. The paired Iq table records 44 passes
+  and this one at-bound corner.
 - **Clamp margin at the 0.300 V edge** (dropout-bench extras): at ss/125C (the corner
   #357 named unmeasured) the clamp is OFF at the edge at every supply: Vsg(M_CLIM)
   0.050-0.051 V, M_CLIM current ~4e-11 A, VOUT still regulating at 1.786-1.790 V.
-  Tightest margin over the matrix: ff/-40C/2.97 V, Vsg 0.412 V (rev2) with M_CLIM at
-  1.4e-12 A — off by ~10 orders of magnitude in current, ~0.2 V of Vsg margin. The
+  Rev2 reaches its highest edge Vsg of 0.412 V at ff/-40C/2.97 V, with M_CLIM
+  carrying 1.4e-12 A. The
   one edge-clamp engagement is rev1's ss/-40C/3.30 V anomaly above.
-- **VREF-referenced V-to-I spread**: I_R = 0.486-1.00 uA over the 45 corners (2.06x)
-  for rev1 and rev2 alike (the revision does not touch it), against the baseline
+- **VREF-referenced V-to-I spread**: I_R spans 0.485–1.000 uA for rev1 and
+  0.486–1.002 uA for rev2 across the 45 corners (2.06x for both), against the baseline
   BIASP reference's 1.73-2.48 uA (1.44x). #357's warning that I_R tracks Vth and
   temperature strongly is confirmed and quantified; tail, clamp threshold and Iq
   inherit it.
@@ -130,11 +139,12 @@ the clamp off). rev2 at the same corner is clean: 0.1548 V, edge Vsg 0.048 V.
 
 ## 6. rev1's Iq failures and the one revision (issue step 4)
 
-rev1 fails the Iq row at 15 corners, recorded unedited in `tables/iq_pair.csv`:
+The rev1 Iq table records 30 passes, 13 measured failures and two invalid corners.
 
 - 13 current excesses (30.2-33.2 uA vs the strict < 30), the mechanism #357 predicted
   (the candidate's bias overhead) — worst ff/125C/3.63 V at 33.2 uA where the baseline
-  itself reads 31.3 uA;
+  reads 30.7 uA. The 31.3 uA quoted in the archived `candidate.py` sizing comment
+  is the baseline maximum at ff/-40C and ff/27C, both at 3.63 V.
 - **two non-regulating states**, diagnosed with single-corner local traces
   (`runs/dbg-*`):
   - `ss/125C/3.30 V`, 50 mA: the current-limit clamp LATCHES during the cold 50 mA
@@ -151,19 +161,21 @@ amplifier current is set by the tail mirror, so `NTAIL W 12/nf 3 -> W 7/nf 2` (t
 4.8x -> 2.8x of NBR; ~3.16 -> ~1.84 uA at tt, the amplifier ~6.4 -> ~3.7 uA) cuts Iq
 everywhere WITHOUT touching the clamp reference chain (I_R / PBR / CLP unchanged,
 preserving the 3.3 V trip) or any preserved device. Nothing else changed. Local tt
-probe: dropout 0.16351 V (rev1 0.16324), tail 1.838 uA, full-load Iq 26.26 uA
-(baseline 27.61). The re-run then covered the FULL matrix again on both benches
+probe: dropout 0.16351 V (rev1 0.16324), tail 1.838 uA, full-load Iq 26.2 uA
+from the recorded VIN current of −0.0500262 A. The re-run covered the full matrix
+again on both benches
 (exceeding the issue's failing-corners + three-worst-passing minimum, at fewer fleet
 jobs than 25 singleton requests): dropout 45/45 (binding ff/-40C/2.97 V 0.2202 V, +
-1.0 mV over rev1), Iq 45/45 — and both non-regulating states are gone (ss/125C/3.30 V
-full-load 24.9 uA, VOUT in window; ff/27C/2.97 V no-load 11.65 uA, VOUT in window).
+0.94 mV over rev1), Iq 44/45 pass and one at bound. Both previously invalid Iq
+corners now regulate. Rev2 measures 24.9 uA at ss/125C/3.30 V under full load
+and 11.65 uA at ff/27C/2.97 V at no load.
 
 ## 7. Decision (issue step 5): **ADOPT-REVIEW**
 
-The issue's own criterion — dropout < 300 mV at every corner — is met by rev1 AND
-rev2. rev2 additionally clears the Iq row at every corner (one at zero effective
-margin). Per step 5 the candidate goes to a **separate production-adoption review
-issue, #702** (loop gain, PM/GM, load transient, PSRR, start-up, MC accuracy), which
+Rev2 meets the issue's decision criterion of a valid dropout below 300 mV at every
+corner. Rev1 has one invalid crossing. Rev2's Iq result at ff/125C/3.63 V requires
+higher-resolution measurement. Per step 5 rev2 advances to **production-adoption
+review #702** (loop gain, PM/GM, load transient, PSRR, start-up, MC accuracy), which
 must also weigh: the ff/125C/3.63 V at-bound Iq corner, rev1's two non-regulating states
 (cleared by rev2's weaker tail, but the start-up/robustness mechanism is not
 re-qualified here), the 2.06x V-to-I spread, the current-limit and thermal PVT
@@ -188,8 +200,9 @@ klt-sim-18c6e44ea618, klt-sim-fdee5150ee8a, klt-sim-60ca4f01634c,
 klt-sim-1f1978d50346`; dropout-cand-r2 `klt-sim-262eff193861, klt-sim-723d25d5235f,
 klt-sim-1233d69429b5`; iq-cand-r2 `klt-sim-5e93d60a3b85, klt-sim-18937a46e444,
 klt-sim-b0e32805e76c, klt-sim-d029a0c0be29, klt-sim-7d252db741d5,
-klt-sim-e5966d7b1353`. `provenance.json` holds the sha256 of every file in this
-directory. The graded evidence is the batch legs; the local probes
+klt-sim-e5966d7b1353`. `provenance.json` lists the SHA-256 digest of every other
+Git-tracked file in this directory, including the per-corner decks, logs and
+response files. The graded evidence is the batch legs; the local probes
 (`runs/local-syntax*`, `runs/dbg-*`) are syntax checks and mechanism diagnosis only.
 Lint: `ruff check --select F` clean on all `.py` files here.
 
@@ -197,6 +210,12 @@ Lint: `ruff check --select F` clean on all `.py` files here.
 
 ```bash
 cd sim/dropout-vs-load/diagnostics/issue-692-20261120-235900
-sh commands.sh        # batch legs need the fleet; ~2 h wall total
-python3 -B analyze.py # regenerates tables/ and verdict.json
+python3 -B analyze.py # regenerate the tables and verdict from the committed batch results
+```
+
+The original fleet invocation is recorded in `commands.sh`. Verify the archived bytes
+from the campaign directory with the following command.
+
+```bash
+jq -r 'to_entries[] | "\(.value)  \(.key)"' provenance.json | sha256sum --check --quiet
 ```
