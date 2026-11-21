@@ -594,8 +594,18 @@ below; leg ids are `<cout>_<load>_<esr>`, e.g. `c4u7_50ma_esr500m`). This is loc
   run (tt, 27 C, 3.30 V; wiring check only, no evidence minted) shows all four
   legs at strict `tolerance_v = 0` FAIL with drawdowns of 2 uV to 32 uV: VOUT
   sags by that amount in the first ~18 us after the enable edge, while still at
-  the sub-mV pre-ramp level, before the soft-start ramp takes over. That is
-  physical-looking, far below any window edge, and exactly the case the open
+  the sub-mV pre-ramp level, before the soft-start ramp takes over.
+  **Attributed (issue #693)**: this is circuit behaviour, not solver noise —
+  a fixed charge packet (drawdown x C_out constant to 0.21 % across all 45
+  corners of the #336 record; converging UP to ~12.6 pC at tt/27 C/3.30 V
+  under solver tightening) that leaves C_out through the Miller compensation
+  cap `C_COMP` (VOUT -> EA_CZ) as the error amplifier's EA_OUT wake transient
+  displaces EA_CZ before the pass device conducts; removing `C_COMP` removes
+  97 % of the 0 mA packet. The mechanism, the 45-corner charge table, the
+  solver ladder and a screened partial fix (R_CZ co-design, verdict REVISE)
+  are in `sim/startup/pilots/20261121-693-enable-edge-charge-attribution.md`;
+  landing the reduction in the schematic is the follow-up issue it names.
+  The dip is far below any window edge, and exactly the case the open
   decision-record question above covers. The checker deliberately does not
   hide it with a tolerance; a decision record must say whether such a dip is
   acceptable (and over what window) before any tolerance is set.
