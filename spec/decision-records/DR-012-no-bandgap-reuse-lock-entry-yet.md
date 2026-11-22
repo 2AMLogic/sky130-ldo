@@ -5,6 +5,13 @@
   2026-08-19 canary spec/DR ratification-via-PR standing policy
   ([2AMLogic/2am#357](https://github.com/2AMLogic/2am/issues/357)), the same path
   DR-003/DR-004/DR-005/DR-010 used. Nothing here is binding until that PR merges.
+  *Amendment (2026-11-19, #301; additive — the clause above is superseded for this
+  record only):* under the #301 operator ruling of 2026-10-19 (option 2), #144's merge
+  was **not** this record's ratifying act (see "Ratification path" below), so "the PR
+  that lands it" names no ratifying event that has occurred. DR-012 is **unratified**
+  until a fresh ratification PR merges. Read "Nothing here is binding until that PR
+  merges" and "the ratifying act" elsewhere in this record in that light. This
+  amendment changes no decision text, target value or status word.
 - **Ratification path**: fresh ratification required — operator ruling on
   #301, 2026-10-19 (option 2). The historical merge of #144 (`39b25bb`) is cited
   for context only and is not accepted as this record's ratifying event; the
@@ -174,8 +181,9 @@ in either direction*.
 ## Status notes
 
 - Stays `proposed` until the PR carrying it is approved and merged (Judge
-  review + Champion/operator merge), which is the ratifying act under the
-  2026-08-19 ratification-via-PR standing policy
+  review + Champion/operator merge), which was the ratifying act under the
+  2026-08-19 ratification-via-PR standing policy (superseded for this record by the
+  #301 ruling — see the 2026-11-19 amendment in the Status line)
   ([2am#357](https://github.com/2AMLogic/2am/issues/357)).
 - Because it sets no `spec/target-spec.md` row and adds no `reuse.lock.json`
   entry, it is **not** input to #1's ratification gate and does not wait on

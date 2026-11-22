@@ -8,6 +8,10 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 
 ### 2026-11-21
 
+- **PR #722**: signoff: cover pdk-smoke.yml in the T1 item 10 hygiene inventory
+- **PR #703**: sim(#692): paired 45-point PVT dropout campaign — rev2 holds < 300 mV at every corner (ADOPT-REVIEW)
+- **Issue #717** (closed): signoff: item 10 hygiene inventory no longer covers the CI smoke steps after the pdk-smoke.yml split
+- **Issue #692** (closed): Dropout: run the paired 45-point PVT campaign for the #357 rev1 amplifier/clamp candidate (0.163 V at tt/27C; ratified row < 300 mV)
 - **PR #713**: ci: stop re-running CI on PR label writes; split smoke into pdk-smoke.yml
 - **Issue #707** (closed): ci.yml triggers a full CI run on every label change (pull_request: types includes 'labeled')
 - **PR #712**: fix: derive the rcz-shelf report's possible-request inventory from the driver's builders

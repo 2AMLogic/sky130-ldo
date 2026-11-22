@@ -58,8 +58,8 @@ re-pointed at it.
 
 from __future__ import annotations
 
+import hashlib
 import json
-import re
 import sys
 from pathlib import Path
 
@@ -72,7 +72,7 @@ import build_characterization_report as _report  # noqa: E402
 # The repo's one content-digest contract (issue #589). Appended, so neither
 # tree's `_record_common` can shadow the other's.
 sys.path.append(str(REPO_ROOT / "layout" / "bin"))
-from _digest import sha256_file_prefixed  # noqa: E402
+from _digest import SHA256_HEX_RE, sha256_file_prefixed  # noqa: E402
 from _store_manifest import (  # noqa: E402 -- the one store-manifest contract (issue #671)
     StoreFetchError,
     fetch_entry_bytes,
@@ -232,28 +232,29 @@ def _margin(value: float, lim: dict | None) -> float | None:
     return min(margins) if margins else None
 
 
-def _load(bench: str, rid: str) -> tuple[dict, Path]:
-    """The record's JSON twin: on disk when the run wrote it there; fetched
-    via `klt artifact get` (sha256-verified against the committed store
-    manifest) when the evidence went to the artifact broker instead -- the
-    batch backend's shape, whose committed `records/<rid>.md` links both the
-    JSON and the netlist snapshot into the store (fetch delegated to the
-    shared _store_manifest helper)."""
+def _load(bench: str, rid: str) -> tuple[dict, Path, str | None, Path | None]:
+    """The record's JSON twin plus its store provenance: on disk when the run
+    wrote it there (no digest, no manifest -- `_envelope()` hashes the file);
+    fetched via `klt artifact get` (sha256-verified against the committed
+    store manifest) when the evidence went to the artifact broker instead --
+    the batch backend's shape, whose committed `records/<rid>.md` links both
+    the JSON and the netlist snapshot into the store (fetch delegated to the
+    shared _store_manifest helper). A store-held record returns the digest of
+    the bytes actually fetched (the pin is what the store delivered, so no
+    caller fetches them again) and the manifest that holds its snapshot too."""
     path = REPO_ROOT / "sim" / bench / "records" / f"{rid}.json"
     if path.is_file():
-        return json.loads(path.read_text()), path
+        return json.loads(path.read_text()), path, None, None
     ref = _report._store_manifest_entry(bench, rid)
     if ref is None:
         raise WrapError(
             f"{bench} {rid}: no records/{rid}.json on disk and no store manifest entry"
         )
     try:
-        return json.loads(fetch_entry_bytes(*ref)), path
+        raw = fetch_entry_bytes(*ref)
     except StoreFetchError as exc:
         raise WrapError(f"{bench} {rid}: {exc}") from exc
-
-
-_HEX64_RE = re.compile(r"[0-9a-f]{64}")
+    return json.loads(raw), path, "sha256:" + hashlib.sha256(raw).hexdigest(), ref[0]
 
 
 def _offline_store_record_problems(bench: str, rid: str) -> list[str]:
@@ -280,7 +281,7 @@ def _offline_store_record_problems(bench: str, rid: str) -> list[str]:
     if rec_entry is None:
         return [f"{manifest.name}: unreadable or has no entry {name} -- cannot verify {where} offline"]
     digest = rec_entry.get("sha256")
-    if not isinstance(digest, str) or not _HEX64_RE.fullmatch(digest):
+    if not isinstance(digest, str) or not SHA256_HEX_RE.fullmatch(digest):
         return [f"{manifest.name}: entry {name} has no well-formed sha256 digest"]
 
     out = output_path(bench, rid)
@@ -302,7 +303,7 @@ def _offline_store_record_problems(bench: str, rid: str) -> list[str]:
         if claimed_snap != actual:
             errors.append(f"{snap_rel}: hashes to {actual} but {rel} pins {claimed_snap}")
         snap_digest = (snap_entry or {}).get("sha256")
-        if isinstance(snap_digest, str) and _HEX64_RE.fullmatch(snap_digest) \
+        if isinstance(snap_digest, str) and SHA256_HEX_RE.fullmatch(snap_digest) \
                 and f"sha256:{snap_digest}" != claimed_snap:
             errors.append(
                 f"{manifest.name}: entry {snap_rel} digests sha256:{snap_digest} "
@@ -315,7 +316,7 @@ def _offline_store_record_problems(bench: str, rid: str) -> list[str]:
         )
     else:
         snap_digest = snap_entry.get("sha256")
-        if not isinstance(snap_digest, str) or not _HEX64_RE.fullmatch(snap_digest):
+        if not isinstance(snap_digest, str) or not SHA256_HEX_RE.fullmatch(snap_digest):
             errors.append(f"{manifest.name}: entry {snap_rel} has no well-formed sha256 digest")
         elif f"sha256:{snap_digest}" != claimed_snap:
             errors.append(
@@ -532,36 +533,22 @@ def build_hysteresis_envelope(bench: str, rid: str) -> dict:
 def build_envelope(bench: str, rid: str) -> dict:
     if _is_hysteresis(bench, rid):
         return build_hysteresis_envelope(bench, rid)
-    rec, rec_path = _load(bench, rid)
+    rec, rec_path, rec_sha, manifest = _load(bench, rid)
     tags = RATIFIED[bench]
     snap = REPO_ROOT / rec["links"]["netlist_snapshot"]
-    rec_sha = snap_sha = None
-    if not rec_path.is_file():
-        # Store-held record (batch backend): the JSON twin and possibly the
-        # netlist snapshot live in the artifact broker behind the committed
-        # store manifest. Fetch the bytes (klt verifies sha256 against the
-        # manifest) so the envelope pins what the record actually is and ran
-        # on; a snapshot already materialised at its netlist-snapshots path
-        # is hashed from disk. Path labels stay the record's own links.
-        import hashlib
-
-        ref = _report._store_manifest_entry(bench, rid)
-        if ref is None:
-            raise WrapError(
-                f"{bench} {rid}: records/{rid}.json is not on disk and no "
-                "store manifest entry carries it"
-            )
-        manifest, _ = ref
+    snap_sha = None
+    if manifest is not None and not snap.is_file():
+        # Store-held record whose netlist snapshot is store-held too: fetch
+        # the snapshot's bytes (klt verifies sha256 against the manifest) so
+        # the envelope pins what the record actually ran on. A snapshot
+        # already materialised at its netlist-snapshots path -- and every
+        # on-disk record -- is hashed from disk by `_envelope()`'s
+        # `sha256_file_prefixed` default; path labels stay the record's own
+        # links.
         try:
-            rec_sha = "sha256:" + hashlib.sha256(
-                fetch_entry_bytes(manifest, f"sim/{bench}/records/{rid}.json")
+            snap_sha = "sha256:" + hashlib.sha256(
+                fetch_entry_bytes(manifest, rec["links"]["netlist_snapshot"])
             ).hexdigest()
-            if snap.is_file():
-                snap_sha = "sha256:" + hashlib.sha256(snap.read_bytes()).hexdigest()
-            else:
-                snap_sha = "sha256:" + hashlib.sha256(
-                    fetch_entry_bytes(manifest, rec["links"]["netlist_snapshot"])
-                ).hexdigest()
         except StoreFetchError as e:
             raise WrapError(f"{bench} {rid}: {e}") from e
     matrix = rec.get("matrix") or {}
