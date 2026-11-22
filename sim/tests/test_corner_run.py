@@ -1406,6 +1406,70 @@ class TestBoundInclusivity(BatchHarness):
             corner_run.load_experiment(SIM_DIR / slug)
 
 
+class TestGradeCheck(unittest.TestCase):
+    """Issue #736: one measurement-check row builder for every backend (local
+    run_corner, standard batch, startup ramp-trace, endpoint) -- the same ten
+    keys in the same order, the window-grid leg fields when the measurement is
+    per-leg, and `grade_bounds`'s own verdict. Only the missing-value reason
+    is caller-supplied."""
+
+    SHARED_KEYS = ["name", "expr", "unit", "value", "min", "max",
+                   "min_inclusive", "max_inclusive", "pass", "reason"]
+
+    @staticmethod
+    def meas(**kw):
+        return corner_run.Measurement(name="x", expr="x", unit="V", **kw)
+
+    def test_row_keys_and_order_match_the_recorded_schema(self):
+        self.assertEqual(list(corner_run.grade_check(self.meas(), 1.0)), self.SHARED_KEYS)
+        m = corner_run.Measurement(
+            name="x", expr="x", leg="c330n_0ma_esr0", cout_f=3.3e-7, esr_ohm=0.0, direction="up"
+        )
+        self.assertEqual(
+            list(corner_run.grade_check(m, 1.0)),
+            self.SHARED_KEYS + ["leg", "cout_f", "esr_ohm", "direction"],
+        )
+
+    def test_bounds_verdicts_are_grade_bounds_own(self):
+        m = self.meas(max=0.3, max_inclusive=False)
+        for v, want in ((0.2, True), (0.3, False), (0.4, False)):
+            d = corner_run.grade_check(m, v)
+            self.assertIs(d["pass"], want, v)
+            self.assertEqual(d["value"], v)
+            self.assertEqual(d["reason"], "" if want else corner_run.grade_bounds(m, v)[1])
+
+    def test_nonfinite_values_fail_without_missing_reason_substitution(self):
+        for v in (float("nan"), float("inf"), float("-inf")):
+            d = corner_run.grade_check(self.meas(), v, missing_reason="caller reason")
+            self.assertIs(d["pass"], False, v)
+            self.assertTrue(math.isnan(d["value"]) if v != v else d["value"] == v)
+            self.assertEqual(d["reason"], "non-finite measurement value")
+
+    def test_missing_value_reason_and_its_caller_override(self):
+        m = self.meas()
+        d = corner_run.grade_check(m, None)
+        self.assertIs(d["pass"], False)
+        self.assertIsNone(d["value"])
+        self.assertEqual(d["reason"], "measurement not found in ngspice output")
+        d = corner_run.grade_check(m, None, missing_reason="measurement not found in klt sim response")
+        self.assertEqual(d["reason"], "measurement not found in klt sim response")
+
+    def test_missing_reason_is_inert_for_a_present_value(self):
+        m = self.meas(max=0.5)
+        self.assertEqual(corner_run.grade_check(m, 0.9, missing_reason="caller reason")["reason"],
+                         "above max 0.5")
+        self.assertEqual(corner_run.grade_check(m, 0.1, missing_reason="caller reason")["reason"], "")
+
+    def test_leg_fields_follow_the_leg_measurement_only(self):
+        m = corner_run.Measurement(
+            name="x", expr="x", leg="c330n_0ma_esr0", cout_f=3.3e-7, esr_ohm=0.0, direction="up"
+        )
+        d = corner_run.grade_check(m, 1.0)
+        self.assertEqual((d["leg"], d["cout_f"], d["esr_ohm"], d["direction"]),
+                         ("c330n_0ma_esr0", 3.3e-7, 0.0, "up"))
+        self.assertNotIn("leg", corner_run.grade_check(self.meas(), 1.0))
+
+
 class TestLoadRegulationManifestGate(unittest.TestCase):
     """Issue #364: the ACTUAL load-regulation manifest, graded by the shared
     grade_bounds, must gate both settled endpoints on the Output window and

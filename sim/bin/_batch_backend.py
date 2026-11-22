@@ -28,6 +28,7 @@ import batch_line_regulation as blr
 import batch_load_regulation as bld
 import batch_startup_ramp as bsr
 from batch_window_grid import TranslationError, leg_step, parse_leg_template
+from ramp_monotonicity import ramp_check
 from _corner_model import (
     Corner,
     Experiment,
@@ -37,7 +38,7 @@ from _corner_model import (
     SPICEINIT_FILE,
     compare_tool_versions,
     detect_solver_diagnostic,
-    grade_bounds,
+    grade_check,
     leg_values,
     unique_in_order,
     window_legs,
@@ -646,6 +647,50 @@ def _engine_log_check(rc: dict, outdir: Path, prefix: str) -> tuple[str | None, 
     return log_text, solver_diagnostic, reasons
 
 
+def _batch_corner_result(
+    corner: Corner,
+    *,
+    elapsed_s: float | None,
+    timeout_s: int,
+    measurements: list[dict],
+    solver_diagnostic: str | None,
+    klt_request,
+    klt_corner_id,
+    klt_status,
+    batch_reasons: list[str],
+    ramp_monotonicity: list[dict] | None = None,
+) -> dict:
+    """The 19-key corner result every batch normalizer emits (issue #736):
+    one schema for the standard, startup ramp-trace and endpoint adapters, so
+    a new key or adapter cannot drift from the others. `elapsed_s` is the
+    already-normalized runtime (None when unobservable); the three `klt_*`
+    fields are the per-corner values (or, for the endpoint adapter, the
+    per-endpoint lists). `ramp_monotonicity` is included only when non-empty.
+    A remote run's ngspice exit is not observable and never fabricated."""
+    return {
+        "corner_id": corner.id,
+        "process": corner.process,
+        "temperature_c": corner.temp_c,
+        "supply_v": corner.supply_v,
+        "execution": "batch",
+        "ngspice_exit": None,
+        "timed_out": False,
+        "killed_by_signal": None,
+        "killed_by_signal_name": None,
+        "elapsed_s": elapsed_s,
+        "timeout_s": timeout_s,
+        "measurements": measurements,
+        **({"ramp_monotonicity": ramp_monotonicity} if ramp_monotonicity else {}),
+        "solver_diagnostic": solver_diagnostic,
+        "pass": (not batch_reasons) and all(c["pass"] for c in measurements),
+        "log": None,
+        "klt_request": klt_request,
+        "klt_corner_id": klt_corner_id,
+        "klt_status": klt_status,
+        "batch_reasons": batch_reasons,
+    }
+
+
 def normalize_batch_response(
     exp: Experiment, group: BatchGroup, response: dict, outdir: Path, timeout: int
 ) -> tuple[list[dict], dict[str, str]]:
@@ -700,18 +745,7 @@ def normalize_batch_response(
                 reason = f"measurement value is missing or non-finite ({entries[0].get('value')!r})"
             else:
                 value = float(entries[0]["value"])
-            graded, bound_reason = grade_bounds(m, value)
-            passed = graded
-            if value is not None:
-                reason = bound_reason
-            checks.append({
-                "name": m.name, "expr": m.expr, "unit": m.unit, "value": value,
-                "min": m.min, "max": m.max,
-                "min_inclusive": m.min_inclusive, "max_inclusive": m.max_inclusive,
-                "pass": passed, "reason": reason,
-                **({"leg": m.leg, "cout_f": m.cout_f, "esr_ohm": m.esr_ohm, "direction": m.direction}
-                   if m.leg is not None else {}),
-            })
+            checks.append(grade_check(m, value, missing_reason=reason))
 
         log_text, solver_diagnostic, log_reasons = _engine_log_check(rc, outdir, tag)
         if log_text is not None:
@@ -719,28 +753,17 @@ def normalize_batch_response(
         reasons.extend(log_reasons)
 
         runtime = rc.get("runtime_s")
-        ok = (not reasons) and all(c["pass"] for c in checks)
-        results.append({
-            "corner_id": corner.id,
-            "process": corner.process,
-            "temperature_c": corner.temp_c,
-            "supply_v": corner.supply_v,
-            "execution": "batch",
-            "ngspice_exit": None,  # not observable for a remote run; never fabricated
-            "timed_out": False,
-            "killed_by_signal": None,
-            "killed_by_signal_name": None,
-            "elapsed_s": runtime if _finite_number(runtime) else None,
-            "timeout_s": timeout,
-            "measurements": checks,
-            "solver_diagnostic": solver_diagnostic,
-            "pass": ok,
-            "log": None,
-            "klt_request": group.key,
-            "klt_corner_id": rc.get("corner_id"),
-            "klt_status": status,
-            "batch_reasons": reasons,
-        })
+        results.append(_batch_corner_result(
+            corner,
+            elapsed_s=runtime if _finite_number(runtime) else None,
+            timeout_s=timeout,
+            measurements=checks,
+            solver_diagnostic=solver_diagnostic,
+            klt_request=group.key,
+            klt_corner_id=rc.get("corner_id"),
+            klt_status=status,
+            batch_reasons=reasons,
+        ))
     return results, logs
 
 
@@ -801,59 +824,37 @@ def normalize_startup_response(
             if m.leg != group.leg:
                 continue
             value = bsr.evaluate_measurement(m.expr, card_values)
-            graded, bound_reason = grade_bounds(m, value)
-            passed = graded
-            reason = bound_reason if value is not None else (
-                f"measurement not computable: {m.expr} over missing card value(s)"
-            )
-            checks.append({
-                "name": m.name, "expr": m.expr, "unit": m.unit, "value": value,
-                "min": m.min, "max": m.max,
-                "min_inclusive": m.min_inclusive, "max_inclusive": m.max_inclusive,
-                "pass": passed, "reason": reason,
-                "leg": m.leg, "cout_f": m.cout_f, "esr_ohm": m.esr_ohm,
-                "direction": m.direction,
-            })
+            checks.append(grade_check(
+                m, value,
+                missing_reason=f"measurement not computable: {m.expr} over missing card value(s)",
+            ))
 
         log_text, solver_diagnostic, log_reasons = _engine_log_check(rc, outdir, tag)
         if log_text is not None:
             logs[corner.id] = log_text
         reasons.extend(log_reasons)
 
-        ramp_legs: list[dict] = []
         leg_result, trace_path, structural = bsr.leg_ramp_condition(
             exp, group.leg, corner.id, rc.get("artifacts"), outdir
         )
         reasons.extend(structural)
-        checks.append(bsr.ramp_check(leg_result))
+        checks.append(ramp_check(leg_result))
         if trace_path is not None:
             leg_result["_trace_path"] = str(trace_path)
-        ramp_legs = [leg_result]
 
         runtime = rc.get("runtime_s")
-        ok = (not reasons) and all(c["pass"] for c in checks)
-        results.append({
-            "corner_id": corner.id,
-            "process": corner.process,
-            "temperature_c": corner.temp_c,
-            "supply_v": corner.supply_v,
-            "execution": "batch",
-            "ngspice_exit": None,  # not observable for a remote run; never fabricated
-            "timed_out": False,
-            "killed_by_signal": None,
-            "killed_by_signal_name": None,
-            "elapsed_s": runtime if _finite_number(runtime) else None,
-            "timeout_s": timeout,
-            "measurements": checks,
-            **({"ramp_monotonicity": ramp_legs} if ramp_legs else {}),
-            "solver_diagnostic": solver_diagnostic,
-            "pass": ok,
-            "log": None,
-            "klt_request": group.key,
-            "klt_corner_id": rc.get("corner_id"),
-            "klt_status": status,
-            "batch_reasons": reasons,
-        })
+        results.append(_batch_corner_result(
+            corner,
+            elapsed_s=runtime if _finite_number(runtime) else None,
+            timeout_s=timeout,
+            measurements=checks,
+            solver_diagnostic=solver_diagnostic,
+            klt_request=group.key,
+            klt_corner_id=rc.get("corner_id"),
+            klt_status=status,
+            batch_reasons=reasons,
+            ramp_monotonicity=[leg_result],
+        ))
     return results, logs
 
 
@@ -920,31 +921,20 @@ def finalize_endpoint_results(
         checks = []
         for m in exp.measurements:
             value = blr.evaluate(m.expr, values, refs)
-            passed, why = grade_bounds(m, value)
-            reason = why if value is not None else "measurement not found in endpoint results"
-            checks.append({
-                "name": m.name, "expr": m.expr, "unit": m.unit, "value": value,
-                "min": m.min, "max": m.max,
-                "min_inclusive": m.min_inclusive, "max_inclusive": m.max_inclusive,
-                "pass": passed, "reason": reason,
-            })
+            checks.append(grade_check(m, value, missing_reason="measurement not found in endpoint results"))
         diags = [p["solver_diagnostic"] for p in mine if p["solver_diagnostic"]]
         elapsed = [p["elapsed_s"] for p in mine]
-        results.append({
-            "corner_id": corner.id, "process": corner.process, "temperature_c": corner.temp_c,
-            "supply_v": corner.supply_v, "execution": "batch",
-            "ngspice_exit": None, "timed_out": False, "killed_by_signal": None,
-            "killed_by_signal_name": None,
-            "elapsed_s": sum(elapsed) if elapsed and all(_finite_number(e) for e in elapsed) else None,
-            "timeout_s": timeout, "measurements": checks,
-            "solver_diagnostic": "; ".join(diags) if diags else None,
-            "pass": (not reasons) and all(c["pass"] for c in checks),
-            "log": None,
-            "klt_request": [p["klt_request"] for p in mine],
-            "klt_corner_id": [p["klt_corner_id"] for p in mine],
-            "klt_status": [p["klt_status"] for p in mine],
-            "batch_reasons": reasons,
-        })
+        results.append(_batch_corner_result(
+            corner,
+            elapsed_s=sum(elapsed) if elapsed and all(_finite_number(e) for e in elapsed) else None,
+            timeout_s=timeout,
+            measurements=checks,
+            solver_diagnostic="; ".join(diags) if diags else None,
+            klt_request=[p["klt_request"] for p in mine],
+            klt_corner_id=[p["klt_corner_id"] for p in mine],
+            klt_status=[p["klt_status"] for p in mine],
+            batch_reasons=reasons,
+        ))
     return results
 
 

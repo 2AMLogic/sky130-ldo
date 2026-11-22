@@ -169,3 +169,22 @@ def evaluate_legs(settings: dict, run_dir: Path, corner_id: str) -> list[dict]:
         res.update({"leg": leg["id"], "trace_file": name, "trace_sha256": sha})
         out.append(res)
     return out
+
+
+def ramp_check(leg_result: dict) -> dict:
+    """The per-leg condition as a corner check row (the shape both the local
+    `run_corner` and the batch startup normalizer emit): max = tolerance_v,
+    pass = the leg's own verdict."""
+    passed = leg_result["pass"]
+    return {
+        "name": f"ramp_drawdown_{leg_result['leg']}_v",
+        "expr": "ramp_monotonicity.max_drawdown(v(vout))",
+        "unit": "V",
+        "value": leg_result["max_drawdown_v"],
+        "min": None,
+        "max": leg_result["settings"]["tolerance_v"],
+        "pass": passed,
+        "reason": ""
+        if passed
+        else f"{leg_result['status']}: " + "; ".join(leg_result["reasons"]),
+    }
