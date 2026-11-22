@@ -235,22 +235,27 @@ def cold_start_step(exp: Experiment) -> dict:
     return batch_dropout.dropout_step(deck, [(m.name, m.expr, m.unit) for m in exp.measurements])
 
 
-def check_cold_start_batch_shape(exp: Experiment) -> None:
-    """Refuse a dropout manifest whose shape is not the validated one: the
-    structural translation must succeed AND the execution sections must still
-    digest to the pinned values (issue #374: an intentional manifest change
-    requires renewed validation, never a silent pass-through)."""
+def _check_pinned_batch_shape(
+    exp: Experiment, *, inner_shape: str, outer_shape: str, translate, err_types, step_noun: str,
+) -> None:
+    """The shared pinned-adapter manifest shape gate (issues #374 / #177 /
+    #379): the structural translation must succeed AND the execution
+    sections must still digest to the pinned values -- an intentional
+    manifest change requires renewed validation, never a silent pass-through.
+    `inner_shape` / `outer_shape` name the shape in the why-strings / the
+    refusal, `translate` + `err_types` run and catch the adapter's deck
+    translation, `step_noun` names what the deck fails to translate to."""
     allowed = BATCH_ALLOWLIST[exp.slug]
     why = None
     if exp.raw.get("window_grid") or any(m.leg is not None for m in exp.measurements):
-        why = "a window_grid / per_leg measurement is not part of the cold-start shape"
+        why = f"a window_grid / per_leg measurement is not part of the {inner_shape} shape"
     elif exp.raw.get("spread_checks"):
-        why = "spread_checks are not part of the validated cold-start shape"
+        why = f"spread_checks are not part of the validated {inner_shape} shape"
     else:
         try:
-            cold_start_step(exp)
-        except batch_dropout.DropoutTranslationError as exc:
-            why = f"deck does not translate to a cold-start klt step ({exc})"
+            translate(exp)
+        except err_types as exc:
+            why = f"deck does not translate to {step_noun} ({exc})"
     if why is None:
         got = pvt_input_sections(exp.raw, None)
         changed = [k for k, v in allowed["manifest_sections"].items() if got.get(k) != v]
@@ -263,9 +268,22 @@ def check_cold_start_batch_shape(exp: Experiment) -> None:
             )
     if why:
         raise HarnessError(
-            f"--backend batch: {exp.slug!r} no longer has the validated cold-start crossing "
+            f"--backend batch: {exp.slug!r} no longer has the validated {outer_shape} "
             f"shape ({why}): {BATCH_REFUSAL_HINT}"
         )
+
+
+def check_cold_start_batch_shape(exp: Experiment) -> None:
+    """Refuse a dropout manifest whose shape is not the validated one: the
+    structural translation must succeed AND the execution sections must still
+    digest to the pinned values (issue #374: an intentional manifest change
+    requires renewed validation, never a silent pass-through)."""
+    _check_pinned_batch_shape(
+        exp,
+        inner_shape="cold-start", outer_shape="cold-start crossing",
+        translate=cold_start_step, err_types=batch_dropout.DropoutTranslationError,
+        step_noun="a cold-start klt step",
+    )
 
 
 def is_endpoint_adapter(exp: Experiment) -> bool:
@@ -293,32 +311,13 @@ def check_chained_batch_shape(exp: Experiment) -> None:
     the structural translation must succeed AND the execution sections must
     still digest to the pinned values (issue #177, same discipline as the
     endpoint adapters)."""
-    allowed = BATCH_ALLOWLIST[exp.slug]
-    why = None
-    if exp.raw.get("window_grid") or any(m.leg is not None for m in exp.measurements):
-        why = "a window_grid / per_leg measurement is not part of the chained-steps shape"
-    elif exp.raw.get("spread_checks"):
-        why = "spread_checks are not part of the validated chained-steps shape"
-    else:
-        try:
-            chained_deck(exp)
-        except (bcl.CurrentLimitTranslationError, blr.EndpointTranslationError) as exc:
-            why = f"deck does not translate to the three chained klt steps ({exc})"
-    if why is None:
-        got = pvt_input_sections(exp.raw, None)
-        changed = [k for k, v in allowed["manifest_sections"].items() if got.get(k) != v]
-        extra = sorted(set(got) - set(allowed["manifest_sections"]))
-        if changed or extra:
-            why = (
-                f"manifest section(s) {changed + extra} changed since the adapter was validated "
-                "(pinned digests in BATCH_ALLOWLIST); re-validate the translation and update "
-                "the pins deliberately"
-            )
-    if why:
-        raise HarnessError(
-            f"--backend batch: {exp.slug!r} no longer has the validated chained-steps "
-            f"shape ({why}): {BATCH_REFUSAL_HINT}"
-        )
+    _check_pinned_batch_shape(
+        exp,
+        inner_shape="chained-steps", outer_shape="chained-steps",
+        translate=chained_deck,
+        err_types=(bcl.CurrentLimitTranslationError, blr.EndpointTranslationError),
+        step_noun="the three chained klt steps",
+    )
 
 
 def endpoint_module(exp: Experiment):
@@ -354,32 +353,12 @@ def check_endpoint_batch_shape(exp: Experiment) -> None:
     """Refuse a line-regulation manifest whose shape is not the validated one:
     the structural translation must succeed AND the execution sections must
     still digest to the pinned values (issue #379)."""
-    allowed = BATCH_ALLOWLIST[exp.slug]
-    why = None
-    if exp.raw.get("window_grid") or any(m.leg is not None for m in exp.measurements):
-        why = "a window_grid / per_leg measurement is not part of the endpoint shape"
-    elif exp.raw.get("spread_checks"):
-        why = "spread_checks are not part of the validated endpoint shape"
-    else:
-        try:
-            endpoint_deck(exp)
-        except blr.EndpointTranslationError as exc:
-            why = f"deck does not translate to cold-start endpoint steps ({exc})"
-    if why is None:
-        got = pvt_input_sections(exp.raw, None)
-        changed = [k for k, v in allowed["manifest_sections"].items() if got.get(k) != v]
-        extra = sorted(set(got) - set(allowed["manifest_sections"]))
-        if changed or extra:
-            why = (
-                f"manifest section(s) {changed + extra} changed since the adapter was validated "
-                "(pinned digests in BATCH_ALLOWLIST); re-validate the translation and update "
-                "the pins deliberately"
-            )
-    if why:
-        raise HarnessError(
-            f"--backend batch: {exp.slug!r} no longer has the validated {exp.slug} "
-            f"endpoint shape ({why}): {BATCH_REFUSAL_HINT}"
-        )
+    _check_pinned_batch_shape(
+        exp,
+        inner_shape="endpoint", outer_shape=f"{exp.slug} endpoint",
+        translate=endpoint_deck, err_types=blr.EndpointTranslationError,
+        step_noun="cold-start endpoint steps",
+    )
 
 
 def batch_legs(exp: Experiment) -> list[str] | None:
@@ -632,16 +611,17 @@ def build_batch_request(
     }
 
 
-def prepare_batch_requests(
-    exp: Experiment, pdk: Pdk, matrix: list[Corner], is_quick: bool, body: list[str],
-    run_dir: Path, timeout: int,
-) -> list[tuple[BatchGroup, Path, dict]]:
-    """Write each request's netlist + request JSON under the scratch run dir."""
+def _check_pinned_netlist(exp: Experiment, body: list[str]) -> None:
+    """The shared stimulus-pin netlist gate for every pinned batch adapter:
+    `blr.check_netlist` (issue #379), whose `error_cls` / `context` only
+    select the exception type and the message's noun, plus -- for the
+    current-limit chained steps -- the IC_SEED `.nodeset` card pinned verbatim
+    (issue #647, `pinned_extra`)."""
+    allowed = BATCH_ALLOWLIST[exp.slug]
     if is_cold_start_crossing(exp):
-        # The stimulus travels in the netlist: refuse before any request is
-        # written (and so before any submission) if it is not the validated one.
         try:
-            batch_dropout.check_netlist(body, BATCH_ALLOWLIST[exp.slug]["stimulus"])
+            blr.check_netlist(body, allowed["stimulus"],
+                              batch_dropout.DropoutTranslationError, "a cold-start crossing request")
         except batch_dropout.DropoutTranslationError as exc:
             raise HarnessError(
                 f"--backend batch: {exp.slug!r} netlist is not the validated cold-start "
@@ -649,7 +629,7 @@ def prepare_batch_requests(
             ) from exc
     if is_endpoint_adapter(exp):
         try:
-            blr.check_netlist(body, BATCH_ALLOWLIST[exp.slug]["stimulus"])
+            blr.check_netlist(body, allowed["stimulus"])
         except blr.EndpointTranslationError as exc:
             raise HarnessError(
                 f"--backend batch: {exp.slug!r} netlist is not the validated {exp.slug} "
@@ -657,12 +637,24 @@ def prepare_batch_requests(
             ) from exc
     if is_chained_steps(exp):
         try:
-            bcl.check_netlist(body, BATCH_ALLOWLIST[exp.slug]["stimulus"])
+            blr.check_netlist(body, allowed["stimulus"], bcl.CurrentLimitTranslationError,
+                              "a current-limit chained-step request",
+                              pinned_extra=(bcl.NODESET_CARD,))
         except bcl.CurrentLimitTranslationError as exc:
             raise HarnessError(
                 f"--backend batch: {exp.slug!r} netlist is not the validated chained-steps "
                 f"baseline ({exc}): {BATCH_REFUSAL_HINT}"
             ) from exc
+
+
+def prepare_batch_requests(
+    exp: Experiment, pdk: Pdk, matrix: list[Corner], is_quick: bool, body: list[str],
+    run_dir: Path, timeout: int,
+) -> list[tuple[BatchGroup, Path, dict]]:
+    """Write each request's netlist + request JSON under the scratch run dir."""
+    # The stimulus travels in the netlist: refuse before any request is
+    # written (and so before any submission) if it is not the validated one.
+    _check_pinned_netlist(exp, body)
     req_dir = run_dir / "klt-requests"
     req_dir.mkdir(parents=True, exist_ok=True)
     out = []
@@ -1053,13 +1045,19 @@ def normalize_chained_response(
 ) -> tuple[list[dict], dict[str, str]]:
     """One chained-steps (issue #177) response: `normalize_batch_response`'s
     per-corner grading -- the request's own `meas_<name>` derived results --
-    with the endpoint adapters' strictness: a klt-side error diagnostic or a
-    failed step is a reason the corner cannot PASS, and the response's result
+    with the endpoint adapters' strictness: an unfinished / incompatible /
+    unidentified remote job is never a result (the same completion gate at
+    entry the other batch normalizers apply, issue #374), a klt-side error
+    diagnostic or a failed step is a reason the corner cannot PASS, and the
+    response's result
     set is checked by NAME and COUNT against the request -- every step card
     and every derived row must be present exactly once (the local deck grades
     all twelve cards; a batch response that lost one would otherwise pass
     silently whenever no derived row happened to read it), and a result the
     request never asked for is refused rather than ignored."""
+    problem = batch_dropout.remote_completion_problem(response)
+    if problem:
+        raise HarnessError(f"request {group.key}: {problem}")
     results, logs = normalize_batch_response(exp, group, response, outdir, timeout)
     legs = chained_deck(exp)
     expected = [f"{leg.step_name}.{name}" for leg in legs for name, _ in leg.cards]
@@ -1145,15 +1143,11 @@ def run_batch(
                 jobs.append(str(info["job_id"]))
             _shared_assert_pdk(response, pdk, pin, allow_mismatch, error_cls=HarnessError)
             if is_chained_steps(exp):
-                # Same gate the cold-start crossing applies (issue #374): an
-                # unfinished / incompatible / unidentified remote job is never
-                # a result. The chained legs are ONE klt request, so one
-                # response covers all three steps of a corner and
-                # normalize_batch_response's per-corner grading below is the
-                # right reader for it.
-                problem = batch_dropout.remote_completion_problem(response)
-                if problem:
-                    raise HarnessError(f"request {group.key}: {problem}")
+                # The chained legs are ONE klt request, so one response
+                # covers all three steps of a corner and
+                # normalize_chained_response -- completion gate at entry like
+                # the other batch normalizers, then normalize_batch_response's
+                # per-corner grading -- is the right reader for it.
                 res, lg = normalize_chained_response(exp, group, response, outdir, timeout)
             elif endpoint_mode:
                 res, lg = normalize_endpoint_response(exp, group, response, outdir)

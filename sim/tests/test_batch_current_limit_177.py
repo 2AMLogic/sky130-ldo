@@ -25,31 +25,18 @@ from _endpoint_adapter_contract import (
     BackendContract,
     EndpointShapeGate,
     RecordProvenance,
+    baseline_netlist,
+    manifest,
 )
 
 sys.path.insert(0, str(SIM_DIR / "bin"))
 import batch_current_limit as bcl  # noqa: E402
 import batch_line_regulation as blr  # noqa: E402
-from _record_common import pvt_input_sections  # noqa: E402
 
 SLUG = "current-limit"
 STIMULUS = corner_run.BATCH_ALLOWLIST[SLUG]["stimulus"]
 
-CL_NETLIST = (
-    "** sch_path: x\n"
-    + "\n".join(
-        [STIMULUS[0], ".save i(vvin)", STIMULUS[1], "VVREF VREF 0 1.2",
-         "xldo VOUT VREF EN VIN ldo_3v3in_1v8out", "COUT VOUT VESR 1u m=1",
-         "RESR VESR 0 10m m=1", STIMULUS[2], STIMULUS[3], STIMULUS[4],
-         bcl.NODESET_CARD,
-         ".subckt ldo_3v3in_1v8out VOUT VREF EN VIN", "R1 VIN VOUT 1", ".ends"]
-    )
-    + "\n.end\n"
-)
-
-
-def manifest() -> dict:
-    return json.loads((SIM_DIR / SLUG / "experiment.json").read_text())
+CL_NETLIST = baseline_netlist(SLUG, extra=(bcl.NODESET_CARD,))
 
 
 def healthy_values(p: str, t: float, vsup: float) -> dict[str, float]:
@@ -172,7 +159,7 @@ class TestCurrentLimitAdapter(
 
     # -- the translation -----------------------------------------------------
     def test_parse_deck_translates_the_three_chained_legs(self):
-        legs = bcl.parse_deck(manifest()["deck"]["analyses"])
+        legs = bcl.parse_deck(manifest(SLUG)["deck"]["analyses"])
         # issue #647: the seeded dc leg LEADS the deck; step names follow
         # content (dc1, tran1, tran2), so the manifest's plot-qualified
         # graded expressions are position-independent
@@ -194,7 +181,7 @@ class TestCurrentLimitAdapter(
         rc, _, _ = self.quick()
         self.assertEqual(rc, 0)
         req = self.requests()[0]
-        steps = bcl.chained_steps(bcl.parse_deck(manifest()["deck"]["analyses"]))
+        steps = bcl.chained_steps(bcl.parse_deck(manifest(SLUG)["deck"]["analyses"]))
         self.assertEqual(req["analysis_steps"], steps)
         exp = corner_run.load_experiment(self.exp_dir)
         self.assertEqual(req["measurements"],
@@ -255,12 +242,6 @@ class TestCurrentLimitAdapter(
         self.assertEqual(rc, 2)
         self.assertIn("FAIL", out)
 
-    def test_whole_corner_erroring_cannot_pass(self):
-        rc, out, err = self.quick(values_of=lambda p, t, vsup: None if p == "ss" else healthy_values(p, t, vsup))
-        self.assertEqual(rc, 2)
-        self.assertIn("ss_-40c_2.97v        FAIL", out)
-        self.assertIn("not a completed result", err)
-
     # -- refusals -----------------------------------------------------------------
     def test_deck_shape_refusals(self):
         for edit in (
@@ -279,7 +260,7 @@ class TestCurrentLimitAdapter(
                     or x.startswith(("meas tran vout_50ma", "meas tran vin_50ma", "meas tran cl_cmp_50ma")))]
             ),
         ):
-            r = json.loads(json.dumps(manifest()))
+            r = json.loads(json.dumps(manifest(SLUG)))
             r["deck"]["analyses"] = edit(r["deck"]["analyses"])
             with self.assertRaises((bcl.CurrentLimitTranslationError, blr.EndpointTranslationError)):
                 bcl.parse_deck(r["deck"]["analyses"])
@@ -312,17 +293,9 @@ class TestCurrentLimitAdapter(
         self.assertEqual(self.klt_calls(), [])
 
     def test_editing_an_execution_manifest_section_refuses_even_with_matching_pins_stale(self):
-        raw = manifest()
-        hit = next(i for i, ln in enumerate(raw["deck"]["analyses"]) if ln.startswith("dc vforce"))
-        raw["deck"]["analyses"][hit] = "dc vforce 0 1.75 0.05"
-        self.write_manifest(raw)
-        err, _, _ = self.run_main("--backend", "batch", *QUICK, expect_exit=HarnessErr)
-        self.assertIn(self.REFUSAL_TEXT, str(err))
-        self.assertEqual(self.klt_calls(), [])
-
-    def test_pins_equal_the_committed_manifest(self):
-        self.assertEqual(pvt_input_sections(manifest(), None),
-                         corner_run.BATCH_ALLOWLIST[SLUG]["manifest_sections"])
+        # issue #647: the seeded dc leg's own sweep line, restep-width edited
+        self.refused(lambda raw: raw["deck"]["analyses"].__setitem__(
+            self.find(raw, "dc vforce"), "dc vforce 0 1.75 0.05"))
 
     def test_sibling_local_only_benches_stay_refused(self):
         for slug in ("psrr-dc", "loop-gain", "enable-shutdown", "thermal"):
