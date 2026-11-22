@@ -17,7 +17,7 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 - **PR #725**: test: stage only experiment inputs in BatchHarness scratch fixture
 - **PR #724**: ci: extend the append-only guard to sim diagnostics run directories
 - **PR #681**: Clarify DR-012’s proposed status and fresh ratification requirement
-- **Issue #736** (closed): Share measurement-check, ramp-check, and batch corner-result builders across corner-run.py and _batch_
+- **Issue #736** (closed): Share measurement-check, ramp-check, and batch corner-result builders across corner-run.py and _batch_backend.py
 - **Issue #729** (closed): Stop double-fetching store-held records and drop redundant hashing in signoff/make_item5_envelope.py
 - **Issue #728** (closed): Reject error envelopes in _fleet_campaign.submit() and drop rcz-shelf-691.py's duplicate submit loop
 - **Issue #720** (closed): Remove multi-response merging from the single-request dropout comparison
