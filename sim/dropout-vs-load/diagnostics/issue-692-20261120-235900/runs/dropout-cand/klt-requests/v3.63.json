@@ -1,0 +1,103 @@
+{
+  "analysis_steps": [
+    {
+      "analysis": {
+        "args": "10u 14m uic",
+        "kind": "tran"
+      },
+      "measurements": [
+        {
+          "name": "dropout_vin_x",
+          "spice": ".meas tran dropout_vin_x find v(vin) when v(vout)=1.764 fall=1 td=6m"
+        },
+        {
+          "name": "vout_at_max_vin_v",
+          "spice": ".meas tran vout_at_max_vin_v avg v(vout) from=5.5m to=6m",
+          "unit": "V"
+        },
+        {
+          "expr": "dropout_vin_x - 1.764",
+          "name": "dropout_v",
+          "unit": "V"
+        },
+        {
+          "name": "ea_out_at_x",
+          "spice": ".meas tran ea_out_at_x find v(xldo.ea_out) when v(vout)=1.764 fall=1 td=6m"
+        },
+        {
+          "name": "tail_i_at_x",
+          "spice": ".meas tran tail_i_at_x find @m.xldo.xm_ntail.msky130_fd_pr__nfet_g5v0d10v5[id] when v(vout)=1.764 fall=1 td=6m"
+        },
+        {
+          "name": "mclim_i_at_x",
+          "spice": ".meas tran mclim_i_at_x find @m.xldo.xm_clim.msky130_fd_pr__pfet_g5v0d10v5[id] when v(vout)=1.764 fall=1 td=6m"
+        },
+        {
+          "name": "vout_at_2v064",
+          "spice": ".meas tran vout_at_2v064 find v(vout) when v(vin)=2.064 fall=1 td=6m"
+        },
+        {
+          "name": "mclim_vgs_at_2v064",
+          "spice": ".meas tran mclim_vgs_at_2v064 find @m.xldo.xm_clim.msky130_fd_pr__pfet_g5v0d10v5[vgs] when v(vin)=2.064 fall=1 td=6m"
+        },
+        {
+          "name": "mclim_i_at_2v064",
+          "spice": ".meas tran mclim_i_at_2v064 find @m.xldo.xm_clim.msky130_fd_pr__pfet_g5v0d10v5[id] when v(vin)=2.064 fall=1 td=6m"
+        },
+        {
+          "name": "tail_i_set",
+          "spice": ".meas tran tail_i_set avg @m.xldo.xm_ntail.msky130_fd_pr__nfet_g5v0d10v5[id] from=5.5m to=6m"
+        },
+        {
+          "name": "biasref_i_set",
+          "spice": ".meas tran biasref_i_set avg @m.xldo.xm_vrf.msky130_fd_pr__nfet_g5v0d10v5[id] from=5.5m to=6m"
+        }
+      ],
+      "name": "dropout"
+    }
+  ],
+  "batch": {
+    "capacity_wait_s": 10800
+  },
+  "corners": {
+    "process": [
+      "tt",
+      "ss",
+      "ff",
+      "sf",
+      "fs"
+    ],
+    "temperature_c": [
+      -40.0,
+      27.0,
+      125.0
+    ]
+  },
+  "engine": "ngspice",
+  "models": {
+    "lib": "libs.tech/combined/sky130.lib.spice",
+    "pdk": "sky130A"
+  },
+  "netlist": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-692/sim/dropout-vs-load/diagnostics/issue-692-20261120-235900/runs/dropout-cand/klt-requests/v3.63.spice",
+  "options": {
+    "keep_artifacts": true,
+    "ngspice_init": [
+      "* ngspice init settings for the sky130 PDK model libraries.",
+      "*",
+      "* The corner runner copies this file into its scratch run directory as",
+      "* `.spiceinit` before invoking ngspice, so runs do not depend on whatever",
+      "* happens to be in ~/.spiceinit. To drive ngspice by hand with the same",
+      "* settings, copy this file to `.spiceinit` in your working directory.",
+      "*",
+      "* Same settings as the sibling sky130-bandgap harness (same PDK, same pin):",
+      "* derived from the PDK's own libs.tech/ngspice/spinit, kept in-repo so the",
+      "* settings a record was produced under are versioned with the harness.",
+      "set ngbehavior=hsa     ; HSPICE-ish compatibility, required to read PDK libs",
+      "set skywaterpdk        ; skip some checks for faster lib loading",
+      "set ng_nomodcheck      ; do not check model parameters",
+      "option noinit          ; do not dump operating point data into the log",
+      "option klu             ; KLU direct linear solver"
+    ],
+    "timeout_s": 300
+  }
+}

@@ -41,6 +41,14 @@ Usage (from the repo root):
 
     python3 signoff/make_item5_envelope.py           # write (append-only)
     python3 signoff/make_item5_envelope.py --check   # exit 1 on drift
+    python3 signoff/make_item5_envelope.py --check --offline
+    #   headless structural check (the build_characterization_report.py
+    #   --offline mode, issue #503): verifies every committed envelope's
+    #   citation chain with no store fetch. Records whose JSON twin is
+    #   committed still get the full byte-exact rebuild; records held in the
+    #   artifact store get their manifest digest chain checked instead --
+    #   coverage, not a skip. Only a host with `klt` + store access can
+    #   confirm a store-held envelope byte-for-byte.
 
 Output files are named ``signoff/evidence/item5-<bench>-<record id>.sim.json``.
 An existing file with different content is never overwritten: a newer record
@@ -50,6 +58,7 @@ re-pointed at it.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import sys
 from pathlib import Path
@@ -63,7 +72,12 @@ import build_characterization_report as _report  # noqa: E402
 # The repo's one content-digest contract (issue #589). Appended, so neither
 # tree's `_record_common` can shadow the other's.
 sys.path.append(str(REPO_ROOT / "layout" / "bin"))
-from _digest import sha256_file_prefixed  # noqa: E402
+from _digest import SHA256_HEX_RE, sha256_file_prefixed  # noqa: E402
+from _store_manifest import (  # noqa: E402 -- the one store-manifest contract (issue #671)
+    StoreFetchError,
+    fetch_entry_bytes,
+    manifest_entries,
+)
 
 OUT_DIR = REPO_ROOT / "signoff" / "evidence"
 
@@ -75,13 +89,13 @@ RECORDS = [
     ("line-regulation", "20260926-200304-35b7392"),
     ("load-regulation", "20260926-010432-228fbc7"),
     ("load-transient", "20260926-013955-6449a98"),
-    ("psrr-dc", "20260926-033606-4a9ec09"),
-    ("iq", "20260910-034648-6c0436d"),
-    ("current-limit", "20260825-105322-933dfdd"),
-    ("startup", "20260825-110456-933dfdd"),
+    ("psrr-dc", "20261029-092008-5ba605f"),
+    ("iq", "20261110-223334-f66373a0"),
+    ("current-limit", "20261117-173516-d843d914"),
+    ("startup", "20261117-221657-efb6bd6b"),
     ("enable-shutdown", "20260825-111526-933dfdd"),
     ("thermal", "20261105-202028-97cd9a9e-qual-15corner"),
-    ("loop-gain", "20260926-040338-4a9ec09"),
+    ("loop-gain", "20261029-092024-5ba605f"),
 ]
 
 #: bench -> {measurement: (spec row id, ratified {"min"/"max"} bound)}.
@@ -130,12 +144,20 @@ RATIFIED: dict[str, dict[str, tuple[str, dict[str, float]]]] = {
         "ilim_knee_ma": ("current-limit", {"min": 50}),
         "ishort_ripple_pct": ("current-limit", {"max": 100}),
     },
-    # Startup: inside +-2 % window, overshoot <= +2 %
+    # Startup: inside +-2 % window, overshoot <= +2 % — measured on the
+    # per-leg names the #336 twelve-leg grid expanded (the strict-0 V
+    # ramp_drawdown_* conditions carry no ratified bound yet: the tolerance
+    # question is the open decision record in sim/README.md, so they stay
+    # untagged observations with the record's own limits).
     "startup": {
-        f"{kind}_{cout}_{load}_v": ("startup", {"max": 1.836} if kind == "vpk" else {"min": 1.764})
+        f"{kind}_v__{leg}": ("startup", {"max": 1.836} if kind == "vpk" else {"min": 1.764})
         for kind in ("vpk", "vfloor")
-        for cout in ("c033", "c47")
-        for load in ("0ma", "50ma")
+        for leg in (
+            "c330n_0ma_esr0", "c330n_0ma_esr10m", "c330n_0ma_esr500m",
+            "c330n_50ma_esr0", "c330n_50ma_esr10m", "c330n_50ma_esr500m",
+            "c4u7_0ma_esr0", "c4u7_0ma_esr10m", "c4u7_0ma_esr500m",
+            "c4u7_50ma_esr0", "c4u7_50ma_esr10m", "c4u7_50ma_esr500m",
+        )
     },
     # Enable / shutdown: shutdown Iq < 3 uA, Vin->Vout leakage <= 1 uA
     "enable-shutdown": {
@@ -195,19 +217,149 @@ def _limits(m: dict) -> dict | None:
 
 
 def _margin(value: float, lim: dict | None) -> float | None:
-    if not lim:
+    if not lim or value is None:
+        # No bound, or the record carried a null value (a missing or
+        # inconclusive measurement, e.g. an expr the runner could not
+        # evaluate): no margin is computable, faithfully.
         return None
     margins = []
-    if "max" in lim:
+    # A null bound (batch records emit `"min": null` for max-only limits)
+    # is no bound.
+    if lim.get("max") is not None:
         margins.append(lim["max"] - value)
-    if "min" in lim:
+    if lim.get("min") is not None:
         margins.append(value - lim["min"])
-    return min(margins)
+    return min(margins) if margins else None
 
 
-def _load(bench: str, rid: str) -> tuple[dict, Path]:
+def _load(bench: str, rid: str) -> tuple[dict, Path, str | None, Path | None]:
+    """The record's JSON twin plus its store provenance: on disk when the run
+    wrote it there (no digest, no manifest -- `_envelope()` hashes the file);
+    fetched via `klt artifact get` (sha256-verified against the committed
+    store manifest) when the evidence went to the artifact broker instead --
+    the batch backend's shape, whose committed `records/<rid>.md` links both
+    the JSON and the netlist snapshot into the store (fetch delegated to the
+    shared _store_manifest helper). A store-held record returns the digest of
+    the bytes actually fetched (the pin is what the store delivered, so no
+    caller fetches them again) and the manifest that holds its snapshot too."""
     path = REPO_ROOT / "sim" / bench / "records" / f"{rid}.json"
-    return json.loads(path.read_text()), path
+    if path.is_file():
+        return json.loads(path.read_text()), path, None, None
+    ref = _report._store_manifest_entry(bench, rid)
+    if ref is None:
+        raise WrapError(
+            f"{bench} {rid}: no records/{rid}.json on disk and no store manifest entry"
+        )
+    try:
+        raw = fetch_entry_bytes(*ref)
+    except StoreFetchError as exc:
+        raise WrapError(f"{bench} {rid}: {exc}") from exc
+    return json.loads(raw), path, "sha256:" + hashlib.sha256(raw).hexdigest(), ref[0]
+
+
+def _offline_store_record_problems(bench: str, rid: str) -> list[str]:
+    """Structural verification of a store-held record's committed envelope
+    with no store fetch (headless CI mode; the offline_check() pattern of
+    build_characterization_report.py, issue #503).
+
+    Rebuilding the envelope needs the record's JSON twin, which lives in the
+    artifact broker behind the committed store manifest -- only hosts with
+    `klt` + store access can read it. Offline, verify the citation chain
+    instead: the manifest entry for the record JSON is present with a
+    well-formed sha256 and the committed envelope pins exactly that digest;
+    the netlist-snapshot pin agrees with the materialised file when it is
+    committed, else with the manifest's own digest for it. Returns one
+    message per problem (empty = consistent).
+    """
+    ref = _report._store_manifest_entry(bench, rid)
+    where = f"sim/{bench}/records/{rid}.json"
+    if ref is None:
+        return [f"{where}: not committed and no store manifest entry -- cannot verify offline"]
+    manifest, name = ref
+    entries = manifest_entries(manifest)
+    rec_entry = next((e for e in entries if e.get("name") == name), None)
+    if rec_entry is None:
+        return [f"{manifest.name}: unreadable or has no entry {name} -- cannot verify {where} offline"]
+    digest = rec_entry.get("sha256")
+    if not isinstance(digest, str) or not SHA256_HEX_RE.fullmatch(digest):
+        return [f"{manifest.name}: entry {name} has no well-formed sha256 digest"]
+
+    out = output_path(bench, rid)
+    rel = out.relative_to(REPO_ROOT).as_posix()
+    env = json.loads(out.read_text())
+    errors: list[str] = []
+    claimed = env.get("source_record", {}).get("sha256")
+    if claimed != f"sha256:{digest}":
+        errors.append(
+            f"{rel}: source_record.sha256 pins {claimed} but {manifest.name} "
+            f"digests {name} as sha256:{digest}"
+        )
+    pin = env.get("provenance", {}).get("input", {})
+    snap_rel, claimed_snap = pin.get("path"), pin.get("content_hash")
+    snap_file = REPO_ROOT / snap_rel
+    snap_entry = next((e for e in entries if e.get("name") == snap_rel), None)
+    if snap_file.is_file():
+        actual = sha256_file_prefixed(snap_file)
+        if claimed_snap != actual:
+            errors.append(f"{snap_rel}: hashes to {actual} but {rel} pins {claimed_snap}")
+        snap_digest = (snap_entry or {}).get("sha256")
+        if isinstance(snap_digest, str) and SHA256_HEX_RE.fullmatch(snap_digest) \
+                and f"sha256:{snap_digest}" != claimed_snap:
+            errors.append(
+                f"{manifest.name}: entry {snap_rel} digests sha256:{snap_digest} "
+                f"but {rel} pins {claimed_snap}"
+            )
+    elif snap_entry is None:
+        errors.append(
+            f"{snap_rel}: neither committed nor listed in {manifest.name} -- "
+            f"{rel}'s input pin is unverifiable offline"
+        )
+    else:
+        snap_digest = snap_entry.get("sha256")
+        if not isinstance(snap_digest, str) or not SHA256_HEX_RE.fullmatch(snap_digest):
+            errors.append(f"{manifest.name}: entry {snap_rel} has no well-formed sha256 digest")
+        elif f"sha256:{snap_digest}" != claimed_snap:
+            errors.append(
+                f"{manifest.name}: entry {snap_rel} digests sha256:{snap_digest} "
+                f"but {rel} pins {claimed_snap}"
+            )
+    return errors
+
+
+def offline_check() -> list[str]:
+    """Offline structural check of the committed item-5 envelopes (headless
+    CI mode; mirrors build_characterization_report.offline_check, issue #503).
+
+    Never fetches from the artifact store. For every record it verifies what
+    is verifiable without one: a record whose JSON twin is committed on disk
+    gets the FULL currency check (envelope_text vs the committed file -- no
+    store-backed step is involved for those); a store-held record gets its
+    citation chain verified instead. It cannot re-derive a store-held
+    envelope's measurements from bytes it cannot read, so it cannot say
+    whether that envelope still equals a fresh wrap -- that stays the
+    store-backed `--check`'s job. Returns one message per problem (empty =
+    consistent).
+    """
+    errors: list[str] = []
+    for bench, rid in RECORDS:
+        out = output_path(bench, rid)
+        rel = out.relative_to(REPO_ROOT).as_posix()
+        if not out.is_file():
+            errors.append(f"{rel}: missing -- run python3 signoff/make_item5_envelope.py")
+            continue
+        if _is_hysteresis(bench, rid) or (REPO_ROOT / "sim" / bench / "records" / f"{rid}.json").is_file():
+            try:
+                text = envelope_text(bench, rid)
+            except WrapError as e:
+                errors.append(f"{rel}: {e}")
+                continue
+            if out.read_text() != text:
+                errors.append(
+                    f"{rel}: committed text is not what make_item5_envelope.py would write"
+                )
+            continue
+        errors.extend(_offline_store_record_problems(bench, rid))
+    return errors
 
 
 def _hysteresis_dir(bench: str, rid: str) -> Path:
@@ -238,6 +390,8 @@ def _envelope(
     remote: dict | None,
     measurements_declared: int,
     measurements_with_limits: int,
+    rec_sha256: str | None = None,
+    snap_sha256: str | None = None,
 ) -> dict:
     """The one item-5 envelope literal, shared by both wrap paths.
 
@@ -259,7 +413,7 @@ def _envelope(
             "bench": bench,
             "record_id": rid,
             "path": rec_path.relative_to(REPO_ROOT).as_posix(),
-            "sha256": sha256_file_prefixed(rec_path),
+            "sha256": rec_sha256 or sha256_file_prefixed(rec_path),
             "overall_pass": overall_pass,
             "matrix_is_subset": matrix_is_subset,
         },
@@ -273,7 +427,7 @@ def _envelope(
             "input": {
                 "path": snap.relative_to(REPO_ROOT).as_posix(),
                 "role": "netlist",
-                "content_hash": sha256_file_prefixed(snap),
+                "content_hash": snap_sha256 or sha256_file_prefixed(snap),
             },
         },
         "metrics": {
@@ -379,9 +533,24 @@ def build_hysteresis_envelope(bench: str, rid: str) -> dict:
 def build_envelope(bench: str, rid: str) -> dict:
     if _is_hysteresis(bench, rid):
         return build_hysteresis_envelope(bench, rid)
-    rec, rec_path = _load(bench, rid)
+    rec, rec_path, rec_sha, manifest = _load(bench, rid)
     tags = RATIFIED[bench]
     snap = REPO_ROOT / rec["links"]["netlist_snapshot"]
+    snap_sha = None
+    if manifest is not None and not snap.is_file():
+        # Store-held record whose netlist snapshot is store-held too: fetch
+        # the snapshot's bytes (klt verifies sha256 against the manifest) so
+        # the envelope pins what the record actually ran on. A snapshot
+        # already materialised at its netlist-snapshots path -- and every
+        # on-disk record -- is hashed from disk by `_envelope()`'s
+        # `sha256_file_prefixed` default; path labels stay the record's own
+        # links.
+        try:
+            snap_sha = "sha256:" + hashlib.sha256(
+                fetch_entry_bytes(manifest, rec["links"]["netlist_snapshot"])
+            ).hexdigest()
+        except StoreFetchError as e:
+            raise WrapError(f"{bench} {rid}: {e}") from e
     matrix = rec.get("matrix") or {}
     subset = bool(matrix.get("is_subset"))
 
@@ -394,10 +563,15 @@ def build_envelope(bench: str, rid: str) -> dict:
             lim = _limits(m)
             if name in tags:
                 row, bound = tags[name]
-                if lim != bound:
+                # Every field the ratified row declares must match exactly;
+                # extra record-side guards (e.g. iq's `min: 0` nonnegativity
+                # guard, issue #336 rollup regeneration) are kept verbatim.
+                mismatched = {k: (lim.get(k), bound[k]) for k in bound if lim.get(k) != bound[k]}
+                if mismatched:
                     raise WrapError(
                         f"{bench} {rid}: {name} carries limits {lim} but the "
-                        f"ratified '{row}' row requires {bound}"
+                        f"ratified '{row}' row requires {bound} "
+                        f"(differing fields: {mismatched})"
                     )
             entry = {
                 "name": name,
@@ -470,6 +644,8 @@ def build_envelope(bench: str, rid: str) -> dict:
         remote=None,
         measurements_declared=declared,
         measurements_with_limits=with_limits,
+        rec_sha256=rec_sha,
+        snap_sha256=snap_sha,
     )
 
 
@@ -484,6 +660,18 @@ def envelope_text(bench: str, rid: str) -> str:
 def main(argv: list[str] | None = None) -> int:
     argv = sys.argv[1:] if argv is None else argv
     check = "--check" in argv
+    offline = "--offline" in argv
+    if offline and not check:
+        print("FATAL: --offline is only meaningful together with --check", file=sys.stderr)
+        return 2
+    if offline:
+        problems = offline_check()
+        if problems:
+            for p in problems:
+                print(f"FAIL: {p}", file=sys.stderr)
+            return 1
+        print("OK: committed item-5 envelopes consistent with their citation chains (offline; no store fetch).")
+        return 0
     rc = 0
     for bench, rid in RECORDS:
         out = output_path(bench, rid)

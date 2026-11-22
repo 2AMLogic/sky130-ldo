@@ -11,9 +11,9 @@ for the live, regenerated rollup of current conformance, which shows several
 rows FAIL against the targets below. That is a disclosed, tracked design gap
 for follow-on work, per DR-006 — not a reason the targets themselves are
 unsettled. The Iq row, which DR-003 and DR-006 left explicitly open, is set
-by [`DR-009`](decision-records/DR-009-iq-budget.md) (`proposed`; it
-ratifies on the same PR-merge path, per 2AMLogic/2am#357). No row is left
-without a number.
+by [`DR-009`](decision-records/DR-009-iq-budget.md) (`proposed`; fresh
+ratification pending under #301 — DR-009 does not ratify itself). No row is
+left without a number.
 
 ## Where these numbers come from
 
@@ -69,8 +69,8 @@ deferred to a later topology decision record.
 ## RATIFIED target table
 
 Every row is **RATIFIED (DR-006/#1)** except Iq, which is set by
-[`DR-009`](decision-records/DR-009-iq-budget.md) (`proposed`; it ratifies on
-merge of its PR, per 2AMLogic/2am#357) — see its note. "Src" cites gf180-ldo's ratified row (G) and/or sky130 published
+[`DR-009`](decision-records/DR-009-iq-budget.md) (`proposed`; fresh
+ratification pending under #301 — DR-009 does not ratify itself) — see its note. "Src" cites gf180-ldo's ratified row (G) and/or sky130 published
 references / this repo's own device characterization (S). **Ratified means
 this is the target**, not a claim the current implementation meets it — see
 [`measurements/characterization.md`](../measurements/characterization.md) for

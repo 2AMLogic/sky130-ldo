@@ -50,6 +50,14 @@ def _result(status, reasons, settings, **extra) -> dict:
     return out
 
 
+def invalid_result(settings: dict, reasons: list[str]) -> dict:
+    """A caller-shaped INVALID result for a trace the checker never saw (e.g.
+    the batch waveform artifact is missing or unusable, issue #336): same
+    shape, checker-owned, never a PASS."""
+    common = {k: v for k, v in settings.items() if k not in ("legs", "signal")}
+    return _result("INVALID", reasons, common)
+
+
 def check_ramp_monotonicity(times, volts, settings: dict) -> dict:
     """Evaluate one startup trace. Never raises on bad data; returns INVALID."""
     s = {"tolerance_v": 0.0, **settings}
@@ -161,3 +169,22 @@ def evaluate_legs(settings: dict, run_dir: Path, corner_id: str) -> list[dict]:
         res.update({"leg": leg["id"], "trace_file": name, "trace_sha256": sha})
         out.append(res)
     return out
+
+
+def ramp_check(leg_result: dict) -> dict:
+    """The per-leg condition as a corner check row (the shape both the local
+    `run_corner` and the batch startup normalizer emit): max = tolerance_v,
+    pass = the leg's own verdict."""
+    passed = leg_result["pass"]
+    return {
+        "name": f"ramp_drawdown_{leg_result['leg']}_v",
+        "expr": "ramp_monotonicity.max_drawdown(v(vout))",
+        "unit": "V",
+        "value": leg_result["max_drawdown_v"],
+        "min": None,
+        "max": leg_result["settings"]["tolerance_v"],
+        "pass": passed,
+        "reason": ""
+        if passed
+        else f"{leg_result['status']}: " + "; ".join(leg_result["reasons"]),
+    }

@@ -27,7 +27,9 @@ import batch_dropout
 import batch_iq as biq
 import batch_line_regulation as blr
 import batch_load_regulation as bld
+import batch_startup_ramp as bsr
 from batch_window_grid import TranslationError, leg_step, parse_leg_template
+from ramp_monotonicity import ramp_check
 from _corner_model import (
     Corner,
     Experiment,
@@ -37,7 +39,7 @@ from _corner_model import (
     SPICEINIT_FILE,
     compare_tool_versions,
     detect_solver_diagnostic,
-    grade_bounds,
+    grade_check,
     leg_values,
     unique_in_order,
     window_legs,
@@ -55,9 +57,12 @@ from _record_common import (
 # BOUNDED on purpose: only the unchanged `pdk-smoke` shape (one `op` analysis,
 # two scalar measurements), the `load-transient` COUT/ESR window grid
 # (issue #326: one single-step `tran` request per supply x leg, see
-# sim/bin/batch_window_grid.py) and the `dropout-vs-load` cold-start crossing
+# sim/bin/batch_window_grid.py), the `dropout-vs-load` cold-start crossing
 # (issue #374: one single-step `tran ... uic` request per supply, see
-# sim/bin/batch_dropout.py) may use it. Every other manifest is refused
+# sim/bin/batch_dropout.py) and the `startup` ramp-trace grid (issue #336:
+# one scalar-`tran` request per supply x leg with `options.waveforms`, the
+# ramp traces returned as waveform artifacts and graded locally, see
+# sim/bin/batch_startup_ramp.py) may use it. Every other manifest is refused
 # before any netlisting, submission or local ngspice -- see sim/README.md
 # "Batch backend". The local path above is untouched; this section only adds a
 # second way to obtain the same per-corner result dicts.
@@ -70,6 +75,16 @@ BATCH_ALLOWLIST = {
     # Shape: a `window_grid` whose leg_analyses translate to a klt step, every
     # measurement per-leg, and no deck-level analysis (comments only).
     "load-transient": {"window_grid": True},
+    # Shape (issue #336): a `window_grid` + `ramp_monotonicity` whose leg
+    # block translates to a scalar per-leg `tran` request (one request per
+    # supply x leg; leg element values baked into the request netlist, the
+    # leg's wrdata trace returned as the corner's waveform artifact via
+    # `options.waveforms` and rebuilt/graded locally by
+    # sim/bin/ramp_monotonicity.py). The manifest shape the translation
+    # relies on is pinned by `check_ramp_trace_shape`, not by digests: the
+    # wrdata signal, the leg ids and the checker settings must match the
+    # ramp block exactly, or the backend refuses before any submission.
+    "startup": {"window_grid": True, "ramp_traces": True},
     # Shape (issue #374): one cold-start `tran ... uic`, td-delayed crossing /
     # window-avg `meas tran` cards, graded expressions over those cards, and
     # the stimulus below sent verbatim in the netlist. RENEWAL: the manifest
@@ -193,9 +208,12 @@ BATCH_REFUSAL_HINT = (
     "supply) and the validated sim/load-regulation endpoints (two single-step "
     "`tran ... uic` requests per supply) and sim/iq's two cold-start endpoints "
     "(two single-step `tran ... uic` requests per supply) and sim/current-limit's "
-    "three chained legs (one three-step `analysis_steps[]` request per supply); "
-    "every other experiment, including the other transient/AC/DC-sweep and mc-* "
-    "manifests, stays on the local backend (see sim/README.md, \"Batch backend\")"
+    "three chained legs (one three-step `analysis_steps[]` request per supply) "
+    "and the sim/startup ramp-trace grid "
+    "(one scalar `tran` request per leg with `options.waveforms`, issue #336); "
+    "every other "
+    "experiment, including the other transient/AC/DC-sweep and mc-* manifests, "
+    "stays on the local backend (see sim/README.md, \"Batch backend\")"
 )
 
 
@@ -367,6 +385,16 @@ def batch_legs(exp: Experiment) -> list[str] | None:
     return [leg["id"] for leg in window_legs(exp.raw)]
 
 
+def is_ramp_trace_grid(exp: Experiment) -> bool:
+    """A window-grid experiment whose per-leg ramp traces must come back from
+    the batch run (issue #336 startup): each leg is a scalar-`tran` request
+    with `options.waveforms`, and the ramp condition is graded locally from
+    the returned waveform artifact."""
+    return bool(
+        BATCH_ALLOWLIST.get(exp.slug, {}).get("ramp_traces") and exp.raw.get("ramp_monotonicity")
+    )
+
+
 def leg_template_name(m: Measurement) -> str:
     """The manifest template name of an expanded per-leg measurement."""
     suffix = "__" + str(m.leg)
@@ -421,13 +449,28 @@ def check_batch_supported(exp: Experiment) -> None:
             f"--backend batch does not support experiment {exp.slug!r}: {BATCH_REFUSAL_HINT}"
         )
     deck = exp.raw.get("deck") or {}
-    if exp.raw.get("ramp_monotonicity"):
+    if exp.raw.get("ramp_monotonicity") and not allowed.get("ramp_traces"):
         raise HarnessError(
             f"--backend batch does not support {exp.slug!r}: waveform post-processing "
             f"(ramp_monotonicity) is local-only: {BATCH_REFUSAL_HINT}"
         )
+    if allowed.get("ramp_traces") and not exp.raw.get("ramp_monotonicity"):
+        # The ratified startup method grades a ramp condition on every leg;
+        # a startup manifest without the block would qualify nothing.
+        raise HarnessError(
+            f"--backend batch: {exp.slug!r} declares no ramp_monotonicity block; "
+            f"the trace-returning shape requires it: {BATCH_REFUSAL_HINT}"
+        )
     if allowed.get("window_grid"):
         check_window_grid_batch_shape(exp)
+        if allowed.get("ramp_traces"):
+            try:
+                bsr.check_ramp_trace_shape(exp)
+            except bsr.StartupRampError as exc:
+                raise HarnessError(
+                    f"--backend batch: {exp.slug!r} does not have the supported "
+                    f"ramp-trace shape ({exc}): {BATCH_REFUSAL_HINT}"
+                ) from exc
         return
     if allowed.get("cold_start_crossing"):
         check_cold_start_batch_shape(exp)
@@ -514,7 +557,12 @@ def build_batch_netlist(exp: Experiment, group: BatchGroup, body: list[str]) -> 
     for opt in deck.get("options") or []:
         head.append(f".option {opt}")
     head.append(".save all")
-    if is_endpoint_adapter(exp):
+    if is_ramp_trace_grid(exp):
+        # Each leg request carries its element values in the netlist: an
+        # `analysis_steps` request cannot return waveforms, so the leg runs
+        # as a scalar tran with the alters baked in (issue #336).
+        body = bsr.leg_netlist_body(exp, group.leg, body)
+    elif is_endpoint_adapter(exp):
         # Each endpoint request carries that point's complete source state
         # (VIN, EN's PWL high level, load) in the netlist (issue #379).
         ep = next(e for e in endpoint_deck(exp) if e.step_name == group.leg)
@@ -525,7 +573,12 @@ def build_batch_netlist(exp: Experiment, group: BatchGroup, body: list[str]) -> 
 def build_batch_request(
     exp: Experiment, pdk: Pdk, group: BatchGroup, netlist_path: Path, timeout: int
 ) -> dict:
-    if is_endpoint_adapter(exp):
+    if is_ramp_trace_grid(exp):
+        # One scalar-tran request per leg (issue #336): the leg's values live
+        # in the request netlist, and the ramp trace comes back as the
+        # corner's waveform artifact (`options.waveforms`).
+        shape = bsr.scalar_leg_request(exp, group.leg)
+    elif is_endpoint_adapter(exp):
         # One single-step request per supply group x endpoint (issue #379).
         shape = {"analysis_steps": [endpoint_step(exp, group.leg)]}
     elif group.leg is not None:
@@ -552,17 +605,20 @@ def build_batch_request(
                 {"name": f"meas_{m.name}", "expr": m.expr, "unit": m.unit} for m in exp.measurements
             ],
         }
+    options = {
+        "timeout_s": timeout,
+        "keep_artifacts": True,
+        "ngspice_init": spiceinit_lines(),
+    }
+    if is_ramp_trace_grid(exp):
+        options["waveforms"] = True
     return {
         "netlist": str(netlist_path),
         "engine": "ngspice",
         "models": {"pdk": pdk.variant, "lib": str(pdk.lib_file.relative_to(pdk.dir))},
         "corners": {"process": list(group.process), "temperature_c": list(group.temperature_c)},
         **shape,
-        "options": {
-            "timeout_s": timeout,
-            "keep_artifacts": True,
-            "ngspice_init": spiceinit_lines(),
-        },
+        "options": options,
         # A klt that classifies the fleet-cap refusal waits on its own (issue #345);
         # run_klt_batch's caller-side retry covers a klt that does not.
         "batch": {"capacity_wait_s": CAPACITY_RETRY_BUDGET_S},
@@ -665,6 +721,79 @@ def _index_response_corners(
     return want, seen
 
 
+def _engine_log_check(rc: dict, outdir: Path, prefix: str) -> tuple[str | None, str | None, list[str]]:
+    """Read one remote corner's engine log artifact and check its text for a
+    solver diagnostic (a relative artifact path resolves against `outdir`).
+    Returns (log text or None, solver diagnostic or None, failure reasons): a
+    log missing from the response or unreadable on disk yields no text and one
+    `prefix`-bearing reason, while a readable log — an empty one included —
+    yields its text and a diagnostic reason only if a marker matched."""
+    reasons: list[str] = []
+    log_text: str | None = None
+    art = rc.get("artifacts")
+    log_ref = art.get("log") if isinstance(art, dict) else None
+    if isinstance(log_ref, str) and log_ref:
+        lp = Path(log_ref)
+        if not lp.is_absolute():
+            lp = outdir / lp
+        try:
+            log_text = lp.read_text(errors="replace")
+        except OSError as exc:
+            reasons.append(f"{prefix}engine log unreadable ({lp}: {exc})")
+    else:
+        reasons.append(f"{prefix}engine log not retained in klt sim response (artifacts.log absent)")
+    solver_diagnostic = None
+    if log_text is not None:
+        solver_diagnostic = detect_solver_diagnostic(log_text)
+        if solver_diagnostic is not None:
+            reasons.append(f"{prefix}solver diagnostic: {solver_diagnostic}")
+    return log_text, solver_diagnostic, reasons
+
+
+def _batch_corner_result(
+    corner: Corner,
+    *,
+    elapsed_s: float | None,
+    timeout_s: int,
+    measurements: list[dict],
+    solver_diagnostic: str | None,
+    klt_request,
+    klt_corner_id,
+    klt_status,
+    batch_reasons: list[str],
+    ramp_monotonicity: list[dict] | None = None,
+) -> dict:
+    """The 19-key corner result every batch normalizer emits (issue #736):
+    one schema for the standard, startup ramp-trace and endpoint adapters, so
+    a new key or adapter cannot drift from the others. `elapsed_s` is the
+    already-normalized runtime (None when unobservable); the three `klt_*`
+    fields are the per-corner values (or, for the endpoint adapter, the
+    per-endpoint lists). `ramp_monotonicity` is included only when non-empty.
+    A remote run's ngspice exit is not observable and never fabricated."""
+    return {
+        "corner_id": corner.id,
+        "process": corner.process,
+        "temperature_c": corner.temp_c,
+        "supply_v": corner.supply_v,
+        "execution": "batch",
+        "ngspice_exit": None,
+        "timed_out": False,
+        "killed_by_signal": None,
+        "killed_by_signal_name": None,
+        "elapsed_s": elapsed_s,
+        "timeout_s": timeout_s,
+        "measurements": measurements,
+        **({"ramp_monotonicity": ramp_monotonicity} if ramp_monotonicity else {}),
+        "solver_diagnostic": solver_diagnostic,
+        "pass": (not batch_reasons) and all(c["pass"] for c in measurements),
+        "log": None,
+        "klt_request": klt_request,
+        "klt_corner_id": klt_corner_id,
+        "klt_status": klt_status,
+        "batch_reasons": batch_reasons,
+    }
+
+
 def normalize_batch_response(
     exp: Experiment, group: BatchGroup, response: dict, outdir: Path, timeout: int
 ) -> tuple[list[dict], dict[str, str]]:
@@ -719,63 +848,116 @@ def normalize_batch_response(
                 reason = f"measurement value is missing or non-finite ({entries[0].get('value')!r})"
             else:
                 value = float(entries[0]["value"])
-            graded, bound_reason = grade_bounds(m, value)
-            passed = graded
-            if value is not None:
-                reason = bound_reason
-            checks.append({
-                "name": m.name, "expr": m.expr, "unit": m.unit, "value": value,
-                "min": m.min, "max": m.max,
-                "min_inclusive": m.min_inclusive, "max_inclusive": m.max_inclusive,
-                "pass": passed, "reason": reason,
-                **({"leg": m.leg, "cout_f": m.cout_f, "esr_ohm": m.esr_ohm, "direction": m.direction}
-                   if m.leg is not None else {}),
-            })
+            checks.append(grade_check(m, value, missing_reason=reason))
 
-        solver_diagnostic, log_text, log_note = None, None, None
-        art = rc.get("artifacts")
-        log_ref = art.get("log") if isinstance(art, dict) else None
-        if isinstance(log_ref, str) and log_ref:
-            lp = Path(log_ref)
-            if not lp.is_absolute():
-                lp = outdir / lp
-            try:
-                log_text = lp.read_text(errors="replace")
-            except OSError as exc:
-                log_note = f"{tag}engine log unreadable ({lp}: {exc})"
-        else:
-            log_note = f"{tag}engine log not retained in klt sim response (artifacts.log absent)"
+        log_text, solver_diagnostic, log_reasons = _engine_log_check(rc, outdir, tag)
         if log_text is not None:
-            solver_diagnostic = detect_solver_diagnostic(log_text)
             logs[corner.id] = log_text
-        else:
-            reasons.append(log_note)
-        if solver_diagnostic is not None:
-            reasons.append(f"{tag}solver diagnostic: {solver_diagnostic}")
+        reasons.extend(log_reasons)
 
         runtime = rc.get("runtime_s")
-        ok = (not reasons) and all(c["pass"] for c in checks)
-        results.append({
-            "corner_id": corner.id,
-            "process": corner.process,
-            "temperature_c": corner.temp_c,
-            "supply_v": corner.supply_v,
-            "execution": "batch",
-            "ngspice_exit": None,  # not observable for a remote run; never fabricated
-            "timed_out": False,
-            "killed_by_signal": None,
-            "killed_by_signal_name": None,
-            "elapsed_s": runtime if _finite_number(runtime) else None,
-            "timeout_s": timeout,
-            "measurements": checks,
-            "solver_diagnostic": solver_diagnostic,
-            "pass": ok,
-            "log": None,
-            "klt_request": group.key,
-            "klt_corner_id": rc.get("corner_id"),
-            "klt_status": status,
-            "batch_reasons": reasons,
-        })
+        results.append(_batch_corner_result(
+            corner,
+            elapsed_s=runtime if _finite_number(runtime) else None,
+            timeout_s=timeout,
+            measurements=checks,
+            solver_diagnostic=solver_diagnostic,
+            klt_request=group.key,
+            klt_corner_id=rc.get("corner_id"),
+            klt_status=status,
+            batch_reasons=reasons,
+        ))
+    return results, logs
+
+
+def normalize_startup_response(
+    exp: Experiment, group: BatchGroup, response: dict, outdir: Path, timeout: int
+) -> tuple[list[dict], dict[str, str]]:
+    """Validate one startup ramp-trace leg response and grade each point
+    locally (issue #336).
+
+    Structure problems raise HarnessError (an unfinished/incompatible remote
+    job is never a result; there is no trustworthy record to write). Per-point
+    problems (errored corner, absent log, solver diagnostic, missing/non-finite
+    `.meas` card) become recorded FAIL reasons. The manifest's per-leg
+    measurements are evaluated over the leg's raw card values with the
+    manifest's own expressions, and the ramp-monotonicity condition is graded
+    from the returned waveform artifact (a missing/unusable trace is an
+    INVALID condition with its reasons — it can only lower the verdict).
+    Returns (results in request point order, {corner id: engine log text}).
+    """
+    problem = batch_dropout.remote_completion_problem(response)
+    if problem:
+        raise HarnessError(f"request {group.key}: {problem}")
+    want, seen = _index_response_corners(group, response)
+    template_cards = [name for name, _ in bsr._leg_template(exp).meas_cards]
+    tag = f"[leg {group.leg}] "
+    results, logs = [], {}
+    for key, corner in want.items():
+        rc = seen[key]
+        reasons: list[str] = []
+        status = rc["status"]
+        if status not in ("pass", "fail"):
+            reasons.append(f"{tag}klt sim corner status {status!r} (not a completed result)")
+        reasons.extend(f"{tag}{r}" for r in batch_dropout.corner_diagnostic_problems(rc))
+        by_name: dict[str, dict] = {}
+        for rm_ in rc["measurements"]:
+            if isinstance(rm_, dict) and isinstance(rm_.get("name"), str):
+                name = rm_["name"]
+                if name in by_name:
+                    reasons.append(f"{tag}measurement {name!r} reported more than once")
+                by_name[name] = rm_
+        card_values: dict[str, float | None] = {}
+        for name in template_cards:
+            entry = by_name.get(name)
+            if entry is None:
+                reasons.append(f"{tag}measurement {name!r} not found in klt sim response")
+                card_values[name] = None
+            elif not _finite_number(entry.get("value")):
+                reasons.append(
+                    f"{tag}measurement {name!r} value is missing or non-finite "
+                    f"({entry.get('value')!r}, klt status {entry.get('status')!r})"
+                )
+                card_values[name] = None
+            else:
+                card_values[name] = float(entry["value"])
+
+        checks = []
+        for m in exp.measurements:
+            if m.leg != group.leg:
+                continue
+            value = bsr.evaluate_measurement(m.expr, card_values)
+            checks.append(grade_check(
+                m, value,
+                missing_reason=f"measurement not computable: {m.expr} over missing card value(s)",
+            ))
+
+        log_text, solver_diagnostic, log_reasons = _engine_log_check(rc, outdir, tag)
+        if log_text is not None:
+            logs[corner.id] = log_text
+        reasons.extend(log_reasons)
+
+        leg_result, trace_path, structural = bsr.leg_ramp_condition(
+            exp, group.leg, corner.id, rc.get("artifacts"), outdir
+        )
+        reasons.extend(structural)
+        checks.append(ramp_check(leg_result))
+        if trace_path is not None:
+            leg_result["_trace_path"] = str(trace_path)
+
+        runtime = rc.get("runtime_s")
+        results.append(_batch_corner_result(
+            corner,
+            elapsed_s=runtime if _finite_number(runtime) else None,
+            timeout_s=timeout,
+            measurements=checks,
+            solver_diagnostic=solver_diagnostic,
+            klt_request=group.key,
+            klt_corner_id=rc.get("corner_id"),
+            klt_status=status,
+            batch_reasons=reasons,
+            ramp_monotonicity=[leg_result],
+        ))
     return results, logs
 
 
@@ -806,24 +988,11 @@ def normalize_endpoint_response(
         reasons.extend(f"[{ep.step_name}] {r}" for r in batch_dropout.corner_diagnostic_problems(rc))
         values, vreasons = blr.extract_endpoint_values(ep, rc["measurements"])
         reasons.extend(vreasons)
-        log_text, solver_diagnostic = None, None
-        art = rc.get("artifacts")
-        log_ref = art.get("log") if isinstance(art, dict) else None
-        if isinstance(log_ref, str) and log_ref:
-            lp = Path(log_ref)
-            if not lp.is_absolute():
-                lp = outdir / lp
-            try:
-                log_text = lp.read_text(errors="replace")
-            except OSError as exc:
-                reasons.append(f"[{ep.step_name}] engine log unreadable ({lp}: {exc})")
-        else:
-            reasons.append(f"[{ep.step_name}] engine log not retained in klt sim response (artifacts.log absent)")
+        log_text, solver_diagnostic, log_reasons = _engine_log_check(
+            rc, outdir, f"[{ep.step_name}] ")
         if log_text is not None:
-            solver_diagnostic = detect_solver_diagnostic(log_text)
             logs[corner.id] = log_text
-        if solver_diagnostic is not None:
-            reasons.append(f"[{ep.step_name}] solver diagnostic: {solver_diagnostic}")
+        reasons.extend(log_reasons)
         runtime = rc.get("runtime_s")
         parts.append({
             "corner": corner, "endpoint": ep.step_name, "values": values, "reasons": reasons,
@@ -855,31 +1024,20 @@ def finalize_endpoint_results(
         checks = []
         for m in exp.measurements:
             value = blr.evaluate(m.expr, values, refs)
-            passed, why = grade_bounds(m, value)
-            reason = why if value is not None else "measurement not found in endpoint results"
-            checks.append({
-                "name": m.name, "expr": m.expr, "unit": m.unit, "value": value,
-                "min": m.min, "max": m.max,
-                "min_inclusive": m.min_inclusive, "max_inclusive": m.max_inclusive,
-                "pass": passed, "reason": reason,
-            })
+            checks.append(grade_check(m, value, missing_reason="measurement not found in endpoint results"))
         diags = [p["solver_diagnostic"] for p in mine if p["solver_diagnostic"]]
         elapsed = [p["elapsed_s"] for p in mine]
-        results.append({
-            "corner_id": corner.id, "process": corner.process, "temperature_c": corner.temp_c,
-            "supply_v": corner.supply_v, "execution": "batch",
-            "ngspice_exit": None, "timed_out": False, "killed_by_signal": None,
-            "killed_by_signal_name": None,
-            "elapsed_s": sum(elapsed) if elapsed and all(_finite_number(e) for e in elapsed) else None,
-            "timeout_s": timeout, "measurements": checks,
-            "solver_diagnostic": "; ".join(diags) if diags else None,
-            "pass": (not reasons) and all(c["pass"] for c in checks),
-            "log": None,
-            "klt_request": [p["klt_request"] for p in mine],
-            "klt_corner_id": [p["klt_corner_id"] for p in mine],
-            "klt_status": [p["klt_status"] for p in mine],
-            "batch_reasons": reasons,
-        })
+        results.append(_batch_corner_result(
+            corner,
+            elapsed_s=sum(elapsed) if elapsed and all(_finite_number(e) for e in elapsed) else None,
+            timeout_s=timeout,
+            measurements=checks,
+            solver_diagnostic="; ".join(diags) if diags else None,
+            klt_request=[p["klt_request"] for p in mine],
+            klt_corner_id=[p["klt_corner_id"] for p in mine],
+            klt_status=[p["klt_status"] for p in mine],
+            batch_reasons=reasons,
+        ))
     return results
 
 
@@ -942,6 +1100,9 @@ def merge_leg_parts(exp: Experiment, acc: dict | None, part: dict) -> dict:
     merged["measurements"] = sorted(
         acc["measurements"] + part["measurements"], key=lambda c: order.get(c["name"], len(order))
     )
+    ramp = acc.get("ramp_monotonicity", []) + part.get("ramp_monotonicity", [])
+    if ramp:
+        merged["ramp_monotonicity"] = ramp
     merged["pass"] = acc["pass"] and part["pass"]
     merged["batch_reasons"] = acc["batch_reasons"] + part["batch_reasons"]
     merged["klt_request"] = acc["klt_request"] + [part["klt_request"]]
@@ -962,7 +1123,9 @@ def run_batch(
     by_id: dict[str, dict] = {}
     endpoint_parts: dict[str, list[dict]] = {}
     endpoint_mode = is_endpoint_adapter(exp)
+    startup_mode = is_ramp_trace_grid(exp)
     logs: dict[str, str] = {}
+    traces: dict[str, list[tuple[str, Path]]] = {}
     requests_meta = []
     jobs: list[str] = []
     for group, request_path, request in prepared:
@@ -987,8 +1150,15 @@ def run_batch(
                 res, lg = normalize_chained_response(exp, group, response, outdir, timeout)
             elif endpoint_mode:
                 res, lg = normalize_endpoint_response(exp, group, response, outdir)
+            elif startup_mode:
+                res, lg = normalize_startup_response(exp, group, response, outdir, timeout)
             else:
                 res, lg = normalize_batch_response(exp, group, response, outdir, timeout)
+            for r in res:
+                for tr in r.get("ramp_monotonicity") or []:
+                    p = tr.pop("_trace_path", None)  # harness-internal; never recorded
+                    if p:
+                        traces.setdefault(r["corner_id"], []).append((tr["trace_file"], Path(p)))
         except HarnessError as exc:
             raise HarnessError(
                 f"{exc}\n  request {group.key} failed; no evidence record written, no local "
@@ -1027,7 +1197,16 @@ def run_batch(
         results = finalize_endpoint_results(exp, matrix, endpoint_parts, timeout)
     else:
         results = [by_id[c.id] for c in matrix]
-    return results, logs, {"requests": requests_meta}
+    traces_meta = {
+        cid: [{"file": name, "path": str(path)} for name, path in entries]
+        for cid, entries in traces.items()
+    }
+    return results, logs, {"requests": requests_meta, **({"traces": traces_meta} if traces_meta else {})}
+
+
+def startup_ramp_adapter_info(exp: Experiment) -> dict:
+    """Provenance of the issue #336 trace-return adapter for a batch record."""
+    return bsr.adapter_info(exp)
 
 
 def batch_tools(base: dict, execution: dict) -> dict:

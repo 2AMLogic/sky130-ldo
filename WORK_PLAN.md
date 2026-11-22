@@ -3,19 +3,19 @@
 Current roadmap derived from GitHub lifecycle labels. Maintained by the Loom Guide role.
 
 <!-- guide:plan-body:start -->
+_Generated: 2026-11-22T00:10:00Z (snapshot; compare against live labels)_
 ## Operator Attention: Merge-Risk-Hold Pileup
 
 Judge-approved PRs under a hold (`loom:blocked` or `loom:operator`) — only a human merge decision is missing.
 
 - **#569**: docs: propose DR-014 binding capacitor condition for the PSRR row
-- **#573**: docs(spec): reconcile DR-009's ratifying-act wording with the #301 ruling
-- **#630**: docs: align DR-009 status wording with the #301 ruling across CLAUDE.md and target spec
+- **#681**: Clarify DR-012’s proposed status and fresh ratification requirement
 
 ## Very Important
 
 `loom:very-important` (one counts per workspace); every stage takes these first.
 
-- **#467**: Bias re-topology so R_BIAS is not one long resistor: new DR, to meet the < 0.1 mm² Area row without a fold waiver (#461)
+- **#467**: Bias re-topology so R_BIAS is not one long resistor: new DR, to meet the < 0.1 mm² Area row without a fold waiver (#461) *(held)*
 
 ## Important
 
@@ -25,37 +25,34 @@ Judge-approved PRs under a hold (`loom:blocked` or `loom:operator`) — only a h
 
 ## Ready
 
-Human-approved issues ready for implementation (`loom:issue`).
+Human-approved issues (`loom:issue`) ready for implementation — excluding held (`loom:blocked`/`loom:operator`/`loom:frozen`), `loom:building`, and issues closed by an open `loom:pr` PR (listed under Approved).
 
-- **#177**: Seed sim/current-limit's leg-1 operating point to conform to the initial-condition contract
 - **#301**: spec: decide whether DR-008 through DR-012 ratified on merge
-- **#336**: Startup: extend cold-enable coverage to the ratified ESR boundaries
-- **#467**: Bias re-topology so R_BIAS is not one long resistor: new DR, to meet the < 0.1 mm² Area row without a fold waiver (#461)
-- **#550**: Re-run signoff-graded benches made stale by the integrated comparator (split from #548)
 
 ## In Progress
 
 Issues currently being built (`loom:building`).
 
-- **#624**: CLAUDE.md:35 still claims DR-009 'ratifies on its own PR merge' — the same stale claim #607 removed from README
+- **#177**: Seed sim/current-limit's leg-1 operating point to conform to the initial-condition contract
 - **#629**: characterization.md Output row reads PASS on light-load-only evidence; record 20261115-133911-1caff9b9 is full-load evidence against that same window
 - **#639**: xschem pin migration: migrate sky130-ldo to the fleet 3.4.7
-- **#642**: CI: documented 'run-pdk-smoke' PR opt-in label does not exist
+- **#693**: Startup: attribute the enable-edge charge packet behind the 0.016-66 uV pre-ramp drawdown and remove its cause
+- **#706**: Characterize rev2 quiescent current, clamp knee and thermal hysteresis
+- **#709**: Qualify R_CZ L=180 for startup charge reduction and land a verified compensation change
+- **#716**: Extend the sim append-only CI check to archived diagnostic runs
 
 ## PRs Awaiting Review
 
 PRs waiting on Judge (`loom:review-requested`).
 
-- **#641**: ci: source-build fleet-pinned xschem 3.4.7, drop apt 3.4.4 install
-- **#643**: ci: declare repo-local run-pdk-smoke label in labels.yml
+_None._
 
 ## Approved (Awaiting Merge)
 
 PRs that passed review and are queued for Champion auto-merge (`loom:pr`).
 
-- **#569**: docs: propose DR-014 binding capacitor condition for the PSRR row
-- **#573**: docs(spec): reconcile DR-009's ratifying-act wording with the #301 ruling
-- **#630**: docs: align DR-009 status wording with the #301 ruling across CLAUDE.md and target spec
+- **#569**: docs: propose DR-014 binding capacitor condition for the PSRR row — closes #314
+- **#681**: Clarify DR-012’s proposed status and fresh ratification requirement
 
 ## Proposed
 
@@ -69,18 +66,24 @@ Issues carrying `loom:curated`.
 - **#416**: Re-run folded-resistor MC at n>=1000 to firm up M2 sigma-ratio gate *(curated)* *(held)*
 - **#461**: T1 item 5 area: compact routed ldo_core under 0.1 mm² with capacitors drawn, re-mint records (part of #458) *(curated)* *(held)*
 - **#503**: measurements: characterization generator cannot see artifact-store-only sim records (iq 20261105-052332-05df7a01) *(curated)* *(held)*
-- **#550**: Re-run signoff-graded benches made stale by the integrated comparator (split from #548) *(curated)*
-- **#623**: pex-post-layout batch runs: serial job-ceiling estimate can exceed the fleet's 3600 s max_job_seconds (shard via request.remote.hosts) *(curated)* *(held)*
-- **#624**: CLAUDE.md:35 still claims DR-009 'ratifies on its own PR merge' — the same stale claim #607 removed from README *(curated)*
+- **#550**: Re-run signoff-graded benches made stale by the integrated comparator (split from #548) *(curated)* *(held)*
 - **#629**: characterization.md Output row reads PASS on light-load-only evidence; record 20261115-133911-1caff9b9 is full-load evidence against that same window *(curated)*
 - **#639**: xschem pin migration: migrate sky130-ldo to the fleet 3.4.7 *(curated)*
-- **#642**: CI: documented 'run-pdk-smoke' PR opt-in label does not exist *(curated)*
+- **#645**: CI: nightly pdk-smoke red for 6+ nights — declared ngspice pin 42 vs resolved 45.2 (CI) / 47 (workers) *(curated)* *(held)*
+- **#691**: Stability: screen a compensation candidate that closes the 10-300 uA band at both C_out endpoints and the 0.33 uF / 50 mA shortfall (follow-on to #370) *(curated)* *(held)*
+- **#693**: Startup: attribute the enable-edge charge packet behind the 0.016-66 uV pre-ramp drawdown and remove its cause *(curated)*
+- **#706**: Characterize rev2 quiescent current, clamp knee and thermal hysteresis *(curated)*
+- **#709**: Qualify R_CZ L=180 for startup charge reduction and land a verified compensation change *(curated)*
+- **#716**: Extend the sim append-only CI check to archived diagnostic runs *(curated)*
 
 ## Proposed (Architect / Hermit)
 
 - **#576**: Collapse layout/'s three klt pins into one: the main pin now descends from both the ERC and cap-rail pins *(hermit)* *(held)*
 - **#591**: ci.yml: the 65-line check-inventory header restates package.json and has drifted from it in four places *(hermit)* *(held)*
 - **#595**: Remove load_results() from sim/bin/_probe_common.py: the one advertised probe helper with no caller *(hermit)* *(held)*
+- **#715**: Share the cold-start and re-enable temperature schedule across the three thermal paths *(hermit)*
+- **#719**: Stage only experiment inputs in BatchHarness to avoid copying 392 MiB of dropout diagnostics *(hermit)*
+- **#720**: Remove multi-response merging from the single-request dropout comparison *(hermit)*
 
 ## Epics
 
@@ -90,14 +93,14 @@ Issues carrying `loom:curated`.
 
 | Bucket | Count |
 |------|-------|
-| Operator merge-risk holds | 3 |
+| Operator merge-risk holds | 2 |
 | Very important | 1 |
 | Important | 1 |
-| Ready (`loom:issue`) | 5 |
-| In Progress (`loom:building`) | 4 |
-| PRs awaiting review | 2 |
-| Approved PRs awaiting merge | 3 |
-| Curated | 14 |
-| Architect / Hermit proposals | 3 |
+| Ready (`loom:issue`, net of holds/building/merge-pending) | 1 |
+| In Progress (`loom:building`) | 7 |
+| PRs awaiting review | 0 |
+| Approved PRs awaiting merge | 2 |
+| Curated | 17 |
+| Architect / Hermit proposals | 6 |
 | Active epics | 1 |
 <!-- guide:plan-body:end -->

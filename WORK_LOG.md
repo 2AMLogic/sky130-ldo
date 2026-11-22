@@ -6,6 +6,58 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 
 - [2026-09](work_log/WORK_LOG_2026-09.md)
 
+### 2026-11-21
+
+- **PR #722**: signoff: cover pdk-smoke.yml in the T1 item 10 hygiene inventory
+- **PR #703**: sim(#692): paired 45-point PVT dropout campaign — rev2 holds < 300 mV at every corner (ADOPT-REVIEW)
+- **Issue #717** (closed): signoff: item 10 hygiene inventory no longer covers the CI smoke steps after the pdk-smoke.yml split
+- **Issue #692** (closed): Dropout: run the paired 45-point PVT campaign for the #357 rev1 amplifier/clamp candidate (0.163 V at tt/27C; ratified row < 300 mV)
+- **PR #713**: ci: stop re-running CI on PR label writes; split smoke into pdk-smoke.yml
+- **Issue #707** (closed): ci.yml triggers a full CI run on every label change (pull_request: types includes 'labeled')
+- **PR #712**: fix: derive the rcz-shelf report's possible-request inventory from the driver's builders
+- **Issue #700** (closed): Diagnostic record states 118 dry-run-validated batch requests; the #691 screen now generates 122
+- **PR #701**: refactor: share the engine-log check across the batch response handlers
+- **PR #695**: feat(sim): screen a frequency-dependent compensation resistor on the batch fleet
+- **Issue #699** (closed): Share the engine-log check across the three batch response handlers
+- **Issue #697** (closed): Correct the klayout-tools#5894 cross-confirmation comment: it swaps which graph_too_large net hit which cap
+
+### 2026-11-20
+
+- **PR #696**: pex: measure per-net resistance-graph fallback reasons; map rails' graph_too_large to klayout-tools#6964 (item 7)
+- **Issue #690** (closed): Item 7: re-run the resistance-graph recheck with per-net fallback reasons and file the upstream gap that actually blocks VIN/VOUT
+- **PR #686**: docs(sim): align iq manifest claim with the #301 fresh-ratification ruling
+- **Issue #683** (closed): docs(sim): reconcile sim/iq/experiment.json's DR-009 ratifying-act claim with the #301 ruling
+- **PR #682**: docs: move live DR-009 citations to the fresh-ratification wording (split from #681)
+
+### 2026-11-19
+
+- **PR #573**: docs(spec): reconcile DR-009's ratifying-act wording with the #301 ruling
+- **PR #630**: docs: align DR-009 status wording with the #301 ruling across CLAUDE.md and target spec
+- **Issue #624** (closed): CLAUDE.md:35 still claims DR-009 'ratifies on its own PR merge' — the same stale claim #607 removed from README
+- **Issue #609** (closed): docs: four prose copies still instruct a raw headless `xschem -n -q -x -s` where `klt netlist` is the decided path
+
+### 2026-11-18
+
+- **PR #677**: test: pin the shared store-manifest read contract in layout/tests
+- **Issue #675** (closed): Add layout/tests/test_store_manifest.py for the shared store-manifest read contract
+- **PR #673**: refactor: one shared artifact-store manifest read/fetch helper
+- **Issue #671** (closed): Consolidate duplicated artifact-store manifest read/fetch helpers
+- **PR #670**: ci: report the spec-table gate on merge_group commits (merge queue step)
+- **Issue #668** (closed): Merge queue: add the merge_group trigger and adapt the PR-metadata gates
+- **PR #667**: refactor: consolidate the two batch adapters' measurement-expression evaluators
+- **Issue #666** (closed): Consolidate duplicate measurement-expression evaluators in sim batch adapters
+- **Issue #663** (closed): WORK_PLAN.md 'In Progress' still lists closed #336 (no loom:building label)
+- **PR #661**: docs(signoff): qualify the gate's "re-hashes every artifact" claims in --help, README and ci.yml
+- **Issue #659** (closed): verify-pins "--help", signoff/README.md and ci.yml still claim the gate "re-hashes every artifact" (post-#658 residual)
+- **PR #658**: docs(signoff): scope check.sh re-hash claim to committed artifacts; seed verify() counts keys
+- **Issue #657** (closed): signoff/check.sh header still claims the gate "re-hashes every artifact" (post-#654 residual)
+- **PR #656**: fix(signoff): report store-manifest-verified pins as such, not as re-hashed
+- **Issue #654** (closed): verify-pins: a store-manifest-verified pin is reported as if its bytes were re-hashed
+- **PR #652**: sim(startup): mint the 12-leg ESR-grid x 45-PVT campaign on the batch fleet
+- **Issue #336** (closed): Startup: extend cold-enable coverage to the ratified ESR boundaries
+- **PR #651**: evidence: pex-post-layout batch legs run as ceiling-split shards (#623)
+- **Issue #623** (closed): pex-post-layout batch runs: serial job-ceiling estimate can exceed the fleet's 3600 s max_job_seconds (shard via request.remote.hosts)
+
 ### 2026-11-17
 
 - **PR #643**: ci: declare repo-local run-pdk-smoke label in labels.yml
@@ -521,27 +573,4 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 - **PR #137**: docs: record the error amplifier as kept in-tree vs sky130-opamp (DR-010 + reuse.lock.json)
 - **PR #134**: spec: ratify the Iq row at < 30 µA via DR-008
 - **PR #130**: docs(design): stability binding mechanism, feedforward-zero screen (verified-negative), coupling-thesis test (#115)
-
-### 2026-09-19
-
-- **Issue #58** (closed): Track the gap to T1 sim-validated / bronze (klayout-tools design-evidence tiers)
-
-### 2026-09-18
-
-- **Issue #1** (closed): Ratify the target spec
-- **PR #50**: docs(spec): draft DR-006 spec ratification — ratify DR-002/003/004/005
-
-### 2026-09-16
-
-- **Issue #109** (closed): merge-pr.sh silently fails on every PR without a prior champion:hold-state marker (pipefail bug)
-
-### 2026-09-15
-
-- **Issue #107** (closed): Two-stage/cascoded amplifier redesign to close PSRR and light-load stability (per DR-007)
-- **Issue #70** (closed): PSRR fails everywhere and light-load stability shortfall is pervasive: bias-generator/compensation redesign needed
-- **Issue #60** (closed): LDO fails its own DRAFT PVT-corner spec: Output, Dropout, Load-transient, PSRR and Stability all FAIL (T1 re-read #58, items 5+6)
-- **PR #111**: docs(design): document verified-negative cascode screening for PSRR/stability
-- **PR #110**: docs(design): close out #60, root-cause/decomposition complete
-- **PR #108**: docs(design): document DR-007 outcome for #70, spin off #107
-- **PR #106**: docs(spec): add DR-007 recommending PSRR/Stability rows be superseded
 

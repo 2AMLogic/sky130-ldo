@@ -1,0 +1,409 @@
+"""Bounded stability-screen coverage. No simulator or fleet needed."""
+
+import itertools
+import json
+import tempfile
+import unittest
+from pathlib import Path
+from unittest import mock
+
+from _sim_script_loader import load_script
+
+BIN = Path(__file__).resolve().parents[1] / "bin"
+screen = load_script("rcz_shelf_691", BIN / "rcz-shelf-691.py", register=True)
+BODY = """COUT VOUT VESR 1u m=1
+HESR VESRS 0 VESRSENSE 0.01
+RLOAD VOUT 0 1800 m=1
+.subckt ldo VOUT VREF EN VIN
+XR_CZ EA_CZ EA_OUT 0 sky130_fd_pr__res_xhigh_po W=0.42 L=52 mult=1 m=1
+.ends
+"""
+
+
+class Grid(unittest.TestCase):
+    def test_requests_match_electrical_grid_and_design(self):
+        loads = ["0mA", "10uA", "30uA", "100uA", "300uA", "1mA", "50mA"]
+        caps = ["0.33u", "4.7u"]
+        esr_values = {"0": "0", "10m": "0.01", "500m": "0.5"}
+        resistances = dict(
+            zip(loads, ["1e12", "180k", "60k", "18k", "6k", "1800", "36"], strict=True)
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp)
+            (out / "requests").mkdir()
+            for stage, esrs, procs, temps in (
+                ("tt", ["0", "10m", "500m"], ["tt"], [27]),
+                ("pvt", ["10m"], ["ss", "ff"], [-40, 125]),
+            ):
+                for design in screen.DESIGNS:
+                    jobs = screen.ac_requests(
+                        out,
+                        {"variant": "sky130A", "ngspice_lib": "model"},
+                        BODY,
+                        stage,
+                        design,
+                    )
+                    expected = set(itertools.product(caps, esrs, loads))
+                    self.assertEqual(len(jobs), len(expected))
+                    self.assertEqual(
+                        {key.split("__")[2] for key, _ in jobs},
+                        {"_".join(v) for v in expected},
+                    )
+                    for key, path in jobs:
+                        req = json.loads(path.read_text())
+                        self.assertEqual(
+                            req["corners"], {"process": procs, "temperature_c": temps}
+                        )
+                        deck = Path(req["netlist"]).read_text()
+                        cap, esr, load = key.split("__")[2].split("_")
+                        self.assertIn(f"COUT VOUT VESR {cap} m=1", deck)
+                        self.assertIn(
+                            f"HESR VESRS 0 VESRSENSE {esr_values[esr]}\n",
+                            deck,
+                        )
+                        self.assertIn(
+                            f"RLOAD VOUT 0 {resistances[load]} ",
+                            deck,
+                        )
+                        self.assertEqual(deck.count("ELG_DEN "), 1)
+                        self.assertEqual("C_BYP" in deck, design == "shelf")
+
+    def test_gates_require_every_paired_result_but_baseline_may_fail(self):
+        rows = [
+            {"design": d, "pm": 20 if d == "baseline" else 45, "gm": 10, "reason": None}
+            for _ in range(42)
+            for d in screen.DESIGNS
+        ]
+        self.assertTrue(screen.advance(rows, "tt"))
+        self.assertFalse(screen.advance(rows[:-1], "tt"))
+        for field, value in [("pm", 44.99), ("gm", 9.99), ("reason", "missing gm")]:
+            with self.subTest(field=field):
+                bad = [*rows[:-1], dict(rows[-1], **{field: value})]
+                self.assertFalse(screen.advance(bad, "tt"))
+        rows[0]["reason"] = "missing baseline"
+        self.assertFalse(screen.advance(rows, "tt"))
+
+    def test_missing_duplicate_and_bad_metrics_are_explained(self):
+        case = {
+            "process": "tt",
+            "temperature_c": 27,
+            "status": "pass",
+            "measurements": [
+                {"name": "pm", "value": 45, "status": "pass"},
+                {"name": "gm", "value": 10, "status": "pass"},
+            ],
+        }
+        for corners, fragment in [
+            ([], "missing"),
+            ([case, case], "duplicate"),
+            ([dict(case, measurements=case["measurements"][:1])], "gm"),
+            ([dict(case, status="error")], "error"),
+        ]:
+            r = {"environment": {"remote": {"job_id": "job"}}, "corners": corners}
+            self.assertIn(fragment, screen.margins(r, "tt", 27)["reason"])
+
+
+def corner_response(measures, diagnostics=(), process="tt", temp=27):
+    return {
+        "environment": {"remote": {"job_id": "job"}},
+        "corners": [
+            {
+                "process": process,
+                "temperature_c": temp,
+                "status": "pass",
+                "measurements": [
+                    {"name": k, "value": v, "status": "pass"}
+                    for k, v in measures.items()
+                ],
+                "diagnostics": list(diagnostics),
+            }
+        ],
+    }
+
+
+SINGULAR = {
+    "severity": "warning",
+    "code": "singular_matrix",
+    "message": "Warning: singular matrix:  check node xldo.ea_cz",
+}
+
+
+class Validity(unittest.TestCase):
+    def test_warning_severity_solver_diagnostics_invalidate_ac(self):
+        resp = corner_response({"pm": 45, "gm": 10}, [SINGULAR])
+        reason = screen.margins(resp, "tt", 27)["reason"]
+        self.assertIn("solver diagnostic", reason)
+        self.assertIn("singular matrix", reason)
+        resp = corner_response({"pm": 45, "gm": 10}, [dict(SINGULAR, message="note")])
+        self.assertIsNone(screen.margins(resp, "tt", 27)["reason"])
+
+    def test_op_request_covers_every_load_per_design_and_stage(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp)
+            (out / "requests").mkdir()
+            for stage in ("tt", "pvt"):
+                for design in screen.DESIGNS:
+                    ((key, path),) = screen.op_requests(
+                        out,
+                        {"variant": "sky130A", "ngspice_lib": "model"},
+                        BODY,
+                        stage,
+                        design,
+                    )
+                    self.assertEqual(key, screen.op_key(stage, design))
+                    req = json.loads(path.read_text())
+                    steps = req["analysis_steps"]
+                    self.assertEqual(
+                        [x["name"] for x in steps], ["op_" + k for k in screen.LOADS]
+                    )
+                    self.assertTrue(all(x["reset"] for x in steps))
+                    self.assertEqual(
+                        [x["alter"]["RLOAD"] for x in steps],
+                        [screen.ohms(v) for v in screen.LOADS.values()],
+                    )
+
+    def test_bias_window_gates_every_ac_row_before_advance(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp)
+            meta = {"preflight": {"exit": 0}, "errors": {}}
+            ac = corner_response({"pm": 62, "gm": 39})
+            for design in screen.DESIGNS:
+                for cap, esr, load in screen.grid("tt"):
+                    key = screen.key_for("tt", design, cap, esr, load)
+                    (out / "responses" / key).mkdir(parents=True)
+                    (out / "responses" / key / "klt.stdout").write_text(json.dumps(ac))
+
+            def write_op(design, vout, diagnostics=()):
+                values = (
+                    {} if vout is None else {f"op_{k}.vout": vout for k in screen.LOADS}
+                )
+                path = out / "responses" / screen.op_key("tt", design)
+                path.mkdir(parents=True, exist_ok=True)
+                (path / "klt.stdout").write_text(
+                    json.dumps(corner_response(values, diagnostics))
+                )
+
+            def rows():
+                return screen.ac_rows(out, "tt", meta)
+
+            # no operating-point data at all
+            self.assertTrue(all("operating point" in r["reason"] for r in rows()))
+            for design in screen.DESIGNS:
+                write_op(design, 1.8)
+            self.assertTrue(all(r["reason"] is None for r in rows()))
+            self.assertTrue(screen.advance(rows(), "tt"))
+            for vout, ok in ((1.62, True), (1.98, True), (1.6199, False), (3.3, False)):
+                write_op("shelf", vout)
+                self.assertEqual(screen.advance(rows(), "tt"), ok, vout)
+            write_op("shelf", 1.8, [SINGULAR])
+            self.assertFalse(screen.advance(rows(), "tt"))
+            self.assertTrue(
+                any("solver diagnostic" in (r["reason"] or "") for r in rows())
+            )
+
+
+class Submit(unittest.TestCase):
+    def test_refused_submits_map_into_keyed_errors(self):
+        """submit() rides fc.submit_all(), so an envelope refusal comes back
+        from run_klt_sim as {"key": ..., "error": ...} and must land in the
+        campaign's {key: error} dict (issue #728)."""
+
+        def fake_submit(key, path, out, env):
+            if key == "bad":
+                return {"key": key, "error": "batch_no_capacity"}
+            return {"key": key, "resp": corner_response({"pm": 60, "gm": 30})}
+
+        with tempfile.TemporaryDirectory() as tmp:
+            jobs = [("good", Path("/n/good.json")), ("bad", Path("/n/bad.json"))]
+            with mock.patch.object(screen.fc, "submit", fake_submit):
+                errors = screen.submit(jobs, Path(tmp), {}, 2)
+        self.assertEqual(errors, {"bad": "batch_no_capacity"})
+
+
+report = load_script("rcz_shelf_report_691", BIN / "rcz-shelf-691-report.py")
+
+
+class Reporting(unittest.TestCase):
+    def test_replay_the_refused_preflight(self):
+        # The source is the actual refused probe. No prior campaign is a data source.
+        rec = BIN.parent / "loop-gain/diagnostics/20261120-223530-542c11e-rcz-shelf"
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp)
+            (out / "campaign.json").write_bytes((rec / "campaign.json").read_bytes())
+            verdict = report.render(out)
+            self.assertEqual(verdict["verdict"], "REVISE")
+            self.assertFalse(verdict["ac_evidence_complete"])
+            self.assertNotIn("pvt", verdict["ac"])
+            for result in verdict["ac"]["tt"].values():
+                self.assertEqual((result["valid"], result["total"]), (0, 42))
+                self.assertIsNone(result["worst"]["pm"])
+            # The archived record stays untouched; this render publishes the full
+            # possible-request grid that the archived hand tally understated, keeps
+            # the refusal and its skipped stages explicit, and is deterministic.
+            self.assertEqual(
+                verdict["possible_requests"],
+                {"tt_ac": 84, "pvt_ac": 28, "op": 4, "survivor": 6, "total": 122},
+            )
+            tables = (out / "tables.md").read_text()
+            self.assertIn("**Total if all gates pass** | **122**", tables)
+            for stage in screen.CORNERS:
+                for design in screen.DESIGNS:
+                    self.assertIn(f"`{screen.op_key(stage, design)}`", tables)
+            self.assertIn("preflight refused", tables)
+            self.assertIn("require an accepted batch preflight", tables)
+            self.assertIn(
+                "Iq and load transients require both paired AC stages to clear.",
+                tables,
+            )
+            first = (
+                (out / "tables.md").read_bytes(),
+                (out / "verdict.json").read_bytes(),
+            )
+            report.render(out)
+            self.assertEqual(
+                (
+                    (out / "tables.md").read_bytes(),
+                    (out / "verdict.json").read_bytes(),
+                ),
+                first,
+            )
+            with self.assertRaises(ValueError):
+                report.render(out, adoption_issue=1)
+
+    def test_published_inventory_matches_the_request_builders(self):
+        # The published counts are derived, not hand-tallied: enumerate the real
+        # builders into a scratch directory and compare every key by category.
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp)
+            (out / "requests").mkdir()
+            pdk = {"variant": "sky130A", "ngspice_lib": "model"}
+            built = {stage: set() for stage in screen.CORNERS}
+            op, survivor = set(), set()
+            for stage in screen.CORNERS:
+                for design in screen.DESIGNS:
+                    built[stage].update(
+                        k for k, _ in screen.ac_requests(out, pdk, BODY, stage, design)
+                    )
+                    op.update(
+                        k for k, _ in screen.op_requests(out, pdk, BODY, stage, design)
+                    )
+            for design in screen.DESIGNS:
+                survivor.update(
+                    k for k, _ in screen.survivor_requests(out, pdk, BODY, design)
+                )
+            inv = report.request_inventory()
+            self.assertEqual({s: set(v) for s, v in inv["ac"].items()}, built)
+            self.assertEqual(set(inv["op"]), op)
+            self.assertEqual(set(inv["survivor"]), survivor)
+            every = [
+                k for v in inv["ac"].values() for k in v
+            ] + inv["op"] + inv["survivor"]
+            self.assertEqual(len(every), len(set(every)))
+            self.assertEqual(
+                (len(inv["ac"]["tt"]), len(inv["ac"]["pvt"])), (84, 28)
+            )
+            self.assertEqual((len(inv["op"]), len(inv["survivor"])), (4, 6))
+            self.assertEqual(len(every), 122)
+
+    def test_transient_crossings_must_match_observed_excursions(self):
+        m = {
+            "vmin": 1.79,
+            "vmax": 1.81,
+            "pre": 1.8,
+            "vfin": 1.8,
+            "tlo": None,
+            "thi": None,
+        }
+        self.assertEqual(report.tran_result(m)["rec_us"], 0)
+        self.assertFalse(report.tran_result(dict(m, vmax=1.9, vfin=1.85))["recovered"])
+        self.assertFalse(
+            report.tran_result(dict(m, vmin=1.74, vmax=1.89, thi=0.00015))["valid"]
+        )
+        self.assertAlmostEqual(
+            report.tran_result(dict(m, vmin=1.70, tlo=0.00014))["rec_us"], 40
+        )
+
+    def test_transient_limits_are_inclusive_at_reported_precision(self):
+        m = {
+            "pre": 1.8,
+            "vmin": 1.8,
+            "vmax": 1.8,
+            "vfin": 1.8,
+            "tlo": None,
+            "thi": None,
+        }
+        down = report.tran_result(dict(m, pre=1.8, vmin=1.65, vfin=1.8, tlo=0.00012))
+        up = report.tran_result(dict(m, vmax=1.95, vfin=1.8, thi=0.00012))
+        self.assertEqual(down["peak_v"], up["peak_v"])
+        self.assertEqual(down["peak_v"], 0.15)
+        self.assertEqual(down["rec_us"], 20.0)
+        # the strict inequality on peak and recovery lives in the table; these sit on the limit
+        self.assertFalse(
+            report.tran_result(dict(m, vmin=1.6499, tlo=0.00012))["peak_v"] <= 0.15
+        )
+        for edge in (1.782, 1.818):
+            r = report.tran_result(
+                dict(m, vmin=1.7, vfin=edge, tlo=0.00014, thi=0.00014)
+            )
+            self.assertTrue(r["recovered"], edge)
+        for edge in (1.7819, 1.8181):
+            r = report.tran_result(
+                dict(m, vmin=1.7, vfin=edge, tlo=0.00014, thi=0.00014)
+            )
+            self.assertFalse(r["recovered"], edge)
+        self.assertEqual(
+            report.tran_result(dict(m, vmin=1.782, vmax=1.818))["rec_us"], 0.0
+        )
+
+    def test_survivor_warning_diagnostics_invalidate_the_corner(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp)
+            path = out / "responses" / "iq__baseline"
+            path.mkdir(parents=True)
+            resp = corner_response({"iq_0mA.ivin": 1e-5}, [SINGULAR], "ss", -40)
+            (path / "klt.stdout").write_text(json.dumps(resp))
+            _, _, error = report.survivor_corner(out, "iq__baseline", "ss", -40)
+            self.assertIn("singular matrix", error)
+            resp["corners"][0]["diagnostics"] = []
+            (path / "klt.stdout").write_text(json.dumps(resp))
+            self.assertIsNone(report.survivor_corner(out, "iq__baseline", "ss", -40)[2])
+
+    def test_survivor_iq_delta_and_strict_limit(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp)
+            for design, draw in (("baseline", 0.050029), ("shelf", 0.050030)):
+                path = out / "responses" / f"iq__{design}"
+                path.mkdir(parents=True)
+                values = {
+                    "iq_0mA.ivin": 0.000014,
+                    "iq_0mA.vout": 1.8,
+                    "iq_50mA.ivin": draw,
+                    "iq_50mA.vout": 1.8,
+                }
+                data = {
+                    "environment": {"remote": {"job_id": "test"}},
+                    "corners": [
+                        {
+                            "process": "ss",
+                            "temperature_c": -40,
+                            "status": "pass",
+                            "measurements": [
+                                {"name": k, "value": v, "status": "pass"}
+                                for k, v in values.items()
+                            ],
+                        }
+                    ],
+                }
+                (path / "klt.stdout").write_text(json.dumps(data))
+            iq, tran = report.survivor_tables(out, [])
+            self.assertEqual(len(iq), 18)
+            self.assertEqual(len(tran), 36)
+            row = next(
+                r
+                for r in iq
+                if (r["process"], r["temp"], r["load"]) == ("ss", -40, "50mA")
+            )
+            self.assertEqual(
+                (row["delta_uA"], row["shelf"]["iq_uA"], row["passed"]), (1, 30, False)
+            )
+            self.assertFalse(any(r["passed"] for r in tran))

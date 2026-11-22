@@ -29,7 +29,7 @@ signoff/
   evidence/characterization.generic.json  item 8's generic evidence envelope
   records/t1-tier-report.json             the verdict of record (generated)
   check.sh                                re-grade + freshness gate (CI runs this)
-  verify-pins.py                          check.sh stage 1: re-hash every pinned artifact
+  verify-pins.py                          check.sh stage 1: verify each pinned artifact (re-hash or store manifest)
   tests/test_verify_pins.py               mutation coverage for that stage (runs in check:ci)
 ```
 
@@ -110,7 +110,7 @@ of the claimant rather than of the tool.
 | 2 | **`met`** | `klt signoff --attest 2 --input` (issue #423) on `layout/ldo-core/reports/20260924-221912-a947aa8/ldo_core.gds` — the GDS items 4 and 11 cite: readable, non-empty top cell `ldo_core`, dbu on grid. **Disclosed:** no regeneration claim (the generator has since moved on and the layout flow needs raw xschem and mints new records, out of scope); items 3, 4 and 11 were re-pinned by issue #553 to the integrated-comparator layout regenerated 2026-11-12 (`layout/ldo-core/reports/20261112-110205-820ba8b3/ldo_core.gds`, `5e617187…`; DRC, LVS and ERC re-run on it, new `M_RC*` devices placed, no `M_TC*`/`M_TSHYS*`), so item 2's attestation, still bound to the older `3e7f504b…` GDS, is no longer aligned with them (re-minting it is not part of #553). The newest committed GDS (`1698311e…`, `20261022-232042-56dd87fe`) is deliberately not the alignment target: its LVS (`20261022-231941-56dd87fe/lvs.json`) is `mismatch`, so moving items 4/11 to it would regress them. Remaining divergence: item 7's PEX pin stays on the older `52307a20…` GDS (`20260825-123551-3b4e121`); its errored PEX envelope was not re-run. |
 | 3 | **`met`** | `klt drc` on that GDS, `status: clean`, `violation_count: 0`, pinned to the GDS's own sha256. **Read the coverage disclosure below before treating this as "DRC clean".** |
 | 4 | **`met`** | `klt lvs`, `status: match`, layout vs. the schematic-derived reference netlist. **Five disclosed warnings below.** Re-pointed by issue #127 at a klt 0.6.0 re-run whose `provenance.input.content_hash` is non-null, so the manifest now pins this citation directly instead of relying only on `signoff/artifact-pins.json`. |
-| 5 | `unmet` / `check_failed` | **Graded from evidence since issue #449.** `signoff/make_item5_envelope.py` wraps the eleven committed corner-matrix records into `klt sim`-shaped envelopes (`signoff/evidence/item5-<bench>-<record>.sim.json`) **without re-simulating** — the *wrap* route, not a `klt sim` re-run. Every value, limit and verdict is copied verbatim from the record; the ratified bound is checked against the record's own limit before anything is written, and each envelope is pinned to the netlist snapshot its record simulated (not necessarily the current schematic — `measurements/characterization.md` reports freshness). `spec_rows."5"` declares 14 rows. Failing rows, named by the grader: `dropout`, `iq`, `load-regulation`, `load-transient`, `psrr`, `stability`. Covered and passing: `current-limit`, `enable-shutdown`, `line-regulation`, `output` (graded at 50 mA over the 45-point matrix via `vout_50ma_v`), `startup`, `thermal`. `iq` is declared `ratified: false` (DR-009 is `proposed`). Declared gaps: `area` (a layout measurement, not a netlist sim; a **failing** row at 0.4519 mm² against the ratified < 0.1 mm², and only a lower bound because the four capacitors C_COMP, C_CL, C_SS and C_TS are not drawn; graded by the layout record `20261023-170539-a8292e91`; `klt economy --budget-um2` can grade it, but no grader envelope kind exists for it) and `output-noise` (waived). The dropout record is a one-corner attribution run (`is_subset`), so its envelope could never be better than `pass_partial`. Input and Load are stimulus conditions, not graded rows. As each row-level issue lands a new record, re-mint its envelope (append-only: a new file, re-point the manifest and pin). Row-level design work: #314, #370, #375, #345, #381, #213. |
+| 5 | `unmet` / `check_failed` | **Graded from evidence since issue #449.** `signoff/make_item5_envelope.py` wraps the eleven committed corner-matrix records into `klt sim`-shaped envelopes (`signoff/evidence/item5-<bench>-<record>.sim.json`) **without re-simulating** — the *wrap* route, not a `klt sim` re-run. Every value, limit and verdict is copied verbatim from the record; the ratified bound is checked against the record's own limit before anything is written, and each envelope is pinned to the netlist snapshot its record simulated (not necessarily the current schematic — `measurements/characterization.md` reports freshness). `spec_rows."5"` declares 14 rows. Failing rows, named by the grader: `current-limit`, `dropout`, `iq`, `load-regulation`, `load-transient`, `output`, `psrr`, `stability`, `startup` (`current-limit` and `output` fail via the #177 current-limit envelope `20261117-173516-d843d914`, where 4/45 corners on the 3.63 V column trip leg 2's dc `vforce` gmin continuation on the #171 solver-diagnostic gate while all measured `vout_50ma_v` and current-limit values stay in bounds; `startup` is measurement-driven, PR #652: the #336 twelve-leg ESR-grid record is the first startup evidence that measures ramp monotonicity, and all 540 legs fail the strict 0 V drawdown tolerance — the open decision-record question in `sim/README.md`, #309; the electrical conditions all pass). Covered and passing: `enable-shutdown`, `line-regulation`, `thermal`. `iq` is declared `ratified: false` (DR-009 is `proposed`). Declared gaps: `area` (a layout measurement, not a netlist sim; a **failing** row at 0.4519 mm² against the ratified < 0.1 mm², and only a lower bound because the four capacitors C_COMP, C_CL, C_SS and C_TS are not drawn; graded by the layout record `20261023-170539-a8292e91`; `klt economy --budget-um2` can grade it, but no grader envelope kind exists for it) and `output-noise` (waived). The dropout record is a one-corner attribution run (`is_subset`), so its envelope could never be better than `pass_partial`. Input and Load are stimulus conditions, not graded rows. As each row-level issue lands a new record, re-mint its envelope (append-only: a new file, re-point the manifest and pin). Row-level design work: #314, #370, #375, #345, #381, #213. |
 | 6 | **`met`** | Cites a real `klt yield` report (`sim/mc-output-accuracy/klt-responses/20260927-093538-227be3e.yield.json`) over the n=200 Monte Carlo campaign: empirical yield **at least 98.1725 % at 95 % confidence** (100 % of 200 samples inside the ratified ±2 % Output window, so the interval is bounded only from below), Cpk 1.34664, sigma-to-spec 4.04σ, sample size `sufficient`, and a deterministic **negative control graded `detected`** — a seeded known-bad variant (feedback divider mis-ratioed +10 %) whose 0/40 in-window draws the same statistics reject with non-overlapping intervals. Issue #203 minted the report (the evidence *kind* the checklist names, which this repo had none of until then); issue #211 added the negative control the item's text also asks for. **The payload status is `reported`, not `pass` — read "Item 6 is `met` — what it says, and the one thing it does not" below before reading anything into this row.** |
 | 7 | `unmet` / `check_failed` | Cites the real `klt pex` run (`sim/pex-post-layout/klt-responses/20260825-125102-3b4e121.pex.json`), pinned to the same layout GDS items 3 and 4 were run on: `status: error`, **135 of 135 delta rows errored, 0 passed**. Item 7 accepts no other evidence kind, so nothing weaker could stand in. A newer `klt pex` record now exists that does *not* error — **and is deliberately still not cited**; see "Item 7 has a passing record that this manifest declines to cite" below. Tracked as issues #122 and #142. |
 | 8 | **`met`** | Cites `evidence/characterization.generic.json`, a generic envelope wrapping `measurements/characterization.md`. **This says the rollup exists and is current — not that its rows pass.** See below. |
@@ -539,7 +539,10 @@ mean nothing"), and `CLAUDE.md`'s "no claim without a testbench" rule reads the
 same way. The citation should move when a `klt` build whose parasitic-R model
 can distinguish the two GDS files above produces a record whose full-load rows
 are physical — not before. That is tracked as **#162**, blocked on the two
-upstream issues.
+upstream issues. *(2026-11-20, issue #690: #162 and #583 have since closed;
+the closed #2391/#2458 filings are history, and the live upstream covers are
+2AMLogic/klayout-tools#6964 and #6899 — see "What would move the needle"
+item 2 for the per-net reason census that named them.)*
 
 ### Item 8 is `met`, and what that verdict does and does not say
 
@@ -659,7 +662,8 @@ instead of the author's assertion.
 
 Item 10's inventory
 ([`evidence/item10-inventory.json`](evidence/item10-inventory.json)) carries a
-`hygiene` list of root-level docs and the CI workflow, and this document states
+`hygiene` list of root-level docs and the CI workflows (`ci.yml` and the
+`pdk-smoke.yml` it calls), and this document states
 the item above as those files **existing**. The tool is stricter than that
 wording. `klt signoff --attest` stamps a `content_hash`
 onto every inventoried file, and `--check` diffs the whole fresh envelope
@@ -816,23 +820,32 @@ In dependency order, not effort order:
    did that), nor the request to declare limits (issue #154 did that), nor the
    power rails to stop being drawn as 0.30 µm signal trunks (#154 did that
    too, and the layout is still DRC-clean and LVS-matched). What it needs now
-   is **not in this repo**: the `--resistance-graph` extractor still falls
-   back to the legacy lumped-R model (klayout-tools#2391/#2458's series-sum,
-   both closed) on the load-current nets — measured on the regenerated core
+   is **not in this repo**, and since issue #690's re-measure the blocker is
+   two named gaps, both at the tool. Measured on the regenerated core
    (2026-11-12, PR #557) in
-   `sim/pex-post-layout/diagnostics/20261114-193718-fabcb0c6-rgraph-recheck/`:
-   **0 of 28 nets graph-derived at this repo's pin** (`dc136150`) and **1 of
-   28 on releases `0.9.1` and `0.9.2`** (a small signal net, identical on
-   both releases; `VIN`/`VOUT` still legacy),
-   so #4061's interior-landing fix (closed-completed 2026-10-23) covers only
-   part of this geometry. Which mechanism blocks the other 27 nets
-   (`unsupported_geometry` vs the `graph_too_large` caps) is not observable
-   from tool output — no per-net fallback reason is emitted — filed
-   generically as
-   [klayout-tools#5747](https://github.com/2AMLogic/klayout-tools/issues/5747).
-   Until that diagnostic (and the fix it will point to) lands, the full-load
-   rows stay non-physical on every build measured. See "Item 7 has a passing
-   record that this manifest declines to cite" above.
+   `sim/pex-post-layout/diagnostics/20261120-223209-542c11e1-rgraph-recheck/`
+   (first build carrying klayout-tools#6130's per-net `fallback_reason`,
+   pinned `main` @ `6bd18bbc8637` — no release contains it yet):
+   **still 1 of 28 nets graph-derived** (`N_FBB`, unchanged from the
+   2026-11-14 diagnostic's release legs), but every legacy net now carries a
+   reason. `VIN` and `VOUT` fall back with **`graph_too_large`**, not
+   `terminal_count_not_two`: `VIN` has 77 terminals over the
+   `MAX_GRAPH_TERMINALS = 64` cap, and `VOUT`'s `metal1` polygon needs up to
+   85,680 mesh cells against `DEFAULT_MAX_DECOMPOSITION_CELLS = 4096` — caps
+   that no `klt extract`/`klt pex` flag can raise, filed as
+   [klayout-tools#6964](https://github.com/2AMLogic/klayout-tools/issues/6964)
+   (newly filed from that diagnostic; `klt power` got its own knob in #3124).
+   The other 22 legacy multi-terminal nets solve `ok` and fall back only for
+   `terminal_count_not_two` — the selection rule #5894's curation inferred,
+   whose removal is
+   [klayout-tools#6899](https://github.com/2AMLogic/klayout-tools/issues/6899)'s
+   opt-in graph netlist mode (in scope for `klt pex`; #5894 / PR #6053 echo
+   and document only). Both must land before the full-load rows measure the
+   layout rather than the extractor's series sum; the re-mint condition — a
+   build where `VIN`/`VOUT` are graph-derived and the 45 full-load rows
+   return a physical extracted `VOUT` — is recorded in that diagnostic's
+   README. See "Item 7 has a passing record that this manifest declines to
+   cite" above.
 3. **Item 11** is `met` as of issue #112: the `klt erc` supply spec and report
    this list previously asked for exist, ran, and are cited — the compound
    citation is that `erc_supply.json` plus item 4's own LVS report on the

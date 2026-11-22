@@ -1,0 +1,18 @@
+{
+  "preflight_submission_ids": [
+    "klt-sim-8c101d9cf1e8"
+  ],
+  "dut_sha": "542c11e1959d6f174a8a69fdee2f8c13607c0844",
+  "klt": "klt 0.9.2.dev111+g978f7464fae1",
+  "mechanism": "Split R_CZ into 26 and 806 \u00b5m xhigh_po sections and shunt the longer section with 18 pF. Below the nominal 1.9 kHz bypass pole the series length approaches the 832 \u00b5m light-load repair. Above the pole the bypass impedance falls toward a 26 \u00b5m residual. The lower crossover at 4.7 \u00b5F should retain more resistance in the 10\u2013300 \u00b5A band. The faster 0.33 \u00b5F loop should see less, including at 50 mA. The passive branch uses no switch, bias current source or CL_SNS connection.",
+  "preflight": {
+    "client_klt_version": null,
+    "exit": 1,
+    "job_id": null,
+    "job_state": null,
+    "reason": "klt sim produced no stdout (rc 1)\n  cmd: /home/loom/.local/bin/klt sim /workspace/work/2amlogic-sky130-ldo-ff05b865/.loom/worktrees/2amlogic-sky130-ldo-ff05b865/issue-691/sim/loop-gain/diagnostics/20261120-223530-542c11e-rcz-shelf/preflight/batch-preflight-dn9wqeue/klt-requests/q1-tt_27c_1.80v.json -o /workspace/work/2amlogic-sky130-ldo-ff05b865/.loom/worktrees/2amlogic-sky130-ldo-ff05b865/issue-691/sim/loop-gain/diagnostics/20261120-223530-542c11e-rcz-shelf/preflight/batch-preflight-dn9wqeue/klt-out/q1-tt_27c_1.80v --backend batch --format json\n  remote job id(s) seen: klt-sim-8c101d9cf1e8\n  stdout: \n  stderr: klt: warning: 2 installs provide PDK variant 'sky130A'; read /home/loom/.volare (PDK_ROOT environment variable), skipped /home/loom/.ciel (search root: ~/.ciel). Resolution is first-match-wins, so a pinned open_pdks build may not be the one this run read -- pin the root explicitly (--pdk-root, or a request's models.pdk_root) to disable the search and choose deliberately.\nklt: batch job klt-sim-8c101d9cf1e8 submitting to s3://<bucket>/jobs/klt-sim-8c101d9cf1e8\n{\n  \"schema_version\": 1,\n  \"error\": {\n    \"command\": \"sim\",\n    \"message\": \"batch backend failed: aws s3 cp (netlist input) failed (exit 255): The config profile (batch-runner-submit) could not be found\"\n  }\n}\n  diagnostics kept in /workspace/work/2amlogic-sky130-ldo-ff05b865/.loom/worktrees/2amlogic-sky130-ldo-ff05b865/issue-691/sim/loop-gain/diagnostics/20261120-223530-542c11e-rcz-shelf/preflight/batch-preflight",
+    "runner_compatibility": null,
+    "runner_klt_version": null
+  },
+  "errors": {}
+}

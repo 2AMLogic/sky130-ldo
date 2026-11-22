@@ -183,7 +183,6 @@ def check_measurements(legs: list[Leg], measurements: list[tuple[str, str, str]]
     for name, expr, _unit in measurements:
         if not re.fullmatch(_IDENT, name):
             raise CurrentLimitTranslationError(f"measurement name {name!r} is not a vector name")
-        blr._tokens(expr, refs)
         blr.evaluate(expr, {}, refs)
 
 

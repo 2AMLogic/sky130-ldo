@@ -5,6 +5,13 @@
   as refined by the two-key mechanism (2AMLogic/2am#372), the ratifying act is
   Judge review (→ `loom:pr`), the two-key mechanism's release, and the merge of
   the pull request this record ships in — the same path DR-006 took.
+  *Amendment (2026-11-13, #301; additive — the clause above is superseded for this
+  record only):* under the #301 operator ruling of 2026-10-19 (option 2), #134's merge
+  was **not** this record's ratifying act (see "Ratification path" below), so "the merge
+  of the pull request this record ships in" names no ratifying event that has occurred.
+  DR-009 is **unratified** until a fresh ratification PR merges. Read "the ratifying act"
+  elsewhere in this record in that light. This amendment changes no decision text,
+  target value or status word.
 - **Ratification path**: fresh ratification required — operator ruling on
   #301, 2026-10-19 (option 2). The historical merge of #134 (`e7ac917`) is cited
   for context only and is not accepted as this record's ratifying event; the
@@ -153,7 +160,9 @@ excluding load current, at every corner of the ratified PVT matrix`, with
 stretch `< 10 µA`, subordinate to DR-002's C_out/ESR window (not to be bought
 back by reintroducing a minimum ESR). Source `G+S`.** This record is
 `proposed`. It ratifies on the merge path named in its Status line, not by
-its own text.
+its own text — and under the #301 ruling that path is a **fresh** ratification PR,
+not the already-merged #134 (see the "Ratification path" bullet and the 2026-11-13
+amendment in the Status line).
 
 Definition, carried into the row so the target is unambiguous:
 
@@ -270,9 +279,12 @@ Definition, carried into the row so the target is unambiguous:
 This record is `proposed`. It ratifies when the pull request it ships in
 completes Judge review (→ `loom:pr`), the two-key mechanism's release
 (2AMLogic/2am#372), and merge, per 2AMLogic/2am#357. That is the same path
-DR-006 took. `spec/target-spec.md` and `README.md` are updated in the same
-PR, ahead of this record's formal Status flip, so the merged tree is
-internally consistent the moment it lands (DR-006's own convention). If the
-market key or EE key escalates, the escalation belongs at PR review. Any
-change to the number after that is a superseding record, not an edit to
-this one.
+DR-006 took. Superseded for this record by the #301 ruling — see the
+2026-11-13 amendment in the Status line: #134's merge was **not** the
+ratifying act, so the pull request that ratifies DR-009 is a **fresh**
+ratification PR that has not yet been opened. `spec/target-spec.md` and
+`README.md` were updated in the same PR as this record, ahead of its formal
+Status flip, so the merged tree is internally consistent (DR-006's own
+convention). If the market key or EE key escalates, the escalation belongs
+at PR review. Any change to the number after that is a superseding record,
+not an edit to this one.

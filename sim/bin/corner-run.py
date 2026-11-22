@@ -43,7 +43,7 @@ from pathlib import Path
 import batch_line_regulation as blr  # noqa: F401  (re-exported; tests call corner_run.blr)
 import batch_load_regulation as bld
 import batch_iq as biq
-from ramp_monotonicity import evaluate_legs
+from ramp_monotonicity import evaluate_legs, ramp_check
 from xschem_exprs import eval_xschem_exprs  # noqa: F401  (re-exported; tests call corner_run.eval_xschem_exprs)
 from _record_common import (
     build_input_fingerprint,
@@ -75,6 +75,7 @@ from _corner_model import (  # noqa: F401  (re-exported: corner_run.<name> is a 
     compare_tool_versions,
     detect_solver_diagnostic,
     grade_bounds,
+    grade_check,
     leg_values,
     parse_tool_version,
     unique_in_order,
@@ -101,15 +102,18 @@ from _batch_backend import (  # noqa: F401  (re-exported: corner_run.<name> is a
     group_batch_requests,
     is_cold_start_crossing,
     is_endpoint_adapter,
+    is_ramp_trace_grid,
     klt_binary,
     leg_template_name,
     merge_leg_parts,
     normalize_batch_response,
     normalize_endpoint_response,
+    normalize_startup_response,
     prepare_batch_requests,
     run_batch,
     run_klt_batch,
     spiceinit_lines,
+    startup_ramp_adapter_info,
     window_grid_step,
 )
 
@@ -660,52 +664,18 @@ def run_corner(
     ok = rc == 0 and not timed_out and solver_diagnostic is None
     for m in exp.measurements:
         value = values.get(m.name)
-        passed, reason = grade_bounds(m, value)
-        checks.append(
-            {
-                "name": m.name,
-                "expr": m.expr,
-                "unit": m.unit,
-                "value": value,
-                "min": m.min,
-                "max": m.max,
-                "min_inclusive": m.min_inclusive,
-                "max_inclusive": m.max_inclusive,
-                "pass": passed,
-                "reason": reason,
-                **(
-                    {
-                        "leg": m.leg,
-                        "cout_f": m.cout_f,
-                        "esr_ohm": m.esr_ohm,
-                        "direction": m.direction,
-                    }
-                    if m.leg is not None
-                    else {}
-                ),
-            }
-        )
-        ok = ok and passed
+        check = grade_check(m, value)
+        checks.append(check)
+        ok = ok and check["pass"]
 
     ramp_legs = []
     ramp_cfg = exp.raw.get("ramp_monotonicity")
     if ramp_cfg:
         ramp_legs = evaluate_legs(ramp_cfg, run_dir, corner.id)
         for leg in ramp_legs:
-            passed = leg["pass"]
-            checks.append(
-                {
-                    "name": f"ramp_drawdown_{leg['leg']}_v",
-                    "expr": "ramp_monotonicity.max_drawdown(v(vout))",
-                    "unit": "V",
-                    "value": leg["max_drawdown_v"],
-                    "min": None,
-                    "max": leg["settings"]["tolerance_v"],
-                    "pass": passed,
-                    "reason": "" if passed else f"{leg['status']}: " + "; ".join(leg["reasons"]),
-                }
-            )
-            ok = ok and passed
+            check = ramp_check(leg)
+            checks.append(check)
+            ok = ok and check["pass"]
         if log_path is not None:
             for leg in ramp_legs:
                 src = run_dir / leg["trace_file"]
@@ -1068,13 +1038,26 @@ def render_batch_execution(record: dict) -> list[str]:
         )
     elif ex.get("adapter"):
         ad = ex["adapter"]
-        lines.append(
-            f"- **Batch adapter**: `{ad['name']}` (issue #{ad['issue']}): one `analysis_steps` "
-            f"step `{ad['step']}` running `{ad['analysis']}` (no operating-point solve), cards "
-            + ", ".join(f"`{c}`" for c in ad["cards"])
-            + "; stimulus sent verbatim in the request netlist and checked against the "
-            "validated lines; graded locally with the manifest's own bounds"
-        )
+        if "waveform_signal" in ad:
+            # issue #336 startup: scalar per-leg tran requests with waveforms
+            lines.append(
+                f"- **Batch adapter**: `{ad['name']}` (issue #{ad['issue']}): one scalar "
+                f"`tran` request per supply x leg running `{ad['analysis']}`, cards "
+                + ", ".join(f"`{c}`" for c in ad["cards"])
+                + f"; the `{ad['waveform_signal']}` trace comes back as each corner's "
+                "waveform artifact (`options.waveforms`), is rebuilt locally as "
+                "`<corner>.<leg>.trace.dat` and graded by `ramp_monotonicity.py` at "
+                f"tolerance {ad['ramp_tolerance_v']} V (strict, unchanged); a missing or "
+                "unusable artifact is an INVALID condition, never a pass"
+            )
+        else:
+            lines.append(
+                f"- **Batch adapter**: `{ad['name']}` (issue #{ad['issue']}): one `analysis_steps` "
+                f"step `{ad['step']}` running `{ad['analysis']}` (no operating-point solve), cards "
+                + ", ".join(f"`{c}`" for c in ad["cards"])
+                + "; stimulus sent verbatim in the request netlist and checked against the "
+                "validated lines; graded locally with the manifest's own bounds"
+            )
     lines.append(
         f"- **ngspice init settings**: `{record['tools'].get('spiceinit_file', 'sim/spiceinit')}` "
         f"(sha256 `{record['tools'].get('spiceinit_sha256', '?')}`) sent as the request's "
@@ -1479,6 +1462,14 @@ def main(argv: list[str]) -> int:
                 print(f"  card : {c}")
             for ln in ad["validated_stimulus"]:
                 print(f"  stimulus (verified in each request netlist): {ln}")
+        if is_ramp_trace_grid(exp):
+            ad = startup_ramp_adapter_info(exp)
+            print(f"\n-- batch adapter {ad['name']} (issue #{ad['issue']}) --")
+            print(f"  analysis {ad['analysis']}; waveform signal {ad['waveform_signal']}")
+            for c in ad["cards"]:
+                print(f"  card : {c}")
+            print(f"  ramp tolerance: {ad['ramp_tolerance_v']} V (strict, unchanged)")
+            print(f"  traces: {ad['trace_source']}")
         print("\n-- corner list --")
         for corner in matrix:
             print(f"  {corner.id}")
@@ -1639,6 +1630,12 @@ def main(argv: list[str]) -> int:
         for res in results:
             if res["corner_id"] in batch_logs:
                 res["log"] = store.uri_label(f"corners/{record_id}/{res['corner_id']}.log")
+        # Issue #336: the ramp traces were rebuilt from the returned waveform
+        # artifacts, not written by a local deck — stage them beside the logs
+        # so the record's per-leg sha256s are verifiable from the store.
+        for entries in (execution.get("traces") or {}).values():
+            for e in entries:
+                store.stage_file(f"corners/{record_id}/{e['file']}", Path(e["path"]))
         for rq in execution["requests"]:
             rq["request_file"] = link_reqs[rq["key"]]
             rq["response_file"] = link_resps[rq["key"]]
@@ -1647,6 +1644,8 @@ def main(argv: list[str]) -> int:
             record["execution"]["adapter"] = cold_start_adapter_info(exp)
         if is_endpoint_adapter(exp):
             record["execution"]["adapter"] = endpoint_adapter_info(exp)
+        if is_ramp_trace_grid(exp):
+            record["execution"]["adapter"] = startup_ramp_adapter_info(exp)
         record["links"].update(
             {"klt_requests": link_reqs, "klt_responses": link_resps, "request_netlists": link_nets}
         )

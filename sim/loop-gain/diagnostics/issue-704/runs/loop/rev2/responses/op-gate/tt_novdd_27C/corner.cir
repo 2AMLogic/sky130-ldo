@@ -1,0 +1,86 @@
+* klt sim -- generated corner deck, do not edit
+.lib /opt/pdk/sky130A/libs.tech/combined/sky130.lib.spice tt
+.include /var/tmp/eda-job-klt-sim-c8710ecd809c/inputs/netlist.cir
+.temp 27.0
+.control
+save all
+reset
+save all
+alter RLOAD=1000000000000.0
+setplot new
+echo klt_step_begin 0 $curplot
+op
+echo klt_step_end 0 $curplot
+set klt_plot_0 = $curplot
+let vout = v(vout)
+let op_0ma__vout = vout
+print op_0ma__vout
+reset
+save all
+alter RLOAD=180000.0
+setplot new
+echo klt_step_begin 1 $curplot
+op
+echo klt_step_end 1 $curplot
+set klt_plot_1 = $curplot
+let vout = v(vout)
+let op_10ua__vout = vout
+print op_10ua__vout
+reset
+save all
+alter RLOAD=60000.0
+setplot new
+echo klt_step_begin 2 $curplot
+op
+echo klt_step_end 2 $curplot
+set klt_plot_2 = $curplot
+let vout = v(vout)
+let op_30ua__vout = vout
+print op_30ua__vout
+reset
+save all
+alter RLOAD=18000.0
+setplot new
+echo klt_step_begin 3 $curplot
+op
+echo klt_step_end 3 $curplot
+set klt_plot_3 = $curplot
+let vout = v(vout)
+let op_100ua__vout = vout
+print op_100ua__vout
+reset
+save all
+alter RLOAD=6000.0
+setplot new
+echo klt_step_begin 4 $curplot
+op
+echo klt_step_end 4 $curplot
+set klt_plot_4 = $curplot
+let vout = v(vout)
+let op_300ua__vout = vout
+print op_300ua__vout
+reset
+save all
+alter RLOAD=1800.0
+setplot new
+echo klt_step_begin 5 $curplot
+op
+echo klt_step_end 5 $curplot
+set klt_plot_5 = $curplot
+let vout = v(vout)
+let op_1ma__vout = vout
+print op_1ma__vout
+reset
+save all
+alter RLOAD=36.0
+setplot new
+echo klt_step_begin 6 $curplot
+op
+echo klt_step_end 6 $curplot
+set klt_plot_6 = $curplot
+let vout = v(vout)
+let op_50ma__vout = vout
+print op_50ma__vout
+quit
+.endc
+.end
