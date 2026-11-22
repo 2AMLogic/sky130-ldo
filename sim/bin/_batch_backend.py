@@ -167,28 +167,35 @@ BATCH_ALLOWLIST = {
         ],
         "baseline_iload": "0",
     },
-    # Shape (issue #177): the THREE chained legs of the current-limit bench as
-    # ONE three-step `analysis_steps[]` request per supply group
-    # (sim/bin/batch_current_limit.py) -- leg 1, cold-start `tran 5u 1.0m uic`
-    # + window cards; leg 2, `alter rload = 1e12` + `alter rforce = 1m` + the
-    # `dc vforce 0 1.75 0.125` sweep + find cards; leg 3, `alter rload = 36`
-    # (RFORCE STAYS at the DC leg's 1 mOhm: the alters are cumulative, which
-    # is why the legs are one request, not three) + cold-start
-    # `tran 500n 3.0m uic` whose VFORCE PWL applies and holds the short. The
-    # manifest's graded expressions are already plot-qualified
-    # (`tran1.vout_50ma`, `1000*dc1.ilim_short`, ...) and travel verbatim as
-    # klt derived measurements. RENEWAL: pinned like the endpoint adapters, by
-    # the record input-fingerprint digests
+    # Shape (issue #177, reordered by #647): the THREE chained legs of the
+    # current-limit bench as ONE three-step `analysis_steps[]` request per
+    # supply group (sim/bin/batch_current_limit.py) -- leg 2 FIRST (the
+    # seeded dc leg leads the deck, issue #647): `alter rload = 1e12` +
+    # `alter rforce = 1m` + the `dc vforce 0 1.75 0.125` sweep + find cards;
+    # then leg 1, `alter rload = 36` + `alter rforce = 1e12` (baseline
+    # restored) + cold-start `tran 5u 1.0m uic` + window cards; then leg 3,
+    # `alter rforce = 1m` (the short is applied through the forcing branch)
+    # + cold-start `tran 500n 3.0m uic` whose VFORCE PWL applies and holds
+    # the short -- the alters are cumulative, which is why the legs are one
+    # request, not three. The manifest's graded expressions are already
+    # plot-qualified (`tran1.vout_50ma`, `1000*dc1.ilim_short`, ...) and
+    # travel verbatim as klt derived measurements; step names follow content
+    # (dc1, tran1, tran2), not position. RENEWAL: pinned like the endpoint
+    # adapters, by the record input-fingerprint digests
     # (sim/tests/test_batch_current_limit_177.py).
     "current-limit": {
         "chained_steps": True,
         "manifest_sections": {
-            "analyses": "9c62a537558fa198c281d6777b5cf96331e67eff184fbed5174945b3a41a85b8",
+            "analyses": "cf6ad58bd847ff0db131daf23d6a2ed644a1ec54723054fd82472c57e2589789",
             "measurements": "356180bb130fc6adbb882cfce66ffa7d021e5fc3854eb9cf4894001275c92eb5",
             "matrix": "639e50d5a920cef70120de11fefa3ffc5bf53f0446c56a853f87c39e95976b21",
         },
         # the stimulus / load elements each request's netlist must declare
-        # (leg 1 runs at exactly these baseline values; legs 2/3 alter from here)
+        # (leg 1 runs at exactly these baseline values; legs 2/3 alter from
+        # here -- leg 2 first, then leg 1 restores, then leg 3 re-alters
+        # rforce, issue #647). The IC_SEED `.nodeset` card the seeded dc leg
+        # depends on is pinned separately by the adapter
+        # (batch_current_limit.NODESET_CARD), verbatim like these lines.
         "stimulus": [
             "VVIN VIN 0 'vsup'",
             "VEN EN 0 dc 'vsup' pwl(0 0 100u 0 101u 'vsup' 10 'vsup')",

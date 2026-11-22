@@ -91,7 +91,7 @@ RECORDS = [
     ("load-transient", "20260926-013955-6449a98"),
     ("psrr-dc", "20261029-092008-5ba605f"),
     ("iq", "20261110-223334-f66373a0"),
-    ("current-limit", "20261117-173516-d843d914"),
+    ("current-limit", "20261122-220637-f1d875fa"),
     ("startup", "20261117-221657-efb6bd6b"),
     ("enable-shutdown", "20260825-111526-933dfdd"),
     ("thermal", "20261105-202028-97cd9a9e-qual-15corner"),

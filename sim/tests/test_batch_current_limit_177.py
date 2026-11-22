@@ -41,6 +41,7 @@ CL_NETLIST = (
         [STIMULUS[0], ".save i(vvin)", STIMULUS[1], "VVREF VREF 0 1.2",
          "xldo VOUT VREF EN VIN ldo_3v3in_1v8out", "COUT VOUT VESR 1u m=1",
          "RESR VESR 0 10m m=1", STIMULUS[2], STIMULUS[3], STIMULUS[4],
+         bcl.NODESET_CARD,
          ".subckt ldo_3v3in_1v8out VOUT VREF EN VIN", "R1 VIN VOUT 1", ".ends"]
     )
     + "\n.end\n"
@@ -95,8 +96,9 @@ class FakeChainedKlt(FakeKlt):
             raise self.raise_exc
         req = json.loads(Path(cmd[2]).read_text())
         self.test.assertNotIn("analysis", req)
+        # issue #647: the seeded dc leg leads the deck
         self.test.assertEqual([s["name"] for s in req["analysis_steps"]],
-                              ["tran1", "dc1", "tran2"])
+                              ["dc1", "tran1", "tran2"])
         lines = Path(req["netlist"]).read_text().splitlines()
         vsup = float(lines[0].split("=")[1])
         outdir = Path(cmd[cmd.index("-o") + 1])
@@ -171,17 +173,20 @@ class TestCurrentLimitAdapter(
     # -- the translation -----------------------------------------------------
     def test_parse_deck_translates_the_three_chained_legs(self):
         legs = bcl.parse_deck(manifest()["deck"]["analyses"])
+        # issue #647: the seeded dc leg LEADS the deck; step names follow
+        # content (dc1, tran1, tran2), so the manifest's plot-qualified
+        # graded expressions are position-independent
         self.assertEqual([(l.step_name, l.kind) for l in legs],
-                         [("tran1", "tran"), ("dc1", "dc"), ("tran2", "tran")])
-        self.assertEqual(legs[0].alters, [])
-        self.assertEqual(legs[0].analysis_args, "5u 1.0m uic")
-        self.assertEqual(legs[1].alters, [("rload", 1e12), ("rforce", 1e-3)])
-        self.assertEqual(legs[1].analysis_args, "vforce 0 1.75 0.125")
-        self.assertEqual(legs[2].alters, [("rload", 36.0)])  # rforce stays at the DC leg's 1 mOhm
+                         [("dc1", "dc"), ("tran1", "tran"), ("tran2", "tran")])
+        self.assertEqual(legs[0].alters, [("rload", 1e12), ("rforce", 1e-3)])
+        self.assertEqual(legs[0].analysis_args, "vforce 0 1.75 0.125")
+        self.assertEqual(legs[1].alters, [("rload", 36.0), ("rforce", 1e12)])  # baseline restored
+        self.assertEqual(legs[1].analysis_args, "5u 1.0m uic")
+        self.assertEqual(legs[2].alters, [("rforce", 1e-3)])  # the short conducts through RFORCE
         self.assertEqual(legs[2].analysis_args, "500n 3.0m uic")
-        self.assertEqual([n for n, _ in legs[0].cards],
+        self.assertEqual([n for n, _ in legs[0].cards], ["ilim_short", "ilim_knee"])
+        self.assertEqual([n for n, _ in legs[1].cards],
                          ["vout_50ma", "vout_50ma_lo", "vout_50ma_hi", "vin_50ma", "cl_cmp_50ma"])
-        self.assertEqual([n for n, _ in legs[1].cards], ["ilim_short", "ilim_knee"])
         self.assertEqual([n for n, _ in legs[2].cards],
                          ["ipre", "ish_avg", "ish_max", "ish_min", "vsh_max"])
 
@@ -260,15 +265,42 @@ class TestCurrentLimitAdapter(
     def test_deck_shape_refusals(self):
         for edit in (
             lambda a: [x.replace("tran 5u 1.0m uic", "tran 5u 1.0m") for x in a],  # no uic
-            lambda a: a[:33],  # leg 3 truncated
+            lambda a: [x for x in a if x != "tran 500n 3.0m uic"],  # leg 3 truncated
             lambda a: [x.replace("dc vforce 0 1.75 0.125", "op") for x in a],
             lambda a: a + ["alter rload = 36"],  # a fourth alter after leg 3
             lambda a: [x.replace("alter rforce = 1m", "alter rforce = 1meg") for x in a],
+            # issue #647: the pre-#647 leg order (leg 1's tran first) no
+            # longer parses -- the seeded dc leg must lead the deck
+            lambda a: (
+                [x for x in a if x == "tran 5u 1.0m uic"
+                 or x.startswith(("meas tran vout_50ma", "meas tran vin_50ma", "meas tran cl_cmp_50ma"))]
+                + [x for x in a if not (
+                    x == "tran 5u 1.0m uic"
+                    or x.startswith(("meas tran vout_50ma", "meas tran vin_50ma", "meas tran cl_cmp_50ma")))]
+            ),
         ):
             r = json.loads(json.dumps(manifest()))
             r["deck"]["analyses"] = edit(r["deck"]["analyses"])
             with self.assertRaises((bcl.CurrentLimitTranslationError, blr.EndpointTranslationError)):
                 bcl.parse_deck(r["deck"]["analyses"])
+
+    def test_seed_card_change_refused_before_submission(self):
+        def tweak_seed(body):
+            return [ln.replace("v(xldo.NB)=0.8641", "v(xldo.NB)=0.9") if ln.startswith(".nodeset") else ln
+                    for ln in body]
+        self.NETLIST = "\n".join(tweak_seed(CL_NETLIST.splitlines())) + "\n"
+        err, _, _ = self.run_main("--backend", "batch", *QUICK, expect_exit=HarnessErr)
+        # a mutated card is not the pin, so the forbidden-card scan catches it
+        self.assertIn("is not allowed in a current-limit chained-step request", str(err))
+        self.assertEqual(self.klt_calls(), [])
+
+    def test_seed_card_absent_refused_before_submission(self):
+        self.NETLIST = "\n".join(
+            ln for ln in CL_NETLIST.splitlines() if not ln.startswith(".nodeset")
+        ) + "\n"
+        err, _, _ = self.run_main("--backend", "batch", *QUICK, expect_exit=HarnessErr)
+        self.assertIn("pinned card", str(err))
+        self.assertEqual(self.klt_calls(), [])
 
     def test_stimulus_change_refused_before_submission(self):
         def swap_vforce_pwl(body):
