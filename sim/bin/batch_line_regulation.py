@@ -220,16 +220,27 @@ def check_netlist(
     stimulus: list[str],
     error_cls: type[ValueError] = EndpointTranslationError,
     context: str = "an endpoint request",
+    pinned_extra: tuple[str, ...] = (),
 ) -> None:
     """Refuse a netlist whose pinned stimulus sources are not the validated
     baseline (one definition each), or that carries a card altering the cold
     start. Shared by every batch adapter: `error_cls` / `context` only select
-    the exception type and the message's noun."""
+    the exception type and the message's noun.
+
+    `pinned_extra` (issue #647) names full lines that are required verbatim
+    (exactly one definition each) yet exempt from the forbidden-card scan --
+    the current-limit IC_SEED `.nodeset` card, whose card word the scan
+    otherwise refuses on principle (a bare netlist-level control-ish card the
+    translation was not validated with). Pinning keeps that principle for
+    everything else: any OTHER `.nodeset`, or this one edited by one
+    character, still refuses."""
     lines = [ln.strip() for ln in body]
     for ln in lines:
         low = ln.lower()
         for card in FORBIDDEN_NETLIST_CARDS:
             if low == card or low.startswith(card + " ") or low.startswith(card + "\t"):
+                if ln in pinned_extra:
+                    continue
                 raise error_cls(f"netlist carries `{ln}`: {card} is not allowed in {context}")
     for want in stimulus:
         elem = want.split()[0].lower()
@@ -238,6 +249,12 @@ def check_netlist(
             raise error_cls(
                 f"stimulus element {want.split()[0]} is {defs!r}, expected exactly [{want!r}] "
                 "(the validated stimulus; a testbench change needs renewed adapter validation)"
+            )
+    for want in pinned_extra:
+        if lines.count(want) != 1:
+            raise error_cls(
+                f"pinned card is {lines.count(want)}x present, expected exactly once: {want!r} "
+                "(the validated seed; a testbench change needs renewed adapter validation)"
             )
 
 

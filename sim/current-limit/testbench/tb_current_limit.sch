@@ -134,6 +134,71 @@ v {xschem version=3.4.7 file_version=1.2
 * shipped the same fix in those two sibling benches, and issue #177, which
 * gave leg 1 one).
 *
+* ---------------------------------------------------------------------
+* Leg 2's dc sweep is SEEDED and runs FIRST (issue #647, contract #171)
+* ---------------------------------------------------------------------
+* Issue #177's 45-corner fleet re-run (record 20261117-173516-d843d914)
+* measured leg 2 -- alone of the three legs -- tripping corner-run.py's
+* #171 solver-diagnostic gate at 4 of 45 corners, every one on the 3.63 V
+* (Vin_max) column: tt_27c/ff_27c `Warning: singular matrix: check node
+* xldo.ea_cz`, fs_27c `... xldo.n_fbb`, fs_125c `Warning: Dynamic gmin
+* stepping failed`. ngspice recovered every point via true gmin stepping and
+* every measured value stayed inside its bounds -- the FAILs were
+* solver-graded, not electrical -- but the #171 gate grades them FAIL
+* regardless, which is the gate working as designed. Localized (issue #647,
+* tt/27C/3.63V, this testbench netlisted and run one corner at a time): the
+* flail is the sweep's own first continuation steps, at the dead-short end
+* of the characteristic (the round between `Reference value : 0` and the
+* next point's solve), not a mid-sweep crossing and not the knee; the
+* 2.97 V and 3.30 V columns solve clean from ngspice's own guess. The fix
+* is the initial-condition contract's `.nodeset` shape (#178/#189, the
+* thermal precedent), with two measured facts shaping it:
+*
+* 1. THE CARD. A `.nodeset` re-applied as the first-iteration guess at
+*    every dc sweep point (measured, #189) whose values are a MEASURED
+*    realizable state of this testbench: the settled held-short end state
+*    of leg 3's own transient (cold-start uic, EN edge at 100us, VOUT=0
+*    short held from t=1.0ms, node voltages read at t=2.95ms) at the
+*    matrix's nominal corner tt/27C/vsup=3.30V -- the sweep's own starting
+*    point (vforce = 0, the dead short, clamp engaged) is exactly that
+*    state, and the whole 0->1.75V characteristic lives on the same
+*    clamp-engaged branch, so the seed biases the continuation onto the
+*    branch it measures. Supply classification per #189's method: the
+*    settled short state was measured at all three supplies (2.97/3.30/
+*    3.63V) and each node written `{vsup-x}` only where its measured
+*    slope is ~1 V/V (EA_OUT=EA_CZ 0.82, BIASP 0.97, CL_CMP 0.98, SS
+*    1.00); EA_TAIL (slope 0.21 -- the PMOS input pair's source node, one
+*    |Vgs| above the ground-referenced gates, exactly #189's finding) and
+*    every other node stay absolute. The clamp state IS the branch here,
+*    so the card seeds the current-limit comparator's own nodes (CL_CMP,
+*    CL_SNS) alongside the set the thermal card uses.
+* 2. THE ORDER. The seeded dc sweep leads the deck (leg 2, then leg 1,
+*    then leg 3 -- the conceptual numbering is unchanged, only the run
+*    order moves). Measured, not stylistic: with the same card, chained
+*    after leg 1's transient, fs_125c_3.63v still tripped `Dynamic gmin
+*    stepping failed` at the sweep's first point (the card is ~250mV from
+*    fs/125C's own short state on BIASP/CL_CMP, and the post-transient
+*    solve needs the guess more than a cold one does); with the dc first,
+*    the identical card solves all four failing corners -- and the matrix
+*    extremes ss/-40C and ff/125C at both supply rails -- with zero
+*    diagnostics. This also puts the deck in the same shape as every
+*    other seeded bench in sim/ (#178 thermal, #179 loop-gain/psrr-dc,
+*    #180 load-transient): the seeded analysis leads, and the two
+*    `tran ... uic` legs follow it -- they are order-independent by
+*    construction (`uic` starts every node at 0; the deck restores each
+*    leg's element values with `alter` before it runs), which the
+*    before/after measurements confirm: all ten graded values at the
+*    probed corners match the superseded record to 4-5 significant
+*    digits.
+*
+* The card is a first-iteration constraint that is then released (a basin
+* hint, not a held state): it may only bias WHICH branch the solve lands
+* on, and the branch it names is the one the sweep measures. Conformance
+* is the measured absence of the #171 markers in the record, not the
+* mechanism's pedigree -- see sim/docs/initial-condition-contract.md's
+* current-limit section (issue #647) for the localization probes and the
+* per-corner before/after.
+*
 * CORRECTION, measured by issue #177 -- the EN edge alone is NOT sufficient,
 * which is why legs 1 and 3 now carry `uic`. Both this comment and issue
 * #174's audit previously held that a non-`uic` transient seeds its own t = 0
@@ -273,3 +338,15 @@ an event of defined duration rather than sampled at one instant. t=1.0ms
 ff_125c ramp), so the fault lands on a block that has actually reached
 regulation, not on an inconclusive t=0 DC solve.
 i(vforce) > 0 means the LDO is delivering current into the forced node.} 1250 -230 0 0 0.2 0.2 {}
+
+* ---- the dc sweep's own starting state: the settled held short (issue #647, contract #171) ----
+C {devices/code_shown.sym} -700 -100 0 0 {name=IC_SEED only_toplevel=false value=".nodeset v(VOUT)=0.00015 v(xldo.FB)=0.0001 v(xldo.N_FBB)=0.00005 v(xldo.EA_OUT)=\{vsup-1.6915\} v(xldo.EA_CZ)=\{vsup-1.6915\} v(xldo.EA_TAIL)=1.6169 v(xldo.SS)=\{vsup-0.0001\} v(xldo.BIASP)=\{vsup-1.0637\} v(xldo.NB)=0.8641 v(xldo.CL_CMP)=\{vsup-0.9038\} v(xldo.CL_SNS)=0.9447 v(xldo.AMP_ENN)=0.0087"}
+T {IC_SEED: the settled held-short state of THIS testbench at tt/27C/vsup=3.30V
+-- leg 2's own starting point (vforce = 0, dead short, clamp engaged) --
+measured from leg 3's cold-start uic transient at t=2.95ms (issue #647; see
+the header for the supply-slope classification, for why the seeded dc sweep
+leads the deck, and for why .nodeset and not .ic: a dc analysis ignores .ic,
+measured in #178). EA_TAIL is absolute, not 'vsup'-relative: slope 0.21 V/V,
+#189's finding. The card is re-applied at every sweep point (measured, #189)
+and only biases which branch the solve lands on -- the clamp-engaged branch
+this sweep measures} -700 -140 0 0 0.2 0.2 {}
