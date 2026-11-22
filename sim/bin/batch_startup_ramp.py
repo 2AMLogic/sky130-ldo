@@ -227,24 +227,6 @@ def leg_ramp_condition(
     return result, path, []
 
 
-def ramp_check(leg_result: dict) -> dict:
-    """The per-leg condition as a corner check row (the local run_corner
-    shape): max = tolerance_v, pass = the leg's own verdict."""
-    passed = leg_result["pass"]
-    return {
-        "name": f"ramp_drawdown_{leg_result['leg']}_v",
-        "expr": "ramp_monotonicity.max_drawdown(v(vout))",
-        "unit": "V",
-        "value": leg_result["max_drawdown_v"],
-        "min": None,
-        "max": leg_result["settings"]["tolerance_v"],
-        "pass": passed,
-        "reason": ""
-        if passed
-        else f"{leg_result['status']}: " + "; ".join(leg_result["reasons"]),
-    }
-
-
 def adapter_info(exp: Experiment) -> dict:
     """Provenance of the issue #336 trace-return adapter for a batch record."""
     template = _leg_template(exp)
