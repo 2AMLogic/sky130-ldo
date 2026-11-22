@@ -33,9 +33,9 @@ leg-corners passed the `vout_pre_v` gate (1.764–1.836 V) before the first step
 
 ## Verdict for #702 (summary)
 
-**Rev2 does not repair any of the three ratified dynamic rows, and adds two
-regressions; the rows' failures are dominated by conditions the baseline already
-fails.**
+**Both designs miss the stability, load-step and PSRR targets. Rev2 adds three
+phase-margin failures at zero load and six falling load steps that exceed the
+150 mV peak-deviation limit.**
 
 | row (ratified bound) | baseline | rev2 | paired verdict |
 |---|---|---|---|
