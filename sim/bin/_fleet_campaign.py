@@ -240,7 +240,13 @@ def base_request(
 
 
 def submit(key: str, req_path: Path, out: Path, env: dict) -> dict:
-    """Submit one request to the batch fleet; never falls back to a local run."""
+    """Submit one request to the batch fleet; never falls back to a local run.
+
+    A JSON error envelope without a `corners` list is refused by
+    `run_klt_sim`'s default `require_corners` -- after the raw
+    `klt.stdout`/`klt.stderr` are persisted in `out / "responses" / key` --
+    and comes back as `{"key": ..., "error": ...}`, never as a sim result.
+    """
     od = out / "responses" / key
     od.mkdir(parents=True)
     try:
@@ -250,7 +256,6 @@ def submit(key: str, req_path: Path, out: Path, env: dict) -> dict:
             "batch",
             env["PDK_ROOT"],
             klt_exe=klt_binary("submit batch grids"),
-            require_corners=False,
         )
     except RuntimeError as exc:
         return {"key": key, "error": str(exc)[-1500:] or "no JSON from klt sim"}
@@ -287,7 +292,8 @@ def submit_all(
             resp = r["resp"]
             job = resp.get("environment", {}).get("remote", {}).get("job_id")
             print(
-                f"{k}: {resp['status']} ({resp['corner_count']} corners) job {job}",
+                f"{k}: {resp.get('status', 'unknown')} "
+                f"({resp.get('corner_count', len(resp['corners']))} corners) job {job}",
                 flush=True,
             )
             yield k, m, resp, job
