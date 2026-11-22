@@ -9,9 +9,11 @@ as committed. Where the two disagree, this file governs. No verdict in `../issue
 
 ## 1. Extraction bias on the low-frequency (`dc`) loop gain: disclosure
 
-The `issue-704` report discloses the extraction-sensitivity of the phase-margin column. It does
-not disclose that the low-frequency (`dc`) loop gain is far more extraction-sensitive, in the
-opposite direction.
+The `issue-704` report discloses that rev2's gain-margin column reads 0.5-2.0 dB optimistic
+under the as-drawn extraction, and that phase margin is insensitive (at most 0.041 deg across
+the six legs, grades preserved). It does not disclose that the low-frequency (`dc`) loop gain
+is far more extraction-sensitive, and in the opposite direction to the gain-margin optimism:
+`dc` reads pessimistic.
 
 On the `c47-esr0-10uA` leg, rev2's as-drawn `dc` of 650.12 reads 1818.23 under the
 single-entry extraction (x2.80, +8.9 dB). rev2's as-drawn `dc` is therefore about 9 dB
@@ -19,7 +21,7 @@ pessimistic, and the paired `dc` column in `../issue-704/tables/loop_pair.csv` i
 like-for-like. The apparent 14.8 dB paired DC-gain deficit on that leg is about 5.9 dB after
 the correction.
 
-No graded quantity uses DC gain: `verdict.json`'s `pair_classification` carries only `d_pm` and
+No graded quantity uses DC gain: `verdict.json`'s `loop_gain.pair_classification` carries only `d_pm` and
 `d_gm`, deliberately no `d_dc`. No verdict in the `issue-704` report changes.
 
 ## 2. Citation repair: the load-transient `.ic` adaptation
@@ -48,10 +50,10 @@ two gmin pairs". The full enumeration of the 6 rev2 invalid corners (and their t
 |---|---|---|
 | 1 mA | tt/-40/2.97 | singular matrix on `xr_cz.t1` |
 | 1 mA | ff/-40/3.30 | singular matrix on `xr_cz.t1` |
-| 1 mA | tt/3.63 | singular matrix on `xr_fb_b.t2` |
+| 1 mA | tt/-40/3.63 | singular matrix on `xr_fb_b.t2` |
 | 50 mA | tt/-40/2.97 | gmin-stepping failure |
 | 50 mA | ff/-40/3.30 | gmin-stepping failure |
-| 50 mA | tt/3.63 | singular matrix on `xr_fb_b.t2` |
+| 50 mA | tt/-40/3.63 | singular matrix on `xr_fb_b.t2` |
 
 The 4 base invalid corners (ff/27/3.30 and fs/-40/3.30, gmin stepping) are unchanged. Each
 invalid corner is listed in `../issue-704/verdict.json` and was excluded from grading rather
