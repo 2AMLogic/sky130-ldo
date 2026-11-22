@@ -441,6 +441,24 @@ writes `ngspice.log`), `git_provenance()` and `load_results()`. Existing
 diagnostics run-id directories are append-only evidence and keep their own
 copies unedited; the helper is forward-only. Tests: `sim/tests/test_probe_common.py`.
 
+**Replaying a run's report never writes into the archive.** A report script
+that regenerates `tables.md`/`verdict.json` from a run's saved inputs is run
+on a *copy*: copy the run directory to scratch and render there, the same way
+`sim/tests/test_rcz_shelf_691.py` replays the refused #691 preflight. From the
+repository root:
+
+```sh
+tmp="$(mktemp -d)"
+cp -r sim/loop-gain/diagnostics/20261120-223530-542c11e-rcz-shelf/. "$tmp/"
+python3 -I sim/bin/rcz-shelf-691-report.py "$tmp"   # prints the verdict
+less "$tmp/tables.md" "$tmp/verdict.json"            # both outputs live in the copy
+```
+
+The tracked record stays byte-identical. Editing, renaming, or deleting a
+committed run file fails CI (`.loom/scripts/check-evidence-append-only.sh`,
+same as a `records/` edit) — a correction mints a new run directory, never an
+in-place regeneration.
+
 ### Writing a new batch-fleet campaign driver (issue #574)
 
 A campaign driver — one that netlists a testbench once, text-edits a per-case
