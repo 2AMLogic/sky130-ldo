@@ -105,16 +105,67 @@ class CompareTests(unittest.TestCase):
             d = Path(t)
             (d / "remote" / "v3.30").mkdir(parents=True)
             (d / "remote" / "v3.30" / "response.json").write_text(json.dumps(resp("46")))
-            v, eng, all_engines = cmp.load_remote(d)
-        self.assertEqual((eng, all_engines), ("46", ["46"]))
+            v, eng = cmp.load_remote(d)
+        self.assertEqual(eng, "46")
         self.assertEqual(v["dropout_vin_x"], 2.161658)
         self.assertAlmostEqual(v["dropout_v"], 0.397658, places=9)
 
     def test_load_remote_with_no_response_raises(self):
         with tempfile.TemporaryDirectory() as t:
             (Path(t) / "remote").mkdir()
-            with self.assertRaises(SystemExit):
+            with self.assertRaises(SystemExit) as cm:
                 cmp.load_remote(Path(t))
+        self.assertIn("0", str(cm.exception))
+
+    def test_load_remote_does_not_merge_two_partial_responses(self):
+        """Regression: one crossing-only and one endpoint-only response in
+        separate request directories must not pool into a complete set
+        (the comparison takes exactly one remote request)."""
+
+        def partial(name, value):
+            return {
+                "environment": {"engine_version": "46"},
+                "corners": [{
+                    "measurements": [{"name": name, "value": value}],
+                }],
+            }
+
+        with tempfile.TemporaryDirectory() as t:
+            d = Path(t)
+            for req, (name, value) in (
+                ("v3.29", ("dropout.dropout_vin_x", 2.161658)),
+                ("v3.31", ("dropout.vout_at_max_vin_v", 1.798832)),
+            ):
+                (d / "remote" / req).mkdir(parents=True)
+                (d / "remote" / req / "response.json").write_text(
+                    json.dumps(partial(name, value))
+                )
+            with self.assertRaises(SystemExit) as cm:
+                cmp.load_remote(d)
+        self.assertIn("2", str(cm.exception))
+
+    def test_load_remote_single_incomplete_response_still_loads(self):
+        """One response carrying only part of the pair stays a loadable
+        (and hence unresolved-at-compare) input; only the count is an error."""
+
+        def partial(name, value):
+            return {
+                "environment": {"engine_version": "46"},
+                "corners": [{
+                    "measurements": [{"name": name, "value": value}],
+                }],
+            }
+
+        with tempfile.TemporaryDirectory() as t:
+            d = Path(t)
+            (d / "remote" / "v3.30").mkdir(parents=True)
+            (d / "remote" / "v3.30" / "response.json").write_text(
+                json.dumps(partial("dropout.dropout_vin_x", 2.161658))
+            )
+            v, eng = cmp.load_remote(d)
+        self.assertEqual(eng, "46")
+        self.assertEqual(v["dropout_vin_x"], 2.161658)
+        self.assertNotIn("vout_at_max_vin_v", v)
 
 
 if __name__ == "__main__":

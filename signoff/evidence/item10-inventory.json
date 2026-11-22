@@ -2,13 +2,14 @@
   "schema_version": 1,
   "kind": "t1-attestation-inventory",
   "t1_item": 10,
-  "description": "Repo hygiene: README, licence, environment/sim docs, CI workflow; checks are the headless repo lint and the pin re-hash stage.",
+  "description": "Repo hygiene: README, licence, environment/sim docs, both CI workflow files (ci.yml and the pdk-smoke.yml it calls, split out by PR #713); checks are the headless repo lint and the pin re-hash stage.",
   "hygiene": [
     "README.md",
     "LICENSE",
     "docs/environment-setup.md",
     "sim/README.md",
-    ".github/workflows/ci.yml"
+    ".github/workflows/ci.yml",
+    ".github/workflows/pdk-smoke.yml"
   ],
   "checks": [
     {

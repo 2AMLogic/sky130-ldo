@@ -1,0 +1,151 @@
+{
+  "netlist": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-704/sim/loop-gain/diagnostics/issue-704/runs/loop/base/requests/op-gate.spice",
+  "engine": "ngspice",
+  "models": {
+    "pdk": "sky130A",
+    "lib": "libs.tech/combined/sky130.lib.spice"
+  },
+  "corners": {
+    "process": [
+      "tt"
+    ],
+    "temperature_c": [
+      27.0
+    ]
+  },
+  "options": {
+    "timeout_s": 300,
+    "keep_artifacts": true
+  },
+  "batch": {
+    "capacity_wait_s": 10800
+  },
+  "analysis_steps": [
+    {
+      "name": "op_0mA",
+      "reset": true,
+      "analysis": {
+        "kind": "op",
+        "args": ""
+      },
+      "alter": {
+        "RLOAD": 1000000000000.0
+      },
+      "measurements": [
+        {
+          "name": "vout",
+          "expr": "v(vout)",
+          "unit": "V"
+        }
+      ]
+    },
+    {
+      "name": "op_10uA",
+      "reset": true,
+      "analysis": {
+        "kind": "op",
+        "args": ""
+      },
+      "alter": {
+        "RLOAD": 180000.0
+      },
+      "measurements": [
+        {
+          "name": "vout",
+          "expr": "v(vout)",
+          "unit": "V"
+        }
+      ]
+    },
+    {
+      "name": "op_30uA",
+      "reset": true,
+      "analysis": {
+        "kind": "op",
+        "args": ""
+      },
+      "alter": {
+        "RLOAD": 60000.0
+      },
+      "measurements": [
+        {
+          "name": "vout",
+          "expr": "v(vout)",
+          "unit": "V"
+        }
+      ]
+    },
+    {
+      "name": "op_100uA",
+      "reset": true,
+      "analysis": {
+        "kind": "op",
+        "args": ""
+      },
+      "alter": {
+        "RLOAD": 18000.0
+      },
+      "measurements": [
+        {
+          "name": "vout",
+          "expr": "v(vout)",
+          "unit": "V"
+        }
+      ]
+    },
+    {
+      "name": "op_300uA",
+      "reset": true,
+      "analysis": {
+        "kind": "op",
+        "args": ""
+      },
+      "alter": {
+        "RLOAD": 6000.0
+      },
+      "measurements": [
+        {
+          "name": "vout",
+          "expr": "v(vout)",
+          "unit": "V"
+        }
+      ]
+    },
+    {
+      "name": "op_1mA",
+      "reset": true,
+      "analysis": {
+        "kind": "op",
+        "args": ""
+      },
+      "alter": {
+        "RLOAD": 1800.0
+      },
+      "measurements": [
+        {
+          "name": "vout",
+          "expr": "v(vout)",
+          "unit": "V"
+        }
+      ]
+    },
+    {
+      "name": "op_50mA",
+      "reset": true,
+      "analysis": {
+        "kind": "op",
+        "args": ""
+      },
+      "alter": {
+        "RLOAD": 36.0
+      },
+      "measurements": [
+        {
+          "name": "vout",
+          "expr": "v(vout)",
+          "unit": "V"
+        }
+      ]
+    }
+  ]
+}

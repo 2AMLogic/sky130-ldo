@@ -6,8 +6,25 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 
 - [2026-09](work_log/WORK_LOG_2026-09.md)
 
+### 2026-11-21
+
+- **PR #722**: signoff: cover pdk-smoke.yml in the T1 item 10 hygiene inventory
+- **PR #703**: sim(#692): paired 45-point PVT dropout campaign — rev2 holds < 300 mV at every corner (ADOPT-REVIEW)
+- **Issue #717** (closed): signoff: item 10 hygiene inventory no longer covers the CI smoke steps after the pdk-smoke.yml split
+- **Issue #692** (closed): Dropout: run the paired 45-point PVT campaign for the #357 rev1 amplifier/clamp candidate (0.163 V at tt/27C; ratified row < 300 mV)
+- **PR #713**: ci: stop re-running CI on PR label writes; split smoke into pdk-smoke.yml
+- **Issue #707** (closed): ci.yml triggers a full CI run on every label change (pull_request: types includes 'labeled')
+- **PR #712**: fix: derive the rcz-shelf report's possible-request inventory from the driver's builders
+- **Issue #700** (closed): Diagnostic record states 118 dry-run-validated batch requests; the #691 screen now generates 122
+- **PR #701**: refactor: share the engine-log check across the batch response handlers
+- **PR #695**: feat(sim): screen a frequency-dependent compensation resistor on the batch fleet
+- **Issue #699** (closed): Share the engine-log check across the three batch response handlers
+- **Issue #697** (closed): Correct the klayout-tools#5894 cross-confirmation comment: it swaps which graph_too_large net hit which cap
+
 ### 2026-11-20
 
+- **PR #696**: pex: measure per-net resistance-graph fallback reasons; map rails' graph_too_large to klayout-tools#6964 (item 7)
+- **Issue #690** (closed): Item 7: re-run the resistance-graph recheck with per-net fallback reasons and file the upstream gap that actually blocks VIN/VOUT
 - **PR #686**: docs(sim): align iq manifest claim with the #301 fresh-ratification ruling
 - **Issue #683** (closed): docs(sim): reconcile sim/iq/experiment.json's DR-009 ratifying-act claim with the #301 ruling
 - **PR #682**: docs: move live DR-009 citations to the fresh-ratification wording (split from #681)

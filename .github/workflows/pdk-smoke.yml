@@ -1,0 +1,96 @@
+name: PDK smoke
+
+# The PDK-gated harness smoke test, split out of ci.yml (#707) with two
+# entry points:
+#
+#   - `workflow_call`: ci.yml's `pdk-smoke` job calls this workflow on its
+#     nightly schedule, on manual dispatch, and on a PR that already carries
+#     the `run-pdk-smoke` label when it opens/synchronizes/reopens. The
+#     caller's job-level `if` owns that gate; it is the original smoke job's
+#     gate, unchanged.
+#   - `pull_request: labeled`: adding `run-pdk-smoke` to an open PR runs
+#     smoke immediately on that PR's current head -- the on-demand path the
+#     `labeled` PR activity used to serve in ci.yml's trigger, narrowed to
+#     this one label so unrelated label writes (loom:reviewing, loom:pr,
+#     ...) start no runners and publish no check runs under either required
+#     headless context. Removing the label does not cancel a running smoke.
+#
+# The `if` below admits everything the caller admits -- a called workflow
+# sees the caller's event, and ci.yml no longer fires on `labeled` -- plus
+# exactly the `run-pdk-smoke` label event, and nothing else.
+
+on:
+  workflow_call: {}
+  pull_request:
+    types: [labeled]
+
+jobs:
+  pdk-smoke:
+    name: PDK-gated harness smoke test (nightly / workflow_dispatch / 'run-pdk-smoke' label)
+    runs-on: ubuntu-latest
+    if: >-
+      github.event_name != 'pull_request' ||
+      github.event.action != 'labeled' ||
+      github.event.label.name == 'run-pdk-smoke'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Same reason as the `checks` job in ci.yml (#220): the byte-exact
+          # characterization check below reads the schematic's git history.
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install ngspice + xschem
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ngspice xschem
+
+      # issue #291: the apt package source gives no version choice, so the
+      # install above cannot be pinned. Log what resolved, against what
+      # sim/pdk.json declares; selftest --require-pdk below FAILs on drift.
+      - name: Show resolved toolchain versions vs sim/pdk.json
+        run: |
+          python3 -c "import json;print('declared:', json.load(open('sim/pdk.json')).get('tools'))"
+          ngspice -v | head -n 2
+          xschem --version | head -n 1
+
+      - name: Install volare
+        run: pip install --user volare
+
+      - name: Fetch + enable pinned sky130 PDK
+        run: |
+          export PATH="$HOME/.local/bin:$PATH"
+          commit="$(python3 -c "import json;print(json.load(open('sim/pdk.json'))['open_pdks_commit'])")"
+          volare fetch --pdk sky130 "$commit"
+          volare enable --pdk sky130 "$commit"
+
+      - name: Run sim/selftest.sh --quick --require-pdk
+        run: |
+          export PATH="$HOME/.local/bin:$PATH"
+          sim/selftest.sh --quick --require-pdk
+
+      - name: Upload harness diagnostics (scratch netlist, decks, ngspice logs)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pdk-smoke-diagnostics
+          path: |
+            sim/build/
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Byte-exact characterization check (includes the live Freshness column)
+        run: |
+          export PATH="$HOME/.local/bin:$PATH"
+          python3 measurements/build_characterization_report.py --check
+        # The only check that evaluates measurements/characterization.md's
+        # per-`sim/` Freshness verdicts, because only this job has the pinned
+        # PDK + xschem needed to re-netlist each testbench schematic (#220).
+        # A failure here is real news in one of two flavours, and the diff it
+        # prints says which: a Freshness-only diff means the committed rollup's
+        # freshness verdicts have gone stale (regenerate it on a PDK machine);
+        # any other diff would already have failed the headless `checks` job.

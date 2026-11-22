@@ -5,6 +5,12 @@
 # attempts and the merged investigation log) are committed evidence behind provenance.json.
 !sim/dropout-vs-load/diagnostics/*/runs/*/ngspice.log
 !sim/dropout-vs-load/diagnostics/*/runs/*/ngspice.merged.log
+# issue #692: the paired 45-point PVT campaign's per-corner engine logs -- both the
+# local copies under runs/<leg>/logs/ and the klt batch responses' own corner logs
+# under runs/<leg>/klt-out/ -- are the solver-diagnostic validity evidence behind
+# the campaign's verdict.json (same precedent as the #357 lines above).
+!sim/dropout-vs-load/diagnostics/*/runs/*/logs/*.log
+!sim/dropout-vs-load/diagnostics/*/runs/*/klt-out/**/ngspice.log
 # issue #374: real klt engine logs captured as dropout batch-adapter test fixtures.
 !sim/tests/fixtures/issue-374/*.ngspice.log
 # issue #384: paired line-regulation local/fleet diagnostic -- the raw local and remote
