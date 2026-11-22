@@ -6,7 +6,7 @@ provenance); recomputes every grade from the raw paired values against the
 ratified bounds (PM >= 45 deg and GM >= 10 dB; load step peak <= 150 mV and
 recovery into +-1 % within 20 us; PSRR strictly > 50 dB @ 1 kHz and > 20 dB
 @ 100 kHz). A missing or invalid measurement is reported as such, never
-inferred and never counted as a pass. Writes tables/*.csv and
+inferred and never counted as a pass. Writes tables/*.csv, tables.md and
 verdict.json next to this script.
 
 Usage: python3 analyze.py

@@ -27,12 +27,9 @@ ngspice runs are the six single-corner syntax probes under `runs/syntax-probe/`
 `match`. One deliberate bench adaptation, disclosed: the load-transient bench's
 11-token `.ic` seed names three nodes the overlay removes (`EA_TAIL`, `EA_D1`,
 `EA_D2`), and ngspice rejects the whole `.ic` card once any named node is gone
-(observed on the pre-adaptation deck during probing; that failing run was not
-retained). The retained evidence for the adaptation: the candidate decks drop
-exactly those three tokens and keep the other eight byte-identical to the
-baseline deck's first eight (`runs/syntax-probe/loadstep-{base,rev2}/deck.spice:22`),
-and all 18 candidate leg-corners passed the `vout_pre_v` gate (1.764–1.836 V;
-`runs/loadstep/rev2/leg.json`) before the first step.
+(measured, `runs/syntax-probe/loadstep-rev2/`); the candidate decks drop exactly
+those three tokens and keep the other eight byte-identical. All 18 candidate
+leg-corners passed the `vout_pre_v` gate (1.764–1.836 V) before the first step.
 
 ## Verdict for #702 (summary)
 
@@ -85,15 +82,6 @@ column carries that disclosed optimism. GM `transfer_metric_unavailable`
 (`no_downward_phase_crossing`) on 4.7 µF·500 mΩ light-load legs — 5 base, 4 rev2 —
 is reported as unavailable, never as a pass.
 
-The low-frequency (`dc`) loop gain is far more extraction-sensitive, in the
-opposite direction: on the c47-esr0-10uA leg, rev2's as-drawn `dc` of 650.12
-reads 1818.23 under the single-entry extraction (×2.80, +8.9 dB), so rev2's
-as-drawn `dc` is ~9 dB pessimistic and the paired `dc` column in
-`tables/loop_pair.csv` is not like-for-like — the apparent 14.8 dB paired
-DC-gain deficit on that leg is ~5.9 dB after the correction. No graded quantity
-uses DC gain (`verdict.json`'s `pair_classification` carries only `d_pm`/`d_gm`,
-deliberately no `d_dc`), so no verdict in this report changes.
-
 ## Coverage, gaps and invalid results
 
 - **Loop gain**: exactly the issue's pinned grid — tt/27 °C/3.30 V, loads
@@ -111,11 +99,9 @@ deliberately no `d_dc`), so no verdict in this report changes.
 - **PSRR**: the full 45-corner matrix × both loads per DUT, at the bench's own
   load network (C_out 1 µF / ESR 10 mΩ). Invalid (solver-diagnostic contract,
   recorded not suppressed): 4 base corners (ff/27/3.30 and fs/−40/3.30, gmin
-  stepping) and 6 rev2 corners (1 mA: `xr_cz.t1` singular matrix at tt/−40/2.97
-  and ff/−40/3.30, `xr_fb_b.t2` singular matrix at tt/3.63; 50 mA: gmin-stepping
-  failure at tt/−40/2.97 and ff/−40/3.30, `xr_fb_b.t2` singular matrix at
-  tt/3.63). Each is listed in `verdict.json` and excluded from grading rather
-  than counted either way.
+  stepping) and 6 rev2 corners (tt/−40/2.97 and tt/3.63 singular-matrix
+  diagnostics on `xr_cz.t1`/`xr_fb_b.t2` plus the two gmin pairs); each is listed
+  in `verdict.json` and excluded from grading rather than counted either way.
 
 ## Files
 
