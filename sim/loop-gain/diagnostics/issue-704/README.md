@@ -28,9 +28,8 @@ ngspice runs are the six single-corner syntax probes under `runs/syntax-probe/`
 11-token `.ic` seed names three nodes the overlay removes (`EA_TAIL`, `EA_D1`,
 `EA_D2`), and ngspice rejects the whole `.ic` card once any named node is gone
 (measured, `runs/syntax-probe/loadstep-rev2/`); the candidate decks drop exactly
-those three tokens, keep the other eight byte-identical, and the `vout_pre_v` gate
-(1.764–1.836 V) proves every candidate transient starts on the regulating branch
-(all 36 leg-corners passed it).
+those three tokens and keep the other eight byte-identical. All 18 candidate
+leg-corners passed the `vout_pre_v` gate (1.764–1.836 V) before the first step.
 
 ## Verdict for #702 (summary)
 
@@ -40,18 +39,23 @@ fails.**
 
 | row (ratified bound) | baseline | rev2 | paired verdict |
 |---|---|---|---|
-| Stability PM ≥ 45° (tt/27 °C/3.30 V, 42 legs) | 19/42 legs below (worst 17.45° @ 0.33 µF·ESR0·30 µA band → light-load band 0–300 µA) | 23/42 below (worst 14.27° @ 4.7 µF·ESR0·10 µA) | 23 legs both fail, 16 both pass, **3 regressions** (4.7 µF, 0 mA, all three ESR: 53.1° → 38.4°, −14.8°); mean ΔPM −1.9°; heavy-load legs improve ≈ +4° |
+| Stability PM ≥ 45° (tt/27 °C/3.30 V, 42 legs) | 23/42 below (worst 17.45° at 4.7 µF, 0 mΩ ESR, 30 µA) | 26/42 below (worst 14.27° at 4.7 µF, 0 mΩ ESR, 10 µA) | 23 legs fail both, 16 pass both. **3 regressions** at 4.7 µF and 0 mA, one at each ESR (PM drops by about 14.75°). Mean ΔPM across all 42 legs is −1.9°. The six 50 mA legs gain 0.76° to 4.08° (mean +3.33°). |
 | Stability GM ≥ 10 dB | 0/37 below (worst 16.95 dB @ 0.33 µF·ESR0·50 mA) | 0/38 below (worst 16.65 dB, same leg; 16.17 dB after the extraction correction below) | no GM regressions; 5 pairs GM-unavailable on ≥1 side |
 | Load step peak ≤ 150 mV (6 legs × quick PVT) | 11/36 direction-legs above (worst 215 mV, 0.33 µF·ESR0 rising, ff/125 °C/3.63 V) | 17/36 above (worst 242 mV, same leg) | rise: 9 fail both; **fall: 2 → 8 (6 new failing legs)**; paired peak deltas ≤ +42 mV |
-| Load step recovery ≤ 20 µs (±1 %) | 36/36 above 20 µs (worst 651.9 µs, 4.7 µF·ESR0, ff/125 °C/3.63 V) | 36/36 above (worst 733.7 µs, same leg) | baseline failure carried by rev2 everywhere; no leg recovers in window |
+| Load step recovery ≤ 20 µs (±1 %) | 36/36 above 20 µs (worst 651.9 µs, 4.7 µF·ESR0, ff/125 °C/3.63 V) | 36/36 above (worst 733.7 µs, same leg) | Both designs recover within the measurement window and miss the 20 µs limit in both directions at every condition. |
 | PSRR > 50 dB @ 1 kHz | 0/86 valid pass (worst 20.30 dB @ 1 mA, fs/125 °C/2.97 V) | 0/84 valid pass (worst 20.10 dB, same corner) | both fail everywhere (pre-existing shortfall) |
 | PSRR > 20 dB @ 100 kHz | 1 mA: 43/43 pass; 50 mA: 0/43 pass (worst 10.46 dB @ fs/−40 °C/2.97 V) | 1 mA: 42/42 pass; 50 mA: 0/42 pass (worst 9.79 dB @ fs/−40 °C/3.30 V) | structure unchanged; paired deltas −3.3…+0.1 dB (1 kHz, mean −1.5) and −2.1…+0.03 dB (100 kHz, mean −0.4) |
 
-Measured failures are results, not harness faults: the light-load PM band, the
-recovery clause and the PSRR row were already unmet by the committed design (the
-0 mA stability gap is the one DR-006 itself discloses; #349/#691's 0.33 µF/50 mA
-condition is re-measured here at 40.1°/16.9 dB base and 43.7°/16.7 dB rev2 — PM
-below 45° on both DUTs, GM above 10 dB on both).
+The baseline already misses the light-load PM, recovery and PSRR targets.
+DR-006 documents the 0 mA stability gap. At the 0.33 µF, 50 mA condition
+from #349/#691, both designs meet the 10 dB gain-margin target at all three
+ESRs. Both reach 45° phase margin only at 500 mΩ.
+
+| ESR | Baseline PM | Baseline GM | Rev2 PM | Rev2 GM |
+|---:|---:|---:|---:|---:|
+| 0 mΩ | 39.82° | 16.95 dB | 43.74° | 16.65 dB |
+| 10 mΩ | 40.09° | 17.16 dB | 43.99° | 16.86 dB |
+| 500 mΩ | 52.26° | 27.22 dB | 55.54° | 26.07 dB |
 
 ## Loop-gain extraction check (rev2's VREF-driven bias)
 
@@ -64,14 +68,14 @@ DC-1.2 V / AC-0 source (`VVREFB`; single-entry condition restored; the edit is
 | leg | as-drawn PM/GM | decoupled PM/GM | ΔPM | ΔGM |
 |---|---|---|---|---|
 | c47-esr0-10uA (worst PM) | 14.27° / 68.72 dB | 14.26° / 67.73 dB | −0.01° | −0.99 dB |
-| c033-esr0-0mA (worst ΔPM leg family) | 14.63° / 69.02 dB | 14.62° / 67.49 dB | −0.01° | −1.53 dB |
+| c033-esr0-0mA (0.33 µF, no load) | 14.63° / 69.02 dB | 14.62° / 67.49 dB | −0.01° | −1.53 dB |
 | c033-esr0-50mA (worst GM) | 43.74° / 16.65 dB | 43.77° / 16.17 dB | +0.03° | −0.49 dB |
 | c47-esr0-0mA (regression leg) | 38.37° / 72.42 dB | 38.33° / 70.43 dB | −0.04° | −2.00 dB |
 | c033-esr0-1mA (passing control) | 86.31° / 28.38 dB | 86.27° / 27.63 dB | −0.04° | −0.75 dB |
 | c47-esr500m-30uA (GM-unavailable) | 15.34° / unav. | 15.33° / unav. | −0.01° | n/a |
 
-Phase margins near the unity-gain crossings are extraction-clean (|ΔPM| ≤ 0.04°):
-the graded PM values stand. Gain margins as-drawn read 0.5–2.0 dB optimistic
+The extraction check changes PM by at most 0.041° across the six legs and
+preserves their PM grades. Gain margins as-drawn read 0.5–2.0 dB optimistic
 against the single-entry extraction; after the correction the worst GM is
 16.17 dB — still above the 10 dB bound, so no GM verdict changes, but rev2's GM
 column carries that disclosed optimism. GM `transfer_metric_unavailable`
@@ -85,10 +89,11 @@ is reported as unavailable, never as a pass.
   500 mΩ} = 42 conditions per DUT, all 84 measured with a regulating operating
   point (op-gate VOUT 1.62–1.98 V, one 7-step op request per DUT). The manifest's
   other 44 PVT corners were **not** attempted.
-- **Load step**: the 6-leg window grid at the load-transient manifest's own
-  `quick_subset` (tt/27/3.30, ss/−40/2.97, ff/125/3.63) = 36 leg-corners per DUT,
-  both step directions each. The other 42 of the 45-corner matrix **not**
-  attempted. No leg showed the window-ceiling ambiguity (max recovery 733.7 µs <
+- **Load step** covers six cap/ESR legs at the three `quick_subset` corners
+  (tt/27/3.30, ss/−40/2.97, ff/125/3.63). That gives 18 leg-corners per DUT,
+  each measured on the rising and falling step (36 direction-legs per DUT).
+  The campaign omitted the other 42 PVT corners. No leg showed the
+  window-ceiling ambiguity (max recovery 733.7 µs <
   the 998 µs ceiling), so every "above 20 µs" reading is a real missed recovery,
   not a no-crossing artifact.
 - **PSRR**: the full 45-corner matrix × both loads per DUT, at the bench's own
