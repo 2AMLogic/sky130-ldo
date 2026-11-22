@@ -1,0 +1,31 @@
+* klt sim -- generated corner deck, do not edit
+.lib /opt/pdk/sky130A/libs.tech/combined/sky130.lib.spice ff
+.include /var/tmp/eda-job-klt-sim-2f1bd54923b1/inputs/netlist.cir
+.temp 125.0
+.control
+save all
+reset
+save all
+alter RLOAD=1800.0
+setplot new
+echo klt_step_begin 0 $curplot
+op
+echo klt_step_end 0 $curplot
+set klt_plot_0 = $curplot
+let vout = v(vout)
+let op_1ma__vout = vout
+print op_1ma__vout
+reset
+save all
+alter RLOAD=36.0
+setplot new
+echo klt_step_begin 1 $curplot
+op
+echo klt_step_end 1 $curplot
+set klt_plot_1 = $curplot
+let vout = v(vout)
+let op_50ma__vout = vout
+print op_50ma__vout
+quit
+.endc
+.end
