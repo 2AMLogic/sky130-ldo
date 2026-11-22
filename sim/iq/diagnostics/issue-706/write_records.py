@@ -39,6 +39,36 @@ def prov(leg_name):
     return d, p
 
 
+def worker_pdk(legs):
+    """Executed-worker PDK evidence from the committed klt reports of `legs`:
+    (stamp texts, pdk_stamp_comparison statuses, models_lib_comparison statuses,
+    n_reports). Read from the rows, never assumed from the submitter's pin."""
+    stamps, cmp_, lib, n = set(), set(), set(), 0
+    for lg in legs:
+        for rp in sorted((HERE / "runs" / lg / "klt-out").glob("*/report.json")):
+            rem = json.loads(rp.read_text())["environment"]["remote"]
+            w = rem["worker_environment"]
+            stamps.add(w["pdk"]["stamp_text"])
+            cmp_.add(w["pdk_stamp_comparison"]["status"])
+            lib.add(rem["models_lib_comparison"]["status"])
+            n += 1
+    return sorted(stamps), sorted(cmp_), sorted(lib), n
+
+
+def pdk_line(bp, legs):
+    stamps, cmp_, lib, n = worker_pdk(legs)
+    return (f"submitter-resolved pin: sky130A @ open_pdks `{bp['pdk']['open_pdks_commit']}` "
+            f"(matches `sim/pdk.json`: {bp['pdk']['matches_pin']}). **Executed worker PDK "
+            f"(from the {n} committed klt reports of these legs)**: stamp "
+            f"{', '.join('`' + x + '`' for x in stamps)}; "
+            f"`pdk_stamp_comparison.status` = {', '.join(cmp_)} (the worker's PDK revision stamp "
+            f"differs from the submitter's pin, so results may differ from a local run at the "
+            f"pin); `models_lib_comparison.status` = {', '.join(lib)} (the model library the "
+            f"deck loads compared equal). Both results are reported so the reader can judge "
+            f"applicability to the production pin; this record does not claim the run executed "
+            f"on the submitter's `{bp['pdk']['open_pdks_commit'][:8]}` revision.")
+
+
 def exec_lines(d):
     out = []
     for r in d["execution"]["requests"]:
@@ -67,6 +97,10 @@ def iq_record() -> str:
             f"| {fmt(g(rc,'iq_full_load_ua'))} | {'PASS' if rc['pass'] else 'FAIL'} |")
     fails_b = ", ".join(s["iq"]["base_fails"]) or "none"
     wm = s["iq"]["worst_margin"]
+    res = s["iq"]["resolution"]
+    pp = s["iq"]["paired"]
+    fail_cuts = ", ".join(f"{c} {v:+.1f}" for c, v in
+                          pp["base_failing_corner_deltas_full_load_ua"].items())
     return f"""# Paired record {rid} (issue #706)
 
 - **Record ID**: {rid}
@@ -87,7 +121,7 @@ def iq_record() -> str:
   committed compensation parts it preserves are C_COMP = 150 p and XR_CZ = res_xhigh_po
   W=0.42 L=52 (the #691 shelf). Both legs' request netlists, diffs and per-corner engine logs
   are committed under `sim/iq/diagnostics/issue-706/runs/`.
-- **PDK**: sky130A @ open_pdks `{bp['pdk']['open_pdks_commit']}` (pin match: {bp['pdk']['matches_pin']})
+- **PDK**: {pdk_line(bp, ("iq-base", "iq-cand"))}
 - **Tools**: remote executor engines per job below; local netlister {bp['tools']['xschem']};
   declared baseline ngspice 42 / xschem 3.4.4 (drifted, recorded not gated)
 - **Repo state**: `{bp['source_commit']}`
@@ -105,22 +139,35 @@ def iq_record() -> str:
 |---|---|---|---|---|---|---|
 {chr(10).join(rows)}
 
-- **Measured failures (valid results)**: production DUT fails the strict bound at 5 corners,
-  all on the 3.63 V column at full load: {fails_b} (30.2–31.3 µA). The rev2 candidate passes
-  all 45 corners.
-- **Margin resolution at the 30 µA bound**: {s['iq']['resolution_note']}. Applied: production's
-  worst corner is ff_-40c_3.63v at {wm['base']['margin_ua']:.3f} µA (a resolved EXCEEDANCE).
-  The candidate's worst corner is ff_125c_3.63v at full load, where the raw card reads
-  `-0.05003` A (6 significant digits) and the derived value is 29.999999999995 µA: the
-  measurement coincides with the bound at its print resolution and the ~0.03 µA solver band
-  straddles it, so **positive margin is NOT resolved** there — the strict-bound PASS is a
-  floating-point inequality, not evidence of margin (no margin is inferred from the last
-  printed digit).
-- **Binding**: the candidate's Iq gain tracks its tail-current cut
-  (NTAIL 2.8x of NBR; tail 1.36–2.37 µA over PVT vs the production tail's 2.40–4.06 µA,
-  measured on the clamp legs' 50 mA operating point at the same corner keys — see
-  `tables/ir_spread.csv`); production's worst Iq corners are exactly the corners where its
-  VIN-scaled bias current peaks (3.63 V column).
+- **Measured failures (valid results)**: production DUT fails the strict bound at {len(s['iq']['base_fails'])} corners,
+  all on the 3.63 V column at full load: {fails_b}. The rev2 candidate passes
+  all {s['iq']['paired']['n_valid']['cand']} corners (production passes {s['iq']['paired']['n_valid']['base']}).
+- **Resolution of the full-load figure (printed and solver reported separately)**: the full-load
+  meas card prints the ~0.05 A supply current with 6 significant digits (e.g. `-5.00300e-02` A
+  at ff_125c_3.63v), so the last printed digit is 1e-7 A = **{res['full_load_print_quantum_ua']} µA**; the manifest
+  then subtracts the ideal 0.05 A load, which does not refine that resolution. Solver settings
+  (ngspice defaults: reltol {res['solver_settings']['reltol']:g}, abstol {res['solver_settings']['abstol_a']:g} A,
+  vntol {res['solver_settings']['vntol_v']:g} V; no override in the deck or `sim/spiceinit`) are a separate
+  matter: {res['solver_note']}. The harness grade is kept as reported (PASS/FAIL columns above).
+  Applied: production's worst corner is {wm['base']['corner']} at {wm['base']['margin_ua']:.3f} µA
+  (an exceedance larger than the print quantum). The candidate's worst corner is
+  {wm['cand']['corner']} at full load, where the derived value is 29.999999999995 µA: the margin
+  (~5e-12 µA) is far inside the {res['full_load_print_quantum_ua']} µA print quantum, so **strict-bound compliance is unresolved at this corner**; the
+  PASS is a floating-point inequality on the harness grade, not evidence of margin, and no
+  solver-resolved margin is claimed (no precision/tolerance comparison was run).
+- **Where the cut is largest (joined by corner, `tables/iq_pair.csv`)**: per-corner full-load
+  ΔIq spans {pp['delta_full_load_ua']['largest_cut'][0]:+.1f} µA ({pp['delta_full_load_ua']['largest_cut'][1]}, a corner production already passes)
+  to {pp['delta_full_load_ua']['largest_increase'][0]:+.1f} µA ({pp['delta_full_load_ua']['largest_increase'][1]}). At production's
+  five failing corners the cuts are {fail_cuts} µA, i.e. smaller than the largest cut
+  and not the largest cuts overall.
+- **Binding (bias/tail currents joined by corner, `tables/ir_spread.csv`)**: production I_R
+  {pp['base_ir_set_50ma']['min'][0]*1e6:.2f}–{pp['base_ir_set_50ma']['max'][0]*1e6:.2f} µA and tail {pp['base_tail_i_set_50ma']['min'][0]*1e6:.2f}–{pp['base_tail_i_set_50ma']['max'][0]*1e6:.2f} µA
+  both peak at {pp['base_ir_set_50ma']['max'][1]} (I_R) / {pp['base_tail_i_set_50ma']['max'][1]} (tail);
+  rev2 I_R {pp['cand_ir_set_50ma']['min'][0]*1e6:.2f}–{pp['cand_ir_set_50ma']['max'][0]*1e6:.2f} µA peaks at {pp['cand_ir_set_50ma']['max'][1]}, tail
+  {pp['cand_tail_i_set_50ma']['min'][0]*1e6:.2f}–{pp['cand_tail_i_set_50ma']['max'][0]*1e6:.2f} µA at {pp['cand_tail_i_set_50ma']['max'][1]}. The currents were measured on
+  the clamp legs' 50 mA operating point. Production's failing corners are not where its
+  bias peaks (sf 3.63 V); the Iq gain is the tail-current reduction at the 3.63 V column, not a
+  match to the I_R peak.
 - **Cross-links**: campaign summary and tables: `sim/iq/diagnostics/issue-706/`
   (README.md, tables/). Thermal and clamp legs of the same campaign: their own records.
 """
@@ -143,6 +190,15 @@ def clamp_record() -> str:
                      f"{f('base_ilim_knee_ma')} | {f('base_ishort_sustained_ma')} | {db} | "
                      f"{f('cand_vout_50ma_v',3)} | {f('cand_ilim_short_ma')} | "
                      f"{f('cand_ilim_knee_ma')} | {f('cand_ishort_sustained_ma')} | {dc} |")
+    cp_ = dict(s["clamp"]["paired"])
+    kmin, kmax = cp_["knee_change_min"], cp_["knee_change_max"]
+    vr = lambda t: [float(r[f"{t}_vout_50ma_v"]) for r in rows if r[f"{t}_pass"] == "True"]
+    cp_["base_v50"], cp_["cand_v50"] = (min(vr("base")), max(vr("base"))), (min(vr("cand")), max(vr("cand")))
+    inv_c = "; ".join(f"{d['corner']} short {d['ilim_short_ma']:.1f} mA / knee {d['ilim_knee_ma']:.1f} mA"
+                      for d in cp_["cand"]["solver_invalid"])
+    ip = s["iq"]["paired"]
+    ir_b = f"{ip['base_ir_set_50ma']['min'][0]*1e6:.2f}–{ip['base_ir_set_50ma']['max'][0]*1e6:.2f}"
+    ir_c = f"{ip['cand_ir_set_50ma']['min'][0]*1e6:.2f}–{ip['cand_ir_set_50ma']['max'][0]*1e6:.2f}"
     diag_b = "\n".join(f"  - {c}: {d}" for c, d in s["clamp"]["solver_diag_base"]) or "  - none"
     diag_c = "\n".join(f"  - {c}: {d}" for c, d in s["clamp"]["solver_diag_cand"]) or "  - none"
     return f"""# Paired record {rid} (issue #706)
@@ -170,7 +226,7 @@ def clamp_record() -> str:
   `apply_candidate(raw, 2)` from PR #703 head `01dfd695` (verified, 0 invariant problems per
   leg; the candidate's one clamp change is XM_CLP's gate BIASP -> PBR). Evidence under
   `sim/iq/diagnostics/issue-706/runs/cl-*/` (request netlists + JSONs, per-corner logs).
-- **PDK**: sky130A @ open_pdks `{bp['pdk']['open_pdks_commit']}` (pin match: {bp['pdk']['matches_pin']})
+- **PDK**: {pdk_line(bp, ("cl-base", "cl-cand"))}
 - **Tools / repo state**: engines per job below; netlister {bp['tools']['xschem']}; `{bp['source_commit']}`
 - **Execution backend**: batch (`klt sim`, aws-batch-fleet), 3 chained requests per variant
   (one per supply, 15 corners each):
@@ -191,17 +247,30 @@ def clamp_record() -> str:
 {diag_b}
   - rev2 candidate (2):
 {diag_c}
-  Every solver-invalid corner still returned healthy measured values (ilim_short 160–195 mA);
-  the failures are the #171 gate working as designed, not out-of-family measurements.
+  Validity from the `base_pass` / `cand_pass` columns: **{cp_['base']['n_valid']}/45 valid corners
+  production, {cp_['cand']['n_valid']}/45 rev2**; paired statistics below use the {cp_['n_pairs_both_valid']} corners
+  where both runs passed the gate. Both rev2 diagnostic keys are new relative to production
+  (production's four are Vin_max-class; rev2's `fs_-40c_3.63v` and `ff_27c_3.30v` are not in
+  production's list). Their retained values are NOT all in the 160–195 mA family:
+  {inv_c}. They are listed, not counted valid.
 - **Non-engagement at or below 50 mA**: both DUTs keep vout_50ma inside 1.764–1.836 V at all
-  45 corners (production 1.7978–1.7991 V; rev2 1.8007–1.8043 V) and the minimum forced-output
-  knee current is 71.8 mA (rev2; 74.6 mA production) — the clamp never engages for I_load <=
-  50 mA at any PVT corner, with >= 21.8 mA of headroom to the knee.
-- **Window (TBD per spec — reported, not graded)**: ilim_short 94.5–228.9 mA (rev2) vs
-  97.7–231.7 mA (production) over PVT; short current sustained for the full 2 ms hold at every
-  corner including Vin_max; ripple < 0.1 % everywhere. The rev2 clamp trip sits ~2–3 % below
-  production's at each corner (the overlay deliberately preserves, not re-targets, the 3.3 V
-  trip point).
+  valid corners (production {cp_['base_v50'][0]:.4f}–{cp_['base_v50'][1]:.4f} V; rev2 {cp_['cand_v50'][0]:.4f}–{cp_['cand_v50'][1]:.4f} V) and the minimum
+  forced-output knee (current sampled at Vout = 1.75 V; a proxy for engagement current, not a
+  measured engagement point) is {cp_['cand']['ilim_knee_ma']['min'][0]:.1f} mA (rev2, {cp_['cand']['ilim_knee_ma']['min'][1]}) vs
+  {cp_['base']['ilim_knee_ma']['min'][0]:.1f} mA (production, {cp_['base']['ilim_knee_ma']['min'][1]}) over valid corners.
+- **Window (TBD per spec — reported, not graded)**: valid-corner ilim_short
+  {cp_['cand']['ilim_short_ma']['min'][0]:.1f}–{cp_['cand']['ilim_short_ma']['max'][0]:.1f} mA (rev2) vs {cp_['base']['ilim_short_ma']['min'][0]:.1f}–{cp_['base']['ilim_short_ma']['max'][0]:.1f} mA (production);
+  short current sustained for the full 2 ms hold at every corner including Vin_max; peak ripple
+  on a valid corner {cp_['base']['ishort_ripple_pct']['max'][0]:.6f} % (production, {cp_['base']['ishort_ripple_pct']['max'][1]}) and
+  {cp_['cand']['ishort_ripple_pct']['max'][0]:.6f} % (rev2, {cp_['cand']['ishort_ripple_pct']['max'][1]}).
+- **The clamp moves substantially across PVT (paired, per corner)**: rev2/production − 1 on the
+  knee current spans **{kmin['knee_pct']:+.1f} %** ({kmin['corner']}: {kmin['knee_base_ma']:.3f} → {kmin['knee_cand_ma']:.3f} mA;
+  short {kmin['short_pct']:+.1f} %) to **{kmax['knee_pct']:+.1f} %** ({kmax['corner']}: {kmax['knee_base_ma']:.3f} → {kmax['knee_cand_ma']:.3f} mA;
+  short {kmax['short_pct']:+.1f} %); the knee falls at {cp_['n_knee_decrease']} and rises at {cp_['n_knee_increase']} of the
+  {cp_['n_pairs_both_valid']} paired corners. This is **not** a uniform 2–3 % shift: the overlay's clamp-visible change
+  (XM_CLP gate BIASP → PBR) moves the trip with the measured bias currents
+  (`tables/ir_spread.csv`: I_R {ir_b} µA production vs {ir_c} µA rev2), and the adoption
+  trade-off should be read from those paired per-corner changes. The window stays TBD.
 - **Cross-links**: campaign summary and tables: `sim/iq/diagnostics/issue-706/`
   (README.md, tables/clamp_pair.csv, tables/ir_spread.csv).
 """

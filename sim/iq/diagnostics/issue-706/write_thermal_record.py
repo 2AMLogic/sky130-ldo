@@ -13,6 +13,7 @@ from __future__ import annotations
 import datetime as dt
 import json
 import subprocess
+import sys
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -41,7 +42,12 @@ def main():
     stamp = dt.datetime.now(dt.timezone.utc).strftime("%Y%m%d-%H%M%S")
     rid = f"{stamp}-{sha8()}-i706-paired"
     p = SIM / "thermal" / "records" / f"{rid}.md"
-    if p.exists():
+    # `--rewrite <record.md>`: regenerate a record that is still unmerged on its PR
+    # branch (review fix) keeping its filename / Record ID; otherwise a fresh mint.
+    if len(sys.argv) == 3 and sys.argv[1] == "--rewrite":
+        p = Path(sys.argv[2]).resolve()
+        rid = p.stem
+    elif p.exists():
         raise SystemExit(f"{p} exists: append-only")
 
     bp = base["pairing"]
@@ -91,8 +97,15 @@ def main():
   (0 problems) before submission; netlist diff committed as `netlist.diff` in the candidate
   run dir. As the iq/clamp records: the overlay's only rev2 lever is NTAIL W12/nf3 -> W7/nf2
   (the thermal-shutdown sense/reference chain is untouched by the overlay).
-- **PDK**: sky130A @ open_pdks `{base['pdk']['installed_commit']}` (pin match:
-  {base['pdk']['installed_commit'] == base['pdk']['pinned_commit']})
+- **PDK**: submitter-resolved pin: sky130A @ open_pdks `{base['pdk']['installed_commit']}` (matches
+  the pin: {base['pdk']['installed_commit'] == base['pdk']['pinned_commit']}). **Executed worker PDK: UNVERIFIED for this record.** The committed
+  thermal point records keep the batch job id, provider and runner-compatibility state but not
+  the worker's `pdk_stamp_comparison` / PDK stamp, and no worker report was retained for these
+  jobs. The sibling iq / current-limit legs of the same campaign, submitted through the same
+  fleet, reported `pdk_stamp_comparison.status` = mismatch with executed
+  stamp `open_pdks f6eeac7d…` (see their records); whether the thermal jobs ran on that
+  revision or on the pin is not established here, so applicability of these thermal numbers to
+  the production pin is unverified.
 - **Tools**: remote executor engines (ngspice `{base['tools']['ngspice'].split()[0]}`);
   local netlister {base['tools']['xschem']}; declared baseline ngspice 42 / xschem 3.4.4
   (drifted, recorded not gated)

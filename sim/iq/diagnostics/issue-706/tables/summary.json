@@ -13,6 +13,130 @@
    ]
   },
   "n_corners": 45,
+  "paired": {
+   "base": {
+    "ilim_knee_ma": {
+     "max": [
+      193.8165,
+      "ss_-40c_3.63v"
+     ],
+     "min": [
+      74.62728,
+      "ff_125c_2.97v"
+     ]
+    },
+    "ilim_short_ma": {
+     "max": [
+      231.6702,
+      "ss_-40c_3.63v"
+     ],
+     "min": [
+      97.70983,
+      "ff_125c_2.97v"
+     ]
+    },
+    "ishort_ripple_pct": {
+     "max": [
+      0.1233844161185457,
+      "ff_125c_2.97v"
+     ],
+     "min": [
+      0.013809472434988238,
+      "ss_-40c_3.63v"
+     ]
+    },
+    "n_valid": 41,
+    "solver_invalid": [
+     {
+      "corner": "tt_27c_3.63v",
+      "ilim_knee_ma": 144.6854,
+      "ilim_short_ma": 182.235
+     },
+     {
+      "corner": "ff_27c_3.63v",
+      "ilim_knee_ma": 112.6339,
+      "ilim_short_ma": 160.5477
+     },
+     {
+      "corner": "fs_27c_3.63v",
+      "ilim_knee_ma": 150.6273,
+      "ilim_short_ma": 189.61079999999998
+     },
+     {
+      "corner": "fs_125c_3.63v",
+      "ilim_knee_ma": 136.2606,
+      "ilim_short_ma": 170.3159
+     }
+    ]
+   },
+   "cand": {
+    "ilim_knee_ma": {
+     "max": [
+      189.98409999999998,
+      "ss_125c_3.63v"
+     ],
+     "min": [
+      71.79562,
+      "ff_-40c_2.97v"
+     ]
+    },
+    "ilim_short_ma": {
+     "max": [
+      228.8662,
+      "ss_125c_2.97v"
+     ],
+     "min": [
+      94.46668,
+      "fs_-40c_2.97v"
+     ]
+    },
+    "ishort_ripple_pct": {
+     "max": [
+      0.12251565477810039,
+      "fs_-40c_3.30v"
+     ],
+     "min": [
+      0.006115727028886433,
+      "ss_125c_2.97v"
+     ]
+    },
+    "n_valid": 43,
+    "solver_invalid": [
+     {
+      "corner": "ff_27c_3.30v",
+      "ilim_knee_ma": 99.69981,
+      "ilim_short_ma": 131.3005
+     },
+     {
+      "corner": "fs_-40c_3.63v",
+      "ilim_knee_ma": 73.87331,
+      "ilim_short_ma": 102.8216
+     }
+    ]
+   },
+   "knee_change_max": {
+    "corner": "sf_125c_2.97v",
+    "knee_base_ma": 95.53986,
+    "knee_cand_ma": 175.8609,
+    "knee_pct": 84.07071142871673,
+    "short_base_ma": 120.14460000000001,
+    "short_cand_ma": 218.4229,
+    "short_pct": 81.80001431608244
+   },
+   "knee_change_min": {
+    "corner": "fs_-40c_3.30v",
+    "knee_base_ma": 137.9795,
+    "knee_cand_ma": 73.68798,
+    "knee_pct": -46.59497968901177,
+    "short_base_ma": 171.78570000000002,
+    "short_cand_ma": 96.19999999999999,
+    "short_pct": -43.99999534303497
+   },
+   "knee_note": "knee = forced-output current sampled at Vout = 1.75 V; it is a proxy for engagement current, not a measured engagement point",
+   "n_knee_decrease": 18,
+   "n_knee_increase": 21,
+   "n_pairs_both_valid": 39
+  },
   "solver_diag_base": [
    [
     "tt_27c_3.63v",
@@ -83,17 +207,102 @@
    ]
   },
   "n_corners": 45,
-  "resolution_note": "meas cards print 6 significant digits (~1e-10 A quantum at 3e-5 A); ngspice solver tolerances are the defaults (reltol 1e-3, abstol 1e-12 A, vntol 1e-6 V; no override in deck or sim/spiceinit), giving a ~reltol*|I| = 0.03 uA band at the 30 uA bound; a margin is called resolved only when > 0.1 uA (3x band + print quantum), never from the last printed digit",
+  "paired": {
+   "base_failing_corner_deltas_full_load_ua": {
+    "ff_-40c_3.63v": -2.3999999999996255,
+    "ff_125c_3.63v": -0.6999999999993136,
+    "ff_27c_3.63v": -1.8999999999991246,
+    "fs_-40c_3.63v": -2.900000000000123,
+    "fs_27c_3.63v": -2.29999999999675
+   },
+   "base_ir_set_50ma": {
+    "max": [
+     2.483969e-06,
+     "sf_27c_3.63v"
+    ],
+    "min": [
+     1.728345e-06,
+     "fs_-40c_2.97v"
+    ]
+   },
+   "base_tail_i_set_50ma": {
+    "max": [
+     4.061462e-06,
+     "sf_27c_3.63v"
+    ],
+    "min": [
+     2.399473e-06,
+     "fs_-40c_2.97v"
+    ]
+   },
+   "cand_ir_set_50ma": {
+    "max": [
+     1.001947e-06,
+     "sf_125c_3.63v"
+    ],
+    "min": [
+     4.861371e-07,
+     "fs_-40c_2.97v"
+    ]
+   },
+   "cand_tail_i_set_50ma": {
+    "max": [
+     2.373332e-06,
+     "sf_125c_3.63v"
+    ],
+    "min": [
+     1.359069e-06,
+     "fs_-40c_2.97v"
+    ]
+   },
+   "delta_full_load_ua": {
+    "largest_cut": [
+     -3.699999999995377,
+     "ss_-40c_3.63v"
+    ],
+    "largest_increase": [
+     0.8999999999981227,
+     "ff_125c_2.97v"
+    ]
+   },
+   "delta_no_load_ua": {
+    "largest_cut": [
+     -3.6961999999999993,
+     "ss_-40c_3.63v"
+    ],
+    "largest_increase": [
+     0.9297000000000004,
+     "ff_125c_2.97v"
+    ]
+   },
+   "n_valid": {
+    "base": 40,
+    "cand": 45
+   }
+  },
+  "resolution": {
+   "full_load_print_quantum_ua": 0.1,
+   "print_note": "the full-load meas card prints the ~0.05 A supply current with 6 significant digits (last digit 1e-7 A = 0.1 uA); the manifest subtracts the ideal 0.05 A load, which does not refine that resolution",
+   "solver_note": "a convergence setting is not an error bound on the difference of two near-equal currents; no precision/tolerance comparison was run, so strict-bound compliance at a corner whose margin is within the print quantum is unresolved and no margin is called solver-resolved",
+   "solver_settings": {
+    "abstol_a": 1e-12,
+    "reltol": 0.001,
+    "source": "ngspice defaults; no override in deck or sim/spiceinit",
+    "vntol_v": 1e-06
+   }
+  },
   "worst_margin": {
    "base": {
     "corner": "ff_-40c_3.63v",
+    "exceeds_print_quantum": false,
     "margin_ua": -1.299999999997997,
-    "resolved": false
+    "solver_resolved": null
    },
    "cand": {
     "corner": "ff_125c_3.63v",
+    "exceeds_print_quantum": false,
     "margin_ua": 4.693134769695462e-12,
-    "resolved": false
+    "solver_resolved": null
    }
   }
  },

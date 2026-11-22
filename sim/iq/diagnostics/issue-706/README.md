@@ -37,7 +37,15 @@ grid was launched; the only local runs are the single-corner syntax probes in
 - **Invariant check**: `check_candidate` passed with 0 problems on every leg of
   every bench. The candidate's one clamp-visible change is XM_CLP's gate
   BIASP → PBR.
-- **PDK**: sky130A @ open_pdks `c6d73a35` — matches `sim/pdk.json` pin.
+- **PDK**: two different statements, both true. The *submitter* resolved sky130A @ open_pdks
+  `c6d73a35` (matches the `sim/pdk.json` pin). The *batch workers* reported a different
+  revision: in all 18 iq/clamp reports (`runs/{iq,cl}-{base,cand}/klt-out/*/report.json`)
+  `environment.remote.worker_environment.pdk_stamp_comparison.status` is **`mismatch`** and the
+  executed stamp is `open_pdks f6eeac7d…` (the 2 `cl-pair-*` reports say the same), while the
+  top-level `models_lib_comparison` is `match`. Readers must judge applicability to the
+  production pin themselves; no result here is claimed to have run on `c6d73a35`. For the
+  **thermal** legs the committed point records omit the worker stamp, so the executed thermal
+  revision is **unverified**.
 - **#467 (bias re-topology)**: still `loom:operator`, **not landed** as of
   this campaign — no pairs need repeating yet. If it lands before #702's
   review, the affected pairs (bias-sensitive: Iq and the I_R column of the
@@ -53,37 +61,52 @@ grid was launched; the only local runs are the single-corner syntax probes in
 - **Production FAILS 5 corners**, all 3.63 V at full load:
   `ff_-40c_3.63v` (31.3 µA), `ff_27c_3.63v`, `ff_125c_3.63v` (30.7 µA),
   `fs_-40c_3.63v`, `fs_27c_3.63v` (30.2–31.3 µA range).
-- **rev2 passes all 45**; per-corner ΔIq is −3.7…+0.9 µA (largest cuts exactly
-  at production's failing `ff`/`fs` 3.63 V corners; small increases at some
-  `tt`/`ss` 125 °C corners, where production was already ~4 µA inside the
-  bound).
-- **ff/125 °C/3.63 V (the AC's named row)**: production 15.38 / **30.70 µA**
-  (FAIL, resolved exceedance); rev2 14.61 / **29.999999999995 µA** — raw card
-  `-0.05003` A (6 sig. digits), derived value coincides with the bound at
-  print resolution and the ~0.03 µA solver band (default reltol 1e-3) straddles
-  it: **positive margin is NOT resolved**. The strict-bound PASS there is a
-  floating-point inequality, not evidence of margin (full statement in the iq
-  record; resolution rule: margin called resolved only when > 0.1 µA = 3x
-  solver band + print quantum, never from the last printed digit).
+- **rev2 passes all 45** (harness grade); per-corner ΔIq (full load) is −3.7…+0.9 µA, joined by
+  corner in `tables/iq_pair.csv`. The **largest cut is −3.7 µA at `ss_-40c_3.63v`, a corner
+  production already passes**; at production's five failing corners the cuts are only
+  −0.7…−2.9 µA (`summary.json` → `iq.paired`). The largest increase is +0.9 µA at
+  `ff_125c_2.97v`.
+- **Resolution (printed and solver reported separately).** The full-load card prints the
+  ~0.05 A supply current with 6 significant digits (`iq_full_load_raw = -5.00300e-02` A at
+  `ff_125c_3.63v`), so the last printed digit is 1e-7 A = **0.1 µA**; the manifest's
+  subtraction of the ideal 0.05 A load does not refine that. Solver settings are ngspice's
+  defaults (reltol 1e-3, abstol 1e-12 A, vntol 1e-6 V) and a convergence setting alone is not
+  an error bound on that difference; no precision/tolerance comparison was run.
+- **ff/125 °C/3.63 V (the AC's named row)**: production 15.38 / **30.70 µA** (FAIL; the 0.7 µA
+  exceedance is larger than the 0.1 µA print quantum); rev2 14.61 / **29.999999999995 µA** —
+  the harness grade is PASS, but the margin (~5e-12 µA) is far inside the print quantum, so
+  **strict-bound compliance at this corner is unresolved** and no solver-resolved margin is
+  claimed. The PASS is a floating-point inequality, not evidence of margin.
 
 ### Current limit (row window TBD per spec — values reported, never graded against an invented window)
 
-- 45/45 corners per variant, forced-output DC curve + short-circuit hold,
-  including the **Vin_max (3.63 V) short at every process/temperature**.
-- **Non-engagement ≤ 50 mA holds for both DUTs at all 45 corners**:
-  `vout_50ma` stays 1.7978–1.7991 V (production) / 1.8007–1.8043 V (rev2),
-  both inside the ratified 1.764–1.836 V output window; minimum forced-output
-  knee current 74.6 mA (production) / 71.8 mA (rev2) — ≥ 21.8 mA headroom.
-- **Reported window values**: `ilim_short` 97.7–231.7 mA (production) /
-  94.5–228.9 mA (rev2); short sustained the full 2 ms hold everywhere; ripple
-  < 0.1 %. rev2's trip sits ~2–3 % below production's per corner (overlay
-  preserves, not re-targets, the 3.3 V trip point).
-- **Solver-invalid corners, reported separately**: production 4 — `tt_27c_3.63v`,
-  `ff_27c_3.63v`, `fs_27c_3.63v`, `fs_125c_3.63v` (all Vin_max; reproduces
-  #647's known baseline diagnostics exactly); rev2 2 — `fs_-40c_3.63v`
-  (Vin_max, same class) and `ff_27c_3.30v` (**not** Vin_max — new, see
-  classification). All six returned healthy values (160–195 mA); the #171 gate
-  flags them, their numbers are retained but not counted harness-clean.
+- 45 corner keys per variant, forced-output DC curve + short-circuit hold, including the
+  **Vin_max (3.63 V) short at every process/temperature**. Valid (solver-gate-passing)
+  corners from `base_pass`/`cand_pass`: **41/45 production, 43/45 rev2**; paired statistics use
+  the 39 corners where both passed.
+- **Non-engagement ≤ 50 mA** holds on valid corners for both DUTs: `vout_50ma` 1.7978–1.7991 V
+  (production) / 1.8007–1.8044 V (rev2), inside the ratified 1.764–1.836 V window; minimum
+  forced-output knee 74.6 mA (production, `ff_125c_2.97v`) / 71.8 mA (rev2, `ff_-40c_2.97v`).
+  *The knee is the forced-output current sampled at Vout = 1.75 V; it is a proxy for
+  engagement current, not a measured engagement point.*
+- **The clamp moves substantially across PVT — it is not a uniform 2–3 % shift.** Paired
+  rev2/production − 1 on the knee over the 39 paired corners spans **−46.6 %** (`fs_-40c_3.30v`:
+  137.980 → 73.688 mA; short −44.0 %) to **+84.1 %** (`sf_125c_2.97v`: 95.540 → 175.861 mA;
+  short +81.8 %); the knee falls at 18 and rises at 21 corners. The overlay's clamp-visible
+  change (XM_CLP gate BIASP → PBR) tracks the measured bias currents (I_R 1.73–2.48 µA
+  production vs 0.49–1.00 µA rev2, `tables/ir_spread.csv`), so the adoption trade-off should
+  be read from the paired per-corner changes. The clamp window stays TBD; nothing is graded
+  against an invented window.
+- **Reported window values (valid corners)**: `ilim_short` 97.7–231.7 mA (production) /
+  94.5–228.9 mA (rev2); short sustained the full 2 ms hold everywhere; peak ripple on a valid
+  corner 0.123384 % (production, `ff_125c_2.97v`) / 0.122516 % (rev2, `fs_-40c_3.30v`).
+- **Solver-invalid corners, reported separately (not valid)**: production 4 — `tt_27c_3.63v`,
+  `ff_27c_3.63v`, `fs_27c_3.63v`, `fs_125c_3.63v` (all Vin_max; reproduces #647's baseline
+  diagnostics; retained shorts 160.5–189.6 mA); rev2 2 — `fs_-40c_3.63v` (Vin_max; retained
+  short **102.8 mA**, knee 73.9 mA) and `ff_27c_3.30v` (**not** Vin_max; retained short
+  **131.3 mA**, knee 99.7 mA). Both rev2 diagnostic keys are new relative to production, and
+  their retained values are **outside** the 160–195 mA family of the other solver-invalid
+  corners; they are retained but not counted valid.
 - **Batch adapter disclosure (#648)**: the three chained current-limit legs ran
   through `batch_current_limit.py`, imported verbatim from PR #648 head
   `befb83fb` (**unmerged**; `loom:merge-conflict` + `loom:changes-requested`)
@@ -122,16 +145,20 @@ all 45 corner keys):
 | I_R (bias set) | 1.73–2.48 µA | 0.49–1.00 µA | prod peak `sf_27c_3.63v` 2.48 µA; rev2 peak `sf_125c_3.63v` 1.00 µA |
 | EA tail | 2.40–4.06 µA | 1.36–2.37 µA | 3.63 V column, both DUTs |
 
-The production DUT's worst Iq corners (`ff`/`fs` at 3.63 V, full load) are
-exactly where its VIN-scaled bias/tail peaks; rev2's Iq gain tracks its tail
-cut at the same corner keys. Classification of every limitation found:
+Joined by corner, production's I_R and tail maxima are both at **`sf_27c_3.63v`**
+(2.48 µA / 4.06 µA), which is not one of its failing Iq corners; rev2's maxima are at
+`sf_125c_3.63v` (1.00 µA / 2.37 µA). The production Iq failures are in the 3.63 V column at
+full load (`ff`/`fs`), and rev2's largest Iq cut (−3.7 µA) is at `ss_-40c_3.63v`, so the Iq
+gain is attributed to the lower tail/bias level across the 3.63 V column, not to a match with
+the I_R peak. Classification of every limitation found:
 
 | Limitation | Class | Note |
 |---|---|---|
 | Iq > 30 µA at 3.63 V full load (5 corners) | **inherited (production)** | fixed by rev2 — the campaign's only spec-row violation among the three benches, removed |
-| Iq margin at ff/125 °C/3.63 V unresolved at the bound | shared | measurement-resolution statement; production *fails* that corner (30.7 µA), rev2 sits at 29.9999… µA |
+| Iq strict-bound compliance at ff/125 °C/3.63 V unresolved | shared | printed resolution 0.1 µA at full load; production *fails* that corner (30.7 µA), rev2 sits at 29.9999… µA (margin ≪ print quantum; no solver-resolved margin claimed) |
 | Clamp solver-diag at Vin_max (prod 4, rev2 1 of them) | **inherited** | reproduces #647 exactly; #171 gate working as designed |
-| Clamp solver-diag `ff_27c_3.30v` (rev2 only, not Vin_max) | **introduced** | convergence flag only; measured values in-family (131.3 mA short, 99.7 mA knee vs rev2's own ff_27c neighbors); watch it if rev2 is adopted |
+| Clamp solver-diag `ff_27c_3.30v` and `fs_-40c_3.63v` (rev2 only; the first not Vin_max) | **introduced** | retained values (131.3 mA short at `ff_27c_3.30v`; 102.8 mA short at `fs_-40c_3.63v`) fall outside the 160–195 mA family of the other solver-invalid corners; not counted valid |
+| Clamp trip moves −46.6 % … +84.1 % (paired knee) across PVT | **introduced** | not a uniform shift; window stays TBD |
 | Thermal nominal offsets (trip >150, hyst <15) | **inherited** | identical on both DUTs; binding sign bound passes everywhere |
 | >125 °C model extrapolation (thermal bench) | **inherited** | DR-005/DR-004 caveat, unchanged |
 
@@ -140,7 +167,7 @@ cut at the same corner keys. Classification of every limitation found:
 | Leg | Expected keys | Attempted | Graded/valid | Gaps |
 |---|---|---|---|---|
 | iq base / cand | 45 / 45 | 45 / 45 | 45 / 45 | none |
-| clamp base / cand | 45 / 45 | 45 / 45 | 45 / 45 (4+2 solver-diag listed separately) | none |
+| clamp base / cand | 45 / 45 | 45 / 45 | 41 / 43 valid (4 + 2 solver-diag corners listed separately, not valid) | none |
 | thermal base / cand | 15 / 15 | 15 / 15 | 15 / 15, dependent rounds complete | none |
 
 Deviations, all evidence-preserving: (1) first chained clamp submission
@@ -158,11 +185,12 @@ record (`20261121-092243`) is a separate append-only mint.
 
 On the bias/protection side, rev2 **removes the only measured spec-row
 violation** (production Iq at 3.63 V full load) and keeps the protection
-benches within noise of production: clamp never engages ≤ 50 mA with ≥ 21.8 mA
-knee headroom, survives the Vin_max short everywhere, and thermal trip/reset
-are unchanged within one bisection step. The costs are one new (non-Vin_max)
-solver-diagnostic corner in the clamp bench and an Iq that sits exactly at the
-30 µA bound at ff/125 °C/3.63 V — a pass without resolved margin. Dynamics
+benches: clamp never engages ≤ 50 mA on valid corners (forced-output knee ≥ 71.8 mA) and
+thermal trip/reset are unchanged within one bisection step. **The clamp trip itself is not
+within noise of production**: the paired knee moves −46.6 % … +84.1 % across PVT. The costs are
+two new solver-diagnostic corners in the clamp bench (one non-Vin_max) and an Iq whose strict
+bound compliance is unresolved at ff/125 °C/3.63 V (harness PASS without resolved margin).
+The executed worker PDK revision differs from the submitter's pin (`mismatch`, above). Dynamics
 (load transient, loop gain) are #704's evidence, not this campaign's. This
 characterization takes no position on adoption; it supplies the paired
 records above.

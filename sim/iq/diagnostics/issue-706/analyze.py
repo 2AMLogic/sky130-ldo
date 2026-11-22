@@ -25,12 +25,19 @@ TABLES = HERE / "tables"
 PROCS = ["tt", "ss", "ff", "sf", "fs"]
 TEMPS = [-40.0, 27.0, 125.0]
 VSUPS = [2.97, 3.30, 3.63]
-# ngspice defaults (no .options override in the deck or sim/spiceinit):
-# reltol=1e-3, abstol=1e-12 A, vntol=1e-6 V; meas cards print 6 significant
-# digits. At the 30 uA bound the solver band is ~reltol*30uA = 0.03 uA; a
-# margin is only called resolved when it exceeds 3x that band plus the print
-# quantum of the last digit (~1e-10 A) -- i.e. > 0.1 uA.
-IQ_RESOLUTION_UA = 0.1
+# Resolution of the graded Iq numbers. The full-load figure is the supply
+# current at a ~0.05 A load: the meas card prints it with 6 significant digits
+# (e.g. -5.00300e-02 A), so the last printed digit is 1e-7 A = 0.1 uA, and the
+# manifest then subtracts the ideal 0.05 A load. Subtracting an exact constant
+# does not improve the resolution: the derived uA value is only known to the
+# print quantum of the raw card, i.e. 0.1 uA (not 1e-10 A). The no-load card is
+# ~1.5e-5 A at 6 digits (~1e-11 A). The solver settings (ngspice defaults,
+# reltol 1e-3, abstol 1e-12 A, vntol 1e-6 V; no override in the deck or
+# sim/spiceinit) are reported separately: a convergence setting is NOT an error
+# bound on the difference of two near-equal currents, and this campaign ran no
+# precision/tolerance comparison, so no margin is called solver-resolved.
+FULL_LOAD_PRINT_QUANTUM_UA = 0.1
+IQ_RESOLUTION_UA = FULL_LOAD_PRINT_QUANTUM_UA
 
 
 def corner_key(proc, temp, vsup):
@@ -155,6 +162,64 @@ def clamp_table():
                              jobs_cand=c_jobs)
 
 
+def _f(x):
+    return None if x in (None, "") else float(x)
+
+
+def clamp_paired(rows):
+    """Paired knee/short changes on corners where BOTH runs passed the solver
+    gate, per-leg valid-corner ranges and counts, from the clamp_pair rows."""
+    valid = [r for r in rows if r["base_pass"] in (True, "True") and r["cand_pass"] in (True, "True")]
+    chg = []
+    for r in valid:
+        kb, kc = _f(r["base_ilim_knee_ma"]), _f(r["cand_ilim_knee_ma"])
+        sb, sc = _f(r["base_ilim_short_ma"]), _f(r["cand_ilim_short_ma"])
+        chg.append({"corner": r["corner"], "knee_pct": 100 * (kc / kb - 1),
+                    "short_pct": 100 * (sc / sb - 1), "knee_base_ma": kb, "knee_cand_ma": kc,
+                    "short_base_ma": sb, "short_cand_ma": sc})
+    lo = min(chg, key=lambda c: c["knee_pct"])
+    hi = max(chg, key=lambda c: c["knee_pct"])
+    out = {"n_pairs_both_valid": len(valid),
+           "knee_change_min": lo, "knee_change_max": hi,
+           "n_knee_decrease": sum(c["knee_pct"] < 0 for c in chg),
+           "n_knee_increase": sum(c["knee_pct"] > 0 for c in chg),
+           "knee_note": ("knee = forced-output current sampled at Vout = 1.75 V; it is a "
+                         "proxy for engagement current, not a measured engagement point")}
+    for tag in ("base", "cand"):
+        v = [r for r in rows if r[f"{tag}_pass"] in (True, "True")]
+        out[tag] = {"n_valid": len(v)}
+        for m in ("ilim_short_ma", "ilim_knee_ma", "ishort_ripple_pct"):
+            vals = [(_f(r[f"{tag}_{m}"]), r["corner"]) for r in v]
+            out[tag][m] = {"min": min(vals), "max": max(vals)}
+        out[tag]["solver_invalid"] = [
+            {"corner": r["corner"], "ilim_short_ma": _f(r[f"{tag}_ilim_short_ma"]),
+             "ilim_knee_ma": _f(r[f"{tag}_ilim_knee_ma"])}
+            for r in rows if r[f"{tag}_pass"] not in (True, "True")]
+    return out
+
+
+def iq_paired(iq_rows, ir_rows):
+    """Worst conditions from the joined per-corner rows."""
+    def ext(rows, key, fn):
+        vals = [(r[key], r["corner"]) for r in rows if r.get(key) is not None]
+        return fn(vals)
+    out = {
+        "n_valid": {"base": sum(r["base_pass"] is True for r in iq_rows),
+                    "cand": sum(r["cand_pass"] is True for r in iq_rows)},
+        "delta_full_load_ua": {"largest_cut": ext(iq_rows, "delta_full_load_ua", min),
+                               "largest_increase": ext(iq_rows, "delta_full_load_ua", max)},
+        "delta_no_load_ua": {"largest_cut": ext(iq_rows, "delta_no_load_ua", min),
+                             "largest_increase": ext(iq_rows, "delta_no_load_ua", max)},
+        "base_failing_corner_deltas_full_load_ua": {
+            r["corner"]: r["delta_full_load_ua"] for r in iq_rows if r["base_pass"] is False},
+    }
+    for tag in ("base", "cand"):
+        for q in ("ir_set_50ma", "tail_i_set_50ma"):
+            vals = [(_f(r[f"{tag}_{q}"]), r["corner"]) for r in ir_rows]
+            out[f"{tag}_{q}"] = {"min": min(vals), "max": max(vals)}
+    return out
+
+
 def write_csv(path, rows):
     path.parent.mkdir(parents=True, exist_ok=True)
     if not rows:
@@ -203,6 +268,7 @@ def main():
                 or "cl_cmp" in k or "i_at_" in k} for r in cl_rows]
     write_csv(TABLES / "ir_spread.csv", ir_rows)
 
+    iq_pairs = iq_paired(iq_rows, ir_rows)
     summary = {
         "iq": {
             "n_corners": len(iq_rows),
@@ -210,21 +276,33 @@ def main():
             "cand_fails": iq_sum["fail_cand"],
             "worst_margin": {
                 v: {"corner": iq_sum["worst"][v][1], "margin_ua": iq_sum["worst"][v][0],
-                    "resolved": iq_sum["worst"][v][0] > IQ_RESOLUTION_UA}
+                    "exceeds_print_quantum": iq_sum["worst"][v][0] > IQ_RESOLUTION_UA,
+                    "solver_resolved": None}
                 for v in ("base", "cand") if iq_sum["worst"][v] is not None
             },
-            "resolution_note": (
-                "meas cards print 6 significant digits (~1e-10 A quantum at 3e-5 A); ngspice "
-                "solver tolerances are the defaults (reltol 1e-3, abstol 1e-12 A, vntol 1e-6 V; "
-                "no override in deck or sim/spiceinit), giving a ~reltol*|I| = 0.03 uA band at "
-                "the 30 uA bound; a margin is called resolved only when > 0.1 uA (3x band + "
-                "print quantum), never from the last printed digit"),
+            "resolution": {
+                "full_load_print_quantum_ua": FULL_LOAD_PRINT_QUANTUM_UA,
+                "print_note": (
+                    "the full-load meas card prints the ~0.05 A supply current with 6 "
+                    "significant digits (last digit 1e-7 A = 0.1 uA); the manifest subtracts "
+                    "the ideal 0.05 A load, which does not refine that resolution"),
+                "solver_settings": {"reltol": 1e-3, "abstol_a": 1e-12, "vntol_v": 1e-6,
+                                    "source": "ngspice defaults; no override in deck or "
+                                              "sim/spiceinit"},
+                "solver_note": (
+                    "a convergence setting is not an error bound on the difference of two "
+                    "near-equal currents; no precision/tolerance comparison was run, so "
+                    "strict-bound compliance at a corner whose margin is within the print "
+                    "quantum is unresolved and no margin is called solver-resolved"),
+            },
+            "paired": iq_pairs,
             "jobs": {"base": iq_sum["jobs_base"], "cand": iq_sum["jobs_cand"]},
         },
         "clamp": {
             "n_corners": len(cl_rows),
             "solver_diag_base": cl_sum["diag_base"],
             "solver_diag_cand": cl_sum["diag_cand"],
+            "paired": clamp_paired(cl_rows),
             "window_tbd_note": ("the current-limit window stays TBD per spec/target-spec.md; "
                                 "values are reported, not graded against an invented window"),
             "jobs": {"base": cl_sum["jobs_base"], "cand": cl_sum["jobs_cand"]},
