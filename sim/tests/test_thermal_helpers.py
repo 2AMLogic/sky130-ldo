@@ -1,5 +1,6 @@
 """PDK-free tests for the shared thermal trip-search helpers (issue #297)."""
 
+import json
 import sys
 import tempfile
 import unittest
@@ -100,6 +101,46 @@ class TestBisect(unittest.TestCase):
             rc.bisect(lambda x: x <= 200, 0.0, 100.0, 1.0, False)
 
 
+class TestColdEnableTemps(unittest.TestCase):
+    """The shared cold-start / EN re-enable schedule (issue #715)."""
+
+    def test_literal_schedule_from_the_541_fixture_brackets(self):
+        # midpoints of the RESET/TRIP fixture in test_batch_thermal_staircase_541.py
+        self.assertEqual(rc.cold_enable_temps(159.15625, 172.15625),
+                         [151, 158, 161, 166, 170, 173, 180])
+
+    def test_narrow_window_two_offsets_round_together(self):
+        # reset 160.0 / trip 163.4: `reset_mid + 2` (162.0) and the window
+        # middle (161.7) both round to 162 C, so the schedule drops to six points.
+        self.assertEqual(rc.cold_enable_temps(160.0, 163.4), [152, 159, 161, 162, 164, 171])
+
+    def test_recorded_temps_replay_from_committed_brackets(self):
+        """Every committed cold/en temperature set reproduces from its own
+        record's brackets through the shared schedule (append-only evidence:
+        this can only cover more pairs as records accrue)."""
+        n = 0
+        paths = sorted((SIM / "thermal" / "hysteresis").glob("*/result*.json"))
+        paths += sorted((SIM / "thermal-regen-cmp" / "records").glob("*/result*.json"))
+        for path in paths:
+            d = json.loads(path.read_text())
+            cases = d["corners"].items() if "corners" in d else [("tt", d)]  # flat local records
+            for name, c in cases:
+                r, t = c.get("t_reset_falling_c", {}), c.get("t_trip_rising_c", {})
+                cold = c.get("cold_start_by_temp", {})
+                en = c.get("en_reenable_by_temp", c.get("en_reenable_from_tripped_by_temp", {}))
+                if "bracket" not in r or "bracket" not in t or not (cold or en):
+                    continue
+                n += 1
+                want = set(rc.cold_enable_temps(sum(r["bracket"]) / 2, sum(t["bracket"]) / 2))
+                got = {float(k) for k in cold} | {float(k) for k in en}
+                if name.split("_")[0] == "ff":
+                    # ff's lowered 180 C bound: points above it are never run (issue #231)
+                    self.assertLessEqual(got, want, f"{path.name} {name}")
+                else:
+                    self.assertEqual(got, want, f"{path.name} {name}")
+        self.assertGreaterEqual(n, 34)  # 34 verified pairs at issue #715 filing
+
+
 class TestReadDat(unittest.TestCase):
     def _read(self, rows, names):
         with tempfile.TemporaryDirectory() as d:
@@ -132,11 +173,13 @@ class TestRunnerWiring(unittest.TestCase):
 
     def test_no_local_copies(self):
         for m in (self.hyst, self.demo):
-            for fn in ("read_dat", "at", "tripped", "bisect"):
+            for fn in ("read_dat", "at", "tripped", "bisect", "cold_enable_temps"):
                 self.assertIs(getattr(m, fn), getattr(rc, fn))
             # issue #597: the Runner shell is shared too, and no local PROGRESS_RE
             self.assertTrue(issubclass(m.Runner, rc.ThermalRunner))
             self.assertFalse(hasattr(m, "PROGRESS_RE"))
+        # issue #715: the batch planner shares the schedule too
+        self.assertIs(bts.cold_enable_temps, rc.cold_enable_temps)
 
     def test_hysteresis_instants_single_source(self):
         names = ("T_COLD", "T_FORCED", "T_HOLD", "T_EN_LOW", "T_REEN")

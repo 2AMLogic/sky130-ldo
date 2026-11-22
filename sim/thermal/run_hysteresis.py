@@ -36,8 +36,9 @@ fallback: a capacity refusal is recorded in refusals.jsonl and the run exits
 non-zero.  `--backend local` runs the original strictly serial flow and is
 accepted for exactly one corner (host rules: no local grids).  Once a corner's
 two brackets are recorded, one more batch set carries its cold-start, EN re-enable
-(DR-005) and disturbance-amplitude points (batch_thermal_staircase.dependent_points,
-the same point formula as the local flow), as further append-only point records.
+(DR-005) and disturbance-amplitude points (batch_thermal_staircase.dependent_points
+over the shared _record_common.cold_enable_temps schedule), as further append-only
+point records.
 
 Usage:
   python3 sim/thermal/run_hysteresis.py [--corners tt:3.30,...] [--resume DIR] [--tag TAG]
@@ -61,7 +62,7 @@ HERE = Path(__file__).resolve().parent
 REPO_ROOT = HERE.parent.parent
 sys.path.insert(0, str(REPO_ROOT / "sim" / "bin"))
 from _record_common import (  # noqa: E402
-    assert_klt_read_the_pinned_pdk, at, bisect, klt_binary, load_corner_run_module,
+    assert_klt_read_the_pinned_pdk, at, bisect, cold_enable_temps, klt_binary, load_corner_run_module,
     read_dat,  # noqa: F401 -- pinned shared by sim/tests/test_thermal_helpers.py
     thermal_deck_frame, tripped, write_new_text,
 )
@@ -494,8 +495,7 @@ def main() -> int:
         robust[f"untripped_held_{amp*1e6:+g}uA_at_{trip_hi:g}C"] = r.untripped_held(trip_hi, amp)
 
     print("[4] cold start and EN disable/re-enable inside and outside the window", flush=True)
-    pts = sorted({round(x) for x in (reset_mid - 8, reset_mid - 1, reset_mid + 2, (reset_mid + trip_mid) / 2,
-                                     trip_mid - 2, trip_mid + 1, trip_mid + 8)})
+    pts = cold_enable_temps(reset_mid, trip_mid)
     cold = {T: r.run("cold", T) for T in pts}
     en = {T: r.run("en", T, IX_HOT, "0") for T in pts}
 
