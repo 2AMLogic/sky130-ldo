@@ -673,8 +673,15 @@ class BatchHarness(unittest.TestCase):
         self.addCleanup(shutil.rmtree, self.tmp, True)
         sim = self.tmp / "sim"
         sim.mkdir()
-        shutil.copytree(SIM_DIR / self.SLUG, sim / self.SLUG,
-                        ignore=shutil.ignore_patterns("records", "corners", "netlist-snapshots"))
+        # stage only the runner's inputs (experiment.json + testbench): the
+        # committed outputs (records/corners/netlist-snapshots) are excluded
+        # as before, and never copying the slug's diagnostics archives keeps
+        # fixture setup O(inputs), not O(diagnostic history)
+        exp = sim / self.SLUG
+        exp.mkdir()
+        shutil.copyfile(SIM_DIR / self.SLUG / "experiment.json",
+                        exp / "experiment.json")
+        shutil.copytree(SIM_DIR / self.SLUG / "testbench", exp / "testbench")
         shutil.copyfile(SIM_DIR / "spiceinit", sim / "spiceinit")
         self.pin = corner_run.load_pin()
         pdk_dir = self.tmp / "pdkroot" / "sky130A"
