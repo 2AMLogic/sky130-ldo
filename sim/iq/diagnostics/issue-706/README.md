@@ -109,13 +109,18 @@ grid was launched; the only local runs are the single-corner syntax probes in
   corners; they are retained but not counted valid.
 - **Batch adapter disclosure (#648)**: the three chained current-limit legs ran
   through `batch_current_limit.py`, imported verbatim from PR #648 head
-  `befb83fb` (**unmerged**; `loom:merge-conflict` + `loom:changes-requested`)
-  — main's batch backend has no current-limit entry. One compatibility shim at
-  the call site (`blr._tokens = blr._EXPR.tokenize`; main removed `_tokens`
-  after #648's branch point). Coverage gap: none for this campaign — the
-  adapter ran every leg; the gap is that the *graded* backend path for
-  current-limit does not exist on main, so grading used the campaign's local
-  evaluator over the same manifest expressions and bounds.
+  `befb83fb` (**unmerged at campaign time**; `loom:merge-conflict` +
+  `loom:changes-requested`) — main's batch backend had no current-limit entry
+  then. One compatibility shim at the call site
+  (`blr._tokens = blr._EXPR.tokenize`; main had removed `_tokens` after #648's
+  branch point). Coverage gap at campaign time: none — the adapter ran every
+  leg; the gap was that the *graded* backend path for current-limit did not
+  exist on main, so grading used the campaign's local evaluator over the same
+  manifest expressions and bounds. **Since superseded:** #648 merged
+  (2026-11-22T21:20:53Z), so `sim/bin/batch_current_limit.py` and a
+  `"current-limit"` entry in `sim/bin/_batch_backend.py` now exist on `main`
+  and the shim's premise (`_tokens`) is gone. The local-evaluator grading is a
+  campaign-time condition; #702 may re-grade against the merged backend path.
 
 ### Thermal (DR-005 fault backstop: 150/135 °C nominal, auto-restart, hysteresis positive)
 

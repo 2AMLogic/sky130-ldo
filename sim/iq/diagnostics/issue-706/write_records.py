@@ -150,7 +150,7 @@ def iq_record() -> str:
   vntol {res['solver_settings']['vntol_v']:g} V; no override in the deck or `sim/spiceinit`) are a separate
   matter: {res['solver_note']}. The harness grade is kept as reported (PASS/FAIL columns above).
   Applied: production's worst corner is {wm['base']['corner']} at {wm['base']['margin_ua']:.3f} µA
-  (an exceedance larger than the print quantum). The candidate's worst corner is
+  ({'an exceedance larger than' if wm['base']['exceeds_print_quantum'] else 'a margin within'} the print quantum). The candidate's worst corner is
   {wm['cand']['corner']} at full load, where the derived value is 29.999999999995 µA: the margin
   (~5e-12 µA) is far inside the {res['full_load_print_quantum_ua']} µA print quantum, so **strict-bound compliance is unresolved at this corner**; the
   PASS is a floating-point inequality on the harness grade, not evidence of margin, and no
@@ -216,7 +216,7 @@ def clamp_record() -> str:
   #171 solver-diagnostic gate.
 - **Batch adapter disclosure**: the three chained legs ran as ONE three-step `analysis_steps[]`
   request per supply through `batch_current_limit.py`, imported VERBATIM from PR #648 head
-  `befb83fb` (**unmerged**; main's batch backend has no current-limit entry). One compatibility
+  `befb83fb` (**unmerged at campaign time**; main's batch backend had no current-limit entry then; #648 has since merged, 2026-11-22T21:20:53Z, so the graded backend path now exists on main and this record's local-evaluator grading is a campaign-time condition). One compatibility
   shim at the driver's call site (`blr._tokens = blr._EXPR.tokenize`; main removed `_tokens`
   after #648's branch point). The manifest's ten graded expressions travel verbatim as klt
   derived measurements; read-only extra cards (forced-VOUT dc curve at 0.375/0.75/1.125/1.5/

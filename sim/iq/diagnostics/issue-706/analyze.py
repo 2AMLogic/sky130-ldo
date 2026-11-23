@@ -276,7 +276,7 @@ def main():
             "cand_fails": iq_sum["fail_cand"],
             "worst_margin": {
                 v: {"corner": iq_sum["worst"][v][1], "margin_ua": iq_sum["worst"][v][0],
-                    "exceeds_print_quantum": iq_sum["worst"][v][0] > IQ_RESOLUTION_UA,
+                    "exceeds_print_quantum": abs(iq_sum["worst"][v][0]) > IQ_RESOLUTION_UA,
                     "solver_resolved": None}
                 for v in ("base", "cand") if iq_sum["worst"][v] is not None
             },
