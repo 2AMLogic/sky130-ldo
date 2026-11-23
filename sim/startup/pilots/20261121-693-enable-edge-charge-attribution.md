@@ -181,21 +181,24 @@ record's 10.14 pC at this corner is the same circuit packet, LTE-smeared.)
 
 (*from the leg's graded trace; the aux table's own VOUT column is the same run.)
 
-Sequence at the enable edge, as the dump reads it: EN rises -> the EN-gated returns
-(`AMP_ENN` 2.24 V -> 2 mV within 0.5 us) and PMOS clamps release -> the mirror/amp core
-wakes and `EA_OUT` falls from VIN by ~0.5 V by the trough (~18 us; ~0.9 V by 35 us) (the `M_MIR2` mirror sink and the PB-gated `M_MIRP2`
-branch balancing each other on the ~100 pF-scale pass-gate node) -> `EA_CZ`
-follows `EA_OUT` only through `R_CZ` (~0.3 MOhm: 52 squares of `res_xhigh_po` at the
-divider's ~5.7-6.3 kOhm/sq; tau = R_CZ x C_COMP ~ 45-50 us), so during the dip window `EA_CZ`-VOUT falls by 87.1 mV -> the charge
-C_COMP must displace is 150 pF x 87.1 mV = **13.1 pC**, pulled out of C_out, while M_PASS
-(Vsg still << |Vth|) cannot yet replace it. That is the packet: budget 13.1 pC vs the
+When EN rises, the EN-gated returns (`AMP_ENN` drops from 2.24 V to 2 mV within
+0.5 us) and PMOS clamps release. As the mirror/amp core wakes, the `M_MIR2` mirror
+sink and the PB-gated `M_MIRP2` branch balance at the pass gate. Its voltage,
+`EA_OUT`, falls from VIN by ~0.5 V by the trough (~18 us) and by ~0.9 V by 35 us.
+`EA_CZ` follows `EA_OUT` through `R_CZ` (~300 kΩ at W=0.42, L=52 in the
+[compensation design](../../../design/README.md#compensation-sized-in-25)).
+With `C_COMP` = 150 pF, the nominal time constant is 45 us. During the dip,
+`EA_CZ`−VOUT falls by 87.1 mV. The charge that C_COMP pulls from C_out is
+150 pF x 87.1 mV = **13.1 pC**. M_PASS (Vsg still << |Vth|) cannot yet
+replace it. That is the packet: budget 13.1 pC vs the
 converged measured 12.6 pC (4 %), vs 10.14 pC at fleet-tolerance LTE. The pass device
 begins conducting near the trough; from there the soft-start ramp takes VOUT up and the
 same C_COMP path quietly returns the charge during the rise.
 
-The residual after `C_COMP -> 1f` (0.33 pC, itself C_out-invariant) is the intrinsic
-capacitance of the same node pair (M_PASS gate-drain overlap over its 125 mm-wide stack,
-plus stray device caps) -- same mechanism, one order smaller.
+The residual after `C_COMP -> 1f` (0.33 pC, itself C_out-invariant) is consistent
+with coupling through the `M_PASS` gate-drain overlap and other stray device
+capacitances. Each 100 µm-wide group includes all 25 fingers, so the 50 parallel
+groups give a total gate width of 5 mm. [Pass-device sizing](../../../design/README.md#pass-device-re-size-116dr-011)
 
 ## 4. Design-change screen (circuit route, step 4)
 
