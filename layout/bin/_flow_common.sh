@@ -45,7 +45,7 @@ flow_paths() {
 #
 # Refuse to run without the pinned `klt` build. With no hint the message names
 # layout/bin/setup-venv.sh's default invocation; a hint is printed as a second,
-# indented line (run-ldo-erc-flow.sh needs its own --requirements file).
+# indented line.
 flow_require_klt() {
   local script="$1" klt="$2" hint="${3-}"
   if [[ -x "$klt" ]]; then

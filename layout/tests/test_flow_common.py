@@ -90,16 +90,16 @@ class RequireKltTest(unittest.TestCase):
         )
 
     def test_a_hint_is_printed_as_an_indented_second_line(self):
-        """run-ldo-erc-flow.sh's own --requirements file, byte for byte."""
+        """A caller-supplied setup hint, byte for byte."""
         result = run_snippet(
-            'flow_require_klt run-ldo-erc-flow.sh /nope/klt '
-            '"layout/bin/setup-venv.sh --requirements layout/erc-requirements.txt"'
+            'flow_require_klt run-x-flow.sh /nope/klt '
+            '"layout/bin/setup-venv.sh --force"'
         )
         self.assertEqual(result.returncode, 1)
         self.assertEqual(
             result.stderr,
-            "run-ldo-erc-flow.sh: /nope/klt not found -- run\n"
-            "  layout/bin/setup-venv.sh --requirements layout/erc-requirements.txt\n",
+            "run-x-flow.sh: /nope/klt not found -- run\n"
+            "  layout/bin/setup-venv.sh --force\n",
         )
 
     def test_an_executable_klt_passes_silently(self):

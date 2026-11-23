@@ -159,12 +159,12 @@ def main() -> int:
         except (IndexError, ValueError):
             pass
 
-    # Coupling: the extractor charges adjacent-level overlap between the
-    # plates of one capacitor on top of the recognised MiM device. Inside the
-    # top-plate footprint that is a double count (the MiM model already is
-    # the capacitance there); outside it (unit gaps, plate margins) it is a
-    # real parallel parasitic.
-    stack_coeff = coeff["met3-met4"] + coeff["met4-met5"]
+    # Coupling: klt (klayout-tools#3021, fixed in the pinned build) already
+    # excludes plate overlap inside a recognised MiM's top-plate footprint --
+    # the MiM model is the capacitance there -- so the reported plate-plate
+    # overlap IS the residual parallel parasitic (unit gaps, plate margins).
+    # Builds before the fix reported footprint overlap on top and needed it
+    # subtracted here; the pinned build must not be subtracted twice.
     cap_rows = []
     coupling_rows = []
     for b in caps:
@@ -173,8 +173,7 @@ def main() -> int:
         ext_err = (e["total"] - b["target_f"]) / b["target_f"]
         pair = pairs.get(tuple(sorted((n1, n2))), {"ff": 0.0})
         reported = pair["ff"] * 1e-15
-        double = b["mim_footprint_um2"] * stack_coeff
-        residual = reported - double
+        residual = reported
         inner = b["plates"]["inner"]
         inner_gnd = pex_nets.get(inner, {}).get("capacitance_ff", float("nan")) * 1e-15
         others = {k: v["ff"] for k, v in pairs.items() if inner in k and set(k) != {n1, n2}}
@@ -189,7 +188,7 @@ def main() -> int:
         })
         coupling_rows.append({
             "name": b["name"], "pair": [n1, n2], "reported_overlap_f": reported,
-            "mim_footprint_double_count_f": double, "residual_parallel_parasitic_f": residual,
+            "residual_parallel_parasitic_f": residual,
             "residual_rel": residual / b["target_f"], "inner": inner, "inner_to_ground_f": inner_gnd,
             "inner_coupled_to_other_nets_ff": others,
             "measured_device_row_met2_under_um2": under["met2"],
@@ -237,7 +236,7 @@ def main() -> int:
              "The ratified Area row (< 0.1 mm^2, strict) is unchanged and is **not** claimed met by the core. "
              "Full-core integration and electrical requalification belong to #231.\n")
     w.append("## Provenance\n")
-    w.append(f"- klt `{kv.get('version')}` (pin `layout/cap-requirements.txt`), KLayout in klt `{kv.get('klayout_version')}`")
+    w.append(f"- klt `{kv.get('version')}` (pin `layout/requirements.txt`), KLayout in klt `{kv.get('klayout_version')}`")
     w.append(f"- Official DRC: PDK `sky130A_mr.drc` run by system `{klayout_v}` (FEOL+BEOL+offgrid; {mr_rules} rule categories evaluated)")
     w.append(f"- Schematic `design/ldo_3v3in_1v8out.sch` @ `{args.schematic_sha}` (capacitors read from its own xschem netlist, `xschem_out/`)")
     w.append(f"- Measured inputs: `{pl['sources']['floorplan']}`, `{pl['sources']['measured_gds']}`, `{pl['sources']['budget']}`; spec `{pl['sources']['spec']}`")
@@ -268,11 +267,10 @@ def main() -> int:
              "parallel; both classes extract (`by_class_f` in `summary.json`) and each carries half the value.\n")
 
     w.append("## Coupling (`klt extract --parasitics`, adjacent-level overlap model)\n")
-    w.append("| Cap | Reported plate-plate overlap | of which inside MiM footprint (double count) | Residual parallel parasitic | Inner node to ground | Inner node to any other net | Measured device-row met2 under block -> est. coupling to outer plate |")
-    w.append("|---|---|---|---|---|---|---|")
+    w.append("| Cap | Reported plate-plate overlap (= residual parallel parasitic; MiM footprint already excluded by klt) | Inner node to ground | Inner node to any other net | Measured device-row met2 under block -> est. coupling to outer plate |")
+    w.append("|---|---|---|---|---|")
     for c in coupling_rows:
-        w.append(f"| {c['name']} | {c['reported_overlap_f'] * 1e15:.1f} fF | {c['mim_footprint_double_count_f'] * 1e15:.1f} fF "
-                 f"| {c['residual_parallel_parasitic_f'] * 1e15:.1f} fF ({c['residual_rel'] * 100:.2f}% of value) "
+        w.append(f"| {c['name']} | {c['reported_overlap_f'] * 1e15:.1f} fF ({c['residual_rel'] * 100:.2f}% of value) "
                  f"| {c['inner_to_ground_f'] * 1e15:.1f} fF | {json.dumps(c['inner_coupled_to_other_nets_ff']) if c['inner_coupled_to_other_nets_ff'] else 'none'} "
                  f"| {c['measured_device_row_met2_under_um2']:.0f} um^2 -> {c['device_row_met2_to_outer_est_f'] * 1e15:.1f} fF |")
     w.append("")

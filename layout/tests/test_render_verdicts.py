@@ -50,7 +50,7 @@ trivial = _load("render-record.py", "render_record")
 import _official_drc as od  # noqa: E402
 import _record_common as record_common  # noqa: E402
 
-CAP_RAIL_RECORD = LAYOUT / "cap-rail-demo" / "reports" / "20261010-033947-80bc87e"
+CAP_RAIL_RECORD = LAYOUT / "cap-rail-demo" / "reports" / "20261123-201859-6f2a9f2e"
 QUAL_RECORDS = [
     LAYOUT / "folded-res-qual" / "reports" / rid
     for rid in ("20261010-032804-ea209d2", "20261010-033502-704005c")
