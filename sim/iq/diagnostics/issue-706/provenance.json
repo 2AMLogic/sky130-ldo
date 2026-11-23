@@ -1,0 +1,58 @@
+{
+  "issue": 706,
+  "pairing_contract": "shared with #704: candidate = production netlist after apply_candidate(raw, 2); both DUTs at one base commit",
+  "production_base": {
+    "commit": "db9f161a305e1edd913743bb926d5b59fd59105e (origin/main at campaign time, clean)",
+    "dut_schematic": "design/ldo_3v3in_1v8out.sch",
+    "actual_cards": {
+      "C_COMP": "C_COMP VOUT EA_CZ 150p m=1",
+      "XR_CZ": "XR_CZ EA_CZ EA_OUT 0 sky130_fd_pr__res_xhigh_po W=0.42 L=52 mult=1 m=1"
+    }
+  },
+  "candidate": {
+    "rev": 2,
+    "overlay_module": "sim/iq/diagnostics/issue-706/candidate.py",
+    "sha256": "a08e93dce932ddd4bb90854459f23bbc8fa1fa7fcbf8a2cf524e2742ec82e5d7",
+    "imported_from": "PR #703 head 01dfd695b07707b7a74c50b2f10e06607770e3fe (branch feature/issue-692, unmerged at campaign time); lineage sim/dropout-vs-load/diagnostics/issue-357/candidate.py (on main)",
+    "rev2_lever": "NTAIL W 12/nf 3 -> W 7/nf 2 (tail mirror 4.8x -> 2.8x of NBR); XR_VR L=550, PBR 2.5/1, PBN 1.75/1, NBR 2.5/2, EN pull-ups present",
+    "invariants": "check_candidate passed with 0 problems on every leg and every bench (iq, current-limit, thermal)"
+  },
+  "clamp_batch_adapter": {
+    "module": "sim/iq/diagnostics/issue-706/batch_current_limit.py",
+    "sha256": "ba8445af246644a22081b8a24b20fcaf9ad0038a60602a75eebbab41813de0d5",
+    "imported_from": "PR #648 head befb83fb41d6a9ea87bd58790d74851dda7f4b86 (branch feature/issue-177, UNMERGED, loom:merge-conflict + loom:changes-requested at campaign time)",
+    "compatibility_shim": "campaign.py sets blr._tokens = blr._EXPR.tokenize: PR #648's branch point predates main's batch_line_regulation refactor that removed blr._tokens; same grammar, same exception",
+    "stimulus_pin": "the PR's BATCH_ALLOWLIST['current-limit'].stimulus, 5 lines, verified against every request netlist by bcl.check_netlist before submission"
+  },
+  "pdk": {
+    "variant": "sky130A",
+    "submitter_resolved_pin": "c6d73a35f524070e85faff4a6a9eef49553ebc2b",
+    "matches_pin": true,
+    "note": "the submitter-side resolution only; NOT the revision the batch workers executed",
+    "executed_worker": {
+      "iq_and_clamp_reports": "all 18 reports under runs/{iq,cl}-{base,cand}/klt-out/*/report.json (plus the 2 cl-pair-* reports) carry environment.remote.worker_environment.pdk.stamp_text = 'open_pdks f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7' (scope 'executed')",
+      "pdk_stamp_comparison": "mismatch (the worker's PDK revision stamp differs from the submitter's; results may differ from a local run)",
+      "models_lib_comparison": "match (top-level model-library comparison)",
+      "thermal": "UNVERIFIED: the committed hysteresis point records retain job id / provider / runner_compatibility but not the worker PDK stamp; executed revision not established"
+    }
+  },
+  "grids": {
+    "iq": "5 process x {-40,27,125} C x {2.97,3.30,3.63} V = 45 points/variant (sim/iq manifest)",
+    "current-limit": "same 45 points/variant (sim/current-limit manifest)",
+    "thermal": "5 process x {2.97,3.30,3.63} V at the bisected temperature = 15 corners/variant, tol 0.3125 C (sim/thermal run_hysteresis.py)"
+  },
+  "post_campaign_lint_fixes": {
+    "why": "CI's ruff pass (npm run test:lint-py, ruff --select F) flagged two unused imports after the campaign ran; both fixes are import-only, zero behavioral delta",
+    "thermal_pair.py": {
+      "sha256_as_executed": "e0186809f2b8b765d48a29b547accc0e4cc81c423647ac8260a210452db9d2ad",
+      "sha256_committed": "3ff8e850f6c4840aab9bd9d7e3417361f0b3483fce0c31b67b4a3bc37bbcf8d7",
+      "delta": "removed the unused 'from _record_common import assert_klt_read_the_pinned_pdk' line; the sha256_as_executed value is what both hysteresis result.json pairing blocks record as driver_sha256",
+      "verify": "re-adding that one line to the committed file reproduces the recorded hash"
+    },
+    "analyze.py": {
+      "delta": "removed the unused 'import sys'; analyze.py is not hash-pinned by any run record",
+      "note": "analyze.py was re-run after the thermal legs completed to fill tables/summary.json's thermal section; its outputs (tables/) are regenerated artifacts, not run evidence"
+    },
+    "candidate.py": "unchanged - committed sha256 a08e93dce932ddd4bb90854459f23bbc8fa1fa7fcbf8a2cf524e2742ec82e5d7 still matches the value every leg's provenance records"
+  }
+}

@@ -441,6 +441,24 @@ writes `ngspice.log`), `git_provenance()` and `load_results()`. Existing
 diagnostics run-id directories are append-only evidence and keep their own
 copies unedited; the helper is forward-only. Tests: `sim/tests/test_probe_common.py`.
 
+**Replaying a run's report never writes into the archive.** A report script
+that regenerates `tables.md`/`verdict.json` from a run's saved inputs is run
+on a *copy*: copy the run directory to scratch and render there, the same way
+`sim/tests/test_rcz_shelf_691.py` replays the refused #691 preflight. From the
+repository root:
+
+```sh
+tmp="$(mktemp -d)"
+cp -r sim/loop-gain/diagnostics/20261120-223530-542c11e-rcz-shelf/. "$tmp/"
+python3 -I sim/bin/rcz-shelf-691-report.py "$tmp"   # prints the verdict
+less "$tmp/tables.md" "$tmp/verdict.json"            # both outputs live in the copy
+```
+
+The tracked record stays byte-identical. Editing, renaming, or deleting a
+committed run file fails CI (`.loom/scripts/check-evidence-append-only.sh`,
+same as a `records/` edit) — a correction mints a new run directory, never an
+in-place regeneration.
+
 ### Writing a new batch-fleet campaign driver (issue #574)
 
 A campaign driver — one that netlists a testbench once, text-edits a per-case
@@ -681,12 +699,13 @@ single `op` analysis and two scalar measurements (`vgs`, `isup`),
 #374, below) and `sim/line-regulation`'s four cold-start endpoints in their
 validated shape (issue #379, below) and `sim/load-regulation`'s two
 cold-start endpoints in their validated shape (issue #381, below) and `sim/iq`'s
-two cold-start endpoints (issue #213, below) and `sim/startup`'s ramp-trace
-grid in its validated shape (issue #336, "Startup ESR grid" above). Every other
-manifest — `current-limit`,
-`enable-shutdown`, `ic-screen-125c-*`, `loop-gain`,
-`psrr-dc`, `startup`, `thermal`, and the `mc-*` experiments (which have their
-own runner, `mc-run.py`) — and any edited smoke, window-grid or dropout shape
+two cold-start endpoints (issue #213, below) and `sim/current-limit`'s three
+chained legs as one three-step request per supply (issue #177, below) and
+`sim/startup`'s ramp-trace grid in its validated shape (issue #336, "Startup
+ESR grid" above). Every other manifest — `enable-shutdown`,
+`ic-screen-125c-*`, `loop-gain`, `psrr-dc`, `thermal`, and the `mc-*`
+experiments (which have their own runner, `mc-run.py`) — and any edited smoke,
+window-grid, dropout, endpoint or chained-legs shape
 is **refused before netlisting, submission or local ngspice**. The other
 regulation grids stay deferred on translating their measurement cards.
 
@@ -1301,6 +1320,117 @@ The record's JSON twin lives in the artifact store (issue #436), so
 `records/*.json`) does not yet see this record: the Iq row of
 `measurements/characterization.md` and the signoff item 8 pins were **not**
 regenerated here and still cite `20260910-034648-6c0436d`.
+
+#### Current limit's chained legs on the batch backend (issue #177)
+
+`python3 sim/bin/corner-run.py sim/current-limit --backend batch` runs the
+current-limit matrix off-host. `sim/bin/batch_current_limit.py` (PDK-free)
+translates the deck's THREE chained legs into **one three-step
+`analysis_steps[]` request per supply group** (3 requests of 5 process × 3
+temperatures for the full 45-point matrix; 3 singletons under `--quick`),
+enabled by klayout-tools#2482 (`analysis_steps[]`). The legs are chained on
+purpose — the alters are cumulative in run order (issue #647 moved leg 2 to
+the front: leg 1 restores the netlist's own RLOAD/RFORCE after the DC leg
+walked them; leg 3 then re-alters `rforce = 1m`, keeping the DC leg's
+conducting forcing branch), and solver state is shared between steps — which
+is exactly klt's no-`reset` step sequence, so the three legs are one
+request, **not** three independent ones (that chaining is also why the
+window-grid rule "never pack legs as steps of one request" does not apply
+here: those legs `reset` between legs, these deliberately do not).
+
+| local deck (`deck.analyses`), in run order | klt request |
+|---|---|
+| `alter rload = 1e12`, `alter rforce = 1m`, `dc vforce 0 1.75 0.125` (leg 2, first) | step `dc1`: the alters as the step's `alter` map (`{rload: 1e12, rforce: 0.001}`), the sweep as `analysis`, its two `find i(vforce) at=` cards as `spice` |
+| `alter rload = 36`, `alter rforce = 1e12`, `tran 5u 1.0m uic` (leg 1) | step `tran1`: baseline element values restored, `analysis` verbatim (`uic` cold start, EN edge); its five window cards as step `spice` measurements |
+| `alter rforce = 1m`, `tran 500n 3.0m uic` (leg 3) | step `tran2`: **only `rforce` changes** — back at the DC leg's 1 mOhm, so the pre-fault window is a live loop delivering into the forcing source's 1.8 V; the short is VFORCE's own PWL, already in the netlist |
+| `let meas_<name> = tran1.vout_50ma`, `1000*dc1.ilim_short`, ... | the manifest's graded rows travel **verbatim** as klt top-level derived measurements named `meas_<name>` — the deck was already written plot-qualified, and klt renders `<step>.<card>` as ngspice plot-qualified vectors |
+
+Results come back as `tran1.<card>` / `dc1.<card>` / `tran2.<card>` plus the
+`meas_<name>` derived rows, and are graded **locally** with the manifest's own
+bounds and the strict solver-diagnostic gate over the one retained engine log
+(all three legs of a corner share it, so a diagnostic in any leg fails the
+corner). The response's result set is checked by name and count against the
+request — every card present exactly once, nothing unrequested — a klt-side
+error diagnostic or failed step cannot PASS, and an unfinished or
+runner-incompatible remote job aborts with no record (same gate as the
+cold-start crossing).
+
+- **Shape gate (before netlisting).** The deck must be exactly the three legs
+  in run order — leg 2 first (issue #647): `alter rload`, `alter rforce`,
+  `dc vforce <a> <b> <step>` + find cards; then leg 1: `alter rload`,
+  `alter rforce`, `tran <tstep> <tstop> uic` + window cards; then leg 3:
+  `alter rforce` (only), `tran <tstep> <tstop> uic` + window cards — with
+  `uic` load-bearing on both transient legs (a non-`uic` tran solves the
+  DC-valued operating point first: the exact hazard #177 fixed). Step names
+  follow content (`dc1`, `tran1`, `tran2`), not position, so the manifest's
+  plot-qualified graded expressions are position-independent. The request
+  netlist's stimulus/load lines are pinned
+  (`BATCH_ALLOWLIST["current-limit"]["stimulus"]`), and so is the testbench's
+  IC_SEED `.nodeset` card the seeded dc leg depends on
+  (`batch_current_limit.NODESET_CARD`, issue #647); the manifest is pinned by
+  digest, and `sim/tests/test_batch_current_limit_177.py` is headless.
+
+**Status (2026-11-17): record `20261117-173516-d843d914`, FAIL, 41/45
+corners PASS** (`--supersedes 20260825-105322-933dfdd`; JSON twin store-only,
+issue #436). `batch-preflight.py` exited 0 (runner klt 0.9.0, ngspice 47) and
+the full 45-point matrix ran as 3 chained-legs requests. Results against the
+#177-seeded deck:
+
+- **Solver-diagnostic gate (#171): 4/45 corners FAIL, every one from leg 2's
+  `dc vforce` sweep, every one on the 3.63 V (Vin_max) column**:
+  `tt_27c_3.63v` / `ff_27c_3.63v` / `fs_27c_3.63v` hit
+  `Warning: singular matrix` (node `xldo.ea_cz` on tt/ff, `xldo.n_fbb` on fs)
+  and `fs_125c_3.63v` hits `Warning: Dynamic gmin stepping failed`, all inside
+  the dc step's gmin continuation — where ngspice recovers each point via
+  *true* gmin stepping, completes the sweep, and every measured value stays
+  healthy; the gate grades those corners FAIL regardless of bounds, as
+  designed. This is the leg-2 exposure the deck's own claim already names —
+  "the one analysis that still solves with EN at its dc value" — now measured:
+  at 2.97 V and 3.3 V its gmin stepping completes at all 30 corners; at 3.63 V
+  it does not always. **The two transient legs #177 seeded are clean at all 45
+  corners** — the hazard this issue fixed (the DC-valued transient operating
+  point both `uic`-less legs solved from nowhere) no longer fires anywhere.
+- **Verdict deltas vs the superseded record.** That record read 45/45 PASS
+  because it predates the #171 gate: 16 of its logs already carry solver
+  diagnostics that were simply not detected then — under the gate it would
+  not read 45/45. The measured values also move for two honest reasons that
+  are not this fix: the DUT changed between the records (the integrated
+  comparator, #230) and the deck changed (issue #76's EN edge on leg 3,
+  PR #185's `uic` + leg-1 conversion). Illustrative at the equivalence
+  corner: the clamp window reads 129-207 mA across PVT now.
+- **Paired local/fleet equivalence (#612 precedent).** One corner
+  (`tt_27c_3.30v`) was also run through the local backend on the same commit:
+  all 10 measurements agree with the fleet's values to every printed digit
+  (vout_50ma_v 1.79883 V, ilim_short_ma 153.306 mA, ishort_sustained_ma
+  153.349 mA, ...) — the chained-steps translation is numerically the local
+  deck.
+
+**Status (2026-11-22): record `20261122-220637-f1d875fa`, PASS, 45/45
+corners PASS** (`--supersedes 20261117-173516-d843d914`; issue #647). The
+full 45-point matrix ran as 3 chained-legs requests on the batch fleet
+against the #647 deck: leg 2's `dc vforce` sweep seeded with the
+testbench's new IC_SEED `.nodeset` card (values measured from the settled
+held-short end state of leg 3's own transient at tt/27C/3.30V, the sweep's
+own starting point; `{vsup-x}` forms for the ~1 V/V-slope nodes, per
+#189's classification method) and moved to the FRONT of the deck — the
+configuration every seeded bench in `sim/` already used, and the one the
+localization probes measured clean: with the same card chained after leg
+1's transient, `fs_125c_3.63v` still tripped `Dynamic gmin stepping
+failed` at the sweep's first continuation step, while dc-first solves all
+four previously-failing corners and the matrix extremes with zero
+diagnostics. The two `uic` transient legs are order-independent by
+construction; every graded value matches the superseded record to 4-5
+significant digits (the clamp window still reads 98-232 mA across PVT —
+the window is unchanged, only its gate-compliance is). All 45 retained
+engine logs carry none of the #171 markers (verified by grep over the
+store-fetched bytes, and by the gate itself: a marker FAILs the corner
+regardless of bounds). The characterization report's Current limit row
+now reads **PASS** on this record. The four corners' diagnostics were
+solver-graded, never electrical — no spec row, bound or schematic device
+changed, and no decision record was needed: the singular nodes named
+(`ea_cz`, `n_fbb`) were the solver's first-continuation flail at the
+dead-short end of a forced-output sweep, not a design instability, and
+seeding removed them (the #189 precedent's exact mechanism class).
 
 ## Bound inclusivity (issue #335)
 

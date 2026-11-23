@@ -148,6 +148,33 @@ def grade_bounds(m: Measurement, value: float | None) -> tuple[bool, str]:
     return True, ""
 
 
+def grade_check(m: Measurement, value: float | None, *, missing_reason: str | None = None) -> dict:
+    """The measurement-check row every backend's corner record carries: the
+    ten shared keys (plus the window-grid leg fields when the measurement is
+    per-leg), graded by `grade_bounds`. The only caller-dependent piece is the
+    reason for a missing value (local ngspice output vs. klt response vs. an
+    uncomputable expression vs. a missing endpoint result) -- pass it as
+    `missing_reason`; it is substituted only when `value is None`."""
+    passed, reason = grade_bounds(m, value)
+    if value is None and missing_reason is not None:
+        reason = missing_reason
+    check = {
+        "name": m.name,
+        "expr": m.expr,
+        "unit": m.unit,
+        "value": value,
+        "min": m.min,
+        "max": m.max,
+        "min_inclusive": m.min_inclusive,
+        "max_inclusive": m.max_inclusive,
+        "pass": passed,
+        "reason": reason,
+    }
+    if m.leg is not None:
+        check.update({"leg": m.leg, "cout_f": m.cout_f, "esr_ohm": m.esr_ohm, "direction": m.direction})
+    return check
+
+
 @dataclass(frozen=True)
 class Corner:
     process: str

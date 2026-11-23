@@ -1,0 +1,1049 @@
+{
+ "clamp": {
+  "jobs": {
+   "base": [
+    "klt-sim-d4285eb3bea5",
+    "klt-sim-36bf764078f9",
+    "klt-sim-00be5725b3a7"
+   ],
+   "cand": [
+    "klt-sim-de4181d91d67",
+    "klt-sim-3abd0c73a9ae",
+    "klt-sim-976b3da234bb"
+   ]
+  },
+  "n_corners": 45,
+  "paired": {
+   "base": {
+    "ilim_knee_ma": {
+     "max": [
+      193.8165,
+      "ss_-40c_3.63v"
+     ],
+     "min": [
+      74.62728,
+      "ff_125c_2.97v"
+     ]
+    },
+    "ilim_short_ma": {
+     "max": [
+      231.6702,
+      "ss_-40c_3.63v"
+     ],
+     "min": [
+      97.70983,
+      "ff_125c_2.97v"
+     ]
+    },
+    "ishort_ripple_pct": {
+     "max": [
+      0.1233844161185457,
+      "ff_125c_2.97v"
+     ],
+     "min": [
+      0.013809472434988238,
+      "ss_-40c_3.63v"
+     ]
+    },
+    "n_valid": 41,
+    "solver_invalid": [
+     {
+      "corner": "tt_27c_3.63v",
+      "ilim_knee_ma": 144.6854,
+      "ilim_short_ma": 182.235
+     },
+     {
+      "corner": "ff_27c_3.63v",
+      "ilim_knee_ma": 112.6339,
+      "ilim_short_ma": 160.5477
+     },
+     {
+      "corner": "fs_27c_3.63v",
+      "ilim_knee_ma": 150.6273,
+      "ilim_short_ma": 189.61079999999998
+     },
+     {
+      "corner": "fs_125c_3.63v",
+      "ilim_knee_ma": 136.2606,
+      "ilim_short_ma": 170.3159
+     }
+    ]
+   },
+   "cand": {
+    "ilim_knee_ma": {
+     "max": [
+      189.98409999999998,
+      "ss_125c_3.63v"
+     ],
+     "min": [
+      71.79562,
+      "ff_-40c_2.97v"
+     ]
+    },
+    "ilim_short_ma": {
+     "max": [
+      228.8662,
+      "ss_125c_2.97v"
+     ],
+     "min": [
+      94.46668,
+      "fs_-40c_2.97v"
+     ]
+    },
+    "ishort_ripple_pct": {
+     "max": [
+      0.12251565477810039,
+      "fs_-40c_3.30v"
+     ],
+     "min": [
+      0.006115727028886433,
+      "ss_125c_2.97v"
+     ]
+    },
+    "n_valid": 43,
+    "solver_invalid": [
+     {
+      "corner": "ff_27c_3.30v",
+      "ilim_knee_ma": 99.69981,
+      "ilim_short_ma": 131.3005
+     },
+     {
+      "corner": "fs_-40c_3.63v",
+      "ilim_knee_ma": 73.87331,
+      "ilim_short_ma": 102.8216
+     }
+    ]
+   },
+   "knee_change_max": {
+    "corner": "sf_125c_2.97v",
+    "knee_base_ma": 95.53986,
+    "knee_cand_ma": 175.8609,
+    "knee_pct": 84.07071142871673,
+    "short_base_ma": 120.14460000000001,
+    "short_cand_ma": 218.4229,
+    "short_pct": 81.80001431608244
+   },
+   "knee_change_min": {
+    "corner": "fs_-40c_3.30v",
+    "knee_base_ma": 137.9795,
+    "knee_cand_ma": 73.68798,
+    "knee_pct": -46.59497968901177,
+    "short_base_ma": 171.78570000000002,
+    "short_cand_ma": 96.19999999999999,
+    "short_pct": -43.99999534303497
+   },
+   "knee_note": "knee = forced-output current sampled at Vout = 1.75 V; it is a proxy for engagement current, not a measured engagement point",
+   "n_knee_decrease": 18,
+   "n_knee_increase": 21,
+   "n_pairs_both_valid": 39
+  },
+  "solver_diag_base": [
+   [
+    "tt_27c_3.63v",
+    "Warning: singular matrix:  check node xldo.ea_cz"
+   ],
+   [
+    "ff_27c_3.63v",
+    "Warning: singular matrix:  check node xldo.ea_cz"
+   ],
+   [
+    "fs_27c_3.63v",
+    "Warning: singular matrix:  check node xldo.n_fbb"
+   ],
+   [
+    "fs_125c_3.63v",
+    "Warning: Dynamic gmin stepping failed"
+   ]
+  ],
+  "solver_diag_cand": [
+   [
+    "ff_27c_3.30v",
+    "Warning: Dynamic gmin stepping failed"
+   ],
+   [
+    "fs_-40c_3.63v",
+    "Warning: Dynamic gmin stepping failed"
+   ]
+  ],
+  "window_tbd_note": "the current-limit window stays TBD per spec/target-spec.md; values are reported, not graded against an invented window"
+ },
+ "iq": {
+  "base_fails": [
+   "ff_-40c_3.63v",
+   "ff_27c_3.63v",
+   "ff_125c_3.63v",
+   "fs_-40c_3.63v",
+   "fs_27c_3.63v"
+  ],
+  "cand_fails": [],
+  "ff_125c_363v": {
+   "base_iq_full_load_raw_a": -0.0500307,
+   "base_iq_full_load_ua": 30.69999999999462,
+   "base_iq_no_load_raw_a": -1.53774e-05,
+   "base_iq_no_load_ua": 15.3774,
+   "base_pass": false,
+   "cand_iq_full_load_raw_a": -0.05003,
+   "cand_iq_full_load_ua": 29.999999999995307,
+   "cand_iq_no_load_raw_a": -1.46061e-05,
+   "cand_iq_no_load_ua": 14.606100000000001,
+   "cand_pass": true
+  },
+  "jobs": {
+   "base": [
+    "klt-sim-8d4f93ce301b",
+    "klt-sim-b1ae3d996482",
+    "klt-sim-72a9c3c71cdc",
+    "klt-sim-62c7cfbb48ed",
+    "klt-sim-7ee8035068d3",
+    "klt-sim-1636fb0cc8d3"
+   ],
+   "cand": [
+    "klt-sim-e1f0d650dfd8",
+    "klt-sim-04fbafcdcfbd",
+    "klt-sim-1efaa15fe553",
+    "klt-sim-b8e823ae79cf",
+    "klt-sim-78f07cb0f489",
+    "klt-sim-bc0213889344"
+   ]
+  },
+  "n_corners": 45,
+  "paired": {
+   "base_failing_corner_deltas_full_load_ua": {
+    "ff_-40c_3.63v": -2.3999999999996255,
+    "ff_125c_3.63v": -0.6999999999993136,
+    "ff_27c_3.63v": -1.8999999999991246,
+    "fs_-40c_3.63v": -2.900000000000123,
+    "fs_27c_3.63v": -2.29999999999675
+   },
+   "base_ir_set_50ma": {
+    "max": [
+     2.483969e-06,
+     "sf_27c_3.63v"
+    ],
+    "min": [
+     1.728345e-06,
+     "fs_-40c_2.97v"
+    ]
+   },
+   "base_tail_i_set_50ma": {
+    "max": [
+     4.061462e-06,
+     "sf_27c_3.63v"
+    ],
+    "min": [
+     2.399473e-06,
+     "fs_-40c_2.97v"
+    ]
+   },
+   "cand_ir_set_50ma": {
+    "max": [
+     1.001947e-06,
+     "sf_125c_3.63v"
+    ],
+    "min": [
+     4.861371e-07,
+     "fs_-40c_2.97v"
+    ]
+   },
+   "cand_tail_i_set_50ma": {
+    "max": [
+     2.373332e-06,
+     "sf_125c_3.63v"
+    ],
+    "min": [
+     1.359069e-06,
+     "fs_-40c_2.97v"
+    ]
+   },
+   "delta_full_load_ua": {
+    "largest_cut": [
+     -3.699999999995377,
+     "ss_-40c_3.63v"
+    ],
+    "largest_increase": [
+     0.8999999999981227,
+     "ff_125c_2.97v"
+    ]
+   },
+   "delta_no_load_ua": {
+    "largest_cut": [
+     -3.6961999999999993,
+     "ss_-40c_3.63v"
+    ],
+    "largest_increase": [
+     0.9297000000000004,
+     "ff_125c_2.97v"
+    ]
+   },
+   "n_valid": {
+    "base": 40,
+    "cand": 45
+   }
+  },
+  "resolution": {
+   "full_load_print_quantum_ua": 0.1,
+   "print_note": "the full-load meas card prints the ~0.05 A supply current with 6 significant digits (last digit 1e-7 A = 0.1 uA); the manifest subtracts the ideal 0.05 A load, which does not refine that resolution",
+   "solver_note": "a convergence setting is not an error bound on the difference of two near-equal currents; no precision/tolerance comparison was run, so strict-bound compliance at a corner whose margin is within the print quantum is unresolved and no margin is called solver-resolved",
+   "solver_settings": {
+    "abstol_a": 1e-12,
+    "reltol": 0.001,
+    "source": "ngspice defaults; no override in deck or sim/spiceinit",
+    "vntol_v": 1e-06
+   }
+  },
+  "worst_margin": {
+   "base": {
+    "corner": "ff_-40c_3.63v",
+    "exceeds_print_quantum": true,
+    "margin_ua": -1.299999999997997,
+    "solver_resolved": null
+   },
+   "cand": {
+    "corner": "ff_125c_3.63v",
+    "exceeds_print_quantum": false,
+    "margin_ua": 4.693134769695462e-12,
+    "solver_resolved": null
+   }
+  }
+ },
+ "thermal": {
+  "base": {
+   "complete": true,
+   "corners": {
+    "ff_2.97V": {
+     "dependent_missing": [],
+     "hysteresis_c": 13.125,
+     "t_reset_c": 166.71875,
+     "t_trip_c": 179.84375
+    },
+    "ff_3.30V": {
+     "dependent_missing": [],
+     "hysteresis_c": 13.125,
+     "t_reset_c": 163.90625,
+     "t_trip_c": 177.03125
+    },
+    "ff_3.63V": {
+     "dependent_missing": [],
+     "hysteresis_c": 13.125,
+     "t_reset_c": 160.46875,
+     "t_trip_c": 173.59375
+    },
+    "fs_2.97V": {
+     "dependent_missing": [],
+     "hysteresis_c": 12.5,
+     "t_reset_c": 168.90625,
+     "t_trip_c": 181.40625
+    },
+    "fs_3.30V": {
+     "dependent_missing": [],
+     "hysteresis_c": 12.8125,
+     "t_reset_c": 165.46875,
+     "t_trip_c": 178.28125
+    },
+    "fs_3.63V": {
+     "dependent_missing": [],
+     "hysteresis_c": 12.8125,
+     "t_reset_c": 161.40625,
+     "t_trip_c": 174.21875
+    },
+    "sf_2.97V": {
+     "dependent_missing": [],
+     "hysteresis_c": 13.125,
+     "t_reset_c": 156.40625,
+     "t_trip_c": 169.53125
+    },
+    "sf_3.30V": {
+     "dependent_missing": [],
+     "hysteresis_c": 13.125,
+     "t_reset_c": 152.96875,
+     "t_trip_c": 166.09375
+    },
+    "sf_3.63V": {
+     "dependent_missing": [],
+     "hysteresis_c": 13.4375,
+     "t_reset_c": 148.90625,
+     "t_trip_c": 162.34375
+    },
+    "ss_2.97V": {
+     "dependent_missing": [],
+     "hysteresis_c": 12.8125,
+     "t_reset_c": 158.28125,
+     "t_trip_c": 171.09375
+    },
+    "ss_3.30V": {
+     "dependent_missing": [],
+     "hysteresis_c": 12.8125,
+     "t_reset_c": 153.90625,
+     "t_trip_c": 166.71875
+    },
+    "ss_3.63V": {
+     "dependent_missing": [],
+     "hysteresis_c": 12.8125,
+     "t_reset_c": 149.21875,
+     "t_trip_c": 162.03125
+    },
+    "tt_2.97V": {
+     "dependent_missing": [],
+     "hysteresis_c": 12.8125,
+     "t_reset_c": 162.96875,
+     "t_trip_c": 175.78125
+    },
+    "tt_3.30V": {
+     "dependent_missing": [],
+     "hysteresis_c": 13.125,
+     "t_reset_c": 159.21875,
+     "t_trip_c": 172.34375
+    },
+    "tt_3.63V": {
+     "dependent_missing": [],
+     "hysteresis_c": 13.125,
+     "t_reset_c": 155.15625,
+     "t_trip_c": 168.28125
+    }
+   },
+   "jobs": [
+    "klt-sim-005a2e89a14f",
+    "klt-sim-00c67b5628e2",
+    "klt-sim-015e6a672f21",
+    "klt-sim-019e4394de82",
+    "klt-sim-0226fca3c268",
+    "klt-sim-02813ce5dfc4",
+    "klt-sim-04d1a2cd54c0",
+    "klt-sim-04f96f7e6ee0",
+    "klt-sim-062853bc3086",
+    "klt-sim-065a41928941",
+    "klt-sim-06b2c90f6ada",
+    "klt-sim-06be11a689ad",
+    "klt-sim-08be0e475e47",
+    "klt-sim-0a295077b2b1",
+    "klt-sim-0c99ec0e0489",
+    "klt-sim-0ca907cbd058",
+    "klt-sim-0f5ca52ab238",
+    "klt-sim-100d9057cc8a",
+    "klt-sim-107e7d383d46",
+    "klt-sim-10a76717888f",
+    "klt-sim-10e44e6cf719",
+    "klt-sim-126f7a38d8dd",
+    "klt-sim-12adaa85ec27",
+    "klt-sim-1408a3de2f68",
+    "klt-sim-147fe4609718",
+    "klt-sim-14f4eaf29056",
+    "klt-sim-1613dd36a570",
+    "klt-sim-197d3371ec31",
+    "klt-sim-197dc8f142b5",
+    "klt-sim-1bb23d1f29ee",
+    "klt-sim-1bb3911e5d6d",
+    "klt-sim-1c2db87ad696",
+    "klt-sim-1c96e5134630",
+    "klt-sim-1e51ccfc9165",
+    "klt-sim-1fc3de38ec7b",
+    "klt-sim-209101468665",
+    "klt-sim-22a9e70f12eb",
+    "klt-sim-22fabe1ac905",
+    "klt-sim-245c74198d42",
+    "klt-sim-256558e42156",
+    "klt-sim-25b8aa0dffe6",
+    "klt-sim-25f628283571",
+    "klt-sim-29f365834ef4",
+    "klt-sim-2b3d52ddcab3",
+    "klt-sim-2ba0789a3144",
+    "klt-sim-2dc4cfaa4ebe",
+    "klt-sim-2dc73031d98c",
+    "klt-sim-2e36902229ad",
+    "klt-sim-2ed588a3587d",
+    "klt-sim-2f5ef8d692f4",
+    "klt-sim-3084df5a4046",
+    "klt-sim-3103097ff2a7",
+    "klt-sim-341875f13911",
+    "klt-sim-3595ba60cea6",
+    "klt-sim-3696a3c731ae",
+    "klt-sim-38ea76e1521f",
+    "klt-sim-3c037dcaf590",
+    "klt-sim-3db670d50f45",
+    "klt-sim-3e74bed413e7",
+    "klt-sim-3e9c52fdb9bf",
+    "klt-sim-3f13be46ff71",
+    "klt-sim-3fa005a1958e",
+    "klt-sim-3fc45313b913",
+    "klt-sim-414d1026770f",
+    "klt-sim-424f7083a475",
+    "klt-sim-4356588a02a2",
+    "klt-sim-444c53255f16",
+    "klt-sim-451d7f6a09b7",
+    "klt-sim-479d3d0ff5fe",
+    "klt-sim-47b4155fc5d2",
+    "klt-sim-4ad0c6b01b60",
+    "klt-sim-4b209ca45607",
+    "klt-sim-4f7ca4dcfed3",
+    "klt-sim-510fb5a58217",
+    "klt-sim-51140021a9da",
+    "klt-sim-5294ba99cc79",
+    "klt-sim-5352769b1568",
+    "klt-sim-548214a88892",
+    "klt-sim-54d9482ad0ff",
+    "klt-sim-556eb6020057",
+    "klt-sim-5573ca081f81",
+    "klt-sim-5608da65b5f8",
+    "klt-sim-5686b211f860",
+    "klt-sim-56d792c5dc66",
+    "klt-sim-56faca430d43",
+    "klt-sim-576bb50a053c",
+    "klt-sim-5a12e1a3a090",
+    "klt-sim-5a707fc77738",
+    "klt-sim-5a726adfc735",
+    "klt-sim-5b1b3b715285",
+    "klt-sim-5b97aa212110",
+    "klt-sim-5c0a41136855",
+    "klt-sim-5c551bb254b8",
+    "klt-sim-5c71be6b23fc",
+    "klt-sim-5cd00aa8e570",
+    "klt-sim-5d0fc7c9c6fc",
+    "klt-sim-5d68569eccdb",
+    "klt-sim-5e0828d8e23d",
+    "klt-sim-5eaf6e4dc552",
+    "klt-sim-5fa8597e8875",
+    "klt-sim-629f8634e10d",
+    "klt-sim-62c8f5b24b24",
+    "klt-sim-652ba6c93f14",
+    "klt-sim-66102884fbbd",
+    "klt-sim-66b64ef9c643",
+    "klt-sim-6933e7bb949f",
+    "klt-sim-69a97eff5484",
+    "klt-sim-6a6fa065b8c9",
+    "klt-sim-6af02f20410d",
+    "klt-sim-6b6693193f33",
+    "klt-sim-6c3257b19e2d",
+    "klt-sim-6daf1d883394",
+    "klt-sim-6eec3f65162f",
+    "klt-sim-6fb1863aa92e",
+    "klt-sim-70151f05dddf",
+    "klt-sim-712b20996299",
+    "klt-sim-72873f88e07c",
+    "klt-sim-731644072328",
+    "klt-sim-7327dca992dd",
+    "klt-sim-739ef574197f",
+    "klt-sim-74e680cfa035",
+    "klt-sim-751931c59196",
+    "klt-sim-75749a26ebe2",
+    "klt-sim-75bba286a6c8",
+    "klt-sim-764651fc34a8",
+    "klt-sim-78a9deee60c1",
+    "klt-sim-7b0c1170b043",
+    "klt-sim-7ba269137efa",
+    "klt-sim-7c4d86909ae5",
+    "klt-sim-7cc03584bea8",
+    "klt-sim-7ce851b6f57c",
+    "klt-sim-7d289f062182",
+    "klt-sim-7d3c5d2537a2",
+    "klt-sim-7e7c7f19fc3f",
+    "klt-sim-7e8701fd977f",
+    "klt-sim-7e9ac111546b",
+    "klt-sim-7f5821552300",
+    "klt-sim-8072fd2ef47a",
+    "klt-sim-809a94059fb5",
+    "klt-sim-80d70eaffeeb",
+    "klt-sim-82b3d20d61d7",
+    "klt-sim-83590c0bc47c",
+    "klt-sim-853b7265dbcb",
+    "klt-sim-857d426833a0",
+    "klt-sim-86715aecd96e",
+    "klt-sim-86add38fda63",
+    "klt-sim-8a0f10655d50",
+    "klt-sim-8a3170b5345b",
+    "klt-sim-8c2918e41255",
+    "klt-sim-8c68304ded45",
+    "klt-sim-8c7071a0c442",
+    "klt-sim-8d0442a21cd3",
+    "klt-sim-8e000446d72b",
+    "klt-sim-8e1a9905f711",
+    "klt-sim-8e905703524f",
+    "klt-sim-8ee09ae43714",
+    "klt-sim-9256cf233cd9",
+    "klt-sim-936bb5bb7dde",
+    "klt-sim-94951094047b",
+    "klt-sim-94d346c710f9",
+    "klt-sim-9635644ab13b",
+    "klt-sim-968071f58f27",
+    "klt-sim-96fdabf22480",
+    "klt-sim-97647fe73e3a",
+    "klt-sim-9826eb3430bd",
+    "klt-sim-991e9b00bbf0",
+    "klt-sim-995e7ac10955",
+    "klt-sim-9980e7934f65",
+    "klt-sim-9a99c3f26d2b",
+    "klt-sim-9c2c66e2df2e",
+    "klt-sim-9f41a5f6e7cd",
+    "klt-sim-9f4a3d514df1",
+    "klt-sim-9ff0435fea02",
+    "klt-sim-a0704ae9c901",
+    "klt-sim-a108ca3dd34e",
+    "klt-sim-a1772816afdb",
+    "klt-sim-a34de189e9f2",
+    "klt-sim-a3f0346a2a99",
+    "klt-sim-a4021b9e66c2",
+    "klt-sim-a546f811d5e5",
+    "klt-sim-a69ee3fc8d35",
+    "klt-sim-a6ffbe37dedb",
+    "klt-sim-a70b588131b1",
+    "klt-sim-a7a4a82925bc",
+    "klt-sim-a82a88cc685a",
+    "klt-sim-a862d49b21a2",
+    "klt-sim-a868084efde6",
+    "klt-sim-a92e8214be90",
+    "klt-sim-aa6a3ad2a9b4",
+    "klt-sim-aaacde7bddf7",
+    "klt-sim-ab05031d3fde",
+    "klt-sim-ac7d3470935a",
+    "klt-sim-ad6571cea5ef",
+    "klt-sim-adba22d596fa",
+    "klt-sim-aee16ff458ea",
+    "klt-sim-b11fe0cbc692",
+    "klt-sim-b1d02000fe46",
+    "klt-sim-b2e9e0897f58",
+    "klt-sim-b452f30c1d11",
+    "klt-sim-b685de874241",
+    "klt-sim-b72fa847d969",
+    "klt-sim-b7dda2ae77ea",
+    "klt-sim-b9609f43b4f8",
+    "klt-sim-b9b3cb614c78",
+    "klt-sim-bc7ccccd8685",
+    "klt-sim-bf17aacd4634",
+    "klt-sim-bf574f7031ca",
+    "klt-sim-bfa10234df7c",
+    "klt-sim-bfffd6bcdd2a",
+    "klt-sim-c1ea6cebe9fd",
+    "klt-sim-c2ece165ed58",
+    "klt-sim-c2f65c3fc60b",
+    "klt-sim-c35c0a1af042",
+    "klt-sim-c37b3b568c83",
+    "klt-sim-c3eced21201c",
+    "klt-sim-c44b5b21b47d",
+    "klt-sim-c5ad09b6a066",
+    "klt-sim-c5c98fedb078",
+    "klt-sim-c6b2b406d633",
+    "klt-sim-c7c2b2a0795b",
+    "klt-sim-ca60d692080a",
+    "klt-sim-cb4fcf148a0d",
+    "klt-sim-cfe0c52785ad",
+    "klt-sim-d088da5a8734",
+    "klt-sim-d0f42666bae1",
+    "klt-sim-d1f68e19f2cf",
+    "klt-sim-d2bd23a905fe",
+    "klt-sim-d2ec11c1590e",
+    "klt-sim-d3f92c055e67",
+    "klt-sim-d61de7e62049",
+    "klt-sim-d6cfc20847e9",
+    "klt-sim-d7135d5ae9e8",
+    "klt-sim-d8bad9e0a434",
+    "klt-sim-dad5ac6251a2",
+    "klt-sim-dafcd74e5fb1",
+    "klt-sim-db2822720fa5",
+    "klt-sim-dc9263ab8b88",
+    "klt-sim-dc9f33a7093e",
+    "klt-sim-de081bce3c55",
+    "klt-sim-de1e5844aa3b",
+    "klt-sim-df506e882e0a",
+    "klt-sim-e014e7c5f348",
+    "klt-sim-e0ba589f4ff7",
+    "klt-sim-e0e8769a2c69",
+    "klt-sim-e0fbf6f0987f",
+    "klt-sim-e18772d556c8",
+    "klt-sim-e19277c7332f",
+    "klt-sim-e281d9af90d5",
+    "klt-sim-e4fe8755d4bc",
+    "klt-sim-e62976fe7ac0",
+    "klt-sim-e64beeb85349",
+    "klt-sim-e96e431e733f",
+    "klt-sim-ebbe9f363728",
+    "klt-sim-ec1edca75f8f",
+    "klt-sim-ecd46d6ce6b9",
+    "klt-sim-ee7da0d7a3ad",
+    "klt-sim-eebcc6ff9ebd",
+    "klt-sim-ef243e860b3c",
+    "klt-sim-efc586ee2b93",
+    "klt-sim-f19ed3fd7b25",
+    "klt-sim-f2d379bb34fc",
+    "klt-sim-f4c85c208d11",
+    "klt-sim-f6ac6c6b3f7e",
+    "klt-sim-f7bc583cd7c9",
+    "klt-sim-f836bb6bab17",
+    "klt-sim-f8a974ecf0d8",
+    "klt-sim-fa806811bd52",
+    "klt-sim-fb8c0b978fa9",
+    "klt-sim-fc291067f923",
+    "klt-sim-fc89accb6f95"
+   ],
+   "n_points": 676,
+   "record": "20261121-041707-db9f161a-i706-paired-base"
+  },
+  "cand": {
+   "complete": true,
+   "corners": {
+    "ff_2.97V": {
+     "dependent_missing": [],
+     "hysteresis_c": 12.8125,
+     "t_reset_c": 166.71875,
+     "t_trip_c": 179.53125
+    },
+    "ff_3.30V": {
+     "dependent_missing": [],
+     "hysteresis_c": 13.125,
+     "t_reset_c": 163.59375,
+     "t_trip_c": 176.71875
+    },
+    "ff_3.63V": {
+     "dependent_missing": [],
+     "hysteresis_c": 13.4375,
+     "t_reset_c": 160.15625,
+     "t_trip_c": 173.59375
+    },
+    "fs_2.97V": {
+     "dependent_missing": [],
+     "hysteresis_c": 12.5,
+     "t_reset_c": 168.90625,
+     "t_trip_c": 181.40625
+    },
+    "fs_3.30V": {
+     "dependent_missing": [],
+     "hysteresis_c": 12.8125,
+     "t_reset_c": 165.15625,
+     "t_trip_c": 177.96875
+    },
+    "fs_3.63V": {
+     "dependent_missing": [],
+     "hysteresis_c": 13.125,
+     "t_reset_c": 161.09375,
+     "t_trip_c": 174.21875
+    },
+    "sf_2.97V": {
+     "dependent_missing": [],
+     "hysteresis_c": 13.125,
+     "t_reset_c": 156.40625,
+     "t_trip_c": 169.53125
+    },
+    "sf_3.30V": {
+     "dependent_missing": [],
+     "hysteresis_c": 13.4375,
+     "t_reset_c": 152.65625,
+     "t_trip_c": 166.09375
+    },
+    "sf_3.63V": {
+     "dependent_missing": [],
+     "hysteresis_c": 13.125,
+     "t_reset_c": 148.90625,
+     "t_trip_c": 162.03125
+    },
+    "ss_2.97V": {
+     "dependent_missing": [],
+     "hysteresis_c": 12.8125,
+     "t_reset_c": 157.96875,
+     "t_trip_c": 170.78125
+    },
+    "ss_3.30V": {
+     "dependent_missing": [],
+     "hysteresis_c": 12.8125,
+     "t_reset_c": 153.59375,
+     "t_trip_c": 166.40625
+    },
+    "ss_3.63V": {
+     "dependent_missing": [],
+     "hysteresis_c": 12.8125,
+     "t_reset_c": 148.90625,
+     "t_trip_c": 161.71875
+    },
+    "tt_2.97V": {
+     "dependent_missing": [],
+     "hysteresis_c": 12.8125,
+     "t_reset_c": 162.65625,
+     "t_trip_c": 175.46875
+    },
+    "tt_3.30V": {
+     "dependent_missing": [],
+     "hysteresis_c": 12.8125,
+     "t_reset_c": 159.21875,
+     "t_trip_c": 172.03125
+    },
+    "tt_3.63V": {
+     "dependent_missing": [],
+     "hysteresis_c": 13.125,
+     "t_reset_c": 155.15625,
+     "t_trip_c": 168.28125
+    }
+   },
+   "jobs": [
+    "klt-sim-006513e20ce6",
+    "klt-sim-0157cb51333f",
+    "klt-sim-021e72290b81",
+    "klt-sim-023b96f862f4",
+    "klt-sim-025e0d369203",
+    "klt-sim-03c5572f39e6",
+    "klt-sim-0470ea617a30",
+    "klt-sim-0745398b0adc",
+    "klt-sim-08fb8b9ed4e6",
+    "klt-sim-098396b93c74",
+    "klt-sim-0c6ce9e82f06",
+    "klt-sim-0db7f4a584cb",
+    "klt-sim-0f6b92e1a6b3",
+    "klt-sim-110f0d208b17",
+    "klt-sim-1132a2e3e721",
+    "klt-sim-12411dc5a5b5",
+    "klt-sim-12627283df46",
+    "klt-sim-128981565e1a",
+    "klt-sim-129535e839fc",
+    "klt-sim-132b8f56b6ee",
+    "klt-sim-13e8e6a63c88",
+    "klt-sim-140a52249309",
+    "klt-sim-1427d8fb3cda",
+    "klt-sim-143e24dd5033",
+    "klt-sim-16a604b8a1fe",
+    "klt-sim-17769f6ced58",
+    "klt-sim-18372946b697",
+    "klt-sim-1da14c4ebac9",
+    "klt-sim-1e049dd198f0",
+    "klt-sim-1e611110a392",
+    "klt-sim-1e77051bb371",
+    "klt-sim-1fc708b1e88d",
+    "klt-sim-205474fa1143",
+    "klt-sim-2102b84d244d",
+    "klt-sim-210a192cca3c",
+    "klt-sim-233e999f48f1",
+    "klt-sim-24d305da6af5",
+    "klt-sim-262d8da07190",
+    "klt-sim-264d58927037",
+    "klt-sim-28ac7c53266d",
+    "klt-sim-2a1d9d4f1df8",
+    "klt-sim-2a3bd0100d0a",
+    "klt-sim-2a485ea8dc38",
+    "klt-sim-2a6f1b644e1c",
+    "klt-sim-2b2089fe10ee",
+    "klt-sim-2e7584bb7e1d",
+    "klt-sim-2fefb8ab5d34",
+    "klt-sim-317c022fbf9c",
+    "klt-sim-33f958a07536",
+    "klt-sim-3536baf3d908",
+    "klt-sim-36211cc82273",
+    "klt-sim-389d67411726",
+    "klt-sim-3b2852f5cebc",
+    "klt-sim-3b9c02c0548b",
+    "klt-sim-3c250124f549",
+    "klt-sim-3d318f073856",
+    "klt-sim-3dc8c009c4f7",
+    "klt-sim-3df25ce592a1",
+    "klt-sim-3e3758f46675",
+    "klt-sim-3e6f60690aee",
+    "klt-sim-3eeb5ee9de25",
+    "klt-sim-415e901798fc",
+    "klt-sim-41a8c354b629",
+    "klt-sim-41d2edacd09e",
+    "klt-sim-4202d0957b6f",
+    "klt-sim-4256dcf769a7",
+    "klt-sim-45462341f39e",
+    "klt-sim-45c288821c6b",
+    "klt-sim-46a21079d399",
+    "klt-sim-46c0a1d81a7d",
+    "klt-sim-473cc2828fb6",
+    "klt-sim-481f016d1eb9",
+    "klt-sim-48340175ff8e",
+    "klt-sim-4a7717d14901",
+    "klt-sim-4bde7eb42b57",
+    "klt-sim-4c1148e8e2e4",
+    "klt-sim-4c3ab105f504",
+    "klt-sim-4ca2ecad204d",
+    "klt-sim-4f82411a1200",
+    "klt-sim-5000523338fa",
+    "klt-sim-531473c08e95",
+    "klt-sim-539685cc37f1",
+    "klt-sim-5590c30198c8",
+    "klt-sim-5661590df834",
+    "klt-sim-5679b4871275",
+    "klt-sim-56ab34cbdad6",
+    "klt-sim-570e48d5b3eb",
+    "klt-sim-581246652fef",
+    "klt-sim-581872171dbd",
+    "klt-sim-594aff4e57ca",
+    "klt-sim-59b599cef561",
+    "klt-sim-5a4665a72cfd",
+    "klt-sim-5af0b63d74f0",
+    "klt-sim-5b7b536a62d3",
+    "klt-sim-5c6f2fbf1f23",
+    "klt-sim-5c83bb7698dc",
+    "klt-sim-5cade5966afe",
+    "klt-sim-5d0067eb71d4",
+    "klt-sim-5e2da16f7468",
+    "klt-sim-5f5820bff945",
+    "klt-sim-5ff7fd784697",
+    "klt-sim-603de0b9aff7",
+    "klt-sim-6185f842a821",
+    "klt-sim-626cd5241d9b",
+    "klt-sim-62c85b31008c",
+    "klt-sim-6513443a9c83",
+    "klt-sim-653b67b1db57",
+    "klt-sim-676186583016",
+    "klt-sim-686a172107df",
+    "klt-sim-6a1390422b78",
+    "klt-sim-6a48c35bec45",
+    "klt-sim-6a6ade849884",
+    "klt-sim-6bb6489b5bb2",
+    "klt-sim-6c91b4566e69",
+    "klt-sim-6c9ddc0db4a9",
+    "klt-sim-6dc342f743c4",
+    "klt-sim-6e79644c3eba",
+    "klt-sim-6f0f32eb1965",
+    "klt-sim-6f36e91062c6",
+    "klt-sim-7070a21cc9e3",
+    "klt-sim-747ad7130a32",
+    "klt-sim-7792e3438671",
+    "klt-sim-78aca79e85b5",
+    "klt-sim-7a22dbd49ca0",
+    "klt-sim-7ac2614db7dc",
+    "klt-sim-7ac71613d4e1",
+    "klt-sim-7bf955f983a7",
+    "klt-sim-7c0ae3986b42",
+    "klt-sim-7c9b1bcc6152",
+    "klt-sim-7cc0d6c4f473",
+    "klt-sim-7cd294161697",
+    "klt-sim-7dcbf76e57e8",
+    "klt-sim-7e5bdec3c8d4",
+    "klt-sim-7f300ad872da",
+    "klt-sim-7f6942b53abc",
+    "klt-sim-7fb20e099f94",
+    "klt-sim-7fd39ea211c9",
+    "klt-sim-8190a5304649",
+    "klt-sim-81d4dacd3e69",
+    "klt-sim-81e9400e4db8",
+    "klt-sim-81f899935b6e",
+    "klt-sim-822dd63ef273",
+    "klt-sim-82fcae0dd3cd",
+    "klt-sim-855daa0be48f",
+    "klt-sim-86e89f369971",
+    "klt-sim-8990169652fd",
+    "klt-sim-8aa21c87d315",
+    "klt-sim-8b481ecd52ea",
+    "klt-sim-8bc7d66d114f",
+    "klt-sim-8bc887ab776a",
+    "klt-sim-8bf95e8ad3ed",
+    "klt-sim-8e25aca0373f",
+    "klt-sim-8ea4a3b01d49",
+    "klt-sim-8ebde07cfd6d",
+    "klt-sim-910bea916dbe",
+    "klt-sim-91cb33cab945",
+    "klt-sim-92ee5f9f2f30",
+    "klt-sim-93076d9d8754",
+    "klt-sim-934abc00c7dc",
+    "klt-sim-9468c2a87bd1",
+    "klt-sim-9481c27c55e2",
+    "klt-sim-981d79a92ca7",
+    "klt-sim-986bab5fb66f",
+    "klt-sim-98b7c9401fc1",
+    "klt-sim-9a1005557838",
+    "klt-sim-9a749a9df85e",
+    "klt-sim-9a77ccb0fb20",
+    "klt-sim-9dacfadcc490",
+    "klt-sim-9ec49b4b1fea",
+    "klt-sim-9f3c5d8ef03a",
+    "klt-sim-a0496e486b24",
+    "klt-sim-a08355410d4e",
+    "klt-sim-a0fecd6bbf88",
+    "klt-sim-a105130e85b6",
+    "klt-sim-a290890582c6",
+    "klt-sim-a291e8a296d2",
+    "klt-sim-a2efbdebc251",
+    "klt-sim-a424adf62ecc",
+    "klt-sim-a57f80009c8b",
+    "klt-sim-a66616828167",
+    "klt-sim-a6a34b649d31",
+    "klt-sim-a6a6fde7fdf0",
+    "klt-sim-a7641b762982",
+    "klt-sim-aa47887b0537",
+    "klt-sim-ab70ae8c93ae",
+    "klt-sim-abb4115c8514",
+    "klt-sim-acf8e9e304dd",
+    "klt-sim-ad15ac6e6bf9",
+    "klt-sim-ae5dcf28e564",
+    "klt-sim-af13776c9346",
+    "klt-sim-b0f5362e220d",
+    "klt-sim-b19d744811f5",
+    "klt-sim-b1a3af7471ab",
+    "klt-sim-b39109bb32f2",
+    "klt-sim-b5cce2704289",
+    "klt-sim-b5d2c5b8cd8b",
+    "klt-sim-b780f9662922",
+    "klt-sim-b8ec71c750a5",
+    "klt-sim-b944ec6b01a3",
+    "klt-sim-b9e4a46b6b69",
+    "klt-sim-bbd11ea06b48",
+    "klt-sim-bbec3dc6c6df",
+    "klt-sim-bcd978b292bb",
+    "klt-sim-be7ab2b54a18",
+    "klt-sim-c0c17c623a02",
+    "klt-sim-c0d41e19677b",
+    "klt-sim-c1606282d114",
+    "klt-sim-c1cf8e1ab2d7",
+    "klt-sim-c1eebd3714f7",
+    "klt-sim-c3bb4df422af",
+    "klt-sim-c48328610526",
+    "klt-sim-c576e10f2638",
+    "klt-sim-c708d3ee5112",
+    "klt-sim-ca36126c7474",
+    "klt-sim-ca3644eab4b1",
+    "klt-sim-ca465675669f",
+    "klt-sim-ca6d1ba71e0d",
+    "klt-sim-cc4751ca76ac",
+    "klt-sim-cd58ed877677",
+    "klt-sim-cd8e96bdfde2",
+    "klt-sim-cefc0c4314ef",
+    "klt-sim-cf830a622e3c",
+    "klt-sim-d12fb9e98039",
+    "klt-sim-d19af60380ea",
+    "klt-sim-d30a9a84e865",
+    "klt-sim-d30d3b2a21f8",
+    "klt-sim-d3705dd17cc9",
+    "klt-sim-d3e1fd2840d2",
+    "klt-sim-d687faa6f480",
+    "klt-sim-d8f96c3ac1a6",
+    "klt-sim-da6e0831209d",
+    "klt-sim-dae69e8223ca",
+    "klt-sim-dc8b1fdb2e58",
+    "klt-sim-ddbef7bf3b49",
+    "klt-sim-dead47b96a62",
+    "klt-sim-e0b17216724c",
+    "klt-sim-e359ec25c912",
+    "klt-sim-e3726d7668cc",
+    "klt-sim-e431e94b06c1",
+    "klt-sim-e612c91cdb2e",
+    "klt-sim-e678cc9ec4c0",
+    "klt-sim-e68e6b251bd6",
+    "klt-sim-e707bebdaa2f",
+    "klt-sim-e729a0dd025b",
+    "klt-sim-e750e8ff6671",
+    "klt-sim-e86c4bdd66a3",
+    "klt-sim-e8a5d06e1b95",
+    "klt-sim-e8e76840bb38",
+    "klt-sim-ea8226453675",
+    "klt-sim-ebe13a7dd419",
+    "klt-sim-ec5f82d22256",
+    "klt-sim-ecd9e45f9186",
+    "klt-sim-ed1df8c5ed30",
+    "klt-sim-ed9409873fbf",
+    "klt-sim-f00cf8101e99",
+    "klt-sim-f03a80e01ee2",
+    "klt-sim-f057496e2e88",
+    "klt-sim-f0ae44f7c308",
+    "klt-sim-f0f6a3439f1b",
+    "klt-sim-f2bd1096fbb5",
+    "klt-sim-f34fc4e71013",
+    "klt-sim-f41b83557122",
+    "klt-sim-f483978ea5eb",
+    "klt-sim-f4c46f82f01c",
+    "klt-sim-f66fd0ef134d",
+    "klt-sim-f70da346ef70",
+    "klt-sim-f7d5b0a1f9b3",
+    "klt-sim-f872d7d3ad54",
+    "klt-sim-f9c97b107fca",
+    "klt-sim-fa96ce539f82"
+   ],
+   "n_points": 676,
+   "record": "20261121-042431-db9f161a-i706-paired-cand"
+  }
+ }
+}

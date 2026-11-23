@@ -1,0 +1,703 @@
+{
+  "schema_version": 3,
+  "netlist": {
+    "path": "sim/loop-gain/diagnostics/issue-704/runs/loadstep/base/klt-requests/q2-ss_-40c_2.97v-c330n_esr500m.spice",
+    "scope": "repo"
+  },
+  "status": "pass",
+  "corner_count": 1,
+  "passed": 1,
+  "failed": 0,
+  "errored": 0,
+  "inconclusive": 0,
+  "diagnostic_counts": {
+    "by_code": {},
+    "by_severity": {},
+    "corners_with_diagnostics": 0
+  },
+  "metrics": {
+    "sim__corner__count": 1,
+    "sim__corner__passed_count": 1,
+    "sim__corner__failed_count": 0,
+    "sim__corner__errored_count": 0,
+    "sim__corner__inconclusive_count": 0
+  },
+  "environment": {
+    "engine": "ngspice",
+    "engine_version": "47",
+    "ngspice_binary": "/usr/local/bin/ngspice",
+    "engine_build": {
+      "version_banner": "******\n** ngspice-47 : Circuit level simulation program\n** Compiled with KLU Direct Linear Solver\n** The U. C. Berkeley CAD Group\n** Copyright 1985-1994, Regents of the University of California.\n** Copyright 2001-2026, The ngspice team.\n** Please get your ngspice manual from https://ngspice.sourceforge.io/docs.html\n** Please file your bug-reports at http://ngspice.sourceforge.net/bugrep.html\n** Creation Date: Fri Nov 13 23:19:32 UTC 2026\n******",
+      "binary_sha256": null,
+      "probe": "ok",
+      "reason": null
+    },
+    "ngspice_init": {
+      "source": "runner",
+      "lines": null,
+      "sha256": null
+    },
+    "models_lib": {
+      "path": null,
+      "scope": "external"
+    },
+    "models_lib_sha256": "48de7c677e2c6e7d09b2559279de9f818be71010a4aa933d728eb4db3b133c84",
+    "models_lib_sha256_scope": "client",
+    "netlist_sha256": "39d8138acdd8e4d7fae511e22d611fd489a49cd613f71c4b8f56d83c3cce7625",
+    "netlist_sha256_scope": "staged",
+    "netlist_closure": [
+      {
+        "path": "sim/loop-gain/diagnostics/issue-704/runs/loadstep/base/klt-requests/q2-ss_-40c_2.97v-c330n_esr500m.spice",
+        "scope": "repo",
+        "sha256": "39d8138acdd8e4d7fae511e22d611fd489a49cd613f71c4b8f56d83c3cce7625"
+      }
+    ],
+    "netlist_identity": "sha256:a3ccf0b0e5739b15d1f434284e89f2603bab6df69cc09f0b3046f8e817d5cbfe",
+    "remote": {
+      "provider": "aws-batch-fleet",
+      "job_id": "klt-sim-7ad905afeb47",
+      "region": "us-east-1",
+      "instance_id": "i-08ce4c5f93a1395bb",
+      "instance_type": "c7i.4xlarge",
+      "availability_zone": "us-east-1a",
+      "ami_id": "ami-09c14f55df4958cbd",
+      "lifecycle": "spot",
+      "spot": true,
+      "state": "done",
+      "exit_code": "0",
+      "concurrency": "1",
+      "physical_cores": "8",
+      "elapsed_seconds": 14,
+      "client_submitted_at": "2026-11-22T07:56:54.043030Z",
+      "client_launched_at": "2026-11-22T07:57:11.444922Z",
+      "client_status_terminal_at": "2026-11-22T07:57:42.782617Z",
+      "client_collected_at": "2026-11-22T07:57:43.551333Z",
+      "runner_klt_version": "0.9.0",
+      "client_klt_version": "0.9.3.dev3057+g5b02378e3d12",
+      "runner_compatibility": "match",
+      "runner_request_features": {
+        "required": [
+          "analysis_steps",
+          "options.ngspice_init"
+        ],
+        "missing": [],
+        "status": "supported"
+      },
+      "worker_environment": {
+        "capture": "ok",
+        "simulator": {
+          "requested_binary": "ngspice",
+          "binary_source": "PATH",
+          "selected_path": "/usr/local/bin/ngspice",
+          "version_banner": "******\n** ngspice-47 : Circuit level simulation program\n** Compiled with KLU Direct Linear Solver\n** The U. C. Berkeley CAD Group\n** Copyright 1985-1994, Regents of the University of California.\n** Copyright 2001-2026, The ngspice team.\n** Please get your ngspice manual from https://ngspice.sourceforge.io/docs.html\n** Please file your bug-reports at http://ngspice.sourceforge.net/bugrep.html\n** Creation Date: Fri Nov 13 23:19:32 UTC 2026\n******\n",
+          "version_probe": "ok"
+        },
+        "pdk": {
+          "variant": "sky130A",
+          "root": "/opt/pdk",
+          "stamp_scheme": "sources-sha256",
+          "stamp_sha256": "4ca10280ae9f293aa1ff69f0060a52e0026929111bda881503717469b429ce67",
+          "stamp_text": "open_pdks f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7",
+          "models_staged": false,
+          "stamp_scope": "executed"
+        },
+        "cpu_model": "Intel(R) Xeon(R) Platinum 8488C",
+        "omp_num_threads": null,
+        "image_manifest": null,
+        "model_inputs": null,
+        "diagnostics": [],
+        "pdk_stamp_comparison": {
+          "status": "mismatch",
+          "warning": "the worker's PDK revision stamp for sky130A differs from the one the submitter resolved locally; results may differ from a local run (a matching stamp would not prove identical models)"
+        },
+        "ngspice_init": null,
+        "threads_per_worker": null,
+        "engine_build_comparison": {
+          "status": "match"
+        }
+      },
+      "runner_model_inputs": null,
+      "runner_models_lib_sha256": "48de7c677e2c6e7d09b2559279de9f818be71010a4aa933d728eb4db3b133c84",
+      "runner_corner_section_libs": null,
+      "runner_osdi_preload": null,
+      "job_ceiling": {
+        "basis": "conservative_serial_bound",
+        "unit_count": 1,
+        "per_unit_timeout_s": 300,
+        "overhead_s": 120.0,
+        "job_bound_s": 420.0,
+        "max_job_seconds": 3600.0,
+        "max_job_seconds_source": "fleet_config",
+        "exceeds_ceiling": false,
+        "check": "warn",
+        "max_units_per_job": 11,
+        "recommended_hosts": 1
+      },
+      "models_lib_comparison": {
+        "status": "match"
+      }
+    },
+    "engine_host": "worker",
+    "client_ngspice_binary": "/home/ubuntu/.local/bin/ngspice",
+    "client_engine_build": {
+      "version_banner": "******\n** ngspice-47 : Circuit level simulation program\n** Compiled with KLU Direct Linear Solver\n** The U. C. Berkeley CAD Group\n** Copyright 1985-1994, Regents of the University of California.\n** Copyright 2001-2026, The ngspice team.\n** Please get your ngspice manual from https://ngspice.sourceforge.io/docs.html\n** Please file your bug-reports at http://ngspice.sourceforge.net/bugrep.html\n** Creation Date: Fri Nov 13 23:19:32 UTC 2026\n******",
+      "binary_sha256": "39ca1adb826660324c3626f72bd946ec40704f0f3fc8e243c623f76e24b3eee2",
+      "probe": "ok",
+      "reason": null
+    },
+    "backend": {
+      "resolved": "batch",
+      "source": "flag",
+      "requested": "batch"
+    }
+  },
+  "coverage": {
+    "corners_simulated": 1,
+    "measurements_declared": 14,
+    "measurements_with_limits": 0,
+    "unrecognized_limit_keys": [],
+    "schema_version": 1,
+    "known": true,
+    "checked": [
+      "measurement:[0,\"ss/novdd/-40C\",\"c330n_esr500m.overshoot_fall_v\"]/observation",
+      "measurement:[0,\"ss/novdd/-40C\",\"c330n_esr500m.overshoot_rise_v\"]/observation",
+      "measurement:[0,\"ss/novdd/-40C\",\"c330n_esr500m.recovery_fall_us\"]/observation",
+      "measurement:[0,\"ss/novdd/-40C\",\"c330n_esr500m.recovery_rise_us\"]/observation",
+      "measurement:[0,\"ss/novdd/-40C\",\"c330n_esr500m.settle_err_50ma_pct\"]/observation",
+      "measurement:[0,\"ss/novdd/-40C\",\"c330n_esr500m.undershoot_fall_v\"]/observation",
+      "measurement:[0,\"ss/novdd/-40C\",\"c330n_esr500m.undershoot_rise_v\"]/observation",
+      "measurement:[0,\"ss/novdd/-40C\",\"c330n_esr500m.v_50ma\"]/observation",
+      "measurement:[0,\"ss/novdd/-40C\",\"c330n_esr500m.v_fall_max\"]/observation",
+      "measurement:[0,\"ss/novdd/-40C\",\"c330n_esr500m.v_fall_min\"]/observation",
+      "measurement:[0,\"ss/novdd/-40C\",\"c330n_esr500m.v_pre\"]/observation",
+      "measurement:[0,\"ss/novdd/-40C\",\"c330n_esr500m.v_rise_max\"]/observation",
+      "measurement:[0,\"ss/novdd/-40C\",\"c330n_esr500m.v_rise_min\"]/observation",
+      "measurement:[0,\"ss/novdd/-40C\",\"c330n_esr500m.vout_pre_v\"]/observation"
+    ],
+    "skipped": [],
+    "inapplicable": [
+      {
+        "id": "measurement:[0,\"ss/novdd/-40C\",\"c330n_esr500m.overshoot_fall_v\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"ss/novdd/-40C\",\"c330n_esr500m.overshoot_rise_v\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"ss/novdd/-40C\",\"c330n_esr500m.recovery_fall_us\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"ss/novdd/-40C\",\"c330n_esr500m.recovery_rise_us\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"ss/novdd/-40C\",\"c330n_esr500m.settle_err_50ma_pct\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"ss/novdd/-40C\",\"c330n_esr500m.undershoot_fall_v\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"ss/novdd/-40C\",\"c330n_esr500m.undershoot_rise_v\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"ss/novdd/-40C\",\"c330n_esr500m.v_50ma\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"ss/novdd/-40C\",\"c330n_esr500m.v_fall_max\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"ss/novdd/-40C\",\"c330n_esr500m.v_fall_min\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"ss/novdd/-40C\",\"c330n_esr500m.v_pre\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"ss/novdd/-40C\",\"c330n_esr500m.v_rise_max\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"ss/novdd/-40C\",\"c330n_esr500m.v_rise_min\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"ss/novdd/-40C\",\"c330n_esr500m.vout_pre_v\"]/limits",
+        "reason": "characterization_without_limits"
+      }
+    ],
+    "unknown": [],
+    "nothing_checked": false,
+    "nothing_checked_reasons": []
+  },
+  "provenance": {
+    "klt_version": "0.9.3.dev3057+g5b02378e3d12",
+    "klt_git_commit": "5b02378e3d12d2aa04642bf664ae85962f309fe3",
+    "klt_reinstall_spec": "klayout-tools @ git+https://github.com/2AMLogic/klayout-tools@5b02378e3d12d2aa04642bf664ae85962f309fe3",
+    "klayout_version": "0.30.12",
+    "pdk": {
+      "name": "sky130A",
+      "source": "PDK_ROOT environment variable",
+      "version": "open_pdks c6d73a35f524070e85faff4a6a9eef49553ebc2b",
+      "ambiguous_sources": [
+        "search root: ~/.ciel"
+      ],
+      "compatibility": {
+        "status": "mismatch",
+        "package": "open_pdks-sky130",
+        "expected": "open_pdks f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7"
+      }
+    },
+    "deck": {
+      "name": "sky130.lib.spice",
+      "content_hash": "sha256:48de7c677e2c6e7d09b2559279de9f818be71010a4aa933d728eb4db3b133c84",
+      "released": false
+    },
+    "input": {
+      "content_hash": "sha256:39d8138acdd8e4d7fae511e22d611fd489a49cd613f71c4b8f56d83c3cce7625",
+      "role": "netlist"
+    }
+  },
+  "measurements": [
+    {
+      "name": "c330n_esr500m.v_pre",
+      "unit": null,
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "ss/novdd/-40C",
+        "value": 1.800303,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "ss/novdd/-40C",
+        "value": 1.800303
+      },
+      "max": {
+        "corner_id": "ss/novdd/-40C",
+        "value": 1.800303
+      },
+      "step": "c330n_esr500m"
+    },
+    {
+      "name": "c330n_esr500m.v_rise_min",
+      "unit": null,
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "ss/novdd/-40C",
+        "value": 1.636001,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "ss/novdd/-40C",
+        "value": 1.636001
+      },
+      "max": {
+        "corner_id": "ss/novdd/-40C",
+        "value": 1.636001
+      },
+      "step": "c330n_esr500m"
+    },
+    {
+      "name": "c330n_esr500m.v_rise_max",
+      "unit": null,
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "ss/novdd/-40C",
+        "value": 1.800303,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "ss/novdd/-40C",
+        "value": 1.800303
+      },
+      "max": {
+        "corner_id": "ss/novdd/-40C",
+        "value": 1.800303
+      },
+      "step": "c330n_esr500m"
+    },
+    {
+      "name": "c330n_esr500m.v_fall_min",
+      "unit": null,
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "ss/novdd/-40C",
+        "value": 1.798821,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "ss/novdd/-40C",
+        "value": 1.798821
+      },
+      "max": {
+        "corner_id": "ss/novdd/-40C",
+        "value": 1.798821
+      },
+      "step": "c330n_esr500m"
+    },
+    {
+      "name": "c330n_esr500m.v_fall_max",
+      "unit": null,
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "ss/novdd/-40C",
+        "value": 1.921513,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "ss/novdd/-40C",
+        "value": 1.921513
+      },
+      "max": {
+        "corner_id": "ss/novdd/-40C",
+        "value": 1.921513
+      },
+      "step": "c330n_esr500m"
+    },
+    {
+      "name": "c330n_esr500m.v_50ma",
+      "unit": null,
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "ss/novdd/-40C",
+        "value": 1.798821,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "ss/novdd/-40C",
+        "value": 1.798821
+      },
+      "max": {
+        "corner_id": "ss/novdd/-40C",
+        "value": 1.798821
+      },
+      "step": "c330n_esr500m"
+    },
+    {
+      "name": "c330n_esr500m.vout_pre_v",
+      "unit": "V",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "ss/novdd/-40C",
+        "value": 1.800303,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "ss/novdd/-40C",
+        "value": 1.800303
+      },
+      "max": {
+        "corner_id": "ss/novdd/-40C",
+        "value": 1.800303
+      },
+      "step": "c330n_esr500m"
+    },
+    {
+      "name": "c330n_esr500m.undershoot_rise_v",
+      "unit": "V",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "ss/novdd/-40C",
+        "value": 0.164302,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "ss/novdd/-40C",
+        "value": 0.164302
+      },
+      "max": {
+        "corner_id": "ss/novdd/-40C",
+        "value": 0.164302
+      },
+      "step": "c330n_esr500m"
+    },
+    {
+      "name": "c330n_esr500m.overshoot_rise_v",
+      "unit": "V",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "ss/novdd/-40C",
+        "value": 0.0,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "ss/novdd/-40C",
+        "value": 0.0
+      },
+      "max": {
+        "corner_id": "ss/novdd/-40C",
+        "value": 0.0
+      },
+      "step": "c330n_esr500m"
+    },
+    {
+      "name": "c330n_esr500m.undershoot_fall_v",
+      "unit": "V",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "ss/novdd/-40C",
+        "value": 0.001482,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "ss/novdd/-40C",
+        "value": 0.001482
+      },
+      "max": {
+        "corner_id": "ss/novdd/-40C",
+        "value": 0.001482
+      },
+      "step": "c330n_esr500m"
+    },
+    {
+      "name": "c330n_esr500m.overshoot_fall_v",
+      "unit": "V",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "ss/novdd/-40C",
+        "value": 0.12121,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "ss/novdd/-40C",
+        "value": 0.12121
+      },
+      "max": {
+        "corner_id": "ss/novdd/-40C",
+        "value": 0.12121
+      },
+      "step": "c330n_esr500m"
+    },
+    {
+      "name": "c330n_esr500m.recovery_rise_us",
+      "unit": "us",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "ss/novdd/-40C",
+        "value": 88.1,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "ss/novdd/-40C",
+        "value": 88.1
+      },
+      "max": {
+        "corner_id": "ss/novdd/-40C",
+        "value": 88.1
+      },
+      "step": "c330n_esr500m"
+    },
+    {
+      "name": "c330n_esr500m.recovery_fall_us",
+      "unit": "us",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "ss/novdd/-40C",
+        "value": 73.1,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "ss/novdd/-40C",
+        "value": 73.1
+      },
+      "max": {
+        "corner_id": "ss/novdd/-40C",
+        "value": 73.1
+      },
+      "step": "c330n_esr500m"
+    },
+    {
+      "name": "c330n_esr500m.settle_err_50ma_pct",
+      "unit": "%",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "ss/novdd/-40C",
+        "value": -0.0823195,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "ss/novdd/-40C",
+        "value": -0.0823195
+      },
+      "max": {
+        "corner_id": "ss/novdd/-40C",
+        "value": -0.0823195
+      },
+      "step": "c330n_esr500m"
+    }
+  ],
+  "corners": [
+    {
+      "corner_id": "ss/novdd/-40C",
+      "process": "ss",
+      "supply_v": {},
+      "temperature_c": -40.0,
+      "status": "pass",
+      "runtime_s": 4.675,
+      "peak_rss_bytes": 204361728,
+      "engine_exit_code": 0,
+      "engine_killed_by_signal": null,
+      "measurements": [
+        {
+          "name": "c330n_esr500m.v_pre",
+          "value": 1.800303,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c330n_esr500m"
+        },
+        {
+          "name": "c330n_esr500m.v_rise_min",
+          "value": 1.636001,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c330n_esr500m"
+        },
+        {
+          "name": "c330n_esr500m.v_rise_max",
+          "value": 1.800303,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c330n_esr500m"
+        },
+        {
+          "name": "c330n_esr500m.v_fall_min",
+          "value": 1.798821,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c330n_esr500m"
+        },
+        {
+          "name": "c330n_esr500m.v_fall_max",
+          "value": 1.921513,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c330n_esr500m"
+        },
+        {
+          "name": "c330n_esr500m.v_50ma",
+          "value": 1.798821,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "c330n_esr500m"
+        },
+        {
+          "name": "c330n_esr500m.vout_pre_v",
+          "value": 1.800303,
+          "unit": "V",
+          "status": "pass",
+          "margin": null,
+          "step": "c330n_esr500m"
+        },
+        {
+          "name": "c330n_esr500m.undershoot_rise_v",
+          "value": 0.164302,
+          "unit": "V",
+          "status": "pass",
+          "margin": null,
+          "step": "c330n_esr500m"
+        },
+        {
+          "name": "c330n_esr500m.overshoot_rise_v",
+          "value": 0.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null,
+          "step": "c330n_esr500m"
+        },
+        {
+          "name": "c330n_esr500m.undershoot_fall_v",
+          "value": 0.001482,
+          "unit": "V",
+          "status": "pass",
+          "margin": null,
+          "step": "c330n_esr500m"
+        },
+        {
+          "name": "c330n_esr500m.overshoot_fall_v",
+          "value": 0.12121,
+          "unit": "V",
+          "status": "pass",
+          "margin": null,
+          "step": "c330n_esr500m"
+        },
+        {
+          "name": "c330n_esr500m.recovery_rise_us",
+          "value": 88.1,
+          "unit": "us",
+          "status": "pass",
+          "margin": null,
+          "step": "c330n_esr500m"
+        },
+        {
+          "name": "c330n_esr500m.recovery_fall_us",
+          "value": 73.1,
+          "unit": "us",
+          "status": "pass",
+          "margin": null,
+          "step": "c330n_esr500m"
+        },
+        {
+          "name": "c330n_esr500m.settle_err_50ma_pct",
+          "value": -0.0823195,
+          "unit": "%",
+          "status": "pass",
+          "margin": null,
+          "step": "c330n_esr500m"
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-704/sim/loop-gain/diagnostics/issue-704/runs/loadstep/base/klt-out/q2-ss_-40c_2.97v-c330n_esr500m/ss_novdd_n40C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-704/sim/loop-gain/diagnostics/issue-704/runs/loadstep/base/klt-out/q2-ss_-40c_2.97v-c330n_esr500m/ss_novdd_n40C/corner.cir"
+      },
+      "monte_carlo": null,
+      "steps": [
+        {
+          "name": "c330n_esr500m",
+          "kind": "tran",
+          "status": "ok"
+        }
+      ]
+    }
+  ],
+  "diagnostics": [
+    {
+      "severity": "warning",
+      "code": "model_bin_range_preflight",
+      "message": "preflight: instance 'XM_PASS' (sky130_fd_pr__pfet_g5v0d10v5) has w=100u nf=25, at/above the ~100 um per-instance width bin range some PDKs enforce (keyed on w as written; nf= does not widen it); ngspice may abort with \"could not find a valid modelname\". Use m= to parallel smaller-width instances (see issue #4976)",
+      "instance": "XM_PASS",
+      "model": "sky130_fd_pr__pfet_g5v0d10v5",
+      "w_um": 100.0,
+      "nf": 25.0
+    }
+  ]
+}

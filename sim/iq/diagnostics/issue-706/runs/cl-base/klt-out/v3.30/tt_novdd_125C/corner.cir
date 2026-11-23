@@ -1,0 +1,126 @@
+* klt sim -- generated corner deck, do not edit
+.lib /opt/pdk/sky130A/libs.tech/combined/sky130.lib.spice tt
+.include /var/tmp/eda-job-klt-sim-36bf764078f9/inputs/netlist.cir
+.temp 125.0
+.control
+save all
+setplot new
+echo klt_step_begin 0 $curplot
+tran 5u 1.0m uic
+echo klt_step_end 0 $curplot
+set klt_plot_0 = $curplot
+meas tran vout_50ma avg v(vout) from=0.9m to=1.0m
+let tran1__vout_50ma = vout_50ma
+print tran1__vout_50ma
+meas tran vout_50ma_lo min v(vout) from=0.9m to=1.0m
+let tran1__vout_50ma_lo = vout_50ma_lo
+print tran1__vout_50ma_lo
+meas tran vout_50ma_hi max v(vout) from=0.9m to=1.0m
+let tran1__vout_50ma_hi = vout_50ma_hi
+print tran1__vout_50ma_hi
+meas tran vin_50ma avg v(vin) from=0.9m to=1.0m
+let tran1__vin_50ma = vin_50ma
+print tran1__vin_50ma
+meas tran cl_cmp_50ma avg v(xldo.cl_cmp) from=0.9m to=1.0m
+let tran1__cl_cmp_50ma = cl_cmp_50ma
+print tran1__cl_cmp_50ma
+meas tran ir_set_50ma avg @m.xldo.xm_biasp1.msky130_fd_pr__pfet_g5v0d10v5[id] from=0.9m to=1.0m
+let tran1__ir_set_50ma = ir_set_50ma
+print tran1__ir_set_50ma
+meas tran tail_i_set_50ma avg @m.xldo.xm_tail.msky130_fd_pr__pfet_g5v0d10v5[id] from=0.9m to=1.0m
+let tran1__tail_i_set_50ma = tail_i_set_50ma
+print tran1__tail_i_set_50ma
+meas tran clp_i_set_50ma avg @m.xldo.xm_clp.msky130_fd_pr__pfet_g5v0d10v5[id] from=0.9m to=1.0m
+let tran1__clp_i_set_50ma = clp_i_set_50ma
+print tran1__clp_i_set_50ma
+meas tran cl_cmp_50ma_x avg v(xldo.cl_cmp) from=0.9m to=1.0m
+let tran1__cl_cmp_50ma_x = cl_cmp_50ma_x
+print tran1__cl_cmp_50ma_x
+alter rforce=0.001
+alter rload=1000000000000.0
+setplot new
+echo klt_step_begin 1 $curplot
+dc vforce 0 1.75 0.125
+echo klt_step_end 1 $curplot
+set klt_plot_1 = $curplot
+meas dc ilim_short find i(vforce) at=0
+let dc1__ilim_short = ilim_short
+print dc1__ilim_short
+meas dc ilim_knee find i(vforce) at=1.75
+let dc1__ilim_knee = ilim_knee
+print dc1__ilim_knee
+meas dc i_at_375mv find i(vforce) at=0.375
+let dc1__i_at_375mv = i_at_375mv
+print dc1__i_at_375mv
+meas dc i_at_750mv find i(vforce) at=0.75
+let dc1__i_at_750mv = i_at_750mv
+print dc1__i_at_750mv
+meas dc i_at_1125mv find i(vforce) at=1.125
+let dc1__i_at_1125mv = i_at_1125mv
+print dc1__i_at_1125mv
+meas dc i_at_1500mv find i(vforce) at=1.5
+let dc1__i_at_1500mv = i_at_1500mv
+print dc1__i_at_1500mv
+meas dc i_at_1625mv find i(vforce) at=1.625
+let dc1__i_at_1625mv = i_at_1625mv
+print dc1__i_at_1625mv
+meas dc cl_cmp_at_short find v(xldo.cl_cmp) at=0
+let dc1__cl_cmp_at_short = cl_cmp_at_short
+print dc1__cl_cmp_at_short
+meas dc cl_cmp_at_knee find v(xldo.cl_cmp) at=1.75
+let dc1__cl_cmp_at_knee = cl_cmp_at_knee
+print dc1__cl_cmp_at_knee
+meas dc clp_i_at_short find @m.xldo.xm_clp.msky130_fd_pr__pfet_g5v0d10v5[id] at=0
+let dc1__clp_i_at_short = clp_i_at_short
+print dc1__clp_i_at_short
+meas dc ir_at_short find @m.xldo.xm_biasp1.msky130_fd_pr__pfet_g5v0d10v5[id] at=0
+let dc1__ir_at_short = ir_at_short
+print dc1__ir_at_short
+alter rload=36.0
+setplot new
+echo klt_step_begin 2 $curplot
+tran 500n 3.0m uic
+echo klt_step_end 2 $curplot
+set klt_plot_2 = $curplot
+meas tran ipre avg i(vvin) from=0.9m to=1.0m
+let tran2__ipre = ipre
+print tran2__ipre
+meas tran ish_avg avg i(vvin) from=2.0m to=3.0m
+let tran2__ish_avg = ish_avg
+print tran2__ish_avg
+meas tran ish_max max i(vvin) from=1.1m to=3.0m
+let tran2__ish_max = ish_max
+print tran2__ish_max
+meas tran ish_min min i(vvin) from=1.1m to=3.0m
+let tran2__ish_min = ish_min
+print tran2__ish_min
+meas tran vsh_max max v(vout) from=1.1m to=3.0m
+let tran2__vsh_max = vsh_max
+print tran2__vsh_max
+meas tran clp_i_short avg @m.xldo.xm_clp.msky130_fd_pr__pfet_g5v0d10v5[id] from=2.0m to=3.0m
+let tran2__clp_i_short = clp_i_short
+print tran2__clp_i_short
+setplot new
+let meas_vout_50ma_v = {$klt_plot_0}.vout_50ma
+print meas_vout_50ma_v
+let meas_vout_50ma_span_v = {$klt_plot_0}.vout_50ma_hi - {$klt_plot_0}.vout_50ma_lo
+print meas_vout_50ma_span_v
+let meas_cl_margin_50ma_v = {$klt_plot_0}.vin_50ma - {$klt_plot_0}.cl_cmp_50ma
+print meas_cl_margin_50ma_v
+let meas_ilim_short_ma = 1000*{$klt_plot_1}.ilim_short
+print meas_ilim_short_ma
+let meas_ilim_knee_ma = 1000*{$klt_plot_1}.ilim_knee
+print meas_ilim_knee_ma
+let meas_ilim_droop_pct = 100*({$klt_plot_1}.ilim_knee - {$klt_plot_1}.ilim_short)/{$klt_plot_1}.ilim_knee
+print meas_ilim_droop_pct
+let meas_ishort_sustained_ma = -1000*{$klt_plot_2}.ish_avg
+print meas_ishort_sustained_ma
+let meas_ishort_ripple_pct = 100*({$klt_plot_2}.ish_max - {$klt_plot_2}.ish_min)/(-{$klt_plot_2}.ish_avg)
+print meas_ishort_ripple_pct
+let meas_vout_short_mv = 1000*{$klt_plot_2}.vsh_max
+print meas_vout_short_mv
+let meas_isup_pre_short_ma = -1000*{$klt_plot_2}.ipre
+print meas_isup_pre_short_ma
+quit
+.endc
+.end
