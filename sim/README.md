@@ -701,9 +701,10 @@ validated shape (issue #379, below) and `sim/load-regulation`'s two
 cold-start endpoints in their validated shape (issue #381, below) and `sim/iq`'s
 two cold-start endpoints (issue #213, below) and `sim/current-limit`'s three
 chained legs as one three-step request per supply (issue #177, below) and
+`sim/enable-shutdown`'s enable cycle + three EN = 0 operating points as one
+four-step request per supply (issue #755, below) and
 `sim/startup`'s ramp-trace grid in its validated shape (issue #336, "Startup
-ESR grid" above). Every other manifest — `enable-shutdown`,
-`ic-screen-125c-*`, `loop-gain`, `psrr-dc`, `thermal`, and the `mc-*`
+ESR grid" above). Every other manifest — `ic-screen-125c-*`, `loop-gain`, `psrr-dc`, `thermal`, and the `mc-*`
 experiments (which have their own runner, `mc-run.py`) — and any edited smoke,
 window-grid, dropout, endpoint or chained-legs shape
 is **refused before netlisting, submission or local ngspice**. The other
@@ -1369,6 +1370,28 @@ cold-start crossing).
   IC_SEED `.nodeset` card the seeded dc leg depends on
   (`batch_current_limit.NODESET_CARD`, issue #647); the manifest is pinned by
   digest, and `sim/tests/test_batch_current_limit_177.py` is headless.
+
+#### Enable/shutdown on the batch backend (issue #755)
+
+`python3 sim/bin/corner-run.py sim/enable-shutdown --backend batch` runs the
+enable/shutdown matrix off-host. `sim/bin/batch_enable_shutdown.py` (PDK-free)
+translates the deck into ONE four-step `analysis_steps[]` request per supply
+group (three requests, 45 distinct corners): `tran1` (`tran 5u 4.5m`, the EN
+enable -> shutdown cycle, four `meas tran` cards), `op1` (output free), `op2`
+(`alter rforce = 1m`, output forced to 0 V) and `op3` (`alter vforce = 1.8`
+with the 1 mOhm path still connected; `rforce` is repeated explicitly so the
+step is correct whether or not klt carries alters across steps). klt derived
+measurements cannot name raw plot vectors, so each manifest expression over
+`opN.<vector>` becomes an `opN` step `expr` measurement named like the manifest
+row (`-1e6*op1.i(vvin)` -> `-1e6*i(vvin)`) plus a top-level `meas_<name>` row
+`opN.<name>`; `tranN.<card>` expressions travel verbatim. All eight rows are
+graded locally with the manifest's bounds. The manifest is pinned by digest and
+the request netlist's `VVIN`, `VEN` (DC 0 + full PWL), `VVREF`, `COUT`, `RESR`,
+`RLOAD`, `RFORCE` and `VFORCE` lines are pinned verbatim
+(`BATCH_ALLOWLIST["enable-shutdown"]`); `sim/tests/test_batch_enable_shutdown_755.py`
+is headless. A `klt sim --dry-run` accepts the translated request; the
+chained-step alter carry-over and a live paired comparison against the local
+backend are not exercised by the headless tests.
 
 **Status (2026-11-17): record `20261117-173516-d843d914`, FAIL, 41/45
 corners PASS** (`--supersedes 20260825-105322-933dfdd`; JSON twin store-only,
