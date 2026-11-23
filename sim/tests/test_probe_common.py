@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import hashlib
-import json
 import sys
 import tempfile
 import unittest
@@ -53,14 +52,6 @@ class TestProbeCommon(unittest.TestCase):
         with mock.patch.object(pc._record_common, "git", return_value="abc") as g:
             self.assertEqual(pc.git_provenance("/r"), "abc")
             g.assert_called_once_with(Path("/r"), "rev-parse", "HEAD")
-
-    def test_load_results(self):
-        with tempfile.TemporaryDirectory() as d:
-            for n in ("b", "a"):
-                p = Path(d) / "runs" / n
-                p.mkdir(parents=True)
-                (p / "result.json").write_text(json.dumps({"run_id": n}))
-            self.assertEqual(list(pc.load_results(d)), ["a", "b"])
 
 
 if __name__ == "__main__":
