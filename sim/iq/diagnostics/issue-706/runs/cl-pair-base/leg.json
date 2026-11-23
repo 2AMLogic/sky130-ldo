@@ -1,0 +1,242 @@
+{
+ "adapter": {
+  "module": "batch_current_limit.py",
+  "shape": "one three-step chained request per supply",
+  "source": "PR #648 head befb83fb (unmerged)"
+ },
+ "candidate_rev": null,
+ "corner_ids": [
+  "tt_27c_3.30v"
+ ],
+ "execution": {
+  "requests": [
+   {
+    "engine_version": "47",
+    "job_id": "klt-sim-e7accc33c0a6",
+    "key": "v3.30",
+    "netlist_file": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-706/sim/iq/diagnostics/issue-706/runs/cl-pair-base/klt-requests/v3.30.spice",
+    "provider": "aws-batch-fleet",
+    "request_file": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-706/sim/iq/diagnostics/issue-706/runs/cl-pair-base/klt-requests/v3.30.json",
+    "response_file": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-706/sim/iq/diagnostics/issue-706/runs/cl-pair-base/klt-out/v3.30/response.json",
+    "returncode": 0,
+    "supply_v": 3.3
+   }
+  ]
+ },
+ "experiment": "current-limit",
+ "leg": "cl-pair-base",
+ "matrix": [
+  [
+   "tt",
+   27.0,
+   3.3
+  ]
+ ],
+ "provenance": {
+  "batch_current_limit_py_sha256": "ba8445af246644a22081b8a24b20fcaf9ad0038a60602a75eebbab41813de0d5",
+  "candidate_invariant_problems": [],
+  "candidate_py_sha256": "a08e93dce932ddd4bb90854459f23bbc8fa1fa7fcbf8a2cf524e2742ec82e5d7",
+  "driver_sha256": "2b89171f529e0225018d8773c3e840c23d5d9787a903a3bd30803720d8e9c5ec",
+  "dut_sch_sha256": "1378c2d440e6ffc2224091972a162357c2634600e6e56cb51e4d6f96159fd2e3",
+  "edit_notes": [],
+  "experiment_json_sha256": "3bf0ac6cd1d2bfd03e3b4105927652001faefba58ce44f842460fe1ccaeb9eb1",
+  "netlist_sha256": "0ac1fda745032e321a577fd095adede011cfa1b5ffd5142c6c8b90a3e882bd85",
+  "pdk": {
+   "lib_sha256": "48de7c677e2c6e7d09b2559279de9f818be71010a4aa933d728eb4db3b133c84",
+   "matches_pin": true,
+   "open_pdks_commit": "c6d73a35f524070e85faff4a6a9eef49553ebc2b"
+  },
+  "source_commit": "db9f161a305e1edd913743bb926d5b59fd59105e",
+  "testbench_sha256": "78b754001fd739b1d207ef846d643f9be3052512ce3f5e7e21bdae4c47fa24c4",
+  "tools": {
+   "declared": {
+    "ngspice": "42",
+    "xschem": "3.4.4"
+   },
+   "ngspice": "ngspice-47 : Circuit level simulation program",
+   "on_baseline": false,
+   "platform": "Linux 7.0.0-1014-aws x86_64",
+   "python": "3.12.3",
+   "xschem": "XSCHEM V3.4.7"
+  }
+ },
+ "results": [
+  {
+   "corner_id": "tt_27c_3.30v",
+   "derived": [
+    {
+     "expr": "tran1.vout_50ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "name": "vout_50ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.798826
+    },
+    {
+     "expr": "tran1.vout_50ma_hi - tran1.vout_50ma_lo",
+     "max": null,
+     "max_inclusive": true,
+     "min": null,
+     "name": "vout_50ma_span_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 8.999999999925734e-06
+    },
+    {
+     "expr": "tran1.vin_50ma - tran1.cl_cmp_50ma",
+     "max": null,
+     "max_inclusive": true,
+     "min": null,
+     "name": "cl_margin_50ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 0.042218999999999784
+    },
+    {
+     "expr": "1000*dc1.ilim_short",
+     "max": null,
+     "max_inclusive": true,
+     "min": 50,
+     "name": "ilim_short_ma",
+     "pass": true,
+     "reason": "",
+     "unit": "mA",
+     "value": 153.3056
+    },
+    {
+     "expr": "1000*dc1.ilim_knee",
+     "max": null,
+     "max_inclusive": true,
+     "min": 50,
+     "name": "ilim_knee_ma",
+     "pass": true,
+     "reason": "",
+     "unit": "mA",
+     "value": 123.70230000000001
+    },
+    {
+     "expr": "100*(dc1.ilim_knee - dc1.ilim_short)/dc1.ilim_knee",
+     "max": null,
+     "max_inclusive": true,
+     "min": null,
+     "name": "ilim_droop_pct",
+     "pass": true,
+     "reason": "",
+     "unit": "%",
+     "value": -23.931082930551806
+    },
+    {
+     "expr": "-1000*tran2.ish_avg",
+     "max": null,
+     "max_inclusive": true,
+     "min": null,
+     "name": "ishort_sustained_ma",
+     "pass": true,
+     "reason": "",
+     "unit": "mA",
+     "value": 153.34900000000002
+    },
+    {
+     "expr": "100*(tran2.ish_max - tran2.ish_min)/(-tran2.ish_avg)",
+     "max": 100,
+     "max_inclusive": true,
+     "min": null,
+     "name": "ishort_ripple_pct",
+     "pass": true,
+     "reason": "",
+     "unit": "%",
+     "value": 0.04043065165079572
+    },
+    {
+     "expr": "1000*tran2.vsh_max",
+     "max": null,
+     "max_inclusive": true,
+     "min": null,
+     "name": "vout_short_mv",
+     "pass": true,
+     "reason": "",
+     "unit": "mV",
+     "value": 0.1533623
+    },
+    {
+     "expr": "-1000*tran2.ipre",
+     "max": null,
+     "max_inclusive": true,
+     "min": null,
+     "name": "isup_pre_short_ma",
+     "pass": true,
+     "reason": "",
+     "unit": "mA",
+     "value": 0.0132637
+    }
+   ],
+   "extras": {
+    "cl_cmp_50ma_x": 3.257781,
+    "cl_cmp_at_knee": 2.490025,
+    "cl_cmp_at_short": 2.396219,
+    "clp_i_at_short": 2.080108e-06,
+    "clp_i_set_50ma": 1.022596e-06,
+    "clp_i_short": 2.080108e-06,
+    "i_at_1125mv": 0.1355194,
+    "i_at_1500mv": 0.1297303,
+    "i_at_1625mv": 0.1272748,
+    "i_at_375mv": 0.1460766,
+    "i_at_750mv": 0.1407241,
+    "ir_at_short": 2.114851e-06,
+    "ir_set_50ma": 2.114843e-06,
+    "tail_i_set_50ma": 3.274387e-06
+   },
+   "klt_status": "pass",
+   "pass": true,
+   "process": "tt",
+   "raw_cards": {
+    "dc1.cl_cmp_at_knee": 2.490025,
+    "dc1.cl_cmp_at_short": 2.396219,
+    "dc1.clp_i_at_short": 2.080108e-06,
+    "dc1.i_at_1125mv": 0.1355194,
+    "dc1.i_at_1500mv": 0.1297303,
+    "dc1.i_at_1625mv": 0.1272748,
+    "dc1.i_at_375mv": 0.1460766,
+    "dc1.i_at_750mv": 0.1407241,
+    "dc1.ilim_knee": 0.1237023,
+    "dc1.ilim_short": 0.1533056,
+    "dc1.ir_at_short": 2.114851e-06,
+    "meas_cl_margin_50ma_v": 0.042219,
+    "meas_ilim_droop_pct": -23.9311,
+    "meas_ilim_knee_ma": 123.7023,
+    "meas_ilim_short_ma": 153.3056,
+    "meas_ishort_ripple_pct": 0.03977865,
+    "meas_ishort_sustained_ma": 153.3486,
+    "meas_isup_pre_short_ma": 0.01326374,
+    "meas_vout_50ma_span_v": 9e-06,
+    "meas_vout_50ma_v": 1.798826,
+    "meas_vout_short_mv": 0.1533623,
+    "tran1.cl_cmp_50ma": 3.257781,
+    "tran1.cl_cmp_50ma_x": 3.257781,
+    "tran1.clp_i_set_50ma": 1.022596e-06,
+    "tran1.ir_set_50ma": 2.114843e-06,
+    "tran1.tail_i_set_50ma": 3.274387e-06,
+    "tran1.vin_50ma": 3.3,
+    "tran1.vout_50ma": 1.798826,
+    "tran1.vout_50ma_hi": 1.798829,
+    "tran1.vout_50ma_lo": 1.79882,
+    "tran2.clp_i_short": 2.080108e-06,
+    "tran2.ipre": -1.32637e-05,
+    "tran2.ish_avg": -0.153349,
+    "tran2.ish_max": -0.153348,
+    "tran2.ish_min": -0.15341,
+    "tran2.vsh_max": 0.0001533623
+   },
+   "reasons": [],
+   "solver_diagnostic": null,
+   "supply_v": 3.3,
+   "temp_c": 27.0
+  }
+ ],
+ "variant": "base"
+}
