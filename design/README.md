@@ -645,6 +645,39 @@ screening showed keeps improving that corner, because the `Iq < 30 µA` row
 (set by DR-009, `proposed`) is the binding constraint — 6× measured 33.6 µA
 at 50 mA, over the row; 2× measures 24.9 µA (table below), inside it.
 
+**A larger `R_CZ` was re-qualified and rejected (#709).** Issue #693's
+attribution traced the startup ramp-monotonicity drawdown to a fixed charge
+packet leaving `C_out` through `C_COMP`/`R_CZ`, and its screen found
+`L=52 → 180` removes 85-88 % of that packet with the peak-overshoot, floor and
+ramp-time bounds passing (ramp-drawdown monotonicity at `tolerance_v = 0` still
+fails: 3.715 and 9.515 µV at the two screened no-load conditions, and the
+Startup signoff grade stays FAIL).
+The #709 co-verification re-measured loop gain over the full 45-corner ×
+18-leg grid on both values (`sim/bias-retopo/20261121-165832-rczL52` = L=52,
+`.../20261121-171327-rczL180` = L=180) and load-transient on matched DUTs
+(`sim/load-transient/records/20261121-173242-303d2449` vs
+`.../20261121-173321-7fd5183b`): the zero moves ~3.5 kHz → ~1 kHz and the
+two-sided optimum shows its other side. The no-load legs improve (0.33 µF:
++0..+13°; 4.7 µF: +0..+2.3°), but the loaded legs lose margin, and not
+uniformly across ESR: `c033`/1 mA goes 74° → 27° worst case and below 45° at
+all 45 PVT points for every ESR (500 mΩ included, worst 31.4°); `c4u7`/50 mA
+goes below 45° at all 45 points at 0 and 10 mΩ (worst 27.0° / 28.0°) but
+keeps zero failures at 500 mΩ (worst 67.8°, down from 101.1°); `c4u7`/1 mA
+improves at all three ESRs. Sub-45° PM points total 203 → 489 of 810 (all
+"worst" values are minima over a leg's 45 PVT points). Load-transient shows
+a marginal change on a row that already fails at L=52: excursion failures
+179 → 151, recovery failures 540 → 540, 28 excursion checks recovered and
+none newly failing, but recovery time at conditions that fail both ways
+moves both ways (e.g. rising-edge recovery at fs/125 °C/2.97 V, 4.7 µF/0 Ω,
+132.7 → 193.9 µs). The EA_OUT wake-shaping alternatives the attribution
+opened were screened on the same conditions and **not shown to qualify**: the
+`M_MIRP2` slew trade broke regulation, and the gate-RC soft-release that was
+run used a 100 ns time constant on a deck that was not committed, so a 100 µs
+release remains unmeasured (see the note, section 4). Adoption of a
+compensation change therefore stays **open** at L=52; the schematic keeps the
+#25 value and the startup record of record is unchanged. Full tables:
+`sim/startup/pilots/20261121-709-rcz-l180-loopgain-rejection.md`.
+
 **Measured result** (`sim/loop-gain` record `20260818-014128-01b7905`, the
 `--quick` 3-corner subset; ratified bound is `spec/target-spec.md`'s Stability
 row, PM ≥ 45° and GM ≥ 10 dB worst corner):
