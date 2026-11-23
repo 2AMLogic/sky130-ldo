@@ -16,7 +16,6 @@ and keep their own copies, byte-for-byte. Standard library only.
 from __future__ import annotations
 
 import hashlib
-import json
 import subprocess
 import time
 from pathlib import Path
@@ -83,12 +82,3 @@ def git_provenance(repo=None) -> str:
     """`git rev-parse HEAD` of `repo` (default: this checkout); "" on failure."""
     repo = Path(repo) if repo is not None else BIN_DIR.parents[1]
     return _record_common.git(repo, "rev-parse", "HEAD")
-
-
-def load_results(diag_dir) -> dict:
-    """{run_id: result.json dict} for every `<diag_dir>/runs/*/result.json`."""
-    out = {}
-    for f in sorted((Path(diag_dir) / "runs").glob("*/result.json")):
-        r = json.loads(f.read_text())
-        out[r["run_id"]] = r
-    return out

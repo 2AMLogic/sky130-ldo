@@ -670,13 +670,17 @@ a marginal change on a row that already fails at L=52: excursion failures
 none newly failing, but recovery time at conditions that fail both ways
 moves both ways (e.g. rising-edge recovery at fs/125 °C/2.97 V, 4.7 µF/0 Ω,
 132.7 → 193.9 µs). The EA_OUT wake-shaping alternatives the attribution
-opened were screened on the same conditions and **not shown to qualify**: the
-`M_MIRP2` slew trade broke regulation, and the gate-RC soft-release that was
-run used a 100 ns time constant on a deck that was not committed, so a 100 µs
-release remains unmeasured (see the note, section 4). Adoption of a
-compensation change therefore stays **open** at L=52; the schematic keeps the
-#25 value and the startup record of record is unchanged. Full tables:
-`sim/startup/pilots/20261121-709-rcz-l180-loopgain-rejection.md`.
+opened were screened on the same conditions and **rejected**: the
+`M_MIRP2` slew trade broke regulation, and the committed ~100 µs soft-release
+screen of the EN-gated clamps (`sim/bin/enp-soft-release-709.py`, both screen
+corners, all 12 legs) cuts the packet only 44-70 % with the ramp drawdown
+still positive at every leg -- no verdict changes -- while stretching the
+release to 300 µs makes the packet worse than baseline or breaks the ratified
+oversoot bound (see `sim/startup/pilots/20261123-709-enp-soft-release-screen.md`).
+Adoption of a compensation change therefore stays **open** at L=52; the
+schematic keeps the #25 value and the startup record of record is unchanged.
+Full tables: `sim/startup/pilots/20261121-709-rcz-l180-loopgain-rejection.md`
+and `sim/startup/pilots/20261123-709-enp-soft-release-screen.md`.
 
 **Measured result** (`sim/loop-gain` record `20260818-014128-01b7905`, the
 `--quick` 3-corner subset; ratified bound is `spec/target-spec.md`'s Stability
