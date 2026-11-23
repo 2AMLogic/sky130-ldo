@@ -185,5 +185,17 @@ improvement over the production baseline.
 - `runs/{startup,line,load}-{base,cand}/klt-out/` — batch responses,
   receipts, per-corner ngspice logs (committed evidence, #692 precedent)
 - `runs/mc-{base,cand}/` — MC request/response and per-sample analysis
+- **Base-leg netlists live in the artifact store, not here.** The base DUT
+  netlists are byte-identical to already-published objects, so they are not
+  re-committed (`scripts/check_artifact_manifests.py`: bytes live in the store
+  only). Read them at:
+  - `runs/startup-base/klt-requests/<case>.spice` →
+    `sim/startup/klt-request-netlists/20261117-221657-efb6bd6b.<case>.spice`
+    (manifest `startup-20261117-221657-efb6bd6b.manifest.json`); the sibling
+    `<case>.json` requests stay here unmodified (append-only evidence); their
+    recorded `netlist` path is the original run-time location of that file.
+  - `runs/mc-base/netlist.spice` →
+    `sim/mc-output-accuracy/netlist-snapshots/20261112-110113-820ba8b3.spice`
+    (manifest `mc-output-accuracy-20261112-110113-820ba8b3.manifest.json`).
 - `tables/*.csv` — paired per-condition values and classifications
 - `verdict.json` — machine-readable verdict for #702
