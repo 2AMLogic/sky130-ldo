@@ -6,6 +6,25 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 
 - [2026-09](work_log/WORK_LOG_2026-09.md)
 
+### 2026-11-22
+
+- **PR #737**: refactor: share the measurement-check, ramp-check and batch corner-result builders
+- **PR #734**: sim: add issue-704 paired loop/load-step/PSRR evidence for rev2
+- **PR #733**: docs(sim): move Iq testbench header to fresh-ratification wording
+- **PR #732**: refactor: fetch store-held item-5 record bytes once per artifact
+- **PR #731**: fix: refuse JSON error envelopes in fleet submit, drop rcz-shelf-691 duplicate pool
+- **PR #727**: fix: require exactly one remote response in the dropout paired loader
+- **PR #725**: test: stage only experiment inputs in BatchHarness scratch fixture
+- **PR #724**: ci: extend the append-only guard to sim diagnostics run directories
+- **PR #681**: Clarify DR-012’s proposed status and fresh ratification requirement
+- **Issue #736** (closed): Share measurement-check, ramp-check, and batch corner-result builders across corner-run.py and _batch_backend.py
+- **Issue #729** (closed): Stop double-fetching store-held records and drop redundant hashing in signoff/make_item5_envelope.py
+- **Issue #728** (closed): Reject error envelopes in _fleet_campaign.submit() and drop rcz-shelf-691.py's duplicate submit loop
+- **Issue #720** (closed): Remove multi-response merging from the single-request dropout comparison
+- **Issue #719** (closed): Stage only experiment inputs in BatchHarness to avoid copying 392 MiB of dropout diagnostics
+- **Issue #716** (closed): Extend the sim append-only CI check to archived diagnostic runs
+- **Issue #704** (closed): Measure rev2 loop stability, load-step response and supply rejection
+
 ### 2026-11-21
 
 - **PR #722**: signoff: cover pdk-smoke.yml in the T1 item 10 hygiene inventory
