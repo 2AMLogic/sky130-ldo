@@ -34,13 +34,15 @@ sys.path.insert(0, str(SIM_DIR / "bin"))
 from _record_common import pvt_input_sections  # noqa: E402
 
 
-def baseline_netlist(slug: str) -> str:
-    """The LDO baseline xschem netlist every endpoint adapter validates against,
-    carrying `slug`'s own validated stimulus pin.
+def baseline_netlist(slug: str, *, extra: tuple[str, ...] = ()) -> str:
+    """The LDO baseline xschem netlist every pinned batch adapter validates
+    against, carrying `slug`'s own validated stimulus pin.
 
     The body is one deck for all adapters; the only thing that varies is the
-    three-line stimulus, which already comes keyed by slug from
-    `corner_run.BATCH_ALLOWLIST[slug]["stimulus"]`.
+    pinned stimulus lines, which already come keyed by slug from
+    `corner_run.BATCH_ALLOWLIST[slug]["stimulus"]`. `extra` appends further
+    verbatim-pinned lines after them -- the current-limit IC_SEED `.nodeset`
+    card (issue #647).
     """
     stimulus = corner_run.BATCH_ALLOWLIST[slug]["stimulus"]
     return (
@@ -48,7 +50,8 @@ def baseline_netlist(slug: str) -> str:
         + "\n".join(
             [stimulus[0], ".save i(vvin)", stimulus[1], "VVREF VREF 0 1.2",
              "xldo VOUT VREF EN VIN ldo_3v3in_1v8out", "COUT VOUT VESR 1u m=1", "RESR VESR 0 10m m=1",
-             stimulus[2], ".subckt ldo_3v3in_1v8out VOUT VREF EN VIN", "R1 VIN VOUT 1", ".ends"]
+             *stimulus[2:], *extra,
+             ".subckt ldo_3v3in_1v8out VOUT VREF EN VIN", "R1 VIN VOUT 1", ".ends"]
         )
         + "\n.end\n"
     )

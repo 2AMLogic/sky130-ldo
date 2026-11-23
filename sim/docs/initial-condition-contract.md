@@ -222,7 +222,7 @@ conversions):
 
 | Bench | Verdict | Mechanism |
 |---|---|---|
-| `current-limit` | **Exposed** — on **all** of legs 1 and 3, not just leg 1 (corrected by #177, see below) | Leg 1's `op` (`experiment.json:24`) runs with `VEN`'s `dc` value (`'vsup'`, fully enabled) per `testbench/tb_current_limit.sch:145` — an unconstrained, loop-closed solve. ~~(Leg 3's `tran` is *not* exposed: ngspice's non-`uic` transient uses the source's PWL value at t=0, which starts at 0/disabled, per the same line's comment.)~~ **That parenthesis is wrong**, and #177 measured it wrong: a non-`uic` `tran` performs an operating-point solve first and reads the `dc` keyword value there, so leg 3's `tran` was exposed by the same mechanism as leg 1's `op` — see "An EN edge alone does not satisfy the first shape" above. Run per-leg at `tt_27c_3.30v` with no `uic`, legs 1 and 3 each tripped `Warning: Dynamic gmin stepping failed`; leg 2's `dc` sweep did not. Converted by #177: both transient legs now carry `uic`. |
+| `current-limit` | **Exposed** — on **all three legs** (legs 1 and 3 corrected by #177; leg 2 by #647, see below) | Leg 1's `op` (`experiment.json:24`) ran with `VEN`'s `dc` value (`'vsup'`, fully enabled) per `testbench/tb_current_limit.sch:145` — an unconstrained, loop-closed solve. ~~(Leg 3's `tran` is *not* exposed: ngspice's non-`uic` transient uses the source's PWL value at t=0, which starts at 0/disabled, per the same line's comment.)~~ **That parenthesis is wrong**, and #177 measured it wrong: a non-`uic` `tran` performs an operating-point solve first and reads the `dc` keyword value there, so leg 3's `tran` was exposed by the same mechanism as leg 1's `op` — see "An EN edge alone does not satisfy the first shape" above. Run per-leg at `tt_27c_3.30v` with no `uic`, legs 1 and 3 each tripped `Warning: Dynamic gmin stepping failed`; leg 2's `dc` sweep did not — **at that corner**. #177 converted both transient legs to `uic`; the 45-corner fleet re-run then measured leg 2 tripping the gate at 4 of 45 corners, all at Vin_max, and **#647 seeded leg 2 with a `.nodeset` and moved it first in the deck** (see "#647" below). |
 | `dropout-vs-load` | **Exposed** → **converted (#178)** | Its only analysis, `dc VVIN 3.63 1.5 -0.02` (`experiment.json:23`), ran with `VEN` held at a constant `'vsup'` (`testbench/tb_dropout_vs_load.sch:108`, no PWL/PULSE at all) — unconstrained, loop-closed. **#178 replaced the `dc` sweep with a cold-start `uic` transient whose VIN is a quasi-static down-ramp** — see "#178: dropout-vs-load and thermal" below. |
 | `loop-gain` | **Exposed** → **converted (#179)** | Its first analysis, `ac dec 30 1e-2 1e9` (`experiment.json:24` as audited), ran with `VEN` held at a constant `'vsup'` (`testbench/tb_loop_gain.sch:102`) — the implicit linearization-point solve ngspice performs before an `ac` analysis is unconstrained, and it is redone from scratch for each of the deck's seven `alter`-reached points. **Converted by #179** to the `.nodeset`-seeded `.ac` shape above. |
 | `load-transient` | **Exposed → CONVERTED (#180)** | Was `tran 200n 3m` with no `uic`, with `VEN` held at a constant `'vsup'` (`testbench/tb_load_transient.sch`) — the same "`tran` with no `uic`" defect `#164` fixed for `mc-output-accuracy`. **#180 converted it** to the `.ic`-seeded shape (variant B): `testbench/tb_load_transient.sch`'s `IC_SEED` card constrains the operating-point solve to the loop's regulating branch at the pre-step 1 mA load and the (still non-`uic`) transient is released from it. See "`load-transient` after #180" below. |
@@ -595,6 +595,110 @@ Monte Carlo experiment" and 2AMLogic/klayout-tools#2482), so the 15-corner matri
 ran through the runner itself — one `ngspice` process at a time, sequentially,
 ~16 minutes total — and the probes above are single-corner debug runs, one
 `ngspice -b` each. No `ngspice` grid was hand-launched.
+
+### #647: `current-limit`'s leg 2 — seeding a dc sweep whose state is not the regulating one
+
+**Verdict first: record `20261122-220637-f1d875fa` (batch fleet), 45/45
+PASS, zero #171 markers in any of the 45 retained engine logs** (grep over
+the store-fetched bytes), superseding `20261117-173516-d843d914` (41/45,
+the four FAILs all solver-graded on leg 2 at Vin_max). Every graded value
+matches the superseded record to 4-5 significant digits — the clamp window
+is unchanged; only its gate-compliance is.
+
+`thermal` (#178/#189) seeded a `dc temp` sweep whose every point sits near
+the *regulating* operating point. `current-limit`'s leg 2 is the second
+`.nodeset`-seeded `dc` sweep in `sim/`, and its state is the opposite
+extreme: VOUT is *forced* from 0 to 1.75 V through 1 mOhm, so the sweep
+lives entirely on the **clamp-engaged** branch — a state no cold-start of
+the block ever visits at its regulated output, but which the bench's own
+leg 3 transient realizes and holds for 2 ms. That held state is where the
+card's values come from.
+
+#### Where the failures were
+
+Single-corner probes at `tt/27C/3.63V`, netlisted through the runner and
+run one `ngspice -b` at a time with sweep-window variants: the flail is the
+sweep's own **first continuation steps at the dead-short end** — the gmin
+round between `Reference value : 0` and the next converged point — not a
+mid-sweep crossing and not the knee. A 2-point window `0 → 0.125` solves
+clean; `0 → 0.25` (step 0.25) fails at its second point; `0.125 → 0.25`
+fails the same way, so it is the step *away from the short*, not the value
+0 itself. Halving the sweep step to 0.0625 does **not** help the unseeded
+deck (all four corners still fail) — the lever is the first guess, not the
+step size. The 2.97 V and 3.30 V columns solve clean from ngspice's own
+guess at all 30 corners; only Vin_max flails.
+
+#### The card
+
+The #178 method exactly: a `.nodeset` card in the testbench schematic
+(`IC_SEED`, `code_shown.sym`, like `thermal`'s), values measured from a
+settled realizable transient of the same testbench — here leg 3's own
+cold-start `uic` transient with the short applied and held, node voltages
+read at t = 2.95 ms, at `tt/27C/3.30V`: the sweep's own starting point
+(`vforce = 0`, dead short, clamp regulating ilim). Supply classification
+per #189: the settled short state was measured at all three supplies and
+each node written `{vsup-x}` only where its slope is ~1 V/V
+(`EA_OUT = EA_CZ` 0.82, `BIASP` 0.97, `CL_CMP` 0.98, `SS` 1.00);
+`EA_TAIL` measures slope 0.21 and stays absolute — the same
+not-VIN-tracking classification #189 found for the same topological
+reason (the PMOS input pair's source node). The clamp's own comparator
+nodes (`CL_CMP` and the sense node `CL_SNS`) join the card because the
+clamp state IS the branch this sweep measures — the `TS_CMP` analogue of
+the thermal card.
+
+The card's values are measured at ONE corner, and the short state moves
+across PVT with the clamp window itself (measured at ten corners spanning
+the matrix: `vsup − EA_OUT` ranges 1.35–1.99 V, `vsup − CL_CMP`
+0.63–1.09 V). That spread is fine for a released first guess, but it makes
+the seed **knife-edge-sensitive in total**, which two probes measured
+directly: a one-node-at-a-time scan at `fs/125C/3.63V` (nominal card,
+single node swapped to the corner's exact value) flips the failure on
+swapping *any* of several nodes — there is no single guilty node — and a
+card written at the window's midpoint instead broke a corner the nominal
+card solved. The robust configuration is not a better-fitted card; it is
+the deck order (below) plus the nominal-corner card.
+
+#### The seeded analysis must LEAD the deck — measured, and now the convention
+
+With the nominal card chained AFTER leg 1's transient (the deck's original
+order), `fs_125c_3.63v` still tripped `Dynamic gmin stepping failed` at the
+sweep's first point; with the **same card** and the `dc` as the deck's
+first analysis, that corner — and the other three failures, and the matrix
+extremes `ss/-40C` and `ff/125C` at both supply rails — solve with zero
+diagnostics. A cold-start dc honors the nodeset cleanly; a dc that follows
+a transient starts from that transient's regulating state and needs the
+guess more (the card is ~250 mV from `fs/125C`'s own short state on
+`BIASP`/`CL_CMP`, and an exact-`fs/125C` card rescues the chained order —
+so the nodeset IS honoured there, just less reliably).
+
+Every seeded bench in `sim/` already had its seeded analysis first —
+`thermal` (#178), `loop-gain`/`psrr-dc` (#179), `load-transient` (#180) —
+because their seeded analysis was their only or first analysis by
+construction. `current-limit` was the first bench with a transient ahead of
+a seeded solve, and it measured why that order is load-bearing. The two
+`uic` transients are order-independent (each starts every node at 0) and
+each leg's element values are restored with `alter` before it runs; the
+manifest's plot-qualified expressions (`tran1.*`, `dc1.*`, `tran2.*`) are
+type-indexed, not deck-position-indexed, so they are unchanged.
+
+#### What this is NOT
+
+Not a design finding: the singular nodes the warnings named (`ea_cz`,
+`n_fbb`) were the solver's first-continuation flail at the dead-short end
+of a forced-output sweep — every measured value was already inside its
+bounds at the failing corners, and seeding removed the diagnostics without
+moving any value beyond solver noise. No spec row, bound or schematic
+device changed, and no decision record was needed. The batch adapter pins
+the card verbatim (`batch_current_limit.NODESET_CARD`): a different seed
+is a different experiment and refuses the batch backend until re-validated.
+
+#### How it was run
+
+Localization and card-derivation probes are single-corner `ngspice -b`
+runs, one at a time (the settled-state measurements at ten corners
+likewise). The verdict record ran through `corner-run.py --backend batch`
+— three chained-legs `klt sim` requests on the Spot fleet, per the host
+rules; no local grid was hand-launched.
 
 ### #187: `dropout-vs-load`'s `EN`-below-VIN supply convention — an enable-path headroom limit, and the bench convention that walked into it
 

@@ -1,0 +1,518 @@
+{
+ "bounds": {
+  "load_step": "peak <= 150 mV, recovery into +-1 % within 20 us",
+  "loop": "PM >= 45 deg, GM >= 10 dB (spec/target-spec.md Stability row; the issue table's 'GM >= 10 deg' is graded as 10 dB per the spec unit)",
+  "psrr": "strictly > 50 dB @ 1 kHz and > 20 dB @ 100 kHz"
+ },
+ "coverage": {
+  "load_step": "the 6-leg window grid at the manifest's own quick_subset [('tt', 27.0, 3.3), ('ss', -40.0, 2.97), ('ff', 125.0, 3.63)]; the other 42 of the 45-corner matrix not attempted",
+  "loop_gain": "tt/27C/3.30V only, 42 conditions per DUT (the issue's pinned grid); PVT corners of sim/loop-gain/experiment.json not attempted",
+  "psrr": "full 45-corner matrix x both loads per DUT at the bench's own load network (C_out 1 uF / ESR 10 mOhm)"
+ },
+ "generated_from": [
+  "runs/loop/base/provenance.json",
+  "runs/loop/rev2/provenance.json",
+  "runs/loop/rev2-decoupled/provenance.json",
+  "runs/psrr/base/provenance.json",
+  "runs/psrr/rev2/provenance.json"
+ ],
+ "issue": 704,
+ "load_step": {
+  "stats": {
+   "base": {
+    "invalid": [],
+    "legs_x_corners": 18,
+    "no_recovery_in_window": 0,
+    "peak_above_bound": 11,
+    "rec_above_bound": 36,
+    "valid": 18,
+    "worst_peak_at": "ff_125c_3.63v/c330n_esr0",
+    "worst_peak_v": 0.215339,
+    "worst_rec_at": "ff_125c_3.63v/c4u7_esr0",
+    "worst_rec_us": 651.9
+   },
+   "rev2": {
+    "invalid": [],
+    "legs_x_corners": 18,
+    "no_recovery_in_window": 0,
+    "peak_above_bound": 17,
+    "rec_above_bound": 36,
+    "valid": 18,
+    "worst_peak_at": "ff_125c_3.63v/c330n_esr0",
+    "worst_peak_v": 0.242057,
+    "worst_rec_at": "ff_125c_3.63v/c4u7_esr0",
+    "worst_rec_us": 733.7
+   }
+  }
+ },
+ "loop_gain": {
+  "decoupled_check": [
+   {
+    "as_drawn": {
+     "dc": 650.1241376331693,
+     "fc": 293.77349992961484,
+     "gm": 68.72046543953024,
+     "pm": 14.270343651371832
+    },
+    "d_gm_db": -0.9890950518352497,
+    "d_pm_deg": -0.014001262959311589,
+    "decoupled": {
+     "dc": 1818.2292199772658,
+     "fc": 293.7779437076655,
+     "gm": 67.731370387695,
+     "pm": 14.25634238841252
+    },
+    "leg": "c47-esr0-10uA",
+    "reasons": [],
+    "verdict": "validated"
+   },
+   {
+    "as_drawn": {
+     "dc": 618.6165928572667,
+     "fc": 263.23863007012386,
+     "gm": 69.02006716370154,
+     "pm": 14.633241641489889
+    },
+    "d_gm_db": -1.5300248087750958,
+    "d_pm_deg": -0.014903501913408945,
+    "decoupled": {
+     "dc": 1672.3459150826288,
+     "fc": 263.24268722271006,
+     "gm": 67.49004235492644,
+     "pm": 14.61833813957648
+    },
+    "leg": "c033-esr0-0mA",
+    "reasons": [],
+    "verdict": "validated"
+   },
+   {
+    "as_drawn": {
+     "dc": 665.4886736982519,
+     "fc": 162608.38474023694,
+     "gm": 16.654916528419044,
+     "pm": 43.74007831116131
+    },
+    "d_gm_db": -0.48569099673073524,
+    "d_pm_deg": 0.03406193910021216,
+    "decoupled": {
+     "dc": 1293.7194842319288,
+     "fc": 162592.07086847958,
+     "gm": 16.16922553168831,
+     "pm": 43.774140250261524
+    },
+    "leg": "c033-esr0-50mA",
+    "reasons": [],
+    "verdict": "validated"
+   },
+   {
+    "as_drawn": {
+     "dc": 617.5092935545058,
+     "fc": 62.67594843750284,
+     "gm": 72.42383703881892,
+     "pm": 38.37137220550602
+    },
+    "d_gm_db": -1.9985355640259712,
+    "d_pm_deg": -0.03990096095154172,
+    "decoupled": {
+     "dc": 1650.7907763183498,
+     "fc": 62.68446211483388,
+     "gm": 70.42530147479295,
+     "pm": 38.33147124455448
+    },
+    "leg": "c47-esr0-0mA",
+    "reasons": [],
+    "verdict": "validated"
+   },
+   {
+    "as_drawn": {
+     "dc": 710.8005037480723,
+     "fc": 26215.98757233575,
+     "gm": 28.380832434868918,
+     "pm": 86.31199681920165
+    },
+    "d_gm_db": -0.7461104651993367,
+    "d_pm_deg": -0.04062958109764736,
+    "decoupled": {
+     "dc": 2009.0620552003634,
+     "fc": 26236.20906453183,
+     "gm": 27.63472196966958,
+     "pm": 86.271367238104
+    },
+    "leg": "c033-esr0-1mA",
+    "reasons": [],
+    "verdict": "validated"
+   },
+   {
+    "as_drawn": {
+     "dc": 662.5834549044943,
+     "fc": 494.8251961164172,
+     "gm": null,
+     "pm": 15.340065915371326
+    },
+    "d_gm_db": null,
+    "d_pm_deg": -0.014721470509414303,
+    "decoupled": {
+     "dc": 1864.8386310536246,
+     "fc": 494.83338975304537,
+     "gm": null,
+     "pm": 15.325344444861912
+    },
+    "leg": "c47-esr500m-30uA",
+    "reasons": [
+     "[transfer_metric_unavailable] measurement 'gm': gain_margin_db is unavailable (no_downward_phase_crossing)",
+     "[transfer_metric_unavailable] measurement 'gm': gain_margin_db is unavailable (no_downward_phase_crossing)"
+    ],
+    "verdict": "validated"
+   }
+  ],
+  "pair_classification": {
+   "c033-esr0-0mA": {
+    "d_gm": 0.45953006557377307,
+    "d_pm": -5.023744694092727,
+    "gm": "both_pass",
+    "pm": "both_fail"
+   },
+   "c033-esr0-100uA": {
+    "d_gm": 0.6881462578789908,
+    "d_pm": -1.7623082200405236,
+    "gm": "both_pass",
+    "pm": "both_pass"
+   },
+   "c033-esr0-10uA": {
+    "d_gm": 0.973086147534886,
+    "d_pm": -1.8637479098824201,
+    "gm": "both_pass",
+    "pm": "both_fail"
+   },
+   "c033-esr0-1mA": {
+    "d_gm": 0.366901531029761,
+    "d_pm": 3.826245661417076,
+    "gm": "both_pass",
+    "pm": "both_pass"
+   },
+   "c033-esr0-300uA": {
+    "d_gm": 0.5618336151624419,
+    "d_pm": 0.2640532655072718,
+    "gm": "both_pass",
+    "pm": "both_pass"
+   },
+   "c033-esr0-30uA": {
+    "d_gm": 0.8622892089095728,
+    "d_pm": -1.9114754618971403,
+    "gm": "both_pass",
+    "pm": "both_fail"
+   },
+   "c033-esr0-50mA": {
+    "d_gm": -0.2917421141433607,
+    "d_pm": 3.918363817538591,
+    "gm": "both_pass",
+    "pm": "both_fail"
+   },
+   "c033-esr10m-0mA": {
+    "d_gm": 0.457394188088486,
+    "d_pm": -5.023766803702472,
+    "gm": "both_pass",
+    "pm": "both_fail"
+   },
+   "c033-esr10m-100uA": {
+    "d_gm": 0.6872293463194268,
+    "d_pm": -1.7629390735761064,
+    "gm": "both_pass",
+    "pm": "both_pass"
+   },
+   "c033-esr10m-10uA": {
+    "d_gm": 0.9728773107946722,
+    "d_pm": -1.8638650207513763,
+    "gm": "both_pass",
+    "pm": "both_fail"
+   },
+   "c033-esr10m-1mA": {
+    "d_gm": 0.36131918143670205,
+    "d_pm": 3.8199548594478614,
+    "gm": "both_pass",
+    "pm": "both_pass"
+   },
+   "c033-esr10m-300uA": {
+    "d_gm": 0.5512592453829228,
+    "d_pm": 0.26201557444612433,
+    "gm": "both_pass",
+    "pm": "both_pass"
+   },
+   "c033-esr10m-30uA": {
+    "d_gm": 0.8619861983968633,
+    "d_pm": -1.911698856986959,
+    "gm": "both_pass",
+    "pm": "both_fail"
+   },
+   "c033-esr10m-50mA": {
+    "d_gm": -0.3034710914120602,
+    "d_pm": 3.905331862207845,
+    "gm": "both_pass",
+    "pm": "both_fail"
+   },
+   "c033-esr500m-0mA": {
+    "d_gm": 0.4168594068048179,
+    "d_pm": -5.024850181101215,
+    "gm": "both_pass",
+    "pm": "both_fail"
+   },
+   "c033-esr500m-100uA": {
+    "d_gm": 0.5528845235312332,
+    "d_pm": -1.7938593083457732,
+    "gm": "both_pass",
+    "pm": "both_pass"
+   },
+   "c033-esr500m-10uA": {
+    "d_gm": 0.8337868580399075,
+    "d_pm": -1.8696039660632096,
+    "gm": "both_pass",
+    "pm": "both_fail"
+   },
+   "c033-esr500m-1mA": {
+    "d_gm": 0.02591633964195239,
+    "d_pm": 3.5164667708185533,
+    "gm": "both_pass",
+    "pm": "both_pass"
+   },
+   "c033-esr500m-300uA": {
+    "d_gm": 0.34987466445199544,
+    "d_pm": 0.1624954901025859,
+    "gm": "both_pass",
+    "pm": "both_pass"
+   },
+   "c033-esr500m-30uA": {
+    "d_gm": 0.7334159767473309,
+    "d_pm": -1.9226492822910473,
+    "gm": "both_pass",
+    "pm": "both_fail"
+   },
+   "c033-esr500m-50mA": {
+    "d_gm": -1.1459729691737692,
+    "d_pm": 3.288216651733478,
+    "gm": "both_pass",
+    "pm": "both_pass"
+   },
+   "c47-esr0-0mA": {
+    "d_gm": 0.09278112914833514,
+    "d_pm": -14.750144146367916,
+    "gm": "both_pass",
+    "pm": "regression"
+   },
+   "c47-esr0-100uA": {
+    "d_gm": 0.9177481509055099,
+    "d_pm": -1.8540220833856722,
+    "gm": "both_pass",
+    "pm": "both_fail"
+   },
+   "c47-esr0-10uA": {
+    "d_gm": 0.6650360208726909,
+    "d_pm": -3.9394342314056416,
+    "gm": "both_pass",
+    "pm": "both_fail"
+   },
+   "c47-esr0-1mA": {
+    "d_gm": 0.7721273072652295,
+    "d_pm": -1.9138036987116038,
+    "gm": "both_pass",
+    "pm": "both_pass"
+   },
+   "c47-esr0-300uA": {
+    "d_gm": 0.8480951264485768,
+    "d_pm": -1.7839493072056598,
+    "gm": "both_pass",
+    "pm": "both_fail"
+   },
+   "c47-esr0-30uA": {
+    "d_gm": 0.9061047753486662,
+    "d_pm": -2.5230122844249934,
+    "gm": "both_pass",
+    "pm": "both_fail"
+   },
+   "c47-esr0-50mA": {
+    "d_gm": 0.41049970683567594,
+    "d_pm": 4.083246014719393,
+    "gm": "both_pass",
+    "pm": "both_pass"
+   },
+   "c47-esr10m-0mA": {
+    "d_gm": 0.09115416252799946,
+    "d_pm": -14.750090752754502,
+    "gm": "both_pass",
+    "pm": "regression"
+   },
+   "c47-esr10m-100uA": {
+    "d_gm": 0.9106202841274111,
+    "d_pm": -1.855297601054616,
+    "gm": "both_pass",
+    "pm": "both_fail"
+   },
+   "c47-esr10m-10uA": {
+    "d_gm": 0.6517892617826817,
+    "d_pm": -3.9398129385847085,
+    "gm": "both_pass",
+    "pm": "both_fail"
+   },
+   "c47-esr10m-1mA": {
+    "d_gm": 0.6858241311185154,
+    "d_pm": -1.9192038149431596,
+    "gm": "both_pass",
+    "pm": "both_pass"
+   },
+   "c47-esr10m-300uA": {
+    "d_gm": 0.8427693650870935,
+    "d_pm": -1.786327771234113,
+    "gm": "both_pass",
+    "pm": "both_fail"
+   },
+   "c47-esr10m-30uA": {
+    "d_gm": 0.8951799198462851,
+    "d_pm": -2.5236923025631484,
+    "gm": "both_pass",
+    "pm": "both_fail"
+   },
+   "c47-esr10m-50mA": {
+    "d_gm": 0.3250405759844206,
+    "d_pm": 4.005863416189555,
+    "gm": "both_pass",
+    "pm": "both_pass"
+   },
+   "c47-esr500m-0mA": {
+    "d_gm": -0.0021660102755447497,
+    "d_pm": -14.747473915541406,
+    "gm": "both_pass",
+    "pm": "regression"
+   },
+   "c47-esr500m-100uA": {
+    "d_gm": null,
+    "d_pm": -1.9178323807314825,
+    "gm": "invalid",
+    "pm": "both_fail"
+   },
+   "c47-esr500m-10uA": {
+    "d_gm": null,
+    "d_pm": -3.958349653448437,
+    "gm": "invalid",
+    "pm": "both_fail"
+   },
+   "c47-esr500m-1mA": {
+    "d_gm": null,
+    "d_pm": -2.1850709788055838,
+    "gm": "invalid",
+    "pm": "both_pass"
+   },
+   "c47-esr500m-300uA": {
+    "d_gm": null,
+    "d_pm": -1.9032194204334587,
+    "gm": "invalid",
+    "pm": "both_fail"
+   },
+   "c47-esr500m-30uA": {
+    "d_gm": null,
+    "d_pm": -2.5569887762183896,
+    "gm": "invalid",
+    "pm": "both_fail"
+   },
+   "c47-esr500m-50mA": {
+    "d_gm": -2.0330091875000846,
+    "d_pm": 0.7579611558906976,
+    "gm": "both_pass",
+    "pm": "both_pass"
+   }
+  },
+  "stats": {
+   "base": {
+    "gm_below_min": 0,
+    "gm_unavailable": [
+     "c47-esr500m-10uA: [transfer_metric_unavailable] measurement 'gm': gain_margin_db is unavailable (no_downward_phase_crossing)",
+     "c47-esr500m-30uA: [transfer_metric_unavailable] measurement 'gm': gain_margin_db is unavailable (no_downward_phase_crossing)",
+     "c47-esr500m-100uA: [transfer_metric_unavailable] measurement 'gm': gain_margin_db is unavailable (no_downward_phase_crossing)",
+     "c47-esr500m-300uA: [transfer_metric_unavailable] measurement 'gm': gain_margin_db is unavailable (no_downward_phase_crossing)",
+     "c47-esr500m-1mA: [transfer_metric_unavailable] measurement 'gm': gain_margin_db is unavailable (no_downward_phase_crossing)"
+    ],
+    "gm_valid": 37,
+    "invalid": [],
+    "pm_below_min": 23,
+    "pm_unavailable": [],
+    "pm_valid": 42,
+    "points": 42,
+    "worst_gm": {
+     "gm": 16.946658642562404,
+     "leg": "c033-esr0-50mA"
+    },
+    "worst_pm": {
+     "leg": "c47-esr0-30uA",
+     "pm": 17.445896784619464
+    }
+   },
+   "rev2": {
+    "gm_below_min": 0,
+    "gm_unavailable": [
+     "c47-esr500m-30uA: [transfer_metric_unavailable] measurement 'gm': gain_margin_db is unavailable (no_downward_phase_crossing)",
+     "c47-esr500m-100uA: [transfer_metric_unavailable] measurement 'gm': gain_margin_db is unavailable (no_downward_phase_crossing)",
+     "c47-esr500m-300uA: [transfer_metric_unavailable] measurement 'gm': gain_margin_db is unavailable (no_downward_phase_crossing)",
+     "c47-esr500m-1mA: [transfer_metric_unavailable] measurement 'gm': gain_margin_db is unavailable (no_downward_phase_crossing)"
+    ],
+    "gm_valid": 38,
+    "invalid": [],
+    "pm_below_min": 26,
+    "pm_unavailable": [],
+    "pm_valid": 42,
+    "points": 42,
+    "worst_gm": {
+     "gm": 16.654916528419044,
+     "leg": "c033-esr0-50mA"
+    },
+    "worst_pm": {
+     "leg": "c47-esr0-10uA",
+     "pm": 14.270343651371832
+    }
+   }
+  }
+ },
+ "psrr": {
+  "stats": {
+   "base": {
+    "fail_100k": 43,
+    "fail_1k": 86,
+    "invalid": [
+     "1ma/ff/27C/3.30V: solver diagnostic: Warning: Dynamic gmin stepping failed",
+     "1ma/fs/-40C/3.30V: solver diagnostic: Warning: Dynamic gmin stepping failed",
+     "50ma/ff/27C/3.30V: operating point solver diagnostic: Warning: Dynamic gmin stepping failed",
+     "50ma/fs/-40C/3.30V: solver diagnostic: Warning: Dynamic gmin stepping failed"
+    ],
+    "points": 90,
+    "valid": 86,
+    "worst_100k": {
+     "at": "50ma/fs/-40C/2.97V",
+     "db": 10.4599
+    },
+    "worst_1k": {
+     "at": "1ma/fs/125C/2.97V",
+     "db": 20.2985
+    }
+   },
+   "rev2": {
+    "fail_100k": 42,
+    "fail_1k": 84,
+    "invalid": [
+     "1ma/tt/-40C/2.97V: solver diagnostic: Warning: singular matrix:  check node xldo.xr_cz.t1",
+     "50ma/tt/-40C/2.97V: solver diagnostic: Warning: Dynamic gmin stepping failed",
+     "1ma/ff/-40C/3.30V: solver diagnostic: Warning: singular matrix:  check node xldo.xr_cz.t1",
+     "50ma/ff/-40C/3.30V: solver diagnostic: Warning: Dynamic gmin stepping failed",
+     "1ma/tt/-40C/3.63V: operating point solver diagnostic: Warning: singular matrix:  check node xldo.xr_fb_b.t2",
+     "50ma/tt/-40C/3.63V: solver diagnostic: Warning: singular matrix:  check node xldo.xr_fb_b.t2"
+    ],
+    "points": 90,
+    "valid": 84,
+    "worst_100k": {
+     "at": "50ma/fs/-40C/3.30V",
+     "db": 9.79172
+    },
+    "worst_1k": {
+     "at": "1ma/fs/125C/2.97V",
+     "db": 20.0996
+    }
+   }
+  }
+ }
+}

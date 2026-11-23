@@ -16,7 +16,6 @@ from __future__ import annotations
 
 import json
 import math
-import shutil
 import sys
 import unittest
 from pathlib import Path
@@ -65,12 +64,6 @@ class FakeDropoutKlt(FakeSingleStepKlt):
 class DropoutHarness(BatchHarness):
     SLUG = SLUG
     NETLIST = DT_NETLIST
-
-    def setUp(self):
-        super().setUp()
-        # the copied tree carries ~20 MB of committed #357 diagnostics the
-        # adapter never reads; drop it from the scratch copy
-        shutil.rmtree(self.exp_dir / "diagnostics", ignore_errors=True)
 
     def make_fake(self, **kw):
         return FakeDropoutKlt(self, self.pin, **kw)

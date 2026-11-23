@@ -13,12 +13,15 @@ the evidence it copies.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 import shutil
 import sys
+import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "signoff"))
@@ -105,6 +108,81 @@ class Item5Envelopes(unittest.TestCase):
                 m.build_envelope("iq", "20260910-034648-6c0436d")
         finally:
             m.RATIFIED["iq"]["iq_no_load_ua"] = orig
+
+
+class StoreHeldRecordFetchContract(unittest.TestCase):
+    """A store-held record is fetched exactly once per artifact (issue #729).
+
+    `build_envelope()` used to fetch the record JSON twice -- `_load()`
+    parsed and discarded the bytes, then the caller fetched them again solely
+    to hash them -- and hashed an on-disk netlist snapshot with
+    `read_bytes()` instead of leaving `_envelope()`'s chunked
+    `sha256_file_prefixed` default to do it. These tests pin the
+    single-fetch contract headlessly: `fetch_entry_bytes` and the manifest
+    lookup are mocked, so no `klt` or store access is needed.
+    """
+
+    BENCH = "test-bench"
+    RID = "20260101-000000-deadbeef"
+    REC_NAME = f"sim/{BENCH}/records/{RID}.json"
+    SNAP_REL = f"sim/{BENCH}/netlist-snapshots/{RID}.spice"
+    SNAP_BYTES = b"* test netlist snapshot\n"
+
+    def _record(self) -> dict:
+        return {
+            "links": {"netlist_snapshot": self.SNAP_REL},
+            "tools": {"ngspice": "test", "platform": "test"},
+            "pdk": {"pinned_commit": "test"},
+            "overall_pass": True,
+            "corners": [{
+                "corner_id": "tt_1v98", "process": "tt", "supply_v": 1.98,
+                "temperature_c": 27, "pass": True,
+                "measurements": [{
+                    "name": "probe_v", "value": 1.8, "unit": "V",
+                    "min": 1.764, "max": 1.836, "pass": True,
+                }],
+            }],
+        }
+
+    def _build(self, snapshot_on_disk: bool) -> tuple[dict, list[str], str, str]:
+        """Wrap a store-held record against a throwaway tree; returns
+        (envelope, fetched entry names, expected record sha, expected
+        snapshot sha)."""
+        rec_raw = (json.dumps(self._record()) + "\n").encode()
+        manifest = Path(f"manifests/artifacts/{self.BENCH}-{self.RID}.manifest.json")
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            snap = root / self.SNAP_REL
+            snap.parent.mkdir(parents=True)
+            expected_snap = "sha256:" + hashlib.sha256(self.SNAP_BYTES).hexdigest()
+            if snapshot_on_disk:
+                snap.write_bytes(self.SNAP_BYTES)
+                expected_snap = m.sha256_file_prefixed(snap)
+            fetch = mock.Mock(side_effect=lambda _m, name: {
+                self.REC_NAME: rec_raw, self.SNAP_REL: self.SNAP_BYTES}[name])
+            with mock.patch.object(m, "REPO_ROOT", root), \
+                 mock.patch.object(m._report, "_store_manifest_entry",
+                                   return_value=(manifest, self.REC_NAME)), \
+                 mock.patch.object(m, "fetch_entry_bytes", fetch), \
+                 mock.patch.dict(m.RATIFIED, {self.BENCH: {
+                     "probe_v": ("output", {"min": 1.764, "max": 1.836})}}):
+                env = m.build_envelope(self.BENCH, self.RID)
+            names = [c.args[1] for c in fetch.call_args_list]
+            return (env, names, "sha256:" + hashlib.sha256(rec_raw).hexdigest(),
+                    expected_snap)
+
+    def test_store_held_record_and_snapshot_fetch_once_each(self):
+        env, names, rec_sha, snap_sha = self._build(snapshot_on_disk=False)
+        self.assertEqual(names.count(self.REC_NAME), 1)  # never re-fetched just to hash it
+        self.assertEqual(names.count(self.SNAP_REL), 1)
+        self.assertEqual(env["source_record"]["sha256"], rec_sha)
+        self.assertEqual(env["provenance"]["input"]["content_hash"], snap_sha)
+
+    def test_store_held_record_with_on_disk_snapshot_fetches_once(self):
+        env, names, rec_sha, snap_sha = self._build(snapshot_on_disk=True)
+        self.assertEqual(names, [self.REC_NAME])  # only the JSON twin; snapshot hashed from disk
+        self.assertEqual(env["source_record"]["sha256"], rec_sha)
+        self.assertEqual(env["provenance"]["input"]["content_hash"], snap_sha)
 
 
 if __name__ == "__main__":
