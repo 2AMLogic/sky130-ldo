@@ -703,8 +703,10 @@ two cold-start endpoints (issue #213, below) and `sim/current-limit`'s three
 chained legs as one three-step request per supply (issue #177, below) and
 `sim/enable-shutdown`'s enable cycle + three EN = 0 operating points as one
 four-step request per supply (issue #755, below) and
+`sim/loop-gain`'s 18-leg AC grid as three ESR-group requests per supply (issue
+#754, below) and
 `sim/startup`'s ramp-trace grid in its validated shape (issue #336, "Startup
-ESR grid" above). Every other manifest — `ic-screen-125c-*`, `loop-gain`, `psrr-dc`, `thermal`, and the `mc-*`
+ESR grid" above). Every other manifest — `ic-screen-125c-*`, `psrr-dc`, `thermal`, and the `mc-*`
 experiments (which have their own runner, `mc-run.py`) — and any edited smoke,
 window-grid, dropout, endpoint or chained-legs shape
 is **refused before netlisting, submission or local ngspice**. The other
@@ -1468,6 +1470,54 @@ manifests (flags omitted or default) keep their previous digest; flipping a
 flag to strict changes the `measurements` digest, so records made before the
 change are reported as input-stale rather than regraded (records are
 append-only and are never rewritten).
+
+#### Loop-gain AC leg grid on the batch backend (issue #754)
+
+`python3 sim/bin/corner-run.py sim/loop-gain --backend batch` runs the 18-leg
+closed-loop-injection `ac_leg_grid` (C_out {0.33, 4.7 uF} x ESR {0, 10 m, 500 m
+ohm} x load {50 mA, 1 mA, 0 mA}) through `sim/bin/batch_loop_gain.py`:
+
+- **Three requests per supply, not eighteen.** klt's step `alter` takes
+  V/I/R/C/L elements only, and the ESR is the CCVS `HESR` (gain = ESR; gain `0`
+  is an exact short, a 0-ohm resistor is floored by ngspice). So `HESR`'s gain
+  travels in each request's NETLIST and the manifest's three contiguous
+  six-leg ESR blocks (`esr10m`, `esr500m`, `esr0`) are the requests; a
+  full 45-corner run is 9 requests (`--quick` is 3 requests per explicit
+  tuple). Only the one pinned `HESR VESRS 0
+  VESRSENSE 10m` line is rewritten (`10m` / `0.5` / `0`).
+- **Steps.** Each request is twelve `analysis_steps[]`: `op<i>` (explicit
+  `alter {COUT, RLOAD}` so every group is self-contained, `vseed = v(vout)`)
+  and `ac<i>` (`ac dec 30 1e-2 1e9`; `lg`, `lgdb`, `lgph` as `intermediate`
+  vectors; `fc`, `phc`, `gmdb` as `.meas ac` cards with `on_unreached: "null"`;
+  `dcg = lgdb[0]` on leg 1). `options.ngspice_init` is `sim/spiceinit` plus
+  `set units=degrees` (so `cph` reports degrees as in the local deck). Step
+  names are the manifest's own plot names, so its expressions carry over.
+- **Grading is local, over step cards.** The request carries NO top-level
+  `measurements[]`: all 56 manifest expressions (`180 + ac<i>.phc`,
+  `-ac<i>.gmdb`, `op<i>.vseed`, `ac1.fc`, `ac1.dcg`) are evaluated by the
+  harness with the manifest's bounds (strict at equality: PM >= 45, GM >= 10,
+  vout_seed in [1.62, 1.98]). A leg with no -180 deg crossing is reported
+  `not_reached` by klt (null value): that measurement grades FAIL, never PASS,
+  and does not abort the corner — matching the local backend — instead of a klt
+  `derived_input_unavailable` corner error.
+- **Admission (renewal pin).** The record input-fingerprint digests of
+  `analyses`, `measurements` and `matrix` are pinned in `BATCH_ALLOWLIST`; they
+  do NOT hash `ac_leg_grid`, so the adapter also replays the deck's `alter`s
+  from the netlist baseline and requires every leg's resulting (C_out, ESR,
+  R_load) to equal `ac_leg_grid`, plus the exact PM/GM/validity expression per
+  leg. The seven baseline top-level cards (`VVIN`, `VEN`, `VVREF`, `COUT`,
+  `VESRSENSE`, `HESR`, `RLOAD`) and the verbatim `.nodeset` seed are pinned in
+  each request netlist. Any drift refuses before netlisting or submission;
+  an intentional change needs renewed validation
+  (`sim/tests/test_batch_loop_gain_754.py`) and a deliberate pin update.
+- **Never a PASS from missing data.** A missing/duplicate/unrequested/errored/
+  non-finite step card, a non-completed corner, an incomplete ESR-group set for
+  a corner, a solver diagnostic or an absent engine log is a recorded FAIL; a
+  structurally wrong response aborts with no record and no local fallback.
+- **Provenance.** `execution.adapter` records the ESR groups, the `HESR` line
+  per group, the cards, the extra init line and the validated pins.
+  `corner-run.py` has no `--wait-for-capacity` flag: every request already
+  carries `batch.capacity_wait_s` and `run_klt_batch` retries capacity refusals.
 
 ## Evidence bytes go to the artifact store (issue #436)
 

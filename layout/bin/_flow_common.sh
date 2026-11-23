@@ -9,7 +9,7 @@
 # Sourcing runs flow_paths, which sets LAYOUT_DIR and REPO_ROOT (the two
 # path derivations that were byte-identical in all five drivers), and defines:
 #
-#   flow_require_klt       <script> <klt-path> [setup-hint]
+#   flow_require_klt       <script> <klt-path>
 #   flow_require_pdk       <script> <pdk-variant> <pin-hint> <klt-command...>
 #   flow_mint_record       <script> <reports-dir> [--rel] [--suffix TEXT]
 #   flow_netlist_schematic <script> <schematic> <xschem-out-dir> <klt-command...>
@@ -41,22 +41,16 @@ flow_paths() {
   REPO_ROOT="$(cd "$LAYOUT_DIR/.." && pwd)"
 }
 
-# flow_require_klt <script> <klt-path> [setup-hint]
+# flow_require_klt <script> <klt-path>
 #
-# Refuse to run without the pinned `klt` build. With no hint the message names
-# layout/bin/setup-venv.sh's default invocation; a hint is printed as a second,
-# indented line.
+# Refuse to run without the pinned `klt` build; the message names
+# layout/bin/setup-venv.sh.
 flow_require_klt() {
-  local script="$1" klt="$2" hint="${3-}"
+  local script="$1" klt="$2"
   if [[ -x "$klt" ]]; then
     return 0
   fi
-  if [[ -n "$hint" ]]; then
-    echo "$script: $klt not found -- run" >&2
-    echo "  $hint" >&2
-  else
-    echo "$script: $klt not found -- run layout/bin/setup-venv.sh first" >&2
-  fi
+  echo "$script: $klt not found -- run layout/bin/setup-venv.sh first" >&2
   exit 1
 }
 

@@ -89,19 +89,6 @@ class RequireKltTest(unittest.TestCase):
             "run-x-flow.sh: /nope/klt not found -- run layout/bin/setup-venv.sh first\n",
         )
 
-    def test_a_hint_is_printed_as_an_indented_second_line(self):
-        """A caller-supplied setup hint, byte for byte."""
-        result = run_snippet(
-            'flow_require_klt run-x-flow.sh /nope/klt '
-            '"layout/bin/setup-venv.sh --force"'
-        )
-        self.assertEqual(result.returncode, 1)
-        self.assertEqual(
-            result.stderr,
-            "run-x-flow.sh: /nope/klt not found -- run\n"
-            "  layout/bin/setup-venv.sh --force\n",
-        )
-
     def test_an_executable_klt_passes_silently(self):
         result = run_snippet('flow_require_klt run-x-flow.sh "$(command -v bash)"; echo past')
         self.assertEqual(result.returncode, 0, result.stderr)
