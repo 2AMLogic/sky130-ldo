@@ -25,6 +25,7 @@ from pathlib import Path
 import batch_current_limit as bcl
 import batch_dropout
 import batch_iq as biq
+import batch_loop_gain as blg
 import batch_line_regulation as blr
 import batch_load_regulation as bld
 import batch_startup_ramp as bsr
@@ -204,6 +205,36 @@ BATCH_ALLOWLIST = {
             "VFORCE VF 0 dc 1.8 pwl(0 1.8 1m 1.8 1.001m 0 10 0)",
         ],
     },
+    # Shape (issue #754): the 18-leg closed-loop-injection `ac_leg_grid`,
+    # translated to ONE `analysis_steps[]` request per supply x ESR group
+    # (`esr10m` / `esr500m` / `esr0`, six legs each; sim/bin/batch_loop_gain.py).
+    # `HESR` (a CCVS klt's step `alter` cannot retarget) is rewritten in each
+    # group's request netlist; C_out and R_load are explicit step `alter`s; PM /
+    # GM / fc / dcgain / vout_seed are graded locally from the returned step
+    # cards. RENEWAL: pinned like the other adapters, by the record
+    # input-fingerprint digests -- which do NOT hash `ac_leg_grid`, so the
+    # adapter additionally replays the deck against it
+    # (sim/tests/test_batch_loop_gain_754.py).
+    "loop-gain": {
+        "ac_leg_grid": True,
+        "manifest_sections": {
+            "analyses": "11991d09a5e99ac6fe50988a4fc82b7185821841524d538e8e23ca2aa7fd8b38",
+            "measurements": "23e68cf3de6b78e431d8325d3c276936f3355ac2f1d7cc106fe5c035b2ec95cc",
+            "matrix": "639e50d5a920cef70120de11fefa3ffc5bf53f0446c56a853f87c39e95976b21",
+        },
+        # the baseline top-level cards each request starts from (HESR's gain is
+        # rewritten per ESR group; the `.nodeset` seed is pinned verbatim by
+        # batch_loop_gain.NODESET_CARD)
+        "stimulus": [
+            "VVIN VIN 0 'vsup'",
+            "VEN EN 0 'vsup'",
+            "VVREF VREF 0 DC 1.2 AC 1",
+            "COUT VOUT VESR 0.33u m=1",
+            "VESRSENSE VESR VESRS 0",
+            "HESR VESRS 0 VESRSENSE 10m",
+            "RLOAD VOUT 0 36 m=1",
+        ],
+    },
 }
 
 BATCH_REFUSAL_HINT = (
@@ -217,7 +248,9 @@ BATCH_REFUSAL_HINT = (
     "(two single-step `tran ... uic` requests per supply) and sim/current-limit's "
     "three chained legs (one three-step `analysis_steps[]` request per supply) "
     "and the sim/startup ramp-trace grid "
-    "(one scalar `tran` request per leg with `options.waveforms`, issue #336); "
+    "(one scalar `tran` request per leg with `options.waveforms`, issue #336) "
+    "and the sim/loop-gain 18-leg AC grid (one `analysis_steps[]` request per "
+    "supply x ESR group, issue #754); "
     "every other "
     "experiment, including the other transient/AC/DC-sweep and mc-* manifests, "
     "stays on the local backend (see sim/README.md, \"Batch backend\")"
@@ -320,6 +353,34 @@ def check_chained_batch_shape(exp: Experiment) -> None:
     )
 
 
+def is_ac_leg_grid(exp: Experiment) -> bool:
+    """Whether the experiment runs through the issue #754 loop-gain adapter."""
+    return bool(BATCH_ALLOWLIST.get(exp.slug, {}).get("ac_leg_grid"))
+
+
+def ac_grid_deck(exp: Experiment) -> list[blg.Leg]:
+    """The eighteen legs of the loop-gain deck, replayed against the
+    manifest's `ac_leg_grid` and with every graded expression checked against
+    them (raises LoopGainTranslationError)."""
+    grid = exp.raw.get("ac_leg_grid")
+    legs = blg.parse_deck((exp.raw.get("deck") or {}).get("analyses") or [], grid)
+    blg.check_measurements(legs, [(m.name, m.expr, m.unit) for m in exp.measurements], grid)
+    return legs
+
+
+def check_ac_leg_grid_batch_shape(exp: Experiment) -> None:
+    """Refuse a loop-gain manifest whose shape is not the validated one: the
+    structural translation (deck replayed against `ac_leg_grid`) must succeed
+    AND the execution sections must still digest to the pinned values (issue
+    #754, same discipline as the other pinned adapters)."""
+    _check_pinned_batch_shape(
+        exp,
+        inner_shape="ac-leg-grid", outer_shape="ac-leg-grid",
+        translate=ac_grid_deck, err_types=blg.LoopGainTranslationError,
+        step_noun="the 18-leg AC klt steps",
+    )
+
+
 def endpoint_module(exp: Experiment):
     """The endpoint-adapter module for the experiment: load-regulation (issue
     #381) or, by default, line-regulation (issue #379). Both raise
@@ -366,6 +427,8 @@ def batch_legs(exp: Experiment) -> list[str] | None:
     line-regulation endpoint ids; None for any other allowlisted experiment."""
     if is_endpoint_adapter(exp):
         return [e.step_name for e in endpoint_deck(exp)]
+    if is_ac_leg_grid(exp):
+        return list(blg.GROUP_KEYS)
     if not BATCH_ALLOWLIST.get(exp.slug, {}).get("window_grid"):
         return None
     return [leg["id"] for leg in window_legs(exp.raw)]
@@ -467,6 +530,9 @@ def check_batch_supported(exp: Experiment) -> None:
     if allowed.get("chained_steps"):
         check_chained_batch_shape(exp)
         return
+    if allowed.get("ac_leg_grid"):
+        check_ac_leg_grid_batch_shape(exp)
+        return
     analyses = list(deck.get("analyses") or ["op"])
     meas = [(m.name, m.expr) for m in exp.measurements]
     if analyses != allowed["analyses"] or meas != allowed["measurements"]:
@@ -553,6 +619,9 @@ def build_batch_netlist(exp: Experiment, group: BatchGroup, body: list[str]) -> 
         # (VIN, EN's PWL high level, load) in the netlist (issue #379).
         ep = next(e for e in endpoint_deck(exp) if e.step_name == group.leg)
         body = endpoint_module(exp).endpoint_body(body, ep)
+    elif is_ac_leg_grid(exp):
+        # Each ESR-group request carries that group's HESR gain (issue #754).
+        body = blg.hesr_body(body, group.leg)
     return head + body
 
 
@@ -567,6 +636,11 @@ def build_batch_request(
     elif is_endpoint_adapter(exp):
         # One single-step request per supply group x endpoint (issue #379).
         shape = {"analysis_steps": [endpoint_step(exp, group.leg)]}
+    elif is_ac_leg_grid(exp):
+        # One 12-step request per supply group x ESR group (issue #754). No
+        # top-level `measurements[]`: all 56 are graded locally from the step
+        # cards so an unreached -180 deg crossing is a FAIL, not a klt error.
+        shape = {"analysis_steps": blg.group_steps(ac_grid_deck(exp), group.leg)}
     elif group.leg is not None:
         # One single-step request per window-grid leg (issue #326).
         shape = {"analysis_steps": [window_grid_step(exp, group.leg)]}
@@ -598,6 +672,8 @@ def build_batch_request(
     }
     if is_ramp_trace_grid(exp):
         options["waveforms"] = True
+    if is_ac_leg_grid(exp):
+        options["ngspice_init"] = spiceinit_lines() + list(blg.NGSPICE_INIT_EXTRA)
     return {
         "netlist": str(netlist_path),
         "engine": "ngspice",
@@ -634,6 +710,15 @@ def _check_pinned_netlist(exp: Experiment, body: list[str]) -> None:
             raise HarnessError(
                 f"--backend batch: {exp.slug!r} netlist is not the validated {exp.slug} "
                 f"endpoint baseline ({exc}): {BATCH_REFUSAL_HINT}"
+            ) from exc
+    if is_ac_leg_grid(exp):
+        try:
+            blr.check_netlist(body, allowed["stimulus"], blg.LoopGainTranslationError,
+                              "an AC leg-grid request", pinned_extra=(blg.NODESET_CARD,))
+        except blg.LoopGainTranslationError as exc:
+            raise HarnessError(
+                f"--backend batch: {exp.slug!r} netlist is not the validated ac-leg-grid "
+                f"baseline ({exc}): {BATCH_REFUSAL_HINT}"
             ) from exc
     if is_chained_steps(exp):
         try:
@@ -1088,6 +1173,96 @@ def normalize_chained_response(
     return results, logs
 
 
+def normalize_ac_grid_response(
+    exp: Experiment, group: BatchGroup, response: dict, outdir: Path
+) -> tuple[list[dict], dict[str, str]]:
+    """Validate one loop-gain ESR-group response (issue #754) and return, per
+    corner, that group's RAW step-card values plus the reasons it cannot PASS.
+    Grading happens in `finalize_ac_grid_results` once all three ESR groups of
+    a corner are in hand.
+
+    Structure problems (and an unfinished/incompatible remote job) raise
+    HarnessError; per-corner problems (non-completed status, klt error
+    diagnostics, missing/duplicate/unexpected/errored/non-finite results,
+    absent log, solver diagnostic) become reasons. A `not_reached` crossing
+    card is a missing value, never an error and never a PASS.
+    """
+    problem = batch_dropout.remote_completion_problem(response)
+    if problem:
+        raise HarnessError(f"request {group.key}: {problem}")
+    want, seen = _index_response_corners(group, response)
+    legs = ac_grid_deck(exp)
+    tag = f"[{group.leg}] "
+    parts, logs = [], {}
+    for key, corner in want.items():
+        rc = seen[key]
+        reasons: list[str] = []
+        if rc["status"] not in ("pass", "fail"):
+            reasons.append(f"{tag}klt sim corner status {rc['status']!r} (not a completed result)")
+        reasons.extend(f"{tag}{r}" for r in batch_dropout.corner_diagnostic_problems(rc))
+        values, vreasons = blg.extract_values(legs, group.leg, rc["measurements"])
+        reasons.extend(f"{tag}{r}" for r in vreasons)
+        log_text, solver_diagnostic, log_reasons = _engine_log_check(rc, outdir, tag)
+        if log_text is not None:
+            logs[corner.id] = log_text
+        reasons.extend(log_reasons)
+        runtime = rc.get("runtime_s")
+        parts.append({
+            "corner": corner, "group": group.leg, "values": values, "reasons": reasons,
+            "solver_diagnostic": solver_diagnostic,
+            "elapsed_s": runtime if _finite_number(runtime) else None,
+            "klt_request": group.key, "klt_corner_id": rc.get("corner_id"), "klt_status": rc["status"],
+        })
+    return parts, logs
+
+
+def finalize_ac_grid_results(
+    exp: Experiment, matrix: list[Corner], parts: dict[str, list[dict]], timeout: int
+) -> list[dict]:
+    """Grade each corner locally from its three ESR groups' raw card values,
+    with the manifest's own expressions and `grade_bounds` (identical to the
+    local backend's grading). A corner missing a group, or carrying a group
+    twice, cannot PASS."""
+    legs = ac_grid_deck(exp)
+    refs = blg.card_refs(legs)
+    results = []
+    for corner in matrix:
+        mine = parts.get(corner.id, [])
+        reasons = [r for p in mine for r in p["reasons"]]
+        for key in blg.GROUP_KEYS:
+            n = sum(1 for p in mine if p["group"] == key)
+            if n != 1:
+                reasons.append(f"[{key}] {n} result(s) for this ESR group (expected exactly one)")
+        values: dict[str, float | None] = {}
+        for p in mine:
+            values.update(p["values"])
+        checks = []
+        for m in exp.measurements:
+            value = blg.evaluate(m.expr, values, refs)
+            checks.append(grade_check(m, value, missing_reason="measurement not found in AC-grid results"))
+        diags = [p["solver_diagnostic"] for p in mine if p["solver_diagnostic"]]
+        elapsed = [p["elapsed_s"] for p in mine]
+        results.append(_batch_corner_result(
+            corner,
+            elapsed_s=sum(elapsed) if elapsed and all(_finite_number(e) for e in elapsed) else None,
+            timeout_s=timeout,
+            measurements=checks,
+            solver_diagnostic="; ".join(diags) if diags else None,
+            klt_request=[p["klt_request"] for p in mine],
+            klt_corner_id=[p["klt_corner_id"] for p in mine],
+            klt_status=[p["klt_status"] for p in mine],
+            batch_reasons=reasons,
+        ))
+    return results
+
+
+def loop_gain_adapter_info(exp: Experiment) -> dict:
+    """Provenance of the issue #754 adapter for a batch record / dry run."""
+    return blg.adapter_info(
+        exp.raw, ac_grid_deck(exp), BATCH_ALLOWLIST[exp.slug], [m.name for m in exp.measurements]
+    )
+
+
 def merge_leg_parts(exp: Experiment, acc: dict | None, part: dict) -> dict:
     """Fold one window-grid leg's batch result for a corner into that corner's
     single result dict (issue #326). Checks are kept in manifest order; the
@@ -1128,6 +1303,7 @@ def run_batch(
     by_id: dict[str, dict] = {}
     endpoint_parts: dict[str, list[dict]] = {}
     endpoint_mode = is_endpoint_adapter(exp)
+    ac_mode = is_ac_leg_grid(exp)
     startup_mode = is_ramp_trace_grid(exp)
     logs: dict[str, str] = {}
     traces: dict[str, list[tuple[str, Path]]] = {}
@@ -1151,6 +1327,8 @@ def run_batch(
                 res, lg = normalize_chained_response(exp, group, response, outdir, timeout)
             elif endpoint_mode:
                 res, lg = normalize_endpoint_response(exp, group, response, outdir)
+            elif ac_mode:
+                res, lg = normalize_ac_grid_response(exp, group, response, outdir)
             elif startup_mode:
                 res, lg = normalize_startup_response(exp, group, response, outdir, timeout)
             else:
@@ -1167,7 +1345,7 @@ def run_batch(
                 f"{', '.join(jobs) if jobs else 'none'}"
             ) from exc
         for r in res:
-            if endpoint_mode:
+            if endpoint_mode or ac_mode:
                 endpoint_parts.setdefault(r["corner"].id, []).append(r)
                 continue
             cid = r["corner_id"]
@@ -1176,6 +1354,10 @@ def run_batch(
             if endpoint_mode:
                 logs[cid] = logs.get(cid, "") + (
                     f"***** {exp.slug} endpoint {group.leg} (klt sim request {group.key}) *****\n{text}\n"
+                )
+            elif ac_mode:
+                logs[cid] = logs.get(cid, "") + (
+                    f"***** {exp.slug} ESR group {group.leg} (klt sim request {group.key}) *****\n{text}\n"
                 )
             elif group.leg is None:
                 logs[cid] = text
@@ -1196,6 +1378,8 @@ def run_batch(
         })
     if endpoint_mode:
         results = finalize_endpoint_results(exp, matrix, endpoint_parts, timeout)
+    elif ac_mode:
+        results = finalize_ac_grid_results(exp, matrix, endpoint_parts, timeout)
     else:
         results = [by_id[c.id] for c in matrix]
     traces_meta = {
