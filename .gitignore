@@ -11,6 +11,12 @@
 # the campaign's verdict.json (same precedent as the #357 lines above).
 !sim/dropout-vs-load/diagnostics/*/runs/*/logs/*.log
 !sim/dropout-vs-load/diagnostics/*/runs/*/klt-out/**/ngspice.log
+# issue #705: the paired rev2-qualification campaign's per-corner engine logs --
+# runs/<leg>/logs/*.log and runs/<leg>/klt-out/**/ngspice.log -- are the
+# solver-diagnostic validity evidence behind its verdict.json (same precedent
+# as the #692 lines above).
+!sim/startup/diagnostics/*/runs/*/logs/*.log
+!sim/startup/diagnostics/*/runs/*/klt-out/**/ngspice.log
 # issue #374: real klt engine logs captured as dropout batch-adapter test fixtures.
 !sim/tests/fixtures/issue-374/*.ngspice.log
 # issue #384: paired line-regulation local/fleet diagnostic -- the raw local and remote
