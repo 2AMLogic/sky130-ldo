@@ -194,7 +194,11 @@ Circuit facts, from the committed baseline deck
   established because the deck is gone (recorded sha256 prefixes 2278231b tt /
   059522b5 sf identify files that are not retrievable). Measured as run:
   Q = 8.562 pC (tt) / 21.326 pC (sf/-40C/2.97V), i.e. a 15.6 % / 1.3 %
-  reduction, all bounds passing, no sag. Because the time constant was
+  reduction, with no sag and the peak-overshoot bound met. These are
+  positive packets, though: under this note's definition
+  (`Q = C_out x drawdown`) they imply positive drawdown, so the 0 V
+  monotonicity check (`tolerance_v = 0`) **still fails** at both corners; "all
+  bounds passing" would be wrong. Because the time constant was
   100 ns, **this result does not rule out a 100 us soft release**, and a 100 us
   release has not been measured.
 - **w2 PB-branch slew trade (`XM_MIRP2` W=20/nf=4 -> W=40/nf=8)** — deck
@@ -208,8 +212,8 @@ Circuit facts, from the committed baseline deck
   (p2b) makes the packet 3.4x WORSE.
 
 What this supports: of the wake-shaping variants that were run, none gave a
-reduction near L=180's 85-88 %, and the one that moved the packet at all
-(w2) broke regulation. What it does **not** support is a claim that wake
+reduction near L=180's 85-88 %. w1 reduced the packet modestly (15.6 % tt /
+1.3 % sf) without fixing the monotonicity failure; w2 broke regulation. What it does **not** support is a claim that wake
 shaping as a class "does not qualify": the 100 us EA_OUT/PB soft release is
 untested. Wake shaping is left **open**, with the L=180 loop-gain rejection
 (section 2) as the only rejection this note establishes. A follow-up must
