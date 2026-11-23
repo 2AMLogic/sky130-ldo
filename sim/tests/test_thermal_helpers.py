@@ -128,7 +128,13 @@ class TestColdEnableTemps(unittest.TestCase):
                 r, t = c.get("t_reset_falling_c", {}), c.get("t_trip_rising_c", {})
                 cold = c.get("cold_start_by_temp", {})
                 en = c.get("en_reenable_by_temp", c.get("en_reenable_from_tripped_by_temp", {}))
-                if "bracket" not in r or "bracket" not in t or not (cold or en):
+                # eligible = brackets plus a (non-skipped) dependent-point plan or a measurement
+                # field (even an empty one): bracket-only records predate the dependent points
+                # and are skipped, but an emptied map must still be accounted for.
+                planned = "dependent_points" in c and "skipped" not in c["dependent_points"]
+                has_dep = (planned or "cold_start_by_temp" in c or "en_reenable_by_temp" in c
+                           or "en_reenable_from_tripped_by_temp" in c)
+                if "bracket" not in r or "bracket" not in t or not has_dep:
                     continue
                 n += 1
                 want = set(rc.cold_enable_temps(sum(r["bracket"]) / 2, sum(t["bracket"]) / 2))
@@ -139,12 +145,10 @@ class TestColdEnableTemps(unittest.TestCase):
                     lab, _, temp = entry.partition("@")
                     if lab in not_run:
                         not_run[lab].add(float(temp.rstrip("C")))
-                # cold-start and EN are checked separately: one measurement must not hide
-                # a gap in the other. Points above a ceiling that did run are kept (got
+                # cold-start and EN are checked separately, empty maps included: one
+                # measurement must not hide a gap in the other. Points above a ceiling that did run are kept (got
                 # is only required to be a subset of the schedule, e.g. ff at 185 C).
                 for lab, rec in (("cold", cold), ("en", en)):
-                    if not rec:
-                        continue
                     got = {float(k) for k in rec}
                     where = f"{path.name} {name} {lab}"
                     self.assertLessEqual(got, want, where)
