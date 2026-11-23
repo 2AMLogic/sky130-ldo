@@ -111,10 +111,11 @@ as `lvs-gds-shape.json` and does not match, because that path mis-combines the
 two stacked capacitor classes
 ([klayout-tools#3019](https://github.com/2AMLogic/klayout-tools/issues/3019)).
 
-Coupling caveats: the extractor charges plate overlap inside the MiM footprint
-on top of the MiM device (a double count, ~3.8% here,
-[klayout-tools#3021](https://github.com/2AMLogic/klayout-tools/issues/3021)); the
-record separates that from the residual real parasitic. It also models only
+Coupling caveats: the first record's build charged plate overlap inside the MiM
+footprint on top of the MiM device (a double count, ~3.8% there,
+[klayout-tools#3021](https://github.com/2AMLogic/klayout-tools/issues/3021)) and
+the renderer subtracted it. That is fixed in the pinned build, so later records
+report the overlap as the residual parasitic directly. The extractor also models only
 adjacent-level overlap, so coupling from a met3 plate to li1/met1/poly under it is
 not computed; the record reports the measured device-row met2 area under each
 block and the deck coefficient's estimate for it, and leaves the rest to the
@@ -170,8 +171,9 @@ layout/bin/run-cap-rail-demo-flow.sh        # mints reports/<id>/, moves LATEST
 python3 -m unittest layout/tests/test_cap_rail_plan.py   # stdlib-only arithmetic tests
 ```
 
-The klt pin is `layout/cap-requirements.txt` (why a separate pin: see that
-file). The flow uses `layout/.venv-cap` if present
-(`layout/bin/setup-venv.sh --requirements layout/cap-requirements.txt`),
-otherwise runs the same pin through `uvx --from` -- nothing is installed
-host-wide. `klayout` and `xschem` must be on `PATH`. No simulation runs here.
+The klt pin is `layout/requirements.txt`, shared with every other layout flow;
+the flow runs on `layout/.venv` (`layout/bin/setup-venv.sh`). The first record
+(`20261010-033947-80bc87e`) ran on its own earlier pin (`klt 0.7.0+gb82427b30c96`)
+and stays reproducible from its `provenance`. `klayout` and `xschem` must be on
+`PATH`, and `PDK_ROOT` must point at the sky130A install if it is not under
+`~/.volare` (`sim/xschemrc` falls back to that). No simulation runs here.

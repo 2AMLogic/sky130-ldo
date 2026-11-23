@@ -45,11 +45,20 @@
 #   this repo now draws, not twelve unrelated upstream commits. (The records
 #   also differ on the design side, by the DR-011 schematic resize; see
 #   `sim/pex-post-layout/README.md` for the full statement.)
-# * `dc136150` (issue #162, current) -- carries klayout-tools#4038
+# * `dc136150` (issue #162, current; sole pin since #576) -- carries klayout-tools#4038
 #   (`c375dc18`, ancestor-checked via the GitHub compare API), which makes
 #   `klt pex` accept `--resistance-graph [--resistance-graph-r-cut OHM]` and
 #   write the graph-derived per-net resistance (klayout-tools#2391/#2458/#4037)
 #   into the pex netlist. `sim/pex-post-layout/bin/run-pex.sh` passes the flag;
 #   without it the default `resistance_ohm` is byte-identical to the legacy
 #   value, so a bare pin bump would not change any row.
+# * Collapse (issue #576, operator ruling 2026-11-23): two extra pins are
+#   folded into this one and their requirements files deleted. `cb79a84f`
+#   (the `klt erc` supply-spec flow) and `b82427b3` (the MiM + rail
+#   demonstrator) were each held because this pin then lacked a capability
+#   they needed. Both are now ancestors of `dc136150` (GitHub compare API,
+#   2026-11-23: `cb79a84f` -> `dc136150` ahead 3052, behind 0; `b82427b3` ->
+#   `dc136150` ahead 2435, behind 0). Each flow was re-run on this build and
+#   minted one new record; existing records keep the build named in their own
+#   `provenance.klt_version` (`0.6.0+gcb79a84fe3e4`, `0.7.0+gb82427b30c96`).
 klayout-tools @ git+https://github.com/2AMLogic/klayout-tools@dc136150a49e9f539a1050bf31e2117ce53441d0

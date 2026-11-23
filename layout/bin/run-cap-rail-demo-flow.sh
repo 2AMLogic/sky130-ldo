@@ -19,38 +19,27 @@
 #   layout/bin/run-cap-rail-demo-flow.sh
 #
 # Requires: `xschem` and `klayout` on PATH, the pinned sky130A PDK
-# (sim/pdk.json), and the klt pin in layout/cap-requirements.txt -- either
-# installed at layout/.venv-cap (setup-venv.sh --requirements
-# layout/cap-requirements.txt) or reachable through `uvx --from` (a throwaway
-# environment; this script never installs anything host-wide).
+# (sim/pdk.json), and the klt pin in layout/requirements.txt installed at
+# layout/.venv (layout/bin/setup-venv.sh).
 set -euo pipefail
 
 # LAYOUT_DIR/REPO_ROOT, the PDK guard, the record mint and the headless
 # netlist step are shared with the other layout/bin/run-*-flow.sh drivers
-# (issue #599). The uvx fallback below stays local to this script: it is the
-# only driver with one.
+# (issue #599).
 source "$(dirname "${BASH_SOURCE[0]}")/_flow_common.sh"
 BLOCK_DIR="$LAYOUT_DIR/cap-rail-demo"
 CELL=cap_rail_demo
 PDK_VARIANT=sky130A
-REQ_FILE="$LAYOUT_DIR/cap-requirements.txt"
 PINS="VOUT,VIN,EA_CZ,CL_CMP,SS,TS_CMP"
 # Measured inputs: the routed layout record the #246 study measured, and the
 # study's own budget (MOS-domain width, channel/row/rail heights, banks).
 MEASURED_RECORD="layout/ldo-core/reports/20260924-221821-a947aa8"
 BUDGET="layout/area-study/20261009-study-246/budget.json"
 
-PIN_SPEC="$(grep -v '^[[:space:]]*#' "$REQ_FILE" | grep -v '^[[:space:]]*$' | head -1)"
-if [[ -x "$LAYOUT_DIR/.venv-cap/bin/klt" ]]; then
-  KLT=("$LAYOUT_DIR/.venv-cap/bin/klt")
-  PY=("$LAYOUT_DIR/.venv-cap/bin/python")
-elif command -v uvx >/dev/null; then
-  KLT=(uvx --from "$PIN_SPEC" klt)
-  PY=(uvx --from "$PIN_SPEC" python)
-else
-  echo "run-cap-rail-demo-flow.sh: no layout/.venv-cap and no uvx -- see layout/cap-requirements.txt" >&2
-  exit 1
-fi
+PIN_SPEC="$(grep -v '^[[:space:]]*#' "$LAYOUT_DIR/requirements.txt" | grep -v '^[[:space:]]*$' | head -1)"
+KLT=("$LAYOUT_DIR/.venv/bin/klt")
+PY=("$LAYOUT_DIR/.venv/bin/python")
+flow_require_klt run-cap-rail-demo-flow.sh "${KLT[0]}"
 for tool in xschem klayout; do
   command -v "$tool" >/dev/null || { echo "run-cap-rail-demo-flow.sh: $tool not on PATH" >&2; exit 1; }
 done
