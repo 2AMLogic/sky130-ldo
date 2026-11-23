@@ -6,8 +6,21 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 
 - [2026-09](work_log/WORK_LOG_2026-09.md)
 
+### 2026-11-23
+
+- **PR #711**: sim: add paired rev2-vs-production Iq, clamp and thermal-hysteresis campaign (i706)
+- **Issue #706** (closed): Characterize rev2 quiescent current, clamp knee and thermal hysteresis
+
 ### 2026-11-22
 
+- **PR #743**: refactor(sim): consolidate pinned batch-adapter shape/netlist gates and dedupe #177 test scaffolding
+- **PR #742**: sim(current-limit): seed leg 2's dc sweep and run it first — 45/45 PASS under the #171 gate (#647)
+- **PR #739**: docs: disclose rev2 dc extraction bias and correct report citations in issue-704 diagnostic
+- **PR #648**: sim(current-limit): batch adapter for the three chained legs; 45-corner fleet re-run supersedes the pre-gate record (#177)
+- **Issue #741** (closed): Consolidate pinned batch-adapter shape/netlist gates and deduplicate #177 adapter test scaffolding
+- **Issue #738** (closed): Report-precision follow-ups on the #704 dynamic-response diagnostic (DC-gain extraction disclosure, .ic citation, PSRR invalid list, docstring)
+- **Issue #647** (closed): Current limit: leg 2's dc vforce sweep trips the solver-diagnostic gate at 4 corners, all at Vin_max (3.63 V)
+- **Issue #177** (closed): Seed sim/current-limit's leg-1 operating point to conform to the initial-condition contract
 - **PR #737**: refactor: share the measurement-check, ramp-check and batch corner-result builders
 - **PR #734**: sim: add issue-704 paired loop/load-step/PSRR evidence for rev2
 - **PR #733**: docs(sim): move Iq testbench header to fresh-ratification wording
@@ -577,19 +590,4 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 - **PR #135**: README: embed the fleet burndown chart
 - **PR #132**: docs(spec): DR-008 — Thermal FAIL is the hysteresis bound, not theta-JA; record the delegated theta-JA integration constraint
 - **PR #126**: feat(signoff): commit a klt signoff block manifest and the T1 verdict of record
-
-### 2026-09-23
-
-- **Issue #136** (closed): 2am: reuse rule 9 — decide and record the sky130-bandgap consumption edge (no in-tree reference exists; VREF is an external port)
-- **Issue #123** (closed): 2am: reuse rule 9 — in-tree error amplifier (symmetric OTA) duplicates sibling canary sky130-opamp — add reuse.lock.json in_tree entry (evaluate), then adopt or record
-- **Issue #122** (closed): T1 item 7: the klt pex leg errors on all 135 corners — item 7 accepts no other evidence kind
-- **Issue #121** (closed): The Iq spec row is unratified ('no number set') yet graded FAIL — ratify it or remove it from the table
-- **Issue #117** (closed): PSRR fails 0/45 corners at every ratified condition
-- **Issue #115** (closed): Stability: PM/GM margins met at only 7/45 corners — likely upstream of the transient and regulation misses
-- **PR #144**: docs: record no-lock-entry decision for the sky130-bandgap reuse edge (DR-012)
-- **PR #143**: sim(pex): re-check the disclosed klt gaps upstream, pin main@040f3406, record 108/135 (#122)
-- **PR #141**: sim(psrr-dc): measure both ratified load points; 50 mA/100 kHz also fails
-- **PR #137**: docs: record the error amplifier as kept in-tree vs sky130-opamp (DR-010 + reuse.lock.json)
-- **PR #134**: spec: ratify the Iq row at < 30 µA via DR-008
-- **PR #130**: docs(design): stability binding mechanism, feedforward-zero screen (verified-negative), coupling-thesis test (#115)
 
