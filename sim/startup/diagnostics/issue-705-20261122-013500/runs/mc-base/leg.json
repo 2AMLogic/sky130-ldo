@@ -1,0 +1,145 @@
+{
+ "aggregate": {
+  "corner_count": 200,
+  "errored": 0,
+  "failed": 0,
+  "passed": 200,
+  "status": "pass"
+ },
+ "analysis": {
+  "errored_or_missing": [],
+  "in_window": 200,
+  "out_of_window": 0,
+  "returned_samples": 200,
+  "stats": {
+   "max": 1.82778,
+   "mean": 1.80217555,
+   "min": 1.77888,
+   "n": 200,
+   "stddev": 0.008317671790686862
+  },
+  "valid_samples": 200,
+  "violations": [],
+  "window_v": {
+   "inclusive": true,
+   "max": 1.836,
+   "min": 1.764
+  }
+ },
+ "experiment": "mc-output-accuracy",
+ "leg": "mc-base",
+ "provenance": {
+  "candidate_invariant_problems": [],
+  "candidate_py_sha256": "a08e93dce932ddd4bb90854459f23bbc8fa1fa7fcbf8a2cf524e2742ec82e5d7",
+  "candidate_rev": null,
+  "edit_notes": [],
+  "engine": "ngspice",
+  "engine_version": "47",
+  "experiment_json_sha256": "7173c034da2a3326a8360b0cf4fa1b488e9b36e3a32a37dbe56480b102ea4e39",
+  "k_sigma": 3,
+  "klt_pdk_version": "open_pdks c6d73a35f524070e85faff4a6a9eef49553ebc2b",
+  "klt_status": "pass",
+  "klt_version": "0.9.3.dev3910+g8703ad519ff7",
+  "n": 200,
+  "netlist_edited_sha256": "01a12320fad9c94e7b253f12be8e16f6a663d5af88c01a33268a89096a846c28",
+  "netlist_raw_sha256": "01a12320fad9c94e7b253f12be8e16f6a663d5af88c01a33268a89096a846c28",
+  "pdk": {
+   "matches_pin": true,
+   "open_pdks_commit": "c6d73a35f524070e85faff4a6a9eef49553ebc2b"
+  },
+  "remote": {
+   "ami_id": "ami-09c14f55df4958cbd",
+   "availability_zone": "us-east-1f",
+   "client_collected_at": "2026-11-23T12:43:14.608818Z",
+   "client_klt_version": "0.9.3.dev3910+g8703ad519ff7",
+   "client_launched_at": "2026-11-23T12:41:10.327590Z",
+   "client_status_terminal_at": "2026-11-23T12:43:13.904999Z",
+   "client_submitted_at": "2026-11-23T12:40:52.428669Z",
+   "concurrency": "1",
+   "elapsed_seconds": 87,
+   "exit_code": "0",
+   "instance_id": "i-0046e505812e5ef69",
+   "instance_type": "c7i.4xlarge",
+   "job_ceiling": {
+    "basis": "conservative_serial_bound",
+    "check": "warn",
+    "exceeds_ceiling": true,
+    "job_bound_s": 60120.0,
+    "max_job_seconds": 3600.0,
+    "max_job_seconds_source": "fleet_config",
+    "max_units_per_job": 11,
+    "overhead_s": 120.0,
+    "per_unit_timeout_s": 300,
+    "recommended_hosts": 19,
+    "unit_count": 200,
+    "warning": "batch job bound 60120s (options.timeout_s 300s x 200 units + 120s; a conservative fully-serial upper bound, not a runtime estimate) exceeds the fleet's whole-job ceiling of 3600s (max_job_seconds from fleet_config); a job still running at the ceiling is killed and every unit is reported batch_job_timeout. Set request.remote.hosts to at least 19 to run one job per shard of at most 11 units, each within the ceiling"
+   },
+   "job_id": "klt-sim-c8059a2afb6b",
+   "lifecycle": "spot",
+   "models_lib_comparison": {
+    "status": "match"
+   },
+   "physical_cores": "8",
+   "provider": "aws-batch-fleet",
+   "region": "us-east-1",
+   "runner_compatibility": "match",
+   "runner_corner_section_libs": null,
+   "runner_klt_version": "0.9.0",
+   "runner_model_inputs": null,
+   "runner_models_lib_sha256": "48de7c677e2c6e7d09b2559279de9f818be71010a4aa933d728eb4db3b133c84",
+   "runner_osdi_preload": null,
+   "spot": true,
+   "state": "done",
+   "worker_environment": {
+    "capture": "ok",
+    "cpu_model": "Intel(R) Xeon(R) Platinum 8488C",
+    "diagnostics": [],
+    "engine_build_comparison": {
+     "status": "match"
+    },
+    "image_manifest": null,
+    "model_inputs": null,
+    "ngspice_init": null,
+    "omp_num_threads": null,
+    "pdk": {
+     "models_staged": false,
+     "root": "/opt/pdk",
+     "stamp_scheme": "sources-sha256",
+     "stamp_scope": "executed",
+     "stamp_sha256": "4ca10280ae9f293aa1ff69f0060a52e0026929111bda881503717469b429ce67",
+     "stamp_text": "open_pdks f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7",
+     "variant": "sky130A"
+    },
+    "pdk_stamp_comparison": {
+     "status": "mismatch",
+     "warning": "the worker's PDK revision stamp for sky130A differs from the one the submitter resolved locally; results may differ from a local run (a matching stamp would not prove identical models)"
+    },
+    "simulator": {
+     "binary_source": "PATH",
+     "requested_binary": "ngspice",
+     "selected_path": "/usr/local/bin/ngspice",
+     "version_banner": "******\n** ngspice-47 : Circuit level simulation program\n** Compiled with KLU Direct Linear Solver\n** The U. C. Berkeley CAD Group\n** Copyright 1985-1994, Regents of the University of California.\n** Copyright 2001-2026, The ngspice team.\n** Please get your ngspice manual from https://ngspice.sourceforge.io/docs.html\n** Please file your bug-reports at http://ngspice.sourceforge.net/bugrep.html\n** Creation Date: Fri Nov 13 23:19:32 UTC 2026\n******\n",
+     "version_probe": "ok"
+    },
+    "threads_per_worker": 1
+   }
+  },
+  "seed": 20260817,
+  "source_commit": "1e328f6558ee68a1ea68ed78b14fd29487d79347",
+  "testbench_sha256": "4572d7f04bc89758bdbde238980e07b4e401bbe8e773e1b761137335b9db24e9",
+  "tools": {
+   "declared": {
+    "ngspice": "42",
+    "xschem": "3.4.4"
+   },
+   "ngspice": "ngspice-47 : Circuit level simulation program",
+   "on_baseline": false,
+   "platform": "Linux 7.0.0-1017-aws x86_64",
+   "python": "3.12.3",
+   "xschem": "XSCHEM V3.4.7"
+  },
+  "variant": "base",
+  "vary": "mismatch"
+ },
+ "variant": "base"
+}

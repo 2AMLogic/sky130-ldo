@@ -1,0 +1,23 @@
+* klt sim -- generated corner deck, do not edit
+.lib /opt/pdk/sky130A/libs.tech/combined/sky130.lib.spice sf
+.include /var/tmp/eda-job-klt-sim-76a8bc3d6f06/inputs/netlist.cir
+.temp -40.0
+.control
+save all
+setplot new
+echo klt_step_begin 0 $curplot
+tran 10u 200m uic
+echo klt_step_end 0 $curplot
+set klt_plot_0 = $curplot
+meas tran vout_50ma avg v(vout) from=199m to=200m
+let tran2__vout_50ma = vout_50ma
+print tran2__vout_50ma
+meas tran vout_50ma_min min v(vout) from=199m to=200m
+let tran2__vout_50ma_min = vout_50ma_min
+print tran2__vout_50ma_min
+meas tran vout_50ma_max max v(vout) from=199m to=200m
+let tran2__vout_50ma_max = vout_50ma_max
+print tran2__vout_50ma_max
+quit
+.endc
+.end
