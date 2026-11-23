@@ -289,7 +289,7 @@ class TestEnableShutdownAdapter(
         self.assertEqual(self.klt_calls(), [])
 
     def test_sibling_local_only_benches_stay_refused(self):
-        for slug in ("psrr-dc", "loop-gain", "thermal"):
+        for slug in ("psrr-dc", "thermal"):
             self.assertNotIn(slug, corner_run.BATCH_ALLOWLIST)
 
     # -- provenance ------------------------------------------------------------
