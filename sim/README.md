@@ -437,7 +437,7 @@ Single-corner ngspice probes under `sim/*/diagnostics/` should import
 `load_corner_run()` (the `corner-run.py` module), `sha()`,
 `logical_lines()`/`find_card()` (netlist editing; accept a string or a list of
 lines), `run_ngspice_deck(run_dir)` (returns `(log, elapsed_s, returncode)` and
-writes `ngspice.log`), `git_provenance()` and `load_results()`. Existing
+writes `ngspice.log`), and `git_provenance()`. Existing
 diagnostics run-id directories are append-only evidence and keep their own
 copies unedited; the helper is forward-only. Tests: `sim/tests/test_probe_common.py`.
 
