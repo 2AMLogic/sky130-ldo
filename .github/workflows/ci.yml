@@ -48,10 +48,14 @@ name: CI
 #     and the PVT knobs actually reach the simulator) -> requires xschem +
 #     ngspice + the ~1 GB sky130 PDK via volare, so per this repo's
 #     "headless only" default-CI guideline it does NOT block every PR. It
-#     runs in the `pdk-smoke` job on a nightly schedule, on manual dispatch,
-#     and opt-in on a PR via the `run-pdk-smoke` label. `--no-write` (the
-#     default when `--record` is not passed) means it does not mint new
-#     append-only sim/ evidence on every CI run.
+#     runs in the `pdk-smoke` job of pdk-smoke.yml, reached from the
+#     `pdk-smoke` job below on a nightly schedule, on manual dispatch, and
+#     opt-in on a PR via the `run-pdk-smoke` label -- and since #707 that
+#     label also triggers pdk-smoke.yml directly, so an opt-in starts smoke
+#     immediately on the PR's current head while label writes alone never
+#     re-run these two headless jobs. `--no-write` (the default when
+#     `--record` is not passed) means it does not mint new append-only sim/
+#     evidence on every CI run.
 #   - `layout/bin/run-trivial-cell-flow.sh` (the klt-driven DRC/LVS proof on
 #     a trivial known-good cell -- see layout/README.md) needs a `klt`
 #     install (layout/bin/setup-venv.sh) plus the same PDK as above, so it
@@ -70,7 +74,11 @@ on:
   push:
     branches: [main]
   pull_request:
-    types: [opened, synchronize, reopened, labeled]
+    types: [opened, synchronize, reopened]
+    # No `labeled` (#707): every Loom label write on a PR used to re-run this
+    # whole workflow against an unchanged tree. The one label that must start
+    # something -- `run-pdk-smoke` -- is served by pdk-smoke.yml's own
+    # `pull_request: labeled` trigger instead.
   merge_group:
     types: [checks_requested]
   schedule:
@@ -183,72 +191,19 @@ jobs:
         # deliberately NOT layout/requirements.txt's klt pin.
 
   pdk-smoke:
-    name: PDK-gated harness smoke test (nightly / workflow_dispatch / 'run-pdk-smoke' label)
-    runs-on: ubuntu-latest
+    # Caller half of the PDK smoke job (#707): the steps live in
+    # .github/workflows/pdk-smoke.yml, split out so this workflow's trigger
+    # could drop `pull_request: labeled` without losing the on-demand smoke
+    # run. Unrelated label writes on a PR (loom:reviewing, loom:pr, ...)
+    # no longer re-run this workflow against an unchanged tree, while adding
+    # the `run-pdk-smoke` label still starts smoke immediately via
+    # pdk-smoke.yml's own `pull_request: labeled` trigger. The gate below is
+    # the original smoke job's gate, unchanged: nightly, manual dispatch,
+    # and a PR (opened/synchronized/reopened) already carrying the
+    # `run-pdk-smoke` label.
     if: >-
       github.event_name == 'schedule' ||
       github.event_name == 'workflow_dispatch' ||
       (github.event_name == 'pull_request' &&
        contains(github.event.pull_request.labels.*.name, 'run-pdk-smoke'))
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          # Same reason as the `checks` job above (#220): the byte-exact
-          # characterization check below reads the schematic's git history.
-          fetch-depth: 0
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-
-      - name: Install ngspice + xschem
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y ngspice xschem
-
-      # issue #291: the apt package source gives no version choice, so the
-      # install above cannot be pinned. Log what resolved, against what
-      # sim/pdk.json declares; selftest --require-pdk below FAILs on drift.
-      - name: Show resolved toolchain versions vs sim/pdk.json
-        run: |
-          python3 -c "import json;print('declared:', json.load(open('sim/pdk.json')).get('tools'))"
-          ngspice -v | head -n 2
-          xschem --version | head -n 1
-
-      - name: Install volare
-        run: pip install --user volare
-
-      - name: Fetch + enable pinned sky130 PDK
-        run: |
-          export PATH="$HOME/.local/bin:$PATH"
-          commit="$(python3 -c "import json;print(json.load(open('sim/pdk.json'))['open_pdks_commit'])")"
-          volare fetch --pdk sky130 "$commit"
-          volare enable --pdk sky130 "$commit"
-
-      - name: Run sim/selftest.sh --quick --require-pdk
-        run: |
-          export PATH="$HOME/.local/bin:$PATH"
-          sim/selftest.sh --quick --require-pdk
-
-      - name: Upload harness diagnostics (scratch netlist, decks, ngspice logs)
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: pdk-smoke-diagnostics
-          path: |
-            sim/build/
-          include-hidden-files: true
-          if-no-files-found: warn
-          retention-days: 14
-
-      - name: Byte-exact characterization check (includes the live Freshness column)
-        run: |
-          export PATH="$HOME/.local/bin:$PATH"
-          python3 measurements/build_characterization_report.py --check
-        # The only check that evaluates measurements/characterization.md's
-        # per-`sim/` Freshness verdicts, because only this job has the pinned
-        # PDK + xschem needed to re-netlist each testbench schematic (#220).
-        # A failure here is real news in one of two flavours, and the diff it
-        # prints says which: a Freshness-only diff means the committed rollup's
-        # freshness verdicts have gone stale (regenerate it on a PDK machine);
-        # any other diff would already have failed the headless `checks` job.
+    uses: ./.github/workflows/pdk-smoke.yml

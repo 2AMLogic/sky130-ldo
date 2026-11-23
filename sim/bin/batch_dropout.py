@@ -20,8 +20,9 @@ in a single step:
   card (`name == expr == card name`), the card's own step result.
 
 The stimulus (VIN ramp, EN edge, load step) lives in the netlist, which is
-sent verbatim; `check_netlist` pins it and refuses anything that would alter
-the cold-start initialisation or fight klt's control block.
+sent verbatim; `blr.check_netlist` (called by the batch backend,
+`_batch_backend._check_pinned_netlist`) pins it and refuses anything that
+would alter the cold-start initialisation or fight klt's control block.
 
 This is deliberately NOT a SPICE interpreter: only the two card forms below
 are accepted, the expression grammar is identifiers-that-name-a-card plus
@@ -162,12 +163,6 @@ def dropout_step(deck: ColdStartDeck, measurements: list[tuple[str, str, str]]) 
 def klt_result_name(name: str) -> str:
     """The name klt reports a step measurement under."""
     return f"{STEP_NAME}.{name}"
-
-
-def check_netlist(body: list[str], stimulus: list[str]) -> None:
-    """Refuse a request netlist whose stimulus is not the pinned one, or that
-    carries a card that would alter the cold start / fight klt's control."""
-    blr.check_netlist(body, stimulus, DropoutTranslationError, "a cold-start crossing request")
 
 
 # klt's batch backend (klt 0.7 sim_batch): status.json state "done" is a clean

@@ -114,6 +114,42 @@ class TestLegs(unittest.TestCase):
         self.assertEqual(res[0]["settings"]["t_enable_s"], 1e-4)
 
 
+class TestRampCheckRow(unittest.TestCase):
+    """Issue #736: the per-leg condition as a corner check row -- one builder
+    (moved here from batch_startup_ramp) shared by the local run_corner loop
+    and the batch startup normalizer, so the two rows cannot drift."""
+
+    @staticmethod
+    def leg(res, leg_id="c330n_0ma_esr0"):
+        res.update({"leg": leg_id, "trace_file": "f.trace.dat", "trace_sha256": None})
+        return res
+
+    def test_pass_row(self):
+        row = rm.ramp_check(self.leg(rm.check_ramp_monotonicity(*ramp(), {**SET, "tolerance_v": 0.0})))
+        self.assertEqual(row["name"], "ramp_drawdown_c330n_0ma_esr0_v")
+        self.assertEqual(row["expr"], "ramp_monotonicity.max_drawdown(v(vout))")
+        self.assertEqual(row["unit"], "V")
+        self.assertEqual(row["value"], 0.0)
+        self.assertIsNone(row["min"])
+        self.assertEqual(row["max"], 0.0)  # the manifest's tolerance_v
+        self.assertIs(row["pass"], True)
+        self.assertEqual(row["reason"], "")
+
+    def test_fail_row_carries_status_and_reasons(self):
+        res = rm.check_ramp_monotonicity(*ramp(dip=(30, 0.2)), {**SET, "tolerance_v": 0.0})
+        row = rm.ramp_check(self.leg(res))
+        self.assertIs(row["pass"], False)
+        self.assertEqual(row["value"], res["max_drawdown_v"])
+        self.assertTrue(row["reason"].startswith("FAIL: "), row["reason"])
+
+    def test_invalid_leg_never_passes(self):
+        res = rm.invalid_result({**SET, "tolerance_v": 0.0}, ["trace unreadable: nope"])
+        row = rm.ramp_check(self.leg(res))
+        self.assertIs(row["pass"], False)
+        self.assertIsNone(row["value"])
+        self.assertEqual(row["reason"], "INVALID: trace unreadable: nope")
+
+
 class TestWiring(unittest.TestCase):
     @classmethod
     def setUpClass(cls):

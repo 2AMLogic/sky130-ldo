@@ -1,0 +1,206 @@
+{
+ "candidate_rev": null,
+ "corner_ids": [
+  "tt_27c_3.30v"
+ ],
+ "execution": {
+  "requests": [
+   {
+    "engine": "ngspice",
+    "engine_version": "47",
+    "job_id": "klt-sim-19ce82bf9de6",
+    "key": "q1-tt_27c_3.30v",
+    "klt_pdk_names_pin": true,
+    "klt_status": "pass",
+    "klt_version": "0.9.3.dev2575+g6bd18bbc8637",
+    "n_points": 1,
+    "pdk_version": "open_pdks c6d73a35f524070e85faff4a6a9eef49553ebc2b",
+    "remote": {
+     "ami_id": "ami-09c14f55df4958cbd",
+     "availability_zone": "us-east-1f",
+     "client_collected_at": "2026-11-20T23:57:34.838745Z",
+     "client_klt_version": "0.9.3.dev2575+g6bd18bbc8637",
+     "client_launched_at": "2026-11-20T23:57:02.325956Z",
+     "client_status_terminal_at": "2026-11-20T23:57:33.981119Z",
+     "client_submitted_at": "2026-11-20T23:56:42.244166Z",
+     "concurrency": "1",
+     "elapsed_seconds": 13,
+     "exit_code": "0",
+     "instance_id": "i-0d202db69e5571fda",
+     "instance_type": "c7i.4xlarge",
+     "job_ceiling": {
+      "basis": "conservative_serial_bound",
+      "check": "warn",
+      "exceeds_ceiling": false,
+      "job_bound_s": 420.0,
+      "max_job_seconds": 3600.0,
+      "max_job_seconds_source": "fleet_config",
+      "max_units_per_job": 11,
+      "overhead_s": 120.0,
+      "per_unit_timeout_s": 300,
+      "recommended_hosts": 1,
+      "unit_count": 1
+     },
+     "job_id": "klt-sim-19ce82bf9de6",
+     "lifecycle": "spot",
+     "models_lib_comparison": {
+      "status": "match"
+     },
+     "physical_cores": "8",
+     "provider": "aws-batch-fleet",
+     "region": "us-east-1",
+     "runner_compatibility": "match",
+     "runner_klt_version": "0.9.0",
+     "runner_model_inputs": null,
+     "runner_models_lib_sha256": "48de7c677e2c6e7d09b2559279de9f818be71010a4aa933d728eb4db3b133c84",
+     "runner_osdi_preload": null,
+     "runner_request_features": {
+      "missing": [],
+      "required": [
+       "analysis_steps",
+       "options.ngspice_init"
+      ],
+      "status": "supported"
+     },
+     "spot": true,
+     "state": "done",
+     "worker_environment": {
+      "capture": "ok",
+      "cpu_model": "Intel(R) Xeon(R) Platinum 8488C",
+      "diagnostics": [],
+      "engine_build_comparison": {
+       "status": "match"
+      },
+      "image_manifest": null,
+      "model_inputs": null,
+      "ngspice_init": null,
+      "omp_num_threads": null,
+      "pdk": {
+       "models_staged": false,
+       "root": "/opt/pdk",
+       "stamp_scheme": "sources-sha256",
+       "stamp_scope": "executed",
+       "stamp_sha256": "4ca10280ae9f293aa1ff69f0060a52e0026929111bda881503717469b429ce67",
+       "stamp_text": "open_pdks f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7",
+       "variant": "sky130A"
+      },
+      "pdk_stamp_comparison": {
+       "status": "mismatch",
+       "warning": "the worker's PDK revision stamp for sky130A differs from the one the submitter resolved locally; results may differ from a local run (a matching stamp would not prove identical models)"
+      },
+      "simulator": {
+       "binary_source": "PATH",
+       "requested_binary": "ngspice",
+       "selected_path": "/usr/local/bin/ngspice",
+       "version_banner": "******\n** ngspice-47 : Circuit level simulation program\n** Compiled with KLU Direct Linear Solver\n** The U. C. Berkeley CAD Group\n** Copyright 1985-1994, Regents of the University of California.\n** Copyright 2001-2026, The ngspice team.\n** Please get your ngspice manual from https://ngspice.sourceforge.io/docs.html\n** Please file your bug-reports at http://ngspice.sourceforge.net/bugrep.html\n** Creation Date: Fri Nov 13 23:19:32 UTC 2026\n******\n",
+       "version_probe": "ok"
+      },
+      "threads_per_worker": null
+     }
+    },
+    "reported_backend": "aws-batch-fleet",
+    "request_file": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-692/sim/dropout-vs-load/diagnostics/issue-692-20261120-235900/runs/pair-base/klt-requests/q1-tt_27c_3.30v.json",
+    "response_file": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-692/sim/dropout-vs-load/diagnostics/issue-692-20261120-235900/runs/pair-base/klt-out/q1-tt_27c_3.30v/response.json",
+    "returncode": 0,
+    "supply_v": 3.3
+   }
+  ]
+ },
+ "experiment": "dropout-vs-load",
+ "extras": {
+  "tt|27.0": {
+   "biasref_i_set": 2.114851e-06,
+   "ea_out_at_x": 0.7113672,
+   "mclim_i_at_2v064": 2.505283e-07,
+   "mclim_i_at_x": 4.919159e-08,
+   "mclim_vgs_at_2v064": 0.7668315,
+   "tail_i_at_x": 3.132626e-07,
+   "tail_i_set": 3.274397e-06,
+   "vout_at_2v064": 1.606975
+  }
+ },
+ "leg": "pair-base",
+ "matrix": [
+  [
+   "tt",
+   27.0,
+   3.3
+  ]
+ ],
+ "provenance": {
+  "candidate_invariant_problems": [],
+  "candidate_py_sha256": "89ff4550264fe9bc7d8e11b352dbb393f110d68051bee7c876d32903807f3304",
+  "driver_sha256": "ffa72f2834585840258f7651f6e1fb0775a1bc1ce78bacee8a49b026425c9e0b",
+  "dut_sch_sha256": "1378c2d440e6ffc2224091972a162357c2634600e6e56cb51e4d6f96159fd2e3",
+  "edit_notes": [],
+  "experiment_json_sha256": "011567ef9110574408396b42068b38cbdb290a28b9f936bacee1f102650b78be",
+  "netlist_sha256": "0de03ee7242a81484f3150422e3f4e81dd1e28dc523501d6e9d055f5b91eaf76",
+  "pdk": {
+   "lib_sha256": "48de7c677e2c6e7d09b2559279de9f818be71010a4aa933d728eb4db3b133c84",
+   "matches_pin": true,
+   "open_pdks_commit": "c6d73a35f524070e85faff4a6a9eef49553ebc2b"
+  },
+  "source_commit": "218e3e998679f569dbefa539db6627c69013f968",
+  "testbench_sha256": "f3b51340b48f368893aba6f24d3d261bc6611310833188478b9fbda83b5ffa34",
+  "tools": {
+   "declared": {
+    "ngspice": "42",
+    "xschem": "3.4.4"
+   },
+   "ngspice": "ngspice-47 : Circuit level simulation program",
+   "on_baseline": false,
+   "platform": "Linux 7.0.0-1017-aws x86_64",
+   "python": "3.12.3",
+   "xschem": "XSCHEM V3.4.7"
+  }
+ },
+ "results": [
+  {
+   "batch_reasons": [],
+   "corner_id": "tt_27c_3.30v",
+   "elapsed_s": 3.474,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": "tt/novdd/27C",
+   "klt_request": "q1-tt_27c_3.30v",
+   "klt_status": "pass",
+   "log": null,
+   "measurements": [
+    {
+     "expr": "dropout_vin_x - 1.764",
+     "max": 0.3,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "dropout_v",
+     "pass": false,
+     "reason": "above max 0.3",
+     "unit": "V",
+     "value": 0.397658
+    },
+    {
+     "expr": "vout_at_max_vin_v",
+     "max": 3.7,
+     "max_inclusive": true,
+     "min": 0.5,
+     "min_inclusive": true,
+     "name": "vout_at_max_vin_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.798832
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": false,
+   "process": "tt",
+   "solver_diagnostic": null,
+   "supply_v": 3.3,
+   "temperature_c": 27.0,
+   "timed_out": false,
+   "timeout_s": 300
+  }
+ ],
+ "variant": "base"
+}

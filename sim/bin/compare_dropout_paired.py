@@ -24,8 +24,8 @@ as `print_resolution_v` (the ~0.4 V dropout metrics resolve to 1e-7 V).
 
 Usage: compare_dropout_paired.py <diagnostics-dir> --local-engine N
            --remote-pass PASS|FAIL --local-pass PASS|FAIL [--out report.json]
-(reads remote/*/response.json -- exactly the one request this bench writes --
-and local/ngspice.log).
+(reads remote/*/response.json -- exactly the one request this bench writes;
+zero or several responses is an error, never a merge -- and local/ngspice.log).
 """
 
 from __future__ import annotations
@@ -78,19 +78,23 @@ def compare(
     )
 
 
-def load_remote(d: Path) -> tuple[dict, str | None, list[str]]:
-    vals, engines = {}, set()
-    for path in sorted((d / "remote").glob("*/response.json")):
-        resp = json.loads(path.read_text())
-        engines.add(str(resp["environment"].get("engine_version")))
-        for m in resp["corners"][0]["measurements"]:
-            if is_finite_number(m.get("value")):
-                vals[m["name"].split(".", 1)[-1]] = m["value"]
+def load_remote(d: Path) -> tuple[dict, str | None]:
+    """Load the one remote response this bench writes; pooling measurements
+    across requests would let two incomplete requests fake a complete pair."""
+    paths = sorted((d / "remote").glob("*/response.json"))
+    if len(paths) != 1:
+        raise SystemExit(
+            f"expected exactly one remote/*/response.json under {d}, found {len(paths)}"
+        )
+    resp = json.loads(paths[0].read_text())
+    vals = {}
+    for m in resp["corners"][0]["measurements"]:
+        if is_finite_number(m.get("value")):
+            vals[m["name"].split(".", 1)[-1]] = m["value"]
     if not vals:
         raise SystemExit(f"no remote/*/response.json measurements under {d}")
     vals.update({k: v for k, v in derive(vals).items() if v is not None})
-    all_engines = sorted(engines)
-    return vals, (all_engines[0] if len(all_engines) == 1 else None), all_engines
+    return vals, str(resp["environment"].get("engine_version"))
 
 
 # Accepts the `.meas` echo lines (`name = value at=/from=...`) and the
@@ -120,7 +124,7 @@ def main(argv: list[str]) -> int:
     ap.add_argument("--remote-pass", choices=("PASS", "FAIL"), required=True)
     ap.add_argument("--local-pass", choices=("PASS", "FAIL"), required=True)
     a = ap.parse_args(argv)
-    rv, reng, _ = load_remote(a.dir)
+    rv, reng = load_remote(a.dir)
     lv = load_local(a.dir)
     rep = compare(
         rv, lv, reng, a.local_engine, a.remote_pass == "PASS", a.local_pass == "PASS"
