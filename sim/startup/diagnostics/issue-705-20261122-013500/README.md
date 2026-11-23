@@ -17,7 +17,13 @@ Both DUTs of every pair below are netlisted from the same worktree state:
 
 - **Pinned commit**: `1e328f6558ee68a1ea68ed78b14fd29487d79347` (`1e328f65`,
   "Merge pull request #722"), recorded per leg in each `runs/<leg>/leg.json`
-  as `provenance.source_commit`, with `git_state` clean.
+  as `provenance.source_commit`. The recorded `provenance.git_state` is
+  `dirty: true` on the six legs that carry it (`startup-*`, `line-*`,
+  `load-*`; the worktree held this campaign's own untracked output files);
+  the two MC legs and `runs/verify-overlay/verification.json` record no
+  `git_state`. The guarantee that holds is narrower: the DUT schematic,
+  testbench and `experiment.json` SHA-256s recorded in every leg equal
+  those files' content at `1e328f65`.
 - **Overlay**: `candidate.py` here is byte-identical (sha256
   `a08e93dce932ddd4…`) to the #692 campaign's
   `sim/dropout-vs-load/diagnostics/issue-692-20261120-235900/candidate.py`;
