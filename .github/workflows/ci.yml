@@ -1,74 +1,19 @@
 name: CI
 
-# Self-check inventory for this repo (see sim/README.md, layout/README.md,
-# CLAUDE.md) and where each one runs:
+# The headless `checks` job below runs `npm run check:ci`; package.json's
+# `check:ci` chain is the authoritative inventory of what it covers -- not
+# restated here, because an unchecked prose paraphrase of it drifts (#591).
+# What package.json cannot express is why the PDK-dependent work does not
+# block every PR:
 #
-#   - `package.json` `check:ci` (JSON syntax of every root-level *.json plus
-#     every sim/**/experiment.json, sim/**/records/*.json and
-#     signoff/**/*.json, shell/python syntax of the harness scripts,
-#     py_compile over every tracked sim/ + layout/ + signoff/ Python file,
-#     `sim/tests/`'s PDK-free unit coverage for the corner runner's own pure
-#     helper functions, `signoff/tests/`'s mutation coverage for
-#     `signoff/verify-pins.py` -- stage 1 of `signoff/check.sh`, which needs
-#     no `klt`, so unlike the rest of that script it CAN run here; it proves
-#     each half of item 11's compound ERC+LVS citation rests on its own pin
-#     rather than on the other half's, #222 -- a regex lint over tracked `.sch`/`.sym` files for
-#     xschem's embedded-quoted-attribute truncation hazard (#59), a regex
-#     lint over tracked `design/*.sch` files for duplicate component
-#     `name=` values (#38) -- catches an unusable merged netlist, e.g. two
-#     `M_ENP4` instances, without needing xschem/ngspice/the PDK at all --
-#     and a uniqueness lint over tracked `spec/decision-records/DR-NNN-*.md`
-#     filenames (#140), which catches two parallel branches independently
-#     claiming the same DR number, as four open PRs each did with `DR-008`,
-#     and -- via `check:characterization` -- a structural re-check of the
-#     committed measurements/characterization.md rollup against a fresh run
-#     of its own generator, #220)
-#     -> `checks` job below, every push/PR/merge group. Headless, no PDK, no `klt`
-#     install needed, but it DOES need full git history (see the job's
-#     fetch-depth below).
-#   - `measurements/build_characterization_report.py --check` (byte-exact:
-#     also compares the per-`sim/` Freshness column, which is a live xschem
-#     re-netlist of each testbench schematic) -> `pdk-smoke` job below. The
-#     headless job above runs the same check with `--ignore-sim-freshness`,
-#     which normalises only those PDK-dependent freshness verdicts; this one
-#     is what keeps the committed verdicts themselves honest. Both directions
-#     matter: before #220 NOTHING ran this generator, and a KeyError that
-#     crashed every invocation went unnoticed for two days (#215/#218) while
-#     CI stayed green.
-#   - `signoff/check.sh` (re-grades this block's T1 state from
-#     signoff/block-manifest.json via `klt signoff --manifest`, and fails if a
-#     pinned content_hash no longer matches the artifact it covers or if the
-#     committed signoff/records/t1-tier-report.json no longer matches a fresh
-#     run) -> `signoff-tier-report` job below, every push/PR/merge group. Needs `klt` but
-#     NOT the PDK/KLayout/ngspice: --manifest mode only reads committed JSON
-#     envelopes and the tier doc bundled inside the klt wheel. See
-#     signoff/README.md.
-#   - `sim/selftest.sh --quick` (the harness's own liveness test: proves the
-#     pinned sky130 PDK models load in ngspice, xschem netlists headlessly,
-#     and the PVT knobs actually reach the simulator) -> requires xschem +
-#     ngspice + the ~1 GB sky130 PDK via volare, so per this repo's
-#     "headless only" default-CI guideline it does NOT block every PR. It
-#     runs in the `pdk-smoke` job of pdk-smoke.yml, reached from the
-#     `pdk-smoke` job below on a nightly schedule, on manual dispatch, and
-#     opt-in on a PR via the `run-pdk-smoke` label -- and since #707 that
-#     label also triggers pdk-smoke.yml directly, so an opt-in starts smoke
-#     immediately on the PR's current head while label writes alone never
-#     re-run these two headless jobs. `--no-write` (the default when
-#     `--record` is not passed) means it does not mint new append-only sim/
-#     evidence on every CI run.
-#   - `layout/bin/run-trivial-cell-flow.sh` (the klt-driven DRC/LVS proof on
-#     a trivial known-good cell -- see layout/README.md) needs a `klt`
-#     install (layout/bin/setup-venv.sh) plus the same PDK as above, so it
-#     is not wired into CI at all yet: it is proven by hand per
-#     layout/README.md's quick start, and its checked-in
-#     trivial-cell/reports/<record-id>/record.md is the evidence. Wiring it
-#     into a CI job is a natural follow-up once this flow is exercised
-#     enough to be worth the ~1 GB PDK download in a second job.
-#   - Everything else claimed under `sim/<experiment>/` once real LDO
-#     testbenches exist is evidence captured by a human/agent run of the
-#     same PDK-gated runner, not a repeatable CI check -- re-running them
-#     here would mint new append-only records on every push, which is not
-#     what CI is for. See sim/README.md for how to reproduce a claim by hand.
+#   - PDK smoke (.github/workflows/pdk-smoke.yml, called by the `pdk-smoke`
+#     job below) runs only nightly, on manual dispatch, or on a PR opting in
+#     with the `run-pdk-smoke` label: every PR would mean installing ngspice
+#     + xschem and downloading the ~1 GB sky130 PDK (volare) each time.
+#   - `layout/bin/run-trivial-cell-flow.sh` (the klt-driven trivial-cell
+#     DRC/LVS proof) is run by hand per layout/README.md's quick start --
+#     evidence: trivial-cell/reports/<record-id>/record.md -- because a CI
+#     job for it would need `klt` plus the same PDK.
 
 on:
   push:
