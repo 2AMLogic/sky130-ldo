@@ -132,12 +132,23 @@ class TestColdEnableTemps(unittest.TestCase):
                     continue
                 n += 1
                 want = set(rc.cold_enable_temps(sum(r["bracket"]) / 2, sum(t["bracket"]) / 2))
-                got = {float(k) for k in cold} | {float(k) for k in en}
-                if name.split("_")[0] == "ff":
-                    # ff's lowered 180 C bound: points above it are never run (issue #231)
-                    self.assertLessEqual(got, want, f"{path.name} {name}")
-                else:
-                    self.assertEqual(got, want, f"{path.name} {name}")
+                dp = c.get("dependent_points", {})
+                # temperatures this record itself says were not measured, per label
+                not_run = {"cold": set(), "en": set()}
+                for entry in list(dp.get("missing", [])) + list(dp.get("beyond_grid_top_not_run", [])):
+                    lab, _, temp = entry.partition("@")
+                    if lab in not_run:
+                        not_run[lab].add(float(temp.rstrip("C")))
+                # cold-start and EN are checked separately: one measurement must not hide
+                # a gap in the other. Points above a ceiling that did run are kept (got
+                # is only required to be a subset of the schedule, e.g. ff at 185 C).
+                for lab, rec in (("cold", cold), ("en", en)):
+                    if not rec:
+                        continue
+                    got = {float(k) for k in rec}
+                    where = f"{path.name} {name} {lab}"
+                    self.assertLessEqual(got, want, where)
+                    self.assertEqual(want - got, not_run[lab], where)
         self.assertGreaterEqual(n, 34)  # 34 verified pairs at issue #715 filing
 
 
