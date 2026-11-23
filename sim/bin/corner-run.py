@@ -92,20 +92,26 @@ from _batch_backend import (  # noqa: F401  (re-exported: corner_run.<name> is a
     build_batch_request,
     check_batch_supported,
     check_cold_start_batch_shape,
+    check_ac_leg_grid_batch_shape,
     check_endpoint_batch_shape,
     check_window_grid_batch_shape,
     cold_start_step,
+    ac_grid_deck,
     endpoint_deck,
     endpoint_module,
     endpoint_step,
+    finalize_ac_grid_results,
     finalize_endpoint_results,
     group_batch_requests,
+    is_ac_leg_grid,
     is_cold_start_crossing,
     is_endpoint_adapter,
     is_ramp_trace_grid,
     klt_binary,
     leg_template_name,
+    loop_gain_adapter_info,
     merge_leg_parts,
+    normalize_ac_grid_response,
     normalize_batch_response,
     normalize_endpoint_response,
     normalize_startup_response,
@@ -1036,6 +1042,20 @@ def render_batch_execution(record: dict) -> list[str]:
             "`tran<N>.<card>` and the slopes/deltas, windows and bounds are graded locally "
             "(offline translation checks do not establish local/fleet numerical equivalence)"
         )
+    elif ex.get("adapter") and ex["adapter"].get("name") == "loop-gain-ac-leg-grid":
+        ad = ex["adapter"]
+        lines.append(
+            f"- **Batch adapter**: `{ad['name']}` (issue #{ad['issue']}): one `analysis_steps` "
+            "request per supply group x ESR group ("
+            + "; ".join(f"`{g['key']}` = `{g['hesr_line']}`, {len(g['legs'])} legs" for g in ad["esr_groups"])
+            + f"), each leg an `op` + `ac` step pair (`{ad['analysis']}`), the `HESR` gain rewritten "
+            "in the request netlist and C_out / R_load carried as step `alter`s; cards "
+            + ", ".join(f"`{c}`" for c in ad["cards"])
+            + f"; `{'`, `'.join(ad['ngspice_init_extra'])}` is sent as an extra `options.ngspice_init` "
+            "line; PM / GM / fc / dcgain / vout_seed are graded locally from the returned step cards "
+            "with the manifest's own expressions and bounds (a `not_reached` crossing is a FAIL, "
+            "never a pass)"
+        )
     elif ex.get("adapter"):
         ad = ex["adapter"]
         if "waveform_signal" in ad:
@@ -1462,6 +1482,16 @@ def main(argv: list[str]) -> int:
                 print(f"  card : {c}")
             for ln in ad["validated_stimulus"]:
                 print(f"  stimulus (verified in each request netlist): {ln}")
+        if is_ac_leg_grid(exp):
+            ad = loop_gain_adapter_info(exp)
+            print(f"\n-- batch adapter {ad['name']} (issue #{ad['issue']}) --")
+            print(f"  {ad['analysis']}; extra ngspice init: {ad['ngspice_init_extra']}")
+            for g in ad["esr_groups"]:
+                print(f"  ESR group {g['key']}: request netlist `{g['hesr_line']}`; legs {', '.join(g['legs'])}")
+            for c in ad["cards"]:
+                print(f"  card : {c}")
+            for ln in ad["validated_stimulus"]:
+                print(f"  stimulus (verified in each request netlist): {ln}")
         if is_ramp_trace_grid(exp):
             ad = startup_ramp_adapter_info(exp)
             print(f"\n-- batch adapter {ad['name']} (issue #{ad['issue']}) --")
@@ -1646,6 +1676,8 @@ def main(argv: list[str]) -> int:
             record["execution"]["adapter"] = endpoint_adapter_info(exp)
         if is_ramp_trace_grid(exp):
             record["execution"]["adapter"] = startup_ramp_adapter_info(exp)
+        if is_ac_leg_grid(exp):
+            record["execution"]["adapter"] = loop_gain_adapter_info(exp)
         record["links"].update(
             {"klt_requests": link_reqs, "klt_responses": link_resps, "request_netlists": link_nets}
         )
