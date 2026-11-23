@@ -7,7 +7,6 @@ import itertools
 import json
 import subprocess
 import sys
-from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -338,24 +337,12 @@ def advance(rows, stage):
 
 
 def submit(jobs, out, env, workers):
-    # Keep the batch helper's raw stdout/stderr. A refusal can be a JSON error
-    # envelope without corners, which submit_all's progress formatter cannot consume.
-    errors = {}
-
-    def run(job):
-        key, path = job
-        result = fc.submit(key, path, out, env)
-        resp = result.get("resp", {})
-        if "corners" not in resp:
-            return key, result.get("error") or str(resp.get("error", "missing corners"))
-        return key, None
-
-    with ThreadPoolExecutor(max_workers=workers) as pool:
-        for key, error in pool.map(run, jobs):
-            if error:
-                errors[key] = error
-            print(f"{key} {'refused' if error else 'returned'}", flush=True)
-    return errors
+    # fc.submit_all() persists each submit's raw stdout/stderr and refuses a
+    # JSON error envelope as {"key": ..., "error": ...}; the campaign reads
+    # responses back off disk, so only the {key: error} mapping is returned.
+    errors = []
+    list(fc.submit_all([(k, {}, p) for k, p in jobs], out, env, workers, errors))
+    return {e["key"]: e["error"] for e in errors}
 
 
 def main():

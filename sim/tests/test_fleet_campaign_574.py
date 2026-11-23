@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import contextlib
 import io
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -96,6 +97,60 @@ class SubmitAll(unittest.TestCase):
         del r["environment"]
         got, _errors, _ = self._run({"a": {"key": "a", "resp": r}})
         self.assertIsNone(got[0][3])
+
+
+class SubmitErrorEnvelope(unittest.TestCase):
+    """A JSON error envelope without a `corners` list is a refused submit, not
+    a sim result: `run_klt_sim`'s default `require_corners` must refuse it
+    AFTER persisting the raw `klt.stdout`/`klt.stderr`, so `submit()` returns
+    `{"key": ..., "error": ...}` and `submit_all()` never formats it (issue
+    #728 -- `require_corners=False` used to leak the envelope into the
+    progress formatter's `resp['status']` as a KeyError)."""
+
+    ENVELOPE = '{"error": "batch_no_capacity", "detail": "fleet full"}'
+
+    def _envelope_proc(self):
+        return subprocess.CompletedProcess(
+            args=["klt", "sim"], returncode=1, stdout=self.ENVELOPE, stderr="refused at launch"
+        )
+
+    def _patches(self):
+        return (
+            mock.patch.object(fc, "klt_binary", return_value="/nonexistent/klt"),
+            mock.patch.object(subprocess, "run", return_value=self._envelope_proc()),
+        )
+
+    def test_submit_refuses_envelope_after_persisting_raw_output(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp)
+            p1, p2 = self._patches()
+            with p1, p2:
+                r = fc.submit(
+                    "case1", Path("/nonexistent/req.json"), out, {"PDK_ROOT": "/pdk"}
+                )
+            od = out / "responses" / "case1"
+            self.assertEqual((od / "klt.stdout").read_text(), self.ENVELOPE)
+            self.assertEqual((od / "klt.stderr").read_text(), "refused at launch")
+        self.assertEqual(r["key"], "case1")
+        self.assertIn("error envelope", r["error"])
+        self.assertIn("batch_no_capacity", r["error"])
+        self.assertNotIn("resp", r)
+
+    def test_submit_all_records_the_error_and_yields_nothing(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp)
+            jobs = [("case1", {}, Path("/nonexistent/case1.json"))]
+            errors: list = []
+            buf = io.StringIO()
+            p1, p2 = self._patches()
+            with p1, p2, contextlib.redirect_stdout(buf):
+                got = list(fc.submit_all(jobs, out, {"PDK_ROOT": "/pdk"}, 2, errors))
+            od = out / "responses" / "case1"
+            self.assertEqual((od / "klt.stdout").read_text(), self.ENVELOPE)
+        self.assertEqual(got, [])
+        self.assertEqual([e["key"] for e in errors], ["case1"])
+        self.assertIn("batch_no_capacity", errors[0]["error"])
+        self.assertIn("case1: SUBMIT FAILED (no local fallback)", buf.getvalue())
 
 
 class Request(unittest.TestCase):

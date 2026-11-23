@@ -5,6 +5,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 from _sim_script_loader import load_script
 
@@ -199,6 +200,24 @@ class Validity(unittest.TestCase):
             self.assertTrue(
                 any("solver diagnostic" in (r["reason"] or "") for r in rows())
             )
+
+
+class Submit(unittest.TestCase):
+    def test_refused_submits_map_into_keyed_errors(self):
+        """submit() rides fc.submit_all(), so an envelope refusal comes back
+        from run_klt_sim as {"key": ..., "error": ...} and must land in the
+        campaign's {key: error} dict (issue #728)."""
+
+        def fake_submit(key, path, out, env):
+            if key == "bad":
+                return {"key": key, "error": "batch_no_capacity"}
+            return {"key": key, "resp": corner_response({"pm": 60, "gm": 30})}
+
+        with tempfile.TemporaryDirectory() as tmp:
+            jobs = [("good", Path("/n/good.json")), ("bad", Path("/n/bad.json"))]
+            with mock.patch.object(screen.fc, "submit", fake_submit):
+                errors = screen.submit(jobs, Path(tmp), {}, 2)
+        self.assertEqual(errors, {"bad": "batch_no_capacity"})
 
 
 report = load_script("rcz_shelf_report_691", BIN / "rcz-shelf-691-report.py")

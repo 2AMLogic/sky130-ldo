@@ -1,0 +1,59 @@
+* klt sim -- generated corner deck, do not edit
+.lib /opt/pdk/sky130A/libs.tech/combined/sky130.lib.spice tt
+.include /var/tmp/eda-job-klt-sim-205ad194f782/inputs/netlist.cir
+.temp 27.0
+.control
+save all
+alter cdir=0.0
+alter cout=4.7e-06
+alter resr=0.5
+setplot new
+echo klt_step_begin 0 $curplot
+tran 200n 3m
+echo klt_step_end 0 $curplot
+set klt_plot_0 = $curplot
+meas tran v_pre AVG v(vout) FROM=0.800m TO=0.999m
+let c4u7_esr500m__v_pre = v_pre
+print c4u7_esr500m__v_pre
+meas tran v_rise_min MIN v(vout) FROM=1.000m TO=2.001m
+let c4u7_esr500m__v_rise_min = v_rise_min
+print c4u7_esr500m__v_rise_min
+meas tran v_rise_max MAX v(vout) FROM=1.000m TO=2.001m
+let c4u7_esr500m__v_rise_max = v_rise_max
+print c4u7_esr500m__v_rise_max
+meas tran v_fall_min MIN v(vout) FROM=2.001m TO=2.999m
+let c4u7_esr500m__v_fall_min = v_fall_min
+print c4u7_esr500m__v_fall_min
+meas tran v_fall_max MAX v(vout) FROM=2.001m TO=2.999m
+let c4u7_esr500m__v_fall_max = v_fall_max
+print c4u7_esr500m__v_fall_max
+meas tran v_50ma FIND v(vout) AT=2.000m
+let c4u7_esr500m__v_50ma = v_50ma
+print c4u7_esr500m__v_50ma
+let vout_pre_v = v_pre
+let c4u7_esr500m__vout_pre_v = vout_pre_v
+print c4u7_esr500m__vout_pre_v
+let undershoot_rise_v = v_pre - v_rise_min
+let c4u7_esr500m__undershoot_rise_v = undershoot_rise_v
+print c4u7_esr500m__undershoot_rise_v
+let overshoot_rise_v = v_rise_max - v_pre
+let c4u7_esr500m__overshoot_rise_v = overshoot_rise_v
+print c4u7_esr500m__overshoot_rise_v
+let undershoot_fall_v = v_pre - v_fall_min
+let c4u7_esr500m__undershoot_fall_v = undershoot_fall_v
+print c4u7_esr500m__undershoot_fall_v
+let overshoot_fall_v = v_fall_max - v_pre
+let c4u7_esr500m__overshoot_fall_v = overshoot_fall_v
+print c4u7_esr500m__overshoot_fall_v
+let recovery_rise_us = vecmax((0.5*(1 + ((abs(v(vout) - (v_pre)))-(0.01 * (v_pre)))/(abs((abs(v(vout) - (v_pre)))-(0.01 * (v_pre)))+1e-18)))*(0.5*(1 + (time-1.0m)/(abs(time-1.0m)+1e-18)) * 0.5*(1 + (2.0m-time)/(abs(2.0m-time)+1e-18)))*(time-1.0m))*1e6
+let c4u7_esr500m__recovery_rise_us = recovery_rise_us
+print c4u7_esr500m__recovery_rise_us
+let recovery_fall_us = vecmax((0.5*(1 + ((abs(v(vout) - (v_pre)))-(0.01 * (v_pre)))/(abs((abs(v(vout) - (v_pre)))-(0.01 * (v_pre)))+1e-18)))*(0.5*(1 + (time-2.001m)/(abs(time-2.001m)+1e-18)) * 0.5*(1 + (2.999m-time)/(abs(2.999m-time)+1e-18)))*(time-2.001m))*1e6
+let c4u7_esr500m__recovery_fall_us = recovery_fall_us
+print c4u7_esr500m__recovery_fall_us
+let settle_err_50ma_pct = 100*(v_50ma - v_pre)/v_pre
+let c4u7_esr500m__settle_err_50ma_pct = settle_err_50ma_pct
+print c4u7_esr500m__settle_err_50ma_pct
+quit
+.endc
+.end

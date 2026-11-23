@@ -43,7 +43,7 @@ from pathlib import Path
 import batch_line_regulation as blr  # noqa: F401  (re-exported; tests call corner_run.blr)
 import batch_load_regulation as bld
 import batch_iq as biq
-from ramp_monotonicity import evaluate_legs
+from ramp_monotonicity import evaluate_legs, ramp_check
 from xschem_exprs import eval_xschem_exprs  # noqa: F401  (re-exported; tests call corner_run.eval_xschem_exprs)
 from _record_common import (
     build_input_fingerprint,
@@ -75,6 +75,7 @@ from _corner_model import (  # noqa: F401  (re-exported: corner_run.<name> is a 
     compare_tool_versions,
     detect_solver_diagnostic,
     grade_bounds,
+    grade_check,
     leg_values,
     parse_tool_version,
     unique_in_order,
@@ -663,52 +664,18 @@ def run_corner(
     ok = rc == 0 and not timed_out and solver_diagnostic is None
     for m in exp.measurements:
         value = values.get(m.name)
-        passed, reason = grade_bounds(m, value)
-        checks.append(
-            {
-                "name": m.name,
-                "expr": m.expr,
-                "unit": m.unit,
-                "value": value,
-                "min": m.min,
-                "max": m.max,
-                "min_inclusive": m.min_inclusive,
-                "max_inclusive": m.max_inclusive,
-                "pass": passed,
-                "reason": reason,
-                **(
-                    {
-                        "leg": m.leg,
-                        "cout_f": m.cout_f,
-                        "esr_ohm": m.esr_ohm,
-                        "direction": m.direction,
-                    }
-                    if m.leg is not None
-                    else {}
-                ),
-            }
-        )
-        ok = ok and passed
+        check = grade_check(m, value)
+        checks.append(check)
+        ok = ok and check["pass"]
 
     ramp_legs = []
     ramp_cfg = exp.raw.get("ramp_monotonicity")
     if ramp_cfg:
         ramp_legs = evaluate_legs(ramp_cfg, run_dir, corner.id)
         for leg in ramp_legs:
-            passed = leg["pass"]
-            checks.append(
-                {
-                    "name": f"ramp_drawdown_{leg['leg']}_v",
-                    "expr": "ramp_monotonicity.max_drawdown(v(vout))",
-                    "unit": "V",
-                    "value": leg["max_drawdown_v"],
-                    "min": None,
-                    "max": leg["settings"]["tolerance_v"],
-                    "pass": passed,
-                    "reason": "" if passed else f"{leg['status']}: " + "; ".join(leg["reasons"]),
-                }
-            )
-            ok = ok and passed
+            check = ramp_check(leg)
+            checks.append(check)
+            ok = ok and check["pass"]
         if log_path is not None:
             for leg in ramp_legs:
                 src = run_dir / leg["trace_file"]

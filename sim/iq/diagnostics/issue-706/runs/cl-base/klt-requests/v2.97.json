@@ -1,0 +1,238 @@
+{
+  "analysis_steps": [
+    {
+      "analysis": {
+        "args": "5u 1.0m uic",
+        "kind": "tran"
+      },
+      "measurements": [
+        {
+          "name": "vout_50ma",
+          "spice": ".meas tran vout_50ma avg v(vout) from=0.9m to=1.0m"
+        },
+        {
+          "name": "vout_50ma_lo",
+          "spice": ".meas tran vout_50ma_lo min v(vout) from=0.9m to=1.0m"
+        },
+        {
+          "name": "vout_50ma_hi",
+          "spice": ".meas tran vout_50ma_hi max v(vout) from=0.9m to=1.0m"
+        },
+        {
+          "name": "vin_50ma",
+          "spice": ".meas tran vin_50ma avg v(vin) from=0.9m to=1.0m"
+        },
+        {
+          "name": "cl_cmp_50ma",
+          "spice": ".meas tran cl_cmp_50ma avg v(xldo.cl_cmp) from=0.9m to=1.0m"
+        },
+        {
+          "name": "ir_set_50ma",
+          "spice": ".meas tran ir_set_50ma avg @m.xldo.xm_biasp1.msky130_fd_pr__pfet_g5v0d10v5[id] from=0.9m to=1.0m"
+        },
+        {
+          "name": "tail_i_set_50ma",
+          "spice": ".meas tran tail_i_set_50ma avg @m.xldo.xm_tail.msky130_fd_pr__pfet_g5v0d10v5[id] from=0.9m to=1.0m"
+        },
+        {
+          "name": "clp_i_set_50ma",
+          "spice": ".meas tran clp_i_set_50ma avg @m.xldo.xm_clp.msky130_fd_pr__pfet_g5v0d10v5[id] from=0.9m to=1.0m"
+        },
+        {
+          "name": "cl_cmp_50ma_x",
+          "spice": ".meas tran cl_cmp_50ma_x avg v(xldo.cl_cmp) from=0.9m to=1.0m"
+        }
+      ],
+      "name": "tran1"
+    },
+    {
+      "alter": {
+        "rforce": 0.001,
+        "rload": 1000000000000.0
+      },
+      "analysis": {
+        "args": "vforce 0 1.75 0.125",
+        "kind": "dc"
+      },
+      "measurements": [
+        {
+          "name": "ilim_short",
+          "spice": ".meas dc ilim_short find i(vforce) at=0"
+        },
+        {
+          "name": "ilim_knee",
+          "spice": ".meas dc ilim_knee find i(vforce) at=1.75"
+        },
+        {
+          "name": "i_at_375mv",
+          "spice": ".meas dc i_at_375mv find i(vforce) at=0.375"
+        },
+        {
+          "name": "i_at_750mv",
+          "spice": ".meas dc i_at_750mv find i(vforce) at=0.75"
+        },
+        {
+          "name": "i_at_1125mv",
+          "spice": ".meas dc i_at_1125mv find i(vforce) at=1.125"
+        },
+        {
+          "name": "i_at_1500mv",
+          "spice": ".meas dc i_at_1500mv find i(vforce) at=1.5"
+        },
+        {
+          "name": "i_at_1625mv",
+          "spice": ".meas dc i_at_1625mv find i(vforce) at=1.625"
+        },
+        {
+          "name": "cl_cmp_at_short",
+          "spice": ".meas dc cl_cmp_at_short find v(xldo.cl_cmp) at=0"
+        },
+        {
+          "name": "cl_cmp_at_knee",
+          "spice": ".meas dc cl_cmp_at_knee find v(xldo.cl_cmp) at=1.75"
+        },
+        {
+          "name": "clp_i_at_short",
+          "spice": ".meas dc clp_i_at_short find @m.xldo.xm_clp.msky130_fd_pr__pfet_g5v0d10v5[id] at=0"
+        },
+        {
+          "name": "ir_at_short",
+          "spice": ".meas dc ir_at_short find @m.xldo.xm_biasp1.msky130_fd_pr__pfet_g5v0d10v5[id] at=0"
+        }
+      ],
+      "name": "dc1"
+    },
+    {
+      "alter": {
+        "rload": 36.0
+      },
+      "analysis": {
+        "args": "500n 3.0m uic",
+        "kind": "tran"
+      },
+      "measurements": [
+        {
+          "name": "ipre",
+          "spice": ".meas tran ipre avg i(vvin) from=0.9m to=1.0m"
+        },
+        {
+          "name": "ish_avg",
+          "spice": ".meas tran ish_avg avg i(vvin) from=2.0m to=3.0m"
+        },
+        {
+          "name": "ish_max",
+          "spice": ".meas tran ish_max max i(vvin) from=1.1m to=3.0m"
+        },
+        {
+          "name": "ish_min",
+          "spice": ".meas tran ish_min min i(vvin) from=1.1m to=3.0m"
+        },
+        {
+          "name": "vsh_max",
+          "spice": ".meas tran vsh_max max v(vout) from=1.1m to=3.0m"
+        },
+        {
+          "name": "clp_i_short",
+          "spice": ".meas tran clp_i_short avg @m.xldo.xm_clp.msky130_fd_pr__pfet_g5v0d10v5[id] from=2.0m to=3.0m"
+        }
+      ],
+      "name": "tran2"
+    }
+  ],
+  "batch": {
+    "capacity_wait_s": 10800
+  },
+  "corners": {
+    "process": [
+      "tt",
+      "ss",
+      "ff",
+      "sf",
+      "fs"
+    ],
+    "temperature_c": [
+      -40.0,
+      27.0,
+      125.0
+    ]
+  },
+  "engine": "ngspice",
+  "measurements": [
+    {
+      "expr": "tran1.vout_50ma",
+      "name": "meas_vout_50ma_v",
+      "unit": "V"
+    },
+    {
+      "expr": "tran1.vout_50ma_hi - tran1.vout_50ma_lo",
+      "name": "meas_vout_50ma_span_v",
+      "unit": "V"
+    },
+    {
+      "expr": "tran1.vin_50ma - tran1.cl_cmp_50ma",
+      "name": "meas_cl_margin_50ma_v",
+      "unit": "V"
+    },
+    {
+      "expr": "1000*dc1.ilim_short",
+      "name": "meas_ilim_short_ma",
+      "unit": "mA"
+    },
+    {
+      "expr": "1000*dc1.ilim_knee",
+      "name": "meas_ilim_knee_ma",
+      "unit": "mA"
+    },
+    {
+      "expr": "100*(dc1.ilim_knee - dc1.ilim_short)/dc1.ilim_knee",
+      "name": "meas_ilim_droop_pct",
+      "unit": "%"
+    },
+    {
+      "expr": "-1000*tran2.ish_avg",
+      "name": "meas_ishort_sustained_ma",
+      "unit": "mA"
+    },
+    {
+      "expr": "100*(tran2.ish_max - tran2.ish_min)/(-tran2.ish_avg)",
+      "name": "meas_ishort_ripple_pct",
+      "unit": "%"
+    },
+    {
+      "expr": "1000*tran2.vsh_max",
+      "name": "meas_vout_short_mv",
+      "unit": "mV"
+    },
+    {
+      "expr": "-1000*tran2.ipre",
+      "name": "meas_isup_pre_short_ma",
+      "unit": "mA"
+    }
+  ],
+  "models": {
+    "lib": "libs.tech/combined/sky130.lib.spice",
+    "pdk": "sky130A"
+  },
+  "netlist": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-706/sim/iq/diagnostics/issue-706/runs/cl-base/klt-requests/v2.97.spice",
+  "options": {
+    "keep_artifacts": true,
+    "ngspice_init": [
+      "* ngspice init settings for the sky130 PDK model libraries.",
+      "*",
+      "* The corner runner copies this file into its scratch run directory as",
+      "* `.spiceinit` before invoking ngspice, so runs do not depend on whatever",
+      "* happens to be in ~/.spiceinit. To drive ngspice by hand with the same",
+      "* settings, copy this file to `.spiceinit` in your working directory.",
+      "*",
+      "* Same settings as the sibling sky130-bandgap harness (same PDK, same pin):",
+      "* derived from the PDK's own libs.tech/ngspice/spinit, kept in-repo so the",
+      "* settings a record was produced under are versioned with the harness.",
+      "set ngbehavior=hsa     ; HSPICE-ish compatibility, required to read PDK libs",
+      "set skywaterpdk        ; skip some checks for faster lib loading",
+      "set ng_nomodcheck      ; do not check model parameters",
+      "option noinit          ; do not dump operating point data into the log",
+      "option klu             ; KLU direct linear solver"
+    ],
+    "timeout_s": 1800
+  }
+}
