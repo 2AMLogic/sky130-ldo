@@ -39,10 +39,11 @@ the harness's own bounds exactly as the local path grades its
 This is deliberately NOT a SPICE interpreter: only the card forms below are
 accepted and anything else is refused before any netlisting, submission or
 local ngspice. The stimulus lives in the netlist, which is sent verbatim;
-`check_netlist` pins the sources and load elements the legs depend on,
-pins the IC_SEED `.nodeset` card the seeded sweep depends on (issue #647),
-and refuses anything else that would alter the legs' semantics or fight
-klt's control block.
+`blr.check_netlist` (called by the batch backend,
+`_batch_backend._check_pinned_netlist`) pins the sources and load elements
+the legs depend on, pins the IC_SEED `.nodeset` card the seeded sweep depends
+on (issue #647), and refuses anything else that would alter the legs'
+semantics or fight klt's control block.
 """
 
 from __future__ import annotations
@@ -247,17 +248,3 @@ def chained_steps(legs: list[Leg]) -> list[dict]:
         }
         for leg in legs
     ]
-
-
-def check_netlist(body: list[str], stimulus: list[str]) -> None:
-    """Refuse a request netlist whose pinned stimulus / load elements are not
-    the validated baseline, or that carries a card that would alter the legs'
-    semantics / fight klt's control block.
-
-    The IC_SEED `.nodeset` card (issue #647) is pinned exactly like the
-    stimulus: the seeded dc leg's conformance depends on the guess it names,
-    so any change to the card refuses the batch backend until the translation
-    is re-validated and the pin updated deliberately."""
-    blr.check_netlist(body, stimulus, CurrentLimitTranslationError,
-                      "a current-limit chained-step request",
-                      pinned_extra=(NODESET_CARD,))
