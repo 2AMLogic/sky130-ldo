@@ -4,13 +4,13 @@
 # T1 item 11 (power delivery, structural) is graded from (issue #112).
 #
 # Usage:
-#   layout/bin/setup-venv.sh --requirements layout/erc-requirements.txt
+#   layout/bin/setup-venv.sh
 #   layout/bin/run-ldo-erc-flow.sh
 #   layout/bin/run-ldo-erc-flow.sh --layout-record 20260825-123551-3b4e121
 #
-# Requires layout/.venv-erc (its own pin -- see layout/erc-requirements.txt
-# for why the ERC flow has a separate pin from DRC/LVS) and a landed ldo-core
-# layout record (layout/ldo-core/reports/LATEST). No PDK install is needed:
+# Requires layout/.venv (the single pin in layout/requirements.txt, shared
+# with the DRC/LVS/PEX flows) and a landed ldo-core layout record
+# (layout/ldo-core/reports/LATEST). No PDK install is needed:
 # `klt erc --pdk sky130` reads its antenna-limit table from klt's own
 # built-in transcription of SkyWater's published rule tables, not from a
 # local PDK tree.
@@ -50,7 +50,7 @@ set -euo pipefail
 # flow_require_pdk on purpose -- see the "No PDK install is needed" note above.
 source "$(dirname "${BASH_SOURCE[0]}")/_flow_common.sh"
 BLOCK_DIR="$LAYOUT_DIR/ldo-core"
-VENV="$LAYOUT_DIR/.venv-erc"
+VENV="$LAYOUT_DIR/.venv"
 KLT="$VENV/bin/klt"
 CELL=ldo_core
 PDK=sky130
@@ -64,8 +64,7 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-flow_require_klt run-ldo-erc-flow.sh "$KLT" \
-  "layout/bin/setup-venv.sh --requirements layout/erc-requirements.txt"
+flow_require_klt run-ldo-erc-flow.sh "$KLT"
 
 [[ -n "$LAYOUT_RECORD_ID" ]] || LAYOUT_RECORD_ID="$(cat "$BLOCK_DIR/reports/LATEST")"
 LAYOUT_RECORD_DIR="$BLOCK_DIR/reports/$LAYOUT_RECORD_ID"

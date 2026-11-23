@@ -44,9 +44,9 @@ All three are checked here, mechanically, from the same GDS the flow is about
 to run `klt erc` on. Exits 0 when the spec still describes the layout, 1 when
 it does not (with the re-derived value printed, so the fix is a copy-paste).
 
-Run under layout/.venv-erc (it needs the `klayout` module `klt` pulls in):
+Run under layout/.venv (it needs the `klayout` module `klt` pulls in):
 
-    layout/.venv-erc/bin/python layout/bin/check-erc-supply-spec.py \\
+    layout/.venv/bin/python layout/bin/check-erc-supply-spec.py \\
         --gds <path/to/ldo_core.gds> --spec layout/ldo-core/erc-supply-spec.json
 """
 
