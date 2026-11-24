@@ -260,7 +260,7 @@ signoff/       klt signoff block manifest + the T1 verdict of record
 
 ## Environment setup
 
-The open-source flow (xschem + ngspice + the sky130 PDK fetched via `volare`,
+The open-source flow (xschem + ngspice + the sky130 PDK fetched via `ciel`,
 plus `klt` for the layout flow) is bootstrapped (issue #2), seeded from the
 working harnesses in [sky130-bandgap](https://github.com/2AMLogic/sky130-bandgap)
 (sky130 flow, `klt` layout/DRC/LVS driver) and

@@ -2,10 +2,12 @@
 
 Reproducible bring-up for this repo's open-source flow: xschem (schematic
 capture / netlisting) + ngspice (simulation) against the sky130 PDK (fetched
-via [volare](https://github.com/efabless/volare)), plus
+via [ciel](https://pypi.org/project/ciel/), the maintained successor to
+[volare](https://github.com/efabless/volare) — same open_pdks build format
+and CLI shape; the pin moved volare → ciel by DR-015 / issue #767), plus
 [klayout-tools](https://github.com/2AMLogic/klayout-tools) (`klt`) for the
 layout / DRC / LVS flow. Follow this doc verbatim from a fresh checkout on a
-machine that already has `xschem`/`ngspice`/`volare`/`python3` on `PATH` (see
+machine that already has `xschem`/`ngspice`/`ciel`/`python3` on `PATH` (see
 "Toolchain versions" below for what a from-scratch install looks like).
 
 This doc is issue #2's deliverable: a fresh checkout can run the env check,
@@ -18,40 +20,49 @@ below.
 |---|---|---|
 | xschem | `XSCHEM V3.4.7` | `/opt/homebrew/bin/xschem` (Homebrew) |
 | ngspice | `ngspice-47` | `/opt/homebrew/bin/ngspice` (Homebrew) |
-| volare | `v0.20.6` | `/opt/homebrew/bin/volare` (Homebrew, via pip/pipx-managed formula) |
+| ciel | `2.6.1` | `pip install ciel==2.6.1` (PyPI; same pin as the fleet's `eda-sim` image) |
 | klt (via `layout/bin/setup-venv.sh`) | `klt 0.2.0` | `layout/.venv/bin/klt`, pinned by `layout/requirements.txt` |
 
 Same shared-machine toolchain the sibling
 [`sky130-bandgap`](https://github.com/2AMLogic/sky130-bandgap) repo bootstrapped
 (its `docs/environment-setup.md` has the from-scratch install notes if
-`xschem`/`ngspice`/`volare` are genuinely absent — this is a shared
+`xschem`/`ngspice`/`ciel` are genuinely absent — this is a shared
 machine-level resource, not sky130-ldo-specific, so **do not reinstall
 speculatively**; verify first):
 
 ```sh
 xschem --version   # expect: XSCHEM V3.4.7 ...
 ngspice --version  # expect: ngspice-47 ...
-volare --version   # expect: Volare v0.20.6 ...
+ciel --version       # expect: ciel, version 2.6.1
 ```
 
-## 1. Fetch + enable the sky130 PDK via volare
+## 1. Fetch + enable the sky130 PDK via ciel
 
 ```sh
-volare ls-remote --pdk sky130   # lists open_pdks build commits, newest first
-volare fetch  --pdk sky130 c6d73a35f524070e85faff4a6a9eef49553ebc2b
-volare enable --pdk sky130 c6d73a35f524070e85faff4a6a9eef49553ebc2b
+pip install ciel==2.6.1
+ciel ls-remote --pdk-family sky130   # lists open_pdks build commits, newest first
+ciel enable --pdk-family sky130 -l sky130_fd_pr f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7
 ```
+
+`ciel enable` both fetches and enables (it runs `fetch` first when the
+version is not yet in the store), so the single command above reproduces the
+pin. Leaving `PDK_ROOT` unset is load-bearing: ciel installs to
+`~/.ciel/<variant>` — the store `sim/pdk.json`'s `default_pdk_root` names —
+but would install to `$PDK_ROOT` instead if it were set.
 
 **Pinned PDK version** (see `sim/pdk.json`, the single source of truth this
 repo's harness reads back):
 
 - PDK family: `sky130`
-- open_pdks build commit: `c6d73a35f524070e85faff4a6a9eef49553ebc2b`
+- open_pdks build commit: `f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7`
 - Variant: `sky130A`
 - Chosen because: this is the same open_pdks commit the sibling
-  `sky130-bandgap` repo already pinned (same PDK, issue #2 ports its
-  harness), which keeps PVT/model provenance consistent across the 2AM Logic
-  canary ports of this block family.
+  `sky130-bandgap` repo pins and the fleet's `eda-sim` PDK manifest
+  (`2AMLogic/klayout-tools`, `docker/eda-sim/pdk-versions.json)`, so PVT/model
+  provenance stays consistent across the 2AM Logic canary ports and the batch
+  fleet's own workers. ciel is the maintained successor to volare (whose PDK
+  release feed stopped in Aug 2025); the same-engine two-PDK measurement
+  behind the move is `sim/loop-gain/diagnostics/issue-767/` (DR-015).
 
 **Pinned tool versions** (`tools` block of the same `sim/pdk.json`, issue #291):
 ngspice `42`, xschem `3.4.4`. `--check-env` prints a named
@@ -61,11 +72,11 @@ ngspice `42`, xschem `3.4.4`. `--check-env` prints a named
 `tools` block carries the declared versions and an `on_baseline` flag. Bumping
 the baseline is a deliberate edit to `sim/pdk.json`, never a side effect.
 
-After `volare enable`, confirm the variant resolved:
+After `ciel enable`, confirm the variant resolved:
 
 ```sh
-ls -la ~/.volare | grep sky130
-# sky130A -> volare/sky130/versions/c6d73a35f524070e85faff4a6a9eef49553ebc2b/sky130A
+ls -la ~/.ciel | grep sky130
+# sky130A -> ciel/sky130/versions/f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7/sky130A
 ```
 
 ## 2. Environment check
@@ -74,7 +85,7 @@ ls -la ~/.volare | grep sky130
 python3 sim/bin/corner-run.py --check-env
 ```
 
-Expected output: `ngspice`, `xschem`, `volare` each report `OK` with a
+Expected output: `ngspice`, `xschem`, `ciel` each report `OK` with a
 version string, and `PDK` reports `OK` with the resolved path and
 `matches sim/pdk.json pin`. Exit code `0`. If anything reports `MISSING`,
 fix that specific piece (missing tool on `PATH`, or PDK not enabled per step
@@ -82,8 +93,11 @@ fix that specific piece (missing tool on `PATH`, or PDK not enabled per step
 diagnoses it.
 
 `PDK_ROOT`/`PDK` resolution order (same for `--check-env`, the corner runner,
-and interactive use): `$PDK_ROOT` env → `volare path` → `default_pdk_root` in
-`sim/pdk.json`; `$PDK` env → `variant` in `sim/pdk.json`.
+and interactive use): `$PDK_ROOT` env → `ciel path --pdk-family sky130 <pinned
+commit>` → `default_pdk_root` in `sim/pdk.json`; `$PDK` env → `variant` in
+`sim/pdk.json`. A host carrying a legacy volare store alongside ciel's never
+has it consulted implicitly: the volare root is not a search root, so the
+first-match-wins ambiguity `klt` warns about cannot arise here.
 
 ## 3. Sim harness selftest (end-to-end xschem + ngspice)
 
@@ -163,14 +177,14 @@ PDK-gated `pdk-smoke` job (nightly / manual dispatch / opt-in via the
   `xschem`, or the `--rcfile sim/xschemrc` flag was omitted.
 - **`Warning: PDK_ROOT environment variable is set but path not found`**
   (printed by the PDK's own `xschemrc`): `$PDK_ROOT`/`$PDK` don't resolve to
-  a real install, or `volare enable` hasn't been run for the pinned hash
+  a real install, or `ciel enable` hasn't been run for the pinned hash
   above.
 - **xschem opens a GUI window instead of running headless**: pass `-x`
   (no X) in addition to `-n -q` when driving `xschem` by hand — the corner
   runner already does this.
 - **`corner-run.py: error: installed PDK ... but sim/pdk.json pins ...`**:
   a different open_pdks commit is enabled than the one pinned in
-  `sim/pdk.json`. Either `volare enable` the pinned commit (step 1), or pass
+  `sim/pdk.json`. Either `ciel enable` the pinned commit (step 1), or pass
   `--allow-pdk-mismatch` if a deliberate mismatch run is intended (the
   record will say so).
 - **`run-trivial-cell-flow.sh: ... klt not found`**: run

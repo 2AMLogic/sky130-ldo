@@ -42,12 +42,12 @@ env_args=(--check-env)
 [ "${REQUIRE_PDK}" -eq 1 ] && env_args+=(--require-pdk)
 if ! python3 "${SIM_DIR}/bin/corner-run.py" "${env_args[@]}"; then
   if [ "${REQUIRE_PDK}" -eq 1 ]; then
-    echo "FAIL: ngspice/xschem/volare and/or the sky130 PDK are not available,"
+    echo "FAIL: ngspice/xschem/ciel and/or the sky130 PDK are not available,"
     echo "      or ngspice/xschem drifted from the versions declared in sim/pdk.json"
     exit 1
   fi
   echo
-  echo "SKIP: simulation stage -- ngspice/xschem/volare and/or the pinned sky130"
+  echo "SKIP: simulation stage -- ngspice/xschem/ciel and/or the pinned sky130"
   echo "      PDK are not available. Unit tests passed. See docs/environment-setup.md"
   echo "      to install the toolchain, then re-run to exercise the end-to-end"
   echo "      PVT smoke test."

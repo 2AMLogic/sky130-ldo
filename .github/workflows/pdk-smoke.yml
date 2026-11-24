@@ -57,15 +57,27 @@ jobs:
           ngspice -v | head -n 2
           xschem --version | head -n 1
 
-      - name: Install volare
-        run: pip install --user volare
+      - name: Install ciel
+        # ciel, not volare: the maintained successor (same open_pdks build
+        # format and CLI shape); volare's PDK release feed stopped in Aug 2025
+        # (DR-015 / issue #767). Same pin (2.6.1) the eda-sim image and
+        # gf180-trng's pdk-nightly.yml carry.
+        run: python3 -m pip install --disable-pip-version-check "ciel==2.6.1"
 
       - name: Fetch + enable pinned sky130 PDK
+        env:
+          # Rate-limit headroom for the GitHub API calls ciel makes. httpx
+          # drops the Authorization header on the cross-host redirect to the
+          # release asset CDN, so the token never leaves github.com (same
+          # wiring as gf180-trng's pdk-nightly.yml).
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           export PATH="$HOME/.local/bin:$PATH"
           commit="$(python3 -c "import json;print(json.load(open('sim/pdk.json'))['open_pdks_commit'])")"
-          volare fetch --pdk sky130 "$commit"
-          volare enable --pdk sky130 "$commit"
+          # Leaving PDK_ROOT unset is load-bearing: ciel installs to
+          # ~/.ciel/<variant>, the store sim/pdk.json's default_pdk_root names,
+          # but would install to $PDK_ROOT instead if it were set.
+          ciel enable --pdk-family sky130 -l sky130_fd_pr "$commit"
 
       - name: Run sim/selftest.sh --quick --require-pdk
         run: |

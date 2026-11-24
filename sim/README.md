@@ -184,7 +184,7 @@ per-topic sections below were moved verbatim to `sim/docs/`:
 
 ```bash
 # 1. install the pinned PDK (~1 min; see sim/pdk.json for the pin)
-volare enable --pdk sky130 c6d73a35f524070e85faff4a6a9eef49553ebc2b
+pip install ciel==2.6.1 && ciel enable --pdk-family sky130 -l sky130_fd_pr f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7
 
 # 2. sanity-check the toolchain and PDK resolution
 python3 sim/bin/corner-run.py --check-env
@@ -197,7 +197,7 @@ python3 sim/bin/corner-run.py sim/pdk-smoke
 ```
 
 Prerequisites, all machine-level (not vendored here): `ngspice`, `xschem`,
-`volare`, `python3` (3.9+, standard library only). See
+`ciel`, `python3` (3.9+, standard library only). See
 `docs/environment-setup.md` for the full reproducible bring-up.
 
 ### Driving the tools by hand
@@ -230,9 +230,10 @@ interactive sessions and the runner resolve the PDK identically.
 | unit tests | `sim/tests/` | PDK-free coverage of the runner's pure helper functions |
 | experiment | `sim/<slug>/experiment.json` | what is being claimed, which corners, which measurements and their limits |
 
-**PDK resolution order**: `$PDK_ROOT` → `volare path` → `default_pdk_root` from
+**PDK resolution order**: `$PDK_ROOT` → `ciel path --pdk-family <family>
+<pinned commit>` → `default_pdk_root` from
 `sim/pdk.json`; variant from `$PDK` → `variant` in `sim/pdk.json`. The runner
-resolves the PDK directory symlink back to its volare version hash and
+resolves the PDK directory symlink back to its open_pdks build hash and
 **refuses to run against a version other than the pin** unless
 `--allow-pdk-mismatch` is passed — in which case the record says so.
 
@@ -499,7 +500,7 @@ mutation tables, card lists and grading maths stay in its own file (issue #587).
 
 | Flag | Effect |
 |---|---|
-| `--check-env` | check ngspice/xschem/volare/PDK are usable and exit (0 if all OK) |
+| `--check-env` | check ngspice/xschem/ciel/PDK are usable and exit (0 if all OK) |
 | `--print-env` | print PDK env exports and exit |
 | `--process tt,ss` / `--temp 27` / `--supply 1.8` | override a matrix axis (marks the run a subset) |
 | `--quick` | run the manifest's `quick_subset` only |

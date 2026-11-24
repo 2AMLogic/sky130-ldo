@@ -53,7 +53,7 @@ class TestToolVersionPin(unittest.TestCase):
         self.assertEqual(set(corner_run.declared_tool_versions(corner_run.load_pin())), {"ngspice", "xschem"})
 
     def _check_env(self, require_pdk, xschem_line):
-        lines = {"ngspice": "ngspice-42 : x", "xschem": xschem_line, "volare": "1.0"}
+        lines = {"ngspice": "ngspice-42 : x", "xschem": xschem_line, "ciel": "2.6.1"}
         pdk = mock.Mock(matches_pin=True, installed_commit="c", dir="d", lib_file="l")
         with mock.patch.object(corner_run.shutil, "which", return_value="/bin/x"), \
              mock.patch.object(corner_run, "first_line", side_effect=lambda cmd: lines[cmd[0]]), \

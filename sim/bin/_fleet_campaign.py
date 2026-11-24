@@ -103,7 +103,7 @@ def preamble(
     if out.exists() and not allow_existing:
         sys.exit(f"refusing to overwrite existing record {out}")
     pdk = json.loads((SIM / "pdk.json").read_text())
-    pdk_root = os.environ.get("PDK_ROOT") or str(Path.home() / ".volare")
+    pdk_root = os.environ.get("PDK_ROOT") or str(Path.home() / ".ciel")
     return pdk, pdk_root, {**os.environ, "PDK_ROOT": pdk_root}
 
 
