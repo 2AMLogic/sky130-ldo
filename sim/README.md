@@ -1403,32 +1403,42 @@ requests, one per supply (jobs `klt-sim-f56865efaf23` / `klt-sim-522cd1f8023a`
 / `klt-sim-4763bbe9a4f3`, ngspice-47 on the Spot fleet). Results:
 
 - **Paired tt / 27 °C / 3.30 V `--no-write` comparison (issue #755 AC 3),
-  local vs batch on the same revision (`d0bee518`)**: all eight scalars and
+  local vs batch on the same revision**: all eight scalars and
   all grades identical at the harness summary's 6-significant-digit print
-  precision, zero discrepancies. Engines: local ngspice-47 (binary sha256
-  `39ca1adb…`) vs fleet ngspice-47 (binary sha256 `e12148ba…`) — same version,
-  different builds; `models_lib_comparison: match` (sky130.lib.spice sha256
-  `48de7c68…` on both sides) while the fleet worker's PDK stamp
+  precision, zero discrepancies. The raw artifacts of both legs (request,
+  response, receipt, generated deck, engine logs, `comparison.json`) are
+  committed under `sim/enable-shutdown/diagnostics/issue-755/` (its README
+  carries the reproduce command; the first, scratch-only pairing of this
+  session was re-run there so the evidence is retrievable). Engines: local
+  ngspice-47 (binary sha256 `39ca1adb…`) vs fleet ngspice-47 (binary sha256
+  `e12148ba…`) — same version, different builds; `models_lib_comparison:
+  match` (sky130.lib.spice sha256 `48de7c67…` on both sides) while the fleet
+  worker's PDK stamp
   (`f6eeac7…`, sources-sha256 scheme) differs from the volare pin
   (`c6d73a35…`) with byte-identical model libraries. Both engines drift from
   the declared ngspice 42 (`sim/pdk.json` tools WARN, recorded in both runs).
 - **Chained-step alter carry-over (the #760 open item): observed — klt
   carries `alter` state across `analysis_steps[]`.** The generated corner deck
-  (job `klt-sim-a3c4e2e3d603`) is ONE ngspice deck with a single `.control`
+  (committed as `sim/enable-shutdown/diagnostics/issue-755/remote/corner.cir`)
+  is ONE ngspice deck with a single `.control`
   block running `tran`, `op`, `alter rforce`, `op`, `alter rforce`, `alter
-  vforce`, `op` in sequence, so `op2`'s `rforce = 1m` persists into `op3`;
-  the adapter's explicit `rforce` repeat in `op3` is redundant and idempotent,
+  vforce`, `op` in sequence with no `reset`/restore between steps, so under
+  ngspice's own semantics `op2`'s `rforce = 1m` persists into `op3`. Because
+  the request itself repeats `rforce` in `op3`, the generated deck shows the
+  repeat (twice `alter rforce=0.001`) and cannot by itself distinguish carry-over
+  from a per-step reset; the adapter's explicit `rforce` repeat in `op3` is
+  redundant and idempotent,
   keeping the translation correct under either behavior as designed.
 - **Solver-diagnostic gate: 9/45 corners FAIL, every one from a diagnostic,
-  none from a bound.** `singular matrix` (node `xldo.ea_cz` on fs corners,
+  none from a bound.** `singular matrix` (node `xldo.ea_cz` on `fs_-40c_3.63v`, `fs_27c_3.30v` and `sf_27c_3.63v`,
   `m.xldo.xm_rcn1.msky130_fd_pr__nfet_g5v0d10v5#drain` on `ff_-40c_2.97v`),
   `Dynamic gmin stepping failed` (`tt_125c_3.30v`, `sf_125c_3.63v`) and
   `2 out of range for ^` (BSIM4 pow overflow on the `tt_-40c` / `fs_-40c` /
   `fs_27c` corners). Every measured value stays inside its ratified bound at all 45
   corners: worst shutdown Iq `0.117 µA` (bound 3 µA, both static and
   after-edge rows), worst Vin->Vout leakage `0.152 µA` (bound 1 µA),
-  `vout_pre_disable_v` 1.8072-1.8213 V and `vout_hold_2ms_v` 1.8060-1.8202 V
-  against the 1.764-1.836 V window — including the ff/sf 125 °C pre-disable
+  `vout_pre_disable_v` 1.8072-1.8213 V inside its 1.764-1.836 V window and
+  `vout_hold_2ms_v` 1.8060-1.8202 V above its 1.764 V floor (no upper bound) — including the ff/sf 125 °C pre-disable
   witness the test plan names (`1.8185`-`1.8209` V).
 - **Verdict delta vs the superseded record**: `20260825-111526-933dfdd`
   (local backend, ngspice-46) read 45/45 PASS because it predates the
