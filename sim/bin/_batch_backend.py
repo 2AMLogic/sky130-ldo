@@ -1105,6 +1105,69 @@ def normalize_startup_response(
     return results, logs
 
 
+def _collect_corner_parts(
+    group: BatchGroup, response: dict, outdir: Path, tag: str, extract, label_key: str, label: str,
+) -> tuple[list[dict], dict[str, str]]:
+    """Per-response bookkeeping the endpoint (issue #379) and loop-gain
+    (issue #754) adapters share (issue #770): gate the response on remote
+    completion, index its corners and, per corner, collect the status and klt
+    diagnostic reasons, that adapter's raw card values -- `extract(corner
+    response)` returns them plus their reasons in final, already-prefixed form
+    -- the retained engine log, and the normalized runtime and request
+    identifiers, as one part dict. `label_key`/`label` carry the coverage
+    identity ("endpoint"/step name, "group"/ESR key) that adapter's finalizer
+    counts parts by. Returns (parts in request corner order, {corner id:
+    engine log text})."""
+    problem = batch_dropout.remote_completion_problem(response)
+    if problem:
+        raise HarnessError(f"request {group.key}: {problem}")
+    want, seen = _index_response_corners(group, response)
+    parts, logs = [], {}
+    for key, corner in want.items():
+        rc = seen[key]
+        reasons: list[str] = []
+        if rc["status"] not in ("pass", "fail"):
+            reasons.append(f"{tag}klt sim corner status {rc['status']!r} (not a completed result)")
+        reasons.extend(f"{tag}{r}" for r in batch_dropout.corner_diagnostic_problems(rc))
+        values, vreasons = extract(rc)
+        reasons.extend(vreasons)
+        log_text, solver_diagnostic, log_reasons = _engine_log_check(rc, outdir, tag)
+        if log_text is not None:
+            logs[corner.id] = log_text
+        reasons.extend(log_reasons)
+        runtime = rc.get("runtime_s")
+        parts.append({
+            "corner": corner, label_key: label, "values": values, "reasons": reasons,
+            "solver_diagnostic": solver_diagnostic,
+            "elapsed_s": runtime if _finite_number(runtime) else None,
+            "klt_request": group.key, "klt_corner_id": rc.get("corner_id"), "klt_status": rc["status"],
+        })
+    return parts, logs
+
+
+def _corner_from_parts(
+    corner: Corner, mine: list[dict], checks: list[dict], reasons: list[str], timeout: int
+) -> dict:
+    """Build one corner's `_batch_corner_result` from the parts its requests
+    returned (the assembly tail the two multi-request finalizers share):
+    solver diagnostics join with `; `, the runtime sums only when every part
+    reported one, and each part's request identifiers become the corner's
+    ordered provenance lists."""
+    diags = [p["solver_diagnostic"] for p in mine if p["solver_diagnostic"]]
+    elapsed = [p["elapsed_s"] for p in mine]
+    return _batch_corner_result(
+        corner,
+        elapsed_s=sum(elapsed) if elapsed and all(_finite_number(e) for e in elapsed) else None,
+        timeout_s=timeout,
+        measurements=checks,
+        solver_diagnostic="; ".join(diags) if diags else None,
+        klt_request=[p["klt_request"] for p in mine],
+        klt_corner_id=[p["klt_corner_id"] for p in mine],
+        klt_status=[p["klt_status"] for p in mine],
+        batch_reasons=reasons,
+    )
+
+
 def normalize_endpoint_response(
     exp: Experiment, group: BatchGroup, response: dict, outdir: Path
 ) -> tuple[list[dict], dict[str, str]]:
@@ -1118,33 +1181,12 @@ def normalize_endpoint_response(
     missing/duplicate/non-finite/unexpected results, absent log, solver
     diagnostic) become reasons.
     """
-    problem = batch_dropout.remote_completion_problem(response)
-    if problem:
-        raise HarnessError(f"request {group.key}: {problem}")
-    want, seen = _index_response_corners(group, response)
     ep = next(e for e in endpoint_deck(exp) if e.step_name == group.leg)
-    parts, logs = [], {}
-    for key, corner in want.items():
-        rc = seen[key]
-        reasons: list[str] = []
-        if rc["status"] not in ("pass", "fail"):
-            reasons.append(f"[{ep.step_name}] klt sim corner status {rc['status']!r} (not a completed result)")
-        reasons.extend(f"[{ep.step_name}] {r}" for r in batch_dropout.corner_diagnostic_problems(rc))
-        values, vreasons = blr.extract_endpoint_values(ep, rc["measurements"])
-        reasons.extend(vreasons)
-        log_text, solver_diagnostic, log_reasons = _engine_log_check(
-            rc, outdir, f"[{ep.step_name}] ")
-        if log_text is not None:
-            logs[corner.id] = log_text
-        reasons.extend(log_reasons)
-        runtime = rc.get("runtime_s")
-        parts.append({
-            "corner": corner, "endpoint": ep.step_name, "values": values, "reasons": reasons,
-            "solver_diagnostic": solver_diagnostic,
-            "elapsed_s": runtime if _finite_number(runtime) else None,
-            "klt_request": group.key, "klt_corner_id": rc.get("corner_id"), "klt_status": rc["status"],
-        })
-    return parts, logs
+    return _collect_corner_parts(
+        group, response, outdir, f"[{ep.step_name}] ",
+        lambda rc: blr.extract_endpoint_values(ep, rc["measurements"]),
+        "endpoint", ep.step_name,
+    )
 
 
 def finalize_endpoint_results(
@@ -1169,19 +1211,7 @@ def finalize_endpoint_results(
         for m in exp.measurements:
             value = blr.evaluate(m.expr, values, refs)
             checks.append(grade_check(m, value, missing_reason="measurement not found in endpoint results"))
-        diags = [p["solver_diagnostic"] for p in mine if p["solver_diagnostic"]]
-        elapsed = [p["elapsed_s"] for p in mine]
-        results.append(_batch_corner_result(
-            corner,
-            elapsed_s=sum(elapsed) if elapsed and all(_finite_number(e) for e in elapsed) else None,
-            timeout_s=timeout,
-            measurements=checks,
-            solver_diagnostic="; ".join(diags) if diags else None,
-            klt_request=[p["klt_request"] for p in mine],
-            klt_corner_id=[p["klt_corner_id"] for p in mine],
-            klt_status=[p["klt_status"] for p in mine],
-            batch_reasons=reasons,
-        ))
+        results.append(_corner_from_parts(corner, mine, checks, reasons, timeout))
     return results
 
 
@@ -1250,33 +1280,14 @@ def normalize_ac_grid_response(
     absent log, solver diagnostic) become reasons. A `not_reached` crossing
     card is a missing value, never an error and never a PASS.
     """
-    problem = batch_dropout.remote_completion_problem(response)
-    if problem:
-        raise HarnessError(f"request {group.key}: {problem}")
-    want, seen = _index_response_corners(group, response)
     legs = ac_grid_deck(exp)
     tag = f"[{group.leg}] "
-    parts, logs = [], {}
-    for key, corner in want.items():
-        rc = seen[key]
-        reasons: list[str] = []
-        if rc["status"] not in ("pass", "fail"):
-            reasons.append(f"{tag}klt sim corner status {rc['status']!r} (not a completed result)")
-        reasons.extend(f"{tag}{r}" for r in batch_dropout.corner_diagnostic_problems(rc))
+
+    def extract(rc: dict) -> tuple[dict[str, float | None], list[str]]:
         values, vreasons = blg.extract_values(legs, group.leg, rc["measurements"])
-        reasons.extend(f"{tag}{r}" for r in vreasons)
-        log_text, solver_diagnostic, log_reasons = _engine_log_check(rc, outdir, tag)
-        if log_text is not None:
-            logs[corner.id] = log_text
-        reasons.extend(log_reasons)
-        runtime = rc.get("runtime_s")
-        parts.append({
-            "corner": corner, "group": group.leg, "values": values, "reasons": reasons,
-            "solver_diagnostic": solver_diagnostic,
-            "elapsed_s": runtime if _finite_number(runtime) else None,
-            "klt_request": group.key, "klt_corner_id": rc.get("corner_id"), "klt_status": rc["status"],
-        })
-    return parts, logs
+        return values, [f"{tag}{r}" for r in vreasons]
+
+    return _collect_corner_parts(group, response, outdir, tag, extract, "group", group.leg)
 
 
 def finalize_ac_grid_results(
@@ -1303,19 +1314,7 @@ def finalize_ac_grid_results(
         for m in exp.measurements:
             value = blg.evaluate(m.expr, values, refs)
             checks.append(grade_check(m, value, missing_reason="measurement not found in AC-grid results"))
-        diags = [p["solver_diagnostic"] for p in mine if p["solver_diagnostic"]]
-        elapsed = [p["elapsed_s"] for p in mine]
-        results.append(_batch_corner_result(
-            corner,
-            elapsed_s=sum(elapsed) if elapsed and all(_finite_number(e) for e in elapsed) else None,
-            timeout_s=timeout,
-            measurements=checks,
-            solver_diagnostic="; ".join(diags) if diags else None,
-            klt_request=[p["klt_request"] for p in mine],
-            klt_corner_id=[p["klt_corner_id"] for p in mine],
-            klt_status=[p["klt_status"] for p in mine],
-            batch_reasons=reasons,
-        ))
+        results.append(_corner_from_parts(corner, mine, checks, reasons, timeout))
     return results
 
 
