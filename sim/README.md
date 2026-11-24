@@ -1514,6 +1514,22 @@ ohm} x load {50 mA, 1 mA, 0 mA}) through `sim/bin/batch_loop_gain.py`:
   non-finite step card, a non-completed corner, an incomplete ESR-group set for
   a corner, a solver diagnostic or an absent engine log is a recorded FAIL; a
   structurally wrong response aborts with no record and no local fallback.
+- **Solver continuation across groups (measured, #757).** The local deck runs
+  all 18 legs in ONE ngspice process (leg 7's `op` starts from leg 6's
+  solution, leg 13's from leg 12's); the batch path restarts the solver per
+  ESR-group request from the `.nodeset`-seeded initial solve. The #757 paired
+  tt/27C/3.30V comparison measured legs 7 and 13 (seed, PM, GM together) at
+  |delta| <= 2e-4 against pair tolerances of 1e-3 — the continuation
+  difference is not observable; see
+  `sim/loop-gain/diagnostics/issue-757/`.
+- **Runner `on_unreached` caveat (klayout-tools#7770).** The batch runner the
+  fleet reports (klt 0.9.0) grades an unreached `.meas` crossing card
+  `status: "error"` (corner `error`) instead of the documented
+  `on_unreached: "null"` → `not_reached`, even when the engine log carries the
+  out-of-interval + `failed!` no-crossing pattern. The harness still grades
+  such a leg as the local backend does (measurement FAIL, corner completes),
+  and `compare_loop_gain_paired.py` confirms non-crossings from the retained
+  engine log; the record carries the runner diagnostic verbatim.
 - **Provenance.** `execution.adapter` records the ESR groups, the `HESR` line
   per group, the cards, the extra init line and the validated pins.
   `corner-run.py` has no `--wait-for-capacity` flag: every request already
