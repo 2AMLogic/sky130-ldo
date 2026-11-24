@@ -101,7 +101,20 @@ class CompareTests(unittest.TestCase):
         self.assertAlmostEqual(d["gm1"], 15.1)
 
 
-def write_pair(d: Path, engines=("46", "46", "46"), remote_mut=None, local_mut=None):
+ERR = "runner-error"  # sentinel: layout writes this result as status "error"
+
+
+def confirming_log(step: str, card: str) -> str:
+    """The three ngspice log lines that pin a no-crossing on one step+card."""
+    return (
+        f"Error: measure  {card}  find(AT) : out of interval\n"
+        f" meas ac {card} find lgdb when lgph=-1.800000e+02 cross=1 failed!\n"
+        f"Warning from checkvalid: vector {step}__{card} is not available "
+        "or has zero length.\n"
+    )
+
+
+def write_pair(d: Path, engines=("46", "46", "46"), remote_mut=None, local_mut=None, logs=None):
     """Lay out <d>/remote/<group>/response.json and <d>/local/values.json from raw()."""
     r = raw()
     if remote_mut:
@@ -113,13 +126,17 @@ def write_pair(d: Path, engines=("46", "46", "46"), remote_mut=None, local_mut=N
             leg = int("".join(c for c in k.split(".")[0] if c.isdigit()))
             if (leg - 1) // 6 != gi:
                 continue
-            if v is None:
-                ms.append({"name": k, "status": "not_reached", "value": None})
+            if v is ERR:
+                ms.append({"name": k, "step": k.split(".")[0], "status": "error", "value": None})
+            elif v is None:
+                ms.append({"name": k, "step": k.split(".")[0], "status": "not_reached", "value": None})
             else:
-                ms.append({"name": k, "status": "ok", "value": v})
+                ms.append({"name": k, "step": k.split(".")[0], "status": "ok", "value": v})
         (d / "remote" / g).mkdir(parents=True)
         (d / "remote" / g / "response.json").write_text(json.dumps(
             {"environment": {"engine_version": eng}, "corners": [{"measurements": ms}]}))
+        if logs and g in logs:
+            (d / "remote" / g / "ngspice.log").write_text(logs[g])
     (d / "local").mkdir()
     loc = raw()
     if local_mut:
@@ -160,6 +177,118 @@ class ArtifactTests(unittest.TestCase):
             del d["ac14.gmdb"]
         r = self.cmp_dir(remote_mut=rm, local_mut=drop)
         self.assertEqual(r["verdict"], "unresolved")
+
+
+class RunnerErrorBridgeTests(unittest.TestCase):
+    """klayout-tools#7770: a runner `error` result is a confirmed non-crossing
+    only when the retained engine log pins it on that exact step and card."""
+
+    def cmp_dir(self, logs=None, remote_mut=None, local_mut=None):
+        with tempfile.TemporaryDirectory() as t:
+            d = Path(t)
+            write_pair(d, remote_mut=remote_mut, local_mut=local_mut, logs=logs)
+            rv, eng, _ = cmp.load_remote(d)
+            return cmp.compare(rv, cmp.load_local(d), eng, "46", True, True)
+
+    def test_error_with_confirming_log_is_non_crossing(self):
+        # leg 14 lives in the esr0 group ((14-1)//6 == 2)
+        def rem(d):
+            d["ac14.gmdb"] = ERR
+
+        def loc(d):
+            d["ac14.gmdb"] = None
+        r = self.cmp_dir(logs={"esr0": confirming_log("ac14", "gmdb")},
+                         remote_mut=rem, local_mut=loc)
+        self.assertEqual(r["verdict"], "equivalent")
+        self.assertEqual(r["unreached_both"], ["gm14"])
+
+    def test_error_without_log_stays_missing(self):
+        def rem(d):
+            d["ac14.gmdb"] = ERR
+
+        def loc(d):
+            d["ac14.gmdb"] = None
+        r = self.cmp_dir(remote_mut=rem, local_mut=loc)
+        self.assertEqual(r["verdict"], "unresolved")
+        self.assertIn("gm14", r["missing"])
+
+    def test_error_with_log_naming_other_card_stays_missing(self):
+        def rem(d):
+            d["ac14.gmdb"] = ERR
+
+        def loc(d):
+            d["ac14.gmdb"] = None
+        r = self.cmp_dir(logs={"esr0": confirming_log("ac14", "fc")},
+                         remote_mut=rem, local_mut=loc)
+        self.assertEqual(r["verdict"], "unresolved")
+
+    def test_error_with_log_naming_other_step_stays_missing(self):
+        def rem(d):
+            d["ac14.gmdb"] = ERR
+
+        def loc(d):
+            d["ac14.gmdb"] = None
+        r = self.cmp_dir(logs={"esr0": confirming_log("ac15", "gmdb")},
+                         remote_mut=rem, local_mut=loc)
+        self.assertEqual(r["verdict"], "unresolved")
+
+    def test_error_without_out_of_interval_stays_missing(self):
+        # vector warning + failed! echo present, but the meas error carries a
+        # DIFFERENT reason (a solver/RHS failure, not a no-crossing)
+        log = (
+            "Error: measure  gmdb  find(AT) : no convergence\n"
+            " meas ac gmdb find lgdb when lgph=-180 cross=1 failed!\n"
+            "Warning from checkvalid: vector ac14__gmdb is not available "
+            "or has zero length.\n"
+        )
+
+        def rem(d):
+            d["ac14.gmdb"] = ERR
+
+        def loc(d):
+            d["ac14.gmdb"] = None
+        r = self.cmp_dir(logs={"esr0": log}, remote_mut=rem, local_mut=loc)
+        self.assertEqual(r["verdict"], "unresolved")
+
+    def test_error_vseed_never_upgraded(self):
+        log = (
+            "Error: measure  vseed  find(AT) : out of interval\n"
+            " meas op vseed find v(vout) failed!\n"
+            "Warning from checkvalid: vector op7__vseed is not available "
+            "or has zero length.\n"
+        )
+
+        def rem(d):
+            d["op7.vseed"] = ERR
+        r = self.cmp_dir(logs={"esr10m": log}, remote_mut=rem)
+        self.assertEqual(r["verdict"], "unresolved")
+        self.assertIn("vseed7", r["missing"])
+
+    def test_bridge_real_shape(self):
+        # the exact lines from the issue-#757 fleet log (legs renamed)
+        log = (
+            "gmdb                =  -5.06785e+01\n"
+            "ac10__gmdb = -5.06785e+01\n"
+            "Error: measure  gmdb  find(AT) : out of interval\n"
+            " meas ac gmdb find lgdb when lgph=-1.800000e+02 cross=1 failed!\n"
+            "Warning from checkvalid: vector gmdb is not available "
+            "or has zero length.\n"
+            "Error: RHS \"gmdb\" invalid\n"
+            "Warning from checkvalid: vector ac11__gmdb is not available "
+            "or has zero length.\n"
+            "gmdb                =  -7.35666e+01\n"
+            "ac12__gmdb = -7.35666e+01\n"
+        )
+
+        def rem(d):
+            d["ac11.gmdb"] = ERR
+
+        def loc(d):
+            d["ac11.gmdb"] = None
+        # leg 11 lives in the esr500m group
+        r = self.cmp_dir(logs={"esr500m": log}, remote_mut=rem, local_mut=loc)
+        self.assertEqual(r["verdict"], "equivalent")
+        self.assertEqual(r["unreached_both"], ["gm11"])
 
 
 if __name__ == "__main__":
