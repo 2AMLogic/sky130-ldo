@@ -40,6 +40,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 
+import _meas_expr
 import batch_line_regulation as blr
 
 TRAN_STEP_NAME = "tran1"
@@ -146,11 +147,7 @@ def parse_deck(lines: list[str]) -> list[Leg]:
 
 
 def _num(text: str) -> float:
-    m = re.fullmatch(r"([-+]?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?)([a-zA-Z]*)", text)
-    scale = {"": 1.0, "m": 1e-3, "u": 1e-6, "n": 1e-9, "p": 1e-12, "k": 1e3}
-    if m is None or m.group(2).lower() not in scale:
-        raise EnableShutdownTranslationError(f"unsupported alter value {text!r}")
-    return float(m.group(1)) * scale[m.group(2).lower()]
+    return _meas_expr.parse_number(text, EnableShutdownTranslationError)
 
 
 def split_measurements(

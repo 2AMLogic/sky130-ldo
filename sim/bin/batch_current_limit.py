@@ -51,6 +51,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
+import _meas_expr
 import batch_line_regulation as blr
 
 # Fixed by content, not position (the dc leg leads the deck, issue #647):
@@ -100,14 +101,7 @@ _MEAS_DC_RE = re.compile(
 
 def _num(text: str) -> float:
     """A SPICE number (`1e12`, `1m`, `36`) as the float klt's `alter` map takes."""
-    m = re.fullmatch(rf"({_NUM})", text)
-    if m is None:
-        raise CurrentLimitTranslationError(f"unsupported alter value {text!r}")
-    m2 = re.fullmatch(r"([-+]?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?)([a-zA-Z]*)", text)
-    scale = {"": 1.0, "m": 1e-3, "u": 1e-6, "n": 1e-9, "p": 1e-12, "k": 1e3}
-    if m2 is None or m2.group(2).lower() not in scale:
-        raise CurrentLimitTranslationError(f"unsupported alter value {text!r}")
-    return float(m2.group(1)) * scale[m2.group(2).lower()]
+    return _meas_expr.parse_number(text, CurrentLimitTranslationError)
 
 
 @dataclass
