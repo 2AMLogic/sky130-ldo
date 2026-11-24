@@ -94,7 +94,9 @@ def load_remote(d: Path) -> tuple[dict, str | None]:
     if not vals:
         raise SystemExit(f"no remote/*/response.json measurements under {d}")
     vals.update({k: v for k, v in derive(vals).items() if v is not None})
-    return vals, str(resp["environment"].get("engine_version"))
+    return vals, _paired_compare.engine_version(
+        [resp.get("environment", {}).get("engine_version")]
+    )
 
 
 # Accepts the `.meas` echo lines (`name = value at=/from=...`) and the

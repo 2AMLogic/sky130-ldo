@@ -193,13 +193,12 @@ def load_remote(d: Path) -> tuple[dict, str | None, list[str]]:
     disagreement or absence) + the engine versions seen."""
     vals: dict = {}
     dup: set[str] = set()
-    engines: set[str] = set()
+    engines: list[str | None] = []
     for key in blr.GROUP_KEYS:
         resp = json.loads((d / "remote" / key / "response.json").read_text())
         log_path = d / "remote" / key / "ngspice.log"
         log_text = log_path.read_text(errors="replace") if log_path.is_file() else None
-        eng = resp.get("environment", {}).get("engine_version")
-        engines.add(None if eng is None else str(eng))
+        engines.append(resp.get("environment", {}).get("engine_version"))
         for m in resp["corners"][0]["measurements"]:
             name = m.get("name")
             if not isinstance(name, str):
@@ -222,9 +221,8 @@ def load_remote(d: Path) -> tuple[dict, str | None, list[str]]:
                 vals[name] = m.get("value")
     for name in dup:
         vals[name] = None  # reported twice: never evidence
-    seen = sorted(e for e in engines if e is not None)
-    engine = seen[0] if len(engines) == 1 and None not in engines else None
-    return vals, engine, seen
+    seen = sorted({str(e) for e in engines if e is not None})
+    return vals, _paired_compare.engine_version(engines), seen
 
 
 def load_local(d: Path) -> dict:
