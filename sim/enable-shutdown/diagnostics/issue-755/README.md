@@ -40,5 +40,11 @@ that the adapter's repeat is idempotent either way.
         --process tt --temp 27 --supply 3.3 --subset-reason "paired diagnostic" --no-write
 
 Layout: `local/{deck.spice,corner-run.log}`,
-`remote/{request.json,request.spice,response.json,batch-receipt.json,ngspice.log,corner.cir,corner-run.log}`.
+`remote/{request.json,response.json,batch-receipt.json,corner.cir}`.
+`remote/request.spice` is not committed: its bytes are the stored object
+`sim/enable-shutdown/klt-request-netlists/20261124-042548-d0bee518.v3.30.spice`
+declared in `manifests/artifacts/enable-shutdown-20261124-042548-d0bee518.manifest.json`
+(`check-artifact-manifests` forbids committing bytes that are in the store).
+The `*.log` files (`local/corner-run.log`, `remote/ngspice.log`, `remote/corner-run.log`) are
+gitignored and not part of the committed bundle.
 Host paths were scrubbed to `<worktree>/` and `~`.
