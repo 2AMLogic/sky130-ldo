@@ -152,6 +152,14 @@ class TestPdkJsonDrift(RunMixin, unittest.TestCase):
         self.assertIn("pins.pdk", err)
         self.assertIn(ALT_COMMIT, err)
         self.assertIn("cites no backticked hex prefix", err)
+        # the envelope is stale against the authority too, independently of the
+        # inventory comparison and the re-mint instructions
+        mismatch_lines = [ln for ln in err.splitlines() if ln.startswith("  - ")]
+        self.assertTrue(
+            any("item9-attestation.generic.json: pin/pdk value" in ln
+                and "sim/pdk.json declares" in ln for ln in mismatch_lines),
+            err,
+        )
 
     def test_variant_drift(self):
         code, err = self.run_root_stderr(pdk=_pdk(variant="sky130B"))
@@ -213,6 +221,44 @@ class TestReadmeDrift(RunMixin, unittest.TestCase):
         self.assertEqual(code, 1)
         self.assertIn("does not declare the pinned tool", err)
         self.assertIn("'xschem 3.4.4'", err)
+
+    def test_tool_name_or_version_variants_fail(self):
+        """Only a complete name+version token pair satisfies the declaration."""
+        for old, new in (
+            ("xschem 3.4.4", "xschem 3.4.4-rc1"),
+            ("xschem 3.4.4", "custom-xschem 3.4.4"),
+            ("xschem 3.4.4", "xschem 3.4.40"),
+            ("ngspice 42", "ngspice 42.1"),
+        ):
+            with self.subTest(new=new):
+                code, err = self.run_root_stderr(readme=_readme().replace(old, new))
+                self.assertEqual(code, 1, err)
+                self.assertIn("does not declare the pinned tool", err)
+
+    def test_extra_unpinned_tool_in_row_fails(self):
+        code, err = self.run_root_stderr(
+            readme=_readme().replace("xschem 3.4.4", "xschem 3.4.4, klayout 0.29")
+        )
+        self.assertEqual(code, 1)
+        self.assertIn("klayout 0.29", err)
+
+    def test_pin_text_outside_the_declaration_does_not_count(self):
+        """A stale declaration plus the right prefix in later prose is drift."""
+        readme = _readme().replace(COMMIT[:8], ALT_COMMIT[:8])
+        readme = readme.replace(
+            " are pinned. |", f" are pinned. Previous evidence: `{COMMIT[:8]}…`. |"
+        )
+        code, err = self.run_root_stderr(readme=readme)
+        self.assertEqual(code, 1)
+        self.assertIn("cites no backticked hex prefix", err)
+
+    def test_variant_only_in_prose_does_not_count(self):
+        readme = _readme(variant="sky130B").replace(
+            " are pinned. |", f" are pinned. Was `{VARIANT}`. |"
+        )
+        code, err = self.run_root_stderr(readme=readme)
+        self.assertEqual(code, 1)
+        self.assertIn("does not name the PDK variant", err)
 
     def test_longer_prefix_of_same_commit_passes(self):
         self.assertEqual(self.run_root(readme=_readme(prefix_len=40, ellipsis="")), 0)
@@ -278,6 +324,72 @@ class TestMalformedInputs(RunMixin, unittest.TestCase):
         self.assertEqual(
             self.run_root(attestation={"attestation": {"checks": ["nope"]}}), 2
         )
+
+    def test_trailing_newline_in_commit_rejected(self):
+        nl = COMMIT + "\n"
+        self.assertEqual(
+            self.run_root(
+                pdk=_pdk(commit=nl),
+                inventory=_inventory(commit=nl),
+                attestation=_attestation(commit=nl),
+            ),
+            2,
+        )
+        for kw, doc in (
+            ("pdk", _pdk(commit=nl)),
+            ("inventory", _inventory(commit=nl)),
+            ("attestation", _attestation(commit=nl)),
+        ):
+            with self.subTest(file=kw):
+                self.assertEqual(self.run_root(**{kw: doc}), 2)
+
+    def test_nested_pin_types_rejected(self):
+        att_bad_value = _attestation()
+        att_bad_value["attestation"]["checks"][0]["value"] = "sky130A"
+        att_bad_passed = _attestation()
+        att_bad_passed["attestation"]["checks"][1]["passed"] = "true"
+        att_bad_tools = _attestation()
+        att_bad_tools["attestation"]["checks"][1]["value"] = {"ngspice": ""}
+        cases = {
+            "inventory revision bool": {"inventory": _inventory(commit=True)},
+            "inventory empty tool version": {
+                "inventory": _inventory(tools={"ngspice": "", "xschem": "3.4.4"})
+            },
+            "inventory non-string tool version": {
+                "inventory": _inventory(tools={"ngspice": 42, "xschem": "3.4.4"})
+            },
+            "attestation non-object value": {"attestation": att_bad_value},
+            "attestation string passed": {"attestation": att_bad_passed},
+            "attestation empty tool version": {"attestation": att_bad_tools},
+        }
+        for name, kw in cases.items():
+            with self.subTest(case=name):
+                self.assertEqual(self.run_root(**kw), 2)
+
+    def test_undecodable_text_inputs_fail_loudly(self):
+        """Invalid UTF-8 in README / check.sh is an input error, not a crash."""
+        with tempfile.TemporaryDirectory() as d:
+            for rel, content in (
+                ("sim/pdk.json", json.dumps(_pdk())),
+                ("signoff/evidence/item9-inventory.json", json.dumps(_inventory())),
+                ("signoff/evidence/item9-attestation.generic.json",
+                 json.dumps(_attestation())),
+                ("signoff/README.md", _readme()),
+                ("signoff/check.sh", CHECK_SH),
+            ):
+                path = Path(d) / rel
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text(content, encoding="utf-8")
+            for rel in ("signoff/README.md", "signoff/check.sh"):
+                path = Path(d) / rel
+                good = path.read_bytes()
+                path.write_bytes(good + b"\xff\xfe\n")
+                with self.subTest(file=rel):
+                    with contextlib.redirect_stderr(io.StringIO()):
+                        self.assertEqual(
+                            m.main(["check-item9-pins.py", "--root", d]), 2
+                        )
+                path.write_bytes(good)
 
     def test_readme_row_missing_or_duplicated(self):
         self.assertEqual(self.run_root(readme="# no table at all\n"), 2)

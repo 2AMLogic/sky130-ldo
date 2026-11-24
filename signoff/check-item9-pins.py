@@ -45,8 +45,16 @@ CHECK_SH = "signoff/check.sh"
 
 KLT_VERSION_RE = re.compile(r'^KLT_VERSION="([^"]+)"', re.M)
 ITEM9_ROW_RE = re.compile(r"^\|\s*9\s*\|")
-HEX_TOKEN_RE = re.compile(r"`([0-9a-f]{7,64})(?:\.\.\.|…)?`")
-COMMIT_RE = re.compile(r"^[0-9a-f]{7,64}$")
+# item 9's row declares its pins in one fixed phrase:
+#   the PDK (`<variant>`, `<hex prefix>…`) and tools (<name> <ver>, ...)
+# Both are parsed structurally -- never searched for anywhere in the row -- so
+# a pin mentioned in other prose ("Previous evidence ...") cannot satisfy them.
+ROW_PDK_RE = re.compile(
+    r"\bPDK \(`([^`]+)`,\s*`([0-9a-f]{7,64})(?:\.\.\.|…)?`\)"
+)
+ROW_TOOLS_RE = re.compile(r"\btools \(([^()]*)\)")
+# fullmatch, never `$`: `$` also matches before a trailing newline.
+COMMIT_RE = re.compile(r"[0-9a-f]{7,64}")
 
 
 class InputError(Exception):
@@ -56,7 +64,7 @@ class InputError(Exception):
 def _read_text(path: Path) -> str:
     try:
         return path.read_text(encoding="utf-8")
-    except OSError as exc:
+    except (OSError, UnicodeDecodeError) as exc:
         raise InputError(f"{path}: unreadable: {exc}") from exc
 
 
@@ -65,6 +73,30 @@ def _load_json(path: Path):
         return json.loads(_read_text(path))
     except ValueError as exc:
         raise InputError(f"{path}: not valid JSON: {exc}") from exc
+
+
+def _check_pdk_pin(value, where: str) -> dict:
+    """A `{"name", "revision"}` pin value must be well-typed, not just present."""
+    if not isinstance(value, dict):
+        raise InputError(f"{where}: must be an object")
+    name = value.get("name")
+    revision = value.get("revision")
+    if not isinstance(name, str) or not name:
+        raise InputError(f"{where}.name: must be a non-empty string")
+    if not isinstance(revision, str) or not COMMIT_RE.fullmatch(revision):
+        raise InputError(f"{where}.revision: must be a lowercase hex string")
+    return value
+
+
+def _check_tools_pin(value, where: str) -> dict:
+    if not isinstance(value, dict):
+        raise InputError(f"{where}: must be an object")
+    for tool, version in value.items():
+        if not isinstance(tool, str) or not tool:
+            raise InputError(f"{where}: keys must be non-empty strings")
+        if not isinstance(version, str) or not version:
+            raise InputError(f"{where}.{tool}: must be a non-empty string")
+    return value
 
 
 def parse_pdk(doc, path: Path) -> tuple[str, str, dict[str, str]]:
@@ -76,7 +108,7 @@ def parse_pdk(doc, path: Path) -> tuple[str, str, dict[str, str]]:
     tools = doc.get("tools")
     if not isinstance(variant, str) or not variant:
         raise InputError(f"{path}: 'variant' must be a non-empty string")
-    if not isinstance(commit, str) or not COMMIT_RE.match(commit):
+    if not isinstance(commit, str) or not COMMIT_RE.fullmatch(commit):
         raise InputError(
             f"{path}: 'open_pdks_commit' must be a non-empty lowercase hex string"
         )
@@ -99,11 +131,10 @@ def parse_inventory_pins(doc, path: Path) -> tuple[dict, dict]:
         raise InputError(f"{path}: 'pins' must be an object")
     pdk = pins.get("pdk")
     tools = pins.get("tools")
-    if not isinstance(pdk, dict):
-        raise InputError(f"{path}: 'pins.pdk' must be an object")
-    if not isinstance(tools, dict):
-        raise InputError(f"{path}: 'pins.tools' must be an object")
-    return pdk, tools
+    return (
+        _check_pdk_pin(pdk, f"{path}: 'pins.pdk'"),
+        _check_tools_pin(tools, f"{path}: 'pins.tools'"),
+    )
 
 
 def attestation_pin_entries(doc, path: Path, role: str) -> list[dict]:
@@ -121,6 +152,11 @@ def attestation_pin_entries(doc, path: Path, role: str) -> list[dict]:
         if not isinstance(entry, dict):
             raise InputError(f"{path}: 'attestation.checks' entries must be objects")
         if entry.get("check") == "pin" and entry.get("role") == role:
+            where = f"{path}: pin/{role} entry"
+            if not isinstance(entry.get("passed"), bool):
+                raise InputError(f"{where}: 'passed' must be a boolean")
+            check = _check_pdk_pin if role == "pdk" else _check_tools_pin
+            check(entry.get("value"), f"{where} 'value'")
             entries.append(entry)
     return entries
 
@@ -156,29 +192,56 @@ def parse_klt_version(check_sh_text: str, path: Path) -> str:
 def row_mismatches(row: str, variant: str, commit: str, tools: dict[str, str]) -> list[str]:
     """Every way item 9's README row can disagree with the attested pins."""
     bad = []
-    if f"`{variant}`" not in row:
+    pdk_decls = ROW_PDK_RE.findall(row)
+    if len(pdk_decls) != 1:
+        bad.append(
+            f"{README}: item 9's row has {len(pdk_decls)} 'PDK (`variant`, "
+            "`hex…`)' declarations; expected exactly one"
+        )
+        decl_variant, prefix = None, None
+    else:
+        decl_variant, prefix = pdk_decls[0]
+    if decl_variant != variant:
         bad.append(
             f"{README}: item 9's row does not name the PDK variant in backticks "
-            f"(expected '`{variant}`')"
+            f"(expected '`{variant}`' in its PDK declaration, found "
+            f"{decl_variant!r})"
         )
-    prefixes = [mt.group(1) for mt in HEX_TOKEN_RE.finditer(row)]
-    if not any(commit.startswith(p) for p in prefixes):
-        found = ", ".join(f"`{p}…`" for p in prefixes) if prefixes else "none"
+    if prefix is None or not commit.startswith(prefix):
         bad.append(
             f"{README}: item 9's row cites no backticked hex prefix of "
-            f"open_pdks_commit {commit} (hex tokens found: {found})"
+            f"open_pdks_commit {commit} in its PDK declaration (found: "
+            f"{prefix if prefix else 'none'})"
         )
+    tool_decls = ROW_TOOLS_RE.findall(row)
+    declared: dict[str, str] = {}
+    if len(tool_decls) != 1:
+        bad.append(
+            f"{README}: item 9's row has {len(tool_decls)} 'tools (name "
+            "version, ...)' declarations; expected exactly one"
+        )
+    else:
+        for item in tool_decls[0].split(","):
+            parts = item.split(None, 1)
+            if len(parts) == 2:
+                declared[parts[0]] = parts[1].strip()
+            else:
+                bad.append(
+                    f"{README}: item 9's row has a malformed tool entry "
+                    f"{item.strip()!r} (expected 'name version')"
+                )
     for name in sorted(tools):
-        version = tools[name]
-        pat = re.compile(
-            rf"(?<![A-Za-z0-9_]){re.escape(name)}\s+{re.escape(version)}"
-            r"(?![0-9A-Za-z.])"
-        )
-        if not pat.search(row):
+        if declared.get(name) != tools[name]:
             bad.append(
                 f"{README}: item 9's row does not declare the pinned tool "
-                f"'{name} {version}'"
+                f"'{name} {tools[name]}' (row declares "
+                f"{declared.get(name, 'no version')!r})"
             )
+    for name in sorted(set(declared) - set(tools)):
+        bad.append(
+            f"{README}: item 9's row declares tool '{name} {declared[name]}' "
+            f"that {PDK_JSON} does not pin"
+        )
     return bad
 
 
@@ -235,9 +298,9 @@ def main(argv: list[str] | None = None) -> int:
     # The envelope is minted from the inventory, so that is what its pin
     # values are compared against -- an inventory updated without a re-mint
     # is exactly the drift this must name.
-    for role, entries, inv_value in (
-        ("pdk", pdk_entries, inv_pdk),
-        ("tools", tools_entries, inv_tools),
+    for role, entries, inv_value, auth_value in (
+        ("pdk", pdk_entries, inv_pdk, expected_pdk),
+        ("tools", tools_entries, inv_tools, tools),
     ):
         if not entries:
             mismatches.append(
@@ -260,6 +323,14 @@ def main(argv: list[str] | None = None) -> int:
                     f"{ATTESTATION}: pin/{role} value is "
                     f"{_dumps(entry.get('value'))} but {INVENTORY} pins "
                     f"{_dumps(inv_value)}"
+                )
+            # ...and independently against sim/pdk.json, so a stale envelope is
+            # named even when the inventory it was minted from is stale too.
+            if entry.get("value") != auth_value:
+                mismatches.append(
+                    f"{ATTESTATION}: pin/{role} value is "
+                    f"{_dumps(entry.get('value'))} but {PDK_JSON} declares "
+                    f"{_dumps(auth_value)}"
                 )
     mismatches.extend(row_mismatches(row, variant, commit, tools))
 
