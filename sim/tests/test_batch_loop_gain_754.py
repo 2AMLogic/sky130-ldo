@@ -316,6 +316,14 @@ class TestLoopGainAdapter(EndpointShapeGate, BackendContract, RecordProvenance, 
             with self.assertRaises(blg.LoopGainTranslationError):
                 blg.parse_deck(raw["deck"]["analyses"], raw["ac_leg_grid"])
 
+    def test_unsupported_suffix_refused_by_the_number_parser_itself(self):
+        # #778: the deck-shape `1.8q` edit above can be caught by the pinned-value
+        # check instead of the suffix grammar if `q` ever joins _SCALE; this
+        # case fails under that widening on its own, whichever check wins there.
+        with self.assertRaisesRegex(blg.LoopGainTranslationError,
+                                    r"unsupported alter value '1\.8q'"):
+            blg._num("1.8q")
+
     def test_ac_leg_grid_drift_refused_even_though_digests_do_not_cover_it(self):
         def edit(raw):
             raw["ac_leg_grid"]["legs"][3]["cout_f"] = 2.2e-6
