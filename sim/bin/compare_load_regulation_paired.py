@@ -82,15 +82,19 @@ def compare(
 
 
 def load_remote(d: Path) -> tuple[dict, str | None, list[str]]:
-    vals, engines = {}, set()
+    vals, engines = {}, []
     for t in (1, 2):
         resp = json.loads((d / "remote" / f"tran{t}" / "response.json").read_text())
-        engines.add(str(resp["environment"].get("engine_version")))
+        engines.append(resp.get("environment", {}).get("engine_version"))
         for m in resp["corners"][0]["measurements"]:
             if is_finite_number(m.get("value")):
                 vals[m["name"].split(".", 1)[1]] = m["value"]
     vals.update({k: v for k, v in derive(vals).items() if v is not None})
-    return vals, (engines.pop() if len(engines) == 1 else None), sorted(engines)
+    return (
+        vals,
+        _paired_compare.engine_version(engines),
+        sorted({str(e) for e in engines if e is not None}),
+    )
 
 
 _MEAS = re.compile(
