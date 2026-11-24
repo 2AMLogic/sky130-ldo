@@ -246,6 +246,10 @@ class TestEnableShutdownAdapter(
             lambda a: [x.replace("tran 5u 4.5m", "tran 5u 4.5m uic") for x in a],
             lambda a: [x for x in a if x != "alter vforce = 1.8"],
             lambda a: [x.replace("alter rforce = 1m", "alter rforce = 1meg") for x in a],
+            # unsupported suffix still raises this adapter's own error (#769:
+            # `meg` itself now parses under _meas_expr's superset table and is
+            # caught by the pinned-value check above instead)
+            lambda a: [x.replace("alter rforce = 1m", "alter rforce = 1q") for x in a],
             lambda a: [x.replace("alter vforce = 1.8", "alter vforce = 1.7") for x in a],
             lambda a: a + ["op"],
             lambda a: [x for x in a if not x.startswith("meas tran")],

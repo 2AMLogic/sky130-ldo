@@ -5,6 +5,8 @@ These exercise the comparison logic only; they are not simulator evidence.
 
 from __future__ import annotations
 
+import contextlib
+import io
 import json
 import sys
 import tempfile
@@ -166,6 +168,79 @@ class CompareTests(unittest.TestCase):
         self.assertEqual(eng, "46")
         self.assertEqual(v["dropout_vin_x"], 2.161658)
         self.assertNotIn("vout_at_max_vin_v", v)
+
+
+RAW = {"dropout_vin_x": 2.161658, "vout_at_max_vin_v": 1.798832}
+
+
+def write_pair(d: Path, environment) -> None:
+    """Lay out the issue-#768 fixture: one remote response carrying
+    `environment` (None leaves the object out) and a local log that agrees
+    with both raw measurements."""
+    ms = [{"name": f"dropout.{k}", "value": v} for k, v in RAW.items()]
+    resp = {"corners": [{"measurements": ms}]}
+    if environment is not None:
+        resp["environment"] = environment
+    (d / "remote" / "v3.30").mkdir(parents=True)
+    (d / "remote" / "v3.30" / "response.json").write_text(json.dumps(resp))
+    (d / "local").mkdir()
+    (d / "local" / "ngspice.log").write_text(
+        "".join(f"{k} = {v:.6e}\n" for k, v in RAW.items())
+    )
+
+
+class RemoteEngineTests(unittest.TestCase):
+    """Issue #768: a missing fleet version is None, never the string "None"."""
+
+    def load(self, environment):
+        with tempfile.TemporaryDirectory() as t:
+            d = Path(t)
+            write_pair(d, environment)
+            return cmp.load_remote(d)
+
+    def test_known_version(self):
+        self.assertEqual(self.load({"engine_version": "46"})[1], "46")
+
+    def test_absent_version_is_none_not_the_string(self):
+        self.assertIsNone(self.load({})[1])
+
+    def test_null_version_is_none(self):
+        self.assertIsNone(self.load({"engine_version": None})[1])
+
+    def test_absent_environment_object_is_none(self):
+        self.assertIsNone(self.load(None)[1])
+
+
+class CliEngineTests(unittest.TestCase):
+    """Issue #768: both legs agree on both raw measurements and both grade
+    FAIL, so the verdict turns on the engine version alone."""
+
+    def run_cli(self, environment, local_engine):
+        with tempfile.TemporaryDirectory() as t:
+            d = Path(t)
+            write_pair(d, environment)
+            out = d / "report.json"
+            argv = [str(d), "--local-engine", local_engine, "--remote-pass", "FAIL",
+                    "--local-pass", "FAIL", "--out", str(out)]
+            with contextlib.redirect_stdout(io.StringIO()):
+                rc = cmp.main(argv)
+            text = out.read_text()
+        return rc, json.loads(text), text
+
+    def test_missing_version_is_json_null_and_exit_2_for_any_local_engine(self):
+        for environment in ({}, {"engine_version": None}):
+            for local_engine in ("46", "None"):
+                with self.subTest(environment=environment, local_engine=local_engine):
+                    rc, rep, text = self.run_cli(environment, local_engine)
+                    self.assertEqual(rc, 2)
+                    self.assertEqual(rep["verdict"], "engine_mismatch")
+                    self.assertIn('"remote_engine": null', text)
+                    self.assertFalse(rep["equivalence_claimable"])
+
+    def test_matching_known_version_and_grades_exit_0(self):
+        rc, rep, _ = self.run_cli({"engine_version": "46"}, "46")
+        self.assertEqual(rc, 0)
+        self.assertEqual(rep["verdict"], "equivalent")
 
 
 if __name__ == "__main__":

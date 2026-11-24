@@ -114,8 +114,12 @@ def confirming_log(step: str, card: str) -> str:
     )
 
 
+ABSENT = object()
+
+
 def write_pair(d: Path, engines=("46", "46", "46"), remote_mut=None, local_mut=None, logs=None):
-    """Lay out <d>/remote/<group>/response.json and <d>/local/values.json from raw()."""
+    """Lay out <d>/remote/<group>/response.json and <d>/local/values.json from
+    raw(). An engine of ABSENT leaves `engine_version` out of that response."""
     r = raw()
     if remote_mut:
         remote_mut(r)
@@ -134,7 +138,8 @@ def write_pair(d: Path, engines=("46", "46", "46"), remote_mut=None, local_mut=N
                 ms.append({"name": k, "step": k.split(".")[0], "status": "ok", "value": v})
         (d / "remote" / g).mkdir(parents=True)
         (d / "remote" / g / "response.json").write_text(json.dumps(
-            {"environment": {"engine_version": eng}, "corners": [{"measurements": ms}]}))
+            {"environment": {} if eng is ABSENT else {"engine_version": eng},
+             "corners": [{"measurements": ms}]}))
         if logs and g in logs:
             (d / "remote" / g / "ngspice.log").write_text(logs[g])
     (d / "local").mkdir()
@@ -162,6 +167,24 @@ class ArtifactTests(unittest.TestCase):
 
     def test_missing_engine_is_mismatch(self):
         self.assertEqual(self.cmp_dir(engines=("46", None, "46"))["verdict"], "engine_mismatch")
+
+    def test_absent_engine_in_one_group_is_mismatch(self):
+        r = self.cmp_dir(engines=("46", ABSENT, "46"))
+        self.assertEqual(r["verdict"], "engine_mismatch")
+        self.assertIsNone(r["remote_engine"])
+
+    def test_absent_engine_in_every_group_is_none_never_equivalent(self):
+        with tempfile.TemporaryDirectory() as t:
+            d = Path(t)
+            write_pair(d, engines=(ABSENT,) * 3)
+            rv, eng, seen = cmp.load_remote(d)
+            lv = cmp.load_local(d)
+        self.assertIsNone(eng)
+        self.assertEqual(seen, [])
+        for local_engine in ("None", "46"):
+            with self.subTest(local_engine=local_engine):
+                r = cmp.compare(rv, lv, eng, local_engine, False, False)
+                self.assertEqual(r["verdict"], "engine_mismatch")
 
     def test_confirmed_non_crossing_reachable_from_artifacts(self):
         def both(d):

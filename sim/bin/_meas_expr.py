@@ -23,6 +23,10 @@ swallow the function, and a dotted ref grammar is disjoint from the literal,
 so the order is safe for both. Standard library only, matching every
 `sim/bin/*.py` script's own convention; importable filename, so the adapters
 reach it with a plain `import` (the `_corner_model.py` pattern).
+
+`parse_number` is that same lexer as a module-level entry point for the batch
+adapters' `alter` values (#769): each passes its own error class, so no
+adapter keeps a private copy of the suffix grammar.
 """
 
 from __future__ import annotations
@@ -38,6 +42,16 @@ _SCALE = {"": 1.0, "t": 1e12, "g": 1e9, "meg": 1e6, "k": 1e3, "m": 1e-3,
           "u": 1e-6, "n": 1e-9, "p": 1e-12, "f": 1e-15}
 
 
+def parse_number(text: str, error_cls: type[ValueError], what: str = "alter value") -> float:
+    """A SPICE number with scale suffix (`1e12`, `1m`, `36`) as the float klt's
+    `alter` map takes, raising `error_cls` (`what` names it in the message) on
+    any other shape."""
+    m = _NUM_RE.fullmatch(text)
+    if m is None or m.group(2).lower() not in _SCALE:
+        raise error_cls(f"unsupported {what} {text!r}")
+    return float(m.group(1)) * _SCALE[m.group(2).lower()]
+
+
 class MeasExprEvaluator:
     """Evaluate manifest expressions over measurement values (grammar in the
     module docstring). `ref_re` is the reference token's regex alternation
@@ -49,10 +63,7 @@ class MeasExprEvaluator:
         self._err = error_cls
 
     def _num(self, text: str) -> float:
-        m = _NUM_RE.fullmatch(text)
-        if m is None or m.group(2).lower() not in _SCALE:
-            raise self._err(f"unsupported number {text!r} in expression")
-        return float(m.group(1)) * _SCALE[m.group(2).lower()]
+        return parse_number(text, self._err, "number in expression")
 
     def tokenize(self, expr: str, refs_ok: set[str]) -> list[tuple[str, str]]:
         """Lex `expr` to (kind, text) tokens: fn/ref/num/op. Every ref must

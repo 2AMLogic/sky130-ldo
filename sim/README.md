@@ -1396,6 +1396,58 @@ is headless. A `klt sim --dry-run` accepts the translated request; the
 chained-step alter carry-over and a live paired comparison against the local
 backend are not exercised by the headless tests.
 
+**Status (2026-11-24): record `20261124-042548-d0bee518`, FAIL, 36/45
+corners PASS** (`--supersedes 20260825-111526-933dfdd`; JSON twin store-only,
+issue #436). `batch-preflight.py` exited 0 (job `klt-sim-89e458932ca4`, runner
+klt 0.9.0, compatibility `match`) and the matrix ran as 3 chained-steps
+requests, one per supply (jobs `klt-sim-f56865efaf23` / `klt-sim-522cd1f8023a`
+/ `klt-sim-4763bbe9a4f3`, ngspice-47 on the Spot fleet). Results:
+
+- **Paired tt / 27 °C / 3.30 V `--no-write` comparison (issue #755 AC 3),
+  local vs batch on the same revision**: all eight scalars and
+  all grades identical at the harness summary's 6-significant-digit print
+  precision, zero discrepancies. The raw artifacts of both legs (request,
+  response, receipt, generated deck, the local corner-run log, `comparison.json`) are
+  committed under `sim/enable-shutdown/diagnostics/issue-755/` (its README
+  carries the reproduce command; the first, scratch-only pairing of this
+  session was re-run there so the evidence is retrievable). Engines: local
+  ngspice-47 (binary sha256 `39ca1adb…`) vs fleet ngspice-47 (binary sha256
+  `e12148ba…`) — same version, different builds; `models_lib_comparison:
+  match` (sky130.lib.spice sha256 `48de7c67…` on both sides) while the fleet
+  worker's PDK stamp
+  (`f6eeac7…`, sources-sha256 scheme) differs from the volare pin
+  (`c6d73a35…`) with byte-identical model libraries. Both engines drift from
+  the declared ngspice 42 (`sim/pdk.json` tools WARN, recorded in both runs).
+- **Chained-step alter carry-over (the #760 open item): observed — klt
+  carries `alter` state across `analysis_steps[]`.** The generated corner deck
+  (committed as `sim/enable-shutdown/diagnostics/issue-755/remote/corner.cir`)
+  is ONE ngspice deck with a single `.control`
+  block running `tran`, `op`, `alter rforce`, `op`, `alter rforce`, `alter
+  vforce`, `op` in sequence with no `reset`/restore between steps, so under
+  ngspice's own semantics `op2`'s `rforce = 1m` persists into `op3`. Because
+  the request itself repeats `rforce` in `op3`, the generated deck shows the
+  repeat (twice `alter rforce=0.001`) and cannot by itself distinguish carry-over
+  from a per-step reset; the adapter's explicit `rforce` repeat in `op3` is
+  redundant and idempotent,
+  keeping the translation correct under either behavior as designed.
+- **Solver-diagnostic gate: 9/45 corners FAIL, every one from a diagnostic,
+  none from a bound.** `singular matrix` (node `xldo.ea_cz` on `fs_-40c_3.63v`, `fs_27c_3.30v` and `sf_27c_3.63v`,
+  `m.xldo.xm_rcn1.msky130_fd_pr__nfet_g5v0d10v5#drain` on `ff_-40c_2.97v`),
+  `Dynamic gmin stepping failed` (`tt_125c_3.30v`, `sf_125c_3.63v`) and
+  `2 out of range for ^` (BSIM4 pow overflow on the `tt_-40c` / `fs_-40c` /
+  `fs_27c` corners). Every measured value stays inside its ratified bound at all 45
+  corners: worst shutdown Iq `0.117 µA` (bound 3 µA, both static and
+  after-edge rows), worst Vin->Vout leakage `0.152 µA` (bound 1 µA),
+  `vout_pre_disable_v` 1.8072-1.8213 V inside its 1.764-1.836 V window and
+  `vout_hold_2ms_v` 1.8060-1.8202 V above its 1.764 V floor (no upper bound) — including the ff/sf 125 °C pre-disable
+  witness the test plan names (`1.8185`-`1.8209` V).
+- **Verdict delta vs the superseded record**: `20260825-111526-933dfdd`
+  (local backend, ngspice-46) read 45/45 PASS because it predates the
+  integrated comparator (#230): 17 of its 45 logs already carry
+  `Dynamic gmin stepping failed` that today's detector flags (under the gate
+  it would have been FAIL, 28/45 PASS). The batch re-run is cleaner, not
+  worse: 9 flagged corners vs 17, on a newer engine.
+
 **Status (2026-11-17): record `20261117-173516-d843d914`, FAIL, 41/45
 corners PASS** (`--supersedes 20260825-105322-933dfdd`; JSON twin store-only,
 issue #436). `batch-preflight.py` exited 0 (runner klt 0.9.0, ngspice 47) and

@@ -1,0 +1,73 @@
+* klt sim -- generated corner deck, do not edit
+.lib /opt/pdk/sky130A/libs.tech/combined/sky130.lib.spice tt
+.include /var/tmp/eda-job-klt-sim-5100f5d02ebc/inputs/netlist.cir
+.temp 27.0
+.control
+save all
+setplot new
+echo klt_step_begin 0 $curplot
+tran 5u 4.5m
+echo klt_step_end 0 $curplot
+set klt_plot_0 = $curplot
+meas tran vpre find v(vout) at=1.9m
+let tran1__vpre = vpre
+print tran1__vpre
+meas tran iq_avg avg i(vvin) from=3.5m to=4.5m
+let tran1__iq_avg = iq_avg
+print tran1__iq_avg
+meas tran iq_worst min i(vvin) from=3.5m to=4.5m
+let tran1__iq_worst = iq_worst
+print tran1__iq_worst
+meas tran vhold find v(vout) at=4m
+let tran1__vhold = vhold
+print tran1__vhold
+setplot new
+echo klt_step_begin 1 $curplot
+op
+echo klt_step_end 1 $curplot
+set klt_plot_1 = $curplot
+let iq_shutdown_static_ua = -1e6*i(vvin)
+let op1__iq_shutdown_static_ua = iq_shutdown_static_ua
+print op1__iq_shutdown_static_ua
+let vout_disabled_static_v = v(vout)
+let op1__vout_disabled_static_v = vout_disabled_static_v
+print op1__vout_disabled_static_v
+alter rforce=0.001
+setplot new
+echo klt_step_begin 2 $curplot
+op
+echo klt_step_end 2 $curplot
+set klt_plot_2 = $curplot
+let leak_vin_vout_ua = 1e6*i(vforce)
+let op2__leak_vin_vout_ua = leak_vin_vout_ua
+print op2__leak_vin_vout_ua
+alter rforce=0.001
+alter vforce=1.8
+setplot new
+echo klt_step_begin 3 $curplot
+op
+echo klt_step_end 3 $curplot
+set klt_plot_3 = $curplot
+let ivout_held_1v8_ua = -1e6*i(vforce)
+let op3__ivout_held_1v8_ua = ivout_held_1v8_ua
+print op3__ivout_held_1v8_ua
+setplot new
+let meas_iq_shutdown_static_ua = {$klt_plot_1}.iq_shutdown_static_ua
+print meas_iq_shutdown_static_ua
+let meas_iq_shutdown_after_edge_ua = -1e6*{$klt_plot_0}.iq_worst
+print meas_iq_shutdown_after_edge_ua
+let meas_iq_shutdown_after_edge_mean_ua = -1e6*{$klt_plot_0}.iq_avg
+print meas_iq_shutdown_after_edge_mean_ua
+let meas_leak_vin_vout_ua = {$klt_plot_2}.leak_vin_vout_ua
+print meas_leak_vin_vout_ua
+let meas_vout_pre_disable_v = {$klt_plot_0}.vpre
+print meas_vout_pre_disable_v
+let meas_vout_hold_2ms_v = {$klt_plot_0}.vhold
+print meas_vout_hold_2ms_v
+let meas_vout_disabled_static_v = {$klt_plot_1}.vout_disabled_static_v
+print meas_vout_disabled_static_v
+let meas_ivout_held_1v8_ua = {$klt_plot_3}.ivout_held_1v8_ua
+print meas_ivout_held_1v8_ua
+quit
+.endc
+.end

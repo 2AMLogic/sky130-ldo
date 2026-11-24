@@ -1,19 +1,34 @@
 """Shared verdict/report logic for the paired local/fleet comparison scripts.
 
-Used by compare_line_regulation_paired.py (#384) and
-compare_load_regulation_paired.py (#381). PDK-free.
+Used by all four comparators: compare_dropout_paired.py (#375),
+compare_line_regulation_paired.py (#384),
+compare_load_regulation_paired.py (#381) and compare_loop_gain_paired.py
+(#757). PDK-free.
 
-Only the generic parts live here: the row builder, the verdict resolution
-(unresolved > rejected > engine_mismatch > equivalent), the report dict, and
-row printing / exit code. Tolerances, endpoint lists and derived-value
-functions stay in each script, next to their docstring, and are passed in as a
-`{name: (tol, unit)}` table so a result can never be rescued by widening them
-from a caller.
+Only the generic parts live here: the engine-version resolution, the row
+builder, the verdict resolution (unresolved > rejected > engine_mismatch >
+equivalent), the report dict, and row printing / exit code. Tolerances,
+endpoint lists and derived-value functions stay in each script, next to
+their docstring, and are passed in as a `{name: (tol, unit)}` table so a
+result can never be rescued by widening them from a caller.
 """
 
 from __future__ import annotations
 
 from _record_common import is_finite_number
+
+
+def engine_version(versions) -> str | None:
+    """The one engine version every required response supplies, or None.
+
+    `versions` holds each response's raw `environment.engine_version`. A
+    version comes back only when every response supplies one and they all
+    agree; an absent or null version in any response, or any disagreement,
+    is None -- never the string "None", which would equal a local engine
+    passed as "None" and let an unversioned pair compare equivalent.
+    """
+    seen = {None if v is None else str(v) for v in versions}
+    return seen.pop() if len(seen) == 1 and None not in seen else None
 
 
 def compare(

@@ -305,6 +305,8 @@ class TestLoopGainAdapter(EndpointShapeGate, BackendContract, RecordProvenance, 
             lambda a: [x for x in a if x != "let dcg = lgdb[0]"],
             lambda a: [x.replace("alter hesr gain = 500m", "alter hesr gain = 400m") for x in a],
             lambda a: [x.replace("alter rload = 1.8k", "alter rload = 2k") for x in a],
+            # unsupported suffix still raises this adapter's own error (#769)
+            lambda a: [x.replace("alter rload = 1.8k", "alter rload = 1.8q") for x in a],
             lambda a: a + ["alter rload = 36"],
             lambda a: [x.replace("meas ac phc find lgph when lgdb=0 cross=1",
                                  "meas ac phc find lgph when lgdb=0 cross=2") for x in a],
