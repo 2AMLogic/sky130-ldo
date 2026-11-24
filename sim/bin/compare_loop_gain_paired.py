@@ -27,12 +27,21 @@ equivalence only; they never establish spec compliance.
 Legs 7 and 13 are reported together (seed, PM, GM) in `continuation_legs`:
 the local solver continues across ESR groups, the batch one restarts.
 
-Usage: compare_loop_gain_paired.py REMOTE_VALUES.json LOCAL_VALUES.json
-           --remote-engine V --local-engine V --remote-pass PASS|FAIL
+Evidence comes from artifacts, never operator assertions (as the sibling
+comparators): the remote map and engine version are read from
+`<dir>/remote/<group>/response.json` for the three ESR groups (esr10m, esr500m,
+esr0); the engine is the one `environment.engine_version` all three agree on, and
+disagreement (or absence) is `None`, i.e. `engine_mismatch`. A remote result with
+`status: "not_reached"` and `value: null` is a confirmed non-crossing (derived
+in `load_remote`); any other null/errored/duplicated result is missing.
+The local map is `<dir>/local/values.json`, an object keyed `opN.vseed`,
+`acN.phc`, `acN.gmdb`, `ac1.fc`, `ac1.dcg`: a crossing card (fc/phc/gmdb) PRESENT
+with value null is the local ngspice's failed crossing measurement (`n/a` in
+corner-run's console) and is read as a confirmed non-crossing; an absent key is
+missing (`load_local`).
+
+Usage: compare_loop_gain_paired.py DIR --local-engine V --remote-pass PASS|FAIL
            --local-pass PASS|FAIL [--out report.json]
-Each values file is a JSON object keyed `opN.vseed`, `acN.phc`, `acN.gmdb`,
-`ac1.fc`, `ac1.dcg` (N = 1..18); a no-crossing result is "not_reached".
-Extract the remote map with `batch_loop_gain.extract_values` per group response.
 """
 
 from __future__ import annotations
@@ -43,6 +52,7 @@ import sys
 from pathlib import Path
 
 import _paired_compare
+import batch_loop_gain as blr
 from _record_common import is_finite_number
 
 NOT_REACHED = "not_reached"
@@ -126,21 +136,57 @@ def compare(
     return rep
 
 
+def load_remote(d: Path) -> tuple[dict, str | None, list[str]]:
+    """Raw remote map + the single agreed engine version (None on any
+    disagreement or absence) + the engine versions seen."""
+    vals: dict = {}
+    dup: set[str] = set()
+    engines: set = set()
+    for key in blr.GROUP_KEYS:
+        resp = json.loads((d / "remote" / key / "response.json").read_text())
+        eng = resp.get("environment", {}).get("engine_version")
+        engines.add(None if eng is None else str(eng))
+        for m in resp["corners"][0]["measurements"]:
+            name = m.get("name")
+            if not isinstance(name, str):
+                continue
+            name = name.lower()
+            if name in vals:
+                dup.add(name)
+            card = name.split(".", 1)[-1]
+            if m.get("status") == "not_reached" and card in blr.UNREACHABLE and m.get("value") is None:
+                vals[name] = NOT_REACHED
+            elif m.get("status") == "error":
+                vals[name] = None
+            else:
+                vals[name] = m.get("value")
+    for name in dup:
+        vals[name] = None  # reported twice: never evidence
+    seen = sorted(e for e in engines if e is not None)
+    engine = seen[0] if len(engines) == 1 and None not in engines else None
+    return vals, engine, seen
+
+
+def load_local(d: Path) -> dict:
+    raw = json.loads((d / "local" / "values.json").read_text())
+    out = {}
+    for k, v in raw.items():
+        card = k.lower().split(".", 1)[-1]
+        out[k.lower()] = NOT_REACHED if v is None and card in blr.UNREACHABLE else v
+    return out
+
+
 def main(argv: list[str]) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    ap.add_argument("remote", type=Path)
-    ap.add_argument("local", type=Path)
+    ap.add_argument("dir", type=Path)
     ap.add_argument("--out", type=Path)
-    ap.add_argument("--remote-engine", required=True)
     ap.add_argument("--local-engine", required=True)
     ap.add_argument("--remote-pass", choices=("PASS", "FAIL"), required=True)
     ap.add_argument("--local-pass", choices=("PASS", "FAIL"), required=True)
     a = ap.parse_args(argv)
-    rep = compare(
-        json.loads(a.remote.read_text()), json.loads(a.local.read_text()),
-        a.remote_engine, a.local_engine,
-        a.remote_pass == "PASS", a.local_pass == "PASS",
-    )
+    rv, reng, _ = load_remote(a.dir)
+    rep = compare(rv, load_local(a.dir), reng, a.local_engine,
+                  a.remote_pass == "PASS", a.local_pass == "PASS")
     if a.out:
         a.out.write_text(json.dumps(rep, indent=2) + "\n")
     return _paired_compare.print_report(rep, 8)

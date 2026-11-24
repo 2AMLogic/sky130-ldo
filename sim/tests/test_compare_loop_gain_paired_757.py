@@ -5,8 +5,11 @@ These exercise the comparison logic only; they are not simulator evidence.
 
 from __future__ import annotations
 
+import json
 import sys
+import tempfile
 import unittest
+from pathlib import Path
 
 from test_corner_run import SIM_DIR
 
@@ -96,6 +99,67 @@ class CompareTests(unittest.TestCase):
         d = cmp.derive(raw())
         self.assertAlmostEqual(d["pm1"], 59.0)
         self.assertAlmostEqual(d["gm1"], 15.1)
+
+
+def write_pair(d: Path, engines=("46", "46", "46"), remote_mut=None, local_mut=None):
+    """Lay out <d>/remote/<group>/response.json and <d>/local/values.json from raw()."""
+    r = raw()
+    if remote_mut:
+        remote_mut(r)
+    groups = ("esr10m", "esr500m", "esr0")
+    for gi, (g, eng) in enumerate(zip(groups, engines)):
+        ms = []
+        for k, v in r.items():
+            leg = int("".join(c for c in k.split(".")[0] if c.isdigit()))
+            if (leg - 1) // 6 != gi:
+                continue
+            if v is None:
+                ms.append({"name": k, "status": "not_reached", "value": None})
+            else:
+                ms.append({"name": k, "status": "ok", "value": v})
+        (d / "remote" / g).mkdir(parents=True)
+        (d / "remote" / g / "response.json").write_text(json.dumps(
+            {"environment": {"engine_version": eng}, "corners": [{"measurements": ms}]}))
+    (d / "local").mkdir()
+    loc = raw()
+    if local_mut:
+        local_mut(loc)
+    (d / "local" / "values.json").write_text(json.dumps(loc))
+
+
+class ArtifactTests(unittest.TestCase):
+    def cmp_dir(self, **kw):
+        with tempfile.TemporaryDirectory() as t:
+            d = Path(t)
+            write_pair(d, **kw)
+            rv, eng, _ = cmp.load_remote(d)
+            return cmp.compare(rv, cmp.load_local(d), eng, "46", True, True)
+
+    def test_clean_pair_equivalent(self):
+        self.assertEqual(self.cmp_dir()["verdict"], "equivalent")
+
+    def test_group_engine_disagreement_is_mismatch(self):
+        r = self.cmp_dir(engines=("46", "46", "45"))
+        self.assertEqual(r["verdict"], "engine_mismatch")
+        self.assertFalse(r["equivalence_claimable"])
+
+    def test_missing_engine_is_mismatch(self):
+        self.assertEqual(self.cmp_dir(engines=("46", None, "46"))["verdict"], "engine_mismatch")
+
+    def test_confirmed_non_crossing_reachable_from_artifacts(self):
+        def both(d):
+            d["ac14.gmdb"] = None
+        r = self.cmp_dir(remote_mut=both, local_mut=both)
+        self.assertEqual(r["verdict"], "equivalent")
+        self.assertEqual(r["unreached_both"], ["gm14"])
+
+    def test_local_absent_key_is_missing_not_non_crossing(self):
+        def rm(d):
+            d["ac14.gmdb"] = None
+        def drop(d):
+            del d["ac14.gmdb"]
+        r = self.cmp_dir(remote_mut=rm, local_mut=drop)
+        self.assertEqual(r["verdict"], "unresolved")
 
 
 if __name__ == "__main__":
