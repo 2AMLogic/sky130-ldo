@@ -102,11 +102,7 @@ class LoopGainTranslationError(ValueError):
 
 
 def _num(text: str) -> float:
-    try:
-        return float(_meas_expr.MeasExprEvaluator(r"(?!)", LoopGainTranslationError)
-                     .evaluate(text, {}, set()))
-    except LoopGainTranslationError as exc:
-        raise LoopGainTranslationError(f"unsupported alter value {text!r}") from exc
+    return _meas_expr.parse_number(text, LoopGainTranslationError)
 
 
 @dataclass

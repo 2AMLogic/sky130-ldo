@@ -249,7 +249,7 @@ class TestCurrentLimitAdapter(
             lambda a: [x for x in a if x != "tran 500n 3.0m uic"],  # leg 3 truncated
             lambda a: [x.replace("dc vforce 0 1.75 0.125", "op") for x in a],
             lambda a: a + ["alter rload = 36"],  # a fourth alter after leg 3
-            lambda a: [x.replace("alter rforce = 1m", "alter rforce = 1meg") for x in a],
+            lambda a: [x.replace("alter rforce = 1m", "alter rforce = 1q") for x in a],
             # issue #647: the pre-#647 leg order (leg 1's tran first) no
             # longer parses -- the seeded dc leg must lead the deck
             lambda a: (
