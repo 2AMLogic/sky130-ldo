@@ -1406,7 +1406,7 @@ requests, one per supply (jobs `klt-sim-f56865efaf23` / `klt-sim-522cd1f8023a`
   local vs batch on the same revision**: all eight scalars and
   all grades identical at the harness summary's 6-significant-digit print
   precision, zero discrepancies. The raw artifacts of both legs (request,
-  response, receipt, generated deck, engine logs, `comparison.json`) are
+  response, receipt, generated deck, the local corner-run log, `comparison.json`) are
   committed under `sim/enable-shutdown/diagnostics/issue-755/` (its README
   carries the reproduce command; the first, scratch-only pairing of this
   session was re-run there so the evidence is retrievable). Engines: local

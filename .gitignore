@@ -25,6 +25,9 @@
 # issue #375: paired dropout cold-start local/fleet diagnostic -- the raw local and remote
 # corner-run / ngspice logs are the source records behind comparison.json.
 !sim/dropout-vs-load/diagnostics/issue-375/**/*.log
+# issue #755: paired enable-shutdown local/fleet diagnostic -- the committed local
+# corner-run log is the raw local-leg output behind comparison.json.
+!sim/enable-shutdown/diagnostics/issue-755/**/*.log
 # issue #583: the pex re-measure legs' klt stderr (empty, and the emptiness
 # itself is the finding — committed evidence per the diagnostics convention).
 !sim/pex-post-layout/diagnostics/*/*/pex.stderr.log

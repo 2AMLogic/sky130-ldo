@@ -16,9 +16,10 @@ the AC 3 claim in `sim/README.md` has retrievable raw artifacts.
   fleet `e12148ba…`); `sky130.lib.spice` sha256 `48de7c677e2c…` on both sides.
   The fleet's PDK stamp differs from the volare pin (`c6d73a35…`) with
   byte-identical model libraries.
-- Preflight for the 45-corner run is recorded in
-  `sim/enable-shutdown/records/20261124-042548-d0bee518.md` (job
-  `klt-sim-89e458932ca4`); this bundle did not re-run it.
+- Preflight for the 45-corner run (job `klt-sim-89e458932ca4`) is cited in
+  `sim/README.md`; this bundle did not re-run it. This pair's own batch
+  response records `runner_compatibility: match` and
+  `models_lib_comparison: match` (`remote/response.json`).
 - Response warning `batch_ngspice_init_unverified` (workers do not confirm
   `options.ngspice_init` was applied) is present in `remote/response.json`; it
   is a harness-reporting gap, not a result difference here.
@@ -39,12 +40,13 @@ that the adapter's repeat is idempotent either way.
     python3 sim/bin/corner-run.py sim/enable-shutdown --backend batch \
         --process tt --temp 27 --supply 3.3 --subset-reason "paired diagnostic" --no-write
 
-Layout: `local/{deck.spice,corner-run.log}`,
+Layout: `local/{deck.spice,corner-run.log}` (the local leg's raw harness output),
 `remote/{request.json,response.json,batch-receipt.json,corner.cir}`.
 `remote/request.spice` is not committed: its bytes are the stored object
 `sim/enable-shutdown/klt-request-netlists/20261124-042548-d0bee518.v3.30.spice`
 declared in `manifests/artifacts/enable-shutdown-20261124-042548-d0bee518.manifest.json`
 (`check-artifact-manifests` forbids committing bytes that are in the store).
-The `*.log` files (`local/corner-run.log`, `remote/ngspice.log`, `remote/corner-run.log`) are
-gitignored and not part of the committed bundle.
+Only `local/corner-run.log` is committed as a log (un-ignored in `.gitignore`);
+the remote leg's raw output is `remote/response.json`, and no remote
+`ngspice.log` / `corner-run.log` is committed.
 Host paths were scrubbed to `<worktree>/` and `~`.
