@@ -8,6 +8,8 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 
 ### 2026-11-23
 
+- **PR #710**: docs: attribute the startup enable-edge drawdown to the C_COMP charge packet; screen R_CZ
+- **Issue #693** (closed): Startup: attribute the enable-edge charge packet behind the 0.016-66 uV pre-ramp drawdown and remove its cause
 - **PR #714**: sim: record R_CZ L=180 loop-gain rejection; compensation adoption stays open (#709)
 - **PR #711**: sim: add paired rev2-vs-production Iq, clamp and thermal-hysteresis campaign (i706)
 - **Issue #706** (closed): Characterize rev2 quiescent current, clamp knee and thermal hysteresis
