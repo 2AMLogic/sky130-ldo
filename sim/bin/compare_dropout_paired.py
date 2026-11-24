@@ -36,6 +36,11 @@ import re
 import sys
 from pathlib import Path
 
+# `python3 -I` (the README reproduce form) implies -P on Python 3.11+, so
+# this script's directory is not on sys.path; the sibling modules below
+# live there.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
 import _paired_compare
 from _record_common import is_finite_number
 
