@@ -34,6 +34,11 @@ Also home to the thermal staircase runner frame (issue #597): the shared
 thermal drivers previously carried as duplicated `deck_text`/`Runner` copies,
 widening the issue-#297 extraction from the leaf helpers to the shell around
 them.
+
+Also home to `cold_enable_temps()` (issue #715), the cold-start / EN
+re-enable sampling schedule derived from the T_reset and T_trip midpoints --
+the integrated bench, the standalone comparator demo and the batch planner
+previously carried three syntactically identical copies of the expression.
 """
 
 from __future__ import annotations
@@ -599,6 +604,24 @@ def bisect(pred, lo, hi, tol, want_lowest):
         else:
             lo, hi = (mid, hi) if ok else (lo, mid)
     return lo, hi
+
+
+# ---- cold-start / EN re-enable temperature schedule (issue #715) -------------
+# The temperatures the cold-start and EN disable/re-enable checks run at,
+# derived from the two bracket midpoints.  One definition shared by
+# sim/thermal/run_hysteresis.py, sim/thermal-regen-cmp/run_demo.py and
+# sim/bin/batch_thermal_staircase.py (previously three identical copies, so a
+# schedule change needed three edits and a fourth copy lived on in a test).
+
+
+def cold_enable_temps(reset_mid: float, trip_mid: float) -> list[int]:
+    """Sorted whole-degree temperatures for the cold-start and EN re-enable
+    checks: seven offsets around the two midpoints (-8/-1/+2 around
+    `reset_mid`, the window middle, -2/+1/+8 around `trip_mid`), rounded to
+    degrees C, de-duplicated and sorted.  A pure function of the midpoints,
+    so a resumed batch run reproduces the same set."""
+    return sorted({round(x) for x in (reset_mid - 8, reset_mid - 1, reset_mid + 2, (reset_mid + trip_mid) / 2,
+                                      trip_mid - 2, trip_mid + 1, trip_mid + 8)})
 
 
 # ---- thermal staircase runner frame (issue #597) -----------------------------
