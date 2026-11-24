@@ -264,6 +264,29 @@ class RunnerErrorBridgeTests(unittest.TestCase):
         self.assertEqual(r["verdict"], "unresolved")
         self.assertIn("vseed7", r["missing"])
 
+    def test_two_legs_failing_same_card_stay_missing(self):
+        # ac13 is a real no-crossing; ac14 fails the same card for another
+        # reason. Un-namespaced evidence must not be attributed to ac14 (or
+        # ac13): both stay missing and the verdict stays unresolved.
+        log = (
+            confirming_log("ac13", "gmdb")
+            + "Error: RHS \"gmdb\" invalid\n"
+            "Warning from checkvalid: vector ac14__gmdb is not available "
+            "or has zero length.\n"
+        )
+
+        def rem(d):
+            d["ac13.gmdb"] = ERR
+            d["ac14.gmdb"] = ERR
+
+        def loc(d):
+            d["ac13.gmdb"] = None
+            d["ac14.gmdb"] = None
+        r = self.cmp_dir(logs={"esr0": log}, remote_mut=rem, local_mut=loc)
+        self.assertEqual(r["verdict"], "unresolved")
+        self.assertIn("gm14", r["missing"])
+        self.assertNotIn("gm14", r["unreached_both"])
+
     def test_bridge_real_shape(self):
         # the exact lines from the issue-#757 fleet log (legs renamed)
         log = (

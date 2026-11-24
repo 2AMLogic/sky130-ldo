@@ -47,9 +47,11 @@ the issue-#757 pair graded an unreached `.meas` crossing card
 no-crossing pattern. `load_remote` therefore also reads
 `<dir>/remote/<group>/ngspice.log` (copied beside `response.json` from the
 location the response's `artifacts.log` names) and upgrades such an error
-result to a confirmed non-crossing ONLY when the log shows, for that exact
-step and card, the out-of-interval meas error, its `failed!` echo, and the
-per-step namespaced-vector warning. Any other error, a missing log, a log
+result to a confirmed non-crossing ONLY when the group log unambiguously
+attributes it: exactly one out-of-interval meas error, one `failed!` echo and
+one namespaced-vector warning for the card, the warning naming that step (the
+first two are un-namespaced in ngspice, so a second failing leg of the same
+card in the group leaves every such leg missing). Any other error, a missing log, a log
 naming a different card or step, or a non-crossing card (vseed) stays
 missing: the bridge can confirm a non-crossing, never invent one.
 
@@ -150,26 +152,39 @@ def compare(
     return rep
 
 
-# klayout-tools#7770 bridge: the three log lines that make a runner `error`
-# result a CONFIRMED non-crossing for one exact step and card. All three must
-# be present; anything less leaves the result missing.
+# klayout-tools#7770 bridge. ngspice emits the out-of-interval error and its
+# `failed!` echo UN-namespaced (card only); only the checkvalid warning carries
+# the `<step>__<card>` namespace, and that warning is produced by ANY failed
+# .meas of the step. So step attribution is only provable when it is unambiguous:
+# exactly one out-of-interval error, one `failed!` echo and one namespaced
+# vector warning for the card in the group log, the warning naming THIS step.
+# Two candidates for one card in a group => the result stays missing.
 _OOI_RE = r"error:\s+measure\s+{card}\b[^\n]*out of interval"
 _FAILED_RE = r"\bmeas\s+\S+\s+{card}\b[^!\n]*failed!"
+_VECTOR_ANY_RE = r"vector\s+\w+__{card}\s+is not available"
 _VECTOR_GONE_RE = r"vector\s+{step}__{card}\s+is not available"
 
 
 def _log_confirms_non_crossing(log_text: str | None, step: str, card: str) -> bool:
-    """True only when the retained engine log pins THIS step's card failure on
-    the target never being reached (out-of-interval meas error + its failed!
-    echo + the per-step namespaced-vector warning). No log, a log naming a
-    different card or step, or a failure without the no-crossing reason
-    returns False: the result then stays missing, never invented."""
+    """True only when the retained engine log unambiguously pins THIS step's
+    card failure on the target never being reached: exactly one out-of-interval
+    meas error, exactly one `failed!` echo, and exactly one namespaced-vector
+    warning for the card in the group log, that warning naming this step. No
+    log, a log naming a different card or step, a failure without the
+    no-crossing reason, or more than one candidate for the card returns False:
+    the result then stays missing, never invented."""
     if not log_text:
         return False
     sub = {"card": re.escape(card), "step": re.escape(step)}
-    return all(
-        re.search(t.format(**sub), log_text, re.IGNORECASE) is not None
-        for t in (_OOI_RE, _FAILED_RE, _VECTOR_GONE_RE)
+
+    def count(t: str) -> int:
+        return len(re.findall(t.format(**sub), log_text, re.IGNORECASE))
+
+    return (
+        count(_OOI_RE) == 1
+        and count(_FAILED_RE) == 1
+        and count(_VECTOR_ANY_RE) == 1
+        and count(_VECTOR_GONE_RE) == 1
     )
 
 
