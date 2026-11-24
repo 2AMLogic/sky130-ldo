@@ -48,6 +48,7 @@ import _record_common as rc  # noqa: E402
 from _record_common import (  # noqa: E402
     at,
     bisect,
+    cold_enable_temps,
     load_corner_run_module,
     read_dat,  # noqa: F401 -- pinned shared by sim/tests/test_thermal_helpers.py
     thermal_deck_frame,
@@ -152,8 +153,7 @@ def main() -> int:
         robust[f"untripped_held_{amp:+g}V_at_{trip_hi:g}C"] = r.untripped_held(trip_hi, amp)
 
     print("[4] cold start and EN disable/re-enable inside and outside the window", flush=True)
-    pts = sorted({round(x) for x in (reset_mid - 8, reset_mid - 1, reset_mid + 2, (reset_mid + trip_mid) / 2,
-                                     trip_mid - 2, trip_mid + 1, trip_mid + 8)})
+    pts = cold_enable_temps(reset_mid, trip_mid)
     cold = {T: r.run("cold", T) for T in pts}
     en = {T: r.run("en", T, VX_HOT, "0") for T in pts}
 

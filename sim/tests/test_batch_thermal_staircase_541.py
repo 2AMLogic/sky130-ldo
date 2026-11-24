@@ -27,12 +27,12 @@ def cmp_report(temps, values):
 
 
 class TestDependentPoints(unittest.TestCase):
-    def test_matches_local_formula(self):
+    def test_cold_and_en_temps_are_the_literal_schedule(self):
+        # literal expectation (issue #715): this test previously recomputed the
+        # offsets as a fourth copy, so a driver edit escaped it unnoticed
         pts = bts.dependent_points(RESET, TRIP)
-        rm, tm = sum(RESET) / 2, sum(TRIP) / 2
-        want = sorted({round(x) for x in (rm - 8, rm - 1, rm + 2, (rm + tm) / 2, tm - 2, tm + 1, tm + 8)})
-        self.assertEqual([T for lab, T in pts if lab == "cold"], want)
-        self.assertEqual([T for lab, T in pts if lab == "en"], want)
+        self.assertEqual([T for lab, T in pts if lab == "cold"], [151, 158, 161, 166, 170, 173, 180])
+        self.assertEqual([T for lab, T in pts if lab == "en"], [151, 158, 161, 166, 170, 173, 180])
         amp = {(lab, T) for lab, T in pts if lab not in ("cold", "en")}
         self.assertEqual(amp, {("hot_ix+0.25uA", 159.3125), ("hot_ix+0.25uA", 159.0),
                                ("hot_ix+1uA", 159.3125), ("hot_ix+1uA", 159.0),

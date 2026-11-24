@@ -25,6 +25,8 @@ reproduces the same next-round points.
 
 from __future__ import annotations
 
+from _record_common import cold_enable_temps  # stdlib-only sibling: this module stays PDK-free
+
 SCENARIOS = {  # name -> (disturbance amplitude A, want_lowest of the held predicate)
     "hot": (+0.5e-6, True),        # tripped state held?  -> T_reset
     "cold_exc": (-0.5e-6, False),  # untripped state held? -> T_trip
@@ -88,10 +90,10 @@ def amp_label(base: str, amp: float) -> str:
 def dependent_points(reset: list[float], trip: list[float]) -> list[tuple[str, float]]:
     """(label, temperature) of the cold / en / amplitude points, a pure function of the
     recorded T_reset and T_trip brackets (run_hysteresis.py `[3]` and `[4]`), so a resumed
-    run reproduces the same set."""
+    run reproduces the same set.  The cold / en temperatures are the shared
+    `_record_common.cold_enable_temps` schedule, the same one the local drivers use."""
     reset_mid, trip_mid = sum(reset) / 2, sum(trip) / 2
-    pts = sorted({round(x) for x in (reset_mid - 8, reset_mid - 1, reset_mid + 2, (reset_mid + trip_mid) / 2,
-                                     trip_mid - 2, trip_mid + 1, trip_mid + 8)})
+    pts = cold_enable_temps(reset_mid, trip_mid)
     out = [(lab, T) for lab in ("cold", "en") for T in pts]
     out += [(amp_label("hot", a), T) for a in AMPS_HOT for T in (reset[1], reset[0])]
     out += [(amp_label("cold_exc", a), T) for a in AMPS_COLD for T in (trip[0], trip[1])]
