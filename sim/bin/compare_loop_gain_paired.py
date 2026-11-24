@@ -40,6 +40,21 @@ with value null is the local ngspice's failed crossing measurement (`n/a` in
 corner-run's console) and is read as a confirmed non-crossing; an absent key is
 missing (`load_local`).
 
+Runner `error` bridge (klayout-tools#7770): the batch runner at the time of
+the issue-#757 pair graded an unreached `.meas` crossing card
+`status: "error"`, `value: null`, even though the request declared
+`on_unreached: "null"` and the engine log carries klt's own documented
+no-crossing pattern. `load_remote` therefore also reads
+`<dir>/remote/<group>/ngspice.log` (copied beside `response.json` from the
+location the response's `artifacts.log` names) and upgrades such an error
+result to a confirmed non-crossing ONLY when the group log unambiguously
+attributes it: exactly one out-of-interval meas error, one `failed!` echo and
+one namespaced-vector warning for the card, the warning naming that step (the
+first two are un-namespaced in ngspice, so a second failing leg of the same
+card in the group leaves every such leg missing). Any other error, a missing log, a log
+naming a different card or step, or a non-crossing card (vseed) stays
+missing: the bridge can confirm a non-crossing, never invent one.
+
 Usage: compare_loop_gain_paired.py DIR --local-engine V --remote-pass PASS|FAIL
            --local-pass PASS|FAIL [--out report.json]
 """
@@ -48,6 +63,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -136,14 +152,52 @@ def compare(
     return rep
 
 
+# klayout-tools#7770 bridge. ngspice emits the out-of-interval error and its
+# `failed!` echo UN-namespaced (card only); only the checkvalid warning carries
+# the `<step>__<card>` namespace, and that warning is produced by ANY failed
+# .meas of the step. So step attribution is only provable when it is unambiguous:
+# exactly one out-of-interval error, one `failed!` echo and one namespaced
+# vector warning for the card in the group log, the warning naming THIS step.
+# Two candidates for one card in a group => the result stays missing.
+_OOI_RE = r"error:\s+measure\s+{card}\b[^\n]*out of interval"
+_FAILED_RE = r"\bmeas\s+\S+\s+{card}\b[^!\n]*failed!"
+_VECTOR_ANY_RE = r"vector\s+\w+__{card}\s+is not available"
+_VECTOR_GONE_RE = r"vector\s+{step}__{card}\s+is not available"
+
+
+def _log_confirms_non_crossing(log_text: str | None, step: str, card: str) -> bool:
+    """True only when the retained engine log unambiguously pins THIS step's
+    card failure on the target never being reached: exactly one out-of-interval
+    meas error, exactly one `failed!` echo, and exactly one namespaced-vector
+    warning for the card in the group log, that warning naming this step. No
+    log, a log naming a different card or step, a failure without the
+    no-crossing reason, or more than one candidate for the card returns False:
+    the result then stays missing, never invented."""
+    if not log_text:
+        return False
+    sub = {"card": re.escape(card), "step": re.escape(step)}
+
+    def count(t: str) -> int:
+        return len(re.findall(t.format(**sub), log_text, re.IGNORECASE))
+
+    return (
+        count(_OOI_RE) == 1
+        and count(_FAILED_RE) == 1
+        and count(_VECTOR_ANY_RE) == 1
+        and count(_VECTOR_GONE_RE) == 1
+    )
+
+
 def load_remote(d: Path) -> tuple[dict, str | None, list[str]]:
     """Raw remote map + the single agreed engine version (None on any
     disagreement or absence) + the engine versions seen."""
     vals: dict = {}
     dup: set[str] = set()
-    engines: set = set()
+    engines: set[str] = set()
     for key in blr.GROUP_KEYS:
         resp = json.loads((d / "remote" / key / "response.json").read_text())
+        log_path = d / "remote" / key / "ngspice.log"
+        log_text = log_path.read_text(errors="replace") if log_path.is_file() else None
         eng = resp.get("environment", {}).get("engine_version")
         engines.add(None if eng is None else str(eng))
         for m in resp["corners"][0]["measurements"]:
@@ -154,10 +208,16 @@ def load_remote(d: Path) -> tuple[dict, str | None, list[str]]:
             if name in vals:
                 dup.add(name)
             card = name.split(".", 1)[-1]
+            step = str(m.get("step") or name.split(".", 1)[0]).lower()
             if m.get("status") == "not_reached" and card in blr.UNREACHABLE and m.get("value") is None:
                 vals[name] = NOT_REACHED
             elif m.get("status") == "error":
-                vals[name] = None
+                vals[name] = (
+                    NOT_REACHED
+                    if card in blr.UNREACHABLE
+                    and _log_confirms_non_crossing(log_text, step, card)
+                    else None
+                )
             else:
                 vals[name] = m.get("value")
     for name in dup:

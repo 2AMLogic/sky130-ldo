@@ -30,6 +30,15 @@ error instead of the local deck's plain FAIL for that measurement. All 56
 manifest expressions are therefore evaluated LOCALLY over the returned step
 card values (`evaluate`), exactly as the local backend grades them.
 
+Solver continuation: the local deck solves all 18 legs in one ngspice process,
+so legs 7 and 13 start from the previous ESR group's solution; each batch
+request restarts from the `.nodeset`-seeded initial solve. The issue-#757
+paired run measured both legs (seed, PM, GM) at |delta| <= 2e-4 against the
+1e-3 pair tolerances -- the difference is not observable. (The runner the
+fleet reports also misgrades an unreached crossing card as `status: "error"`
+despite `on_unreached: "null"` -- klayout-tools#7770; the harness's local
+grading is unaffected.)
+
 This is deliberately NOT a SPICE interpreter: only the deck vocabulary below
 is accepted, replayed against the manifest's own `ac_leg_grid` (which the
 record input-fingerprint digests do not cover), and anything else is refused

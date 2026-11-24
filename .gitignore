@@ -1,6 +1,12 @@
 *.raw
 *.log
 !sim/loop-gain/diagnostics/*/runs/*/ngspice.log
+# issue #757: the paired loop-gain comparison's engine logs -- the local corner
+# log (the full-precision print lines behind paired/local/values.json) and the
+# three klt batch responses' retained ngspice logs (the confirmed-non-crossing
+# evidence the comparator's runner-error bridge reads, klayout-tools#7770).
+!sim/loop-gain/diagnostics/*/paired/local/*.fail.log
+!sim/loop-gain/diagnostics/*/paired/remote/*/ngspice.log
 # dropout-vs-load/ diagnostics (issue #357): the raw per-run solver logs (incl. failed/invalid
 # attempts and the merged investigation log) are committed evidence behind provenance.json.
 !sim/dropout-vs-load/diagnostics/*/runs/*/ngspice.log
