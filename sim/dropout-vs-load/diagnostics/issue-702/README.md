@@ -70,15 +70,15 @@ item 1 listed alongside start-up as rows 3b–3c).
 | 1b | Stability GM ≥ 10 dB | 0/37 below; worst 16.95 dB | 0/38 below; worst 16.65 dB (16.17 dB corrected) | 0.33 µF·0 mΩ·50 mA | as 1a; 5 pairs GM-unavailable (reported, never passed) | inherited pass (no regressions) | #704 `tables/loop_pair.csv`, `verdict.json` (extraction check) |
 | 2a | Load-step peak ≤ 150 mV | rise 9/18 fail (worst 215 mV); fall 2/18 (11/36 direction-legs) | rise 9/18 (worst **242 mV**); fall **8/18** (17/36 direction-legs) | 0.33 µF·ESR0, ff/125 °C/3.63 V (rise, both) | 6 cap/ESR legs × 3 `quick_subset` corners = 18 rise + 18 fall (36 direction-legs) per DUT | **candidate regression** (6 new falling legs; paired peak deltas ≤ +42 mV) over **inherited failure** (rise legs fail both) | #704 `tables/loadstep_pair.csv`, `verdict.json` |
 | 2b | Load-step recovery ≤ 20 µs (±1 %) | 36/36 direction-legs above; worst 651.9 µs | 36/36 direction-legs above; worst 733.7 µs | 4.7 µF·ESR0, ff/125 °C/3.63 V | as 2a (18/18 rise + 18/18 fall); all within window, no ceiling artifact | **inherited failure** | #704 `tables/loadstep_pair.csv`, `verdict.json` |
-| 2c | PSRR > 50 dB @ 1 kHz | 0/86 valid pass; worst 20.30 dB | 0/84 valid pass; worst 20.10 dB | 1 mA, fs/125 °C/2.97 V | 45 corners × 2 loads (4 base / 6 rev2 solver-invalid, excluded not counted) | **inherited failure** | #704 `tables/psrr_pair.csv`, `verdict.json` |
-| 2d | PSRR > 20 dB @ 100 kHz | 1 mA 43/43 pass; 50 mA 0/43 (worst 10.46 dB) | 1 mA 42/42 pass; 50 mA 0/42 (worst 9.79 dB) | 50 mA, fs/−40 °C | as 2c; deltas −2.1…+0.03 dB (mean −0.4) | **inherited failure** (50 mA clause; DR-007) | #704 `tables/psrr_pair.csv`, `verdict.json` |
-| 3a | Start-up over PVT (electrical: peak ≤ 1.836 V, floor ≥ 1.764 V, entry reached) | 540/540 pass; vpk ≤ 1.8246 V, floor ≥ 1.79836 V | 540/540 pass; vpk ≤ 1.82792 V, floor ≥ 1.80112 V | — | 45 corners × 12 cold-enable legs per DUT | pass both; strict ramp monotonicity (0 V tol) fails **540/540 both** — **inherited failure** (historic 20261117-221657 pattern, µV drawdowns). Rev1's two non-regulating states (ss/125 °C/3.30 V clamp latch; ff/27 °C/2.97 V VOUT > VIN) are cleared by rev2's weaker tail; no latch, no `vout_above_vin`, no invalid retention on either DUT | #705 `tables/startup_pair.csv`, `README.md` |
+| 2c | PSRR > 50 dB @ 1 kHz | 0/86 valid pass; worst 20.30 dB | 0/84 valid pass; worst 20.10 dB | 1 mA, fs/125 °C/2.97 V | 45 corners × 2 loads; solver-invalid load measurements excluded, not counted: 4 baseline / 6 rev2 = 2 baseline and 3 rev2 distinct PVT corners (each invalid at both loads; the sets are disjoint, so all 3 rev2 corners — ff/−40 °C/3.30 V, tt/−40 °C/2.97 V, tt/−40 °C/3.63 V — are rev2-only gaps) | **inherited failure** | #704 `tables/psrr_pair.csv`, `verdict.json` |
+| 2d | PSRR > 20 dB @ 100 kHz | 1 mA 43/43 pass; 50 mA 0/43 (worst 10.46 dB) | 1 mA 42/42 pass; 50 mA 0/42 (worst 9.79 dB) | 50 mA, fs/−40 °C; supply 2.97 V (baseline) / 3.30 V (rev2) | as 2c; deltas −2.1…+0.03 dB (mean −0.4) | **inherited failure** (50 mA clause; DR-007) | #704 `tables/psrr_pair.csv`, `verdict.json` |
+| 3a | Start-up over PVT (electrical: peak ≤ 1.836 V, floor ≥ 1.764 V, entry reached) | 540/540 pass; vpk ≤ 1.8246 V, floor ≥ 1.79836 V | 540/540 pass; vpk ≤ 1.82792 V, floor ≥ 1.80112 V | max peak: `ss_125c_2.97v/c4u7_0ma_esr0` (base), `fs_125c_3.63v/c4u7_0ma_esr500m` (rev2); min floor: `ss_125c_2.97v/c330n_50ma_esr0` (base), `ss_-40c_2.97v/c330n_50ma_esr0` (rev2) | 45 corners × 12 cold-enable legs per DUT | pass both; strict ramp monotonicity (0 V tol) fails **540/540 both** — **inherited failure** (historic 20261117-221657 pattern, µV drawdowns). Rev1's two non-regulating states (ss/125 °C/3.30 V clamp latch; ff/27 °C/2.97 V VOUT > VIN) are cleared by rev2's weaker tail; no latch, no `vout_above_vin`, no invalid retention on either DUT | #705 `tables/startup_pair.csv`, `README.md` |
 | 3b | Line regulation (< 5 mV/V over 2.97–3.63 V, 1 mA & 50 mA) | 45/45 pass; worst 0.597 mV/V (1 mA), 0.370 mV/V (50 mA) | 45/45 pass; worst **3.211 mV/V** (1 mA), **3.164 mV/V** (50 mA) | `fs_125c_2.97v` (1 mA both, 50 mA rev2); `ff_125c_2.97v` (50 mA base) | 45 corners × 4 endpoints (all 14 checks) per DUT | inherited pass (`both-pass` all 45 corners, 0 regressions; noteworthy behavior change: worst 1 mA line slope increases ~5.4× on rev2, still `< 5 mV/V`) | `sim/startup/diagnostics/issue-705-20261122-013500/tables/line-regulation_pair.csv`, `verdict.json` |
 | 3c | Load regulation (< 1 % / 18 mV, 0→50 mA) | 44/45 pass; **FAIL** at `fs_125c_3.63v` (19.944 mV / 1.108 %) | **45/45 pass**; worst **11.253 mV / 0.625 %** | `fs_125c_3.63v` (both) | 45 corners (0→50 mA, all 8 checks) per DUT | **candidate improvement** (44/45 `both-pass`, 1 improvement at `fs_125c_3.63v`: 19.944→11.253 mV, 0 regressions) | `sim/startup/diagnostics/issue-705-20261122-013500/tables/load-regulation_pair.csv`, `verdict.json` |
 | 4 | MC output accuracy (mismatch, 200 draws) | 200/200 valid, 0 out-of-window; σ 8.318 mV (mean 1.80218 V) | 200/200 valid, 0 out-of-window; σ **6.657 mV** (mean 1.80432 V) | — | tt_mm/27 °C/3.30 V/1 mA, `vary=mismatch`, k_sigma 3, seed 20260817, same seed both legs | **candidate improvement** (σ −20 %) | #705 `README.md` (MC table), `verdict.json` |
 | 5 | Iq re-measure at ff/125 °C/3.63 V (< 30 µA strict, DR-009 proposed) | 30.70 µA full load — **FAIL** (0.7 µA exceedance > 0.1 µA print quantum) | 29.999999999995 µA — harness PASS, margin ~5e-12 µA ≪ 0.1 µA print quantum | ff/125 °C/3.63 V, 50 mA | 45 corners per DUT, both load endpoints | **unresolved** at the named corner. Context: production fails 5 corners (3.63 V full load, ff/fs: 30.2–31.3 µA), rev2 passes 45/45 at harness grade — those 5 are a **candidate improvement** | #706 `tables/iq_pair.csv`, `sim/iq/records/20261121-042335-db9f161a-i706-paired.md` |
-| 6 | Current limit (window TBD; never engages ≤ 50 mA; survives short at Vin_max) | 41/45 valid; v50 1.7978–1.7991 V; knee ≥ 74.6 mA; short 97.7–231.7 mA | 43/45 valid; v50 1.8007–1.8044 V; knee ≥ 71.8 mA; short 94.5–228.9 mA | knee −46.6 % at fs/−40 °C/3.30 V (137.98→73.688 mA); +84.1 % at sf/125 °C/2.97 V (95.54→175.861 mA) | 45 corner keys per DUT, forced-output DC + 2 ms held short incl. Vin_max | numeric clauses pass both; **introduced**: clamp-knee spread −46.6…+84.1 % (falls at 18, rises at 21 of 39 paired corners) and **2 rev2-only solver-invalid corners** (`ff_27c_3.30v` non-Vin_max, retained short 131.3 mA; `fs_-40c_3.63v` Vin_max, 102.8 mA — both outside the 160–195 mA family of production's 4 inherited Vin_max diagnostics) | #706 `tables/clamp_pair.csv`, `sim/current-limit/records/20261121-042335-db9f161a-i706-paired.md` |
-| 7 | Thermal trip/reset re-bisection (150/135 °C nominal; binding bound = hysteresis sign) | trip 162.0–181.4 °C, reset 148.9–168.9 °C, hyst +12.5–13.4 °C | trip 161.7–181.4 °C, reset 148.9–168.9 °C, hyst +12.5–13.4 °C | identical worst-case behavior (highest fs_2.97V, lowest sf/ss_3.63V) | 15 corners × both crossings per DUT, 676 staircase points, tol 0.3125 °C | unchanged within one bisection step (|Δtrip| ≤ 0.3125 °C everywhere); nominal offsets and >125 °C model extrapolation are **inherited**; worker PDK stamp unverified (§1) | `sim/thermal/records/20261121-092243-db9f161a-i706-paired.md` |
+| 6 | Current limit (window TBD; never engages ≤ 50 mA; survives short at Vin_max) | 41/45 valid; v50 1.7978–1.7991 V; knee ≥ 74.6 mA; short 97.7–231.7 mA | 43/45 valid; v50 1.8007–1.8044 V; knee ≥ 71.8 mA; short 94.5–228.9 mA | knee −46.6 % at fs/−40 °C/3.30 V (137.98→73.688 mA); +84.1 % at sf/125 °C/2.97 V (95.54→175.861 mA) | 45 corner keys per DUT, forced-output DC + 2 ms held short incl. Vin_max | numeric clauses pass both (50 mA clause measured as regulated output at 50 mA on valid corners; actual engagement current and its margin **unresolved**); **introduced**: shift of the forced-VOUT = 1.75 V knee proxy −46.6…+84.1 % (falls at 18, rises at 21 of 39 valid pairs) and **2 rev2-only solver-invalid corners** (`ff_27c_3.30v` non-Vin_max, retained short 131.3 mA; `fs_-40c_3.63v` Vin_max, 102.8 mA — both outside the 160–195 mA family of production's 4 inherited Vin_max diagnostics) | #706 `tables/clamp_pair.csv`, `sim/current-limit/records/20261121-042335-db9f161a-i706-paired.md` |
+| 7 | Thermal trip/reset re-bisection (150/135 °C nominal; binding bound = hysteresis sign) | trip 162.0–181.4 °C, reset 148.9–168.9 °C, hyst +12.5–13.4 °C | trip 161.7–181.4 °C, reset 148.9–168.9 °C, hyst +12.5–13.4 °C | identical worst-case behavior (highest fs_2.97V, lowest sf/ss_3.63V) | 15 corners × both crossings per DUT, 676 staircase points, tol 0.3125 °C | unchanged within one bisection step (absolute trip shift ≤ 0.3125 °C everywhere); nominal offsets and >125 °C model extrapolation are **inherited**; worker PDK stamp unverified (§1) | `sim/thermal/records/20261121-092243-db9f161a-i706-paired.md` |
 | 8 | V-to-I spread disposition (I_R over PVT) | 1.73–2.48 µA (1.44x, BIASP-referenced) | 0.486–1.002 µA (**2.06x**, VREF-referenced) | rev2 peak sf/125 °C/3.63 V; production peak sf/27 °C/3.63 V | 45 corner keys, measured at the clamp legs' 50 mA point | **introduced** widening (2.06x vs 1.44x); tail, clamp threshold and Iq inherit it — the measured driver of row 6's knee spread | #692 `README.md` §5; #706 `tables/ir_spread.csv` |
 | 9 | Re-base against #467 if it lands first | n/a — screen ran against the committed bias | n/a | n/a | #467 checked 2026-11-24: **open**, `loom:operator`, not landed | **no pair invalidated at review time**; see §4 | #706 `README.md` §"#467"; issue tracker |
 
@@ -136,35 +136,41 @@ Reasons:
 
 1. **The headline holds everywhere**: rev2 closes the ratified dropout gap (#114) at
    all 45 PVT corners (binding 0.2202 V vs 300 mV) where production passes none
-   (binding 0.6731 V), and it removes production's only measured spec-row violation
-   outside dropout (5 Iq corners at 3.63 V full load) plus the one load-regulation
-   failure (`fs_125c_3.63v`, 19.944→11.253 mV, row 3c), with no start-up,
+   (binding 0.6731 V). It resolves 4 of production's 5 full-load Iq failures at
+   3.63 V (ff/−40 °C, ff/27 °C, fs/−40 °C, fs/27 °C); the fifth, ff/125 °C/3.63 V,
+   stays unresolved (29.999999999995 µA, row 5). It also fixes the one
+   load-regulation failure (`fs_125c_3.63v`, 19.944→11.253 mV, row 3c). Production's
+   other measured failures (PM, recovery, PSRR) are inherited, not removed. There are
+   no start-up,
    line-regulation (worst slope rises ~5.4× to 3.211 mV/V but stays `< 5 mV/V`,
    row 3b), thermal or MC regressions anywhere. Rejecting would discard a real,
    fully-covered improvement.
 2. **But rev2 introduces dynamic regressions** that adoption would ratify as new
    failures: 3 new PM failures at 0 mA/4.7 µF (≈ −14.75° each) and 6 new falling
-   load-step legs over 150 mV (fall failures 2/18→8/18, worst peak 215→242 mV). These sit on
+   load-step legs over 150 mV (fall failures 2/18→8/18, worst rising peak 215→242 mV; falling peak 155.3→172.7 mV). These sit on
    top of the inherited light-load stability/recovery gaps (DR-006/DR-007) but are
    attributable to the candidate, and the compensation was never re-derived for the
    new OTA (§3) — the obvious revision lever before any adopt decision.
 3. **The clamp is not within noise of production**: the paired knee moves −46.6 % to
-   +84.1 % across PVT (row 6), driven by the VREF-referenced V-to-I's 2.06x spread
-   (row 8). The spec window is deliberately TBD, so no row fails, but adopting means
-   accepting a substantially moved protection trip — a conscious trade-off, not a
-   formality. The non-engagement margin at the low end (knee ≥ 71.8 mA vs the
-   "never engages ≤ 50 mA" clause) survives, with less headroom than production's
-   74.6 mA.
+   +84.1 % across 39 valid pairs (row 6). That is the shift of the knee proxy (current
+   sampled at forced VOUT = 1.75 V), not a measured engagement current. The
+   VREF-referenced V-to-I's 2.06x spread (row 8) is the measured driver. The spec
+   window is deliberately TBD, so no row fails, but adopting means accepting a
+   substantially moved proxy — a conscious trade-off, not a formality. At 50 mA the
+   output stays regulated on the valid corners (1.8007–1.8043 V rev2 vs
+   1.7978–1.7991 V production). The actual engagement current and its margin above
+   50 mA are unresolved: the 71.8 / 74.6 mA minimum proxy values do not establish
+   them.
 4. **Unresolved margins and missing results** (the complete list, each visible above):
    - ff/125 °C/3.63 V full-load Iq at-bound: 29.999999999995 µA against a 0.1 µA
      print quantum — harness PASS is a floating-point inequality, not margin (row 5).
    - The 3 PM regressions and 6 new falling load-step failures (rows 1a, 2a).
    - The 2 rev2-only solver-invalid clamp corners, one of them not Vin_max, with
      retained values outside the inherited family (row 6).
-   - The clamp-knee spread −46.6…+84.1 % (row 6) and the V-to-I 2.06x spread (row 8).
+   - The knee-proxy shift −46.6…+84.1 % and unresolved engagement current (row 6) and the V-to-I 2.06x spread (row 8).
    - Coverage gaps, inherited unless noted: loop gain measured at tt/27 °C/3.30 V only
      (42 legs; 44 PVT corners unattempted); load-step at 3 `quick_subset` corners only;
-     PSRR 6 rev2 solver-invalid corners; MC at a single tt_mm condition; strict ramp
+     PSRR: 6 rev2 load measurements invalid = 3 distinct PVT corners, all rev2-only (baseline: 4 measurements = 2 corners, disjoint); MC at a single tt_mm condition; strict ramp
      monotonicity fails all 540 legs on both DUTs (zero-tolerance verdict, historic);
      thermal points extrapolate the pinned models beyond DR-004's 125 °C axis.
    - Provenance caveats: #706 executed on worker PDK `f6eeac7d…` (stamp mismatch,
