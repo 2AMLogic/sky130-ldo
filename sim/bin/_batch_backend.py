@@ -24,6 +24,7 @@ from pathlib import Path
 
 import batch_current_limit as bcl
 import batch_dropout
+import batch_enable_shutdown as bes
 import batch_iq as biq
 import batch_loop_gain as blg
 import batch_line_regulation as blr
@@ -205,6 +206,33 @@ BATCH_ALLOWLIST = {
             "VFORCE VF 0 dc 1.8 pwl(0 1.8 1m 1.8 1.001m 0 10 0)",
         ],
     },
+    # Shape (issue #755): the enable -> shutdown cycle plus three EN = 0
+    # operating points as ONE four-step `analysis_steps[]` request per supply
+    # group (sim/bin/batch_enable_shutdown.py): `tran 5u 4.5m` + four
+    # `meas tran` cards (tran1), then op1 (output free), op2 (`alter rforce =
+    # 1m`) and op3 (`alter vforce = 1.8`, rforce kept). The manifest's op
+    # plot-vector expressions travel as op-step `expr` measurements with
+    # `meas_<name>` derived rows over them. RENEWAL: pinned like the other
+    # adapters (sim/tests/test_batch_enable_shutdown_755.py).
+    "enable-shutdown": {
+        "chained_steps": True,
+        "adapter_kind": "enable-shutdown",
+        "manifest_sections": {
+            "analyses": "d6150860fa2d9794127310ccd6a971ce484092f72674030d8b826ba05cae2ef9",
+            "measurements": "167b59c9baf58ce4562520f114444ca6599ee9d4392762cc7c0aa5d1ea93bc33",
+            "matrix": "639e50d5a920cef70120de11fefa3ffc5bf53f0446c56a853f87c39e95976b21",
+        },
+        "stimulus": [
+            "VVIN VIN 0 'vsup'",
+            "VEN EN 0 dc 0 pwl(0 0 100u 0 101u 'vsup' 2m 'vsup' 2.001m 0 10 0)",
+            "VVREF VREF 0 1.2",
+            "COUT VOUT VESR 1u m=1",
+            "RESR VESR 0 10m m=1",
+            "RLOAD VOUT 0 1e12 m=1",
+            "RFORCE VOUT VF 1e12 m=1",
+            "VFORCE VF 0 0",
+        ],
+    },
     # Shape (issue #754): the 18-leg closed-loop-injection `ac_leg_grid`,
     # translated to ONE `analysis_steps[]` request per supply x ESR group
     # (`esr10m` / `esr500m` / `esr0`, six legs each; sim/bin/batch_loop_gain.py).
@@ -247,6 +275,8 @@ BATCH_REFUSAL_HINT = (
     "`tran ... uic` requests per supply) and sim/iq's two cold-start endpoints "
     "(two single-step `tran ... uic` requests per supply) and sim/current-limit's "
     "three chained legs (one three-step `analysis_steps[]` request per supply) "
+    "and sim/enable-shutdown's enable cycle + three EN = 0 operating points "
+    "(one four-step `analysis_steps[]` request per supply) "
     "and the sim/startup ramp-trace grid "
     "(one scalar `tran` request per leg with `options.waveforms`, issue #336) "
     "and the sim/loop-gain 18-leg AC grid (one `analysis_steps[]` request per "
@@ -331,12 +361,37 @@ def is_chained_steps(exp: Experiment) -> bool:
     return bool(BATCH_ALLOWLIST.get(exp.slug, {}).get("chained_steps"))
 
 
-def chained_deck(exp: Experiment) -> list[bcl.Leg]:
-    """The three chained legs of the deck, parsed and with every graded
-    expression checked against them (raises CurrentLimitTranslationError)."""
-    legs = bcl.parse_deck((exp.raw.get("deck") or {}).get("analyses") or [])
-    bcl.check_measurements(legs, [(m.name, m.expr, m.unit) for m in exp.measurements])
+def is_enable_shutdown(exp: Experiment) -> bool:
+    """Whether the chained-steps experiment is the issue #755 enable/shutdown
+    bench (four steps, op-vector expressions) rather than #177's current-limit."""
+    return BATCH_ALLOWLIST.get(exp.slug, {}).get("adapter_kind") == "enable-shutdown"
+
+
+def chained_deck(exp: Experiment) -> list:
+    """The chained steps of the deck, parsed and with every graded
+    expression checked against them (raises the adapter's translation error)."""
+    mod = bes if is_enable_shutdown(exp) else bcl
+    legs = mod.parse_deck((exp.raw.get("deck") or {}).get("analyses") or [])
+    mod.check_measurements(legs, [(m.name, m.expr, m.unit) for m in exp.measurements])
     return legs
+
+
+def chained_request_shape(exp: Experiment) -> dict:
+    """The `analysis_steps[]` + derived-`measurements[]` shape of a chained
+    request: the manifest's graded rows travel as `meas_<name>` results."""
+    legs = chained_deck(exp)
+    if is_enable_shutdown(exp):
+        meas = [(m.name, m.expr, m.unit) for m in exp.measurements]
+        return {
+            "analysis_steps": bes.chained_steps(legs),
+            "measurements": bes.request_measurements(legs, meas),
+        }
+    return {
+        "analysis_steps": bcl.chained_steps(legs),
+        "measurements": [
+            {"name": f"meas_{m.name}", "expr": m.expr, "unit": m.unit} for m in exp.measurements
+        ],
+    }
 
 
 def check_chained_batch_shape(exp: Experiment) -> None:
@@ -348,8 +403,9 @@ def check_chained_batch_shape(exp: Experiment) -> None:
         exp,
         inner_shape="chained-steps", outer_shape="chained-steps",
         translate=chained_deck,
-        err_types=(bcl.CurrentLimitTranslationError, blr.EndpointTranslationError),
-        step_noun="the three chained klt steps",
+        err_types=(bcl.CurrentLimitTranslationError, bes.EnableShutdownTranslationError,
+                   blr.EndpointTranslationError),
+        step_noun="the chained klt steps",
     )
 
 
@@ -649,12 +705,7 @@ def build_batch_request(
         # manifest's graded rows travel as klt derived measurements, named
         # `meas_<name>` so the response lookup and local grading match the
         # other backends' contract.
-        shape = {
-            "analysis_steps": bcl.chained_steps(chained_deck(exp)),
-            "measurements": [
-                {"name": f"meas_{m.name}", "expr": m.expr, "unit": m.unit} for m in exp.measurements
-            ],
-        }
+        shape = chained_request_shape(exp)
     elif is_cold_start_crossing(exp):
         # One single-step cold-start request per supply group (issue #374).
         shape = {"analysis_steps": [cold_start_step(exp)]}
@@ -720,7 +771,16 @@ def _check_pinned_netlist(exp: Experiment, body: list[str]) -> None:
                 f"--backend batch: {exp.slug!r} netlist is not the validated ac-leg-grid "
                 f"baseline ({exc}): {BATCH_REFUSAL_HINT}"
             ) from exc
-    if is_chained_steps(exp):
+    if is_chained_steps(exp) and is_enable_shutdown(exp):
+        try:
+            blr.check_netlist(body, allowed["stimulus"], bes.EnableShutdownTranslationError,
+                              "an enable/shutdown chained-step request")
+        except bes.EnableShutdownTranslationError as exc:
+            raise HarnessError(
+                f"--backend batch: {exp.slug!r} netlist is not the validated chained-steps "
+                f"baseline ({exc}): {BATCH_REFUSAL_HINT}"
+            ) from exc
+    elif is_chained_steps(exp):
         try:
             blr.check_netlist(body, allowed["stimulus"], bcl.CurrentLimitTranslationError,
                               "a current-limit chained-step request",
@@ -1145,7 +1205,10 @@ def normalize_chained_response(
         raise HarnessError(f"request {group.key}: {problem}")
     results, logs = normalize_batch_response(exp, group, response, outdir, timeout)
     legs = chained_deck(exp)
-    expected = [f"{leg.step_name}.{name}" for leg in legs for name, _ in leg.cards]
+    if is_enable_shutdown(exp):
+        expected = bes.step_result_names(legs)
+    else:
+        expected = [f"{leg.step_name}.{name}" for leg in legs for name, _ in leg.cards]
     expected += [f"meas_{m.name}" for m in exp.measurements]
     by_corner = {c.get("corner_id"): c for c in response["corners"] if isinstance(c, dict)}
     for r in results:

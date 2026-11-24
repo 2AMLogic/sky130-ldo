@@ -298,7 +298,7 @@ class TestCurrentLimitAdapter(
             self.find(raw, "dc vforce"), "dc vforce 0 1.75 0.05"))
 
     def test_sibling_local_only_benches_stay_refused(self):
-        for slug in ("psrr-dc", "enable-shutdown", "thermal"):
+        for slug in ("psrr-dc", "thermal"):
             self.assertNotIn(slug, corner_run.BATCH_ALLOWLIST)
 
     # -- provenance ------------------------------------------------------------

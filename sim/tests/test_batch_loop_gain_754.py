@@ -349,7 +349,7 @@ class TestLoopGainAdapter(EndpointShapeGate, BackendContract, RecordProvenance, 
 
     def test_admitted_and_sibling_benches_still_refused(self):
         self.assertIn(SLUG, corner_run.BATCH_ALLOWLIST)
-        for slug in ("psrr-dc", "enable-shutdown", "thermal"):
+        for slug in ("psrr-dc", "thermal"):
             self.assertNotIn(slug, corner_run.BATCH_ALLOWLIST)
 
     def test_dry_run_prints_the_nine_requests(self):
