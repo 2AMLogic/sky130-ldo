@@ -705,8 +705,13 @@ chained legs as one three-step request per supply (issue #177, below) and
 four-step request per supply (issue #755, below) and
 `sim/loop-gain`'s 18-leg AC grid as three ESR-group requests per supply (issue
 #754, below) and
+`sim/psrr-dc`'s two-load op + AC pairs as one four-step request per supply
+(issue #786: `op1`/`ac1` at 1.8 kOhm, then `alter rload = 36` and `op2`/`ac2`;
+the `let` vectors travel as `ac`-step `expr` measurements, the six manifest
+rows are graded locally, and the AC stimulus, output network and three-node
+`.nodeset` are pinned in the netlist) and
 `sim/startup`'s ramp-trace grid in its validated shape (issue #336, "Startup
-ESR grid" above). Every other manifest — `ic-screen-125c-*`, `psrr-dc`, `thermal`, and the `mc-*`
+ESR grid" above). Every other manifest — `ic-screen-125c-*`, `thermal`, and the `mc-*`
 experiments (which have their own runner, `mc-run.py`) — and any edited smoke,
 window-grid, dropout, endpoint or chained-legs shape
 is **refused before netlisting, submission or local ngspice**. The other
