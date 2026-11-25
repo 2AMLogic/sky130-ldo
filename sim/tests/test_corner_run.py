@@ -1234,6 +1234,39 @@ class TestWindowGrid(unittest.TestCase):
         bad["value"] = 0.2  # still flagged pass=True
         self.assertFalse(self.cov(results)["pass"])
 
+    def test_grid_rechecks_equality_at_manifest_bounds(self):
+        measurement = next(m for m in self.exp.measurements if m.name == "vout_pre_v__c330n_esr0")
+        results = self.good_results()
+        check = next(c for c in results[0]["measurements"] if c["name"] == measurement.name)
+        for bound, strict_reason in (("min", "not above strict min"), ("max", "not below strict max")):
+            value = getattr(measurement, bound)
+            check["value"] = value  # the stored check still says pass
+            for inclusive in (False, True):
+                with (
+                    self.subTest(bound=bound, inclusive=inclusive),
+                    mock.patch.object(measurement, f"{bound}_inclusive", inclusive),
+                ):
+                    cov = self.cov(results)
+                    self.assertTrue(cov["complete"])
+                    self.assertEqual(cov["conditions_evaluated"], 96)
+                    self.assertEqual(cov["pass"], inclusive)
+                    self.assertEqual(cov["conditions_passing"], 96 if inclusive else 95)
+                    if inclusive:
+                        self.assertEqual(cov["failures"], [])
+                    else:
+                        (failure,) = cov["failures"]
+                        self.assertEqual(failure["measurement"], measurement.name)
+                        self.assertEqual(failure["status"], "fail")
+                        self.assertEqual(failure["reason"], f"{strict_reason} {value:g}")
+
+    def test_failing_stored_check_vetoes_an_in_bounds_value(self):
+        results = self.good_results()
+        results[0]["measurements"][0].update({"pass": False, "reason": "flagged by corner"})
+        cov = self.cov(results)
+        self.assertFalse(cov["pass"])
+        (failure,) = cov["failures"]
+        self.assertEqual(failure["reason"], "flagged by corner")
+
     def test_nan_and_unparsable_values_are_not_a_pass(self):
         for value in (float("nan"), float("inf"), None):
             results = self.good_results()
