@@ -8,6 +8,9 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 
 ### 2026-11-25
 
+- **PR #793**: docs: clarify batch support for PSRR and loop-gain campaigns
+- **Issue #792** (closed): psrr-dc issue-786 diagnostics README cites a `models_lib_comparison: match` verdict the report records as `null`
+- **Issue #788** (closed): Stale 'batch refuses psrr-dc' claims in sim/README.md and bias-retopo-pvt.py after #786
 - **PR #787**: feat: admit the graded psrr-dc campaign to the batch backend
 - **Issue #754** (closed): Sim: strictly-admitted batch adapter for the loop-gain bench (ac_leg_grid), then re-run (split from #554)
 
