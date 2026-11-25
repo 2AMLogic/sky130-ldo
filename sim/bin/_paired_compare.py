@@ -5,8 +5,8 @@ compare_line_regulation_paired.py (#384),
 compare_load_regulation_paired.py (#381) and compare_loop_gain_paired.py
 (#757). PDK-free.
 
-Only the generic parts live here: the engine-version resolution, the row
-builder, the verdict resolution (unresolved > rejected > engine_mismatch >
+Only the generic parts live here: the endpoint-response reader, engine-version
+resolution, the row builder, verdict resolution (unresolved > rejected > engine_mismatch >
 equivalent), the report dict, and row printing / exit code. Tolerances,
 endpoint lists and derived-value functions stay in each script, next to
 their docstring, and are passed in as a `{name: (tol, unit)}` table so a
@@ -15,7 +15,11 @@ result can never be rescued by widening them from a caller.
 
 from __future__ import annotations
 
+import json
+from pathlib import Path
+
 from _record_common import is_finite_number
+from batch_line_regulation import extract_step_values
 
 
 def engine_version(versions) -> str | None:
@@ -31,6 +35,22 @@ def engine_version(versions) -> str | None:
     return seen.pop() if len(seen) == 1 and None not in seen else None
 
 
+def load_endpoint_responses(
+    d: Path, endpoint_cards: list[list[str]],
+) -> tuple[dict, str | None, list[str]]:
+    """Read each tran response against the bench's cards in deck order."""
+    values, versions, errors = {}, [], []
+    for index, cards in enumerate(endpoint_cards, 1):
+        step = f"tran{index}"
+        response = json.loads((d / "remote" / step / "response.json").read_text())
+        versions.append(response.get("environment", {}).get("engine_version"))
+        expected = [f"{step}.{card}" for card in cards]
+        raw, reasons = extract_step_values(step, expected, response["corners"][0]["measurements"])
+        values.update({name.split(".", 1)[1]: value for name, value in raw.items()})
+        errors.extend(reasons)
+    return values, engine_version(versions), errors
+
+
 def compare(
     tols: dict,
     remote: dict,
@@ -40,6 +60,7 @@ def compare(
     remote_pass=None,
     local_pass=None,
     extra: dict | None = None,
+    remote_errors: list[str] | None = None,
 ) -> dict:
     """Compare `remote` vs `local` over the names in `tols` (insertion order).
 
@@ -61,7 +82,7 @@ def compare(
         rows.append(dict(name=name, remote=r, local=l, delta=d, tol=tol, unit=unit, ok=ok))
     engines_equal = remote_engine is not None and str(remote_engine) == str(local_engine)
     verdict_match = remote_pass is not None and remote_pass == local_pass
-    if missing or not verdict_match:
+    if remote_errors or missing or not verdict_match:
         verdict = "unresolved"
     elif breaches:
         verdict = "rejected"
@@ -76,6 +97,7 @@ def compare(
         "remote_engine": remote_engine,
         "local_engine": local_engine,
         **(extra or {}),
+        **({"remote_errors": remote_errors} if remote_errors else {}),
         "spec_verdicts": {
             "remote_pass": remote_pass,
             "local_pass": local_pass,
@@ -95,6 +117,8 @@ def print_report(rep: dict, name_width: int) -> int:
             f"{r['name']:{name_width}s} remote={r['remote']} local={r['local']} "
             f"d={d} {r['unit']} {'ok' if r['ok'] else 'OUT'}"
         )
+    for error in rep.get("remote_errors", []):
+        print(error)
     print(
         f"engines remote={rep['remote_engine']} local={rep['local_engine']} "
         f"-> verdict {rep['verdict']}"
