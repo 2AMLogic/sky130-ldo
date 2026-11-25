@@ -1,7 +1,7 @@
 # DR-014: PSRR binding capacitor condition
 
-- **Status**: proposed — not self-ratifying; ratifies on operator approval of
-  the PR that adds it
+- **Status**: proposed — operator approval of this PR ratifies only the PSRR
+  capacitor condition. Phase 3 verifies performance against that condition.
 - **Date**: 2026-11-12
 - **Author**: Builder agent (drafted per #314, Phase 2)
 - **Ratifies against / input to**: #314 (PSRR: decide and evidence the binding
@@ -16,9 +16,11 @@ at 1 mA and at 50 mA) does not say which output-capacitor condition it binds
 at. DR-002 ratifies the window (C_eff 0.33–4.7 µF, ESR 0–500 mΩ, no minimum
 ESR, 1 µF nominal), and other window-sensitive rows already say how they use
 it, but the PSRR bench (`sim/psrr-dc/testbench/tb_psrr_dc.sch`) evaluates one
-point only: 1 µF / 10 mΩ, labelled "DR-002 proposed nominal". The 100 kHz
-sub-metrics depend on the output impedance of the pass-device / C_out network,
-so they are the ones most exposed to that gap.
+point only: 1 µF / 10 mΩ, labelled "DR-002 proposed nominal". As loop gain
+rolls off, the output impedance of the pass device and capacitor has more
+influence on supply-ripple rejection. DR-002 identifies a pass-gate pole near
+the loop bandwidth. Changing C_eff or ESR can change rejection at 100 kHz
+in either direction.
 
 Phase 1 of #314 mints the evidence: record
 `sim/psrr-dc/records/20261112-123922-1177e742.{json,md}`
@@ -26,8 +28,11 @@ Phase 1 of #314 mints the evidence: record
 `c6d73a35f524070e85faff4a6a9eef49553ebc2b`). It samples C_eff ∈ {0.33, 1, 4.7}
 µF × ESR ∈ {0, 10 m, 500 m} Ω at three corners — (tt, 27 °C, 3.3 V),
 (ss, −40 °C, 2.97 V), (ff, 125 °C, 3.63 V) — and both loads. All 54 points are
-populated. The nominal point reproduces `20260926-033606-4a9ec09` to
-|Δ| ≤ 0.0001 dB.
+populated. The run used a dirty working tree and off-baseline tools (ngspice
+46 and xschem 3.4.7, declared versions 42 and 3.4.4). The archived sweep
+deck adds a direct capacitor branch (`CDIR`) for exact zero ESR. At tt/27 °C
+the nominal point reproduces all four metrics in `20260926-033606-4a9ec09`
+to |Δ| ≤ 0.0001 dB.
 
 **Evidence finding (sampled grid only).** Under the selection rule fixed in
 advance (minimum over the three corners, ties to the lower C_eff then lower
@@ -42,10 +47,13 @@ ESR), the worst sampled point per sub-metric is:
 
 Three things in the table matter to the decision:
 
-1. **0 Ω ESR is worst in all four.** The 10 mΩ in the current bench is not
-   the unfavourable ESR end.
-2. **The worst point differs per sub-metric**, and two of the four are window
-   edges (4.7 µF, 0.33 µF) at opposite ends of the C_eff range.
+1. **All four sampled minima occur at 0 Ω ESR.** At 1 kHz the 0 and 10 mΩ
+   values at the worst corner and capacitance agree to three decimal places.
+   At 100 kHz / 50 mA the ESR ordering reverses with capacitance. At ss,
+   raising ESR from 0 to 500 mΩ raises PSRR from 10.982 to 13.539 dB at
+   1 µF and lowers it from 25.046 to 22.691 dB at 4.7 µF.
+2. **Different sub-metrics select opposite capacitance endpoints.** Both
+   1 kHz minima occur at 4.7 µF, and the 100 kHz / 1 mA minimum at 0.33 µF.
 3. **The worst 100 kHz / 50 mA point is interior** (1 µF), not a window edge.
    At tt/27 °C the 0 Ω column reads 11.882 dB (0.33 µF), 11.252 dB (1 µF),
    25.972 dB (4.7 µF): the minimum is not at an endpoint, so an edge-only
@@ -56,23 +64,20 @@ corners, same record): 1 kHz / 1 mA 22.400 vs 21.304 dB (1.1 dB); 100 kHz /
 1 mA 31.974 vs 21.165 dB (10.8 dB); 1 kHz / 50 mA 22.616 vs 22.536 dB
 (0.08 dB); 100 kHz / 50 mA 11.049 vs 10.982 dB (0.07 dB).
 
-**Status of the row against these numbers.** The row is not met anywhere on
-the sampled grid: every 1 kHz cell is 21–24 dB against > 50 dB, and every
-100 kHz / 50 mA cell is below 27 dB, with the worst at 10.982 dB against
-> 20 dB. That is already true at the 1 µF nominal, so this record does not
-create the failure and does not absorb it. The row remains a tracked design
-gap (DR-007 is the separate, still-`proposed` record on thresholds).
+**Status of the row against these numbers.** At every sampled point, both
+1 kHz clauses fall below 50 dB. At 100 kHz the 50 mA minimum misses
+the > 20 dB target by 9.018 dB. All three clauses also fail at the nominal
+capacitor. The 100 kHz / 1 mA minimum clears 20 dB by 1.165 dB on this grid.
+It falls below DR-007's proposed ≥ 28 dB floor, derived from nominal-capacitor
+measurements at 1 mA. The PSRR shortfall remains an open design issue.
 
 ## Decision
 
-**Proposed: bind the PSRR row to the full DR-002 window (alternative (c)) —
-every sub-metric must satisfy its threshold at every point of the ratified
-C_eff × ESR window, with ESR = 0 treated as a first-class evaluation point —
-and require interior-point and further-corner refinement before ratification
-(see "Sampled-grid limit").** No threshold changes. This record is
-`proposed`: it states an evidence-based recommendation, and the specification
-condition is a call that only the operator's approval of the adding PR can
-ratify.
+**Bind all four PSRR clauses to the full DR-002 window (alternative (c)).**
+Each clause must meet its existing threshold throughout 0.33–4.7 µF effective
+capacitance and 0–500 mΩ ESR, including exact zero ESR. The operator can
+ratify this condition on the Phase 1 evidence. Phase 3 begins with refinement
+to select the finite evaluation set used for qualification.
 
 ## Alternatives considered
 
@@ -97,6 +102,12 @@ Disclosure alone does not gate. It would only be revisited if a ratified
 decision narrowed the window the PSRR row is guaranteed over (for example, if
 the row were deliberately scoped to the recommended 1 µF part).
 
+The gf180-ldo sibling ratified its PSRR row at 1 µF nominal (DR-0004,
+amendment A7) and later narrowed its stability envelope to 1 µF (DR-0018).
+For sky130, nominal-only reporting would conceal the measured 10.8 dB loss
+at 100 kHz / 1 mA. The interior minimum at 100 kHz / 50 mA also calls for
+coverage between the endpoints.
+
 **(c) Bind to the full window (recommended).** The case against it: it is the
 strictest option, it needs a finite set of evaluation points to be testable,
 and with the row already failing it adds evidence cost without changing any
@@ -104,8 +115,9 @@ verdict today. It is recommended because it is the only option whose
 condition does not depend on which grid was sampled, it matches how DR-002's
 window is used for Stability and Load transient ("over the ratified C_out/ESR
 window"), and it is robust to the interior-minimum behaviour the 100 kHz /
-50 mA data shows. Its testable form is the window endpoints plus the
-interior points that refinement finds, evaluated at ESR = 0.
+50 mA data shows. The window defines the requirement independently of any
+grid. Phase 3 tests both capacitance endpoints and the interior capacitances
+identified by refinement, each at 0, 10 and 500 mΩ ESR at minimum.
 
 ## Consequences
 
@@ -114,44 +126,40 @@ interior points that refinement finds, evaluated at ESR = 0.
 - **Unmeetable-at-window report.** On the sampled grid the row is unmet at
   every point, including the nominal. Nothing here relaxes it. If ratified,
   the redesign must be measured against the whole window, not 1 µF / 10 mΩ.
-- **Follow-up (Phase 3 of #314), after ratification only:** add the
-  evaluation set as legs in `sim/psrr-dc/experiment.json` (as
-  `sim/startup/experiment.json` does), reset independently, covering all 45
-  PVT corners with C_out/ESR coordinates in each result, with the report
-  disclosing which capacitor conditions each record covered. That needs an
-  off-host path: `BATCH_ALLOWLIST` for `psrr-dc` must be extended after
-  verifying the batch backend supports these AC measurements. It should not
-  run before the PSRR design state is settled, so that it is not run twice.
-  It is not filed by this record.
+- **Phase 3 of #314.** On ratification, the operator opens the qualification
+  follow-up. First refine the joint grid as described below. Once the PSRR
+  design is settled, qualify the resulting evaluation set across all 45 PVT
+  corners at both loads. Add independently reset legs to
+  `sim/psrr-dc/experiment.json`, retaining the direct-capacitor path for
+  exact zero ESR. Record C_eff and ESR for every result and report which
+  conditions each record covers.
 - **Handed to design unresolved:** the PSRR shortfall itself, and the
   interaction with DR-007 and the Iq budget.
 
 ### Sampled-grid limit
 
 The Phase 1 grid is 3 C_eff × 3 ESR points at 3 corners. It cannot prove the
-continuous-window worst case or the all-45-corner worst case. Before
-ratification, the following refinement is **needed**, not optional:
+continuous-window worst case or the all-45-corner worst case. After
+ratification, Phase 3 requires the following evidence to select the
+qualification points:
 
-- **Interior C_eff.** The 100 kHz / 50 mA minimum sits at the middle C_eff
-  sample, so the true minimum lies somewhere between 0.33 and 4.7 µF and may
-  be lower than 10.982 dB. Add interior C_eff points (at least between 0.33
-  and 4.7 µF, e.g. a log-spaced sweep) at ESR = 0.
+- **Joint C_eff × ESR refinement.** Keep 0.33, 1 and 4.7 µF and add interior
+  capacitances on both sides of 1 µF, where the 100 kHz / 50 mA sampled
+  minimum occurs. At **every** capacitance, including each new interior
+  point, sweep at least 0, 10 and 500 mΩ ESR. Include additional points
+  around any lower minima found for each load and frequency.
 - **Other corners.** The worst corner is ff for the 1 kHz sub-metrics and ss
   for the 100 kHz ones on this grid; the remaining 42 of the 45 corners are
   unsampled. The 45-corner record already exists at the nominal; a wider
-  corner sample at the refined points should confirm the corner assignment.
-- **ESR between 0 and 10 mΩ.** All four worst points are at 0 Ω, the lower
-  bound of the window; the sample does not show whether a small nonzero ESR
-  changes the ordering. 10 mΩ is within 0.07 dB of 0 Ω at the 100 kHz / 50 mA
-  worst point, so this is low risk, but it is unsampled.
+  corner sample at the refined points should test whether the worst corner
+  shifts with C_eff or ESR.
+- **ESR between 0 and 10 mΩ.** At the sampled 100 kHz / 50 mA minimum,
+  the two values differ by only 0.07 dB. Add intermediate ESR samples to
+  check for a lower value between them and carry any such point into the
+  45-corner evaluation set.
 
 ## Status notes
 
-`proposed`. It is ratified by the operator's approval of the PR that adds
-it (the 2026-08-19 ratification-via-PR standing policy,
-[2AMLogic/2am#357](https://github.com/2AMLogic/2am/issues/357)); an agent
-does not ratify it. The refinement above is a precondition the operator may
-choose to waive or defer, and the choice should be stated in the ratifying
-action. DR-002's window and DR-007's `proposed` threshold recommendation are
-unchanged by this record. Evidence path:
-`sim/psrr-dc/records/20261112-123922-1177e742.{json,md}`.
+`proposed`. Operator approval of this PR decides where the thresholds apply.
+The three measured failures stay open for design, and a claim of compliance
+requires Phase 3 qualification evidence.
