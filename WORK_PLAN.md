@@ -3,14 +3,13 @@
 Current roadmap derived from GitHub lifecycle labels. Maintained by the Loom Guide role.
 
 <!-- guide:plan-body:start -->
-_Generated: 2026-11-25T10:01:04Z (snapshot; compare against live labels)_
+_Generated: 2026-11-25T20:44:28Z (snapshot; compare against live labels)_
 ## Operator Attention: Merge-Risk-Hold Pileup
 
 Judge-approved PRs under a hold (`loom:blocked` or `loom:operator`) — only a human merge decision is missing.
 
 - **#569**: docs: propose DR-014 binding capacitor condition for the PSRR row
 - **#735**: docs(spec): reconcile DR-008 status text with its ratification path
-- **#777**: migrate sky130 PDK pin from volare c6d73a35 to ciel f6eeac7 (DR-015)
 
 ## Very Important
 
@@ -23,6 +22,7 @@ Judge-approved PRs under a hold (`loom:blocked` or `loom:operator`) — only a h
 `loom:important`; taken before unlabelled work.
 
 - **#301**: spec: decide whether DR-008 through DR-012 ratified on merge
+- **#786**: Verify the graded PSRR batch adapter and publish its 45-corner fleet record *(held)*
 
 ## Ready
 
@@ -37,12 +37,13 @@ Issues currently being built (`loom:building`).
 
 - **#301**: spec: decide whether DR-008 through DR-012 ratified on merge
 - **#767**: sim/pdk.json pins a volare sky130A build while every worker run uses the ciel store (--allow-pdk-mismatch on every record)
+- **#791**: Batch-mode PDK provenance: the pinned-PDK guard and the record's PDK line are blind to the fleet worker's own stamp
 
 ## PRs Awaiting Review
 
 PRs waiting on Judge (`loom:review-requested`).
 
-_None._
+- **#777**: migrate sky130 PDK pin from volare c6d73a35 to ciel f6eeac7 (DR-015)
 
 ## Approved (Awaiting Merge)
 
@@ -50,7 +51,7 @@ PRs that passed review and are queued for Champion auto-merge (`loom:pr`).
 
 - **#569**: docs: propose DR-014 binding capacitor condition for the PSRR row
 - **#735**: docs(spec): reconcile DR-008 status text with its ratification path
-- **#777**: migrate sky130 PDK pin from volare c6d73a35 to ciel f6eeac7 (DR-015)
+- **#794**: fix: verify the executed worker PDK before publishing simulation records
 
 ## Proposed
 
@@ -70,10 +71,12 @@ Issues carrying `loom:curated`.
 - **#645**: CI: nightly pdk-smoke red for 6+ nights — declared ngspice pin 42 vs resolved 45.2 (CI) / 47 (workers) *(curated)* *(held)*
 - **#691**: Stability: screen a compensation candidate that closes the 10-300 uA band at both C_out endpoints and the 0.33 uF / 50 mA shortfall (follow-on to #370) *(curated)* *(held)*
 - **#767**: sim/pdk.json pins a volare sky130A build while every worker run uses the ciel store (--allow-pdk-mismatch on every record) *(curated)*
+- **#786**: Verify the graded PSRR batch adapter and publish its 45-corner fleet record *(curated)* *(held)*
+- **#791**: Batch-mode PDK provenance: the pinned-PDK guard and the record's PDK line are blind to the fleet worker's own stamp *(curated)*
 
 ## Proposed (Architect / Hermit)
 
-_None._
+- **#797**: Use the batch endpoint validator in paired line- and load-regulation comparisons *(hermit)*
 
 ## Epics
 
@@ -83,14 +86,14 @@ _None._
 
 | Bucket | Count |
 |------|-------|
-| Operator merge-risk holds | 3 |
+| Operator merge-risk holds | 2 |
 | Very important | 1 |
-| Important | 1 |
+| Important | 2 |
 | Ready (`loom:issue`, net of holds/building/merge-pending) | 2 |
-| In Progress (`loom:building`) | 2 |
-| PRs awaiting review | 0 |
+| In Progress (`loom:building`) | 3 |
+| PRs awaiting review | 1 |
 | Approved PRs awaiting merge | 3 |
-| Curated | 14 |
-| Architect / Hermit proposals | 0 |
+| Curated | 16 |
+| Architect / Hermit proposals | 1 |
 | Active epics | 1 |
 <!-- guide:plan-body:end -->
