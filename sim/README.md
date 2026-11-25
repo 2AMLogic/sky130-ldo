@@ -1244,9 +1244,10 @@ non-finite cell -> no finding, listed). Tests: `sim/tests/test_psrr_cap_sweep.py
 The grid samples the window; it cannot prove the continuous-window or 45-corner
 worst case.
 
-**Runner (`sim/bin/psrr-cap-sweep-run.py`).** `corner-run.py --backend batch` still
-refuses `psrr-dc` (its allowlist is untouched). This dedicated runner sends the sweep
-to `klt sim` instead, as **one request per corner**. Each corner's deck walks every
+**Runner (`sim/bin/psrr-cap-sweep-run.py`).** `corner-run.py --backend batch`
+runs the graded `psrr-dc` campaign through the adapter added in #786. The cap/ESR
+sweep has its own manifest slug, `psrr-dc-cap-esr-sweep`, and its dedicated runner
+sends **one request per corner** to `klt sim`. Each corner's deck walks every
 point as ordered `analysis_steps`: for each point and load, an `op` step whose
 `alter`s set COUT, RESR, CDIR and RLOAD explicitly, followed by the `ac lin 3 1e3 1e5`
 step. The testbench's `.nodeset` seed (#171/#179) applies to every one of these
