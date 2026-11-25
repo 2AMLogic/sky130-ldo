@@ -8,6 +8,7 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 
 ### 2026-11-25
 
+- **PR #787**: feat: admit the graded psrr-dc campaign to the batch backend
 - **Issue #754** (closed): Sim: strictly-admitted batch adapter for the loop-gain bench (ac_leg_grid), then re-run (split from #554)
 
 ### 2026-11-24
