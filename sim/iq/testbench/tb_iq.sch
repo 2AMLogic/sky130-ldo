@@ -9,10 +9,14 @@ v {xschem version=3.4.7 file_version=1.2
 * "Iq (excl. load current)" row: "< 30uA at no load and full load". That row
 * is the one row DR-006 left open when issue #1 ratified the rest of the
 * table: its number is set by spec/decision-records/DR-009-iq-budget.md,
-* whose status is 'proposed' -- DR-009 does not ratify itself, and ratifies
-* only when the pull request it ships in merges (the same path DR-006 took).
-* The bound below cites DR-009's number verbatim, not an invented final
-* limit, and needs re-verification if that record changes before it merges.
+* whose status is 'proposed' -- DR-009 does not ratify itself, and under the
+* 2026-10-19 operator ruling on #301 (option 2) it stays 'proposed' until a
+* fresh ratification PR is reviewed and released under the standing process
+* (2AMLogic/2am#357, #372) and merged; the already-merged #134 is cited as
+* historical context only and is not this record's ratifying act. The bound
+* below cites DR-009's number verbatim, not an invented final limit, and
+* needs re-verification if that record changes before that fresh
+* ratification PR merges.
 *
 * VIN is tied directly to the corner runner's 'vsup' (same convention
 * load-transient/psrr-dc already use). Iq is defined, per

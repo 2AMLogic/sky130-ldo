@@ -1,0 +1,120 @@
+{
+  "analysis_steps": [
+    {
+      "alter": {
+        "cdir": 0.0,
+        "cout": 3.3e-07,
+        "resr": 0.01
+      },
+      "analysis": {
+        "args": "200n 3m",
+        "kind": "tran"
+      },
+      "measurements": [
+        {
+          "name": "v_pre",
+          "spice": ".meas tran v_pre AVG v(vout) FROM=0.800m TO=0.999m"
+        },
+        {
+          "name": "v_rise_min",
+          "spice": ".meas tran v_rise_min MIN v(vout) FROM=1.000m TO=2.001m"
+        },
+        {
+          "name": "v_rise_max",
+          "spice": ".meas tran v_rise_max MAX v(vout) FROM=1.000m TO=2.001m"
+        },
+        {
+          "name": "v_fall_min",
+          "spice": ".meas tran v_fall_min MIN v(vout) FROM=2.001m TO=2.999m"
+        },
+        {
+          "name": "v_fall_max",
+          "spice": ".meas tran v_fall_max MAX v(vout) FROM=2.001m TO=2.999m"
+        },
+        {
+          "name": "v_50ma",
+          "spice": ".meas tran v_50ma FIND v(vout) AT=2.000m"
+        },
+        {
+          "expr": "v_pre",
+          "name": "vout_pre_v",
+          "unit": "V"
+        },
+        {
+          "expr": "v_pre - v_rise_min",
+          "name": "undershoot_rise_v",
+          "unit": "V"
+        },
+        {
+          "expr": "v_rise_max - v_pre",
+          "name": "overshoot_rise_v",
+          "unit": "V"
+        },
+        {
+          "expr": "v_pre - v_fall_min",
+          "name": "undershoot_fall_v",
+          "unit": "V"
+        },
+        {
+          "expr": "v_fall_max - v_pre",
+          "name": "overshoot_fall_v",
+          "unit": "V"
+        },
+        {
+          "expr": "vecmax((0.5*(1 + ((abs(v(vout) - (v_pre)))-(0.01 * (v_pre)))/(abs((abs(v(vout) - (v_pre)))-(0.01 * (v_pre)))+1e-18)))*(0.5*(1 + (time-1.0m)/(abs(time-1.0m)+1e-18)) * 0.5*(1 + (2.0m-time)/(abs(2.0m-time)+1e-18)))*(time-1.0m))*1e6",
+          "name": "recovery_rise_us",
+          "unit": "us"
+        },
+        {
+          "expr": "vecmax((0.5*(1 + ((abs(v(vout) - (v_pre)))-(0.01 * (v_pre)))/(abs((abs(v(vout) - (v_pre)))-(0.01 * (v_pre)))+1e-18)))*(0.5*(1 + (time-2.001m)/(abs(time-2.001m)+1e-18)) * 0.5*(1 + (2.999m-time)/(abs(2.999m-time)+1e-18)))*(time-2.001m))*1e6",
+          "name": "recovery_fall_us",
+          "unit": "us"
+        },
+        {
+          "expr": "100*(v_50ma - v_pre)/v_pre",
+          "name": "settle_err_50ma_pct",
+          "unit": "%"
+        }
+      ],
+      "name": "c330n_esr10m"
+    }
+  ],
+  "batch": {
+    "capacity_wait_s": 10800
+  },
+  "corners": {
+    "process": [
+      "ff"
+    ],
+    "temperature_c": [
+      125.0
+    ]
+  },
+  "engine": "ngspice",
+  "models": {
+    "lib": "libs.tech/combined/sky130.lib.spice",
+    "pdk": "sky130A"
+  },
+  "netlist": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-704/sim/loop-gain/diagnostics/issue-704/runs/loadstep/base/klt-requests/q3-ff_125c_3.63v-c330n_esr10m.spice",
+  "options": {
+    "keep_artifacts": true,
+    "ngspice_init": [
+      "* ngspice init settings for the sky130 PDK model libraries.",
+      "*",
+      "* The corner runner copies this file into its scratch run directory as",
+      "* `.spiceinit` before invoking ngspice, so runs do not depend on whatever",
+      "* happens to be in ~/.spiceinit. To drive ngspice by hand with the same",
+      "* settings, copy this file to `.spiceinit` in your working directory.",
+      "*",
+      "* Same settings as the sibling sky130-bandgap harness (same PDK, same pin):",
+      "* derived from the PDK's own libs.tech/ngspice/spinit, kept in-repo so the",
+      "* settings a record was produced under are versioned with the harness.",
+      "set ngbehavior=hsa     ; HSPICE-ish compatibility, required to read PDK libs",
+      "set skywaterpdk        ; skip some checks for faster lib loading",
+      "set ng_nomodcheck      ; do not check model parameters",
+      "option noinit          ; do not dump operating point data into the log",
+      "option klu             ; KLU direct linear solver"
+    ],
+    "timeout_s": 300
+  }
+}

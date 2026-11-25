@@ -114,6 +114,42 @@ class TestLegs(unittest.TestCase):
         self.assertEqual(res[0]["settings"]["t_enable_s"], 1e-4)
 
 
+class TestRampCheckRow(unittest.TestCase):
+    """Issue #736: the per-leg condition as a corner check row -- one builder
+    (moved here from batch_startup_ramp) shared by the local run_corner loop
+    and the batch startup normalizer, so the two rows cannot drift."""
+
+    @staticmethod
+    def leg(res, leg_id="c330n_0ma_esr0"):
+        res.update({"leg": leg_id, "trace_file": "f.trace.dat", "trace_sha256": None})
+        return res
+
+    def test_pass_row(self):
+        row = rm.ramp_check(self.leg(rm.check_ramp_monotonicity(*ramp(), {**SET, "tolerance_v": 0.0})))
+        self.assertEqual(row["name"], "ramp_drawdown_c330n_0ma_esr0_v")
+        self.assertEqual(row["expr"], "ramp_monotonicity.max_drawdown(v(vout))")
+        self.assertEqual(row["unit"], "V")
+        self.assertEqual(row["value"], 0.0)
+        self.assertIsNone(row["min"])
+        self.assertEqual(row["max"], 0.0)  # the manifest's tolerance_v
+        self.assertIs(row["pass"], True)
+        self.assertEqual(row["reason"], "")
+
+    def test_fail_row_carries_status_and_reasons(self):
+        res = rm.check_ramp_monotonicity(*ramp(dip=(30, 0.2)), {**SET, "tolerance_v": 0.0})
+        row = rm.ramp_check(self.leg(res))
+        self.assertIs(row["pass"], False)
+        self.assertEqual(row["value"], res["max_drawdown_v"])
+        self.assertTrue(row["reason"].startswith("FAIL: "), row["reason"])
+
+    def test_invalid_leg_never_passes(self):
+        res = rm.invalid_result({**SET, "tolerance_v": 0.0}, ["trace unreadable: nope"])
+        row = rm.ramp_check(self.leg(res))
+        self.assertIs(row["pass"], False)
+        self.assertIsNone(row["value"])
+        self.assertEqual(row["reason"], "INVALID: trace unreadable: nope")
+
+
 class TestWiring(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -141,11 +177,17 @@ class TestWiring(unittest.TestCase):
         self.assertIn("wrdata tt_27c_3.30v.c4u7_50ma_esr500m.trace.dat v(vout)", deck)
         self.assertNotIn("{corner_id}", deck)
 
-    def test_batch_refuses_ramp_manifest(self):
+    def test_batch_admits_ramp_manifest_only_with_its_block(self):
+        # issue #336: the trace-returning batch shape admits the committed
+        # startup manifest; without the ramp block it would qualify nothing
+        # and refuses instead.
         exp = self.cr.Experiment(dir=Path("."), raw=self.manifest)
         exp.measurements = []
-        with self.assertRaises(self.cr.HarnessError):
-            self.cr.check_batch_supported(exp)
+        self.cr.check_batch_supported(exp)
+        no_ramp = {k: v for k, v in self.manifest.items() if k != "ramp_monotonicity"}
+        with self.assertRaises(self.cr.HarnessError) as cm:
+            self.cr.check_batch_supported(self.cr.Experiment(dir=Path("."), raw=no_ramp))
+        self.assertIn("declares no ramp_monotonicity", str(cm.exception))
 
     def test_ramp_changes_input_fingerprint_only_when_present(self):
         from _record_common import pvt_input_sections

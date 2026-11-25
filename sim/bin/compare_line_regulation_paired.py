@@ -10,10 +10,10 @@ can never be rescued by widening them.
 
 Verdicts: `equivalent` (all values present, within tolerance, engines equal),
 `engine_mismatch` (values may be reported, equivalence NOT claimable),
-`rejected` (a difference exceeds tolerance), `unresolved` (missing/non-finite
-value or a mismatched pass/fail verdict). Precedence: unresolved > rejected >
-engine_mismatch > equivalent. Matching FAIL verdicts support execution
-equivalence only; they never establish spec compliance.
+`rejected` (a difference exceeds tolerance), `unresolved` (invalid endpoint
+measurements, missing/non-finite values or mismatched pass/fail verdicts).
+Precedence: unresolved > rejected > engine_mismatch > equivalent.
+Matching FAIL verdicts support execution equivalence only.
 
 Usage: compare_line_regulation_paired.py <diagnostics-dir> [--out report.json]
 (reads remote/tran{1..4}/response.json and local/corner-run.log).
@@ -27,16 +27,19 @@ import re
 import sys
 from pathlib import Path
 
+# `python3 -I` (the README reproduce form) implies -P on Python 3.11+, so
+# this script's directory is not on sys.path; the sibling modules below
+# live there.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
 import _paired_compare
 from _record_common import is_finite_number
 
 ENDPOINT_TOL_V = 1e-6
 SLOPE_TOL_MV_PER_V = 0.01
-ENDPOINTS = [
-    f"vout_{ld}_{vin}{sfx}"
-    for ld in ("1ma", "50ma")
-    for vin in ("lo", "hi")
-    for sfx in ("", "_min", "_max")
+ENDPOINT_CARDS = [
+    [base, base + "_min", base + "_max"]
+    for base in ("vout_1ma_lo", "vout_1ma_hi", "vout_50ma_lo", "vout_50ma_hi")
 ]
 SLOPES = ["line_reg_1ma_mv_per_v", "line_reg_50ma_mv_per_v"]
 
@@ -55,7 +58,7 @@ def derive_slopes(v: dict) -> dict:
 
 
 TOLS = {
-    **{n: (ENDPOINT_TOL_V, "V") for n in ENDPOINTS},
+    **{n: (ENDPOINT_TOL_V, "V") for cards in ENDPOINT_CARDS for n in cards},
     **{n: (SLOPE_TOL_MV_PER_V, "mV/V") for n in SLOPES},
 }
 
@@ -67,22 +70,18 @@ def compare(
     local_engine,
     remote_pass=None,
     local_pass=None,
+    remote_errors: list[str] | None = None,
 ) -> dict:
     return _paired_compare.compare(
-        TOLS, remote, local, remote_engine, local_engine, remote_pass, local_pass
+        TOLS, remote, local, remote_engine, local_engine, remote_pass, local_pass,
+        remote_errors=remote_errors,
     )
 
 
 def load_remote(d: Path) -> tuple[dict, str | None, list[str]]:
-    vals, engines = {}, set()
-    for t in range(1, 5):
-        resp = json.loads((d / "remote" / f"tran{t}" / "response.json").read_text())
-        engines.add(str(resp["environment"].get("engine_version")))
-        for m in resp["corners"][0]["measurements"]:
-            if m.get("status") == "pass" or is_finite_number(m.get("value")):
-                vals[m["name"].split(".", 1)[1]] = m["value"]
+    vals, engine, errors = _paired_compare.load_endpoint_responses(d, ENDPOINT_CARDS)
     vals.update({k: v for k, v in derive_slopes(vals).items() if v is not None})
-    return vals, (engines.pop() if len(engines) == 1 else None), sorted(engines)
+    return vals, engine, errors
 
 
 def load_local(d: Path) -> tuple[dict, bool | None]:
@@ -111,9 +110,11 @@ def main(argv: list[str]) -> int:
     )
     ap.add_argument("--remote-pass", choices=("PASS", "FAIL"), required=True)
     a = ap.parse_args(argv)
-    rv, reng, _ = load_remote(a.dir)
+    rv, reng, errors = load_remote(a.dir)
     lv, lpass = load_local(a.dir)
-    rep = compare(rv, lv, reng, a.local_engine, a.remote_pass == "PASS", lpass)
+    rep = compare(
+        rv, lv, reng, a.local_engine, a.remote_pass == "PASS", lpass, remote_errors=errors
+    )
     text = json.dumps(rep, indent=2) + "\n"
     if a.out:
         a.out.write_text(text)

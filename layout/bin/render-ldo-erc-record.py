@@ -367,8 +367,7 @@ def main() -> int:
     a(
         f"- `klt` version: `{prov.klt_version}`, reported by the run itself as "
         f"`{(erc.get('provenance') or {}).get('klt_version')}` (pinned commit, "
-        "see `layout/erc-requirements.txt` -- a SECOND pin, distinct from "
-        "`layout/requirements.txt`'s DRC/LVS pin; that file explains why)"
+        "see `layout/requirements.txt`, the one pin shared by every layout flow)"
     )
     a(
         "- KLayout engine version: "

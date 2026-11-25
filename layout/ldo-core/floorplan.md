@@ -290,8 +290,10 @@ the layout records' own "Known gap" paragraph, which is generated text and is
 not rewritten in place) said the pinned `klt` had *no capacitor generator*.
 That tool gap is closed: `klt gen cap_array` landed upstream for
 [`2AMLogic/klayout-tools#1117`](https://github.com/2AMLogic/klayout-tools/issues/1117)
-(closed 2026-08-18), and both pins this repo uses (`layout/requirements.txt`,
-`layout/cap-requirements.txt`) postdate it. `cap_array` draws independent
+(closed 2026-08-18), and both pins this repo used when this was written
+(the main pin and `b82427b3`, the former cap-rail build, since collapsed into
+the single pin in `layout/requirements.txt`, whose comments carry the pin
+history) postdate it. `cap_array` draws independent
 single-level units, which is why the demonstrator below draws its own stacked
 MiM structure instead (klayout-tools#3022).
 

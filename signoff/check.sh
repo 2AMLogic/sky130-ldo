@@ -14,8 +14,12 @@
 #    and klt 0.6.0 says so on every pinned citation it prints ("input: not
 #    re-hashed ... the artifact itself was not read"). Two hand-written files
 #    agreeing with each other proves nothing on its own, so this step re-hashes
-#    every artifact named in signoff/artifact-pins.json and cross-checks it
-#    against the envelope's own claim and against the manifest's pin. Touch the
+#    every committed artifact named in signoff/artifact-pins.json and
+#    cross-checks it against the envelope's own claim and against the
+#    manifest's pin; a store-held artifact (batch-backend evidence with no
+#    committed bytes) is checked against the sha256 its committed store
+#    manifest records instead, and only a host with klt + store access can
+#    confirm those byte-for-byte. Touch the
 #    layout GDS, the LVS reference netlist, the MC netlist snapshot or
 #    measurements/characterization.md without re-pinning, and this fails --
 #    which is the whole point: a citation that cannot rot is a citation that
@@ -97,6 +101,13 @@ fi
 # unit coverage on every push while this script's later stages cannot.
 # ---------------------------------------------------------------------------
 python3 signoff/verify-pins.py "$MANIFEST" "$PINS"
+
+# Item 9's PDK/tools pins must mirror sim/pdk.json -- the declaration the sim
+# harness actually runs against -- across the inventory, the attested envelope
+# and signoff/README.md row 9. `klt signoff --attest 9 --check` only compares
+# the inventory with the envelope, so without this a re-pinned sim/pdk.json
+# leaves item 9 attesting a pin nothing uses (issue #780).
+python3 signoff/check-item9-pins.py
 
 # ---------------------------------------------------------------------------
 # 2 + 3. Re-grade, and compare against the committed verdict of record.

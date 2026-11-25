@@ -1,0 +1,209 @@
+{
+  "schema_version": 1,
+  "netlist": "sim/psrr-dc/netlist-snapshots/20261029-092008-5ba605f.spice",
+  "status": "fail",
+  "corner_count": 1,
+  "passed": 0,
+  "failed": 1,
+  "errored": 0,
+  "wrapper": "NOT a `klt sim` run. Hand-wrapped by signoff/make_item5_envelope.py from the committed harness-format record named in `source_record`; every value, limit and verdict is copied verbatim and nothing was re-simulated. Measurements tagged with a `spec_row` carry that row's RATIFIED bound (spec/target-spec.md, DR-006), which the script checked against the record's own limit before writing. The input pin is the netlist snapshot the record simulated, not necessarily the current schematic: see measurements/characterization.md for per-record freshness.",
+  "source_record": {
+    "bench": "psrr-dc",
+    "record_id": "20261029-092008-5ba605f",
+    "path": "sim/psrr-dc/records/20261029-092008-5ba605f.json",
+    "sha256": "sha256:02b66febb93e604b8795920aeaa283e78ba19ce9727ef8effedd9963bf7fb7b7",
+    "overall_pass": false,
+    "matrix_is_subset": true
+  },
+  "environment": {
+    "engine": "ngspice",
+    "engine_version": "ngspice-42 : Circuit level simulation program",
+    "pdk": "c6d73a35f524070e85faff4a6a9eef49553ebc2b",
+    "platform": "Linux 7.0.0-1014-aws x86_64"
+  },
+  "provenance": {
+    "input": {
+      "path": "sim/psrr-dc/netlist-snapshots/20261029-092008-5ba605f.spice",
+      "role": "netlist",
+      "content_hash": "sha256:3eb9b4aaf93aff1a72d1165aa20bf8c8c91f5943ff5eef6f7ca4f4a0b7e70b0e"
+    }
+  },
+  "metrics": {
+    "sim__corner__count": 1,
+    "sim__corner__passed_count": 0,
+    "sim__corner__failed_count": 1,
+    "sim__corner__errored_count": 0
+  },
+  "coverage": {
+    "schema_version": 1,
+    "known": true,
+    "checked": [
+      "psrr-dc:tt_27c_3.30v:psrr_100khz_1ma_db",
+      "psrr-dc:tt_27c_3.30v:psrr_100khz_50ma_db",
+      "psrr-dc:tt_27c_3.30v:psrr_1khz_1ma_db",
+      "psrr-dc:tt_27c_3.30v:psrr_1khz_50ma_db"
+    ],
+    "skipped": [
+      {
+        "id": "psrr-dc:corner-matrix",
+        "reason": "pvt_subset: DR-013 single-corner debug probe (#467); batch backend refuses psrr-dc and local grids are not permitted on the dispatch host"
+      }
+    ],
+    "inapplicable": [],
+    "unknown": [],
+    "nothing_checked": false,
+    "nothing_checked_reasons": [],
+    "measurements_declared": 6,
+    "measurements_with_limits": 4
+  },
+  "measurements": [
+    {
+      "name": "psrr_1khz_1ma_db",
+      "unit": "dB",
+      "limits": {
+        "min": 50
+      },
+      "status": "fail",
+      "worst_case": {
+        "corner_id": "tt_27c_3.30v",
+        "value": 23.21392,
+        "margin": -26.78608
+      },
+      "spec_row": "psrr"
+    },
+    {
+      "name": "psrr_100khz_1ma_db",
+      "unit": "dB",
+      "limits": {
+        "min": 20
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_27c_3.30v",
+        "value": 33.51925,
+        "margin": 13.51925
+      },
+      "spec_row": "psrr"
+    },
+    {
+      "name": "psrr_1khz_50ma_db",
+      "unit": "dB",
+      "limits": {
+        "min": 50
+      },
+      "status": "fail",
+      "worst_case": {
+        "corner_id": "tt_27c_3.30v",
+        "value": 23.31075,
+        "margin": -26.68925
+      },
+      "spec_row": "psrr"
+    },
+    {
+      "name": "psrr_100khz_50ma_db",
+      "unit": "dB",
+      "limits": {
+        "min": 20
+      },
+      "status": "fail",
+      "worst_case": {
+        "corner_id": "tt_27c_3.30v",
+        "value": 11.31379,
+        "margin": -8.68621
+      },
+      "spec_row": "psrr"
+    },
+    {
+      "name": "vout_seed_1ma_v",
+      "unit": "V",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_27c_3.30v",
+        "value": 1.800595,
+        "margin": null
+      }
+    },
+    {
+      "name": "vout_seed_50ma_v",
+      "unit": "V",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_27c_3.30v",
+        "value": 1.798831,
+        "margin": null
+      }
+    }
+  ],
+  "corners": [
+    {
+      "corner_id": "tt_27c_3.30v",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 27.0,
+      "status": "fail",
+      "measurements": [
+        {
+          "name": "psrr_1khz_1ma_db",
+          "value": 23.21392,
+          "unit": "dB",
+          "limits": {
+            "min": 50
+          },
+          "status": "fail",
+          "margin": -26.78608
+        },
+        {
+          "name": "psrr_100khz_1ma_db",
+          "value": 33.51925,
+          "unit": "dB",
+          "limits": {
+            "min": 20
+          },
+          "status": "pass",
+          "margin": 13.51925
+        },
+        {
+          "name": "psrr_1khz_50ma_db",
+          "value": 23.31075,
+          "unit": "dB",
+          "limits": {
+            "min": 50
+          },
+          "status": "fail",
+          "margin": -26.68925
+        },
+        {
+          "name": "psrr_100khz_50ma_db",
+          "value": 11.31379,
+          "unit": "dB",
+          "limits": {
+            "min": 20
+          },
+          "status": "fail",
+          "margin": -8.68621
+        },
+        {
+          "name": "vout_seed_1ma_v",
+          "value": 1.800595,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vout_seed_50ma_v",
+          "value": 1.798831,
+          "unit": "V",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": []
+    }
+  ]
+}

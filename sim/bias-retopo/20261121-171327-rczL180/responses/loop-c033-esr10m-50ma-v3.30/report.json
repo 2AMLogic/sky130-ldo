@@ -1,0 +1,1639 @@
+{
+  "schema_version": 3,
+  "netlist": {
+    "path": "sim/bias-retopo/20261121-171327-rczL180/requests/loop-c033-esr10m-50ma-v3.30.spice",
+    "scope": "repo"
+  },
+  "status": "pass",
+  "corner_count": 15,
+  "passed": 15,
+  "failed": 0,
+  "errored": 0,
+  "inconclusive": 0,
+  "diagnostic_counts": {
+    "by_code": {
+      "nonconvergence": 2
+    },
+    "by_severity": {
+      "warning": 2
+    },
+    "corners_with_diagnostics": 2
+  },
+  "metrics": {
+    "sim__corner__count": 15,
+    "sim__corner__passed_count": 15,
+    "sim__corner__failed_count": 0,
+    "sim__corner__errored_count": 0,
+    "sim__corner__inconclusive_count": 0
+  },
+  "environment": {
+    "engine": "ngspice",
+    "engine_version": "47",
+    "ngspice_binary": "/usr/local/bin/ngspice",
+    "engine_build": {
+      "version_banner": "******\n** ngspice-47 : Circuit level simulation program\n** Compiled with KLU Direct Linear Solver\n** The U. C. Berkeley CAD Group\n** Copyright 1985-1994, Regents of the University of California.\n** Copyright 2001-2026, The ngspice team.\n** Please get your ngspice manual from https://ngspice.sourceforge.io/docs.html\n** Please file your bug-reports at http://ngspice.sourceforge.net/bugrep.html\n** Creation Date: Fri Nov 13 23:19:32 UTC 2026\n******",
+      "binary_sha256": null,
+      "probe": "ok",
+      "reason": null
+    },
+    "ngspice_init": {
+      "source": "runner",
+      "lines": null,
+      "sha256": null
+    },
+    "models_lib": {
+      "path": null,
+      "scope": "external"
+    },
+    "models_lib_sha256": "48de7c677e2c6e7d09b2559279de9f818be71010a4aa933d728eb4db3b133c84",
+    "models_lib_sha256_scope": "client",
+    "netlist_sha256": "8d4bec328c1b953971503f4c8632b8118bae70f44dd2dd8bb05c9a0b372d42e5",
+    "netlist_sha256_scope": "staged",
+    "netlist_closure": [
+      {
+        "path": "sim/bias-retopo/20261121-171327-rczL180/requests/loop-c033-esr10m-50ma-v3.30.spice",
+        "scope": "repo",
+        "sha256": "8d4bec328c1b953971503f4c8632b8118bae70f44dd2dd8bb05c9a0b372d42e5"
+      }
+    ],
+    "netlist_identity": "sha256:b36cdb4a1177e9ac8d4c5ca018abc4d011c315e4ac84ce2d60a8cc5ac2baa7ca",
+    "remote": {
+      "provider": "aws-batch-fleet",
+      "job_id": "klt-sim-79bf91977047",
+      "region": "us-east-1",
+      "instance_id": "i-08a826411a9517db6",
+      "instance_type": "m6i.4xlarge",
+      "availability_zone": "us-east-1c",
+      "ami_id": "ami-09c14f55df4958cbd",
+      "lifecycle": "spot",
+      "spot": true,
+      "state": "done",
+      "exit_code": "0",
+      "concurrency": "1",
+      "physical_cores": "8",
+      "elapsed_seconds": 21,
+      "client_submitted_at": "2026-11-21T17:25:24.407254Z",
+      "client_launched_at": "2026-11-21T17:25:49.638783Z",
+      "client_status_terminal_at": "2026-11-21T17:26:21.482608Z",
+      "client_collected_at": "2026-11-21T17:26:23.482096Z",
+      "runner_klt_version": "0.9.0",
+      "client_klt_version": "0.9.3.dev2586+g9bac82596e2f",
+      "runner_compatibility": "match",
+      "runner_request_features": {
+        "required": [
+          "transfer"
+        ],
+        "missing": [],
+        "status": "supported"
+      },
+      "worker_environment": {
+        "capture": "ok",
+        "simulator": {
+          "requested_binary": "ngspice",
+          "binary_source": "PATH",
+          "selected_path": "/usr/local/bin/ngspice",
+          "version_banner": "******\n** ngspice-47 : Circuit level simulation program\n** Compiled with KLU Direct Linear Solver\n** The U. C. Berkeley CAD Group\n** Copyright 1985-1994, Regents of the University of California.\n** Copyright 2001-2026, The ngspice team.\n** Please get your ngspice manual from https://ngspice.sourceforge.io/docs.html\n** Please file your bug-reports at http://ngspice.sourceforge.net/bugrep.html\n** Creation Date: Fri Nov 13 23:19:32 UTC 2026\n******\n",
+          "version_probe": "ok"
+        },
+        "pdk": {
+          "variant": "sky130A",
+          "root": "/opt/pdk",
+          "stamp_scheme": "sources-sha256",
+          "stamp_sha256": "4ca10280ae9f293aa1ff69f0060a52e0026929111bda881503717469b429ce67",
+          "stamp_text": "open_pdks f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7",
+          "models_staged": false,
+          "stamp_scope": "executed"
+        },
+        "cpu_model": "Intel(R) Xeon(R) Platinum 8375C CPU @ 2.90GHz",
+        "omp_num_threads": null,
+        "image_manifest": null,
+        "model_inputs": null,
+        "diagnostics": [],
+        "pdk_stamp_comparison": {
+          "status": "mismatch",
+          "warning": "the worker's PDK revision stamp for sky130A differs from the one the submitter resolved locally; results may differ from a local run (a matching stamp would not prove identical models)"
+        },
+        "ngspice_init": null,
+        "threads_per_worker": 1,
+        "engine_build_comparison": {
+          "status": "match"
+        }
+      },
+      "runner_model_inputs": null,
+      "runner_models_lib_sha256": "48de7c677e2c6e7d09b2559279de9f818be71010a4aa933d728eb4db3b133c84",
+      "runner_osdi_preload": null,
+      "job_ceiling": {
+        "basis": "conservative_serial_bound",
+        "unit_count": 15,
+        "per_unit_timeout_s": 300,
+        "overhead_s": 120.0,
+        "job_bound_s": 4620.0,
+        "max_job_seconds": 3600.0,
+        "max_job_seconds_source": "fleet_config",
+        "exceeds_ceiling": true,
+        "check": "warn",
+        "max_units_per_job": 11,
+        "recommended_hosts": 2,
+        "warning": "batch job bound 4620s (options.timeout_s 300s x 15 units + 120s; a conservative fully-serial upper bound, not a runtime estimate) exceeds the fleet's whole-job ceiling of 3600s (max_job_seconds from fleet_config); a job still running at the ceiling is killed and every unit is reported batch_job_timeout. Set request.remote.hosts to at least 2 to run one job per shard of at most 11 units, each within the ceiling"
+      },
+      "models_lib_comparison": {
+        "status": "match"
+      }
+    },
+    "engine_host": "worker",
+    "client_ngspice_binary": "/home/ubuntu/.local/bin/ngspice",
+    "client_engine_build": {
+      "version_banner": "******\n** ngspice-47 : Circuit level simulation program\n** Compiled with KLU Direct Linear Solver\n** The U. C. Berkeley CAD Group\n** Copyright 1985-1994, Regents of the University of California.\n** Copyright 2001-2026, The ngspice team.\n** Please get your ngspice manual from https://ngspice.sourceforge.io/docs.html\n** Please file your bug-reports at http://ngspice.sourceforge.net/bugrep.html\n** Creation Date: Fri Nov 13 23:19:32 UTC 2026\n******",
+      "binary_sha256": "39ca1adb826660324c3626f72bd946ec40704f0f3fc8e243c623f76e24b3eee2",
+      "probe": "ok",
+      "reason": null
+    },
+    "backend": {
+      "resolved": "batch",
+      "source": "flag",
+      "requested": "batch"
+    }
+  },
+  "coverage": {
+    "corners_simulated": 15,
+    "measurements_declared": 4,
+    "measurements_with_limits": 0,
+    "unrecognized_limit_keys": [],
+    "schema_version": 1,
+    "known": true,
+    "checked": [
+      "measurement:[0,\"tt/novdd/-40C\",\"dc\"]/observation",
+      "measurement:[0,\"tt/novdd/-40C\",\"fc\"]/observation",
+      "measurement:[0,\"tt/novdd/-40C\",\"gm\"]/observation",
+      "measurement:[0,\"tt/novdd/-40C\",\"pm\"]/observation",
+      "measurement:[1,\"tt/novdd/27C\",\"dc\"]/observation",
+      "measurement:[1,\"tt/novdd/27C\",\"fc\"]/observation",
+      "measurement:[1,\"tt/novdd/27C\",\"gm\"]/observation",
+      "measurement:[1,\"tt/novdd/27C\",\"pm\"]/observation",
+      "measurement:[10,\"sf/novdd/27C\",\"dc\"]/observation",
+      "measurement:[10,\"sf/novdd/27C\",\"fc\"]/observation",
+      "measurement:[10,\"sf/novdd/27C\",\"gm\"]/observation",
+      "measurement:[10,\"sf/novdd/27C\",\"pm\"]/observation",
+      "measurement:[11,\"sf/novdd/125C\",\"dc\"]/observation",
+      "measurement:[11,\"sf/novdd/125C\",\"fc\"]/observation",
+      "measurement:[11,\"sf/novdd/125C\",\"gm\"]/observation",
+      "measurement:[11,\"sf/novdd/125C\",\"pm\"]/observation",
+      "measurement:[12,\"fs/novdd/-40C\",\"dc\"]/observation",
+      "measurement:[12,\"fs/novdd/-40C\",\"fc\"]/observation",
+      "measurement:[12,\"fs/novdd/-40C\",\"gm\"]/observation",
+      "measurement:[12,\"fs/novdd/-40C\",\"pm\"]/observation",
+      "measurement:[13,\"fs/novdd/27C\",\"dc\"]/observation",
+      "measurement:[13,\"fs/novdd/27C\",\"fc\"]/observation",
+      "measurement:[13,\"fs/novdd/27C\",\"gm\"]/observation",
+      "measurement:[13,\"fs/novdd/27C\",\"pm\"]/observation",
+      "measurement:[14,\"fs/novdd/125C\",\"dc\"]/observation",
+      "measurement:[14,\"fs/novdd/125C\",\"fc\"]/observation",
+      "measurement:[14,\"fs/novdd/125C\",\"gm\"]/observation",
+      "measurement:[14,\"fs/novdd/125C\",\"pm\"]/observation",
+      "measurement:[2,\"tt/novdd/125C\",\"dc\"]/observation",
+      "measurement:[2,\"tt/novdd/125C\",\"fc\"]/observation",
+      "measurement:[2,\"tt/novdd/125C\",\"gm\"]/observation",
+      "measurement:[2,\"tt/novdd/125C\",\"pm\"]/observation",
+      "measurement:[3,\"ss/novdd/-40C\",\"dc\"]/observation",
+      "measurement:[3,\"ss/novdd/-40C\",\"fc\"]/observation",
+      "measurement:[3,\"ss/novdd/-40C\",\"gm\"]/observation",
+      "measurement:[3,\"ss/novdd/-40C\",\"pm\"]/observation",
+      "measurement:[4,\"ss/novdd/27C\",\"dc\"]/observation",
+      "measurement:[4,\"ss/novdd/27C\",\"fc\"]/observation",
+      "measurement:[4,\"ss/novdd/27C\",\"gm\"]/observation",
+      "measurement:[4,\"ss/novdd/27C\",\"pm\"]/observation",
+      "measurement:[5,\"ss/novdd/125C\",\"dc\"]/observation",
+      "measurement:[5,\"ss/novdd/125C\",\"fc\"]/observation",
+      "measurement:[5,\"ss/novdd/125C\",\"gm\"]/observation",
+      "measurement:[5,\"ss/novdd/125C\",\"pm\"]/observation",
+      "measurement:[6,\"ff/novdd/-40C\",\"dc\"]/observation",
+      "measurement:[6,\"ff/novdd/-40C\",\"fc\"]/observation",
+      "measurement:[6,\"ff/novdd/-40C\",\"gm\"]/observation",
+      "measurement:[6,\"ff/novdd/-40C\",\"pm\"]/observation",
+      "measurement:[7,\"ff/novdd/27C\",\"dc\"]/observation",
+      "measurement:[7,\"ff/novdd/27C\",\"fc\"]/observation",
+      "measurement:[7,\"ff/novdd/27C\",\"gm\"]/observation",
+      "measurement:[7,\"ff/novdd/27C\",\"pm\"]/observation",
+      "measurement:[8,\"ff/novdd/125C\",\"dc\"]/observation",
+      "measurement:[8,\"ff/novdd/125C\",\"fc\"]/observation",
+      "measurement:[8,\"ff/novdd/125C\",\"gm\"]/observation",
+      "measurement:[8,\"ff/novdd/125C\",\"pm\"]/observation",
+      "measurement:[9,\"sf/novdd/-40C\",\"dc\"]/observation",
+      "measurement:[9,\"sf/novdd/-40C\",\"fc\"]/observation",
+      "measurement:[9,\"sf/novdd/-40C\",\"gm\"]/observation",
+      "measurement:[9,\"sf/novdd/-40C\",\"pm\"]/observation"
+    ],
+    "skipped": [],
+    "inapplicable": [
+      {
+        "id": "measurement:[0,\"tt/novdd/-40C\",\"dc\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/-40C\",\"fc\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/-40C\",\"gm\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/-40C\",\"pm\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[1,\"tt/novdd/27C\",\"dc\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[1,\"tt/novdd/27C\",\"fc\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[1,\"tt/novdd/27C\",\"gm\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[1,\"tt/novdd/27C\",\"pm\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[10,\"sf/novdd/27C\",\"dc\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[10,\"sf/novdd/27C\",\"fc\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[10,\"sf/novdd/27C\",\"gm\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[10,\"sf/novdd/27C\",\"pm\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[11,\"sf/novdd/125C\",\"dc\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[11,\"sf/novdd/125C\",\"fc\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[11,\"sf/novdd/125C\",\"gm\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[11,\"sf/novdd/125C\",\"pm\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[12,\"fs/novdd/-40C\",\"dc\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[12,\"fs/novdd/-40C\",\"fc\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[12,\"fs/novdd/-40C\",\"gm\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[12,\"fs/novdd/-40C\",\"pm\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[13,\"fs/novdd/27C\",\"dc\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[13,\"fs/novdd/27C\",\"fc\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[13,\"fs/novdd/27C\",\"gm\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[13,\"fs/novdd/27C\",\"pm\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[14,\"fs/novdd/125C\",\"dc\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[14,\"fs/novdd/125C\",\"fc\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[14,\"fs/novdd/125C\",\"gm\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[14,\"fs/novdd/125C\",\"pm\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[2,\"tt/novdd/125C\",\"dc\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[2,\"tt/novdd/125C\",\"fc\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[2,\"tt/novdd/125C\",\"gm\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[2,\"tt/novdd/125C\",\"pm\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[3,\"ss/novdd/-40C\",\"dc\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[3,\"ss/novdd/-40C\",\"fc\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[3,\"ss/novdd/-40C\",\"gm\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[3,\"ss/novdd/-40C\",\"pm\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[4,\"ss/novdd/27C\",\"dc\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[4,\"ss/novdd/27C\",\"fc\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[4,\"ss/novdd/27C\",\"gm\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[4,\"ss/novdd/27C\",\"pm\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[5,\"ss/novdd/125C\",\"dc\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[5,\"ss/novdd/125C\",\"fc\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[5,\"ss/novdd/125C\",\"gm\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[5,\"ss/novdd/125C\",\"pm\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[6,\"ff/novdd/-40C\",\"dc\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[6,\"ff/novdd/-40C\",\"fc\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[6,\"ff/novdd/-40C\",\"gm\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[6,\"ff/novdd/-40C\",\"pm\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[7,\"ff/novdd/27C\",\"dc\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[7,\"ff/novdd/27C\",\"fc\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[7,\"ff/novdd/27C\",\"gm\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[7,\"ff/novdd/27C\",\"pm\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[8,\"ff/novdd/125C\",\"dc\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[8,\"ff/novdd/125C\",\"fc\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[8,\"ff/novdd/125C\",\"gm\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[8,\"ff/novdd/125C\",\"pm\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[9,\"sf/novdd/-40C\",\"dc\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[9,\"sf/novdd/-40C\",\"fc\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[9,\"sf/novdd/-40C\",\"gm\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[9,\"sf/novdd/-40C\",\"pm\"]/limits",
+        "reason": "characterization_without_limits"
+      }
+    ],
+    "unknown": [],
+    "nothing_checked": false,
+    "nothing_checked_reasons": []
+  },
+  "provenance": {
+    "klt_version": "0.9.3.dev2586+g9bac82596e2f",
+    "klt_git_commit": "9bac82596e2f093424f94112aad2a9c046de1946",
+    "klt_reinstall_spec": "klayout-tools @ git+https://github.com/2AMLogic/klayout-tools@9bac82596e2f093424f94112aad2a9c046de1946",
+    "klayout_version": "0.30.12",
+    "pdk": {
+      "name": "sky130A",
+      "source": "PDK_ROOT environment variable",
+      "version": "open_pdks c6d73a35f524070e85faff4a6a9eef49553ebc2b",
+      "ambiguous_sources": [
+        "search root: ~/.ciel"
+      ],
+      "compatibility": {
+        "status": "mismatch",
+        "package": "open_pdks-sky130",
+        "expected": "open_pdks f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7"
+      }
+    },
+    "deck": {
+      "name": "sky130.lib.spice",
+      "content_hash": "sha256:48de7c677e2c6e7d09b2559279de9f818be71010a4aa933d728eb4db3b133c84",
+      "released": false
+    },
+    "input": {
+      "content_hash": "sha256:8d4bec328c1b953971503f4c8632b8118bae70f44dd2dd8bb05c9a0b372d42e5",
+      "role": "netlist"
+    }
+  },
+  "measurements": [
+    {
+      "name": "pm",
+      "unit": "deg",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/-40C",
+        "value": 14.807168230545841,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "sf/novdd/-40C",
+        "value": 14.426313073316237
+      },
+      "max": {
+        "corner_id": "fs/novdd/125C",
+        "value": 19.87738388647506
+      }
+    },
+    {
+      "name": "gm",
+      "unit": "dB",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/-40C",
+        "value": 11.960642759140805,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "sf/novdd/-40C",
+        "value": 11.756805850773164
+      },
+      "max": {
+        "corner_id": "fs/novdd/125C",
+        "value": 14.452408853335227
+      }
+    },
+    {
+      "name": "fc",
+      "unit": "Hz",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/-40C",
+        "value": 203390.4320967383,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "fs/novdd/125C",
+        "value": 152459.89828699967
+      },
+      "max": {
+        "corner_id": "sf/novdd/-40C",
+        "value": 206580.4874419593
+      }
+    },
+    {
+      "name": "dc",
+      "unit": "",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/-40C",
+        "value": 1662.817742908085,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "fs/novdd/125C",
+        "value": 1076.852833031879
+      },
+      "max": {
+        "corner_id": "ff/novdd/-40C",
+        "value": 1712.5684085429423
+      }
+    }
+  ],
+  "corners": [
+    {
+      "corner_id": "tt/novdd/-40C",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": -40.0,
+      "status": "pass",
+      "runtime_s": 3.826,
+      "peak_rss_bytes": 184897536,
+      "engine_exit_code": 0,
+      "engine_killed_by_signal": null,
+      "measurements": [
+        {
+          "name": "pm",
+          "value": 14.807168230545841,
+          "unit": "deg",
+          "status": "pass",
+          "margin": null,
+          "transfer": {
+            "num": "v(xldo.fb)",
+            "den": "v(xldo.lg_den)",
+            "metric": "phase_margin_deg"
+          }
+        },
+        {
+          "name": "gm",
+          "value": 11.960642759140805,
+          "unit": "dB",
+          "status": "pass",
+          "margin": null,
+          "transfer": {
+            "num": "v(xldo.fb)",
+            "den": "v(xldo.lg_den)",
+            "metric": "gain_margin_db"
+          }
+        },
+        {
+          "name": "fc",
+          "value": 203390.4320967383,
+          "unit": "Hz",
+          "status": "pass",
+          "margin": null,
+          "transfer": {
+            "num": "v(xldo.fb)",
+            "den": "v(xldo.lg_den)",
+            "metric": "unity_crossing_hz"
+          }
+        },
+        {
+          "name": "dc",
+          "value": 1662.817742908085,
+          "unit": "",
+          "status": "pass",
+          "margin": null,
+          "transfer": {
+            "num": "v(xldo.fb)",
+            "den": "v(xldo.lg_den)",
+            "metric": "low_frequency_magnitude"
+          }
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-709/sim/bias-retopo/20261121-171327-rczL180/responses/loop-c033-esr10m-50ma-v3.30/tt_novdd_n40C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-709/sim/bias-retopo/20261121-171327-rczL180/responses/loop-c033-esr10m-50ma-v3.30/tt_novdd_n40C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "tt/novdd/27C",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27.0,
+      "status": "pass",
+      "runtime_s": 3.827,
+      "peak_rss_bytes": 184909824,
+      "engine_exit_code": 0,
+      "engine_killed_by_signal": null,
+      "measurements": [
+        {
+          "name": "pm",
+          "value": 16.768097480575534,
+          "unit": "deg",
+          "status": "pass",
+          "margin": null,
+          "transfer": {
+            "num": "v(xldo.fb)",
+            "den": "v(xldo.lg_den)",
+            "metric": "phase_margin_deg"
+          }
+        },
+        {
+          "name": "gm",
+          "value": 13.05029821477537,
+          "unit": "dB",
+          "status": "pass",
+          "margin": null,
+          "transfer": {
+            "num": "v(xldo.fb)",
+            "den": "v(xldo.lg_den)",
+            "metric": "gain_margin_db"
+          }
+        },
+        {
+          "name": "fc",
+          "value": 179001.52630550956,
+          "unit": "Hz",
+          "status": "pass",
+          "margin": null,
+          "transfer": {
+            "num": "v(xldo.fb)",
+            "den": "v(xldo.lg_den)",
+            "metric": "unity_crossing_hz"
+          }
+        },
+        {
+          "name": "dc",
+          "value": 1400.7181229480382,
+          "unit": "",
+          "status": "pass",
+          "margin": null,
+          "transfer": {
+            "num": "v(xldo.fb)",
+            "den": "v(xldo.lg_den)",
+            "metric": "low_frequency_magnitude"
+          }
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-709/sim/bias-retopo/20261121-171327-rczL180/responses/loop-c033-esr10m-50ma-v3.30/tt_novdd_27C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-709/sim/bias-retopo/20261121-171327-rczL180/responses/loop-c033-esr10m-50ma-v3.30/tt_novdd_27C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "tt/novdd/125C",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 125.0,
+      "status": "pass",
+      "runtime_s": 3.824,
+      "peak_rss_bytes": 184909824,
+      "engine_exit_code": 0,
+      "engine_killed_by_signal": null,
+      "measurements": [
+        {
+          "name": "pm",
+          "value": 19.48787326199806,
+          "unit": "deg",
+          "status": "pass",
+          "margin": null,
+          "transfer": {
+            "num": "v(xldo.fb)",
+            "den": "v(xldo.lg_den)",
+            "metric": "phase_margin_deg"
+          }
+        },
+        {
+          "name": "gm",
+          "value": 14.318664317372011,
+          "unit": "dB",
+          "status": "pass",
+          "margin": null,
+          "transfer": {
+            "num": "v(xldo.fb)",
+            "den": "v(xldo.lg_den)",
+            "metric": "gain_margin_db"
+          }
+        },
+        {
+          "name": "fc",
+          "value": 154142.73219419198,
+          "unit": "Hz",
+          "status": "pass",
+          "margin": null,
+          "transfer": {
+            "num": "v(xldo.fb)",
+            "den": "v(xldo.lg_den)",
+            "metric": "unity_crossing_hz"
+          }
+        },
+        {
+          "name": "dc",
+          "value": 1112.9487788065696,
+          "unit": "",
+          "status": "pass",
+          "margin": null,
+          "transfer": {
+            "num": "v(xldo.fb)",
+            "den": "v(xldo.lg_den)",
+            "metric": "low_frequency_magnitude"
+          }
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-709/sim/bias-retopo/20261121-171327-rczL180/responses/loop-c033-esr10m-50ma-v3.30/tt_novdd_125C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-709/sim/bias-retopo/20261121-171327-rczL180/responses/loop-c033-esr10m-50ma-v3.30/tt_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "ss/novdd/-40C",
+      "process": "ss",
+      "supply_v": {},
+      "temperature_c": -40.0,
+      "status": "pass",
+      "runtime_s": 3.773,
+      "peak_rss_bytes": 184885248,
+      "engine_exit_code": 0,
+      "engine_killed_by_signal": null,
+      "measurements": [
+        {
+          "name": "pm",
+          "value": 14.5600625059638,
+          "unit": "deg",
+          "status": "pass",
+          "margin": null,
+          "transfer": {
+            "num": "v(xldo.fb)",
+            "den": "v(xldo.lg_den)",
+            "metric": "phase_margin_deg"
+          }
+        },
+        {
+          "name": "gm",
+          "value": 11.893703907917729,
+          "unit": "dB",
+          "status": "pass",
+          "margin": null,
+          "transfer": {
+            "num": "v(xldo.fb)",
+            "den": "v(xldo.lg_den)",
+            "metric": "gain_margin_db"
+          }
+        },
+        {
+          "name": "fc",
+          "value": 203367.52140415783,
+          "unit": "Hz",
+          "status": "pass",
+          "margin": null,
+          "transfer": {
+            "num": "v(xldo.fb)",
+            "den": "v(xldo.lg_den)",
+            "metric": "unity_crossing_hz"
+          }
+        },
+        {
+          "name": "dc",
+          "value": 1641.6445306584171,
+          "unit": "",
+          "status": "pass",
+          "margin": null,
+          "transfer": {
+            "num": "v(xldo.fb)",
+            "den": "v(xldo.lg_den)",
+            "metric": "low_frequency_magnitude"
+          }
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-709/sim/bias-retopo/20261121-171327-rczL180/responses/loop-c033-esr10m-50ma-v3.30/ss_novdd_n40C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-709/sim/bias-retopo/20261121-171327-rczL180/responses/loop-c033-esr10m-50ma-v3.30/ss_novdd_n40C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "ss/novdd/27C",
+      "process": "ss",
+      "supply_v": {},
+      "temperature_c": 27.0,
+      "status": "pass",
+      "runtime_s": 3.823,
+      "peak_rss_bytes": 184897536,
+      "engine_exit_code": 0,
+      "engine_killed_by_signal": null,
+      "measurements": [
+        {
+          "name": "pm",
+          "value": 16.575402015238268,
+          "unit": "deg",
+          "status": "pass",
+          "margin": null,
+          "transfer": {
+            "num": "v(xldo.fb)",
+            "den": "v(xldo.lg_den)",
+            "metric": "phase_margin_deg"
+          }
+        },
+        {
+          "name": "gm",
+          "value": 13.025073494649778,
+          "unit": "dB",
+          "status": "pass",
+          "margin": null,
+          "transfer": {
+            "num": "v(xldo.fb)",
+            "den": "v(xldo.lg_den)",
+            "metric": "gain_margin_db"
+          }
+        },
+        {
+          "name": "fc",
+          "value": 178497.37709105632,
+          "unit": "Hz",
+          "status": "pass",
+          "margin": null,
+          "transfer": {
+            "num": "v(xldo.fb)",
+            "den": "v(xldo.lg_den)",
+            "metric": "unity_crossing_hz"
+          }
+        },
+        {
+          "name": "dc",
+          "value": 1381.2764685825152,
+          "unit": "",
+          "status": "pass",
+          "margin": null,
+          "transfer": {
+            "num": "v(xldo.fb)",
+            "den": "v(xldo.lg_den)",
+            "metric": "low_frequency_magnitude"
+          }
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-709/sim/bias-retopo/20261121-171327-rczL180/responses/loop-c033-esr10m-50ma-v3.30/ss_novdd_27C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-709/sim/bias-retopo/20261121-171327-rczL180/responses/loop-c033-esr10m-50ma-v3.30/ss_novdd_27C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "ss/novdd/125C",
+      "process": "ss",
+      "supply_v": {},
+      "temperature_c": 125.0,
+      "status": "pass",
+      "runtime_s": 3.772,
+      "peak_rss_bytes": 184885248,
+      "engine_exit_code": 0,
+      "engine_killed_by_signal": null,
+      "measurements": [
+        {
+          "name": "pm",
+          "value": 19.3350226546207,
+          "unit": "deg",
+          "status": "pass",
+          "margin": null,
+          "transfer": {
+            "num": "v(xldo.fb)",
+            "den": "v(xldo.lg_den)",
+            "metric": "phase_margin_deg"
+          }
+        },
+        {
+          "name": "gm",
+          "value": 14.329979801320357,
+          "unit": "dB",
+          "status": "pass",
+          "margin": null,
+          "transfer": {
+            "num": "v(xldo.fb)",
+            "den": "v(xldo.lg_den)",
+            "metric": "gain_margin_db"
+          }
+        },
+        {
+          "name": "fc",
+          "value": 153377.21908137534,
+          "unit": "Hz",
+          "status": "pass",
+          "margin": null,
+          "transfer": {
+            "num": "v(xldo.fb)",
+            "den": "v(xldo.lg_den)",
+            "metric": "unity_crossing_hz"
+          }
+        },
+        {
+          "name": "dc",
+          "value": 1106.8355064401433,
+          "unit": "",
+          "status": "pass",
+          "margin": null,
+          "transfer": {
+            "num": "v(xldo.fb)",
+            "den": "v(xldo.lg_den)",
+            "metric": "low_frequency_magnitude"
+          }
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-709/sim/bias-retopo/20261121-171327-rczL180/responses/loop-c033-esr10m-50ma-v3.30/ss_novdd_125C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-709/sim/bias-retopo/20261121-171327-rczL180/responses/loop-c033-esr10m-50ma-v3.30/ss_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "ff/novdd/-40C",
+      "process": "ff",
+      "supply_v": {},
+      "temperature_c": -40.0,
+      "status": "pass",
+      "runtime_s": 3.921,
+      "peak_rss_bytes": 184909824,
+      "engine_exit_code": 0,
+      "engine_killed_by_signal": null,
+      "measurements": [
+        {
+          "name": "pm",
+          "value": 14.838519672931625,
+          "unit": "deg",
+          "status": "pass",
+          "margin": null,
+          "transfer": {
+            "num": "v(xldo.fb)",
+            "den": "v(xldo.lg_den)",
+            "metric": "phase_margin_deg"
+          }
+        },
+        {
+          "name": "gm",
+          "value": 11.910790868765957,
+          "unit": "dB",
+          "status": "pass",
+          "margin": null,
+          "transfer": {
+            "num": "v(xldo.fb)",
+            "den": "v(xldo.lg_den)",
+            "metric": "gain_margin_db"
+          }
+        },
+        {
+          "name": "fc",
+          "value": 206020.745896955,
+          "unit": "Hz",
+          "status": "pass",
+          "margin": null,
+          "transfer": {
+            "num": "v(xldo.fb)",
+            "den": "v(xldo.lg_den)",
+            "metric": "unity_crossing_hz"
+          }
+        },
+        {
+          "name": "dc",
+          "value": 1712.5684085429423,
+          "unit": "",
+          "status": "pass",
+          "margin": null,
+          "transfer": {
+            "num": "v(xldo.fb)",
+            "den": "v(xldo.lg_den)",
+            "metric": "low_frequency_magnitude"
+          }
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "nonconvergence",
+          "message": "Warning: Dynamic gmin stepping failed"
+        }
+      ],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-709/sim/bias-retopo/20261121-171327-rczL180/responses/loop-c033-esr10m-50ma-v3.30/ff_novdd_n40C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-709/sim/bias-retopo/20261121-171327-rczL180/responses/loop-c033-esr10m-50ma-v3.30/ff_novdd_n40C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "ff/novdd/27C",
+      "process": "ff",
+      "supply_v": {},
+      "temperature_c": 27.0,
+      "status": "pass",
+      "runtime_s": 3.922,
+      "peak_rss_bytes": 184909824,
+      "engine_exit_code": 0,
+      "engine_killed_by_signal": null,
+      "measurements": [
+        {
+          "name": "pm",
+          "value": 16.756417219886373,
+          "unit": "deg",
+          "status": "pass",
+          "margin": null,
+          "transfer": {
+            "num": "v(xldo.fb)",
+            "den": "v(xldo.lg_den)",
+            "metric": "phase_margin_deg"
+          }
+        },
+        {
+          "name": "gm",
+          "value": 12.983264496324379,
+          "unit": "dB",
+          "status": "pass",
+          "margin": null,
+          "transfer": {
+            "num": "v(xldo.fb)",
+            "den": "v(xldo.lg_den)",
+            "metric": "gain_margin_db"
+          }
+        },
+        {
+          "name": "fc",
+          "value": 181501.5546680812,
+          "unit": "Hz",
+          "status": "pass",
+          "margin": null,
+          "transfer": {
+            "num": "v(xldo.fb)",
+            "den": "v(xldo.lg_den)",
+            "metric": "unity_crossing_hz"
+          }
+        },
+        {
+          "name": "dc",
+          "value": 1435.9148093141723,
+          "unit": "",
+          "status": "pass",
+          "margin": null,
+          "transfer": {
+            "num": "v(xldo.fb)",
+            "den": "v(xldo.lg_den)",
+            "metric": "low_frequency_magnitude"
+          }
+        }
+      ],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "nonconvergence",
+          "message": "Warning: Dynamic gmin stepping failed"
+        }
+      ],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-709/sim/bias-retopo/20261121-171327-rczL180/responses/loop-c033-esr10m-50ma-v3.30/ff_novdd_27C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-709/sim/bias-retopo/20261121-171327-rczL180/responses/loop-c033-esr10m-50ma-v3.30/ff_novdd_27C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "ff/novdd/125C",
+      "process": "ff",
+      "supply_v": {},
+      "temperature_c": 125.0,
+      "status": "pass",
+      "runtime_s": 3.221,
+      "peak_rss_bytes": 185511936,
+      "engine_exit_code": 0,
+      "engine_killed_by_signal": null,
+      "measurements": [
+        {
+          "name": "pm",
+          "value": 19.457425994920158,
+          "unit": "deg",
+          "status": "pass",
+          "margin": null,
+          "transfer": {
+            "num": "v(xldo.fb)",
+            "den": "v(xldo.lg_den)",
+            "metric": "phase_margin_deg"
+          }
+        },
+        {
+          "name": "gm",
+          "value": 14.240449442555638,
+          "unit": "dB",
+          "status": "pass",
+          "margin": null,
+          "transfer": {
+            "num": "v(xldo.fb)",
+            "den": "v(xldo.lg_den)",
+            "metric": "gain_margin_db"
+          }
+        },
+        {
+          "name": "fc",
+          "value": 156400.59403596813,
+          "unit": "Hz",
+          "status": "pass",
+          "margin": null,
+          "transfer": {
+            "num": "v(xldo.fb)",
+            "den": "v(xldo.lg_den)",
+            "metric": "unity_crossing_hz"
+          }
+        },
+        {
+          "name": "dc",
+          "value": 1100.5762589896797,
+          "unit": "",
+          "status": "pass",
+          "margin": null,
+          "transfer": {
+            "num": "v(xldo.fb)",
+            "den": "v(xldo.lg_den)",
+            "metric": "low_frequency_magnitude"
+          }
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-709/sim/bias-retopo/20261121-171327-rczL180/responses/loop-c033-esr10m-50ma-v3.30/ff_novdd_125C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-709/sim/bias-retopo/20261121-171327-rczL180/responses/loop-c033-esr10m-50ma-v3.30/ff_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "sf/novdd/-40C",
+      "process": "sf",
+      "supply_v": {},
+      "temperature_c": -40.0,
+      "status": "pass",
+      "runtime_s": 3.27,
+      "peak_rss_bytes": 185511936,
+      "engine_exit_code": 0,
+      "engine_killed_by_signal": null,
+      "measurements": [
+        {
+          "name": "pm",
+          "value": 14.426313073316237,
+          "unit": "deg",
+          "status": "pass",
+          "margin": null,
+          "transfer": {
+            "num": "v(xldo.fb)",
+            "den": "v(xldo.lg_den)",
+            "metric": "phase_margin_deg"
+          }
+        },
+        {
+          "name": "gm",
+          "value": 11.756805850773164,
+          "unit": "dB",
+          "status": "pass",
+          "margin": null,
+          "transfer": {
+            "num": "v(xldo.fb)",
+            "den": "v(xldo.lg_den)",
+            "metric": "gain_margin_db"
+          }
+        },
+        {
+          "name": "fc",
+          "value": 206580.4874419593,
+          "unit": "Hz",
+          "status": "pass",
+          "margin": null,
+          "transfer": {
+            "num": "v(xldo.fb)",
+            "den": "v(xldo.lg_den)",
+            "metric": "unity_crossing_hz"
+          }
+        },
+        {
+          "name": "dc",
+          "value": 1645.659487221215,
+          "unit": "",
+          "status": "pass",
+          "margin": null,
+          "transfer": {
+            "num": "v(xldo.fb)",
+            "den": "v(xldo.lg_den)",
+            "metric": "low_frequency_magnitude"
+          }
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-709/sim/bias-retopo/20261121-171327-rczL180/responses/loop-c033-esr10m-50ma-v3.30/sf_novdd_n40C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-709/sim/bias-retopo/20261121-171327-rczL180/responses/loop-c033-esr10m-50ma-v3.30/sf_novdd_n40C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "sf/novdd/27C",
+      "process": "sf",
+      "supply_v": {},
+      "temperature_c": 27.0,
+      "status": "pass",
+      "runtime_s": 3.22,
+      "peak_rss_bytes": 185511936,
+      "engine_exit_code": 0,
+      "engine_killed_by_signal": null,
+      "measurements": [
+        {
+          "name": "pm",
+          "value": 16.4148750775976,
+          "unit": "deg",
+          "status": "pass",
+          "margin": null,
+          "transfer": {
+            "num": "v(xldo.fb)",
+            "den": "v(xldo.lg_den)",
+            "metric": "phase_margin_deg"
+          }
+        },
+        {
+          "name": "gm",
+          "value": 12.891430524940612,
+          "unit": "dB",
+          "status": "pass",
+          "margin": null,
+          "transfer": {
+            "num": "v(xldo.fb)",
+            "den": "v(xldo.lg_den)",
+            "metric": "gain_margin_db"
+          }
+        },
+        {
+          "name": "fc",
+          "value": 181254.2223717489,
+          "unit": "Hz",
+          "status": "pass",
+          "margin": null,
+          "transfer": {
+            "num": "v(xldo.fb)",
+            "den": "v(xldo.lg_den)",
+            "metric": "unity_crossing_hz"
+          }
+        },
+        {
+          "name": "dc",
+          "value": 1390.4422593081486,
+          "unit": "",
+          "status": "pass",
+          "margin": null,
+          "transfer": {
+            "num": "v(xldo.fb)",
+            "den": "v(xldo.lg_den)",
+            "metric": "low_frequency_magnitude"
+          }
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-709/sim/bias-retopo/20261121-171327-rczL180/responses/loop-c033-esr10m-50ma-v3.30/sf_novdd_27C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-709/sim/bias-retopo/20261121-171327-rczL180/responses/loop-c033-esr10m-50ma-v3.30/sf_novdd_27C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "sf/novdd/125C",
+      "process": "sf",
+      "supply_v": {},
+      "temperature_c": 125.0,
+      "status": "pass",
+      "runtime_s": 3.321,
+      "peak_rss_bytes": 185511936,
+      "engine_exit_code": 0,
+      "engine_killed_by_signal": null,
+      "measurements": [
+        {
+          "name": "pm",
+          "value": 19.12872125940288,
+          "unit": "deg",
+          "status": "pass",
+          "margin": null,
+          "transfer": {
+            "num": "v(xldo.fb)",
+            "den": "v(xldo.lg_den)",
+            "metric": "phase_margin_deg"
+          }
+        },
+        {
+          "name": "gm",
+          "value": 14.19154185462822,
+          "unit": "dB",
+          "status": "pass",
+          "margin": null,
+          "transfer": {
+            "num": "v(xldo.fb)",
+            "den": "v(xldo.lg_den)",
+            "metric": "gain_margin_db"
+          }
+        },
+        {
+          "name": "fc",
+          "value": 155789.81224055038,
+          "unit": "Hz",
+          "status": "pass",
+          "margin": null,
+          "transfer": {
+            "num": "v(xldo.fb)",
+            "den": "v(xldo.lg_den)",
+            "metric": "unity_crossing_hz"
+          }
+        },
+        {
+          "name": "dc",
+          "value": 1121.8517666209816,
+          "unit": "",
+          "status": "pass",
+          "margin": null,
+          "transfer": {
+            "num": "v(xldo.fb)",
+            "den": "v(xldo.lg_den)",
+            "metric": "low_frequency_magnitude"
+          }
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-709/sim/bias-retopo/20261121-171327-rczL180/responses/loop-c033-esr10m-50ma-v3.30/sf_novdd_125C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-709/sim/bias-retopo/20261121-171327-rczL180/responses/loop-c033-esr10m-50ma-v3.30/sf_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "fs/novdd/-40C",
+      "process": "fs",
+      "supply_v": {},
+      "temperature_c": -40.0,
+      "status": "pass",
+      "runtime_s": 3.27,
+      "peak_rss_bytes": 185511936,
+      "engine_exit_code": 0,
+      "engine_killed_by_signal": null,
+      "measurements": [
+        {
+          "name": "pm",
+          "value": 15.218627904903684,
+          "unit": "deg",
+          "status": "pass",
+          "margin": null,
+          "transfer": {
+            "num": "v(xldo.fb)",
+            "den": "v(xldo.lg_den)",
+            "metric": "phase_margin_deg"
+          }
+        },
+        {
+          "name": "gm",
+          "value": 12.176769887849769,
+          "unit": "dB",
+          "status": "pass",
+          "margin": null,
+          "transfer": {
+            "num": "v(xldo.fb)",
+            "den": "v(xldo.lg_den)",
+            "metric": "gain_margin_db"
+          }
+        },
+        {
+          "name": "fc",
+          "value": 200005.22760405272,
+          "unit": "Hz",
+          "status": "pass",
+          "margin": null,
+          "transfer": {
+            "num": "v(xldo.fb)",
+            "den": "v(xldo.lg_den)",
+            "metric": "unity_crossing_hz"
+          }
+        },
+        {
+          "name": "dc",
+          "value": 1671.706343214411,
+          "unit": "",
+          "status": "pass",
+          "margin": null,
+          "transfer": {
+            "num": "v(xldo.fb)",
+            "den": "v(xldo.lg_den)",
+            "metric": "low_frequency_magnitude"
+          }
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-709/sim/bias-retopo/20261121-171327-rczL180/responses/loop-c033-esr10m-50ma-v3.30/fs_novdd_n40C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-709/sim/bias-retopo/20261121-171327-rczL180/responses/loop-c033-esr10m-50ma-v3.30/fs_novdd_n40C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "fs/novdd/27C",
+      "process": "fs",
+      "supply_v": {},
+      "temperature_c": 27.0,
+      "status": "pass",
+      "runtime_s": 3.22,
+      "peak_rss_bytes": 185511936,
+      "engine_exit_code": 0,
+      "engine_killed_by_signal": null,
+      "measurements": [
+        {
+          "name": "pm",
+          "value": 17.149561497785754,
+          "unit": "deg",
+          "status": "pass",
+          "margin": null,
+          "transfer": {
+            "num": "v(xldo.fb)",
+            "den": "v(xldo.lg_den)",
+            "metric": "phase_margin_deg"
+          }
+        },
+        {
+          "name": "gm",
+          "value": 13.21860069612662,
+          "unit": "dB",
+          "status": "pass",
+          "margin": null,
+          "transfer": {
+            "num": "v(xldo.fb)",
+            "den": "v(xldo.lg_den)",
+            "metric": "gain_margin_db"
+          }
+        },
+        {
+          "name": "fc",
+          "value": 176622.0817848625,
+          "unit": "Hz",
+          "status": "pass",
+          "margin": null,
+          "transfer": {
+            "num": "v(xldo.fb)",
+            "den": "v(xldo.lg_den)",
+            "metric": "unity_crossing_hz"
+          }
+        },
+        {
+          "name": "dc",
+          "value": 1403.447678573402,
+          "unit": "",
+          "status": "pass",
+          "margin": null,
+          "transfer": {
+            "num": "v(xldo.fb)",
+            "den": "v(xldo.lg_den)",
+            "metric": "low_frequency_magnitude"
+          }
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-709/sim/bias-retopo/20261121-171327-rczL180/responses/loop-c033-esr10m-50ma-v3.30/fs_novdd_27C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-709/sim/bias-retopo/20261121-171327-rczL180/responses/loop-c033-esr10m-50ma-v3.30/fs_novdd_27C/corner.cir"
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "fs/novdd/125C",
+      "process": "fs",
+      "supply_v": {},
+      "temperature_c": 125.0,
+      "status": "pass",
+      "runtime_s": 3.22,
+      "peak_rss_bytes": 185511936,
+      "engine_exit_code": 0,
+      "engine_killed_by_signal": null,
+      "measurements": [
+        {
+          "name": "pm",
+          "value": 19.87738388647506,
+          "unit": "deg",
+          "status": "pass",
+          "margin": null,
+          "transfer": {
+            "num": "v(xldo.fb)",
+            "den": "v(xldo.lg_den)",
+            "metric": "phase_margin_deg"
+          }
+        },
+        {
+          "name": "gm",
+          "value": 14.452408853335227,
+          "unit": "dB",
+          "status": "pass",
+          "margin": null,
+          "transfer": {
+            "num": "v(xldo.fb)",
+            "den": "v(xldo.lg_den)",
+            "metric": "gain_margin_db"
+          }
+        },
+        {
+          "name": "fc",
+          "value": 152459.89828699967,
+          "unit": "Hz",
+          "status": "pass",
+          "margin": null,
+          "transfer": {
+            "num": "v(xldo.fb)",
+            "den": "v(xldo.lg_den)",
+            "metric": "unity_crossing_hz"
+          }
+        },
+        {
+          "name": "dc",
+          "value": 1076.852833031879,
+          "unit": "",
+          "status": "pass",
+          "margin": null,
+          "transfer": {
+            "num": "v(xldo.fb)",
+            "den": "v(xldo.lg_den)",
+            "metric": "low_frequency_magnitude"
+          }
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-709/sim/bias-retopo/20261121-171327-rczL180/responses/loop-c033-esr10m-50ma-v3.30/fs_novdd_125C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-709/sim/bias-retopo/20261121-171327-rczL180/responses/loop-c033-esr10m-50ma-v3.30/fs_novdd_125C/corner.cir"
+      },
+      "monte_carlo": null
+    }
+  ],
+  "diagnostics": [
+    {
+      "severity": "warning",
+      "code": "model_bin_range_preflight",
+      "message": "preflight: instance 'XM_PASS' (sky130_fd_pr__pfet_g5v0d10v5) has w=100u nf=25, at/above the ~100 um per-instance width bin range some PDKs enforce (keyed on w as written; nf= does not widen it); ngspice may abort with \"could not find a valid modelname\". Use m= to parallel smaller-width instances (see issue #4976)",
+      "instance": "XM_PASS",
+      "model": "sky130_fd_pr__pfet_g5v0d10v5",
+      "w_um": 100.0,
+      "nf": 25.0
+    }
+  ]
+}

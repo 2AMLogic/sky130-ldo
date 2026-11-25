@@ -32,6 +32,11 @@ import re
 import sys
 from pathlib import Path
 
+# `python3 -I` (the README reproduce form) implies -P on Python 3.11+, so
+# this script's directory is not on sys.path; the sibling modules below
+# live there.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
 import _paired_compare
 from _record_common import is_finite_number
 
@@ -40,12 +45,12 @@ LOAD_REG_V_TOL = 2e-6
 LOAD_REG_PCT_TOL = 1.2e-4
 PRINT_RESOLUTION_V = 1e-6  # ngspice prints 7 significant digits at ~1.8 V
 VNOM = 1.8
-ENDPOINTS = [
-    f"vout_{ld}{sfx}" for ld in ("0ma", "50ma") for sfx in ("", "_min", "_max")
+ENDPOINT_CARDS = [
+    [base, base + "_min", base + "_max"]
+    for base in ("vout_0ma", "vout_50ma")
 ]
-DERIVED = ["load_reg_v", "load_reg_pct"]
 TOLS = {
-    **{n: (ENDPOINT_TOL_V, "V") for n in ENDPOINTS},
+    **{n: (ENDPOINT_TOL_V, "V") for cards in ENDPOINT_CARDS for n in cards},
     "load_reg_v": (LOAD_REG_V_TOL, "V"),
     "load_reg_pct": (LOAD_REG_PCT_TOL, "%"),
 }
@@ -69,6 +74,7 @@ def compare(
     local_engine,
     remote_pass=None,
     local_pass=None,
+    remote_errors: list[str] | None = None,
 ) -> dict:
     return _paired_compare.compare(
         TOLS,
@@ -79,19 +85,14 @@ def compare(
         remote_pass,
         local_pass,
         extra={"print_resolution_v": PRINT_RESOLUTION_V},
+        remote_errors=remote_errors,
     )
 
 
 def load_remote(d: Path) -> tuple[dict, str | None, list[str]]:
-    vals, engines = {}, set()
-    for t in (1, 2):
-        resp = json.loads((d / "remote" / f"tran{t}" / "response.json").read_text())
-        engines.add(str(resp["environment"].get("engine_version")))
-        for m in resp["corners"][0]["measurements"]:
-            if is_finite_number(m.get("value")):
-                vals[m["name"].split(".", 1)[1]] = m["value"]
+    vals, engine, errors = _paired_compare.load_endpoint_responses(d, ENDPOINT_CARDS)
     vals.update({k: v for k, v in derive(vals).items() if v is not None})
-    return vals, (engines.pop() if len(engines) == 1 else None), sorted(engines)
+    return vals, engine, errors
 
 
 _MEAS = re.compile(
@@ -116,10 +117,11 @@ def main(argv: list[str]) -> int:
     ap.add_argument("--remote-pass", choices=("PASS", "FAIL"), required=True)
     ap.add_argument("--local-pass", choices=("PASS", "FAIL"), required=True)
     a = ap.parse_args(argv)
-    rv, reng, _ = load_remote(a.dir)
+    rv, reng, errors = load_remote(a.dir)
     lv = load_local(a.dir)
     rep = compare(
-        rv, lv, reng, a.local_engine, a.remote_pass == "PASS", a.local_pass == "PASS"
+        rv, lv, reng, a.local_engine, a.remote_pass == "PASS", a.local_pass == "PASS",
+        remote_errors=errors,
     )
     if a.out:
         a.out.write_text(json.dumps(rep, indent=2) + "\n")

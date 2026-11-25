@@ -1,0 +1,90 @@
+# Work Log Archive — 2026-09
+
+Sections moved byte-for-byte from [WORK_LOG.md](../WORK_LOG.md) by `loom-daemon work-docs archive`.
+
+### 2026-09-25
+
+- **Issue #174** (closed): Audit remaining sim/ benches (current-limit, dropout-vs-load, loop-gain, load-transient, psrr-dc, thermal, startup, enable-shutdown) for the same initial-condition exposure
+- **Issue #171** (closed): Define sim/'s initial-condition contract; fail a corner on a solver diagnostic (corner-run.py)
+- **Issue #169** (closed): Re-test #81 item 2's 125C/50mA second equilibrium with the full node set constrained: #164 showed its method unreliable at a gentler corner
+- **Issue #164** (closed): Mismatch alone latches the loop off at 27C/1mA: ~6% of MC draws settle with VOUT at the input rail (startup bench is 45/45 and cannot see it)
+- **Issue #154** (closed): layout: gen-ldo-blocks.py routes VIN/VOUT as 0.30um signal trunks, making post-layout full-load rows non-physical
+- **Issue #119** (closed): Load transient FAILs 20/45 corners — re-measure after the stability fix before designing for it
+- **Issue #118** (closed): DC accuracy: Output (177/200 MC), line regulation (18/45) and load regulation (34/45) all FAIL
+- **PR #181**: docs(sim): audit remaining sim/ benches for initial-condition-contract exposure
+- **PR #176**: sim: define initial-condition contract; fail a corner on a solver diagnostic (corner-run.py)
+- **PR #175**: sim+docs: #81 item 2's 125C/50mA second equilibrium does not exist -- a five-variant IC screen regulates everywhere; #81's numbers were EA_OUT/TS_SNS/TS_REF
+- **PR #170**: sim: seed mc-output-accuracy's transient from a realizable state — the 27C/1mA rail mode is the bench's .op, not a second equilibrium
+- **PR #167**: fix(sim): size load-transient C_out to DR-002 ceiling; instrument the recovery-time clause
+- **PR #165**: DC accuracy: one mechanism behind all three rows — and it is not matching, supply rejection or loop gain
+- **PR #163**: layout: size VIN/VOUT as spec-derived power rails, and measure why the extractor cannot see it
+
+### 2026-09-24
+
+- **Issue #159** (closed): Residual stale-ratification prose in design/README.md and challenge-4-proposal.md (left behind by #152) plus a possibly-stale "No LDO layout yet" heading
+- **Issue #156** (closed): docs: the stated full-load extracted-VOUT range in signoff/README.md does not match the record's own delta[] rows
+- **Issue #153** (closed): Stale "once issue #1 rules/ratifies" phrasing survives the DR-006 ratification sweep (and DR-006's own header still reads proposed)
+- **Issue #152** (closed): Testbench .sch headers and design/README.md still call the target table DRAFT after DR-006/#1 ratified it
+- **Issue #147** (closed): sim/ manifests and sim/README.md still call the target table DRAFT after DR-006/#1 ratified it
+- **Issue #146** (closed): characterization.md's Post-layout PEX detail is stale relative to build_characterization_report.py --check
+- **Issue #142** (closed): Draw the sky130 hvi voltage-domain marker in ldo_core's layout so extraction binds g5v0d10v5, not the 01v8 core flavour
+- **Issue #140** (closed): ci: lint for duplicate DR-NNN decision-record numbers (four open PRs each claimed DR-008)
+- **Issue #125** (closed): README: embed the fleet burndown chart (one line)
+- **Issue #120** (closed): Thermal FAILs 3/15 corners — establish the delegated theta-JA assumption before treating it as a design defect
+- **Issue #116** (closed): Dropout fails 0/45 corners against the ratified < 300 mV row — check pass-device sizing first (cf. gf180-ldo#139)
+- **Issue #113** (closed): Commit a klt signoff block manifest so this block's T1 state is graded, not hand-read
+- **PR #161**: docs: retire the last stale "issue #1 has not ratified" claims and the "No LDO layout yet" heading (#159)
+- **PR #160**: docs: state the real full-load extracted-VOUT extremes and narrow the klt-pin claim
+- **PR #158**: docs: retire forward-looking "once issue #1 rules" phrasing; flip DR-006 to ratified (#153)
+- **PR #157**: docs: cite spec/target-spec.md as ratified in testbench headers and design/README.md (#152)
+- **PR #155**: feat(layout): draw the sky130 hvi voltage-domain marker so extraction binds g5v0d10v5 (#142)
+- **PR #151**: docs: cite spec/target-spec.md as ratified in sim/ manifests and docs
+- **PR #149**: feat(ci): fail check:ci on duplicate DR-NNN decision-record numbers (#140)
+- **PR #148**: docs: relocate hand-written PEX triage narrative out of characterization.md
+- **PR #139**: fix(design): re-size M_PASS/M_SENSE for dropout (DR-011); correct a disproven single-op claim (#116)
+- **PR #135**: README: embed the fleet burndown chart
+- **PR #132**: docs(spec): DR-008 — Thermal FAIL is the hysteresis bound, not theta-JA; record the delegated theta-JA integration constraint
+- **PR #126**: feat(signoff): commit a klt signoff block manifest and the T1 verdict of record
+
+### 2026-09-23
+
+- **Issue #136** (closed): 2am: reuse rule 9 — decide and record the sky130-bandgap consumption edge (no in-tree reference exists; VREF is an external port)
+- **Issue #123** (closed): 2am: reuse rule 9 — in-tree error amplifier (symmetric OTA) duplicates sibling canary sky130-opamp — add reuse.lock.json in_tree entry (evaluate), then adopt or record
+- **Issue #122** (closed): T1 item 7: the klt pex leg errors on all 135 corners — item 7 accepts no other evidence kind
+- **Issue #121** (closed): The Iq spec row is unratified ('no number set') yet graded FAIL — ratify it or remove it from the table
+- **Issue #117** (closed): PSRR fails 0/45 corners at every ratified condition
+- **Issue #115** (closed): Stability: PM/GM margins met at only 7/45 corners — likely upstream of the transient and regulation misses
+- **PR #144**: docs: record no-lock-entry decision for the sky130-bandgap reuse edge (DR-012)
+- **PR #143**: sim(pex): re-check the disclosed klt gaps upstream, pin main@040f3406, record 108/135 (#122)
+- **PR #141**: sim(psrr-dc): measure both ratified load points; 50 mA/100 kHz also fails
+- **PR #137**: docs: record the error amplifier as kept in-tree vs sky130-opamp (DR-010 + reuse.lock.json)
+- **PR #134**: spec: ratify the Iq row at < 30 µA via DR-008
+- **PR #130**: docs(design): stability binding mechanism, feedforward-zero screen (verified-negative), coupling-thesis test (#115)
+
+### 2026-09-19
+
+- **Issue #58** (closed): Track the gap to T1 sim-validated / bronze (klayout-tools design-evidence tiers)
+
+### 2026-09-18
+
+- **Issue #1** (closed): Ratify the target spec
+- **PR #50**: docs(spec): draft DR-006 spec ratification — ratify DR-002/003/004/005
+
+### 2026-09-16
+
+- **Issue #109** (closed): merge-pr.sh silently fails on every PR without a prior champion:hold-state marker (pipefail bug)
+
+### 2026-09-15
+
+- **Issue #107** (closed): Two-stage/cascoded amplifier redesign to close PSRR and light-load stability (per DR-007)
+- **Issue #70** (closed): PSRR fails everywhere and light-load stability shortfall is pervasive: bias-generator/compensation redesign needed
+- **Issue #60** (closed): LDO fails its own DRAFT PVT-corner spec: Output, Dropout, Load-transient, PSRR and Stability all FAIL (T1 re-read #58, items 5+6)
+- **PR #111**: docs(design): document verified-negative cascode screening for PSRR/stability
+- **PR #110**: docs(design): close out #60, root-cause/decomposition complete
+- **PR #108**: docs(design): document DR-007 outcome for #70, spin off #107
+- **PR #106**: docs(spec): add DR-007 recommending PSRR/Stability rows be superseded
+
+### 2026-09-10
+
+- **Issue #104** (closed): LDO: run the full 45-point PVT matrix for the line-regulation, load-regulation and Iq testbenches (issue #64's three benches, mirroring #74)
+- **PR #105**: sim: run the full 45-point PVT matrix for line-regulation, load-regulation and Iq (#104)

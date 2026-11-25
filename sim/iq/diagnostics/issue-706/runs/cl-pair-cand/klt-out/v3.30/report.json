@@ -1,0 +1,1489 @@
+{
+  "schema_version": 3,
+  "netlist": {
+    "path": "sim/iq/diagnostics/issue-706/runs/cl-pair-cand/klt-requests/v3.30.spice",
+    "scope": "repo"
+  },
+  "status": "pass",
+  "corner_count": 1,
+  "passed": 1,
+  "failed": 0,
+  "errored": 0,
+  "inconclusive": 0,
+  "diagnostic_counts": {
+    "by_code": {},
+    "by_severity": {},
+    "corners_with_diagnostics": 0
+  },
+  "metrics": {
+    "sim__corner__count": 1,
+    "sim__corner__passed_count": 1,
+    "sim__corner__failed_count": 0,
+    "sim__corner__errored_count": 0,
+    "sim__corner__inconclusive_count": 0
+  },
+  "environment": {
+    "engine": "ngspice",
+    "engine_version": "47",
+    "ngspice_binary": "/usr/local/bin/ngspice",
+    "engine_build": {
+      "version_banner": "******\n** ngspice-47 : Circuit level simulation program\n** Compiled with KLU Direct Linear Solver\n** The U. C. Berkeley CAD Group\n** Copyright 1985-1994, Regents of the University of California.\n** Copyright 2001-2026, The ngspice team.\n** Please get your ngspice manual from https://ngspice.sourceforge.io/docs.html\n** Please file your bug-reports at http://ngspice.sourceforge.net/bugrep.html\n** Creation Date: Fri Nov 13 23:19:32 UTC 2026\n******",
+      "binary_sha256": null,
+      "probe": "ok",
+      "reason": null
+    },
+    "ngspice_init": {
+      "source": "runner",
+      "lines": null,
+      "sha256": null
+    },
+    "models_lib": {
+      "path": null,
+      "scope": "external"
+    },
+    "models_lib_sha256": "48de7c677e2c6e7d09b2559279de9f818be71010a4aa933d728eb4db3b133c84",
+    "models_lib_sha256_scope": "client",
+    "netlist_sha256": "3f5e0b0eacdeeb3ec1ffe9deb644adfeb50b720f31e4d1e3aa15f399102baa3c",
+    "netlist_sha256_scope": "staged",
+    "netlist_closure": [
+      {
+        "path": "sim/iq/diagnostics/issue-706/runs/cl-pair-cand/klt-requests/v3.30.spice",
+        "scope": "repo",
+        "sha256": "3f5e0b0eacdeeb3ec1ffe9deb644adfeb50b720f31e4d1e3aa15f399102baa3c"
+      }
+    ],
+    "netlist_identity": "sha256:fa2fa6dae59584975d3e394e25bbe7822d4b20a9d86bcb7ff6db85db6f43b4d3",
+    "remote": {
+      "provider": "aws-batch-fleet",
+      "job_id": "klt-sim-22a64abdd7ca",
+      "region": "us-east-1",
+      "instance_id": "i-07d4c8d078c634e94",
+      "instance_type": "m7i.4xlarge",
+      "availability_zone": "us-east-1c",
+      "ami_id": "ami-09c14f55df4958cbd",
+      "lifecycle": "spot",
+      "spot": true,
+      "state": "done",
+      "exit_code": "0",
+      "concurrency": "1",
+      "physical_cores": "8",
+      "elapsed_seconds": 13,
+      "client_submitted_at": "2026-11-21T03:39:35.166269Z",
+      "client_launched_at": "2026-11-21T03:39:54.724468Z",
+      "client_status_terminal_at": "2026-11-21T03:40:26.173394Z",
+      "client_collected_at": "2026-11-21T03:40:27.005408Z",
+      "runner_klt_version": "0.9.0",
+      "client_klt_version": "0.9.3.dev2575+g6bd18bbc8637",
+      "runner_compatibility": "match",
+      "runner_request_features": {
+        "required": [
+          "analysis_steps",
+          "measurements[].expr",
+          "options.ngspice_init"
+        ],
+        "missing": [],
+        "status": "supported"
+      },
+      "worker_environment": {
+        "capture": "ok",
+        "simulator": {
+          "requested_binary": "ngspice",
+          "binary_source": "PATH",
+          "selected_path": "/usr/local/bin/ngspice",
+          "version_banner": "******\n** ngspice-47 : Circuit level simulation program\n** Compiled with KLU Direct Linear Solver\n** The U. C. Berkeley CAD Group\n** Copyright 1985-1994, Regents of the University of California.\n** Copyright 2001-2026, The ngspice team.\n** Please get your ngspice manual from https://ngspice.sourceforge.io/docs.html\n** Please file your bug-reports at http://ngspice.sourceforge.net/bugrep.html\n** Creation Date: Fri Nov 13 23:19:32 UTC 2026\n******\n",
+          "version_probe": "ok"
+        },
+        "pdk": {
+          "variant": "sky130A",
+          "root": "/opt/pdk",
+          "stamp_scheme": "sources-sha256",
+          "stamp_sha256": "4ca10280ae9f293aa1ff69f0060a52e0026929111bda881503717469b429ce67",
+          "stamp_text": "open_pdks f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7",
+          "models_staged": false,
+          "stamp_scope": "executed"
+        },
+        "cpu_model": "Intel(R) Xeon(R) Platinum 8488C",
+        "omp_num_threads": null,
+        "image_manifest": null,
+        "model_inputs": null,
+        "diagnostics": [],
+        "pdk_stamp_comparison": {
+          "status": "mismatch",
+          "warning": "the worker's PDK revision stamp for sky130A differs from the one the submitter resolved locally; results may differ from a local run (a matching stamp would not prove identical models)"
+        },
+        "ngspice_init": null,
+        "threads_per_worker": null,
+        "engine_build_comparison": {
+          "status": "match"
+        }
+      },
+      "runner_model_inputs": null,
+      "runner_models_lib_sha256": "48de7c677e2c6e7d09b2559279de9f818be71010a4aa933d728eb4db3b133c84",
+      "runner_osdi_preload": null,
+      "job_ceiling": {
+        "basis": "conservative_serial_bound",
+        "unit_count": 1,
+        "per_unit_timeout_s": 1800,
+        "overhead_s": 120.0,
+        "job_bound_s": 1920.0,
+        "max_job_seconds": 3600.0,
+        "max_job_seconds_source": "fleet_config",
+        "exceeds_ceiling": false,
+        "check": "warn",
+        "max_units_per_job": 1,
+        "recommended_hosts": 1
+      },
+      "models_lib_comparison": {
+        "status": "match"
+      }
+    },
+    "engine_host": "worker",
+    "client_ngspice_binary": "/home/ubuntu/.local/bin/ngspice",
+    "client_engine_build": {
+      "version_banner": "******\n** ngspice-47 : Circuit level simulation program\n** Compiled with KLU Direct Linear Solver\n** The U. C. Berkeley CAD Group\n** Copyright 1985-1994, Regents of the University of California.\n** Copyright 2001-2026, The ngspice team.\n** Please get your ngspice manual from https://ngspice.sourceforge.io/docs.html\n** Please file your bug-reports at http://ngspice.sourceforge.net/bugrep.html\n** Creation Date: Fri Nov 13 23:19:32 UTC 2026\n******",
+      "binary_sha256": "39ca1adb826660324c3626f72bd946ec40704f0f3fc8e243c623f76e24b3eee2",
+      "probe": "ok",
+      "reason": null
+    },
+    "backend": {
+      "resolved": "batch",
+      "source": "flag",
+      "requested": "batch"
+    }
+  },
+  "coverage": {
+    "corners_simulated": 1,
+    "measurements_declared": 36,
+    "measurements_with_limits": 0,
+    "unrecognized_limit_keys": [],
+    "schema_version": 1,
+    "known": true,
+    "checked": [
+      "measurement:[0,\"tt/novdd/27C\",\"dc1.cl_cmp_at_knee\"]/observation",
+      "measurement:[0,\"tt/novdd/27C\",\"dc1.cl_cmp_at_short\"]/observation",
+      "measurement:[0,\"tt/novdd/27C\",\"dc1.clp_i_at_short\"]/observation",
+      "measurement:[0,\"tt/novdd/27C\",\"dc1.i_at_1125mv\"]/observation",
+      "measurement:[0,\"tt/novdd/27C\",\"dc1.i_at_1500mv\"]/observation",
+      "measurement:[0,\"tt/novdd/27C\",\"dc1.i_at_1625mv\"]/observation",
+      "measurement:[0,\"tt/novdd/27C\",\"dc1.i_at_375mv\"]/observation",
+      "measurement:[0,\"tt/novdd/27C\",\"dc1.i_at_750mv\"]/observation",
+      "measurement:[0,\"tt/novdd/27C\",\"dc1.ilim_knee\"]/observation",
+      "measurement:[0,\"tt/novdd/27C\",\"dc1.ilim_short\"]/observation",
+      "measurement:[0,\"tt/novdd/27C\",\"dc1.ir_at_short\"]/observation",
+      "measurement:[0,\"tt/novdd/27C\",\"meas_cl_margin_50ma_v\"]/observation",
+      "measurement:[0,\"tt/novdd/27C\",\"meas_ilim_droop_pct\"]/observation",
+      "measurement:[0,\"tt/novdd/27C\",\"meas_ilim_knee_ma\"]/observation",
+      "measurement:[0,\"tt/novdd/27C\",\"meas_ilim_short_ma\"]/observation",
+      "measurement:[0,\"tt/novdd/27C\",\"meas_ishort_ripple_pct\"]/observation",
+      "measurement:[0,\"tt/novdd/27C\",\"meas_ishort_sustained_ma\"]/observation",
+      "measurement:[0,\"tt/novdd/27C\",\"meas_isup_pre_short_ma\"]/observation",
+      "measurement:[0,\"tt/novdd/27C\",\"meas_vout_50ma_span_v\"]/observation",
+      "measurement:[0,\"tt/novdd/27C\",\"meas_vout_50ma_v\"]/observation",
+      "measurement:[0,\"tt/novdd/27C\",\"meas_vout_short_mv\"]/observation",
+      "measurement:[0,\"tt/novdd/27C\",\"tran1.cl_cmp_50ma\"]/observation",
+      "measurement:[0,\"tt/novdd/27C\",\"tran1.cl_cmp_50ma_x\"]/observation",
+      "measurement:[0,\"tt/novdd/27C\",\"tran1.clp_i_set_50ma\"]/observation",
+      "measurement:[0,\"tt/novdd/27C\",\"tran1.ir_set_50ma\"]/observation",
+      "measurement:[0,\"tt/novdd/27C\",\"tran1.tail_i_set_50ma\"]/observation",
+      "measurement:[0,\"tt/novdd/27C\",\"tran1.vin_50ma\"]/observation",
+      "measurement:[0,\"tt/novdd/27C\",\"tran1.vout_50ma\"]/observation",
+      "measurement:[0,\"tt/novdd/27C\",\"tran1.vout_50ma_hi\"]/observation",
+      "measurement:[0,\"tt/novdd/27C\",\"tran1.vout_50ma_lo\"]/observation",
+      "measurement:[0,\"tt/novdd/27C\",\"tran2.clp_i_short\"]/observation",
+      "measurement:[0,\"tt/novdd/27C\",\"tran2.ipre\"]/observation",
+      "measurement:[0,\"tt/novdd/27C\",\"tran2.ish_avg\"]/observation",
+      "measurement:[0,\"tt/novdd/27C\",\"tran2.ish_max\"]/observation",
+      "measurement:[0,\"tt/novdd/27C\",\"tran2.ish_min\"]/observation",
+      "measurement:[0,\"tt/novdd/27C\",\"tran2.vsh_max\"]/observation"
+    ],
+    "skipped": [],
+    "inapplicable": [
+      {
+        "id": "measurement:[0,\"tt/novdd/27C\",\"dc1.cl_cmp_at_knee\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/27C\",\"dc1.cl_cmp_at_short\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/27C\",\"dc1.clp_i_at_short\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/27C\",\"dc1.i_at_1125mv\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/27C\",\"dc1.i_at_1500mv\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/27C\",\"dc1.i_at_1625mv\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/27C\",\"dc1.i_at_375mv\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/27C\",\"dc1.i_at_750mv\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/27C\",\"dc1.ilim_knee\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/27C\",\"dc1.ilim_short\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/27C\",\"dc1.ir_at_short\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/27C\",\"meas_cl_margin_50ma_v\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/27C\",\"meas_ilim_droop_pct\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/27C\",\"meas_ilim_knee_ma\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/27C\",\"meas_ilim_short_ma\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/27C\",\"meas_ishort_ripple_pct\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/27C\",\"meas_ishort_sustained_ma\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/27C\",\"meas_isup_pre_short_ma\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/27C\",\"meas_vout_50ma_span_v\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/27C\",\"meas_vout_50ma_v\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/27C\",\"meas_vout_short_mv\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/27C\",\"tran1.cl_cmp_50ma\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/27C\",\"tran1.cl_cmp_50ma_x\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/27C\",\"tran1.clp_i_set_50ma\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/27C\",\"tran1.ir_set_50ma\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/27C\",\"tran1.tail_i_set_50ma\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/27C\",\"tran1.vin_50ma\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/27C\",\"tran1.vout_50ma\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/27C\",\"tran1.vout_50ma_hi\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/27C\",\"tran1.vout_50ma_lo\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/27C\",\"tran2.clp_i_short\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/27C\",\"tran2.ipre\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/27C\",\"tran2.ish_avg\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/27C\",\"tran2.ish_max\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/27C\",\"tran2.ish_min\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/27C\",\"tran2.vsh_max\"]/limits",
+        "reason": "characterization_without_limits"
+      }
+    ],
+    "unknown": [],
+    "nothing_checked": false,
+    "nothing_checked_reasons": []
+  },
+  "provenance": {
+    "klt_version": "0.9.3.dev2575+g6bd18bbc8637",
+    "klt_git_commit": "6bd18bbc8637f6d767b3c24e77bd5db7a39e4bbe",
+    "klt_reinstall_spec": "klayout-tools @ git+https://github.com/2AMLogic/klayout-tools@6bd18bbc8637f6d767b3c24e77bd5db7a39e4bbe",
+    "klayout_version": "0.30.12",
+    "pdk": {
+      "name": "sky130A",
+      "source": "PDK_ROOT environment variable",
+      "version": "open_pdks c6d73a35f524070e85faff4a6a9eef49553ebc2b",
+      "ambiguous_sources": [
+        "search root: ~/.ciel"
+      ],
+      "compatibility": {
+        "status": "mismatch",
+        "package": "open_pdks-sky130",
+        "expected": "open_pdks f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7"
+      }
+    },
+    "deck": {
+      "name": "sky130.lib.spice",
+      "content_hash": "sha256:48de7c677e2c6e7d09b2559279de9f818be71010a4aa933d728eb4db3b133c84",
+      "released": false
+    },
+    "input": {
+      "content_hash": "sha256:3f5e0b0eacdeeb3ec1ffe9deb644adfeb50b720f31e4d1e3aa15f399102baa3c",
+      "role": "netlist"
+    }
+  },
+  "measurements": [
+    {
+      "name": "tran1.vout_50ma",
+      "unit": null,
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/27C",
+        "value": 1.802719,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "tt/novdd/27C",
+        "value": 1.802719
+      },
+      "max": {
+        "corner_id": "tt/novdd/27C",
+        "value": 1.802719
+      },
+      "step": "tran1"
+    },
+    {
+      "name": "tran1.vout_50ma_lo",
+      "unit": null,
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/27C",
+        "value": 1.802589,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "tt/novdd/27C",
+        "value": 1.802589
+      },
+      "max": {
+        "corner_id": "tt/novdd/27C",
+        "value": 1.802589
+      },
+      "step": "tran1"
+    },
+    {
+      "name": "tran1.vout_50ma_hi",
+      "unit": null,
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/27C",
+        "value": 1.802787,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "tt/novdd/27C",
+        "value": 1.802787
+      },
+      "max": {
+        "corner_id": "tt/novdd/27C",
+        "value": 1.802787
+      },
+      "step": "tran1"
+    },
+    {
+      "name": "tran1.vin_50ma",
+      "unit": null,
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/27C",
+        "value": 3.3,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "tt/novdd/27C",
+        "value": 3.3
+      },
+      "max": {
+        "corner_id": "tt/novdd/27C",
+        "value": 3.3
+      },
+      "step": "tran1"
+    },
+    {
+      "name": "tran1.cl_cmp_50ma",
+      "unit": null,
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/27C",
+        "value": 3.258087,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "tt/novdd/27C",
+        "value": 3.258087
+      },
+      "max": {
+        "corner_id": "tt/novdd/27C",
+        "value": 3.258087
+      },
+      "step": "tran1"
+    },
+    {
+      "name": "tran1.ir_set_50ma",
+      "unit": null,
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/27C",
+        "value": 7.325262e-07,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "tt/novdd/27C",
+        "value": 7.325262e-07
+      },
+      "max": {
+        "corner_id": "tt/novdd/27C",
+        "value": 7.325262e-07
+      },
+      "step": "tran1"
+    },
+    {
+      "name": "tran1.tail_i_set_50ma",
+      "unit": null,
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/27C",
+        "value": 1.838224e-06,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "tt/novdd/27C",
+        "value": 1.838224e-06
+      },
+      "max": {
+        "corner_id": "tt/novdd/27C",
+        "value": 1.838224e-06
+      },
+      "step": "tran1"
+    },
+    {
+      "name": "tran1.clp_i_set_50ma",
+      "unit": null,
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/27C",
+        "value": 1.024908e-06,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "tt/novdd/27C",
+        "value": 1.024908e-06
+      },
+      "max": {
+        "corner_id": "tt/novdd/27C",
+        "value": 1.024908e-06
+      },
+      "step": "tran1"
+    },
+    {
+      "name": "tran1.cl_cmp_50ma_x",
+      "unit": null,
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/27C",
+        "value": 3.258087,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "tt/novdd/27C",
+        "value": 3.258087
+      },
+      "max": {
+        "corner_id": "tt/novdd/27C",
+        "value": 3.258087
+      },
+      "step": "tran1"
+    },
+    {
+      "name": "dc1.ilim_short",
+      "unit": null,
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/27C",
+        "value": 0.152136,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "tt/novdd/27C",
+        "value": 0.152136
+      },
+      "max": {
+        "corner_id": "tt/novdd/27C",
+        "value": 0.152136
+      },
+      "step": "dc1"
+    },
+    {
+      "name": "dc1.ilim_knee",
+      "unit": null,
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/27C",
+        "value": 0.1234803,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "tt/novdd/27C",
+        "value": 0.1234803
+      },
+      "max": {
+        "corner_id": "tt/novdd/27C",
+        "value": 0.1234803
+      },
+      "step": "dc1"
+    },
+    {
+      "name": "dc1.i_at_375mv",
+      "unit": null,
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/27C",
+        "value": 0.1449511,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "tt/novdd/27C",
+        "value": 0.1449511
+      },
+      "max": {
+        "corner_id": "tt/novdd/27C",
+        "value": 0.1449511
+      },
+      "step": "dc1"
+    },
+    {
+      "name": "dc1.i_at_750mv",
+      "unit": null,
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/27C",
+        "value": 0.139645,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "tt/novdd/27C",
+        "value": 0.139645
+      },
+      "max": {
+        "corner_id": "tt/novdd/27C",
+        "value": 0.139645
+      },
+      "step": "dc1"
+    },
+    {
+      "name": "dc1.i_at_1125mv",
+      "unit": null,
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/27C",
+        "value": 0.1344915,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "tt/novdd/27C",
+        "value": 0.1344915
+      },
+      "max": {
+        "corner_id": "tt/novdd/27C",
+        "value": 0.1344915
+      },
+      "step": "dc1"
+    },
+    {
+      "name": "dc1.i_at_1500mv",
+      "unit": null,
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/27C",
+        "value": 0.1288556,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "tt/novdd/27C",
+        "value": 0.1288556
+      },
+      "max": {
+        "corner_id": "tt/novdd/27C",
+        "value": 0.1288556
+      },
+      "step": "dc1"
+    },
+    {
+      "name": "dc1.i_at_1625mv",
+      "unit": null,
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/27C",
+        "value": 0.1266507,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "tt/novdd/27C",
+        "value": 0.1266507
+      },
+      "max": {
+        "corner_id": "tt/novdd/27C",
+        "value": 0.1266507
+      },
+      "step": "dc1"
+    },
+    {
+      "name": "dc1.cl_cmp_at_short",
+      "unit": null,
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/27C",
+        "value": 2.432398,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "tt/novdd/27C",
+        "value": 2.432398
+      },
+      "max": {
+        "corner_id": "tt/novdd/27C",
+        "value": 2.432398
+      },
+      "step": "dc1"
+    },
+    {
+      "name": "dc1.cl_cmp_at_knee",
+      "unit": null,
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/27C",
+        "value": 2.496459,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "tt/novdd/27C",
+        "value": 2.496459
+      },
+      "max": {
+        "corner_id": "tt/novdd/27C",
+        "value": 2.496459
+      },
+      "step": "dc1"
+    },
+    {
+      "name": "dc1.clp_i_at_short",
+      "unit": null,
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/27C",
+        "value": 2.068561e-06,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "tt/novdd/27C",
+        "value": 2.068561e-06
+      },
+      "max": {
+        "corner_id": "tt/novdd/27C",
+        "value": 2.068561e-06
+      },
+      "step": "dc1"
+    },
+    {
+      "name": "dc1.ir_at_short",
+      "unit": null,
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/27C",
+        "value": 7.248275e-07,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "tt/novdd/27C",
+        "value": 7.248275e-07
+      },
+      "max": {
+        "corner_id": "tt/novdd/27C",
+        "value": 7.248275e-07
+      },
+      "step": "dc1"
+    },
+    {
+      "name": "tran2.ipre",
+      "unit": null,
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/27C",
+        "value": -1.18758e-05,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "tt/novdd/27C",
+        "value": -1.18758e-05
+      },
+      "max": {
+        "corner_id": "tt/novdd/27C",
+        "value": -1.18758e-05
+      },
+      "step": "tran2"
+    },
+    {
+      "name": "tran2.ish_avg",
+      "unit": null,
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/27C",
+        "value": -0.152179,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "tt/novdd/27C",
+        "value": -0.152179
+      },
+      "max": {
+        "corner_id": "tt/novdd/27C",
+        "value": -0.152179
+      },
+      "step": "tran2"
+    },
+    {
+      "name": "tran2.ish_max",
+      "unit": null,
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/27C",
+        "value": -0.152179,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "tt/novdd/27C",
+        "value": -0.152179
+      },
+      "max": {
+        "corner_id": "tt/novdd/27C",
+        "value": -0.152179
+      },
+      "step": "tran2"
+    },
+    {
+      "name": "tran2.ish_min",
+      "unit": null,
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/27C",
+        "value": -0.15229,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "tt/novdd/27C",
+        "value": -0.15229
+      },
+      "max": {
+        "corner_id": "tt/novdd/27C",
+        "value": -0.15229
+      },
+      "step": "tran2"
+    },
+    {
+      "name": "tran2.vsh_max",
+      "unit": null,
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/27C",
+        "value": 0.0001522435,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "tt/novdd/27C",
+        "value": 0.0001522435
+      },
+      "max": {
+        "corner_id": "tt/novdd/27C",
+        "value": 0.0001522435
+      },
+      "step": "tran2"
+    },
+    {
+      "name": "tran2.clp_i_short",
+      "unit": null,
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/27C",
+        "value": 2.06856e-06,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "tt/novdd/27C",
+        "value": 2.06856e-06
+      },
+      "max": {
+        "corner_id": "tt/novdd/27C",
+        "value": 2.06856e-06
+      },
+      "step": "tran2"
+    },
+    {
+      "name": "meas_vout_50ma_v",
+      "unit": "V",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/27C",
+        "value": 1.802719,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "tt/novdd/27C",
+        "value": 1.802719
+      },
+      "max": {
+        "corner_id": "tt/novdd/27C",
+        "value": 1.802719
+      },
+      "derived_from": [
+        "tran1.vout_50ma"
+      ]
+    },
+    {
+      "name": "meas_vout_50ma_span_v",
+      "unit": "V",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/27C",
+        "value": 0.000198,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "tt/novdd/27C",
+        "value": 0.000198
+      },
+      "max": {
+        "corner_id": "tt/novdd/27C",
+        "value": 0.000198
+      },
+      "derived_from": [
+        "tran1.vout_50ma_hi",
+        "tran1.vout_50ma_lo"
+      ]
+    },
+    {
+      "name": "meas_cl_margin_50ma_v",
+      "unit": "V",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/27C",
+        "value": 0.041913,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "tt/novdd/27C",
+        "value": 0.041913
+      },
+      "max": {
+        "corner_id": "tt/novdd/27C",
+        "value": 0.041913
+      },
+      "derived_from": [
+        "tran1.vin_50ma",
+        "tran1.cl_cmp_50ma"
+      ]
+    },
+    {
+      "name": "meas_ilim_short_ma",
+      "unit": "mA",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/27C",
+        "value": 152.136,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "tt/novdd/27C",
+        "value": 152.136
+      },
+      "max": {
+        "corner_id": "tt/novdd/27C",
+        "value": 152.136
+      },
+      "derived_from": [
+        "dc1.ilim_short"
+      ]
+    },
+    {
+      "name": "meas_ilim_knee_ma",
+      "unit": "mA",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/27C",
+        "value": 123.4803,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "tt/novdd/27C",
+        "value": 123.4803
+      },
+      "max": {
+        "corner_id": "tt/novdd/27C",
+        "value": 123.4803
+      },
+      "derived_from": [
+        "dc1.ilim_knee"
+      ]
+    },
+    {
+      "name": "meas_ilim_droop_pct",
+      "unit": "%",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/27C",
+        "value": -23.2067,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "tt/novdd/27C",
+        "value": -23.2067
+      },
+      "max": {
+        "corner_id": "tt/novdd/27C",
+        "value": -23.2067
+      },
+      "derived_from": [
+        "dc1.ilim_knee",
+        "dc1.ilim_short"
+      ]
+    },
+    {
+      "name": "meas_ishort_sustained_ma",
+      "unit": "mA",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/27C",
+        "value": 152.1786,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "tt/novdd/27C",
+        "value": 152.1786
+      },
+      "max": {
+        "corner_id": "tt/novdd/27C",
+        "value": 152.1786
+      },
+      "derived_from": [
+        "tran2.ish_avg"
+      ]
+    },
+    {
+      "name": "meas_ishort_ripple_pct",
+      "unit": "%",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/27C",
+        "value": 0.07346631,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "tt/novdd/27C",
+        "value": 0.07346631
+      },
+      "max": {
+        "corner_id": "tt/novdd/27C",
+        "value": 0.07346631
+      },
+      "derived_from": [
+        "tran2.ish_max",
+        "tran2.ish_min",
+        "tran2.ish_avg"
+      ]
+    },
+    {
+      "name": "meas_vout_short_mv",
+      "unit": "mV",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/27C",
+        "value": 0.1522435,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "tt/novdd/27C",
+        "value": 0.1522435
+      },
+      "max": {
+        "corner_id": "tt/novdd/27C",
+        "value": 0.1522435
+      },
+      "derived_from": [
+        "tran2.vsh_max"
+      ]
+    },
+    {
+      "name": "meas_isup_pre_short_ma",
+      "unit": "mA",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/27C",
+        "value": 0.01187577,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "tt/novdd/27C",
+        "value": 0.01187577
+      },
+      "max": {
+        "corner_id": "tt/novdd/27C",
+        "value": 0.01187577
+      },
+      "derived_from": [
+        "tran2.ipre"
+      ]
+    }
+  ],
+  "corners": [
+    {
+      "corner_id": "tt/novdd/27C",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27.0,
+      "status": "pass",
+      "runtime_s": 4.449,
+      "peak_rss_bytes": 184926208,
+      "engine_exit_code": 0,
+      "engine_killed_by_signal": null,
+      "measurements": [
+        {
+          "name": "tran1.vout_50ma",
+          "value": 1.802719,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "tran1"
+        },
+        {
+          "name": "tran1.vout_50ma_lo",
+          "value": 1.802589,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "tran1"
+        },
+        {
+          "name": "tran1.vout_50ma_hi",
+          "value": 1.802787,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "tran1"
+        },
+        {
+          "name": "tran1.vin_50ma",
+          "value": 3.3,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "tran1"
+        },
+        {
+          "name": "tran1.cl_cmp_50ma",
+          "value": 3.258087,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "tran1"
+        },
+        {
+          "name": "tran1.ir_set_50ma",
+          "value": 7.325262e-07,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "tran1"
+        },
+        {
+          "name": "tran1.tail_i_set_50ma",
+          "value": 1.838224e-06,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "tran1"
+        },
+        {
+          "name": "tran1.clp_i_set_50ma",
+          "value": 1.024908e-06,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "tran1"
+        },
+        {
+          "name": "tran1.cl_cmp_50ma_x",
+          "value": 3.258087,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "tran1"
+        },
+        {
+          "name": "dc1.ilim_short",
+          "value": 0.152136,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dc1"
+        },
+        {
+          "name": "dc1.ilim_knee",
+          "value": 0.1234803,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dc1"
+        },
+        {
+          "name": "dc1.i_at_375mv",
+          "value": 0.1449511,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dc1"
+        },
+        {
+          "name": "dc1.i_at_750mv",
+          "value": 0.139645,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dc1"
+        },
+        {
+          "name": "dc1.i_at_1125mv",
+          "value": 0.1344915,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dc1"
+        },
+        {
+          "name": "dc1.i_at_1500mv",
+          "value": 0.1288556,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dc1"
+        },
+        {
+          "name": "dc1.i_at_1625mv",
+          "value": 0.1266507,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dc1"
+        },
+        {
+          "name": "dc1.cl_cmp_at_short",
+          "value": 2.432398,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dc1"
+        },
+        {
+          "name": "dc1.cl_cmp_at_knee",
+          "value": 2.496459,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dc1"
+        },
+        {
+          "name": "dc1.clp_i_at_short",
+          "value": 2.068561e-06,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dc1"
+        },
+        {
+          "name": "dc1.ir_at_short",
+          "value": 7.248275e-07,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "dc1"
+        },
+        {
+          "name": "tran2.ipre",
+          "value": -1.18758e-05,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "tran2"
+        },
+        {
+          "name": "tran2.ish_avg",
+          "value": -0.152179,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "tran2"
+        },
+        {
+          "name": "tran2.ish_max",
+          "value": -0.152179,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "tran2"
+        },
+        {
+          "name": "tran2.ish_min",
+          "value": -0.15229,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "tran2"
+        },
+        {
+          "name": "tran2.vsh_max",
+          "value": 0.0001522435,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "tran2"
+        },
+        {
+          "name": "tran2.clp_i_short",
+          "value": 2.06856e-06,
+          "unit": null,
+          "status": "pass",
+          "margin": null,
+          "step": "tran2"
+        },
+        {
+          "name": "meas_vout_50ma_v",
+          "value": 1.802719,
+          "unit": "V",
+          "status": "pass",
+          "margin": null,
+          "derived_from": [
+            "tran1.vout_50ma"
+          ]
+        },
+        {
+          "name": "meas_vout_50ma_span_v",
+          "value": 0.000198,
+          "unit": "V",
+          "status": "pass",
+          "margin": null,
+          "derived_from": [
+            "tran1.vout_50ma_hi",
+            "tran1.vout_50ma_lo"
+          ]
+        },
+        {
+          "name": "meas_cl_margin_50ma_v",
+          "value": 0.041913,
+          "unit": "V",
+          "status": "pass",
+          "margin": null,
+          "derived_from": [
+            "tran1.vin_50ma",
+            "tran1.cl_cmp_50ma"
+          ]
+        },
+        {
+          "name": "meas_ilim_short_ma",
+          "value": 152.136,
+          "unit": "mA",
+          "status": "pass",
+          "margin": null,
+          "derived_from": [
+            "dc1.ilim_short"
+          ]
+        },
+        {
+          "name": "meas_ilim_knee_ma",
+          "value": 123.4803,
+          "unit": "mA",
+          "status": "pass",
+          "margin": null,
+          "derived_from": [
+            "dc1.ilim_knee"
+          ]
+        },
+        {
+          "name": "meas_ilim_droop_pct",
+          "value": -23.2067,
+          "unit": "%",
+          "status": "pass",
+          "margin": null,
+          "derived_from": [
+            "dc1.ilim_knee",
+            "dc1.ilim_short"
+          ]
+        },
+        {
+          "name": "meas_ishort_sustained_ma",
+          "value": 152.1786,
+          "unit": "mA",
+          "status": "pass",
+          "margin": null,
+          "derived_from": [
+            "tran2.ish_avg"
+          ]
+        },
+        {
+          "name": "meas_ishort_ripple_pct",
+          "value": 0.07346631,
+          "unit": "%",
+          "status": "pass",
+          "margin": null,
+          "derived_from": [
+            "tran2.ish_max",
+            "tran2.ish_min",
+            "tran2.ish_avg"
+          ]
+        },
+        {
+          "name": "meas_vout_short_mv",
+          "value": 0.1522435,
+          "unit": "mV",
+          "status": "pass",
+          "margin": null,
+          "derived_from": [
+            "tran2.vsh_max"
+          ]
+        },
+        {
+          "name": "meas_isup_pre_short_ma",
+          "value": 0.01187577,
+          "unit": "mA",
+          "status": "pass",
+          "margin": null,
+          "derived_from": [
+            "tran2.ipre"
+          ]
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-706/sim/iq/diagnostics/issue-706/runs/cl-pair-cand/klt-out/v3.30/tt_novdd_27C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-706/sim/iq/diagnostics/issue-706/runs/cl-pair-cand/klt-out/v3.30/tt_novdd_27C/corner.cir"
+      },
+      "monte_carlo": null,
+      "steps": [
+        {
+          "name": "tran1",
+          "kind": "tran",
+          "status": "ok"
+        },
+        {
+          "name": "dc1",
+          "kind": "dc",
+          "status": "ok"
+        },
+        {
+          "name": "tran2",
+          "kind": "tran",
+          "status": "ok"
+        }
+      ]
+    }
+  ],
+  "diagnostics": [
+    {
+      "severity": "warning",
+      "code": "model_bin_range_preflight",
+      "message": "preflight: instance 'XM_PASS' (sky130_fd_pr__pfet_g5v0d10v5) has w=100u nf=25, at/above the ~100 um per-instance width bin range some PDKs enforce (keyed on w as written; nf= does not widen it); ngspice may abort with \"could not find a valid modelname\". Use m= to parallel smaller-width instances (see issue #4976)",
+      "instance": "XM_PASS",
+      "model": "sky130_fd_pr__pfet_g5v0d10v5",
+      "w_um": 100.0,
+      "nf": 25.0
+    }
+  ]
+}

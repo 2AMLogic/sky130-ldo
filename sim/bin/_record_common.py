@@ -28,6 +28,17 @@ trailing usage phrase of their error message.
 Also home to `is_finite_number()` (issue #522), the "real finite number (not
 bool/NaN/inf)" predicate -- six `sim/bin/` scripts previously carried
 byte-equivalent copies under `_finite` / `_finite_number`.
+
+Also home to the thermal staircase runner frame (issue #597): the shared
+`thermal_scrub_log` / `thermal_deck_frame` / `ThermalRunner` that the two
+thermal drivers previously carried as duplicated `deck_text`/`Runner` copies,
+widening the issue-#297 extraction from the leaf helpers to the shell around
+them.
+
+Also home to `cold_enable_temps()` (issue #715), the cold-start / EN
+re-enable sampling schedule derived from the T_reset and T_trip midpoints --
+the integrated bench, the standalone comparator demo and the batch planner
+previously carried three syntactically identical copies of the expression.
 """
 
 from __future__ import annotations
@@ -42,6 +53,7 @@ import shutil
 import socket
 import subprocess
 import sys
+import tempfile
 import time
 from pathlib import Path
 
@@ -78,12 +90,13 @@ def git(repo_root: Path, *args: str) -> str:
 # `note`s, `corners_note`, `unit`, ... -- can be edited freely without
 # invalidating a simulation. Bump INPUT_FINGERPRINT_VERSION whenever an
 # allow-list or the serialization changes: the checker reports a version
-# mismatch as "unverified", never as a (false) match or mismatch.
+# mismatch as "unverified", never as a (false) match or mismatch. The actual
+# allow-lists are built inline in `pvt_input_sections()` (sections: analyses,
+# measurements, matrix, plus a conditional ramp_monotonicity when the manifest
+# declares one and a conditional solver when sim/spiceinit is present) and
+# `mc_input_sections()` (analyses, measurements, matrix, netlist_patch).
 
 INPUT_FINGERPRINT_VERSION = 1
-
-PVT_FINGERPRINT_SECTIONS = ("analyses", "measurements", "matrix", "solver")
-MC_FINGERPRINT_SECTIONS = ("analyses", "measurements", "matrix", "netlist_patch")
 
 
 def _canon(value):
@@ -591,6 +604,174 @@ def bisect(pred, lo, hi, tol, want_lowest):
         else:
             lo, hi = (mid, hi) if ok else (lo, mid)
     return lo, hi
+
+
+# ---- cold-start / EN re-enable temperature schedule (issue #715) -------------
+# The temperatures the cold-start and EN disable/re-enable checks run at,
+# derived from the two bracket midpoints.  One definition shared by
+# sim/thermal/run_hysteresis.py, sim/thermal-regen-cmp/run_demo.py and
+# sim/bin/batch_thermal_staircase.py (previously three identical copies, so a
+# schedule change needed three edits and a fourth copy lived on in a test).
+
+
+def cold_enable_temps(reset_mid: float, trip_mid: float) -> list[int]:
+    """Sorted whole-degree temperatures for the cold-start and EN re-enable
+    checks: seven offsets around the two midpoints (-8/-1/+2 around
+    `reset_mid`, the window middle, -2/+1/+8 around `trip_mid`), rounded to
+    degrees C, de-duplicated and sorted.  A pure function of the midpoints,
+    so a resumed batch run reproduces the same set."""
+    return sorted({round(x) for x in (reset_mid - 8, reset_mid - 1, reset_mid + 2, (reset_mid + trip_mid) / 2,
+                                      trip_mid - 2, trip_mid + 1, trip_mid + 8)})
+
+
+# ---- thermal staircase runner frame (issue #597) -----------------------------
+# The `deck_text`/`Runner` shell around the helpers above, which the two
+# thermal drivers (run_hysteresis.py, run_demo.py) previously carried as two
+# ~62-line copies, 41 of them byte-identical.
+
+
+THERMAL_PROGRESS_RE = re.compile(r"\s*Reference value :\s*[-+0-9.eE]+")
+
+# Marker net scanned when corner-run's `detect_solver_diagnostic` finds nothing.
+# "Error:" is deliberately included for BOTH benches (issue #597): one copy had
+# drifted without it, and a wider net can only surface a diagnostic sooner,
+# never hide one the narrower net caught.
+THERMAL_EXTRA_MARKERS = ("source stepping failed", "timestep too small", "Transient op", "Error:")
+
+
+def thermal_scrub_log(raw: str, drop_prefixes: tuple = ()) -> str:
+    """Normalised run log for a thermal staircase point: CR -> LF, the
+    transient `Reference value :` progress lines blanked, blank lines dropped,
+    and lines starting with any of `drop_prefixes` removed (the
+    integrated-LDO bench filters its echoed `option SCALE` card)."""
+    return "\n".join(
+        ln
+        for ln in (THERMAL_PROGRESS_RE.sub("", x).rstrip() for x in raw.replace("\r", "\n").splitlines())
+        if ln and not ln.startswith(drop_prefixes)
+    )
+
+
+def thermal_deck_frame(
+    netlist_body: list[str], pdk, temp_c: float, dist_param: str, dist_val, en_dip: str, dat: str,
+    *, vectors: list[str], banner: str, process: str, vsup, tstep: str, t_stop_us,
+    extra_options: tuple = (),
+) -> str:
+    """The deck head/`.control` frame shared by the two thermal staircase
+    benches: the `vsup` / disturbance / `en_dip` `.param`s, `.temp`, `.lib`,
+    then `tran ... uic` + `wrdata`.  Bench-specific: `banner`, the disturbance
+    `.param` name, any `extra_options` `.option` cards, the wrdata `vectors`
+    and the corner/`tran` values."""
+    head = [
+        banner,
+        f"* corner: {process} / {vsup} V / {temp_c} C",
+        f".param vsup={vsup}",
+        f".param {dist_param}={dist_val}",
+        f".param en_dip={en_dip}",
+        *extra_options,
+        f".temp {temp_c}",
+        f'.lib "{pdk.lib_file}" {process}',
+    ]
+    ctl = [
+        ".control",
+        "save all",
+        f"tran {tstep} {t_stop_us}u uic",
+        f"wrdata {dat} " + " ".join(vectors),
+        "quit",
+        ".endc",
+        ".end",
+        "",
+    ]
+    return "\n".join(head + netlist_body + ctl)
+
+
+class ThermalRunner:
+    """The local single-corner ngspice staircase runner shared by the two
+    thermal benches (sim/thermal/run_hysteresis.py `--backend local` and
+    sim/thermal-regen-cmp/run_demo.py): deck write, the `ngspice -b`
+    invocation, log scrub + solver-diagnostic fallback, the missing-`.dat`
+    error, the per-run `.log`/`.csv` writers, the run counter / `runs` list,
+    the progress line and the two monotone hold predicates.
+
+    Subclasses declare their bench constants as class attributes, bind their
+    module-level `deck_text` (so it late-binds the module's PROCESS/VSUP),
+    and return the bench-specific half of each per-run record from
+    `measure(t, v)` (merged after the shared id/corner/tripped-flags frame).
+    """
+
+    KEYS: list = []     # read_dat vector names, in wrdata order
+    AMP_KEY = ""        # per-run record key carrying the disturbance amplitude
+    HOT_AMP = 0.0       # default disturbance amplitudes for the hold predicates
+    COLD_AMP = 0.0
+    T_COLD = T_FORCED = T_HOLD = T_EN_LOW = T_REEN = 0.0  # observation instants (us)
+    # Deliberately ONE decimation target for both benches (issue #597): the
+    # pre-refactor copies had drifted to 220 vs 260 rows.  The CSV is a
+    # human-inspection convenience artifact, not graded evidence, so the
+    # unified value carries no bench-specific meaning.
+    CSV_ROWS = 260
+    # Log-line prefixes dropped before the diagnostic scan; per-bench (the
+    # integrated-LDO bench echoes its `option SCALE` card into the log).
+    LOG_DROP_PREFIXES: tuple = ()
+    EXTRA_MARKERS = THERMAL_EXTRA_MARKERS
+
+    def __init__(self, out: Path, pdk, body, supply_v, detect_diag, work_prefix: str):
+        self.out, self.pdk, self.body = out, pdk, body
+        self.supply_v, self.detect_diag = supply_v, detect_diag
+        self.n = 0
+        self.runs: list[dict] = []
+        self.work = Path(tempfile.mkdtemp(prefix=work_prefix))
+        shutil.copy(Path(__file__).resolve().parents[1] / "spiceinit", self.work / ".spiceinit")
+        (out / "runs").mkdir(parents=True, exist_ok=True)
+
+    def rid_suffix(self, amp: float) -> str:
+        """Disturbance tag in the run id, in bench units; empty when amp == 0."""
+        return ""
+
+    def measure(self, t, v) -> dict:  # pragma: no cover - overridden by both benches
+        raise NotImplementedError
+
+    def run(self, scenario: str, temp_c: float, amp: float = 0.0, en_dip: str = "vsup") -> dict:
+        self.n += 1
+        rid = f"{self.n:03d}_{scenario}_{temp_c:g}C" + self.rid_suffix(amp)
+        dat = self.work / f"{rid}.dat"
+        deck = self.work / f"{rid}.cir"
+        deck.write_text(self.deck_text(self.body, self.pdk, temp_c, amp, en_dip, str(dat)))
+        proc = subprocess.run(
+            ["ngspice", "-b", str(deck)],
+            cwd=self.work, capture_output=True, text=True, timeout=900, stdin=subprocess.DEVNULL,
+        )
+        log = thermal_scrub_log(proc.stdout + "\n" + proc.stderr, self.LOG_DROP_PREFIXES)
+        diag = self.detect_diag(log) or next(
+            (ln.strip() for ln in log.splitlines() if any(m in ln for m in self.EXTRA_MARKERS)), None
+        )
+        if not dat.is_file():
+            raise RuntimeError(f"{rid}: ngspice produced no data (rc={proc.returncode})\n{log[-800:]}")
+        t, v = read_dat(dat, self.KEYS)
+        res = {
+            "id": rid, "scenario": scenario, "temp_c": temp_c, self.AMP_KEY: amp, "en_dip": en_dip,
+            "ngspice_rc": proc.returncode, "solver_diagnostic": diag,
+            "cold_start_tripped": tripped(at(t, v["ts_cmp"], self.T_COLD), self.supply_v),
+            "forced_tripped": tripped(at(t, v["ts_cmp"], self.T_FORCED), self.supply_v),
+            "hold_tripped": tripped(at(t, v["ts_cmp"], self.T_HOLD), self.supply_v),
+            **self.measure(t, v),
+        }
+        (self.out / "runs" / f"{rid}.log").write_text(log + "\n")
+        with (self.out / "runs" / f"{rid}.csv").open("w") as f:
+            f.write("t_us," + ",".join(self.KEYS) + "\n")
+            for i in range(0, len(t), max(1, len(t) // self.CSV_ROWS)):
+                f.write(f"{t[i]*1e6:.3f}," + ",".join(f"{v[k][i]:.5f}" for k in self.KEYS) + "\n")
+        self.runs.append(res)
+        print(f"  {rid}: forced={'T' if res['forced_tripped'] else 'u'} hold={'T' if res['hold_tripped'] else 'u'}"
+              f" cold={'T' if res['cold_start_tripped'] else 'u'} diag={diag}", flush=True)
+        return res
+
+    # ---- monotone hold predicates -------------------------------------
+    def tripped_held(self, temp, amp=None):
+        r = self.run("hot", temp, self.HOT_AMP if amp is None else amp)
+        return r["forced_tripped"] and r["hold_tripped"]
+
+    def untripped_held(self, temp, amp=None):
+        r = self.run("cold_exc", temp, self.COLD_AMP if amp is None else amp)
+        return (not r["forced_tripped"]) and (not r["hold_tripped"])
 
 
 def is_finite_number(x) -> bool:

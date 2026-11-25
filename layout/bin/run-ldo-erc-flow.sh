@@ -4,13 +4,13 @@
 # T1 item 11 (power delivery, structural) is graded from (issue #112).
 #
 # Usage:
-#   layout/bin/setup-venv.sh --requirements layout/erc-requirements.txt
+#   layout/bin/setup-venv.sh
 #   layout/bin/run-ldo-erc-flow.sh
 #   layout/bin/run-ldo-erc-flow.sh --layout-record 20260825-123551-3b4e121
 #
-# Requires layout/.venv-erc (its own pin -- see layout/erc-requirements.txt
-# for why the ERC flow has a separate pin from DRC/LVS) and a landed ldo-core
-# layout record (layout/ldo-core/reports/LATEST). No PDK install is needed:
+# Requires layout/.venv (the single pin in layout/requirements.txt, shared
+# with the DRC/LVS/PEX flows) and a landed ldo-core layout record
+# (layout/ldo-core/reports/LATEST). No PDK install is needed:
 # `klt erc --pdk sky130` reads its antenna-limit table from klt's own
 # built-in transcription of SkyWater's published rule tables, not from a
 # local PDK tree.
@@ -45,10 +45,12 @@
 # declared a supply clears the short (klayout-tools#2183).
 set -euo pipefail
 
-LAYOUT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-REPO_ROOT="$(cd "$LAYOUT_DIR/.." && pwd)"
+# LAYOUT_DIR/REPO_ROOT, the klt guard and the record mint are shared with the
+# other layout/bin/run-*-flow.sh drivers (issue #599). This driver calls no
+# flow_require_pdk on purpose -- see the "No PDK install is needed" note above.
+source "$(dirname "${BASH_SOURCE[0]}")/_flow_common.sh"
 BLOCK_DIR="$LAYOUT_DIR/ldo-core"
-VENV="$LAYOUT_DIR/.venv-erc"
+VENV="$LAYOUT_DIR/.venv"
 KLT="$VENV/bin/klt"
 CELL=ldo_core
 PDK=sky130
@@ -62,11 +64,7 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-if [[ ! -x "$KLT" ]]; then
-  echo "run-ldo-erc-flow.sh: $KLT not found -- run" >&2
-  echo "  layout/bin/setup-venv.sh --requirements layout/erc-requirements.txt" >&2
-  exit 1
-fi
+flow_require_klt run-ldo-erc-flow.sh "$KLT"
 
 [[ -n "$LAYOUT_RECORD_ID" ]] || LAYOUT_RECORD_ID="$(cat "$BLOCK_DIR/reports/LATEST")"
 LAYOUT_RECORD_DIR="$BLOCK_DIR/reports/$LAYOUT_RECORD_ID"
@@ -85,12 +83,8 @@ fi
 "$VENV/bin/python" "$LAYOUT_DIR/bin/check-erc-supply-spec.py" \
   --gds "$GDS" --spec "$SPEC" --top "$CELL"
 
-TS_UTC="$(date -u +%Y%m%d-%H%M%S)"
-SHORT_SHA="$(git -C "$REPO_ROOT" rev-parse --short HEAD)"
-RECORD_ID="${TS_UTC}-${SHORT_SHA}"
-OUT_DIR="$BLOCK_DIR/reports/$RECORD_ID"
-mkdir -p "$OUT_DIR"
-echo "run-ldo-erc-flow.sh: record $RECORD_ID -> $OUT_DIR (layout from $LAYOUT_RECORD_ID)"
+flow_mint_record run-ldo-erc-flow.sh "$BLOCK_DIR/reports" \
+  --suffix " (layout from $LAYOUT_RECORD_ID)"
 
 LAYOUT_SHA="$(git -C "$REPO_ROOT" log -1 --format=%h -- layout/ldo-core)"
 

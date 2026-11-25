@@ -16,6 +16,9 @@ import sys
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
+sys.path.insert(0, str(HERE))
+import _fleet_campaign as fc  # noqa: E402
+
 _spec = importlib.util.spec_from_file_location(
     "rcz_adaptive_370", HERE / "rcz-adaptive-370.py"
 )
@@ -42,7 +45,7 @@ def ac_valid(m: dict) -> bool:
 
 
 def ac_pass(m: dict) -> bool:
-    return ac_valid(m) and m["pm"] >= ra.PM_MIN and m["gm"] >= ra.GM_MIN
+    return ac_valid(m) and m["pm"] >= fc.PM_MIN and m["gm"] >= fc.GM_MIN
 
 
 def collect(rows):

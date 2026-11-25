@@ -1,0 +1,6682 @@
+{
+ "candidate_rev": 2,
+ "corner_ids": [
+  "tt_-40c_2.97v",
+  "tt_-40c_3.30v",
+  "tt_-40c_3.63v",
+  "tt_27c_2.97v",
+  "tt_27c_3.30v",
+  "tt_27c_3.63v",
+  "tt_125c_2.97v",
+  "tt_125c_3.30v",
+  "tt_125c_3.63v",
+  "ss_-40c_2.97v",
+  "ss_-40c_3.30v",
+  "ss_-40c_3.63v",
+  "ss_27c_2.97v",
+  "ss_27c_3.30v",
+  "ss_27c_3.63v",
+  "ss_125c_2.97v",
+  "ss_125c_3.30v",
+  "ss_125c_3.63v",
+  "ff_-40c_2.97v",
+  "ff_-40c_3.30v",
+  "ff_-40c_3.63v",
+  "ff_27c_2.97v",
+  "ff_27c_3.30v",
+  "ff_27c_3.63v",
+  "ff_125c_2.97v",
+  "ff_125c_3.30v",
+  "ff_125c_3.63v",
+  "sf_-40c_2.97v",
+  "sf_-40c_3.30v",
+  "sf_-40c_3.63v",
+  "sf_27c_2.97v",
+  "sf_27c_3.30v",
+  "sf_27c_3.63v",
+  "sf_125c_2.97v",
+  "sf_125c_3.30v",
+  "sf_125c_3.63v",
+  "fs_-40c_2.97v",
+  "fs_-40c_3.30v",
+  "fs_-40c_3.63v",
+  "fs_27c_2.97v",
+  "fs_27c_3.30v",
+  "fs_27c_3.63v",
+  "fs_125c_2.97v",
+  "fs_125c_3.30v",
+  "fs_125c_3.63v"
+ ],
+ "execution": {
+  "requests": [
+   {
+    "endpoint": "tran1",
+    "engine": "ngspice",
+    "engine_version": "47",
+    "job_id": "klt-sim-7870b7978553",
+    "key": "v2.97-tran1",
+    "klt_pdk_names_pin": true,
+    "klt_status": "pass",
+    "klt_version": "0.9.3.dev3910+g8703ad519ff7",
+    "n_points": 15,
+    "pdk_version": "open_pdks c6d73a35f524070e85faff4a6a9eef49553ebc2b",
+    "remote": {
+     "ami_id": "ami-09c14f55df4958cbd",
+     "availability_zone": "us-east-1f",
+     "client_collected_at": "2026-11-23T12:42:04.098771Z",
+     "client_klt_version": "0.9.3.dev3910+g8703ad519ff7",
+     "client_launched_at": "2026-11-23T12:41:01.158741Z",
+     "client_status_terminal_at": "2026-11-23T12:42:03.236183Z",
+     "client_submitted_at": "2026-11-23T12:40:44.096611Z",
+     "concurrency": "1",
+     "elapsed_seconds": 25,
+     "exit_code": "0",
+     "instance_id": "i-0b2a1bb49213c9579",
+     "instance_type": "m6i.4xlarge",
+     "job_ceiling": {
+      "basis": "conservative_serial_bound",
+      "check": "warn",
+      "exceeds_ceiling": true,
+      "job_bound_s": 9120.0,
+      "max_job_seconds": 3600.0,
+      "max_job_seconds_source": "fleet_config",
+      "max_units_per_job": 5,
+      "overhead_s": 120.0,
+      "per_unit_timeout_s": 600,
+      "recommended_hosts": 3,
+      "unit_count": 15,
+      "warning": "batch job bound 9120s (options.timeout_s 600s x 15 units + 120s; a conservative fully-serial upper bound, not a runtime estimate) exceeds the fleet's whole-job ceiling of 3600s (max_job_seconds from fleet_config); a job still running at the ceiling is killed and every unit is reported batch_job_timeout. Set request.remote.hosts to at least 3 to run one job per shard of at most 5 units, each within the ceiling"
+     },
+     "job_id": "klt-sim-7870b7978553",
+     "lifecycle": "spot",
+     "models_lib_comparison": {
+      "status": "match"
+     },
+     "physical_cores": "8",
+     "provider": "aws-batch-fleet",
+     "region": "us-east-1",
+     "runner_compatibility": "match",
+     "runner_corner_section_libs": null,
+     "runner_klt_version": "0.9.0",
+     "runner_model_inputs": null,
+     "runner_models_lib_sha256": "48de7c677e2c6e7d09b2559279de9f818be71010a4aa933d728eb4db3b133c84",
+     "runner_osdi_preload": null,
+     "runner_request_features": {
+      "missing": [],
+      "required": [
+       "analysis_steps",
+       "options.ngspice_init"
+      ],
+      "status": "supported"
+     },
+     "spot": true,
+     "state": "done",
+     "worker_environment": {
+      "capture": "ok",
+      "cpu_model": "Intel(R) Xeon(R) Platinum 8375C CPU @ 2.90GHz",
+      "diagnostics": [],
+      "engine_build_comparison": {
+       "status": "match"
+      },
+      "image_manifest": null,
+      "model_inputs": null,
+      "ngspice_init": null,
+      "omp_num_threads": null,
+      "pdk": {
+       "models_staged": false,
+       "root": "/opt/pdk",
+       "stamp_scheme": "sources-sha256",
+       "stamp_scope": "executed",
+       "stamp_sha256": "4ca10280ae9f293aa1ff69f0060a52e0026929111bda881503717469b429ce67",
+       "stamp_text": "open_pdks f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7",
+       "variant": "sky130A"
+      },
+      "pdk_stamp_comparison": {
+       "status": "mismatch",
+       "warning": "the worker's PDK revision stamp for sky130A differs from the one the submitter resolved locally; results may differ from a local run (a matching stamp would not prove identical models)"
+      },
+      "simulator": {
+       "binary_source": "PATH",
+       "requested_binary": "ngspice",
+       "selected_path": "/usr/local/bin/ngspice",
+       "version_banner": "******\n** ngspice-47 : Circuit level simulation program\n** Compiled with KLU Direct Linear Solver\n** The U. C. Berkeley CAD Group\n** Copyright 1985-1994, Regents of the University of California.\n** Copyright 2001-2026, The ngspice team.\n** Please get your ngspice manual from https://ngspice.sourceforge.io/docs.html\n** Please file your bug-reports at http://ngspice.sourceforge.net/bugrep.html\n** Creation Date: Fri Nov 13 23:19:32 UTC 2026\n******\n",
+       "version_probe": "ok"
+      },
+      "threads_per_worker": 1
+     }
+    },
+    "reported_backend": "aws-batch-fleet",
+    "request_file": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-705/sim/startup/diagnostics/issue-705-20261122-013500/runs/load-cand/klt-requests/v2.97-tran1.json",
+    "response_file": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-705/sim/startup/diagnostics/issue-705-20261122-013500/runs/load-cand/klt-out/v2.97-tran1/response.json",
+    "returncode": 0,
+    "supply_v": 2.97
+   },
+   {
+    "endpoint": "tran2",
+    "engine": "ngspice",
+    "engine_version": "47",
+    "job_id": "klt-sim-76a8bc3d6f06",
+    "key": "v2.97-tran2",
+    "klt_pdk_names_pin": true,
+    "klt_status": "pass",
+    "klt_version": "0.9.3.dev3910+g8703ad519ff7",
+    "n_points": 15,
+    "pdk_version": "open_pdks c6d73a35f524070e85faff4a6a9eef49553ebc2b",
+    "remote": {
+     "ami_id": "ami-09c14f55df4958cbd",
+     "availability_zone": "us-east-1d",
+     "client_collected_at": "2026-11-23T12:43:26.968839Z",
+     "client_klt_version": "0.9.3.dev3910+g8703ad519ff7",
+     "client_launched_at": "2026-11-23T12:42:24.048777Z",
+     "client_status_terminal_at": "2026-11-23T12:43:26.077222Z",
+     "client_submitted_at": "2026-11-23T12:42:04.728772Z",
+     "concurrency": "1",
+     "elapsed_seconds": 25,
+     "exit_code": "0",
+     "instance_id": "i-084273e8a63681144",
+     "instance_type": "c7i.4xlarge",
+     "job_ceiling": {
+      "basis": "conservative_serial_bound",
+      "check": "warn",
+      "exceeds_ceiling": true,
+      "job_bound_s": 9120.0,
+      "max_job_seconds": 3600.0,
+      "max_job_seconds_source": "fleet_config",
+      "max_units_per_job": 5,
+      "overhead_s": 120.0,
+      "per_unit_timeout_s": 600,
+      "recommended_hosts": 3,
+      "unit_count": 15,
+      "warning": "batch job bound 9120s (options.timeout_s 600s x 15 units + 120s; a conservative fully-serial upper bound, not a runtime estimate) exceeds the fleet's whole-job ceiling of 3600s (max_job_seconds from fleet_config); a job still running at the ceiling is killed and every unit is reported batch_job_timeout. Set request.remote.hosts to at least 3 to run one job per shard of at most 5 units, each within the ceiling"
+     },
+     "job_id": "klt-sim-76a8bc3d6f06",
+     "lifecycle": "spot",
+     "models_lib_comparison": {
+      "status": "match"
+     },
+     "physical_cores": "8",
+     "provider": "aws-batch-fleet",
+     "region": "us-east-1",
+     "runner_compatibility": "match",
+     "runner_corner_section_libs": null,
+     "runner_klt_version": "0.9.0",
+     "runner_model_inputs": null,
+     "runner_models_lib_sha256": "48de7c677e2c6e7d09b2559279de9f818be71010a4aa933d728eb4db3b133c84",
+     "runner_osdi_preload": null,
+     "runner_request_features": {
+      "missing": [],
+      "required": [
+       "analysis_steps",
+       "options.ngspice_init"
+      ],
+      "status": "supported"
+     },
+     "spot": true,
+     "state": "done",
+     "worker_environment": {
+      "capture": "ok",
+      "cpu_model": "Intel(R) Xeon(R) Platinum 8488C",
+      "diagnostics": [],
+      "engine_build_comparison": {
+       "status": "match"
+      },
+      "image_manifest": null,
+      "model_inputs": null,
+      "ngspice_init": null,
+      "omp_num_threads": null,
+      "pdk": {
+       "models_staged": false,
+       "root": "/opt/pdk",
+       "stamp_scheme": "sources-sha256",
+       "stamp_scope": "executed",
+       "stamp_sha256": "4ca10280ae9f293aa1ff69f0060a52e0026929111bda881503717469b429ce67",
+       "stamp_text": "open_pdks f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7",
+       "variant": "sky130A"
+      },
+      "pdk_stamp_comparison": {
+       "status": "mismatch",
+       "warning": "the worker's PDK revision stamp for sky130A differs from the one the submitter resolved locally; results may differ from a local run (a matching stamp would not prove identical models)"
+      },
+      "simulator": {
+       "binary_source": "PATH",
+       "requested_binary": "ngspice",
+       "selected_path": "/usr/local/bin/ngspice",
+       "version_banner": "******\n** ngspice-47 : Circuit level simulation program\n** Compiled with KLU Direct Linear Solver\n** The U. C. Berkeley CAD Group\n** Copyright 1985-1994, Regents of the University of California.\n** Copyright 2001-2026, The ngspice team.\n** Please get your ngspice manual from https://ngspice.sourceforge.io/docs.html\n** Please file your bug-reports at http://ngspice.sourceforge.net/bugrep.html\n** Creation Date: Fri Nov 13 23:19:32 UTC 2026\n******\n",
+       "version_probe": "ok"
+      },
+      "threads_per_worker": 1
+     }
+    },
+    "reported_backend": "aws-batch-fleet",
+    "request_file": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-705/sim/startup/diagnostics/issue-705-20261122-013500/runs/load-cand/klt-requests/v2.97-tran2.json",
+    "response_file": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-705/sim/startup/diagnostics/issue-705-20261122-013500/runs/load-cand/klt-out/v2.97-tran2/response.json",
+    "returncode": 0,
+    "supply_v": 2.97
+   },
+   {
+    "endpoint": "tran1",
+    "engine": "ngspice",
+    "engine_version": "47",
+    "job_id": "klt-sim-435ef5e67ebf",
+    "key": "v3.30-tran1",
+    "klt_pdk_names_pin": true,
+    "klt_status": "pass",
+    "klt_version": "0.9.3.dev3910+g8703ad519ff7",
+    "n_points": 15,
+    "pdk_version": "open_pdks c6d73a35f524070e85faff4a6a9eef49553ebc2b",
+    "remote": {
+     "ami_id": "ami-09c14f55df4958cbd",
+     "availability_zone": "us-east-1d",
+     "client_collected_at": "2026-11-23T12:44:50.129285Z",
+     "client_klt_version": "0.9.3.dev3910+g8703ad519ff7",
+     "client_launched_at": "2026-11-23T12:43:47.094753Z",
+     "client_status_terminal_at": "2026-11-23T12:44:49.213598Z",
+     "client_submitted_at": "2026-11-23T12:43:27.611917Z",
+     "concurrency": "1",
+     "elapsed_seconds": 22,
+     "exit_code": "0",
+     "instance_id": "i-03ea95381e5f7d71c",
+     "instance_type": "c7i.4xlarge",
+     "job_ceiling": {
+      "basis": "conservative_serial_bound",
+      "check": "warn",
+      "exceeds_ceiling": true,
+      "job_bound_s": 9120.0,
+      "max_job_seconds": 3600.0,
+      "max_job_seconds_source": "fleet_config",
+      "max_units_per_job": 5,
+      "overhead_s": 120.0,
+      "per_unit_timeout_s": 600,
+      "recommended_hosts": 3,
+      "unit_count": 15,
+      "warning": "batch job bound 9120s (options.timeout_s 600s x 15 units + 120s; a conservative fully-serial upper bound, not a runtime estimate) exceeds the fleet's whole-job ceiling of 3600s (max_job_seconds from fleet_config); a job still running at the ceiling is killed and every unit is reported batch_job_timeout. Set request.remote.hosts to at least 3 to run one job per shard of at most 5 units, each within the ceiling"
+     },
+     "job_id": "klt-sim-435ef5e67ebf",
+     "lifecycle": "spot",
+     "models_lib_comparison": {
+      "status": "match"
+     },
+     "physical_cores": "8",
+     "provider": "aws-batch-fleet",
+     "region": "us-east-1",
+     "runner_compatibility": "match",
+     "runner_corner_section_libs": null,
+     "runner_klt_version": "0.9.0",
+     "runner_model_inputs": null,
+     "runner_models_lib_sha256": "48de7c677e2c6e7d09b2559279de9f818be71010a4aa933d728eb4db3b133c84",
+     "runner_osdi_preload": null,
+     "runner_request_features": {
+      "missing": [],
+      "required": [
+       "analysis_steps",
+       "options.ngspice_init"
+      ],
+      "status": "supported"
+     },
+     "spot": true,
+     "state": "done",
+     "worker_environment": {
+      "capture": "ok",
+      "cpu_model": "Intel(R) Xeon(R) Platinum 8488C",
+      "diagnostics": [],
+      "engine_build_comparison": {
+       "status": "match"
+      },
+      "image_manifest": null,
+      "model_inputs": null,
+      "ngspice_init": null,
+      "omp_num_threads": null,
+      "pdk": {
+       "models_staged": false,
+       "root": "/opt/pdk",
+       "stamp_scheme": "sources-sha256",
+       "stamp_scope": "executed",
+       "stamp_sha256": "4ca10280ae9f293aa1ff69f0060a52e0026929111bda881503717469b429ce67",
+       "stamp_text": "open_pdks f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7",
+       "variant": "sky130A"
+      },
+      "pdk_stamp_comparison": {
+       "status": "mismatch",
+       "warning": "the worker's PDK revision stamp for sky130A differs from the one the submitter resolved locally; results may differ from a local run (a matching stamp would not prove identical models)"
+      },
+      "simulator": {
+       "binary_source": "PATH",
+       "requested_binary": "ngspice",
+       "selected_path": "/usr/local/bin/ngspice",
+       "version_banner": "******\n** ngspice-47 : Circuit level simulation program\n** Compiled with KLU Direct Linear Solver\n** The U. C. Berkeley CAD Group\n** Copyright 1985-1994, Regents of the University of California.\n** Copyright 2001-2026, The ngspice team.\n** Please get your ngspice manual from https://ngspice.sourceforge.io/docs.html\n** Please file your bug-reports at http://ngspice.sourceforge.net/bugrep.html\n** Creation Date: Fri Nov 13 23:19:32 UTC 2026\n******\n",
+       "version_probe": "ok"
+      },
+      "threads_per_worker": 1
+     }
+    },
+    "reported_backend": "aws-batch-fleet",
+    "request_file": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-705/sim/startup/diagnostics/issue-705-20261122-013500/runs/load-cand/klt-requests/v3.30-tran1.json",
+    "response_file": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-705/sim/startup/diagnostics/issue-705-20261122-013500/runs/load-cand/klt-out/v3.30-tran1/response.json",
+    "returncode": 0,
+    "supply_v": 3.3
+   },
+   {
+    "endpoint": "tran2",
+    "engine": "ngspice",
+    "engine_version": "47",
+    "job_id": "klt-sim-7f202803130e",
+    "key": "v3.30-tran2",
+    "klt_pdk_names_pin": true,
+    "klt_status": "pass",
+    "klt_version": "0.9.3.dev3910+g8703ad519ff7",
+    "n_points": 15,
+    "pdk_version": "open_pdks c6d73a35f524070e85faff4a6a9eef49553ebc2b",
+    "remote": {
+     "ami_id": "ami-09c14f55df4958cbd",
+     "availability_zone": "us-east-1f",
+     "client_collected_at": "2026-11-23T12:46:12.063818Z",
+     "client_klt_version": "0.9.3.dev3910+g8703ad519ff7",
+     "client_launched_at": "2026-11-23T12:45:08.577559Z",
+     "client_status_terminal_at": "2026-11-23T12:46:10.832431Z",
+     "client_submitted_at": "2026-11-23T12:44:50.756470Z",
+     "concurrency": "1",
+     "elapsed_seconds": 24,
+     "exit_code": "0",
+     "instance_id": "i-0ad5380d5de7cd113",
+     "instance_type": "c7i.4xlarge",
+     "job_ceiling": {
+      "basis": "conservative_serial_bound",
+      "check": "warn",
+      "exceeds_ceiling": true,
+      "job_bound_s": 9120.0,
+      "max_job_seconds": 3600.0,
+      "max_job_seconds_source": "fleet_config",
+      "max_units_per_job": 5,
+      "overhead_s": 120.0,
+      "per_unit_timeout_s": 600,
+      "recommended_hosts": 3,
+      "unit_count": 15,
+      "warning": "batch job bound 9120s (options.timeout_s 600s x 15 units + 120s; a conservative fully-serial upper bound, not a runtime estimate) exceeds the fleet's whole-job ceiling of 3600s (max_job_seconds from fleet_config); a job still running at the ceiling is killed and every unit is reported batch_job_timeout. Set request.remote.hosts to at least 3 to run one job per shard of at most 5 units, each within the ceiling"
+     },
+     "job_id": "klt-sim-7f202803130e",
+     "lifecycle": "spot",
+     "models_lib_comparison": {
+      "status": "match"
+     },
+     "physical_cores": "8",
+     "provider": "aws-batch-fleet",
+     "region": "us-east-1",
+     "runner_compatibility": "match",
+     "runner_corner_section_libs": null,
+     "runner_klt_version": "0.9.0",
+     "runner_model_inputs": null,
+     "runner_models_lib_sha256": "48de7c677e2c6e7d09b2559279de9f818be71010a4aa933d728eb4db3b133c84",
+     "runner_osdi_preload": null,
+     "runner_request_features": {
+      "missing": [],
+      "required": [
+       "analysis_steps",
+       "options.ngspice_init"
+      ],
+      "status": "supported"
+     },
+     "spot": true,
+     "state": "done",
+     "worker_environment": {
+      "capture": "ok",
+      "cpu_model": "Intel(R) Xeon(R) Platinum 8488C",
+      "diagnostics": [],
+      "engine_build_comparison": {
+       "status": "match"
+      },
+      "image_manifest": null,
+      "model_inputs": null,
+      "ngspice_init": null,
+      "omp_num_threads": null,
+      "pdk": {
+       "models_staged": false,
+       "root": "/opt/pdk",
+       "stamp_scheme": "sources-sha256",
+       "stamp_scope": "executed",
+       "stamp_sha256": "4ca10280ae9f293aa1ff69f0060a52e0026929111bda881503717469b429ce67",
+       "stamp_text": "open_pdks f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7",
+       "variant": "sky130A"
+      },
+      "pdk_stamp_comparison": {
+       "status": "mismatch",
+       "warning": "the worker's PDK revision stamp for sky130A differs from the one the submitter resolved locally; results may differ from a local run (a matching stamp would not prove identical models)"
+      },
+      "simulator": {
+       "binary_source": "PATH",
+       "requested_binary": "ngspice",
+       "selected_path": "/usr/local/bin/ngspice",
+       "version_banner": "******\n** ngspice-47 : Circuit level simulation program\n** Compiled with KLU Direct Linear Solver\n** The U. C. Berkeley CAD Group\n** Copyright 1985-1994, Regents of the University of California.\n** Copyright 2001-2026, The ngspice team.\n** Please get your ngspice manual from https://ngspice.sourceforge.io/docs.html\n** Please file your bug-reports at http://ngspice.sourceforge.net/bugrep.html\n** Creation Date: Fri Nov 13 23:19:32 UTC 2026\n******\n",
+       "version_probe": "ok"
+      },
+      "threads_per_worker": 1
+     }
+    },
+    "reported_backend": "aws-batch-fleet",
+    "request_file": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-705/sim/startup/diagnostics/issue-705-20261122-013500/runs/load-cand/klt-requests/v3.30-tran2.json",
+    "response_file": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-705/sim/startup/diagnostics/issue-705-20261122-013500/runs/load-cand/klt-out/v3.30-tran2/response.json",
+    "returncode": 0,
+    "supply_v": 3.3
+   },
+   {
+    "endpoint": "tran1",
+    "engine": "ngspice",
+    "engine_version": "47",
+    "job_id": "klt-sim-e9561ddb7435",
+    "key": "v3.63-tran1",
+    "klt_pdk_names_pin": true,
+    "klt_status": "pass",
+    "klt_version": "0.9.3.dev3910+g8703ad519ff7",
+    "n_points": 15,
+    "pdk_version": "open_pdks c6d73a35f524070e85faff4a6a9eef49553ebc2b",
+    "remote": {
+     "ami_id": "ami-09c14f55df4958cbd",
+     "availability_zone": "us-east-1f",
+     "client_collected_at": "2026-11-23T12:47:36.785492Z",
+     "client_klt_version": "0.9.3.dev3910+g8703ad519ff7",
+     "client_launched_at": "2026-11-23T12:46:33.736120Z",
+     "client_status_terminal_at": "2026-11-23T12:47:35.948348Z",
+     "client_submitted_at": "2026-11-23T12:46:12.759705Z",
+     "concurrency": "1",
+     "elapsed_seconds": 35,
+     "exit_code": "0",
+     "instance_id": "i-0bb6c5e884ee897c1",
+     "instance_type": "m6i.4xlarge",
+     "job_ceiling": {
+      "basis": "conservative_serial_bound",
+      "check": "warn",
+      "exceeds_ceiling": true,
+      "job_bound_s": 9120.0,
+      "max_job_seconds": 3600.0,
+      "max_job_seconds_source": "fleet_config",
+      "max_units_per_job": 5,
+      "overhead_s": 120.0,
+      "per_unit_timeout_s": 600,
+      "recommended_hosts": 3,
+      "unit_count": 15,
+      "warning": "batch job bound 9120s (options.timeout_s 600s x 15 units + 120s; a conservative fully-serial upper bound, not a runtime estimate) exceeds the fleet's whole-job ceiling of 3600s (max_job_seconds from fleet_config); a job still running at the ceiling is killed and every unit is reported batch_job_timeout. Set request.remote.hosts to at least 3 to run one job per shard of at most 5 units, each within the ceiling"
+     },
+     "job_id": "klt-sim-e9561ddb7435",
+     "lifecycle": "spot",
+     "models_lib_comparison": {
+      "status": "match"
+     },
+     "physical_cores": "8",
+     "provider": "aws-batch-fleet",
+     "region": "us-east-1",
+     "runner_compatibility": "match",
+     "runner_corner_section_libs": null,
+     "runner_klt_version": "0.9.0",
+     "runner_model_inputs": null,
+     "runner_models_lib_sha256": "48de7c677e2c6e7d09b2559279de9f818be71010a4aa933d728eb4db3b133c84",
+     "runner_osdi_preload": null,
+     "runner_request_features": {
+      "missing": [],
+      "required": [
+       "analysis_steps",
+       "options.ngspice_init"
+      ],
+      "status": "supported"
+     },
+     "spot": true,
+     "state": "done",
+     "worker_environment": {
+      "capture": "ok",
+      "cpu_model": "Intel(R) Xeon(R) Platinum 8375C CPU @ 2.90GHz",
+      "diagnostics": [],
+      "engine_build_comparison": {
+       "status": "match"
+      },
+      "image_manifest": null,
+      "model_inputs": null,
+      "ngspice_init": null,
+      "omp_num_threads": null,
+      "pdk": {
+       "models_staged": false,
+       "root": "/opt/pdk",
+       "stamp_scheme": "sources-sha256",
+       "stamp_scope": "executed",
+       "stamp_sha256": "4ca10280ae9f293aa1ff69f0060a52e0026929111bda881503717469b429ce67",
+       "stamp_text": "open_pdks f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7",
+       "variant": "sky130A"
+      },
+      "pdk_stamp_comparison": {
+       "status": "mismatch",
+       "warning": "the worker's PDK revision stamp for sky130A differs from the one the submitter resolved locally; results may differ from a local run (a matching stamp would not prove identical models)"
+      },
+      "simulator": {
+       "binary_source": "PATH",
+       "requested_binary": "ngspice",
+       "selected_path": "/usr/local/bin/ngspice",
+       "version_banner": "******\n** ngspice-47 : Circuit level simulation program\n** Compiled with KLU Direct Linear Solver\n** The U. C. Berkeley CAD Group\n** Copyright 1985-1994, Regents of the University of California.\n** Copyright 2001-2026, The ngspice team.\n** Please get your ngspice manual from https://ngspice.sourceforge.io/docs.html\n** Please file your bug-reports at http://ngspice.sourceforge.net/bugrep.html\n** Creation Date: Fri Nov 13 23:19:32 UTC 2026\n******\n",
+       "version_probe": "ok"
+      },
+      "threads_per_worker": 1
+     }
+    },
+    "reported_backend": "aws-batch-fleet",
+    "request_file": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-705/sim/startup/diagnostics/issue-705-20261122-013500/runs/load-cand/klt-requests/v3.63-tran1.json",
+    "response_file": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-705/sim/startup/diagnostics/issue-705-20261122-013500/runs/load-cand/klt-out/v3.63-tran1/response.json",
+    "returncode": 0,
+    "supply_v": 3.63
+   },
+   {
+    "endpoint": "tran2",
+    "engine": "ngspice",
+    "engine_version": "47",
+    "job_id": "klt-sim-e924912f64e6",
+    "key": "v3.63-tran2",
+    "klt_pdk_names_pin": true,
+    "klt_status": "pass",
+    "klt_version": "0.9.3.dev3910+g8703ad519ff7",
+    "n_points": 15,
+    "pdk_version": "open_pdks c6d73a35f524070e85faff4a6a9eef49553ebc2b",
+    "remote": {
+     "ami_id": "ami-09c14f55df4958cbd",
+     "availability_zone": "us-east-1a",
+     "client_collected_at": "2026-11-23T12:49:02.298718Z",
+     "client_klt_version": "0.9.3.dev3910+g8703ad519ff7",
+     "client_launched_at": "2026-11-23T12:47:58.090979Z",
+     "client_status_terminal_at": "2026-11-23T12:49:01.310766Z",
+     "client_submitted_at": "2026-11-23T12:47:38.119626Z",
+     "concurrency": "1",
+     "elapsed_seconds": 28,
+     "exit_code": "0",
+     "instance_id": "i-02c923a822a67340a",
+     "instance_type": "m7i.4xlarge",
+     "job_ceiling": {
+      "basis": "conservative_serial_bound",
+      "check": "warn",
+      "exceeds_ceiling": true,
+      "job_bound_s": 9120.0,
+      "max_job_seconds": 3600.0,
+      "max_job_seconds_source": "fleet_config",
+      "max_units_per_job": 5,
+      "overhead_s": 120.0,
+      "per_unit_timeout_s": 600,
+      "recommended_hosts": 3,
+      "unit_count": 15,
+      "warning": "batch job bound 9120s (options.timeout_s 600s x 15 units + 120s; a conservative fully-serial upper bound, not a runtime estimate) exceeds the fleet's whole-job ceiling of 3600s (max_job_seconds from fleet_config); a job still running at the ceiling is killed and every unit is reported batch_job_timeout. Set request.remote.hosts to at least 3 to run one job per shard of at most 5 units, each within the ceiling"
+     },
+     "job_id": "klt-sim-e924912f64e6",
+     "lifecycle": "spot",
+     "models_lib_comparison": {
+      "status": "match"
+     },
+     "physical_cores": "8",
+     "provider": "aws-batch-fleet",
+     "region": "us-east-1",
+     "runner_compatibility": "match",
+     "runner_corner_section_libs": null,
+     "runner_klt_version": "0.9.0",
+     "runner_model_inputs": null,
+     "runner_models_lib_sha256": "48de7c677e2c6e7d09b2559279de9f818be71010a4aa933d728eb4db3b133c84",
+     "runner_osdi_preload": null,
+     "runner_request_features": {
+      "missing": [],
+      "required": [
+       "analysis_steps",
+       "options.ngspice_init"
+      ],
+      "status": "supported"
+     },
+     "spot": true,
+     "state": "done",
+     "worker_environment": {
+      "capture": "ok",
+      "cpu_model": "Intel(R) Xeon(R) Platinum 8488C",
+      "diagnostics": [],
+      "engine_build_comparison": {
+       "status": "match"
+      },
+      "image_manifest": null,
+      "model_inputs": null,
+      "ngspice_init": null,
+      "omp_num_threads": null,
+      "pdk": {
+       "models_staged": false,
+       "root": "/opt/pdk",
+       "stamp_scheme": "sources-sha256",
+       "stamp_scope": "executed",
+       "stamp_sha256": "4ca10280ae9f293aa1ff69f0060a52e0026929111bda881503717469b429ce67",
+       "stamp_text": "open_pdks f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7",
+       "variant": "sky130A"
+      },
+      "pdk_stamp_comparison": {
+       "status": "mismatch",
+       "warning": "the worker's PDK revision stamp for sky130A differs from the one the submitter resolved locally; results may differ from a local run (a matching stamp would not prove identical models)"
+      },
+      "simulator": {
+       "binary_source": "PATH",
+       "requested_binary": "ngspice",
+       "selected_path": "/usr/local/bin/ngspice",
+       "version_banner": "******\n** ngspice-47 : Circuit level simulation program\n** Compiled with KLU Direct Linear Solver\n** The U. C. Berkeley CAD Group\n** Copyright 1985-1994, Regents of the University of California.\n** Copyright 2001-2026, The ngspice team.\n** Please get your ngspice manual from https://ngspice.sourceforge.io/docs.html\n** Please file your bug-reports at http://ngspice.sourceforge.net/bugrep.html\n** Creation Date: Fri Nov 13 23:19:32 UTC 2026\n******\n",
+       "version_probe": "ok"
+      },
+      "threads_per_worker": 1
+     }
+    },
+    "reported_backend": "aws-batch-fleet",
+    "request_file": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-705/sim/startup/diagnostics/issue-705-20261122-013500/runs/load-cand/klt-requests/v3.63-tran2.json",
+    "response_file": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-705/sim/startup/diagnostics/issue-705-20261122-013500/runs/load-cand/klt-out/v3.63-tran2/response.json",
+    "returncode": 0,
+    "supply_v": 3.63
+   }
+  ]
+ },
+ "experiment": "load-regulation",
+ "leg": "load-cand",
+ "matrix": [
+  [
+   "tt",
+   -40.0,
+   2.97
+  ],
+  [
+   "tt",
+   -40.0,
+   3.3
+  ],
+  [
+   "tt",
+   -40.0,
+   3.63
+  ],
+  [
+   "tt",
+   27.0,
+   2.97
+  ],
+  [
+   "tt",
+   27.0,
+   3.3
+  ],
+  [
+   "tt",
+   27.0,
+   3.63
+  ],
+  [
+   "tt",
+   125.0,
+   2.97
+  ],
+  [
+   "tt",
+   125.0,
+   3.3
+  ],
+  [
+   "tt",
+   125.0,
+   3.63
+  ],
+  [
+   "ss",
+   -40.0,
+   2.97
+  ],
+  [
+   "ss",
+   -40.0,
+   3.3
+  ],
+  [
+   "ss",
+   -40.0,
+   3.63
+  ],
+  [
+   "ss",
+   27.0,
+   2.97
+  ],
+  [
+   "ss",
+   27.0,
+   3.3
+  ],
+  [
+   "ss",
+   27.0,
+   3.63
+  ],
+  [
+   "ss",
+   125.0,
+   2.97
+  ],
+  [
+   "ss",
+   125.0,
+   3.3
+  ],
+  [
+   "ss",
+   125.0,
+   3.63
+  ],
+  [
+   "ff",
+   -40.0,
+   2.97
+  ],
+  [
+   "ff",
+   -40.0,
+   3.3
+  ],
+  [
+   "ff",
+   -40.0,
+   3.63
+  ],
+  [
+   "ff",
+   27.0,
+   2.97
+  ],
+  [
+   "ff",
+   27.0,
+   3.3
+  ],
+  [
+   "ff",
+   27.0,
+   3.63
+  ],
+  [
+   "ff",
+   125.0,
+   2.97
+  ],
+  [
+   "ff",
+   125.0,
+   3.3
+  ],
+  [
+   "ff",
+   125.0,
+   3.63
+  ],
+  [
+   "sf",
+   -40.0,
+   2.97
+  ],
+  [
+   "sf",
+   -40.0,
+   3.3
+  ],
+  [
+   "sf",
+   -40.0,
+   3.63
+  ],
+  [
+   "sf",
+   27.0,
+   2.97
+  ],
+  [
+   "sf",
+   27.0,
+   3.3
+  ],
+  [
+   "sf",
+   27.0,
+   3.63
+  ],
+  [
+   "sf",
+   125.0,
+   2.97
+  ],
+  [
+   "sf",
+   125.0,
+   3.3
+  ],
+  [
+   "sf",
+   125.0,
+   3.63
+  ],
+  [
+   "fs",
+   -40.0,
+   2.97
+  ],
+  [
+   "fs",
+   -40.0,
+   3.3
+  ],
+  [
+   "fs",
+   -40.0,
+   3.63
+  ],
+  [
+   "fs",
+   27.0,
+   2.97
+  ],
+  [
+   "fs",
+   27.0,
+   3.3
+  ],
+  [
+   "fs",
+   27.0,
+   3.63
+  ],
+  [
+   "fs",
+   125.0,
+   2.97
+  ],
+  [
+   "fs",
+   125.0,
+   3.3
+  ],
+  [
+   "fs",
+   125.0,
+   3.63
+  ]
+ ],
+ "provenance": {
+  "candidate_invariant_problems": [],
+  "candidate_py_sha256": "a08e93dce932ddd4bb90854459f23bbc8fa1fa7fcbf8a2cf524e2742ec82e5d7",
+  "candidate_rev": 2,
+  "dut_sch_sha256": "1378c2d440e6ffc2224091972a162357c2634600e6e56cb51e4d6f96159fd2e3",
+  "edit_notes": [
+   "removed XM_IN2S",
+   "removed XM_MIRP2",
+   "removed XM_MIRP1",
+   "removed XM_MIR4",
+   "removed XM_MIR3",
+   "removed XM_MIR2",
+   "removed XM_MIR1",
+   "removed XM_IN2",
+   "removed XM_IN1",
+   "removed XM_TAIL",
+   "rewired XM_ENP5: 'XM_ENP5 PB EN VIN VIN' -> 'XM_ENP5 ND1 EN VIN VIN'",
+   "rewired XM_CLP: 'XM_CLP CL_CMP BIASP VIN VIN' -> 'XM_CLP CL_CMP PBR VIN VIN'",
+   "added XM_VRF",
+   "added XR_VR",
+   "added XM_PBR",
+   "added XM_PBN",
+   "added XM_NBR",
+   "added XM_NTAIL",
+   "added XM_NIN1",
+   "added XM_NIN1C",
+   "added XM_NIN2",
+   "added XM_NIN2S",
+   "added XM_PD1",
+   "added XM_PO1",
+   "added XM_PD2",
+   "added XM_PO2",
+   "added XM_NMD",
+   "added XM_NMO",
+   "added XM_ENP6",
+   "added XM_ENP7"
+  ],
+  "experiment_json_sha256": "a7e5fac991709aa493346edcd09089e4359b6cd8ab6fa16941d2aed779d16ecd",
+  "git_state": {
+   "branch": "feature/issue-705",
+   "dirty": true,
+   "sha": "1e328f65"
+  },
+  "netlist_edited_sha256": "f37163446564d56dec0ed5c504d0ff153b6aed2c100b2f23c24020838ee1ae37",
+  "netlist_raw_sha256": "4fd7fceb56ae1c3b751db1c2ca993f6528afd7b6bf1dfa965dbf4f783ce36fef",
+  "overlay_source": "sim/dropout-vs-load/diagnostics/issue-692-20261120-235900/candidate.py",
+  "pdk": {
+   "lib_sha256": "48de7c677e2c6e7d09b2559279de9f818be71010a4aa933d728eb4db3b133c84",
+   "matches_pin": true,
+   "open_pdks_commit": "c6d73a35f524070e85faff4a6a9eef49553ebc2b"
+  },
+  "pin": {
+   "open_pdks_commit": "c6d73a35f524070e85faff4a6a9eef49553ebc2b"
+  },
+  "source_commit": "1e328f6558ee68a1ea68ed78b14fd29487d79347",
+  "testbench_sha256": "0c792adf3b9b4f98aff3d0102cf11938ae26dc2a39083087da349f9de48be88a",
+  "tools": {
+   "declared": {
+    "ngspice": "42",
+    "xschem": "3.4.4"
+   },
+   "ngspice": "ngspice-47 : Circuit level simulation program",
+   "on_baseline": false,
+   "platform": "Linux 7.0.0-1017-aws x86_64",
+   "python": "3.12.3",
+   "xschem": "XSCHEM V3.4.7"
+  },
+  "variant": "cand"
+ },
+ "results": [
+  {
+   "batch_reasons": [],
+   "corner_id": "tt_-40c_2.97v",
+   "elapsed_s": 15.625,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "tt/novdd/-40C",
+    "tt/novdd/-40C"
+   ],
+   "klt_request": [
+    "v2.97-tran1",
+    "v2.97-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "abs(tran2.vout_50ma - tran1.vout_0ma)",
+     "max": 0.018,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 0.0019839999999999858
+    },
+    {
+     "expr": "100*abs(tran2.vout_50ma - tran1.vout_0ma)/1.8",
+     "max": 1,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_pct",
+     "pass": true,
+     "reason": "",
+     "unit": "%",
+     "value": 0.11022222222222143
+    },
+    {
+     "expr": "tran1.vout_0ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803324
+    },
+    {
+     "expr": "tran1.vout_0ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803324
+    },
+    {
+     "expr": "tran1.vout_0ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_0ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803324
+    },
+    {
+     "expr": "tran2.vout_50ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.80134
+    },
+    {
+     "expr": "tran2.vout_50ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.80134
+    },
+    {
+     "expr": "tran2.vout_50ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_50ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.80134
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "tt",
+   "solver_diagnostic": null,
+   "supply_v": 2.97,
+   "temperature_c": -40.0,
+   "timed_out": false,
+   "timeout_s": 600
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "tt_-40c_3.30v",
+   "elapsed_s": 14.822,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "tt/novdd/-40C",
+    "tt/novdd/-40C"
+   ],
+   "klt_request": [
+    "v3.30-tran1",
+    "v3.30-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "abs(tran2.vout_50ma - tran1.vout_0ma)",
+     "max": 0.018,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 0.0019559999999998468
+    },
+    {
+     "expr": "100*abs(tran2.vout_50ma - tran1.vout_0ma)/1.8",
+     "max": 1,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_pct",
+     "pass": true,
+     "reason": "",
+     "unit": "%",
+     "value": 0.10866666666665815
+    },
+    {
+     "expr": "tran1.vout_0ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.804155
+    },
+    {
+     "expr": "tran1.vout_0ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.804155
+    },
+    {
+     "expr": "tran1.vout_0ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_0ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.804155
+    },
+    {
+     "expr": "tran2.vout_50ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.802199
+    },
+    {
+     "expr": "tran2.vout_50ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.802199
+    },
+    {
+     "expr": "tran2.vout_50ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_50ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.802199
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "tt",
+   "solver_diagnostic": null,
+   "supply_v": 3.3,
+   "temperature_c": -40.0,
+   "timed_out": false,
+   "timeout_s": 600
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "tt_-40c_3.63v",
+   "elapsed_s": 17.317999999999998,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "tt/novdd/-40C",
+    "tt/novdd/-40C"
+   ],
+   "klt_request": [
+    "v3.63-tran1",
+    "v3.63-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "abs(tran2.vout_50ma - tran1.vout_0ma)",
+     "max": 0.018,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 0.001972000000000085
+    },
+    {
+     "expr": "100*abs(tran2.vout_50ma - tran1.vout_0ma)/1.8",
+     "max": 1,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_pct",
+     "pass": true,
+     "reason": "",
+     "unit": "%",
+     "value": 0.10955555555556026
+    },
+    {
+     "expr": "tran1.vout_0ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.805006
+    },
+    {
+     "expr": "tran1.vout_0ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.805006
+    },
+    {
+     "expr": "tran1.vout_0ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_0ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.805006
+    },
+    {
+     "expr": "tran2.vout_50ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803034
+    },
+    {
+     "expr": "tran2.vout_50ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803032
+    },
+    {
+     "expr": "tran2.vout_50ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_50ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803037
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "tt",
+   "solver_diagnostic": null,
+   "supply_v": 3.63,
+   "temperature_c": -40.0,
+   "timed_out": false,
+   "timeout_s": 600
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "tt_27c_2.97v",
+   "elapsed_s": 15.899000000000001,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "tt/novdd/27C",
+    "tt/novdd/27C"
+   ],
+   "klt_request": [
+    "v2.97-tran1",
+    "v2.97-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "abs(tran2.vout_50ma - tran1.vout_0ma)",
+     "max": 0.018,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 0.0027140000000001052
+    },
+    {
+     "expr": "100*abs(tran2.vout_50ma - tran1.vout_0ma)/1.8",
+     "max": 1,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_pct",
+     "pass": true,
+     "reason": "",
+     "unit": "%",
+     "value": 0.15077777777778362
+    },
+    {
+     "expr": "tran1.vout_0ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.804612
+    },
+    {
+     "expr": "tran1.vout_0ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.804612
+    },
+    {
+     "expr": "tran1.vout_0ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_0ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.804612
+    },
+    {
+     "expr": "tran2.vout_50ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.801898
+    },
+    {
+     "expr": "tran2.vout_50ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.801898
+    },
+    {
+     "expr": "tran2.vout_50ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_50ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.801898
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "tt",
+   "solver_diagnostic": null,
+   "supply_v": 2.97,
+   "temperature_c": 27.0,
+   "timed_out": false,
+   "timeout_s": 600
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "tt_27c_3.30v",
+   "elapsed_s": 14.677,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "tt/novdd/27C",
+    "tt/novdd/27C"
+   ],
+   "klt_request": [
+    "v3.30-tran1",
+    "v3.30-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "abs(tran2.vout_50ma - tran1.vout_0ma)",
+     "max": 0.018,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 0.002701999999999982
+    },
+    {
+     "expr": "100*abs(tran2.vout_50ma - tran1.vout_0ma)/1.8",
+     "max": 1,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_pct",
+     "pass": true,
+     "reason": "",
+     "unit": "%",
+     "value": 0.1501111111111101
+    },
+    {
+     "expr": "tran1.vout_0ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.805526
+    },
+    {
+     "expr": "tran1.vout_0ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.805526
+    },
+    {
+     "expr": "tran1.vout_0ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_0ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.805526
+    },
+    {
+     "expr": "tran2.vout_50ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.802824
+    },
+    {
+     "expr": "tran2.vout_50ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.802824
+    },
+    {
+     "expr": "tran2.vout_50ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_50ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.802824
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "tt",
+   "solver_diagnostic": null,
+   "supply_v": 3.3,
+   "temperature_c": 27.0,
+   "timed_out": false,
+   "timeout_s": 600
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "tt_27c_3.63v",
+   "elapsed_s": 15.667,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "tt/novdd/27C",
+    "tt/novdd/27C"
+   ],
+   "klt_request": [
+    "v3.63-tran1",
+    "v3.63-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "abs(tran2.vout_50ma - tran1.vout_0ma)",
+     "max": 0.018,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 0.0027730000000001365
+    },
+    {
+     "expr": "100*abs(tran2.vout_50ma - tran1.vout_0ma)/1.8",
+     "max": 1,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_pct",
+     "pass": true,
+     "reason": "",
+     "unit": "%",
+     "value": 0.15405555555556313
+    },
+    {
+     "expr": "tran1.vout_0ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.806499
+    },
+    {
+     "expr": "tran1.vout_0ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.806499
+    },
+    {
+     "expr": "tran1.vout_0ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_0ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.806499
+    },
+    {
+     "expr": "tran2.vout_50ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803726
+    },
+    {
+     "expr": "tran2.vout_50ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803726
+    },
+    {
+     "expr": "tran2.vout_50ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_50ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803726
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "tt",
+   "solver_diagnostic": null,
+   "supply_v": 3.63,
+   "temperature_c": 27.0,
+   "timed_out": false,
+   "timeout_s": 600
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "tt_125c_2.97v",
+   "elapsed_s": 15.638,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "tt/novdd/125C",
+    "tt/novdd/125C"
+   ],
+   "klt_request": [
+    "v2.97-tran1",
+    "v2.97-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "abs(tran2.vout_50ma - tran1.vout_0ma)",
+     "max": 0.018,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 0.005223999999999895
+    },
+    {
+     "expr": "100*abs(tran2.vout_50ma - tran1.vout_0ma)/1.8",
+     "max": 1,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_pct",
+     "pass": true,
+     "reason": "",
+     "unit": "%",
+     "value": 0.2902222222222164
+    },
+    {
+     "expr": "tran1.vout_0ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.808179
+    },
+    {
+     "expr": "tran1.vout_0ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.808179
+    },
+    {
+     "expr": "tran1.vout_0ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_0ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.808179
+    },
+    {
+     "expr": "tran2.vout_50ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.802955
+    },
+    {
+     "expr": "tran2.vout_50ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.802955
+    },
+    {
+     "expr": "tran2.vout_50ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_50ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.802955
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "tt",
+   "solver_diagnostic": null,
+   "supply_v": 2.97,
+   "temperature_c": 125.0,
+   "timed_out": false,
+   "timeout_s": 600
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "tt_125c_3.30v",
+   "elapsed_s": 14.911999999999999,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "tt/novdd/125C",
+    "tt/novdd/125C"
+   ],
+   "klt_request": [
+    "v3.30-tran1",
+    "v3.30-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "abs(tran2.vout_50ma - tran1.vout_0ma)",
+     "max": 0.018,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 0.005395000000000039
+    },
+    {
+     "expr": "100*abs(tran2.vout_50ma - tran1.vout_0ma)/1.8",
+     "max": 1,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_pct",
+     "pass": true,
+     "reason": "",
+     "unit": "%",
+     "value": 0.2997222222222244
+    },
+    {
+     "expr": "tran1.vout_0ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.80939
+    },
+    {
+     "expr": "tran1.vout_0ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.80939
+    },
+    {
+     "expr": "tran1.vout_0ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_0ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.80939
+    },
+    {
+     "expr": "tran2.vout_50ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803995
+    },
+    {
+     "expr": "tran2.vout_50ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803995
+    },
+    {
+     "expr": "tran2.vout_50ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_50ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803996
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "tt",
+   "solver_diagnostic": null,
+   "supply_v": 3.3,
+   "temperature_c": 125.0,
+   "timed_out": false,
+   "timeout_s": 600
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "tt_125c_3.63v",
+   "elapsed_s": 15.766,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "tt/novdd/125C",
+    "tt/novdd/125C"
+   ],
+   "klt_request": [
+    "v3.63-tran1",
+    "v3.63-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "abs(tran2.vout_50ma - tran1.vout_0ma)",
+     "max": 0.018,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 0.005764000000000102
+    },
+    {
+     "expr": "100*abs(tran2.vout_50ma - tran1.vout_0ma)/1.8",
+     "max": 1,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_pct",
+     "pass": true,
+     "reason": "",
+     "unit": "%",
+     "value": 0.3202222222222279
+    },
+    {
+     "expr": "tran1.vout_0ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.810774
+    },
+    {
+     "expr": "tran1.vout_0ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.810774
+    },
+    {
+     "expr": "tran1.vout_0ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_0ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.810774
+    },
+    {
+     "expr": "tran2.vout_50ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.80501
+    },
+    {
+     "expr": "tran2.vout_50ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.80501
+    },
+    {
+     "expr": "tran2.vout_50ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_50ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.80501
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "tt",
+   "solver_diagnostic": null,
+   "supply_v": 3.63,
+   "temperature_c": 125.0,
+   "timed_out": false,
+   "timeout_s": 600
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "ss_-40c_2.97v",
+   "elapsed_s": 15.579,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "ss/novdd/-40C",
+    "ss/novdd/-40C"
+   ],
+   "klt_request": [
+    "v2.97-tran1",
+    "v2.97-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "abs(tran2.vout_50ma - tran1.vout_0ma)",
+     "max": 0.018,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 0.0019860000000000433
+    },
+    {
+     "expr": "100*abs(tran2.vout_50ma - tran1.vout_0ma)/1.8",
+     "max": 1,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_pct",
+     "pass": true,
+     "reason": "",
+     "unit": "%",
+     "value": 0.11033333333333574
+    },
+    {
+     "expr": "tran1.vout_0ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803104
+    },
+    {
+     "expr": "tran1.vout_0ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803104
+    },
+    {
+     "expr": "tran1.vout_0ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_0ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803104
+    },
+    {
+     "expr": "tran2.vout_50ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.801118
+    },
+    {
+     "expr": "tran2.vout_50ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.801118
+    },
+    {
+     "expr": "tran2.vout_50ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_50ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.801118
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "ss",
+   "solver_diagnostic": null,
+   "supply_v": 2.97,
+   "temperature_c": -40.0,
+   "timed_out": false,
+   "timeout_s": 600
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "ss_-40c_3.30v",
+   "elapsed_s": 14.809000000000001,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "ss/novdd/-40C",
+    "ss/novdd/-40C"
+   ],
+   "klt_request": [
+    "v3.30-tran1",
+    "v3.30-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "abs(tran2.vout_50ma - tran1.vout_0ma)",
+     "max": 0.018,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 0.0019530000000000936
+    },
+    {
+     "expr": "100*abs(tran2.vout_50ma - tran1.vout_0ma)/1.8",
+     "max": 1,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_pct",
+     "pass": true,
+     "reason": "",
+     "unit": "%",
+     "value": 0.10850000000000519
+    },
+    {
+     "expr": "tran1.vout_0ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803935
+    },
+    {
+     "expr": "tran1.vout_0ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803935
+    },
+    {
+     "expr": "tran1.vout_0ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_0ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803935
+    },
+    {
+     "expr": "tran2.vout_50ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.801982
+    },
+    {
+     "expr": "tran2.vout_50ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.801982
+    },
+    {
+     "expr": "tran2.vout_50ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_50ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.801982
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "ss",
+   "solver_diagnostic": null,
+   "supply_v": 3.3,
+   "temperature_c": -40.0,
+   "timed_out": false,
+   "timeout_s": 600
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "ss_-40c_3.63v",
+   "elapsed_s": 15.658000000000001,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "ss/novdd/-40C",
+    "ss/novdd/-40C"
+   ],
+   "klt_request": [
+    "v3.63-tran1",
+    "v3.63-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "abs(tran2.vout_50ma - tran1.vout_0ma)",
+     "max": 0.018,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 0.001958999999999822
+    },
+    {
+     "expr": "100*abs(tran2.vout_50ma - tran1.vout_0ma)/1.8",
+     "max": 1,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_pct",
+     "pass": true,
+     "reason": "",
+     "unit": "%",
+     "value": 0.10883333333332344
+    },
+    {
+     "expr": "tran1.vout_0ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.804779
+    },
+    {
+     "expr": "tran1.vout_0ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.804779
+    },
+    {
+     "expr": "tran1.vout_0ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_0ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.804779
+    },
+    {
+     "expr": "tran2.vout_50ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.80282
+    },
+    {
+     "expr": "tran2.vout_50ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.80282
+    },
+    {
+     "expr": "tran2.vout_50ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_50ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.80282
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "ss",
+   "solver_diagnostic": null,
+   "supply_v": 3.63,
+   "temperature_c": -40.0,
+   "timed_out": false,
+   "timeout_s": 600
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "ss_27c_2.97v",
+   "elapsed_s": 15.738,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "ss/novdd/27C",
+    "ss/novdd/27C"
+   ],
+   "klt_request": [
+    "v2.97-tran1",
+    "v2.97-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "abs(tran2.vout_50ma - tran1.vout_0ma)",
+     "max": 0.018,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 0.002687000000000106
+    },
+    {
+     "expr": "100*abs(tran2.vout_50ma - tran1.vout_0ma)/1.8",
+     "max": 1,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_pct",
+     "pass": true,
+     "reason": "",
+     "unit": "%",
+     "value": 0.14927777777778367
+    },
+    {
+     "expr": "tran1.vout_0ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.804329
+    },
+    {
+     "expr": "tran1.vout_0ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.804329
+    },
+    {
+     "expr": "tran1.vout_0ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_0ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.804329
+    },
+    {
+     "expr": "tran2.vout_50ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.801642
+    },
+    {
+     "expr": "tran2.vout_50ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.801642
+    },
+    {
+     "expr": "tran2.vout_50ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_50ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.801642
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "ss",
+   "solver_diagnostic": null,
+   "supply_v": 2.97,
+   "temperature_c": 27.0,
+   "timed_out": false,
+   "timeout_s": 600
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "ss_27c_3.30v",
+   "elapsed_s": 15.07,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "ss/novdd/27C",
+    "ss/novdd/27C"
+   ],
+   "klt_request": [
+    "v3.30-tran1",
+    "v3.30-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "abs(tran2.vout_50ma - tran1.vout_0ma)",
+     "max": 0.018,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 0.00266299999999986
+    },
+    {
+     "expr": "100*abs(tran2.vout_50ma - tran1.vout_0ma)/1.8",
+     "max": 1,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_pct",
+     "pass": true,
+     "reason": "",
+     "unit": "%",
+     "value": 0.14794444444443666
+    },
+    {
+     "expr": "tran1.vout_0ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.805235
+    },
+    {
+     "expr": "tran1.vout_0ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.805235
+    },
+    {
+     "expr": "tran1.vout_0ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_0ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.805235
+    },
+    {
+     "expr": "tran2.vout_50ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.802572
+    },
+    {
+     "expr": "tran2.vout_50ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.802571
+    },
+    {
+     "expr": "tran2.vout_50ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_50ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.802572
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "ss",
+   "solver_diagnostic": null,
+   "supply_v": 3.3,
+   "temperature_c": 27.0,
+   "timed_out": false,
+   "timeout_s": 600
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "ss_27c_3.63v",
+   "elapsed_s": 15.508,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "ss/novdd/27C",
+    "ss/novdd/27C"
+   ],
+   "klt_request": [
+    "v3.63-tran1",
+    "v3.63-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "abs(tran2.vout_50ma - tran1.vout_0ma)",
+     "max": 0.018,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 0.0027159999999999407
+    },
+    {
+     "expr": "100*abs(tran2.vout_50ma - tran1.vout_0ma)/1.8",
+     "max": 1,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_pct",
+     "pass": true,
+     "reason": "",
+     "unit": "%",
+     "value": 0.1508888888888856
+    },
+    {
+     "expr": "tran1.vout_0ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.80619
+    },
+    {
+     "expr": "tran1.vout_0ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.80619
+    },
+    {
+     "expr": "tran1.vout_0ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_0ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.80619
+    },
+    {
+     "expr": "tran2.vout_50ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803474
+    },
+    {
+     "expr": "tran2.vout_50ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803474
+    },
+    {
+     "expr": "tran2.vout_50ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_50ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803474
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "ss",
+   "solver_diagnostic": null,
+   "supply_v": 3.63,
+   "temperature_c": 27.0,
+   "timed_out": false,
+   "timeout_s": 600
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "ss_125c_2.97v",
+   "elapsed_s": 15.821000000000002,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "ss/novdd/125C",
+    "ss/novdd/125C"
+   ],
+   "klt_request": [
+    "v2.97-tran1",
+    "v2.97-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "abs(tran2.vout_50ma - tran1.vout_0ma)",
+     "max": 0.018,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 0.004754000000000147
+    },
+    {
+     "expr": "100*abs(tran2.vout_50ma - tran1.vout_0ma)/1.8",
+     "max": 1,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_pct",
+     "pass": true,
+     "reason": "",
+     "unit": "%",
+     "value": 0.2641111111111193
+    },
+    {
+     "expr": "tran1.vout_0ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.807398
+    },
+    {
+     "expr": "tran1.vout_0ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.807398
+    },
+    {
+     "expr": "tran1.vout_0ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_0ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.807398
+    },
+    {
+     "expr": "tran2.vout_50ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.802644
+    },
+    {
+     "expr": "tran2.vout_50ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.802644
+    },
+    {
+     "expr": "tran2.vout_50ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_50ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.802644
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "ss",
+   "solver_diagnostic": null,
+   "supply_v": 2.97,
+   "temperature_c": 125.0,
+   "timed_out": false,
+   "timeout_s": 600
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "ss_125c_3.30v",
+   "elapsed_s": 14.873,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "ss/novdd/125C",
+    "ss/novdd/125C"
+   ],
+   "klt_request": [
+    "v3.30-tran1",
+    "v3.30-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "abs(tran2.vout_50ma - tran1.vout_0ma)",
+     "max": 0.018,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 0.00483699999999998
+    },
+    {
+     "expr": "100*abs(tran2.vout_50ma - tran1.vout_0ma)/1.8",
+     "max": 1,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_pct",
+     "pass": true,
+     "reason": "",
+     "unit": "%",
+     "value": 0.26872222222222114
+    },
+    {
+     "expr": "tran1.vout_0ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.808521
+    },
+    {
+     "expr": "tran1.vout_0ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.808521
+    },
+    {
+     "expr": "tran1.vout_0ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_0ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.808521
+    },
+    {
+     "expr": "tran2.vout_50ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803684
+    },
+    {
+     "expr": "tran2.vout_50ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803684
+    },
+    {
+     "expr": "tran2.vout_50ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_50ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803684
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "ss",
+   "solver_diagnostic": null,
+   "supply_v": 3.3,
+   "temperature_c": 125.0,
+   "timed_out": false,
+   "timeout_s": 600
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "ss_125c_3.63v",
+   "elapsed_s": 15.758,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "ss/novdd/125C",
+    "ss/novdd/125C"
+   ],
+   "klt_request": [
+    "v3.63-tran1",
+    "v3.63-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "abs(tran2.vout_50ma - tran1.vout_0ma)",
+     "max": 0.018,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 0.005090999999999957
+    },
+    {
+     "expr": "100*abs(tran2.vout_50ma - tran1.vout_0ma)/1.8",
+     "max": 1,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_pct",
+     "pass": true,
+     "reason": "",
+     "unit": "%",
+     "value": 0.28283333333333094
+    },
+    {
+     "expr": "tran1.vout_0ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.809785
+    },
+    {
+     "expr": "tran1.vout_0ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.809785
+    },
+    {
+     "expr": "tran1.vout_0ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_0ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.809785
+    },
+    {
+     "expr": "tran2.vout_50ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.804694
+    },
+    {
+     "expr": "tran2.vout_50ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.804694
+    },
+    {
+     "expr": "tran2.vout_50ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_50ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.804694
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "ss",
+   "solver_diagnostic": null,
+   "supply_v": 3.63,
+   "temperature_c": 125.0,
+   "timed_out": false,
+   "timeout_s": 600
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "ff_-40c_2.97v",
+   "elapsed_s": 15.925,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "ff/novdd/-40C",
+    "ff/novdd/-40C"
+   ],
+   "klt_request": [
+    "v2.97-tran1",
+    "v2.97-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "abs(tran2.vout_50ma - tran1.vout_0ma)",
+     "max": 0.018,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 0.0019900000000001583
+    },
+    {
+     "expr": "100*abs(tran2.vout_50ma - tran1.vout_0ma)/1.8",
+     "max": 1,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_pct",
+     "pass": true,
+     "reason": "",
+     "unit": "%",
+     "value": 0.11055555555556434
+    },
+    {
+     "expr": "tran1.vout_0ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803557
+    },
+    {
+     "expr": "tran1.vout_0ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803557
+    },
+    {
+     "expr": "tran1.vout_0ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_0ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803557
+    },
+    {
+     "expr": "tran2.vout_50ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.801567
+    },
+    {
+     "expr": "tran2.vout_50ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.801567
+    },
+    {
+     "expr": "tran2.vout_50ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_50ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.801567
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "ff",
+   "solver_diagnostic": null,
+   "supply_v": 2.97,
+   "temperature_c": -40.0,
+   "timed_out": false,
+   "timeout_s": 600
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "ff_-40c_3.30v",
+   "elapsed_s": 18.298,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "ff/novdd/-40C",
+    "ff/novdd/-40C"
+   ],
+   "klt_request": [
+    "v3.30-tran1",
+    "v3.30-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "abs(tran2.vout_50ma - tran1.vout_0ma)",
+     "max": 0.018,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 0.0019659999999999123
+    },
+    {
+     "expr": "100*abs(tran2.vout_50ma - tran1.vout_0ma)/1.8",
+     "max": 1,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_pct",
+     "pass": true,
+     "reason": "",
+     "unit": "%",
+     "value": 0.10922222222221735
+    },
+    {
+     "expr": "tran1.vout_0ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.80439
+    },
+    {
+     "expr": "tran1.vout_0ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.80439
+    },
+    {
+     "expr": "tran1.vout_0ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_0ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.80439
+    },
+    {
+     "expr": "tran2.vout_50ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.802424
+    },
+    {
+     "expr": "tran2.vout_50ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.802201
+    },
+    {
+     "expr": "tran2.vout_50ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_50ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.802646
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "ff",
+   "solver_diagnostic": null,
+   "supply_v": 3.3,
+   "temperature_c": -40.0,
+   "timed_out": false,
+   "timeout_s": 600
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "ff_-40c_3.63v",
+   "elapsed_s": 15.555,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "ff/novdd/-40C",
+    "ff/novdd/-40C"
+   ],
+   "klt_request": [
+    "v3.63-tran1",
+    "v3.63-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "abs(tran2.vout_50ma - tran1.vout_0ma)",
+     "max": 0.018,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 0.001994999999999969
+    },
+    {
+     "expr": "100*abs(tran2.vout_50ma - tran1.vout_0ma)/1.8",
+     "max": 1,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_pct",
+     "pass": true,
+     "reason": "",
+     "unit": "%",
+     "value": 0.1108333333333316
+    },
+    {
+     "expr": "tran1.vout_0ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.805252
+    },
+    {
+     "expr": "tran1.vout_0ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.805252
+    },
+    {
+     "expr": "tran1.vout_0ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_0ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.805252
+    },
+    {
+     "expr": "tran2.vout_50ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803257
+    },
+    {
+     "expr": "tran2.vout_50ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803256
+    },
+    {
+     "expr": "tran2.vout_50ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_50ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803258
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "ff",
+   "solver_diagnostic": null,
+   "supply_v": 3.63,
+   "temperature_c": -40.0,
+   "timed_out": false,
+   "timeout_s": 600
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "ff_27c_2.97v",
+   "elapsed_s": 15.93,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "ff/novdd/27C",
+    "ff/novdd/27C"
+   ],
+   "klt_request": [
+    "v2.97-tran1",
+    "v2.97-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "abs(tran2.vout_50ma - tran1.vout_0ma)",
+     "max": 0.018,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 0.0027570000000001205
+    },
+    {
+     "expr": "100*abs(tran2.vout_50ma - tran1.vout_0ma)/1.8",
+     "max": 1,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_pct",
+     "pass": true,
+     "reason": "",
+     "unit": "%",
+     "value": 0.15316666666667336
+    },
+    {
+     "expr": "tran1.vout_0ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.804917
+    },
+    {
+     "expr": "tran1.vout_0ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.804917
+    },
+    {
+     "expr": "tran1.vout_0ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_0ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.804917
+    },
+    {
+     "expr": "tran2.vout_50ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.80216
+    },
+    {
+     "expr": "tran2.vout_50ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.80216
+    },
+    {
+     "expr": "tran2.vout_50ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_50ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.80216
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "ff",
+   "solver_diagnostic": null,
+   "supply_v": 2.97,
+   "temperature_c": 27.0,
+   "timed_out": false,
+   "timeout_s": 600
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "ff_27c_3.30v",
+   "elapsed_s": 14.799,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "ff/novdd/27C",
+    "ff/novdd/27C"
+   ],
+   "klt_request": [
+    "v3.30-tran1",
+    "v3.30-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "abs(tran2.vout_50ma - tran1.vout_0ma)",
+     "max": 0.018,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 0.002758000000000038
+    },
+    {
+     "expr": "100*abs(tran2.vout_50ma - tran1.vout_0ma)/1.8",
+     "max": 1,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_pct",
+     "pass": true,
+     "reason": "",
+     "unit": "%",
+     "value": 0.15322222222222434
+    },
+    {
+     "expr": "tran1.vout_0ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.805843
+    },
+    {
+     "expr": "tran1.vout_0ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.805843
+    },
+    {
+     "expr": "tran1.vout_0ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_0ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.805843
+    },
+    {
+     "expr": "tran2.vout_50ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803085
+    },
+    {
+     "expr": "tran2.vout_50ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803085
+    },
+    {
+     "expr": "tran2.vout_50ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_50ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803085
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "ff",
+   "solver_diagnostic": null,
+   "supply_v": 3.3,
+   "temperature_c": 27.0,
+   "timed_out": false,
+   "timeout_s": 600
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "ff_27c_3.63v",
+   "elapsed_s": 15.706,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "ff/novdd/27C",
+    "ff/novdd/27C"
+   ],
+   "klt_request": [
+    "v3.63-tran1",
+    "v3.63-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "abs(tran2.vout_50ma - tran1.vout_0ma)",
+     "max": 0.018,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 0.002850000000000019
+    },
+    {
+     "expr": "100*abs(tran2.vout_50ma - tran1.vout_0ma)/1.8",
+     "max": 1,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_pct",
+     "pass": true,
+     "reason": "",
+     "unit": "%",
+     "value": 0.1583333333333344
+    },
+    {
+     "expr": "tran1.vout_0ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.806839
+    },
+    {
+     "expr": "tran1.vout_0ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.806839
+    },
+    {
+     "expr": "tran1.vout_0ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_0ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.806839
+    },
+    {
+     "expr": "tran2.vout_50ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803989
+    },
+    {
+     "expr": "tran2.vout_50ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803989
+    },
+    {
+     "expr": "tran2.vout_50ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_50ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803989
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "ff",
+   "solver_diagnostic": null,
+   "supply_v": 3.63,
+   "temperature_c": 27.0,
+   "timed_out": false,
+   "timeout_s": 600
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "ff_125c_2.97v",
+   "elapsed_s": 13.552,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "ff/novdd/125C",
+    "ff/novdd/125C"
+   ],
+   "klt_request": [
+    "v2.97-tran1",
+    "v2.97-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "abs(tran2.vout_50ma - tran1.vout_0ma)",
+     "max": 0.018,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 0.006361999999999979
+    },
+    {
+     "expr": "100*abs(tran2.vout_50ma - tran1.vout_0ma)/1.8",
+     "max": 1,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_pct",
+     "pass": true,
+     "reason": "",
+     "unit": "%",
+     "value": 0.3534444444444433
+    },
+    {
+     "expr": "tran1.vout_0ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.809623
+    },
+    {
+     "expr": "tran1.vout_0ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.809623
+    },
+    {
+     "expr": "tran1.vout_0ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_0ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.809623
+    },
+    {
+     "expr": "tran2.vout_50ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803261
+    },
+    {
+     "expr": "tran2.vout_50ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803261
+    },
+    {
+     "expr": "tran2.vout_50ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_50ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803262
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "ff",
+   "solver_diagnostic": null,
+   "supply_v": 2.97,
+   "temperature_c": 125.0,
+   "timed_out": false,
+   "timeout_s": 600
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "ff_125c_3.30v",
+   "elapsed_s": 13.274000000000001,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "ff/novdd/125C",
+    "ff/novdd/125C"
+   ],
+   "klt_request": [
+    "v3.30-tran1",
+    "v3.30-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "abs(tran2.vout_50ma - tran1.vout_0ma)",
+     "max": 0.018,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 0.006836999999999982
+    },
+    {
+     "expr": "100*abs(tran2.vout_50ma - tran1.vout_0ma)/1.8",
+     "max": 1,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_pct",
+     "pass": true,
+     "reason": "",
+     "unit": "%",
+     "value": 0.3798333333333323
+    },
+    {
+     "expr": "tran1.vout_0ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.811141
+    },
+    {
+     "expr": "tran1.vout_0ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.811141
+    },
+    {
+     "expr": "tran1.vout_0ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_0ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.811141
+    },
+    {
+     "expr": "tran2.vout_50ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.804304
+    },
+    {
+     "expr": "tran2.vout_50ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.804304
+    },
+    {
+     "expr": "tran2.vout_50ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_50ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.804304
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "ff",
+   "solver_diagnostic": null,
+   "supply_v": 3.3,
+   "temperature_c": 125.0,
+   "timed_out": false,
+   "timeout_s": 600
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "ff_125c_3.63v",
+   "elapsed_s": 13.804,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "ff/novdd/125C",
+    "ff/novdd/125C"
+   ],
+   "klt_request": [
+    "v3.63-tran1",
+    "v3.63-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "abs(tran2.vout_50ma - tran1.vout_0ma)",
+     "max": 0.018,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 0.007617999999999903
+    },
+    {
+     "expr": "100*abs(tran2.vout_50ma - tran1.vout_0ma)/1.8",
+     "max": 1,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_pct",
+     "pass": true,
+     "reason": "",
+     "unit": "%",
+     "value": 0.4232222222222168
+    },
+    {
+     "expr": "tran1.vout_0ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.812943
+    },
+    {
+     "expr": "tran1.vout_0ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.812943
+    },
+    {
+     "expr": "tran1.vout_0ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_0ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.812943
+    },
+    {
+     "expr": "tran2.vout_50ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.805325
+    },
+    {
+     "expr": "tran2.vout_50ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.805325
+    },
+    {
+     "expr": "tran2.vout_50ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_50ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.805325
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "ff",
+   "solver_diagnostic": null,
+   "supply_v": 3.63,
+   "temperature_c": 125.0,
+   "timed_out": false,
+   "timeout_s": 600
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "sf_-40c_2.97v",
+   "elapsed_s": 13.603,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "sf/novdd/-40C",
+    "sf/novdd/-40C"
+   ],
+   "klt_request": [
+    "v2.97-tran1",
+    "v2.97-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "abs(tran2.vout_50ma - tran1.vout_0ma)",
+     "max": 0.018,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 0.0019199999999999218
+    },
+    {
+     "expr": "100*abs(tran2.vout_50ma - tran1.vout_0ma)/1.8",
+     "max": 1,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_pct",
+     "pass": true,
+     "reason": "",
+     "unit": "%",
+     "value": 0.10666666666666232
+    },
+    {
+     "expr": "tran1.vout_0ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803088
+    },
+    {
+     "expr": "tran1.vout_0ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803088
+    },
+    {
+     "expr": "tran1.vout_0ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_0ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803088
+    },
+    {
+     "expr": "tran2.vout_50ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.801168
+    },
+    {
+     "expr": "tran2.vout_50ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.801168
+    },
+    {
+     "expr": "tran2.vout_50ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_50ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.801168
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "sf",
+   "solver_diagnostic": null,
+   "supply_v": 2.97,
+   "temperature_c": -40.0,
+   "timed_out": false,
+   "timeout_s": 600
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "sf_-40c_3.30v",
+   "elapsed_s": 13.109,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "sf/novdd/-40C",
+    "sf/novdd/-40C"
+   ],
+   "klt_request": [
+    "v3.30-tran1",
+    "v3.30-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "abs(tran2.vout_50ma - tran1.vout_0ma)",
+     "max": 0.018,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 0.001882999999999857
+    },
+    {
+     "expr": "100*abs(tran2.vout_50ma - tran1.vout_0ma)/1.8",
+     "max": 1,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_pct",
+     "pass": true,
+     "reason": "",
+     "unit": "%",
+     "value": 0.10461111111110316
+    },
+    {
+     "expr": "tran1.vout_0ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803896
+    },
+    {
+     "expr": "tran1.vout_0ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803896
+    },
+    {
+     "expr": "tran1.vout_0ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_0ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803896
+    },
+    {
+     "expr": "tran2.vout_50ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.802013
+    },
+    {
+     "expr": "tran2.vout_50ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.802013
+    },
+    {
+     "expr": "tran2.vout_50ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_50ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.802013
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "sf",
+   "solver_diagnostic": null,
+   "supply_v": 3.3,
+   "temperature_c": -40.0,
+   "timed_out": false,
+   "timeout_s": 600
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "sf_-40c_3.63v",
+   "elapsed_s": 15.46,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "sf/novdd/-40C",
+    "sf/novdd/-40C"
+   ],
+   "klt_request": [
+    "v3.63-tran1",
+    "v3.63-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "abs(tran2.vout_50ma - tran1.vout_0ma)",
+     "max": 0.018,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 0.0018859999999998323
+    },
+    {
+     "expr": "100*abs(tran2.vout_50ma - tran1.vout_0ma)/1.8",
+     "max": 1,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_pct",
+     "pass": true,
+     "reason": "",
+     "unit": "%",
+     "value": 0.10477777777776845
+    },
+    {
+     "expr": "tran1.vout_0ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.804717
+    },
+    {
+     "expr": "tran1.vout_0ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.804717
+    },
+    {
+     "expr": "tran1.vout_0ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_0ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.804717
+    },
+    {
+     "expr": "tran2.vout_50ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.802831
+    },
+    {
+     "expr": "tran2.vout_50ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.802538
+    },
+    {
+     "expr": "tran2.vout_50ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_50ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803124
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "sf",
+   "solver_diagnostic": null,
+   "supply_v": 3.63,
+   "temperature_c": -40.0,
+   "timed_out": false,
+   "timeout_s": 600
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "sf_27c_2.97v",
+   "elapsed_s": 13.556000000000001,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "sf/novdd/27C",
+    "sf/novdd/27C"
+   ],
+   "klt_request": [
+    "v2.97-tran1",
+    "v2.97-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "abs(tran2.vout_50ma - tran1.vout_0ma)",
+     "max": 0.018,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 0.0025999999999999357
+    },
+    {
+     "expr": "100*abs(tran2.vout_50ma - tran1.vout_0ma)/1.8",
+     "max": 1,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_pct",
+     "pass": true,
+     "reason": "",
+     "unit": "%",
+     "value": 0.14444444444444088
+    },
+    {
+     "expr": "tran1.vout_0ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.804312
+    },
+    {
+     "expr": "tran1.vout_0ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.804312
+    },
+    {
+     "expr": "tran1.vout_0ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_0ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.804312
+    },
+    {
+     "expr": "tran2.vout_50ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.801712
+    },
+    {
+     "expr": "tran2.vout_50ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.801712
+    },
+    {
+     "expr": "tran2.vout_50ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_50ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.801713
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "sf",
+   "solver_diagnostic": null,
+   "supply_v": 2.97,
+   "temperature_c": 27.0,
+   "timed_out": false,
+   "timeout_s": 600
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "sf_27c_3.30v",
+   "elapsed_s": 13.139,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "sf/novdd/27C",
+    "sf/novdd/27C"
+   ],
+   "klt_request": [
+    "v3.30-tran1",
+    "v3.30-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "abs(tran2.vout_50ma - tran1.vout_0ma)",
+     "max": 0.018,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 0.002569999999999961
+    },
+    {
+     "expr": "100*abs(tran2.vout_50ma - tran1.vout_0ma)/1.8",
+     "max": 1,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_pct",
+     "pass": true,
+     "reason": "",
+     "unit": "%",
+     "value": 0.14277777777777562
+    },
+    {
+     "expr": "tran1.vout_0ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.805197
+    },
+    {
+     "expr": "tran1.vout_0ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.805197
+    },
+    {
+     "expr": "tran1.vout_0ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_0ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.805197
+    },
+    {
+     "expr": "tran2.vout_50ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.802627
+    },
+    {
+     "expr": "tran2.vout_50ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.802627
+    },
+    {
+     "expr": "tran2.vout_50ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_50ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.802627
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "sf",
+   "solver_diagnostic": null,
+   "supply_v": 3.3,
+   "temperature_c": 27.0,
+   "timed_out": false,
+   "timeout_s": 600
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "sf_27c_3.63v",
+   "elapsed_s": 14.004000000000001,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "sf/novdd/27C",
+    "sf/novdd/27C"
+   ],
+   "klt_request": [
+    "v3.63-tran1",
+    "v3.63-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "abs(tran2.vout_50ma - tran1.vout_0ma)",
+     "max": 0.018,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 0.002610999999999919
+    },
+    {
+     "expr": "100*abs(tran2.vout_50ma - tran1.vout_0ma)/1.8",
+     "max": 1,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_pct",
+     "pass": true,
+     "reason": "",
+     "unit": "%",
+     "value": 0.14505555555555105
+    },
+    {
+     "expr": "tran1.vout_0ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.806126
+    },
+    {
+     "expr": "tran1.vout_0ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.806126
+    },
+    {
+     "expr": "tran1.vout_0ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_0ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.806126
+    },
+    {
+     "expr": "tran2.vout_50ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803515
+    },
+    {
+     "expr": "tran2.vout_50ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803515
+    },
+    {
+     "expr": "tran2.vout_50ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_50ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803515
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "sf",
+   "solver_diagnostic": null,
+   "supply_v": 3.63,
+   "temperature_c": 27.0,
+   "timed_out": false,
+   "timeout_s": 600
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "sf_125c_2.97v",
+   "elapsed_s": 13.854,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "sf/novdd/125C",
+    "sf/novdd/125C"
+   ],
+   "klt_request": [
+    "v2.97-tran1",
+    "v2.97-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "abs(tran2.vout_50ma - tran1.vout_0ma)",
+     "max": 0.018,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 0.0044789999999999
+    },
+    {
+     "expr": "100*abs(tran2.vout_50ma - tran1.vout_0ma)/1.8",
+     "max": 1,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_pct",
+     "pass": true,
+     "reason": "",
+     "unit": "%",
+     "value": 0.24883333333332774
+    },
+    {
+     "expr": "tran1.vout_0ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.80724
+    },
+    {
+     "expr": "tran1.vout_0ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.80724
+    },
+    {
+     "expr": "tran1.vout_0ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_0ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.80724
+    },
+    {
+     "expr": "tran2.vout_50ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.802761
+    },
+    {
+     "expr": "tran2.vout_50ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.802761
+    },
+    {
+     "expr": "tran2.vout_50ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_50ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.802761
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "sf",
+   "solver_diagnostic": null,
+   "supply_v": 2.97,
+   "temperature_c": 125.0,
+   "timed_out": false,
+   "timeout_s": 600
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "sf_125c_3.30v",
+   "elapsed_s": 13.333,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "sf/novdd/125C",
+    "sf/novdd/125C"
+   ],
+   "klt_request": [
+    "v3.30-tran1",
+    "v3.30-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "abs(tran2.vout_50ma - tran1.vout_0ma)",
+     "max": 0.018,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 0.004534000000000038
+    },
+    {
+     "expr": "100*abs(tran2.vout_50ma - tran1.vout_0ma)/1.8",
+     "max": 1,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_pct",
+     "pass": true,
+     "reason": "",
+     "unit": "%",
+     "value": 0.251888888888891
+    },
+    {
+     "expr": "tran1.vout_0ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.808324
+    },
+    {
+     "expr": "tran1.vout_0ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.808324
+    },
+    {
+     "expr": "tran1.vout_0ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_0ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.808324
+    },
+    {
+     "expr": "tran2.vout_50ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.80379
+    },
+    {
+     "expr": "tran2.vout_50ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.80379
+    },
+    {
+     "expr": "tran2.vout_50ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_50ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.80379
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "sf",
+   "solver_diagnostic": null,
+   "supply_v": 3.3,
+   "temperature_c": 125.0,
+   "timed_out": false,
+   "timeout_s": 600
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "sf_125c_3.63v",
+   "elapsed_s": 13.55,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "sf/novdd/125C",
+    "sf/novdd/125C"
+   ],
+   "klt_request": [
+    "v3.63-tran1",
+    "v3.63-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "abs(tran2.vout_50ma - tran1.vout_0ma)",
+     "max": 0.018,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 0.004745999999999917
+    },
+    {
+     "expr": "100*abs(tran2.vout_50ma - tran1.vout_0ma)/1.8",
+     "max": 1,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_pct",
+     "pass": true,
+     "reason": "",
+     "unit": "%",
+     "value": 0.26366666666666205
+    },
+    {
+     "expr": "tran1.vout_0ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.809537
+    },
+    {
+     "expr": "tran1.vout_0ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.809537
+    },
+    {
+     "expr": "tran1.vout_0ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_0ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.809537
+    },
+    {
+     "expr": "tran2.vout_50ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.804791
+    },
+    {
+     "expr": "tran2.vout_50ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.804791
+    },
+    {
+     "expr": "tran2.vout_50ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_50ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.804791
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "sf",
+   "solver_diagnostic": null,
+   "supply_v": 3.63,
+   "temperature_c": 125.0,
+   "timed_out": false,
+   "timeout_s": 600
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "fs_-40c_2.97v",
+   "elapsed_s": 13.608,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "fs/novdd/-40C",
+    "fs/novdd/-40C"
+   ],
+   "klt_request": [
+    "v2.97-tran1",
+    "v2.97-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "abs(tran2.vout_50ma - tran1.vout_0ma)",
+     "max": 0.018,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 0.0020700000000000163
+    },
+    {
+     "expr": "100*abs(tran2.vout_50ma - tran1.vout_0ma)/1.8",
+     "max": 1,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_pct",
+     "pass": true,
+     "reason": "",
+     "unit": "%",
+     "value": 0.11500000000000091
+    },
+    {
+     "expr": "tran1.vout_0ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803606
+    },
+    {
+     "expr": "tran1.vout_0ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803606
+    },
+    {
+     "expr": "tran1.vout_0ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_0ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803606
+    },
+    {
+     "expr": "tran2.vout_50ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.801536
+    },
+    {
+     "expr": "tran2.vout_50ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.801536
+    },
+    {
+     "expr": "tran2.vout_50ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_50ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.801536
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "fs",
+   "solver_diagnostic": null,
+   "supply_v": 2.97,
+   "temperature_c": -40.0,
+   "timed_out": false,
+   "timeout_s": 600
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "fs_-40c_3.30v",
+   "elapsed_s": 13.207999999999998,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "fs/novdd/-40C",
+    "fs/novdd/-40C"
+   ],
+   "klt_request": [
+    "v3.30-tran1",
+    "v3.30-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "abs(tran2.vout_50ma - tran1.vout_0ma)",
+     "max": 0.018,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 0.002051000000000025
+    },
+    {
+     "expr": "100*abs(tran2.vout_50ma - tran1.vout_0ma)/1.8",
+     "max": 1,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_pct",
+     "pass": true,
+     "reason": "",
+     "unit": "%",
+     "value": 0.11394444444444583
+    },
+    {
+     "expr": "tran1.vout_0ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.804467
+    },
+    {
+     "expr": "tran1.vout_0ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.804467
+    },
+    {
+     "expr": "tran1.vout_0ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_0ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.804467
+    },
+    {
+     "expr": "tran2.vout_50ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.802416
+    },
+    {
+     "expr": "tran2.vout_50ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.802416
+    },
+    {
+     "expr": "tran2.vout_50ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_50ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.802416
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "fs",
+   "solver_diagnostic": null,
+   "supply_v": 3.3,
+   "temperature_c": -40.0,
+   "timed_out": false,
+   "timeout_s": 600
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "fs_-40c_3.63v",
+   "elapsed_s": 13.704,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "fs/novdd/-40C",
+    "fs/novdd/-40C"
+   ],
+   "klt_request": [
+    "v3.63-tran1",
+    "v3.63-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "abs(tran2.vout_50ma - tran1.vout_0ma)",
+     "max": 0.018,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 0.002083000000000057
+    },
+    {
+     "expr": "100*abs(tran2.vout_50ma - tran1.vout_0ma)/1.8",
+     "max": 1,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_pct",
+     "pass": true,
+     "reason": "",
+     "unit": "%",
+     "value": 0.11572222222222539
+    },
+    {
+     "expr": "tran1.vout_0ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.805357
+    },
+    {
+     "expr": "tran1.vout_0ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.805357
+    },
+    {
+     "expr": "tran1.vout_0ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_0ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.805357
+    },
+    {
+     "expr": "tran2.vout_50ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803274
+    },
+    {
+     "expr": "tran2.vout_50ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803274
+    },
+    {
+     "expr": "tran2.vout_50ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_50ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803274
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "fs",
+   "solver_diagnostic": null,
+   "supply_v": 3.63,
+   "temperature_c": -40.0,
+   "timed_out": false,
+   "timeout_s": 600
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "fs_27c_2.97v",
+   "elapsed_s": 13.456,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "fs/novdd/27C",
+    "fs/novdd/27C"
+   ],
+   "klt_request": [
+    "v2.97-tran1",
+    "v2.97-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "abs(tran2.vout_50ma - tran1.vout_0ma)",
+     "max": 0.018,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 0.0028690000000000104
+    },
+    {
+     "expr": "100*abs(tran2.vout_50ma - tran1.vout_0ma)/1.8",
+     "max": 1,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_pct",
+     "pass": true,
+     "reason": "",
+     "unit": "%",
+     "value": 0.15938888888888947
+    },
+    {
+     "expr": "tran1.vout_0ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.804975
+    },
+    {
+     "expr": "tran1.vout_0ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.804975
+    },
+    {
+     "expr": "tran1.vout_0ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_0ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.804975
+    },
+    {
+     "expr": "tran2.vout_50ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.802106
+    },
+    {
+     "expr": "tran2.vout_50ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.802106
+    },
+    {
+     "expr": "tran2.vout_50ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_50ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.802106
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "fs",
+   "solver_diagnostic": null,
+   "supply_v": 2.97,
+   "temperature_c": 27.0,
+   "timed_out": false,
+   "timeout_s": 600
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "fs_27c_3.30v",
+   "elapsed_s": 13.216000000000001,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "fs/novdd/27C",
+    "fs/novdd/27C"
+   ],
+   "klt_request": [
+    "v3.30-tran1",
+    "v3.30-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "abs(tran2.vout_50ma - tran1.vout_0ma)",
+     "max": 0.018,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 0.0028770000000000184
+    },
+    {
+     "expr": "100*abs(tran2.vout_50ma - tran1.vout_0ma)/1.8",
+     "max": 1,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_pct",
+     "pass": true,
+     "reason": "",
+     "unit": "%",
+     "value": 0.15983333333333435
+    },
+    {
+     "expr": "tran1.vout_0ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.805926
+    },
+    {
+     "expr": "tran1.vout_0ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.805926
+    },
+    {
+     "expr": "tran1.vout_0ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_0ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.805926
+    },
+    {
+     "expr": "tran2.vout_50ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803049
+    },
+    {
+     "expr": "tran2.vout_50ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803049
+    },
+    {
+     "expr": "tran2.vout_50ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_50ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803049
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "fs",
+   "solver_diagnostic": null,
+   "supply_v": 3.3,
+   "temperature_c": 27.0,
+   "timed_out": false,
+   "timeout_s": 600
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "fs_27c_3.63v",
+   "elapsed_s": 13.802,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "fs/novdd/27C",
+    "fs/novdd/27C"
+   ],
+   "klt_request": [
+    "v3.63-tran1",
+    "v3.63-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "abs(tran2.vout_50ma - tran1.vout_0ma)",
+     "max": 0.018,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 0.0029839999999998756
+    },
+    {
+     "expr": "100*abs(tran2.vout_50ma - tran1.vout_0ma)/1.8",
+     "max": 1,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_pct",
+     "pass": true,
+     "reason": "",
+     "unit": "%",
+     "value": 0.16577777777777086
+    },
+    {
+     "expr": "tran1.vout_0ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.806954
+    },
+    {
+     "expr": "tran1.vout_0ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.806954
+    },
+    {
+     "expr": "tran1.vout_0ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_0ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.806954
+    },
+    {
+     "expr": "tran2.vout_50ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.80397
+    },
+    {
+     "expr": "tran2.vout_50ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.80397
+    },
+    {
+     "expr": "tran2.vout_50ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_50ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.803971
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "fs",
+   "solver_diagnostic": null,
+   "supply_v": 3.63,
+   "temperature_c": 27.0,
+   "timed_out": false,
+   "timeout_s": 600
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "fs_125c_2.97v",
+   "elapsed_s": 14.151,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "fs/novdd/125C",
+    "fs/novdd/125C"
+   ],
+   "klt_request": [
+    "v2.97-tran1",
+    "v2.97-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "abs(tran2.vout_50ma - tran1.vout_0ma)",
+     "max": 0.018,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 0.008498000000000117
+    },
+    {
+     "expr": "100*abs(tran2.vout_50ma - tran1.vout_0ma)/1.8",
+     "max": 1,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_pct",
+     "pass": true,
+     "reason": "",
+     "unit": "%",
+     "value": 0.4721111111111176
+    },
+    {
+     "expr": "tran1.vout_0ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.811628
+    },
+    {
+     "expr": "tran1.vout_0ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.811628
+    },
+    {
+     "expr": "tran1.vout_0ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_0ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.811628
+    },
+    {
+     "expr": "tran2.vout_50ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.80313
+    },
+    {
+     "expr": "tran2.vout_50ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.80313
+    },
+    {
+     "expr": "tran2.vout_50ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_50ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.80313
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "fs",
+   "solver_diagnostic": null,
+   "supply_v": 2.97,
+   "temperature_c": 125.0,
+   "timed_out": false,
+   "timeout_s": 600
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "fs_125c_3.30v",
+   "elapsed_s": 13.364999999999998,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "fs/novdd/125C",
+    "fs/novdd/125C"
+   ],
+   "klt_request": [
+    "v3.30-tran1",
+    "v3.30-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "abs(tran2.vout_50ma - tran1.vout_0ma)",
+     "max": 0.018,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 0.009621000000000102
+    },
+    {
+     "expr": "100*abs(tran2.vout_50ma - tran1.vout_0ma)/1.8",
+     "max": 1,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_pct",
+     "pass": true,
+     "reason": "",
+     "unit": "%",
+     "value": 0.5345000000000056
+    },
+    {
+     "expr": "tran1.vout_0ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.813806
+    },
+    {
+     "expr": "tran1.vout_0ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.813806
+    },
+    {
+     "expr": "tran1.vout_0ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_0ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.813806
+    },
+    {
+     "expr": "tran2.vout_50ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.804185
+    },
+    {
+     "expr": "tran2.vout_50ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.804185
+    },
+    {
+     "expr": "tran2.vout_50ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_50ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.804185
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "fs",
+   "solver_diagnostic": null,
+   "supply_v": 3.3,
+   "temperature_c": 125.0,
+   "timed_out": false,
+   "timeout_s": 600
+  },
+  {
+   "batch_reasons": [],
+   "corner_id": "fs_125c_3.63v",
+   "elapsed_s": 13.809,
+   "execution": "batch",
+   "killed_by_signal": null,
+   "killed_by_signal_name": null,
+   "klt_corner_id": [
+    "fs/novdd/125C",
+    "fs/novdd/125C"
+   ],
+   "klt_request": [
+    "v3.63-tran1",
+    "v3.63-tran2"
+   ],
+   "klt_status": [
+    "pass",
+    "pass"
+   ],
+   "log": null,
+   "measurements": [
+    {
+     "expr": "abs(tran2.vout_50ma - tran1.vout_0ma)",
+     "max": 0.018,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 0.011252999999999957
+    },
+    {
+     "expr": "100*abs(tran2.vout_50ma - tran1.vout_0ma)/1.8",
+     "max": 1,
+     "max_inclusive": false,
+     "min": null,
+     "min_inclusive": true,
+     "name": "load_reg_pct",
+     "pass": true,
+     "reason": "",
+     "unit": "%",
+     "value": 0.6251666666666643
+    },
+    {
+     "expr": "tran1.vout_0ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.816471
+    },
+    {
+     "expr": "tran1.vout_0ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_0ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.816471
+    },
+    {
+     "expr": "tran1.vout_0ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_0ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.816471
+    },
+    {
+     "expr": "tran2.vout_50ma",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.805218
+    },
+    {
+     "expr": "tran2.vout_50ma_min",
+     "max": null,
+     "max_inclusive": true,
+     "min": 1.764,
+     "min_inclusive": true,
+     "name": "vout_50ma_min_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.805218
+    },
+    {
+     "expr": "tran2.vout_50ma_max",
+     "max": 1.836,
+     "max_inclusive": true,
+     "min": null,
+     "min_inclusive": true,
+     "name": "vout_50ma_max_v",
+     "pass": true,
+     "reason": "",
+     "unit": "V",
+     "value": 1.805218
+    }
+   ],
+   "ngspice_exit": null,
+   "pass": true,
+   "process": "fs",
+   "solver_diagnostic": null,
+   "supply_v": 3.63,
+   "temperature_c": 125.0,
+   "timed_out": false,
+   "timeout_s": 600
+  }
+ ],
+ "variant": "cand"
+}

@@ -19,60 +19,43 @@
 #   layout/bin/run-cap-rail-demo-flow.sh
 #
 # Requires: `xschem` and `klayout` on PATH, the pinned sky130A PDK
-# (sim/pdk.json), and the klt pin in layout/cap-requirements.txt -- either
-# installed at layout/.venv-cap (setup-venv.sh --requirements
-# layout/cap-requirements.txt) or reachable through `uvx --from` (a throwaway
-# environment; this script never installs anything host-wide).
+# (sim/pdk.json), and the klt pin in layout/requirements.txt installed at
+# layout/.venv (layout/bin/setup-venv.sh).
 set -euo pipefail
 
-LAYOUT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-REPO_ROOT="$(cd "$LAYOUT_DIR/.." && pwd)"
+# LAYOUT_DIR/REPO_ROOT, the PDK guard, the record mint and the headless
+# netlist step are shared with the other layout/bin/run-*-flow.sh drivers
+# (issue #599).
+source "$(dirname "${BASH_SOURCE[0]}")/_flow_common.sh"
 BLOCK_DIR="$LAYOUT_DIR/cap-rail-demo"
 CELL=cap_rail_demo
 PDK_VARIANT=sky130A
-REQ_FILE="$LAYOUT_DIR/cap-requirements.txt"
 PINS="VOUT,VIN,EA_CZ,CL_CMP,SS,TS_CMP"
 # Measured inputs: the routed layout record the #246 study measured, and the
 # study's own budget (MOS-domain width, channel/row/rail heights, banks).
 MEASURED_RECORD="layout/ldo-core/reports/20260924-221821-a947aa8"
 BUDGET="layout/area-study/20261009-study-246/budget.json"
 
-PIN_SPEC="$(grep -v '^[[:space:]]*#' "$REQ_FILE" | grep -v '^[[:space:]]*$' | head -1)"
-if [[ -x "$LAYOUT_DIR/.venv-cap/bin/klt" ]]; then
-  KLT=("$LAYOUT_DIR/.venv-cap/bin/klt")
-  PY=("$LAYOUT_DIR/.venv-cap/bin/python")
-elif command -v uvx >/dev/null; then
-  KLT=(uvx --from "$PIN_SPEC" klt)
-  PY=(uvx --from "$PIN_SPEC" python)
-else
-  echo "run-cap-rail-demo-flow.sh: no layout/.venv-cap and no uvx -- see layout/cap-requirements.txt" >&2
-  exit 1
-fi
+PIN_SPEC="$(grep -v '^[[:space:]]*#' "$LAYOUT_DIR/requirements.txt" | grep -v '^[[:space:]]*$' | head -1)"
+KLT=("$LAYOUT_DIR/.venv/bin/klt")
+PY=("$LAYOUT_DIR/.venv/bin/python")
+flow_require_klt run-cap-rail-demo-flow.sh "${KLT[0]}"
 for tool in xschem klayout; do
   command -v "$tool" >/dev/null || { echo "run-cap-rail-demo-flow.sh: $tool not on PATH" >&2; exit 1; }
 done
-"${KLT[@]}" pdk find --pdk "$PDK_VARIANT" >/dev/null || {
-  echo "run-cap-rail-demo-flow.sh: no resolvable $PDK_VARIANT PDK -- see sim/pdk.json" >&2; exit 1; }
+flow_require_pdk run-cap-rail-demo-flow.sh "$PDK_VARIANT" "see sim/pdk.json" "${KLT[@]}"
 PDK_KLAYOUT="$("${KLT[@]}" pdk find --pdk "$PDK_VARIANT" --format json | python3 -c 'import json,sys; print(json.load(sys.stdin)["assets"]["klayout"])')"
 MR_DECK="$PDK_KLAYOUT/drc/sky130A_mr.drc"
 [[ -f "$MR_DECK" ]] || { echo "run-cap-rail-demo-flow.sh: $MR_DECK not found" >&2; exit 1; }
 
 cd "$REPO_ROOT"
-TS_UTC="$(date -u +%Y%m%d-%H%M%S)"
-SHORT_SHA="$(git rev-parse --short HEAD)"
-RECORD_ID="${TS_UTC}-${SHORT_SHA}"
-OUT_REL="layout/cap-rail-demo/reports/$RECORD_ID"
-OUT_DIR="$REPO_ROOT/$OUT_REL"
-mkdir -p "$OUT_DIR"
-echo "run-cap-rail-demo-flow.sh: record $RECORD_ID -> $OUT_REL"
+flow_mint_record run-cap-rail-demo-flow.sh "$BLOCK_DIR/reports" --rel
 SCHEMATIC_SHA="$(git log -1 --format=%h -- design/ldo_3v3in_1v8out.sch)"
 
 # --- 1. schematic netlist (the capacitor list comes from here) --------------
-mkdir -p "$OUT_DIR/xschem_out"
-xschem -n -q -x -s -o "$OUT_DIR/xschem_out" --rcfile sim/xschemrc design/ldo_3v3in_1v8out.sch \
-  >/dev/null 2>&1
-NETLIST_REL="$OUT_REL/xschem_out/ldo_3v3in_1v8out.spice"
-[[ -f "$NETLIST_REL" ]] || { echo "run-cap-rail-demo-flow.sh: xschem produced no netlist" >&2; exit 1; }
+flow_netlist_schematic run-cap-rail-demo-flow.sh \
+  "$REPO_ROOT/design/ldo_3v3in_1v8out.sch" "$OUT_DIR/xschem_out" "${KLT[@]}"
+NETLIST_REL="${SCHEM_NETLIST#"$REPO_ROOT"/}"
 
 # --- 2. draw ----------------------------------------------------------------
 "${PY[@]}" layout/bin/gen-cap-rail-demo.py \

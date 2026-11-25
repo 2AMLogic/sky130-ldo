@@ -2,8 +2,224 @@
 
 Chronological record of merged pull requests and closed issues. Maintained by the Loom Guide role.
 
+## Archives
+
+- [2026-09](work_log/WORK_LOG_2026-09.md)
+
+### 2026-11-25
+
+- **PR #793**: docs: clarify batch support for PSRR and loop-gain campaigns
+- **Issue #792** (closed): psrr-dc issue-786 diagnostics README cites a `models_lib_comparison: match` verdict the report records as `null`
+- **Issue #788** (closed): Stale 'batch refuses psrr-dc' claims in sim/README.md and bias-retopo-pvt.py after #786
+- **PR #787**: feat: admit the graded psrr-dc campaign to the batch backend
+- **Issue #754** (closed): Sim: strictly-admitted batch adapter for the loop-gain bench (ac_leg_grid), then re-run (split from #554)
+
+### 2026-11-24
+
+- **PR #783**: refactor: extract power-rail sizing and klayout router out of gen-ldo-blocks
+- **PR #782**: signoff: gate item 9's PDK/tools pins against sim/pdk.json
+- **PR #779**: test: pin the unsupported-suffix refusal on _num directly in the es/lg suites
+- **PR #776**: fix: paired comparators importable under python3 -I
+- **PR #774**: refactor: share one SPICE-number parser across batch adapters via _meas_expr.parse_number
+- **PR #773**: refactor(sim): share corner-part collection and assembly between endpoint and loop-gain batch adapters
+- **PR #772**: fix: share one fleet engine-version rule across the paired comparators
+- **PR #766**: sim: loop-gain batch adapter live verification — paired equivalence and 45-corner fleet record
+- **PR #765**: sim: enable-shutdown 45-corner batch record, paired comparison and alter carry-over
+- **PR #764**: docs: write the #702 rev2 adoption review — recommendation revise, disposition pending (#763)
+- **PR #762**: sim: add PDK-free paired loop-gain comparator
+- **PR #760**: sim: admit enable-shutdown to the batch backend via a pinned four-step adapter
+- **PR #726**: sim: share the cold-start/EN re-enable schedule via _record_common
+- **Issue #781** (closed): Split layout/bin/gen-ldo-blocks.py into power-rail sizing and router modules
+- **Issue #780** (closed): T1 item 9's PDK pin evidence went stale when sim/pdk.json re-pinned, and no check notices
+- **Issue #778** (closed): Two of the three #769 unsupported-suffix refusal cases are insensitive to the suffix table
+- **Issue #775** (closed): chore: gitignore daemon account-ranking state so check-main-clean.sh stops flagging it
+- **Issue #771** (closed): Paired-comparison reproduce commands fail on Python 3.11+: python3 -I drops the script directory
+- **Issue #770** (closed): Share corner provenance assembly between endpoint and loop-gain batch adapters
+- **Issue #769** (closed): Consolidate duplicate SPICE-number parsers in batch translators into _meas_expr
+- **Issue #768** (closed): Share fleet engine-version checks across paired simulation comparators
+- **Issue #763** (closed): Rev2 dropout candidate: write the adoption review and recommendation (split from #702)
+- **Issue #757** (closed): Sim: loop-gain batch adapter live verification — paired single-corner comparison and full 45-corner re-run (follow-up to #754)
+- **Issue #755** (closed): Sim: strictly-admitted batch adapter for the enable-shutdown bench, then re-run (split from #554)
+- **Issue #715** (closed): Share the cold-start and re-enable temperature schedule across the three thermal paths
+- **Issue #702** (closed): Production-adoption review: low-headroom amplifier/clamp dropout candidate (rev2) — loop gain, PM/GM, load transient, PSRR, start-up, MC accuracy
+
+### 2026-11-23
+
+- **PR #761**: layout: drop unused flow_require_klt hint arg and fix floorplan pin wording
+- **PR #758**: sim: admit loop-gain's AC leg grid to the batch backend (ESR-group requests)
+- **PR #756**: layout: fold ERC and cap-rail flows onto the single klt pin
+- **PR #753**: sim: paired rev2 qualification of startup, line/load regulation and MC output accuracy
+- **PR #752**: test: cover enp-soft-release-709 deck-delta patcher
+- **PR #749**: sim: measure and reject the 100us EA_OUT/PB soft-release wake shaping (#709)
+- **PR #748**: docs(ci): replace the ci.yml check-inventory header with a check:ci pointer plus PDK gating rationale
+- **PR #747**: refactor: drop uncalled load_results() helper from probe scaffolding
+- **Issue #759** (closed): layout/: two live references still name the deleted per-flow requirements files, and flow_require_klt's hint arg is now unused
+- **Issue #751** (closed): sim/tests: cover enp-soft-release-709.py's deck-delta patcher (convention gap)
+- **Issue #709** (closed): Qualify R_CZ L=180 for startup charge reduction and land a verified compensation change
+- **Issue #705** (closed): Qualify rev2 start-up, line/load regulation and mismatch accuracy
+- **Issue #595** (closed): Remove load_results() from sim/bin/_probe_common.py: the one advertised probe helper with no caller
+- **Issue #591** (closed): Shorten the CI workflow header to a check:ci pointer and the PDK rationale
+- **Issue #576** (closed): Collapse layout/'s three klt pins into one: the main pin now descends from both the ERC and cap-rail pins
+- **Issue #565** (closed): item-5 envelopes cannot wrap the batch-fleet records from PR #561 (no .json record emitted)
+- **PR #710**: docs: attribute the startup enable-edge drawdown to the C_COMP charge packet; screen R_CZ
+- **Issue #693** (closed): Startup: attribute the enable-edge charge packet behind the 0.016-66 uV pre-ramp drawdown and remove its cause
+- **PR #714**: sim: record R_CZ L=180 loop-gain rejection; compensation adoption stays open (#709)
+- **PR #711**: sim: add paired rev2-vs-production Iq, clamp and thermal-hysteresis campaign (i706)
+- **Issue #706** (closed): Characterize rev2 quiescent current, clamp knee and thermal hysteresis
+
+### 2026-11-22
+
+- **PR #743**: refactor(sim): consolidate pinned batch-adapter shape/netlist gates and dedupe #177 test scaffolding
+- **PR #742**: sim(current-limit): seed leg 2's dc sweep and run it first — 45/45 PASS under the #171 gate (#647)
+- **PR #739**: docs: disclose rev2 dc extraction bias and correct report citations in issue-704 diagnostic
+- **PR #648**: sim(current-limit): batch adapter for the three chained legs; 45-corner fleet re-run supersedes the pre-gate record (#177)
+- **Issue #741** (closed): Consolidate pinned batch-adapter shape/netlist gates and deduplicate #177 adapter test scaffolding
+- **Issue #738** (closed): Report-precision follow-ups on the #704 dynamic-response diagnostic (DC-gain extraction disclosure, .ic citation, PSRR invalid list, docstring)
+- **Issue #647** (closed): Current limit: leg 2's dc vforce sweep trips the solver-diagnostic gate at 4 corners, all at Vin_max (3.63 V)
+- **Issue #177** (closed): Seed sim/current-limit's leg-1 operating point to conform to the initial-condition contract
+- **PR #737**: refactor: share the measurement-check, ramp-check and batch corner-result builders
+- **PR #734**: sim: add issue-704 paired loop/load-step/PSRR evidence for rev2
+- **PR #733**: docs(sim): move Iq testbench header to fresh-ratification wording
+- **PR #732**: refactor: fetch store-held item-5 record bytes once per artifact
+- **PR #731**: fix: refuse JSON error envelopes in fleet submit, drop rcz-shelf-691 duplicate pool
+- **PR #727**: fix: require exactly one remote response in the dropout paired loader
+- **PR #725**: test: stage only experiment inputs in BatchHarness scratch fixture
+- **PR #724**: ci: extend the append-only guard to sim diagnostics run directories
+- **PR #681**: Clarify DR-012’s proposed status and fresh ratification requirement
+- **Issue #736** (closed): Share measurement-check, ramp-check, and batch corner-result builders across corner-run.py and _batch_backend.py
+- **Issue #729** (closed): Stop double-fetching store-held records and drop redundant hashing in signoff/make_item5_envelope.py
+- **Issue #728** (closed): Reject error envelopes in _fleet_campaign.submit() and drop rcz-shelf-691.py's duplicate submit loop
+- **Issue #720** (closed): Remove multi-response merging from the single-request dropout comparison
+- **Issue #719** (closed): Stage only experiment inputs in BatchHarness to avoid copying 392 MiB of dropout diagnostics
+- **Issue #716** (closed): Extend the sim append-only CI check to archived diagnostic runs
+- **Issue #704** (closed): Measure rev2 loop stability, load-step response and supply rejection
+
+### 2026-11-21
+
+- **PR #722**: signoff: cover pdk-smoke.yml in the T1 item 10 hygiene inventory
+- **PR #703**: sim(#692): paired 45-point PVT dropout campaign — rev2 holds < 300 mV at every corner (ADOPT-REVIEW)
+- **Issue #717** (closed): signoff: item 10 hygiene inventory no longer covers the CI smoke steps after the pdk-smoke.yml split
+- **Issue #692** (closed): Dropout: run the paired 45-point PVT campaign for the #357 rev1 amplifier/clamp candidate (0.163 V at tt/27C; ratified row < 300 mV)
+- **PR #713**: ci: stop re-running CI on PR label writes; split smoke into pdk-smoke.yml
+- **Issue #707** (closed): ci.yml triggers a full CI run on every label change (pull_request: types includes 'labeled')
+- **PR #712**: fix: derive the rcz-shelf report's possible-request inventory from the driver's builders
+- **Issue #700** (closed): Diagnostic record states 118 dry-run-validated batch requests; the #691 screen now generates 122
+- **PR #701**: refactor: share the engine-log check across the batch response handlers
+- **PR #695**: feat(sim): screen a frequency-dependent compensation resistor on the batch fleet
+- **Issue #699** (closed): Share the engine-log check across the three batch response handlers
+- **Issue #697** (closed): Correct the klayout-tools#5894 cross-confirmation comment: it swaps which graph_too_large net hit which cap
+
+### 2026-11-20
+
+- **PR #696**: pex: measure per-net resistance-graph fallback reasons; map rails' graph_too_large to klayout-tools#6964 (item 7)
+- **Issue #690** (closed): Item 7: re-run the resistance-graph recheck with per-net fallback reasons and file the upstream gap that actually blocks VIN/VOUT
+- **PR #686**: docs(sim): align iq manifest claim with the #301 fresh-ratification ruling
+- **Issue #683** (closed): docs(sim): reconcile sim/iq/experiment.json's DR-009 ratifying-act claim with the #301 ruling
+- **PR #682**: docs: move live DR-009 citations to the fresh-ratification wording (split from #681)
+
+### 2026-11-19
+
+- **PR #573**: docs(spec): reconcile DR-009's ratifying-act wording with the #301 ruling
+- **PR #630**: docs: align DR-009 status wording with the #301 ruling across CLAUDE.md and target spec
+- **Issue #624** (closed): CLAUDE.md:35 still claims DR-009 'ratifies on its own PR merge' — the same stale claim #607 removed from README
+- **Issue #609** (closed): docs: four prose copies still instruct a raw headless `xschem -n -q -x -s` where `klt netlist` is the decided path
+
+### 2026-11-18
+
+- **PR #677**: test: pin the shared store-manifest read contract in layout/tests
+- **Issue #675** (closed): Add layout/tests/test_store_manifest.py for the shared store-manifest read contract
+- **PR #673**: refactor: one shared artifact-store manifest read/fetch helper
+- **Issue #671** (closed): Consolidate duplicated artifact-store manifest read/fetch helpers
+- **PR #670**: ci: report the spec-table gate on merge_group commits (merge queue step)
+- **Issue #668** (closed): Merge queue: add the merge_group trigger and adapt the PR-metadata gates
+- **PR #667**: refactor: consolidate the two batch adapters' measurement-expression evaluators
+- **Issue #666** (closed): Consolidate duplicate measurement-expression evaluators in sim batch adapters
+- **Issue #663** (closed): WORK_PLAN.md 'In Progress' still lists closed #336 (no loom:building label)
+- **PR #661**: docs(signoff): qualify the gate's "re-hashes every artifact" claims in --help, README and ci.yml
+- **Issue #659** (closed): verify-pins "--help", signoff/README.md and ci.yml still claim the gate "re-hashes every artifact" (post-#658 residual)
+- **PR #658**: docs(signoff): scope check.sh re-hash claim to committed artifacts; seed verify() counts keys
+- **Issue #657** (closed): signoff/check.sh header still claims the gate "re-hashes every artifact" (post-#654 residual)
+- **PR #656**: fix(signoff): report store-manifest-verified pins as such, not as re-hashed
+- **Issue #654** (closed): verify-pins: a store-manifest-verified pin is reported as if its bytes were re-hashed
+- **PR #652**: sim(startup): mint the 12-leg ESR-grid x 45-PVT campaign on the batch fleet
+- **Issue #336** (closed): Startup: extend cold-enable coverage to the ratified ESR boundaries
+- **PR #651**: evidence: pex-post-layout batch legs run as ceiling-split shards (#623)
+- **Issue #623** (closed): pex-post-layout batch runs: serial job-ceiling estimate can exceed the fleet's 3600 s max_job_seconds (shard via request.remote.hosts)
+
+### 2026-11-17
+
+- **PR #643**: ci: declare repo-local run-pdk-smoke label in labels.yml
+- **Issue #642** (closed): CI: documented 'run-pdk-smoke' PR opt-in label does not exist
+- **PR #637**: chore(loom): resync installed Loom to v0.19.1306
+
+### 2026-11-16
+
+- **PR #632**: fix(sim): make the bias grid's unusable-point guard a real disjunction on status
+- **Issue #625** (closed): bias-retopo-grid.py's unusable-point guard: the status test is dead code (operator precedence), so a non-pass corner is graded
+- **PR #627**: chore(loom): resync installed Loom to v0.19.1302
+- **PR #626**: feat: pin README's ratified spec table with a DR-gated lock guard
+- **Issue #618** (closed): Port gf180-ldo's spec-table guard so README's ratified mirror cannot drift again
+- **PR #621**: fix(signoff): check attested hygiene exactly against the tree, not the branch diff
+- **Issue #588** (closed): check-attested-hygiene.sh: detect stale re-mints, not just absent ones (+ a --self-test)
+- **PR #617**: docs: point netlist prose at klt netlist instead of raw xschem
+- **PR #616**: evidence: standalone 45-corner pex-post-layout schematic leg completes on the batch fleet (#327)
+- **Issue #327** (closed): sim(pex): run the 45-corner schematic-side PEX leg once the batch fleet runner accepts klt 0.7.x clients (split from #277)
+- **PR #628**: sim/pex-post-layout: shard batch jobs via job_ceiling_check split
+- **PR #622**: refactor: collapse the triplicated PM/GM spec thresholds onto _fleet_campaign.py
+- **Issue #596** (closed): Collapse the triplicated PM/GM spec thresholds in sim/bin onto _fleet_campaign.py
+- **PR #593**: refactor(sim): build the bias grid's requests and submits on _fleet_campaign
+- **Issue #586** (closed): Fold sim/bin/bias-retopo-grid.py onto _fleet_campaign.py: the one batch-fleet driver #574's dedup missed
+
+### 2026-11-15
+
+- **PR #620**: refactor(signoff): collapse duplicated item-5 envelope literal into one _envelope() helper
+- **Issue #606** (closed): Collapse the duplicated 51-line item-5 envelope literal in signoff/make_item5_envelope.py
+- **PR #619**: docs: make README's ratified spec-table mirror faithful to the gate
+- **Issue #607** (closed): README.md's 16-row spec table is a second copy of the ratified gate and has drifted in four rows
+- **PR #614**: refactor(sim): derive hysteresis observation instants from batch_thermal_staircase
+- **Issue #613** (closed): Thermal observation instants (T_COLD..T_REEN) are duplicated between run_hysteresis.py and batch_thermal_staircase.py
+- **PR #603**: refactor(sim): extract one shared batch endpoint-adapter test contract
+- **Issue #587** (closed): Deduplicate the batch adapter test scaffolding: 113 identical lines across three test files
+- **PR #602**: refactor(sim): use _record_common.spiceinit_sha256 in corner-run.py
+- **Issue #598** (closed): Remove corner-run.py's spiceinit_digest: byte-identical duplicate of _record_common.spiceinit_sha256
+- **PR #600**: docs(signoff): correct "What would move the needle" for items 11 and 1/2/9/10
+- **Issue #582** (closed): README and signoff/README still say T1 5/11; the verdict of record says 9/11
+- **PR #584**: feat(signoff): catch item-10 hygiene drift and T1 headline staleness in check:ci
+- **Issue #579** (closed): Docs PRs touching README.md always fail signoff stage 1b (item 10 attestation drift)
+- **PR #612**: sim: paired dropout local/fleet baseline check passes (equivalent, ngspice-47 both sides)
+- **Issue #375** (closed): Dropout: run the paired local/remote baseline check for the cold-start batch adapter once the fleet preflight accepts
+- **PR #611**: refactor(sim): share the thermal staircase Runner and deck frame in _record_common
+- **Issue #597** (closed): Collapse the duplicated thermal Runner and deck frame onto _record_common.py's #297 block
+- **PR #610**: sim: remove six dead module-level constants in sim/bin
+- **Issue #605** (closed): Remove six dead module-level constants in sim/bin: the residue pyflakes cannot see
+- **PR #608**: diagnostics: re-measure the pex resistance-graph blocker on the regenerated core
+- **Issue #583** (closed): Item 7: re-measure the extraction blocker on the regenerated core (extraction only, no corner grid)
+- **PR #594**: refactor(sim): extract the klt sim batch backend into _batch_backend.py
+- **Issue #580** (closed): Split sim/bin/corner-run.py: extract the 845-line klt sim batch backend into an importable sibling module
+
+### 2026-11-14
+
+- **PR #601**: refactor(layout): one shared preamble for the five run-*-flow.sh drivers
+- **Issue #599** (closed): layout/bin: the five run-*-flow.sh drivers duplicate their preamble, and two copies have drifted
+- **PR #590**: refactor: drop never-called owner_of and grade_ac helpers
+- **Issue #585** (closed): Remove two never-called helpers: owner_of in diagnose-official-drc.py and grade_ac in rcz-adaptive-370.py
+- **PR #592**: refactor: one shared file-SHA-256 helper and one strict digest normalizer
+- **Issue #589** (closed): Consolidate five file-SHA-256 helpers and two divergent digest normalizers into one contract
+- **PR #581**: docs: roadmap as of 2026-11-13
+
+### 2026-11-13
+
+- **PR #575**: refactor(sim): extract the batch-fleet campaign core into _fleet_campaign.py
+- **Issue #574** (closed): Deduplicate the batch-fleet driver core copied across bias-retopo-pvt / rcz-fleet-confirm / rcz-adaptive-370
+- **Issue #267** (closed): layout: fix locally-routed official-DRC families (via.1a_b, m2.5, via2.5, nwell.9) found by #260
+
 ### 2026-11-12
 
+- **PR #570**: test: share FakeSingleStepKlt across batch-adapter tests
+- **Issue #568** (closed): Dedupe FakeKlt subclasses in batch-adapter tests (~120 LOC of copy-paste)
+- **PR #566**: fix: repo-relative GDS path for layout-flow DRC and re-pin signoff item 3
+- **Issue #564** (closed): signoff/README: item 3/4/11 narrative sections still describe pre-#553 records
+- **PR #563**: sim: mint PSRR C_eff x ESR reduced-sweep evidence record
 - **PR #559**: feat(signoff): wrap thermal hysteresis record as the item-5 envelope
 - **Issue #558** (closed): signoff: item-5 Thermal envelope still wraps legacy record; Thermal row now grades the hysteresis record
 - **PR #557**: layout: regenerate core from integrated-comparator netlist and re-pin signoff items 3, 4, 11
@@ -387,89 +603,3 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 - **PR #183**: sim: seed load-transient's tran to the #171 initial-condition contract
 - **PR #182**: sim: convert line/load-regulation's unseeded .op chains to the #171 initial-condition contract, re-run both 45-corner matrices
 
-### 2026-09-25
-
-- **Issue #174** (closed): Audit remaining sim/ benches (current-limit, dropout-vs-load, loop-gain, load-transient, psrr-dc, thermal, startup, enable-shutdown) for the same initial-condition exposure
-- **Issue #171** (closed): Define sim/'s initial-condition contract; fail a corner on a solver diagnostic (corner-run.py)
-- **Issue #169** (closed): Re-test #81 item 2's 125C/50mA second equilibrium with the full node set constrained: #164 showed its method unreliable at a gentler corner
-- **Issue #164** (closed): Mismatch alone latches the loop off at 27C/1mA: ~6% of MC draws settle with VOUT at the input rail (startup bench is 45/45 and cannot see it)
-- **Issue #154** (closed): layout: gen-ldo-blocks.py routes VIN/VOUT as 0.30um signal trunks, making post-layout full-load rows non-physical
-- **Issue #119** (closed): Load transient FAILs 20/45 corners — re-measure after the stability fix before designing for it
-- **Issue #118** (closed): DC accuracy: Output (177/200 MC), line regulation (18/45) and load regulation (34/45) all FAIL
-- **PR #181**: docs(sim): audit remaining sim/ benches for initial-condition-contract exposure
-- **PR #176**: sim: define initial-condition contract; fail a corner on a solver diagnostic (corner-run.py)
-- **PR #175**: sim+docs: #81 item 2's 125C/50mA second equilibrium does not exist -- a five-variant IC screen regulates everywhere; #81's numbers were EA_OUT/TS_SNS/TS_REF
-- **PR #170**: sim: seed mc-output-accuracy's transient from a realizable state — the 27C/1mA rail mode is the bench's .op, not a second equilibrium
-- **PR #167**: fix(sim): size load-transient C_out to DR-002 ceiling; instrument the recovery-time clause
-- **PR #165**: DC accuracy: one mechanism behind all three rows — and it is not matching, supply rejection or loop gain
-- **PR #163**: layout: size VIN/VOUT as spec-derived power rails, and measure why the extractor cannot see it
-
-### 2026-09-24
-
-- **Issue #159** (closed): Residual stale-ratification prose in design/README.md and challenge-4-proposal.md (left behind by #152) plus a possibly-stale "No LDO layout yet" heading
-- **Issue #156** (closed): docs: the stated full-load extracted-VOUT range in signoff/README.md does not match the record's own delta[] rows
-- **Issue #153** (closed): Stale "once issue #1 rules/ratifies" phrasing survives the DR-006 ratification sweep (and DR-006's own header still reads proposed)
-- **Issue #152** (closed): Testbench .sch headers and design/README.md still call the target table DRAFT after DR-006/#1 ratified it
-- **Issue #147** (closed): sim/ manifests and sim/README.md still call the target table DRAFT after DR-006/#1 ratified it
-- **Issue #146** (closed): characterization.md's Post-layout PEX detail is stale relative to build_characterization_report.py --check
-- **Issue #142** (closed): Draw the sky130 hvi voltage-domain marker in ldo_core's layout so extraction binds g5v0d10v5, not the 01v8 core flavour
-- **Issue #140** (closed): ci: lint for duplicate DR-NNN decision-record numbers (four open PRs each claimed DR-008)
-- **Issue #125** (closed): README: embed the fleet burndown chart (one line)
-- **Issue #120** (closed): Thermal FAILs 3/15 corners — establish the delegated theta-JA assumption before treating it as a design defect
-- **Issue #116** (closed): Dropout fails 0/45 corners against the ratified < 300 mV row — check pass-device sizing first (cf. gf180-ldo#139)
-- **Issue #113** (closed): Commit a klt signoff block manifest so this block's T1 state is graded, not hand-read
-- **PR #161**: docs: retire the last stale "issue #1 has not ratified" claims and the "No LDO layout yet" heading (#159)
-- **PR #160**: docs: state the real full-load extracted-VOUT extremes and narrow the klt-pin claim
-- **PR #158**: docs: retire forward-looking "once issue #1 rules" phrasing; flip DR-006 to ratified (#153)
-- **PR #157**: docs: cite spec/target-spec.md as ratified in testbench headers and design/README.md (#152)
-- **PR #155**: feat(layout): draw the sky130 hvi voltage-domain marker so extraction binds g5v0d10v5 (#142)
-- **PR #151**: docs: cite spec/target-spec.md as ratified in sim/ manifests and docs
-- **PR #149**: feat(ci): fail check:ci on duplicate DR-NNN decision-record numbers (#140)
-- **PR #148**: docs: relocate hand-written PEX triage narrative out of characterization.md
-- **PR #139**: fix(design): re-size M_PASS/M_SENSE for dropout (DR-011); correct a disproven single-op claim (#116)
-- **PR #135**: README: embed the fleet burndown chart
-- **PR #132**: docs(spec): DR-008 — Thermal FAIL is the hysteresis bound, not theta-JA; record the delegated theta-JA integration constraint
-- **PR #126**: feat(signoff): commit a klt signoff block manifest and the T1 verdict of record
-
-### 2026-09-23
-
-- **Issue #136** (closed): 2am: reuse rule 9 — decide and record the sky130-bandgap consumption edge (no in-tree reference exists; VREF is an external port)
-- **Issue #123** (closed): 2am: reuse rule 9 — in-tree error amplifier (symmetric OTA) duplicates sibling canary sky130-opamp — add reuse.lock.json in_tree entry (evaluate), then adopt or record
-- **Issue #122** (closed): T1 item 7: the klt pex leg errors on all 135 corners — item 7 accepts no other evidence kind
-- **Issue #121** (closed): The Iq spec row is unratified ('no number set') yet graded FAIL — ratify it or remove it from the table
-- **Issue #117** (closed): PSRR fails 0/45 corners at every ratified condition
-- **Issue #115** (closed): Stability: PM/GM margins met at only 7/45 corners — likely upstream of the transient and regulation misses
-- **PR #144**: docs: record no-lock-entry decision for the sky130-bandgap reuse edge (DR-012)
-- **PR #143**: sim(pex): re-check the disclosed klt gaps upstream, pin main@040f3406, record 108/135 (#122)
-- **PR #141**: sim(psrr-dc): measure both ratified load points; 50 mA/100 kHz also fails
-- **PR #137**: docs: record the error amplifier as kept in-tree vs sky130-opamp (DR-010 + reuse.lock.json)
-- **PR #134**: spec: ratify the Iq row at < 30 µA via DR-008
-- **PR #130**: docs(design): stability binding mechanism, feedforward-zero screen (verified-negative), coupling-thesis test (#115)
-
-### 2026-09-19
-
-- **Issue #58** (closed): Track the gap to T1 sim-validated / bronze (klayout-tools design-evidence tiers)
-
-### 2026-09-18
-
-- **Issue #1** (closed): Ratify the target spec
-- **PR #50**: docs(spec): draft DR-006 spec ratification — ratify DR-002/003/004/005
-
-### 2026-09-16
-
-- **Issue #109** (closed): merge-pr.sh silently fails on every PR without a prior champion:hold-state marker (pipefail bug)
-
-### 2026-09-15
-
-- **Issue #107** (closed): Two-stage/cascoded amplifier redesign to close PSRR and light-load stability (per DR-007)
-- **Issue #70** (closed): PSRR fails everywhere and light-load stability shortfall is pervasive: bias-generator/compensation redesign needed
-- **Issue #60** (closed): LDO fails its own DRAFT PVT-corner spec: Output, Dropout, Load-transient, PSRR and Stability all FAIL (T1 re-read #58, items 5+6)
-- **PR #111**: docs(design): document verified-negative cascode screening for PSRR/stability
-- **PR #110**: docs(design): close out #60, root-cause/decomposition complete
-- **PR #108**: docs(design): document DR-007 outcome for #70, spin off #107
-- **PR #106**: docs(spec): add DR-007 recommending PSRR/Stability rows be superseded
-
-### 2026-09-10
-
-- **Issue #104** (closed): LDO: run the full 45-point PVT matrix for the line-regulation, load-regulation and Iq testbenches (issue #64's three benches, mirroring #74)
-- **PR #105**: sim: run the full 45-point PVT matrix for line-regulation, load-regulation and Iq (#104)

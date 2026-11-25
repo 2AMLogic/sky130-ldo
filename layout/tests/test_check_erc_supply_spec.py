@@ -6,7 +6,7 @@ control: stackup covers drawn routing, drawn-well narrative, and the
 substrate well_boxes assertion. A final pair drives main() end to end to pin
 the exit-code contract.
 
-Needs the `klayout` module (present in the layout ERC venv, layout/.venv-erc).
+Needs the `klayout` module (present in the layout venv, layout/.venv).
 CI's headless `checks` job installs no klayout wheel, so these tests skip with
 an explicit reason there rather than failing.
 """
@@ -29,8 +29,8 @@ except ImportError:  # pragma: no cover - depends on the environment
 
 SCRIPT = Path(__file__).resolve().parents[1] / "bin" / "check-erc-supply-spec.py"
 SKIP_REASON = (
-    "klayout.db not importable; run under the layout ERC venv "
-    "(layout/.venv-erc) to exercise check-erc-supply-spec.py"
+    "klayout.db not importable; run under the layout venv "
+    "(layout/.venv) to exercise check-erc-supply-spec.py"
 )
 
 NWELL = (64, 20)

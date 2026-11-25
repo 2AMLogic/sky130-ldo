@@ -24,6 +24,7 @@ from unittest import mock
 
 SIM_DIR = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(SIM_DIR / "bin"))
+import _batch_backend  # noqa: E402  # the batch backend is its own module (issue #580)
 import _evidence_store  # noqa: E402  # corner-run.py imports _record_common (issue #46)
 from _sim_script_loader import load_script  # noqa: E402
 corner_run = load_script("corner_run", SIM_DIR / "bin" / "corner-run.py", register=True)
@@ -561,6 +562,83 @@ class FakeKlt:
         return subprocess.CompletedProcess(cmd, self.rc, stdout=out, stderr="")
 
 
+class FakeSingleStepKlt(FakeKlt):
+    """Shared `klt sim` fake for single-step (`analysis_steps`) batch adapters.
+
+    Owns the launch guard, request parse, process x temperature corner loop,
+    log write, `<step>.<name>` measurement records and the response envelope.
+    Subclasses set JOB_ID (and optionally RUNTIME_S / ERROR_MESSAGE) and supply:
+      point_input(req, lines)      -> tuple of per-request inputs from the netlist
+      values(p, t, point)          -> per-corner result object (None = corner error)
+    and may override measurement_value(vals, m) / corner_ok(vals)."""
+
+    JOB_ID = "klt-sim-000000"
+    RUNTIME_S = 9.0
+    ERROR_MESSAGE = "no value"
+
+    def __init__(self, test, pin, log_text=None, **kw):
+        super().__init__(test, pin, **kw)
+        self.log_text = log_text
+
+    def point_input(self, req, lines):
+        raise NotImplementedError
+
+    def values(self, p, t, point):
+        raise NotImplementedError
+
+    def corner_ok(self, vals):
+        return vals is not None
+
+    def measurement_value(self, vals, m):
+        """Default: vals is an (avg, min, max) tuple picked by the .meas kind."""
+        return vals[{"avg": 0, "min": 1, "max": 2}[m["spice"].split()[3]]]
+
+    def __call__(self, cmd, **kw):
+        self.calls.append((cmd, kw))
+        if cmd[0] != "/fake/klt":
+            self.test.fail(f"unexpected launch: {cmd}")
+        if self.raise_exc:
+            raise self.raise_exc
+        req = json.loads(Path(cmd[2]).read_text())
+        self.test.assertNotIn("analysis", req)
+        (step,) = req["analysis_steps"]
+        lines = Path(req["netlist"]).read_text().splitlines()
+        point = self.point_input(req, lines)
+        outdir = Path(cmd[cmd.index("-o") + 1])
+        outdir.mkdir(parents=True, exist_ok=True)
+        corners = []
+        for p in req["corners"]["process"]:
+            for t in req["corners"]["temperature_c"]:
+                vals = self.values(p, t, point)
+                ok = self.corner_ok(vals)
+                logp = outdir / f"{p}_{t}.log"
+                logp.write_text(self.log_text or f"Operating point simulation skipped by 'uic'\n{p} {t}\n")
+                meas = []
+                for m in step["measurements"]:
+                    v = None if vals is None else self.measurement_value(vals, m)
+                    meas.append({"name": f"{step['name']}.{m['name']}", "value": v,
+                                 "status": "pass" if v is not None else "error"})
+                corners.append({
+                    "corner_id": f"{p}/novdd/{t:g}C", "process": p, "temperature_c": t,
+                    "status": "pass" if ok else "error", "runtime_s": self.RUNTIME_S,
+                    "diagnostics": [] if ok else [
+                        {"severity": "error", "code": "measurement", "message": self.ERROR_MESSAGE}],
+                    "artifacts": {"log": str(logp)}, "measurements": meas,
+                })
+        resp = {
+            "status": "pass", "corners": corners,
+            "environment": {"engine": "ngspice", "engine_version": "46",
+                            "remote": {"provider": "aws-batch-fleet", "job_id": self.JOB_ID,
+                                       "state": "done", "exit_code": "0",
+                                       "runner_compatibility": "match"}},
+            "provenance": {"klt_version": "0.7.0", "pdk": {"version": self.pin["open_pdks_commit"]}},
+        }
+        if self.mutate:
+            self.mutate(resp, req)
+        out = self.stdout if self.stdout is not None else json.dumps(resp)
+        return subprocess.CompletedProcess(cmd, self.rc, stdout=out, stderr="")
+
+
 def _fake_commit(self):
     """Stand-in for EvidenceRun.commit(): no broker; copy staged files to
     REPO_ROOT/<store name> and write a manifest with artifact: uris."""
@@ -595,8 +673,15 @@ class BatchHarness(unittest.TestCase):
         self.addCleanup(shutil.rmtree, self.tmp, True)
         sim = self.tmp / "sim"
         sim.mkdir()
-        shutil.copytree(SIM_DIR / self.SLUG, sim / self.SLUG,
-                        ignore=shutil.ignore_patterns("records", "corners", "netlist-snapshots"))
+        # stage only the runner's inputs (experiment.json + testbench): the
+        # committed outputs (records/corners/netlist-snapshots) are excluded
+        # as before, and never copying the slug's diagnostics archives keeps
+        # fixture setup O(inputs), not O(diagnostic history)
+        exp = sim / self.SLUG
+        exp.mkdir()
+        shutil.copyfile(SIM_DIR / self.SLUG / "experiment.json",
+                        exp / "experiment.json")
+        shutil.copytree(SIM_DIR / self.SLUG / "testbench", exp / "testbench")
         shutil.copyfile(SIM_DIR / "spiceinit", sim / "spiceinit")
         self.pin = corner_run.load_pin()
         pdk_dir = self.tmp / "pdkroot" / "sky130A"
@@ -620,6 +705,11 @@ class BatchHarness(unittest.TestCase):
             mock.patch.object(corner_run, "REPO_ROOT", self.tmp),
             mock.patch.object(corner_run, "BUILD_DIR", self.tmp / "build"),
             mock.patch.object(corner_run, "SPICEINIT_FILE", sim / "spiceinit"),
+            # The batch backend lives in its own module (issue #580) and reads
+            # these from its own globals, so the runner-side patch above does
+            # not reach it -- patch both, or a batch run escapes the fixture.
+            mock.patch.object(_batch_backend, "SPICEINIT_FILE", sim / "spiceinit"),
+            mock.patch.object(_batch_backend, "klt_binary", return_value="/fake/klt"),
             mock.patch.object(corner_run, "load_pin", return_value=self.pin),
             mock.patch.object(corner_run, "resolve_pdk", side_effect=lambda pin: self.pdk),
             mock.patch.object(corner_run, "netlist_with_xschem", side_effect=fake_netlist),
@@ -1144,6 +1234,39 @@ class TestWindowGrid(unittest.TestCase):
         bad["value"] = 0.2  # still flagged pass=True
         self.assertFalse(self.cov(results)["pass"])
 
+    def test_grid_rechecks_equality_at_manifest_bounds(self):
+        measurement = next(m for m in self.exp.measurements if m.name == "vout_pre_v__c330n_esr0")
+        results = self.good_results()
+        check = next(c for c in results[0]["measurements"] if c["name"] == measurement.name)
+        for bound, strict_reason in (("min", "not above strict min"), ("max", "not below strict max")):
+            value = getattr(measurement, bound)
+            check["value"] = value  # the stored check still says pass
+            for inclusive in (False, True):
+                with (
+                    self.subTest(bound=bound, inclusive=inclusive),
+                    mock.patch.object(measurement, f"{bound}_inclusive", inclusive),
+                ):
+                    cov = self.cov(results)
+                    self.assertTrue(cov["complete"])
+                    self.assertEqual(cov["conditions_evaluated"], 96)
+                    self.assertEqual(cov["pass"], inclusive)
+                    self.assertEqual(cov["conditions_passing"], 96 if inclusive else 95)
+                    if inclusive:
+                        self.assertEqual(cov["failures"], [])
+                    else:
+                        (failure,) = cov["failures"]
+                        self.assertEqual(failure["measurement"], measurement.name)
+                        self.assertEqual(failure["status"], "fail")
+                        self.assertEqual(failure["reason"], f"{strict_reason} {value:g}")
+
+    def test_failing_stored_check_vetoes_an_in_bounds_value(self):
+        results = self.good_results()
+        results[0]["measurements"][0].update({"pass": False, "reason": "flagged by corner"})
+        cov = self.cov(results)
+        self.assertFalse(cov["pass"])
+        (failure,) = cov["failures"]
+        self.assertEqual(failure["reason"], "flagged by corner")
+
     def test_nan_and_unparsable_values_are_not_a_pass(self):
         for value in (float("nan"), float("inf"), None):
             results = self.good_results()
@@ -1314,6 +1437,70 @@ class TestBoundInclusivity(BatchHarness):
                 for flag in ("min_inclusive", "max_inclusive"):
                     self.assertEqual(m.get(flag) is False, strict.get(m["name"]) == flag, (slug, m["name"], flag))
             corner_run.load_experiment(SIM_DIR / slug)
+
+
+class TestGradeCheck(unittest.TestCase):
+    """Issue #736: one measurement-check row builder for every backend (local
+    run_corner, standard batch, startup ramp-trace, endpoint) -- the same ten
+    keys in the same order, the window-grid leg fields when the measurement is
+    per-leg, and `grade_bounds`'s own verdict. Only the missing-value reason
+    is caller-supplied."""
+
+    SHARED_KEYS = ["name", "expr", "unit", "value", "min", "max",
+                   "min_inclusive", "max_inclusive", "pass", "reason"]
+
+    @staticmethod
+    def meas(**kw):
+        return corner_run.Measurement(name="x", expr="x", unit="V", **kw)
+
+    def test_row_keys_and_order_match_the_recorded_schema(self):
+        self.assertEqual(list(corner_run.grade_check(self.meas(), 1.0)), self.SHARED_KEYS)
+        m = corner_run.Measurement(
+            name="x", expr="x", leg="c330n_0ma_esr0", cout_f=3.3e-7, esr_ohm=0.0, direction="up"
+        )
+        self.assertEqual(
+            list(corner_run.grade_check(m, 1.0)),
+            self.SHARED_KEYS + ["leg", "cout_f", "esr_ohm", "direction"],
+        )
+
+    def test_bounds_verdicts_are_grade_bounds_own(self):
+        m = self.meas(max=0.3, max_inclusive=False)
+        for v, want in ((0.2, True), (0.3, False), (0.4, False)):
+            d = corner_run.grade_check(m, v)
+            self.assertIs(d["pass"], want, v)
+            self.assertEqual(d["value"], v)
+            self.assertEqual(d["reason"], "" if want else corner_run.grade_bounds(m, v)[1])
+
+    def test_nonfinite_values_fail_without_missing_reason_substitution(self):
+        for v in (float("nan"), float("inf"), float("-inf")):
+            d = corner_run.grade_check(self.meas(), v, missing_reason="caller reason")
+            self.assertIs(d["pass"], False, v)
+            self.assertTrue(math.isnan(d["value"]) if v != v else d["value"] == v)
+            self.assertEqual(d["reason"], "non-finite measurement value")
+
+    def test_missing_value_reason_and_its_caller_override(self):
+        m = self.meas()
+        d = corner_run.grade_check(m, None)
+        self.assertIs(d["pass"], False)
+        self.assertIsNone(d["value"])
+        self.assertEqual(d["reason"], "measurement not found in ngspice output")
+        d = corner_run.grade_check(m, None, missing_reason="measurement not found in klt sim response")
+        self.assertEqual(d["reason"], "measurement not found in klt sim response")
+
+    def test_missing_reason_is_inert_for_a_present_value(self):
+        m = self.meas(max=0.5)
+        self.assertEqual(corner_run.grade_check(m, 0.9, missing_reason="caller reason")["reason"],
+                         "above max 0.5")
+        self.assertEqual(corner_run.grade_check(m, 0.1, missing_reason="caller reason")["reason"], "")
+
+    def test_leg_fields_follow_the_leg_measurement_only(self):
+        m = corner_run.Measurement(
+            name="x", expr="x", leg="c330n_0ma_esr0", cout_f=3.3e-7, esr_ohm=0.0, direction="up"
+        )
+        d = corner_run.grade_check(m, 1.0)
+        self.assertEqual((d["leg"], d["cout_f"], d["esr_ohm"], d["direction"]),
+                         ("c330n_0ma_esr0", 3.3e-7, 0.0, "up"))
+        self.assertNotIn("leg", corner_run.grade_check(self.meas(), 1.0))
 
 
 class TestLoadRegulationManifestGate(unittest.TestCase):
@@ -1657,6 +1844,14 @@ class TestBatchWindowGrid(BatchHarness):
             (self.exp_dir / "experiment.json").write_text(json.dumps(raw))
             err, _, _ = self.run_main("--backend", "batch", *QUICK, expect_exit=HarnessErr)
             self.assertIn("bounded", str(err), slug)
+        # issue #336: startup itself is admitted, but only WITH its ramp
+        # block — a foreign manifest under that slug refuses on the missing
+        # ramp_monotonicity (it would qualify no trace condition).
+        raw = json.loads((SIM_DIR / self.SLUG / "experiment.json").read_text())
+        raw["slug"] = "startup"
+        (self.exp_dir / "experiment.json").write_text(json.dumps(raw))
+        err, _, _ = self.run_main("--backend", "batch", *QUICK, expect_exit=HarnessErr)
+        self.assertIn("declares no ramp_monotonicity", str(err))
         # issue #374: dropout-vs-load is admitted only in its validated
         # cold-start shape; a foreign manifest under that slug is refused.
         raw = json.loads((SIM_DIR / self.SLUG / "experiment.json").read_text())

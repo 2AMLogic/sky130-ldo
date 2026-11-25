@@ -556,6 +556,20 @@ without restoring drive, because `EA_OUT`'s floor barely moves with it
 change into a dropout fix would also have confounded the very measurement that
 had to be taken. Preserved as a follow-up issue rather than discarded.
 
+> **Update (2026-11-20, issues #323/#339/#357/#692): the tail-headroom reading
+> above is the measured mechanism after all — at low `VIN`, not at the divider.**
+> #323 attributed the tt/27 °C/50 mA limit to amplifier tail/bias headroom
+> collapse plus the current-limit clamp conducting as `VIN` falls, not to pass
+> gate headroom (`sim/dropout-vs-load/diagnostics/issue-323/`); #339 showed the
+> two interventions together reach 0.164 V with ideal sources
+> (`.../issue-339/`); #357 screened the physical candidate — NMOS-input OTA +
+> VREF-referenced clamp, pass device unchanged — at **0.163237 V** against the
+> 0.397658 V baseline (`.../issue-357/`); and #692's paired 45-point PVT
+> campaign holds the row at **every corner** (rev2 binding ff/-40 °C/2.97 V,
+> 0.2202 V, verdict ADOPT-REVIEW; the production-adoption review owns the
+> remaining rows) (`.../issue-692-20261120-235900/`). Do not pick up the
+> pre-#323 "`EA_OUT` floor is the open limiter" reading above without those.
+
 ### Amplifier sizing revision (#22)
 
 The corrected pass device is 25× wider, so the amplifier has to throttle it
@@ -630,6 +644,43 @@ doublet, which needs bandwidth. It stops at 2× rather than the 6× that
 screening showed keeps improving that corner, because the `Iq < 30 µA` row
 (set by DR-009, `proposed`) is the binding constraint — 6× measured 33.6 µA
 at 50 mA, over the row; 2× measures 24.9 µA (table below), inside it.
+
+**A larger `R_CZ` was re-qualified and rejected (#709).** Issue #693's
+attribution traced the startup ramp-monotonicity drawdown to a fixed charge
+packet leaving `C_out` through `C_COMP`/`R_CZ`, and its screen found
+`L=52 → 180` removes 85-88 % of that packet with the peak-overshoot, floor and
+ramp-time bounds passing (ramp-drawdown monotonicity at `tolerance_v = 0` still
+fails: 3.715 and 9.515 µV at the two screened no-load conditions, and the
+Startup signoff grade stays FAIL).
+The #709 co-verification re-measured loop gain over the full 45-corner ×
+18-leg grid on both values (`sim/bias-retopo/20261121-165832-rczL52` = L=52,
+`.../20261121-171327-rczL180` = L=180) and load-transient on matched DUTs
+(`sim/load-transient/records/20261121-173242-303d2449` vs
+`.../20261121-173321-7fd5183b`): the zero moves ~3.5 kHz → ~1 kHz and the
+two-sided optimum shows its other side. The no-load legs improve (0.33 µF:
++0..+13°; 4.7 µF: +0..+2.3°), but the loaded legs lose margin, and not
+uniformly across ESR: `c033`/1 mA goes 74° → 27° worst case and below 45° at
+all 45 PVT points for every ESR (500 mΩ included, worst 31.4°); `c4u7`/50 mA
+goes below 45° at all 45 points at 0 and 10 mΩ (worst 27.0° / 28.0°) but
+keeps zero failures at 500 mΩ (worst 67.8°, down from 101.1°); `c4u7`/1 mA
+improves at all three ESRs. Sub-45° PM points total 203 → 489 of 810 (all
+"worst" values are minima over a leg's 45 PVT points). Load-transient shows
+a marginal change on a row that already fails at L=52: excursion failures
+179 → 151, recovery failures 540 → 540, 28 excursion checks recovered and
+none newly failing, but recovery time at conditions that fail both ways
+moves both ways (e.g. rising-edge recovery at fs/125 °C/2.97 V, 4.7 µF/0 Ω,
+132.7 → 193.9 µs). The EA_OUT wake-shaping alternatives the attribution
+opened were screened on the same conditions and **rejected**: the
+`M_MIRP2` slew trade broke regulation, and the committed ~100 µs soft-release
+screen of the EN-gated clamps (`sim/bin/enp-soft-release-709.py`, both screen
+corners, all 12 legs) cuts the packet only 44-70 % with the ramp drawdown
+still positive at every leg -- no verdict changes -- while stretching the
+release to 300 µs makes the packet worse than baseline or breaks the ratified
+oversoot bound (see `sim/startup/pilots/20261123-709-enp-soft-release-screen.md`).
+Adoption of a compensation change therefore stays **open** at L=52; the
+schematic keeps the #25 value and the startup record of record is unchanged.
+Full tables: `sim/startup/pilots/20261121-709-rcz-l180-loopgain-rejection.md`
+and `sim/startup/pilots/20261123-709-enp-soft-release-screen.md`.
 
 **Measured result** (`sim/loop-gain` record `20260818-014128-01b7905`, the
 `--quick` 3-corner subset; ratified bound is `spec/target-spec.md`'s Stability
@@ -1110,8 +1161,9 @@ removable disturbance current `IX` at `xldo.TS_SNS` and an `EN` source that is
 Everything below was run against the pinned PDK (`sky130A`, open_pdks
 `c6d73a35f524070e85faff4a6a9eef49553ebc2b`, same pin as `sim/pdk.json`), `tt`
 corner, 27°C, `VREF = 1.2V` (placeholder, see above), **from the committed
-schematic's own xschem-generated netlist** (`xschem -n … -o /tmp/… ; .include`
-that `.spice` file into a throwaway deck). Nothing here is committed under
+schematic's own xschem-generated netlist** (`klt netlist -o
+/tmp/ldo_3v3in_1v8out.spice` ; `.include` that `.spice` file into a
+throwaway deck). Nothing here is committed under
 `sim/`: these issues are design sources only. The corner-swept versions live
 under `sim/` — `load-transient` / `psrr-dc` / `dropout-vs-load` from #18 and
 `loop-gain` from #25, each re-run against this revision — with the full
@@ -1452,7 +1504,7 @@ decisions: `spec/decision-records/`):
   characterization report for the live verdicts and DR-007 / DR-011 for the
   PSRR/Stability and pass-device-sizing decisions. Iq currently fails
   `iq_full_load_ua` at 9 of 45 corners; its row is set by DR-009, which is
-  still `proposed` (ratifies on its own PR merge).
+  still `proposed` (fresh ratification pending under #301).
 - **`C_CL` is a placeholder**: the current-limit comparator pole is not sized
   against a loop-gain sim (screened only as a smoke test).
 - **No on-chip voltage reference**: `VREF` is an external port (see "VREF
@@ -1470,8 +1522,8 @@ is archived verbatim in [`investigation-log.md`](investigation-log.md).
 source sim/bin/pdk-env.sh
 xschem --rcfile "$XSCHEM_RCFILE" design/ldo_3v3in_1v8out.sch   # interactive open
 
-# headless netlist check (same invocation the sim harness uses):
-xschem -n -q -x -s -o /tmp/ldo_out --rcfile sim/xschemrc design/ldo_3v3in_1v8out.sch
+# headless netlist check (`klt netlist` forces the headless flags and kills a hung run):
+klt netlist -o /tmp/ldo_out/ldo_3v3in_1v8out.spice --rcfile sim/xschemrc design/ldo_3v3in_1v8out.sch
 grep -c MISSING /tmp/ldo_out/ldo_3v3in_1v8out.spice   # expect 0
 ```
 

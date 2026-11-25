@@ -29,8 +29,10 @@ signoff/
   evidence/characterization.generic.json  item 8's generic evidence envelope
   records/t1-tier-report.json             the verdict of record (generated)
   check.sh                                re-grade + freshness gate (CI runs this)
-  verify-pins.py                          check.sh stage 1: re-hash every pinned artifact
+  verify-pins.py                          check.sh stage 1: verify each pinned artifact (re-hash or store manifest)
   tests/test_verify_pins.py               mutation coverage for that stage (runs in check:ci)
+  check-item9-pins.py                     check.sh stage 1: item 9's pins must mirror sim/pdk.json
+  tests/test_item9_pins.py                mutation coverage for that check (runs in check:ci)
 ```
 
 - `block` is `"sky130-ldo"`. It is required: it is how this block's row is
@@ -110,7 +112,7 @@ of the claimant rather than of the tool.
 | 2 | **`met`** | `klt signoff --attest 2 --input` (issue #423) on `layout/ldo-core/reports/20260924-221912-a947aa8/ldo_core.gds` — the GDS items 4 and 11 cite: readable, non-empty top cell `ldo_core`, dbu on grid. **Disclosed:** no regeneration claim (the generator has since moved on and the layout flow needs raw xschem and mints new records, out of scope); items 3, 4 and 11 were re-pinned by issue #553 to the integrated-comparator layout regenerated 2026-11-12 (`layout/ldo-core/reports/20261112-110205-820ba8b3/ldo_core.gds`, `5e617187…`; DRC, LVS and ERC re-run on it, new `M_RC*` devices placed, no `M_TC*`/`M_TSHYS*`), so item 2's attestation, still bound to the older `3e7f504b…` GDS, is no longer aligned with them (re-minting it is not part of #553). The newest committed GDS (`1698311e…`, `20261022-232042-56dd87fe`) is deliberately not the alignment target: its LVS (`20261022-231941-56dd87fe/lvs.json`) is `mismatch`, so moving items 4/11 to it would regress them. Remaining divergence: item 7's PEX pin stays on the older `52307a20…` GDS (`20260825-123551-3b4e121`); its errored PEX envelope was not re-run. |
 | 3 | **`met`** | `klt drc` on that GDS, `status: clean`, `violation_count: 0`, pinned to the GDS's own sha256. **Read the coverage disclosure below before treating this as "DRC clean".** |
 | 4 | **`met`** | `klt lvs`, `status: match`, layout vs. the schematic-derived reference netlist. **Five disclosed warnings below.** Re-pointed by issue #127 at a klt 0.6.0 re-run whose `provenance.input.content_hash` is non-null, so the manifest now pins this citation directly instead of relying only on `signoff/artifact-pins.json`. |
-| 5 | `unmet` / `check_failed` | **Graded from evidence since issue #449.** `signoff/make_item5_envelope.py` wraps the eleven committed corner-matrix records into `klt sim`-shaped envelopes (`signoff/evidence/item5-<bench>-<record>.sim.json`) **without re-simulating** — the *wrap* route, not a `klt sim` re-run. Every value, limit and verdict is copied verbatim from the record; the ratified bound is checked against the record's own limit before anything is written, and each envelope is pinned to the netlist snapshot its record simulated (not necessarily the current schematic — `measurements/characterization.md` reports freshness). `spec_rows."5"` declares 14 rows. Failing rows, named by the grader: `dropout`, `iq`, `load-regulation`, `load-transient`, `psrr`, `stability`. Covered and passing: `current-limit`, `enable-shutdown`, `line-regulation`, `output` (graded at 50 mA over the 45-point matrix via `vout_50ma_v`), `startup`, `thermal`. `iq` is declared `ratified: false` (DR-009 is `proposed`). Declared gaps: `area` (a layout measurement, not a netlist sim; a **failing** row at 0.4519 mm² against the ratified < 0.1 mm², and only a lower bound because the four capacitors C_COMP, C_CL, C_SS and C_TS are not drawn; graded by the layout record `20261023-170539-a8292e91`; `klt economy --budget-um2` can grade it, but no grader envelope kind exists for it) and `output-noise` (waived). The dropout record is a one-corner attribution run (`is_subset`), so its envelope could never be better than `pass_partial`. Input and Load are stimulus conditions, not graded rows. As each row-level issue lands a new record, re-mint its envelope (append-only: a new file, re-point the manifest and pin). Row-level design work: #314, #370, #375, #345, #381, #213. |
+| 5 | `unmet` / `check_failed` | **Graded from evidence since issue #449.** `signoff/make_item5_envelope.py` wraps the eleven committed corner-matrix records into `klt sim`-shaped envelopes (`signoff/evidence/item5-<bench>-<record>.sim.json`) **without re-simulating** — the *wrap* route, not a `klt sim` re-run. Every value, limit and verdict is copied verbatim from the record; the ratified bound is checked against the record's own limit before anything is written, and each envelope is pinned to the netlist snapshot its record simulated (not necessarily the current schematic — `measurements/characterization.md` reports freshness). `spec_rows."5"` declares 14 rows. Failing rows, named by the grader: `dropout`, `iq`, `load-regulation`, `load-transient`, `psrr`, `stability`, `startup` (`startup` is measurement-driven, PR #652: the #336 twelve-leg ESR-grid record is the first startup evidence that measures ramp monotonicity, and all 540 legs fail the strict 0 V drawdown tolerance — the open decision-record question in `sim/README.md`, #309; the electrical conditions all pass). Covered and passing: `current-limit` and `output` (both via the #647 current-limit envelope `20261122-220637-f1d875fa`, which supersedes the #177 record's solver-graded 41/45: leg 2's dc `vforce` sweep is now seeded with the bench's IC_SEED `.nodeset` card and leads the deck, and the full matrix is 45/45 PASS with zero #171 solver diagnostics while every graded value matches the superseded record to 4-5 significant digits — no ratified bound was touched), plus `enable-shutdown`, `line-regulation`, `thermal`. `iq` is declared `ratified: false` (DR-009 is `proposed`). Declared gaps: `area` (a layout measurement, not a netlist sim; a **failing** row at 0.4519 mm² against the ratified < 0.1 mm², and only a lower bound because the four capacitors C_COMP, C_CL, C_SS and C_TS are not drawn; graded by the layout record `20261023-170539-a8292e91`; `klt economy --budget-um2` can grade it, but no grader envelope kind exists for it) and `output-noise` (waived). The dropout record is a one-corner attribution run (`is_subset`), so its envelope could never be better than `pass_partial`. Input and Load are stimulus conditions, not graded rows. As each row-level issue lands a new record, re-mint its envelope (append-only: a new file, re-point the manifest and pin). Row-level design work: #314, #370, #375, #345, #381, #213. |
 | 6 | **`met`** | Cites a real `klt yield` report (`sim/mc-output-accuracy/klt-responses/20260927-093538-227be3e.yield.json`) over the n=200 Monte Carlo campaign: empirical yield **at least 98.1725 % at 95 % confidence** (100 % of 200 samples inside the ratified ±2 % Output window, so the interval is bounded only from below), Cpk 1.34664, sigma-to-spec 4.04σ, sample size `sufficient`, and a deterministic **negative control graded `detected`** — a seeded known-bad variant (feedback divider mis-ratioed +10 %) whose 0/40 in-window draws the same statistics reject with non-overlapping intervals. Issue #203 minted the report (the evidence *kind* the checklist names, which this repo had none of until then); issue #211 added the negative control the item's text also asks for. **The payload status is `reported`, not `pass` — read "Item 6 is `met` — what it says, and the one thing it does not" below before reading anything into this row.** |
 | 7 | `unmet` / `check_failed` | Cites the real `klt pex` run (`sim/pex-post-layout/klt-responses/20260825-125102-3b4e121.pex.json`), pinned to the same layout GDS items 3 and 4 were run on: `status: error`, **135 of 135 delta rows errored, 0 passed**. Item 7 accepts no other evidence kind, so nothing weaker could stand in. A newer `klt pex` record now exists that does *not* error — **and is deliberately still not cited**; see "Item 7 has a passing record that this manifest declines to cite" below. Tracked as issues #122 and #142. |
 | 8 | **`met`** | Cites `evidence/characterization.generic.json`, a generic envelope wrapping `measurements/characterization.md`. **This says the rollup exists and is current — not that its rows pass.** See below. |
@@ -539,7 +541,10 @@ mean nothing"), and `CLAUDE.md`'s "no claim without a testbench" rule reads the
 same way. The citation should move when a `klt` build whose parasitic-R model
 can distinguish the two GDS files above produces a record whose full-load rows
 are physical — not before. That is tracked as **#162**, blocked on the two
-upstream issues.
+upstream issues. *(2026-11-20, issue #690: #162 and #583 have since closed;
+the closed #2391/#2458 filings are history, and the live upstream covers are
+2AMLogic/klayout-tools#6964 and #6899 — see "What would move the needle"
+item 2 for the per-net reason census that named them.)*
 
 ### Item 8 is `met`, and what that verdict does and does not say
 
@@ -655,6 +660,113 @@ instead of the author's assertion.
   (item 1 needs the klt batch backend or xschem ≥ 3.4.5), then re-pin and
   `bash signoff/check.sh --write`.
 
+### Attested hygiene files: a content edit is drift
+
+Item 10's inventory
+([`evidence/item10-inventory.json`](evidence/item10-inventory.json)) carries a
+`hygiene` list of root-level docs and the CI workflows (`ci.yml` and the
+`pdk-smoke.yml` it calls), and this document states
+the item above as those files **existing**. The tool is stricter than that
+wording. `klt signoff --attest` stamps a `content_hash`
+onto every inventoried file, and `--check` diffs the whole fresh envelope
+against the committed one (excluding only the producing build's version
+strings). So **any byte change to any inventoried hygiene file is attestation
+drift**, and the branch that makes it must carry a re-minted
+`item10-attestation.generic.json` or stage 1b fails:
+
+```
+signoff/check.sh: item 10 attestation drifted -- re-mint with klt signoff --attest 10
+```
+
+Nothing about this is specific to `README.md`. In practice the file it bites is
+`sim/README.md` — the sim-harness design log, and the most-edited prose file in
+the repo: all six re-mints of the item-10 envelope between 2026-11-05 and
+2026-11-14 were driven by it, and every one was *reactive*, landing after a red
+`T1 tier report` job had already cost a CI round trip (issue #579).
+
+`npm run check:ci` now catches it before the push.
+`signoff/check-attested-hygiene.sh` compares each inventoried hygiene file's
+sha256 against that path's `content_hash` pin in the committed
+`item10-attestation.generic.json` — an exact envelope-vs-tree comparison, so
+any byte change, any deleted inventoried file, and any inventoried file with
+no pin in the envelope fail the guard with the path named, until the envelope
+is re-minted against the current tree. It reads the hygiene list out of the
+inventory at runtime (it holds no copy of that list, so a path added to the
+inventory is covered the day it is added) and the klt pin out of
+`signoff/check.sh`. It needs only `python3` — no klt, no network, about a
+second — and carries a `--self-test` fixture suite that `check:ci` runs
+before the check itself. It checks only that one question — whether the
+envelope describes the tree; whether a re-mint is *correct* is stage 1b's
+job, authoritatively.
+
+The re-mint, from the repo root:
+
+```bash
+uvx --from klayout-tools==0.9.0 klt signoff --attest 10 \
+  --inventory signoff/evidence/item10-inventory.json \
+  -o signoff/evidence/item10-attestation.generic.json
+```
+
+Commit the re-minted envelope in the same branch as the edit that caused it.
+
+Narrowing the inventory so prose docs were attested by presence rather than
+content hash would change what this block attests, so it is **not** something
+to reach for here — it needs its own decision record under `spec/`. It is also
+not expressible in `klt` today: inventory entries are bare path strings with no
+per-entry options, and `_file_check()` always stamps a `content_hash`. Filed as
+a capability gap on the tool
+([klayout-tools#5615](https://github.com/2AMLogic/klayout-tools/issues/5615)).
+
+### Item 9's pins are checked against `sim/pdk.json`, not just each other
+
+`sim/pdk.json` is the harness's authoritative declaration of the PDK
+(`variant`, `open_pdks_commit`) and toolchain (`tools`) every simulation
+record is pinned against. Item 9's evidence hardcodes the same values in
+three more places — the inventory's `pins`, the `{"check": "pin"}` entries
+of the attested envelope, and this document's item-9 row — and
+`klt signoff --attest 9 --check` only compares the inventory with the
+envelope: it never reads `sim/pdk.json`. Until issue #780 nothing compared
+the two sides, so a PDK re-pin could move `sim/pdk.json` and edit this
+document's row while the envelope kept attesting the old revision, with CI
+green the whole way. The tool-pin migrations (#639 `xschem`, #645 `ngspice`)
+touch the same `tools` object and would hit the identical blind spot.
+
+`signoff/check-item9-pins.py`, in `npm run check:ci` and `check.sh` stage 1,
+now fails unless all four sources agree. When `sim/pdk.json`'s pin moves,
+the same branch must:
+
+1. update `pins` (and, if the host tooling disclosure moved, the cold-start
+   `description`) in
+   [`evidence/item9-inventory.json`](evidence/item9-inventory.json);
+2. re-mint the envelope:
+
+   ```bash
+   uvx --from klayout-tools==0.9.0 klt signoff --attest 9 \
+     --inventory signoff/evidence/item9-inventory.json \
+     -o signoff/evidence/item9-attestation.generic.json
+   ```
+
+3. update item 9's row above to what the new run reported;
+4. re-pin `artifact-pins.json` and `block-manifest.json` for the re-minted
+   envelope and regenerate the verdict of record with
+   `bash signoff/check.sh --write`.
+
+### The T1 headline in the root README is checked, not asserted
+
+`README.md`'s evidence-ladder headline — the `### Where this block sits on the
+evidence ladder: **T1 <met>/<total>, tier: <tier>**` line — claims of itself
+that it "is not prose" and that CI makes it "fail rather than go stale". Until
+issue #579 nothing compared it with `signoff/records/t1-tier-report.json`, and
+it sat four items stale.
+`signoff/check-t1-headline.py`, in `npm run check:ci`, now recomputes
+`met`/`total` from the record and fails on a mismatch.
+
+The denominator is the number of `items` entries carrying a **numeric** `id`.
+The record also holds trailing entries with `id: null` — those are the T2/T3/T4
+*tier* rows, not T1 items — so the correct total is 11, not the file's 14
+entries. When a re-grade (`bash signoff/check.sh --write`) moves either number,
+update the README headline in the same branch.
+
 ### Freshness, and the two independent places it is pinned
 
 **Every one of the six citations now carries a manifest `content_hash`**
@@ -744,15 +856,43 @@ In dependency order, not effort order:
    did that), nor the request to declare limits (issue #154 did that), nor the
    power rails to stop being drawn as 0.30 µm signal trunks (#154 did that
    too, and the layout is still DRC-clean and LVS-matched). What it needs now
-   is **not in this repo**: a `klt` build whose `--parasitics` lumped-R model
-   can tell a sized power rail from a signal trunk at all —
-   [klayout-tools#2391](https://github.com/2AMLogic/klayout-tools/issues/2391)
-   and [#2458](https://github.com/2AMLogic/klayout-tools/issues/2458). At this
-   repo's pin, 98–99 % of the modelled per-net resistance on the load-current
-   nets is the device generator's own local-interconnect pads, which no knob
-   this flow has can change. Tracked as #162. See "Item 7 has a passing record
-   that this manifest declines to cite" above.
-3. **Item 11** needs a `klt erc` supply spec and report (issue #112).
+   is **not in this repo**, and since issue #690's re-measure the blocker is
+   two named gaps, both at the tool. Measured on the regenerated core
+   (2026-11-12, PR #557) in
+   `sim/pex-post-layout/diagnostics/20261120-223209-542c11e1-rgraph-recheck/`
+   (first build carrying klayout-tools#6130's per-net `fallback_reason`,
+   pinned `main` @ `6bd18bbc8637` — no release contains it yet):
+   **still 1 of 28 nets graph-derived** (`N_FBB`, unchanged from the
+   2026-11-14 diagnostic's release legs), but every legacy net now carries a
+   reason. `VIN` and `VOUT` fall back with **`graph_too_large`**, not
+   `terminal_count_not_two`: `VIN` has 77 terminals over the
+   `MAX_GRAPH_TERMINALS = 64` cap, and `VOUT`'s `metal1` polygon needs up to
+   85,680 mesh cells against `DEFAULT_MAX_DECOMPOSITION_CELLS = 4096` — caps
+   that no `klt extract`/`klt pex` flag can raise, filed as
+   [klayout-tools#6964](https://github.com/2AMLogic/klayout-tools/issues/6964)
+   (newly filed from that diagnostic; `klt power` got its own knob in #3124).
+   The other 22 legacy multi-terminal nets solve `ok` and fall back only for
+   `terminal_count_not_two` — the selection rule #5894's curation inferred,
+   whose removal is
+   [klayout-tools#6899](https://github.com/2AMLogic/klayout-tools/issues/6899)'s
+   opt-in graph netlist mode (in scope for `klt pex`; #5894 / PR #6053 echo
+   and document only). Both must land before the full-load rows measure the
+   layout rather than the extractor's series sum; the re-mint condition — a
+   build where `VIN`/`VOUT` are graph-derived and the 45 full-load rows
+   return a physical extracted `VOUT` — is recorded in that diagnostic's
+   README. See "Item 7 has a passing record that this manifest declines to
+   cite" above.
+3. **Item 11** is `met` as of issue #112: the `klt erc` supply spec and report
+   this list previously asked for exist, ran, and are cited — the compound
+   citation is that `erc_supply.json` plus item 4's own LVS report on the
+   byte-identical GDS. Nothing remains to build. Two disclosures remain on that
+   row, and neither is a build task: one of the two ties rests on an asserted
+   substrate region (sky130 NMOS sit in the native p-substrate and this stream
+   draws no pwell, so the region is declared rather than drawn —
+   klayout-tools#2255), and the antenna half is `clean_partial` because `klt`
+   has no sky130 limit for the 18 gate × met3 pairs #154's VIN rail adds
+   (klayout-tools#1994). Both move through the tool, not through this design.
+   See "Item 11 is `met` — what it says, and what it does not" above.
 4. **Item 6** is `met` as of issue #203, and as of issue #211 the
    **deterministic negative control** this list previously asked for exists,
    ran, and is cited: `detected`, on a seeded +10 % divider mis-ratio the
@@ -765,8 +905,17 @@ In dependency order, not effort order:
    decision record, and a number invented to make the row read `pass` would be
    worse than the honest `reported`. See "Item 6 is `met` — what it says, and
    the one thing it does not" above.
-5. **Items 1, 2, 9 and 10** need nothing built. They stay `unmet` by choice,
-   not by gap.
+5. **Items 1, 2, 9 and 10** need nothing built, and since issue #423 they are
+   all four `met` — graded from tool-produced envelopes (`klt signoff --attest`)
+   rather than from an author's assertion. They were left uncited before that,
+   by choice and not by gap; the choice is now moot. Disclosures remain on three
+   of the rows, and none is a build task: item 1's netlist freshness check is
+   `local_only` and carries its committed outcome, item 2's attestation is still
+   bound to the older GDS and so is no longer aligned with items 3, 4 and 11
+   (re-minting it was out of scope for #553), and item 9's declared cold start is
+   the PDK-free harness unit suite rather than the PDK-gated end-to-end smoke
+   run. See "Items 1, 2, 9 and 10 are graded from tool-produced envelopes" above
+   and each item's row in the table at the top.
 
 Filing the tool-side friction this surfaces belongs at
 `2AMLogic/klayout-tools`, per this repo's friction protocol in `CLAUDE.md` —
@@ -781,6 +930,12 @@ describe the pre-#230 schematic and are STALE against it (the regenerated
 was moved (that file was regenerated). The tier stays `null`, 5/11. The full
 inventory is in `sim/README.md`, "Stale artifacts caused by the schematic change";
 re-running them belongs to #231.
+
+*Added 2026-11-14 (issue #582):* the sentences above are left as written, as the
+record of what was true at #230. The count has since moved — issue #423 brought
+items 1, 2, 9 and 10 to `met`, so the verdict of record now reads **9/11**. The
+tier is still `null`. Read `records/t1-tier-report.json` for the current verdict
+rather than any count in this note.
 
 ## Note from #553 review round (rollup regenerated, item 8 re-pinned)
 

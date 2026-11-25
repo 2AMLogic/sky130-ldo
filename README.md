@@ -22,10 +22,11 @@ even a PASS on a stale record does not qualify the current integrated
 schematic. Two rows (PSRR, Stability) additionally have a topology-level root
 cause and a proposed replacement disclosed in
 [`DR-007`](spec/decision-records/DR-007-psrr-stability-vs-iq.md) (pending its own
-ratification). Refreshing stale electrical evidence is tracked separately (issue
-#231). Read every number in this repo as either a ratified target or a
-simulation result against an open PDK's models, with the corner and testbench
-that produced it recorded alongside it.
+ratification). Refreshing stale electrical evidence is tracked separately
+(issue #231, closed 2026-11-12; its remaining downstream re-runs continue
+under issue #548). Read every number in this repo as either a ratified target
+or a simulation result against an open PDK's models, with the corner and
+testbench that produced it recorded alongside it.
 
 ![fleet burndown](https://raw.githubusercontent.com/2AMLogic/2am/main/fleet-metrics/charts/sky130-ldo.svg)
 
@@ -117,19 +118,19 @@ pending DR-007's own market-comparison mechanism.
 
 | Parameter | Target | Stretch |
 |---|---|---|
-| Input | 3.3 V ±10% (2.97–3.63 V) | 5 V flavor — separate follow-on variant (DR-001) |
+| Input | 3.3 V ±10% (2.97–3.63 V) | 5 V flavor as a separate follow-on variant |
 | Output | 1.8 V ±2% (fixed; divider as a unit-resistor string) | programmable 1.2–3.0 V — deferred |
 | Load | 0–50 mA (0 mA = no external load; feedback divider is the only inherent preload) | 100 mA |
 | Dropout @ 50 mA | < 300 mV (note 1) | < 200 mV |
 | Line regulation | < 5 mV/V over 2.97–3.63 V, at 1 mA and 50 mA (note 2) | — |
 | Load regulation (0–50 mA) | < 1% (18 mV), counted inside the ±2% window (note 2) | — |
 | Load transient | 1↔50 mA step, ~1 µs edges: peak excursion ≤ 150 mV, recover to ±1% in ≤ 20 µs, over the ratified C_out/ESR window (note 3) | peak ≤ 100 mV |
-| PSRR | > 50 dB @ 1 kHz and > 20 dB @ 100 kHz, at 1 mA and 50 mA (note 4) | > 60 dB @ 1 kHz, > 30 dB @ 100 kHz |
-| Iq (excl. load current) | < 30 µA at no load and at full load (50 mA), every PVT corner (note 5) | < 10 µA |
+| PSRR | > 50 dB @ 1 kHz and > 20 dB @ 100 kHz, at 1 mA (light-load, binding) and at 50 mA (note 4) | > 60 dB @ 1 kHz, > 30 dB @ 100 kHz |
+| Iq (excl. load current) | < 30 µA at no load **and** at full load (50 mA), every PVT corner; Iq = total VIN current minus load current, EN asserted (note 5) | < 10 µA — subordinate to DR-002's C_out/ESR window; not to be bought back by reintroducing a minimum ESR |
 | Current limit | constant-current (brickwall) clamp, window TBD over PVT; never engages for I_load ≤ 50 mA; survives continuous Vout = 0 short at Vin_max (note 6) | — |
 | Startup / soft-start | monotonic into any load 0–50 mA and any C_out in the stability window; controlled ramp; inside ±2% within a few ms of enable; overshoot ≤ +2% (note 6) | — |
 | Enable / shutdown | shutdown Iq < 3 µA worst corner; disabled output = pass device fully off, no active discharge; Vin→Vout leakage ≤ 1 µA (note 6) | — |
-| Thermal | continuous worst-case dissipation set by Vin_max × I_load; specified to Tj ≤ 125 °C; fault-only shutdown backstop 150 °C trip / 135 °C reset (note 7) | — |
+| Thermal | continuous worst-case dissipation set by Vin_max × I_load; short-circuit ceiling set by the current limit; specified to Tj ≤ 125 °C (rated-operation ceiling, unchanged); θJA delegated to package/integration (note 7) | — |
 | Output noise | not specified — waived unless a consumer states a requirement | µVrms row if a consumer asks |
 | Area | < 0.1 mm² total core area, pass FET included, excluding pads and sealring | — |
 | Stability | stable 0–50 mA over the ratified C_out/ESR window; PM ≥ 45°, GM ≥ 10 dB worst corner (note 4) | capless variant (separate fork) |
@@ -156,8 +157,9 @@ Notes — these are part of the ratified spec, not commentary:
    0 mA end of Stability is the binding, unresolved gap. Current verdicts and
    freshness: see the characterization report.
 5. **Iq** is set by
-   [`DR-009`](spec/decision-records/DR-009-iq-budget.md) (`proposed`; it
-   ratifies on merge of its PR, per 2AMLogic/2am#357). The number comes from
+   [`DR-009`](spec/decision-records/DR-009-iq-budget.md) (`proposed`; fresh
+   ratification pending under #301 — DR-009 does not ratify itself). The
+   number comes from
    gf180-ldo parity, checked against a sky130 device-fact budget and public
    comps, not from the measured result. It closes the item DR-003/DR-006 left
    open. No named binding corner (DR-004 caveat). Current verdict: see the
@@ -176,8 +178,10 @@ current pass/fail state of the evidence behind it — for that, see
 generated (not hand-maintained) rollup that cites the exact `sim/<slug>/records/`
 record behind every row's current verdict. Regenerate it with
 `python3 measurements/build_characterization_report.py` after any `sim/`
-record lands or `design/` changes; this table (the ratified spec + notes
-above) stays the authority on what is required, `measurements/characterization.md`
+record lands or `design/` changes; [`spec/target-spec.md`](spec/target-spec.md)
+stays the authority on what is required (the table above is its mirror, not the
+authority itself — and the mirror is now pinned against silent drift: see the
+spec-table guard below), `measurements/characterization.md`
 on what the evidence currently shows. Verdict and freshness are separate:
 a PASS on a `STALE` record is not qualification of the current integrated
 schematic, and this README makes no such claim. Check that the committed report
@@ -189,24 +193,57 @@ spec-ratified** — simulation and layout work are underway, but no ratified row
 is qualified on the current integrated schematic (see the report's Freshness
 column).
 
-### Where this block sits on the evidence ladder: **T1 5/11, `tier: null`**
+### Spec-table guard
+
+The Parameter/Target/Stretch table above is pinned by
+`spec/spec-table-lock.json` and checked by `spec/check_spec_table.py` (stdlib
+only, no PDK) in CI's `checks` job:
+
+```
+python3 spec/check_spec_table.py --check                      # table vs lock
+python3 spec/check_spec_table.py --check --base origin/main   # + authorization diff
+python3 spec/check_spec_table.py --write --base origin/main --dr DR-NNN
+```
+
+Editing a row, or a numbered ratified note (including a `5a`-style id), without
+a matching, freshly appended lock amendment fails CI. An amendment must cite a
+decision record that is either new in the PR (status proposed or ratified) or
+flipped from proposed to ratified in the PR. This is a structural audit trail
+only: eligibility is **not** operator ratification (a proposed record may be
+approved on the same PR) and the reviewer still confirms the record actually
+authorizes the named rows. The guard also locks the numbered ratified notes
+under the table, keyed by their literal ids and whitespace-normalized (wording,
+numbers, units, links and punctuation are preserved, so editing historical
+context or evidence references inside a note is an amendment too; a note id
+change counts as removal plus addition). The lock is schema version 2; a
+version 1 (table-only) lock is accepted only as a base, and migrating it passes
+only if the notes are unchanged, so a migration cannot hide a note edit.
+Deleting the notes lock or downgrading the schema, duplicate note ids and a
+missing notes section all fail. Workflow:
+`spec/decision-records/TEMPLATE.md`. On PRs, CI validates GitHub's merge
+checkout against the PR's base SHA.
+
+### Where this block sits on the evidence ladder: **T1 9/11, `tier: null`**
 
 That number is not prose — it is
 [`signoff/records/t1-tier-report.json`](signoff/records/t1-tier-report.json),
 the output of `klt signoff --manifest` against
 [`signoff/block-manifest.json`](signoff/block-manifest.json), re-run by CI on
 every push so it fails rather than goes stale when either this block's
-evidence or the klayout-tools T1 checklist moves. Items 3 (DRC clean), 4 (LVS
-match), 6 (a `klt yield` report over the Monte Carlo campaign), 8
-(characterization report) and 11 (power delivery, structural: a `klt erc`
-supply-spec run plus the LVS report) are `met`. The other six are `unmet`,
-each with a machine-readable reason.
-[`signoff/README.md`](signoff/README.md) carries the per-item reading and the
-coverage disclosures the grader structurally cannot check — read it before
-drawing any conclusion from either the five `met` rows or the six `unmet`
-ones. Item 6 in particular: its yield report's status is `reported`, not
-`pass`, because this block's spec ratifies no yield target — reported yield
-is not a ratified yield target. The campaign does carry a recorded
+evidence or the klayout-tools T1 checklist moves. `npm run check:ci` also
+compares this very headline against that record
+(`signoff/check-t1-headline.py`), so the two cannot diverge silently. Items 1
+(design sources), 2 (layout), 3 (DRC clean), 4 (LVS match), 6 (a `klt yield`
+report over the Monte Carlo campaign), 8 (characterization report), 9
+(testbenches shipped), 10 (repo hygiene) and 11 (power delivery, structural: a
+`klt erc` supply-spec run plus the LVS report) are `met`. The other two — 5
+(full corner verification) and 7 (post-layout verification) — are `unmet`, each
+with a machine-readable reason. [`signoff/README.md`](signoff/README.md) carries
+the per-item reading and the coverage disclosures the grader structurally cannot
+check — read it before drawing any conclusion from either the nine `met` rows or
+the two `unmet` ones. Item 6 in particular: its yield report's status is
+`reported`, not `pass`, because this block's spec ratifies no yield target —
+reported yield is not a ratified yield target. The campaign does carry a recorded
 deterministic negative control (issue #211, a seeded known-bad variant graded
 `detected`); see `signoff/README.md` for what it does and does not show.
 

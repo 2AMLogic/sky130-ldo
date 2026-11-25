@@ -1,12 +1,15 @@
 #!/usr/bin/env bash
 # check-evidence-append-only.sh - Fail if a branch modifies, renames, or
-# deletes a committed `sim/<exp>/records/*` file (adds are fine).
+# deletes a committed `sim/<exp>/records/*` file or a file inside a
+# `sim/<exp>/diagnostics/<run-id>/` run directory (adds are fine).
 #
 # Rule source: `sim/README.md` "Append-only rule" -- "`records/*` files are
 # never edited or deleted after creation -- this applies even to typo fixes,
 # because the append-only guarantee is the whole point of an evidence trail.
 # Corrections mint a new record that references the prior one via
-# **Supersedes**." (#283)
+# **Supersedes**." (#283) The same guide's "Writing a new diagnostic probe" --
+# "Existing diagnostics run-id directories are append-only evidence and keep
+# their own copies unedited" (#353; guarded since #716).
 #
 # Why: the rule was enforced only by convention, and Champion auto-merges
 # `loom:pr` with no human in the loop, so an agent "tidying" or regenerating a
@@ -18,8 +21,12 @@
 #
 # What it checks: `git diff --name-status -M <merge-base>..HEAD` against
 # origin/main (CI's `checks` job uses fetch-depth: 0). Any path under
-# `sim/*/records/` with status M, D, or R (as either the old or the new side
-# of a rename) fails; status A passes. Tree-local, no forge access.
+# `sim/*/records/` or `sim/*/diagnostics/<run-id>/` with status M, D, or R (as
+# either the old or the new side of a rename) fails; status A passes. The
+# run-id component is matched by position, not name, so timestamped and
+# `issue-*` run directories both qualify; files directly under
+# `sim/*/diagnostics/` (outside any run directory) stay editable. Tree-local,
+# no forge access.
 # Skipped, loudly, when no base is resolvable (no origin/main ref, no common
 # ancestor) or when HEAD is already the base (on main itself).
 # Override the base ref with EVIDENCE_BASE_REF (default origin/main).
@@ -37,13 +44,23 @@
 #                                          Run fixture tests in a throwaway
 #                                          git repo.
 #
-# Exit codes: 0 = ok or skipped; 1 = a committed record was modified,
-# renamed, or deleted (offenders named on stderr).
+# Exit codes: 0 = ok or skipped; 1 = a committed evidence file (record or
+# diagnostics run file) was modified, renamed, or deleted (offenders named on
+# stderr).
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BASE_REF="${EVIDENCE_BASE_REF:-origin/main}"
+
+# protected_path <path> -> 0 if <path> is committed append-only evidence
+#
+# `sim/<exp>/records/**` (any depth) and files inside a
+# `sim/<exp>/diagnostics/<run-id>/**` run directory. The run-id component is
+# matched by position, not name (#716).
+protected_path() {
+  [[ "$1" =~ ^sim/[^/]+/records/ || "$1" =~ ^sim/[^/]+/diagnostics/[^/]+/ ]]
+}
 
 # check_root <root> -> 0 ok/skip, 1 violations
 check_root() {
@@ -74,12 +91,12 @@ check_root() {
       A) continue ;;
       R|C)
         # Rename/copy: old side (p1) is the committed record being moved.
-        if [[ "${status:0:1}" == R && "$p1" =~ ^sim/[^/]+/records/ ]]; then
+        if [[ "${status:0:1}" == R ]] && protected_path "$p1"; then
           bad+=("R  $p1 -> $p2")
         fi
         ;;
       *)
-        if [[ "$p1" =~ ^sim/[^/]+/records/ ]]; then
+        if protected_path "$p1"; then
           bad+=("${status:0:1}  $p1")
         fi
         ;;
@@ -87,18 +104,19 @@ check_root() {
   done < <(git -C "$root" diff --name-status -M "$base" HEAD)
 
   if [[ ${#bad[@]} -gt 0 ]]; then
-    echo "COMMITTED SIM RECORD MODIFIED/RENAMED/DELETED:" >&2
+    echo "COMMITTED SIM EVIDENCE MODIFIED/RENAMED/DELETED:" >&2
     for line in "${bad[@]}"; do echo "  $line" >&2; done
     {
       echo ""
-      echo "check-evidence-append-only: FAIL — sim/*/records/* are append-only evidence"
-      echo "(sim/README.md \"Append-only rule\"; applies even to typo fixes). Restore the"
-      echo "original file and mint a NEW record whose Supersedes names the prior one."
-      echo "There is no escape hatch."
+      echo "check-evidence-append-only: FAIL — sim/*/records/* and files under"
+      echo "sim/*/diagnostics/<run-id>/ are append-only evidence"
+      echo "(sim/README.md \"Append-only rule\"; applies even to typo fixes)."
+      echo "Restore the original file and mint a NEW record whose Supersedes"
+      echo "names the prior one. There is no escape hatch."
     } >&2
     return 1
   fi
-  echo "check-evidence-append-only: OK — no committed sim record modified, renamed, or deleted vs $BASE_REF."
+  echo "check-evidence-append-only: OK — no committed sim record or diagnostics run file modified, renamed, or deleted vs $BASE_REF."
   return 0
 }
 
@@ -116,6 +134,12 @@ self_test() {
   echo one >"$repo/sim/exp/records/r1.md"
   echo two >"$repo/sim/exp/records/r2.md"
   echo x >"$repo/sim/exp/notes.md"
+  mkdir -p "$repo/sim/exp/diagnostics/20261011-000000-deadbeef-probe/preflight" \
+    "$repo/sim/exp/diagnostics/issue-9/notes"
+  echo campaign >"$repo/sim/exp/diagnostics/20261011-000000-deadbeef-probe/campaign.json"
+  echo probe >"$repo/sim/exp/diagnostics/20261011-000000-deadbeef-probe/preflight/probe.txt"
+  echo keep >"$repo/sim/exp/diagnostics/issue-9/notes/keep.md"
+  echo loose >"$repo/sim/exp/diagnostics/loose.md"
   git -C "$repo" add -A && git -C "$repo" commit -qm base
 
   expect() {
@@ -158,6 +182,30 @@ self_test() {
   git -C "$repo" rm -q sim/exp/records/r1.md
   commit delete
   expect 1 "deleting a committed record fails"
+
+  branch diag-edit
+  echo changed >>"$repo/sim/exp/diagnostics/20261011-000000-deadbeef-probe/preflight/probe.txt"
+  commit diag-edit
+  expect 1 "editing a nested file in a committed diagnostics run fails"
+  printf '%s' "$out" | grep -qF "sim/exp/diagnostics/20261011-000000-deadbeef-probe/preflight/probe.txt" || { echo "  FAIL: offender not named" >&2; failures=$((failures + 1)); }
+
+  branch diag-rename-out
+  git -C "$repo" mv sim/exp/diagnostics/issue-9/notes/keep.md sim/keep-moved.md
+  commit diag-rename-out
+  expect 1 "renaming a diagnostics run file out of the archive fails"
+  printf '%s' "$out" | grep -qF "sim/exp/diagnostics/issue-9/notes/keep.md" || { echo "  FAIL: rename source not named" >&2; failures=$((failures + 1)); }
+
+  branch diag-delete
+  git -C "$repo" rm -q sim/exp/diagnostics/20261011-000000-deadbeef-probe/campaign.json
+  commit diag-delete
+  expect 1 "deleting a committed diagnostics run file fails"
+
+  branch diag-add-only
+  mkdir -p "$repo/sim/exp/diagnostics/20261012-000000-cafe123-next-probe"
+  echo fresh >"$repo/sim/exp/diagnostics/20261012-000000-cafe123-next-probe/tables.md"
+  echo more >>"$repo/sim/exp/diagnostics/loose.md"
+  commit diag-add-only
+  expect 0 "a new diagnostics run (plus a loose, non-run diagnostics edit) passes"
 
   branch missing-base
   BASE_REF=no-such-ref

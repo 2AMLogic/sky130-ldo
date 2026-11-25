@@ -1,0 +1,115 @@
+--- diagnosis: `klt pex --resistance-graph` per-net fallback-reason re-measure on the regenerated core (issue #690)
+captured_utc: 2026-11-20T22:32-22:41Z
+git_head: 542c11e1 (worktree feature/issue-690, branched from main; no source changes)
+layout_record: 20261112-110205-820ba8b3 (= layout/ldo-core/reports/LATEST)
+gds_sha256: 5e6171873b24b8d4c7af6f55d59600d84099cd13790c8320d8ccf074e657c1ca
+  (byte-identical to the 20261114-193718-fabcb0c6-rgraph-recheck input, so that
+  diagnostic and this one differ by klt build only)
+pdk: sky130A, open_pdks c6d73a35f524070e85faff4a6a9eef49553ebc2b (sim/pdk.json), PDK_ROOT=~/.volare
+ngspice: not run (extraction only; both legs, no simulation, no corner grid, no batch)
+xschem: not run
+
+=== EXPERIMENT (issue #690) ===
+
+Question: the 2026-11-14 diagnostic found 1 of 28 nets graph-derived and could
+not say why the other 27 fell back (no per-net reason existed on any build).
+2AMLogic/klayout-tools#6130 added `fallback_reason` to each
+`extraction.resistance_graph.nets[]` entry (merged 2026-11-17). Re-run the
+recheck on a build carrying it and tabulate the reasons, VIN/VOUT explicitly.
+
+Build choice: no PyPI release contains #6130 (newest is 0.9.2 of 2026-11-14;
+#6130 merged 2026-11-17), so per the issue a main commit is pinned:
+2AMLogic/klayout-tools main @ 6bd18bbc8637f6d767b3c24e77bd5db7a39e4bbe
+(2026-11-20), reporting klt 0.9.3.dev2575+g6bd18bbc8637. Run via uvx
+--from 'klayout-tools @ git+...@6bd18bbc...' (throwaway env; the repo pin
+layout/.venv and layout/requirements.txt are untouched).
+
+Same extraction flags as the 2026-11-14 legs, against the same GDS:
+
+  klt pex <GDS> --extract-only --deck sky130 --top ldo_core --pdk sky130A \
+      --resistance-graph --resistance-graph-r-cut 9.3 --format json
+    -> exit 4 (--extract-only's documented success), 0-byte stderr, 28 nets
+
+  klt extract <GDS> --deck sky130 --top ldo_core --pdk sky130A \
+      --parasitics --resistance-graph --resistance-graph-r-cut 9.3 \
+      -o ldo_core.extract.spice --format json
+    -> exit 0; stderr is one benign progress line ("parasitics_compute still
+       running"), kept in extract-main-6bd18bbc/extract.stderr.log. This
+       companion leg exists because the pex echo collapses graph status +
+       first diagnostic code into one fallback_reason token; klt extract
+       carries the per-net diagnostics that name the exceeded cap.
+
+=== MEASURED ===
+
+1. Graph-derived: still 1 of 28 (`N_FBB`, 806.4216... ohm, identical value to
+   the 2026-11-14 release legs). The build bump changes nothing about which
+   net is selected.
+
+2. Reason census over the 27 legacy nets (sums to 28 with row 1):
+     terminal_count_not_two      22   (all graphs status ok, 3-24 terminals;
+                                       17 of them carry an informational
+                                       terminals_disconnected diagnostic)
+     graph_too_large              3   VIN, VOUT, EA_OUT
+     graph_status_skipped         1   EA_CZ  (too_few_terminals: 1 device
+                                       terminal; graph built, 53 nodes)
+     pair_resistance_unavailable  1   VREF   (terminals_disconnected: 2 device
+                                       terminals in 2 groups, pair null; graph
+                                       ok, 98 nodes)
+
+3. VIN and VOUT fall back with graph_too_large, NOT terminal_count_not_two —
+   the issue-#690 / #5894-curation inference (selection rule blocks the rails)
+   is wrong in mechanism for the rails: the build caps refuse their graphs
+   before the terminal-count check runs. Diagnostics (extract leg):
+     VIN    "77 terminals exceed the 64 cap"           (MAX_GRAPH_TERMINALS)
+     VOUT   no terminal-cap diagnostic (so <=64 terminals); metal1 polygon 0
+            "needs up to 85680 mesh cells" and metal2 polygon 0 "12876" over
+            the 4096 cap (DEFAULT_MAX_DECOMPOSITION_CELLS)
+     EA_OUT "108 terminals exceed the 64 cap"
+   The 22 terminal_count_not_two nets DO confirm the inferred two-terminal
+   selection rule (their graphs are ok with >=3 terminals).
+
+4. No via_resistance_unknown appears anywhere: --resistance-graph-r-cut 9.3
+   stamps every landing (klt extract does not read ParasiticsDeck.cuts yet,
+   #3053/#6917). The #6917 mechanism would surface only without the r-cut.
+
+5. Upstream mapping (states verified via gh api at 2026-11-20T22:41Z):
+   - terminal_count_not_two -> #6899 (open; opt-in graph netlist mode,
+     "reachable from klt pex" in scope). #5894/#6053 do not remove it. No new
+     issue filed -- #6899 already asks exactly for terminal-pair resistance on
+     3+-terminal nets in klt pex.
+   - graph_too_large -> #6964, filed 2026-11-20 from this diagnostic: build
+     caps unreachable from the CLI (klt power got max_decomposition_cells in
+     #3124); layout-free reproduction in upstream-repro/. THE VIN/VOUT blocker.
+   - graph_status_skipped / pair_resistance_unavailable -> no issue; inherent
+     (one-terminal net) and documented-behavior-unprovable-as-bug
+     (disconnected pair on a private layout) respectively. Rationale in README.
+   - Cross-confirmation of the #5894 inferred finding posted on #5894
+     (issuecomment-7052398788).
+
+=== READING (per issue #690) ===
+
+T1 item 7's tool blocker is now two named, distinct upstream gaps, not one:
+the rails' graphs are refused by build caps (#6964), and even with caps
+raised the current scalar selection only ever picks two-terminal nets, so a
+>=3-terminal rail needs #6899's graph netlist mode to carry a graph-derived
+value. Both must land before a 45-corner re-mint can measure the layout
+rather than the extractor's series sum. Re-mint condition and prerequisites
+are recorded in README.md; nothing under records/ was written or modified and
+no citation, spec row, limit or pin was changed.
+
+=== FILES ===
+
+  main-6bd18bbc/          klt-version.txt, pex.json (full response, exit 4),
+                          pex.stderr.log (empty, tracked — its emptiness is
+                          the finding), ldo_core.pex.spice,
+                          per-net-resistance-source.md (the AC table)
+  extract-main-6bd18bbc/  same file set for the klt extract leg (exit 0;
+                          extract.stderr.log keeps the one progress line),
+                          per-net table carries status/terminals/diagnostics
+  upstream-repro/         repro_graph_caps.py + repro_output.txt — the
+                          build_resistance_graph reproduction behind #6964
+                          (cases A1/A2/A3 terminal cap, B1/B2 mesh-cell cap),
+                          pure klayout API, no layout/PDK dependency
+
+Nothing under records/ was written or modified; this directory is append-only
+diagnosis evidence, not a PEX record, and supersedes nothing.

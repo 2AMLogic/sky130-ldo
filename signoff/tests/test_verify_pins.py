@@ -292,11 +292,12 @@ class TestAttestedItems(unittest.TestCase):
                 dst = root / m["path"]["path"]
                 dst.parent.mkdir(parents=True, exist_ok=True)
                 dst.write_bytes((REPO_ROOT / m["path"]["path"]).read_bytes())
-            self.assertEqual(verify_pins.verify_input_set(
-                pin, "1", verify_pins.norm(pin["sha256"]), root), [])
+            expected = verify_pins.normalize_sha256(pin["sha256"])
+            self.assertEqual(
+                verify_pins.verify_input_set(pin, "1", expected, root), [])
             (root / "design/ldo_3v3in_1v8out.sch").write_bytes(b"drift")
-            self.assertTrue(verify_pins.verify_input_set(
-                pin, "1", verify_pins.norm(pin["sha256"]), root))
+            self.assertTrue(
+                verify_pins.verify_input_set(pin, "1", expected, root))
 
 
 class TestManifestParts(unittest.TestCase):
@@ -314,10 +315,417 @@ class TestManifestParts(unittest.TestCase):
         self.assertEqual(verify_pins.manifest_parts(None), [])
         self.assertEqual(verify_pins.manifest_parts(["a.json", 7]), [])
 
-    def test_norm_accepts_both_hash_spellings(self):
-        self.assertEqual(verify_pins.norm("sha256:abc"), "abc")
-        self.assertEqual(verify_pins.norm("abc"), "abc")
-        self.assertIsNone(verify_pins.norm(None))
+
+class TestDigestContract(unittest.TestCase):
+    """This stage reads recorded hashes through the repo's ONE normalizer (#589).
+
+    It used to carry its own `norm`, strictly weaker than
+    `measurements/build_characterization_report.py`'s `normalize_sha256`
+    despite that function's docstring claiming parity: `norm` passed
+    `"sha256:TBD"` through as the comparable string `"TBD"`, and left an
+    uppercase or whitespace-padded digest un-canonicalised -- inside the gate
+    that is the verdict of record. The full case-by-case contract is pinned in
+    `layout/tests/test_digest.py`; what matters here is that this stage uses
+    that same function object and nothing else.
+    """
+
+    def test_stage_uses_the_shared_normalizer(self):
+        sys.path.append(str(REPO_ROOT / "layout" / "bin"))
+        import _digest
+
+        self.assertIs(verify_pins.normalize_sha256, _digest.normalize_sha256)
+        self.assertIs(verify_pins.sha256_file, _digest.sha256_file)
+
+    def test_the_weaker_normalizer_is_gone(self):
+        self.assertFalse(hasattr(verify_pins, "norm"))
+
+    def test_both_spellings_still_read_as_the_same_digest(self):
+        sha = "a" * 64
+        self.assertEqual(verify_pins.normalize_sha256(sha), sha)
+        self.assertEqual(verify_pins.normalize_sha256("sha256:" + sha), sha)
+
+    def test_malformed_recorded_hashes_are_not_comparable(self):
+        for bad in ("sha256:TBD", "sha256:", "deadbeef", None, 7):
+            self.assertIsNone(verify_pins.normalize_sha256(bad), bad)
+
+
+class TestMalformedProvenanceIsUnverified(unittest.TestCase):
+    """A hash that is not a digest must be reported as such, not compared.
+
+    Both halves of the pin/manifest correlation are covered: a malformed pin
+    (`artifact-pins.json`) and a malformed manifest citation. Under `norm`
+    these did not pass silently -- `norm("sha256:TBD")` returned the truthy
+    string `"TBD"`, which then failed some *other* comparison -- but they were
+    diagnosed as drift or as a missing backing pin, which sends a reader
+    looking for the wrong defect. The assertions below pin the diagnosis, not
+    just the exit status.
+    """
+
+    def test_a_pin_whose_sha256_is_a_placeholder_fails(self):
+        pins = _pins()
+        target = next(p for p in pins if not p.get("input_set"))
+        target["sha256"] = "sha256:TBD"
+        failures = _verify(_manifest(), pins)
+        self.assertTrue(
+            any("not a sha256 digest" in f for f in failures), failures)
+
+    def test_a_pin_whose_sha256_is_truncated_fails(self):
+        pins = _pins()
+        target = next(p for p in pins if not p.get("input_set"))
+        target["sha256"] = target["sha256"][:20]
+        self.assertTrue(_verify(_manifest(), pins))
+
+    def test_a_manifest_citation_with_a_malformed_hash_fails(self):
+        manifest = _manifest()
+        item = next(
+            i for i, e in sorted(manifest["evidence"].items())
+            if isinstance(e, dict) and "content_hash" in e
+        )
+        manifest["evidence"][item] = {
+            **manifest["evidence"][item],
+            "content_hash": "sha256:TBD",
+        }
+        failures = _verify(manifest, _pins())
+        self.assertTrue(
+            any("not a sha256 digest" in f for f in failures), failures)
+
+    def test_an_uppercase_pin_still_matches_its_artifact(self):
+        """Canonicalisation, not weakening: same bytes, different typing.
+
+        `norm` compared an uppercase pin verbatim against a lowercase
+        `hexdigest()`, so this spelling used to be reported as drift.
+        """
+        pins = _pins()
+        for pin in pins:
+            pin["sha256"] = pin["sha256"].upper().replace("SHA256:", "sha256:")
+        manifest = _manifest()
+        self.assertEqual(_verify(manifest, pins), [])
+
+
+class TestStoreHeldPins(unittest.TestCase):
+    """A pin whose artifact bytes live in the artifact store only.
+
+    The batch backend's evidence (netlist snapshots, record JSON twins)
+    keeps its bytes in the store: committing a copy is exactly what
+    scripts/check_artifact_manifests.py rejects, so such a pin has no file
+    to re-hash and must verify against the sha256 the committed
+    manifests/artifacts store manifest records instead. These mutations
+    prove the fallback compares that digest rather than waving an absent
+    file through.
+    """
+
+    def _store_held_pins(self, pins: list[dict]) -> list[dict]:
+        # Only the batch-backend shape counts: the artifact is absent from
+        # the tree AND a committed store manifest lists it. Local-backend
+        # snapshots are legitimately committed on disk and verify by re-hash.
+        return [
+            p for p in pins
+            if "/netlist-snapshots/" in str(p.get("artifact", ""))
+            and not (REPO_ROOT / str(p["artifact"])).is_file()
+            and verify_pins._store_manifest_digest(REPO_ROOT, str(p["artifact"])) is not None
+        ]
+
+    def test_the_premise_holds_snapshots_are_store_held(self):
+        """Guard the fixture the mutations below depend on.
+
+        The item-5 netlist-snapshot pins must name files that are absent
+        from the tree yet listed in a committed store manifest -- otherwise
+        the mutations stop exercising the fallback and silently pass for
+        the on-disk reason instead.
+        """
+        pins = self._store_held_pins(_pins())
+        self.assertTrue(
+            pins, "no pin names a netlist snapshot -- the store-held "
+                  "mutation tests no longer exercise the fallback",
+        )
+        for pin in pins:
+            rel = str(pin["artifact"])
+            self.assertFalse(
+                (REPO_ROOT / rel).is_file(),
+                f"{rel} is committed again -- committed bytes duplicating a "
+                f"stored object is what check-artifact-manifests forbids",
+            )
+            self.assertIsNotNone(
+                verify_pins._store_manifest_digest(REPO_ROOT, rel),
+                f"{rel} is not on disk and no committed store manifest lists "
+                f"it, so its pin cannot verify at all",
+            )
+
+    def test_a_store_held_pin_with_a_wrong_digest_fails(self):
+        """The fallback must compare the manifest digest, not skip it."""
+        pins = _pins()
+        store_held = self._store_held_pins(pins)
+        self.assertTrue(store_held, "fixture drained: no store-held pins")
+        mutated = []
+        flipped = False
+        for pin in pins:
+            if not flipped and pin in store_held:
+                good = verify_pins.normalize_sha256(pin["sha256"])
+                # A different but well-formed digest: 64 hex chars, not the
+                # recorded one.
+                bad = ("0" * 64) if good != "0" * 64 else ("1" * 64)
+                pin = {**pin, "sha256": f"sha256:{bad}"}
+                flipped = True
+            mutated.append(pin)
+        self.assertTrue(flipped, "no store-held pin found to mutate")
+
+        failures = _verify(_manifest(), mutated)
+        self.assertTrue(
+            failures,
+            "a store-held pin whose digest disagrees with the committed "
+            "store manifest must fail the check",
+        )
+        self.assertTrue(
+            any("netlist-snapshots" in f for f in failures), failures)
+
+    def test_a_pin_absent_everywhere_fails(self):
+        """Absent on disk AND unlisted in any store manifest is still an error.
+
+        This is the no-weakening half: the fallback may verify a store-held
+        pin, never dissolve the existence requirement.
+        """
+        pins = _pins()
+        store_held = self._store_held_pins(pins)
+        self.assertTrue(store_held, "fixture drained: no store-held pins")
+        mutated = []
+        retargeted = False
+        for pin in pins:
+            if not retargeted and pin in store_held:
+                pin = {**pin, "artifact": "sim/no-such-bench/netlist-snapshots/deadbeef.spice"}
+                retargeted = True
+            mutated.append(pin)
+        self.assertTrue(retargeted)
+
+        failures = _verify(_manifest(), mutated)
+        self.assertTrue(
+            any("does not exist" in f for f in failures), failures)
+
+    def test_script_exit_status_reflects_a_bad_store_digest(self):
+        """Drive the real CLI the way signoff/check.sh stage 1 does."""
+        import hashlib
+        import tempfile
+
+        pins = _pins()
+        store_held = self._store_held_pins(pins)
+        self.assertTrue(store_held, "fixture drained: no store-held pins")
+        mutated = []
+        flipped = False
+        for pin in pins:
+            if not flipped and pin in store_held:
+                bad = hashlib.sha256(b"not the recorded digest").hexdigest()
+                pin = {**pin, "sha256": f"sha256:{bad}"}
+                flipped = True
+            mutated.append(pin)
+        self.assertTrue(flipped)
+
+        with tempfile.TemporaryDirectory() as tmp:
+            pins_path = Path(tmp) / "artifact-pins.json"
+            pins_path.write_text(json.dumps({"pins": mutated}, indent=2))
+            proc = subprocess.run(
+                [sys.executable, str(SCRIPT), str(MANIFEST), str(pins_path)],
+                cwd=REPO_ROOT,
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(proc.returncode, 1, proc.stderr)
+            self.assertIn("netlist-snapshots", proc.stderr)
+
+
+class TestVerificationStrengthReporting(unittest.TestCase):
+    """Issue #654: stdout must not claim a stronger check than was performed.
+
+    A store-held pin's digest came out of a committed store manifest, not out
+    of hashing bytes, so the mismatch message must name that manifest -- "hashes
+    to ... today" is reserved for the branch that actually re-hashed a file --
+    and the success summary must split the count by strength instead of
+    reporting all pins as re-hashed.
+    """
+
+    def _flip_sha(self, pins: list[dict], target: dict) -> list[dict]:
+        good = verify_pins.normalize_sha256(target["sha256"])
+        bad = ("0" * 64) if good != "0" * 64 else ("1" * 64)
+        return [
+            p if p is not target else {**p, "sha256": f"sha256:{bad}"}
+            for p in pins
+        ]
+
+    def test_a_store_held_mismatch_names_the_manifest_not_a_rehash(self):
+        pins = _pins()
+        target = next(
+            p for p in pins
+            if "/netlist-snapshots/" in str(p.get("artifact", ""))
+            and not (REPO_ROOT / str(p["artifact"])).is_file()
+        )
+        failures = _verify(_manifest(), self._flip_sha(pins, target))
+        msg = next(f for f in failures if str(target["artifact"]) in f)
+        self.assertNotIn(
+            "hashes to", msg,
+            f"nothing was hashed for a store-held pin: {msg}",
+        )
+        self.assertIn(".manifest.json", msg)
+
+    def test_an_on_disk_mismatch_keeps_the_rehash_wording(self):
+        pins = _pins()
+        target = next(
+            p for p in pins
+            if not p.get("input_set")
+            and (REPO_ROOT / str(p["artifact"])).is_file()
+        )
+        failures = _verify(_manifest(), self._flip_sha(pins, target))
+        msg = next(f for f in failures if str(target["artifact"]) in f)
+        self.assertIn("hashes to", msg)
+        self.assertIn(" today", msg)
+
+    def test_summary_splits_the_count_on_the_real_pin_set(self):
+        """Mixed set: N re-hashed + M store-verified, plus the caveat."""
+        pins = _pins()
+        n_store = sum(
+            1 for p in pins if not (REPO_ROOT / str(p["artifact"])).is_file()
+        )
+        self.assertGreater(
+            n_store, 0,
+            "fixture drained: every pin's artifact is committed, so the "
+            "split summary is untested",
+        )
+        n_disk = len(pins) - n_store
+        proc = subprocess.run(
+            [sys.executable, str(SCRIPT), str(MANIFEST), str(PINS)],
+            cwd=REPO_ROOT,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertIn(
+            f"({n_disk} re-hashed on disk, {n_store} verified against "
+            f"their committed store manifest",
+            proc.stdout,
+        )
+        self.assertIn("klt + store access", proc.stdout)
+
+    def _scratch_run(self, *, artifact_committed: bool):
+        """The real CLI over a minimal fabricated one-pin set in a tempdir."""
+        import hashlib
+
+        content = b"evidence bytes"
+        digest = hashlib.sha256(content).hexdigest()
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "env.json").write_text("{}")
+            manifest_path = root / "block-manifest.json"
+            manifest_path.write_text(
+                json.dumps({"evidence": {"1": {"file": "env.json"}}})
+            )
+            if artifact_committed:
+                (root / "snap.spice").write_bytes(content)
+            else:
+                store = root / "manifests" / "artifacts"
+                store.mkdir(parents=True)
+                (store / "bench-rid.manifest.json").write_text(json.dumps(
+                    {"entries": [
+                        {"name": "snap.spice", "sha256": digest,
+                         "size": len(content)},
+                    ]}
+                ))
+            pins_path = root / "artifact-pins.json"
+            pins_path.write_text(json.dumps({"pins": [{
+                "item": 1,
+                "artifact": "snap.spice",
+                "sha256": f"sha256:{digest}",
+                "cited_envelope": "env.json",
+            }]}))
+            return subprocess.run(
+                [
+                    sys.executable, str(SCRIPT),
+                    str(manifest_path), str(pins_path),
+                    "--root", str(root),
+                ],
+                capture_output=True,
+                text=True,
+            )
+
+    def test_all_on_disk_summary_reports_zero_store(self):
+        proc = self._scratch_run(artifact_committed=True)
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertIn(
+            "(1 re-hashed on disk, 0 verified against their committed "
+            "store manifest)",
+            proc.stdout,
+        )
+        self.assertNotIn("klt + store access", proc.stdout)
+
+    def test_all_store_summary_carries_the_caveat(self):
+        proc = self._scratch_run(artifact_committed=False)
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertIn(
+            "(0 re-hashed on disk, 1 verified against their committed "
+            "store manifest)",
+            proc.stdout,
+        )
+        self.assertIn("klt + store access", proc.stdout)
+
+
+class TestStoreManifestDigest(unittest.TestCase):
+    """Unit coverage for the digest lookup the fallback rests on."""
+
+    def _fabricated(self, entries: list) -> Path:
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        root = Path(tmp.name)
+        d = root / "manifests" / "artifacts"
+        d.mkdir(parents=True)
+        (d / "bench-rid.manifest.json").write_text(
+            json.dumps({"entries": entries})
+        )
+        return root
+
+    def test_returns_the_recorded_digest(self):
+        root = self._fabricated([
+            {"name": "sim/bench/netlist-snapshots/rid.spice",
+             "sha256": "a" * 64, "size": 100},
+        ])
+        self.assertEqual(
+            verify_pins._store_manifest_digest(
+                root, "sim/bench/netlist-snapshots/rid.spice"),
+            "a" * 64,
+        )
+
+    def test_the_prefixed_spelling_normalises_to_the_same_digest(self):
+        root = self._fabricated([
+            {"name": "sim/bench/netlist-snapshots/rid.spice",
+             "sha256": f"sha256:{'a' * 64}", "size": 100},
+        ])
+        self.assertEqual(
+            verify_pins._store_manifest_digest(
+                root, "sim/bench/netlist-snapshots/rid.spice"),
+            "a" * 64,
+        )
+
+    def test_unknown_path_returns_none(self):
+        root = self._fabricated([
+            {"name": "sim/bench/netlist-snapshots/other.spice",
+             "sha256": "a" * 64, "size": 100},
+        ])
+        self.assertIsNone(
+            verify_pins._store_manifest_digest(
+                root, "sim/bench/netlist-snapshots/rid.spice"),
+        )
+
+    def test_malformed_digest_returns_none(self):
+        root = self._fabricated([
+            {"name": "sim/bench/netlist-snapshots/rid.spice",
+             "sha256": "TBD", "size": 100},
+        ])
+        self.assertIsNone(
+            verify_pins._store_manifest_digest(
+                root, "sim/bench/netlist-snapshots/rid.spice"),
+        )
+
+    def test_no_manifests_dir_returns_none(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            self.assertIsNone(
+                verify_pins._store_manifest_digest(
+                    Path(tmp), "sim/bench/netlist-snapshots/rid.spice"),
+            )
 
 
 if __name__ == "__main__":

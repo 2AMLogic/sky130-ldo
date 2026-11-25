@@ -53,17 +53,16 @@ same commit the sibling `sky130-bandgap` repo's own trivial-cell flow already
 proved against this same sky130 PDK pin, so this repo's first layout-flow run
 starts from a known-good baseline rather than an unverified new pin.
 
-**There are two pins, deliberately.** `requirements.txt` is the build every
-committed DRC/LVS/PEX record was produced on; those records are append-only
-evidence, so bumping it invalidates their stated provenance and is done only
-alongside a re-run. `erc-requirements.txt` is a second, newer pin for the
-`klt erc` supply-spec flow, which needs capability (`nets[].kind`,
-`stackup[0].active_layer`, `devices[]`, isolated `ties[]` extraction,
-`well_layer: null` + `well_boxes`) that landed upstream long after the first
-pin. That file names each capability and the upstream issue behind it. Two
-pins, each naming the build its own evidence was produced on, beats one pin
-that is wrong for one of the flows — cross-check any report against the
-`provenance.klt_version` it carries.
+**There is one pin.** `requirements.txt` is the build every layout flow runs
+on: DRC/LVS/PEX/area, the `klt erc` supply-spec flow and the MiM + rail
+demonstrator. Records are append-only evidence and each carries the
+`provenance.klt_version` it was produced on, so a record made on an earlier
+build (the ERC records on `cb79a84f`, the demonstrator's first record on
+`b82427b3`, ldo-core records on `acb0ae6c`/`040f3406`) stays reproducible
+against its own stated build; cross-check any report against that string.
+Bumping the pin is a deliberate act done alongside a re-run. The pin history
+in `requirements.txt` records why each build was chosen and the collapse of the
+two extra pins (#576).
 
 ## The flow
 
@@ -119,11 +118,9 @@ accident on a compare that ignores the other axis. Both must (and do) report
 ```
 layout/
   README.md                  # this file
-  requirements.txt           # pinned `klt` install for the DRC/LVS/PEX flows (git commit SHA)
-  erc-requirements.txt       # SECOND pin, for the `klt erc` supply-spec flow (and why it differs)
-  cap-requirements.txt       # THIRD pin, for the #254 MiM + rail overlay demonstrator (and why)
+  requirements.txt           # the one pinned `klt` install for every layout flow (git commit SHA)
   bin/
-    setup-venv.sh             # create/refresh a venv from one of the requirements files
+    setup-venv.sh             # create/refresh layout/.venv from requirements.txt
     run-trivial-cell-flow.sh  # the repeatable driver: gen -> drc -> extract -> lvs -> report
     render-record.py          # renders + verdict-checks a record's record.md
     run-ldo-layout-flow.sh    # LDO-core driver: xschem netlist -> gen -> gen-compose -> route -> drc -> report
@@ -143,9 +140,7 @@ layout/
     gen-cap-rail-demo.py      # draws the stacked-MiM capacitors + rails, writes plan.json + LVS reference
     _cap_rail_plan.py         # stdlib-only sizing / plate / footprint arithmetic (unit-tested)
     render-cap-rail-record.py # renders + verdict-checks a demonstrator record's record.md
-  .venv/                      # gitignored -- `klt` install, created by setup-venv.sh
-  .venv-erc/                  # gitignored -- the ERC flow's own pinned `klt` install
-  .venv-cap/                  # gitignored -- the #254 demonstrator's own pinned `klt` install
+  .venv/                      # gitignored -- the one `klt` install, created by setup-venv.sh
   cap-rail-demo/              # issue #254 demonstrator: README.md + reports/<record-id>/ (NOT the core)
   ldo-core/                   # the real LDO layout (see "Extending to the LDO core")
     floorplan.md               # device-to-block mapping, placement + routing rationale
@@ -281,13 +276,11 @@ canaries filed — isolated `ties[]` extraction
 device-body carve-outs
 ([#2183](https://github.com/2AMLogic/klayout-tools/issues/2183)), and the
 native-substrate tie
-([#2255](https://github.com/2AMLogic/klayout-tools/issues/2255)). That is
-what `erc-requirements.txt`'s second pin buys. It was a second pin rather
-than a bump of the first because, when it was written, the DRC/LVS pin was
-`acb0ae6c`, which predates all of them. Since #142 the DRC/LVS pin is
-`040f3406`, which descends from the ERC pin `cb79a84f`, so one pin could now
-serve both flows. Collapsing them is a deliberate follow-up; see
-`erc-requirements.txt`.
+([#2255](https://github.com/2AMLogic/klayout-tools/issues/2255)). The ERC
+flow first ran on its own pin (`cb79a84f`) because the DRC/LVS pin then
+(`acb0ae6c`) predated all of those; #576 collapsed it onto the main pin, which
+descends from it. The ERC records up to `20261112-110312-820ba8b3` carry
+`klt 0.6.0+gcb79a84fe3e4`; later ones carry the main pin's build.
 
 ## Extending to the LDO core (issues #15/#33)
 
@@ -473,8 +466,7 @@ argument, not a check.
 ## ERC supply spec — T1 item 11, power delivery (structural) (issue #112)
 
 ```bash
-# its OWN pinned klt build -- see layout/erc-requirements.txt for why
-layout/bin/setup-venv.sh --requirements layout/erc-requirements.txt
+layout/bin/setup-venv.sh          # the one layout pin (layout/requirements.txt)
 layout/bin/run-ldo-erc-flow.sh    # pre-flight -> klt erc -> 4 controls -> record
 ```
 
@@ -509,7 +501,7 @@ Three things about this repo's spec are worth knowing before reading it:
   the opposite: omit `ties[]`, because klayout-tools#2169 made a declared
   tie collapse a routed design into one island and report a false
   `erc.supply_short`. That is fixed on the pin in
-  `erc-requirements.txt` (a tie now gets its own isolated extraction), and
+  `requirements.txt` (a tie now gets its own isolated extraction), and
   it matters for the verdict rather than for tidiness — a spec with zero
   `ties[]` grades `supply_spec_incomplete` (**unmet**), and a
   `ties_disclosure` of either kind grades unmet too.
@@ -619,7 +611,7 @@ separate task. Tests: `layout/tests/test_gds_area.py`.
 narrative, substrate `well_boxes` assertion) with tiny in-memory `klayout.db`
 layouts: one passing case and one negative control each, plus the `main()`
 exit-code contract. No PDK is needed, but the `klayout` module is: the tests run
-in the layout ERC venv (`layout/.venv-erc`) and are skipped, with an explicit
+in the layout venv (`layout/.venv`) and are skipped, with an explicit
 reason, where `klayout` is not importable (CI's headless `checks` job installs
 no klayout wheel).
 
@@ -632,8 +624,8 @@ assignment that confines met3 rail use to the column above the pass device.
 `layout/bin/run-cap-rail-demo-flow.sh` checks it with the curated `klt drc`
 deck, the PDK's own `sky130A_mr.drc`, `klt extract` (devices and parasitics) and
 `klt lvs` against a schematic-derived reference plus two negative controls, and
-renders a feasibility verdict against the unchanged Area row. It runs on its own
-klt pin (`cap-requirements.txt`), so the ldo-core records keep theirs. See
+renders a feasibility verdict against the unchanged Area row. It runs on the same klt pin
+as every other layout flow (`requirements.txt`). See
 `layout/cap-rail-demo/README.md` for the metal assignment, every disclosed LVS
 condition and the five klayout-tools issues it filed. Tests:
 `layout/tests/test_cap_rail_plan.py` (stdlib only).

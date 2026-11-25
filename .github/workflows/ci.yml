@@ -1,76 +1,31 @@
 name: CI
 
-# Self-check inventory for this repo (see sim/README.md, layout/README.md,
-# CLAUDE.md) and where each one runs:
+# The headless `checks` job below runs `npm run check:ci`; package.json's
+# `check:ci` chain is the authoritative inventory of what it covers -- not
+# restated here, because an unchecked prose paraphrase of it drifts (#591).
+# What package.json cannot express is why the PDK-dependent work does not
+# block every PR:
 #
-#   - `package.json` `check:ci` (JSON syntax of every root-level *.json plus
-#     every sim/**/experiment.json, sim/**/records/*.json and
-#     signoff/**/*.json, shell/python syntax of the harness scripts,
-#     py_compile over every tracked sim/ + layout/ + signoff/ Python file,
-#     `sim/tests/`'s PDK-free unit coverage for the corner runner's own pure
-#     helper functions, `signoff/tests/`'s mutation coverage for
-#     `signoff/verify-pins.py` -- stage 1 of `signoff/check.sh`, which needs
-#     no `klt`, so unlike the rest of that script it CAN run here; it proves
-#     each half of item 11's compound ERC+LVS citation rests on its own pin
-#     rather than on the other half's, #222 -- a regex lint over tracked `.sch`/`.sym` files for
-#     xschem's embedded-quoted-attribute truncation hazard (#59), a regex
-#     lint over tracked `design/*.sch` files for duplicate component
-#     `name=` values (#38) -- catches an unusable merged netlist, e.g. two
-#     `M_ENP4` instances, without needing xschem/ngspice/the PDK at all --
-#     and a uniqueness lint over tracked `spec/decision-records/DR-NNN-*.md`
-#     filenames (#140), which catches two parallel branches independently
-#     claiming the same DR number, as four open PRs each did with `DR-008`,
-#     and -- via `check:characterization` -- a structural re-check of the
-#     committed measurements/characterization.md rollup against a fresh run
-#     of its own generator, #220)
-#     -> `checks` job below, every push/PR. Headless, no PDK, no `klt`
-#     install needed, but it DOES need full git history (see the job's
-#     fetch-depth below).
-#   - `measurements/build_characterization_report.py --check` (byte-exact:
-#     also compares the per-`sim/` Freshness column, which is a live xschem
-#     re-netlist of each testbench schematic) -> `pdk-smoke` job below. The
-#     headless job above runs the same check with `--ignore-sim-freshness`,
-#     which normalises only those PDK-dependent freshness verdicts; this one
-#     is what keeps the committed verdicts themselves honest. Both directions
-#     matter: before #220 NOTHING ran this generator, and a KeyError that
-#     crashed every invocation went unnoticed for two days (#215/#218) while
-#     CI stayed green.
-#   - `signoff/check.sh` (re-grades this block's T1 state from
-#     signoff/block-manifest.json via `klt signoff --manifest`, and fails if a
-#     pinned content_hash no longer matches the artifact it covers or if the
-#     committed signoff/records/t1-tier-report.json no longer matches a fresh
-#     run) -> `signoff-tier-report` job below, every push/PR. Needs `klt` but
-#     NOT the PDK/KLayout/ngspice: --manifest mode only reads committed JSON
-#     envelopes and the tier doc bundled inside the klt wheel. See
-#     signoff/README.md.
-#   - `sim/selftest.sh --quick` (the harness's own liveness test: proves the
-#     pinned sky130 PDK models load in ngspice, xschem netlists headlessly,
-#     and the PVT knobs actually reach the simulator) -> requires xschem +
-#     ngspice + the ~1 GB sky130 PDK via volare, so per this repo's
-#     "headless only" default-CI guideline it does NOT block every PR. It
-#     runs in the `pdk-smoke` job on a nightly schedule, on manual dispatch,
-#     and opt-in on a PR via the `run-pdk-smoke` label. `--no-write` (the
-#     default when `--record` is not passed) means it does not mint new
-#     append-only sim/ evidence on every CI run.
-#   - `layout/bin/run-trivial-cell-flow.sh` (the klt-driven DRC/LVS proof on
-#     a trivial known-good cell -- see layout/README.md) needs a `klt`
-#     install (layout/bin/setup-venv.sh) plus the same PDK as above, so it
-#     is not wired into CI at all yet: it is proven by hand per
-#     layout/README.md's quick start, and its checked-in
-#     trivial-cell/reports/<record-id>/record.md is the evidence. Wiring it
-#     into a CI job is a natural follow-up once this flow is exercised
-#     enough to be worth the ~1 GB PDK download in a second job.
-#   - Everything else claimed under `sim/<experiment>/` once real LDO
-#     testbenches exist is evidence captured by a human/agent run of the
-#     same PDK-gated runner, not a repeatable CI check -- re-running them
-#     here would mint new append-only records on every push, which is not
-#     what CI is for. See sim/README.md for how to reproduce a claim by hand.
+#   - PDK smoke (.github/workflows/pdk-smoke.yml, called by the `pdk-smoke`
+#     job below) runs only nightly, on manual dispatch, or on a PR opting in
+#     with the `run-pdk-smoke` label: every PR would mean installing ngspice
+#     + xschem and downloading the ~1 GB sky130 PDK (volare) each time.
+#   - `layout/bin/run-trivial-cell-flow.sh` (the klt-driven trivial-cell
+#     DRC/LVS proof) is run by hand per layout/README.md's quick start --
+#     evidence: trivial-cell/reports/<record-id>/record.md -- because a CI
+#     job for it would need `klt` plus the same PDK.
 
 on:
   push:
     branches: [main]
   pull_request:
-    types: [opened, synchronize, reopened, labeled]
+    types: [opened, synchronize, reopened]
+    # No `labeled` (#707): every Loom label write on a PR used to re-run this
+    # whole workflow against an unchanged tree. The one label that must start
+    # something -- `run-pdk-smoke` -- is served by pdk-smoke.yml's own
+    # `pull_request: labeled` trigger instead.
+  merge_group:
+    types: [checks_requested]
   schedule:
     # 06:00 UTC daily
     - cron: "0 6 * * *"
@@ -107,6 +62,46 @@ jobs:
         # to end rather than tracking whatever uv release is newest.
         run: python3 -m pip install "uv==0.12.23"
 
+      - name: Verify the ratified spec table matches its lock (+ authorization diff on PR / merge group)
+        # Merge queue (#668; event/base plumbing pattern from
+        # sky130-comparator#332): on `merge_group` the checkout is the queue's
+        # trial-merge commit and the base arrives in the event payload. The
+        # event -> base selection lives in this shell (values through `env:`,
+        # never `${{ }}` interpolated into the command), and an event that
+        # requires a base but carries none FAILS rather than silently
+        # downgrading to the current-tree check. Tests:
+        # measurements/tests/test_check_spec_table.py (#618, merge-group cases).
+        env:
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          MG_BASE: ${{ github.event.merge_group.base_sha }}
+        run: |
+          BASE=""
+          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
+            BASE="$PR_BASE"
+          elif [ "$GITHUB_EVENT_NAME" = "merge_group" ]; then
+            BASE="$MG_BASE"
+          fi
+          case "$GITHUB_EVENT_NAME" in
+            pull_request|merge_group)
+              [ -n "$BASE" ] || {
+                echo "FAIL: $GITHUB_EVENT_NAME event carries no base sha: refusing to claim the spec table was verified" >&2
+                exit 1
+              } ;;
+          esac
+          if [ -n "$BASE" ]; then
+            # The checkout is GitHub's merge commit (PR) or trial merge
+            # (merge_group): the candidate being validated, compared against
+            # the merge-base with the event's base SHA (full history from
+            # fetch-depth: 0). Structural audit trail only; it is not
+            # operator ratification.
+            python3 spec/check_spec_table.py --check --base "$BASE"
+          else
+            # Push/schedule/manual: README's Parameter/Target/Stretch mirror
+            # and its ratified notes vs spec/spec-table-lock.json consistency
+            # (#618).
+            python3 spec/check_spec_table.py --check
+          fi
+
       - name: npm run check:ci
         run: npm run check:ci
 
@@ -130,7 +125,8 @@ jobs:
         # signoff/records/t1-tier-report.json is the verdict of record that
         # issue #114 (the gap-to-T1 tracker) cites instead of keeping its own
         # hand-maintained item checklist. It is only worth citing if it cannot
-        # rot: this step re-hashes every artifact behind every citation, then
+        # rot: this step re-verifies each artifact behind every citation
+        # (re-hash, or the committed store manifest digest), then
         # re-runs `klt signoff --manifest` and fails when the committed record
         # no longer matches a fresh run. Both are real news -- either this
         # block's evidence moved, or the T1 checklist did (it grew an eleventh
@@ -140,72 +136,19 @@ jobs:
         # deliberately NOT layout/requirements.txt's klt pin.
 
   pdk-smoke:
-    name: PDK-gated harness smoke test (nightly / workflow_dispatch / 'run-pdk-smoke' label)
-    runs-on: ubuntu-latest
+    # Caller half of the PDK smoke job (#707): the steps live in
+    # .github/workflows/pdk-smoke.yml, split out so this workflow's trigger
+    # could drop `pull_request: labeled` without losing the on-demand smoke
+    # run. Unrelated label writes on a PR (loom:reviewing, loom:pr, ...)
+    # no longer re-run this workflow against an unchanged tree, while adding
+    # the `run-pdk-smoke` label still starts smoke immediately via
+    # pdk-smoke.yml's own `pull_request: labeled` trigger. The gate below is
+    # the original smoke job's gate, unchanged: nightly, manual dispatch,
+    # and a PR (opened/synchronized/reopened) already carrying the
+    # `run-pdk-smoke` label.
     if: >-
       github.event_name == 'schedule' ||
       github.event_name == 'workflow_dispatch' ||
       (github.event_name == 'pull_request' &&
        contains(github.event.pull_request.labels.*.name, 'run-pdk-smoke'))
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          # Same reason as the `checks` job above (#220): the byte-exact
-          # characterization check below reads the schematic's git history.
-          fetch-depth: 0
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-
-      - name: Install ngspice + xschem
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y ngspice xschem
-
-      # issue #291: the apt package source gives no version choice, so the
-      # install above cannot be pinned. Log what resolved, against what
-      # sim/pdk.json declares; selftest --require-pdk below FAILs on drift.
-      - name: Show resolved toolchain versions vs sim/pdk.json
-        run: |
-          python3 -c "import json;print('declared:', json.load(open('sim/pdk.json')).get('tools'))"
-          ngspice -v | head -n 2
-          xschem --version | head -n 1
-
-      - name: Install volare
-        run: pip install --user volare
-
-      - name: Fetch + enable pinned sky130 PDK
-        run: |
-          export PATH="$HOME/.local/bin:$PATH"
-          commit="$(python3 -c "import json;print(json.load(open('sim/pdk.json'))['open_pdks_commit'])")"
-          volare fetch --pdk sky130 "$commit"
-          volare enable --pdk sky130 "$commit"
-
-      - name: Run sim/selftest.sh --quick --require-pdk
-        run: |
-          export PATH="$HOME/.local/bin:$PATH"
-          sim/selftest.sh --quick --require-pdk
-
-      - name: Upload harness diagnostics (scratch netlist, decks, ngspice logs)
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: pdk-smoke-diagnostics
-          path: |
-            sim/build/
-          include-hidden-files: true
-          if-no-files-found: warn
-          retention-days: 14
-
-      - name: Byte-exact characterization check (includes the live Freshness column)
-        run: |
-          export PATH="$HOME/.local/bin:$PATH"
-          python3 measurements/build_characterization_report.py --check
-        # The only check that evaluates measurements/characterization.md's
-        # per-`sim/` Freshness verdicts, because only this job has the pinned
-        # PDK + xschem needed to re-netlist each testbench schematic (#220).
-        # A failure here is real news in one of two flavours, and the diff it
-        # prints says which: a Freshness-only diff means the committed rollup's
-        # freshness verdicts have gone stale (regenerate it on a PDK machine);
-        # any other diff would already have failed the headless `checks` job.
+    uses: ./.github/workflows/pdk-smoke.yml

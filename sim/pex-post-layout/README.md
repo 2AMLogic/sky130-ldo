@@ -404,6 +404,107 @@ a routing result; it is filed generically as klayout-tools#4061. `r_cut` 0
 and 9.3 gave the same `unsupported` verdict. Item 7 stays unciteable, and no
 spec, bound or rail sizing was changed.
 
+**Update (2026-11-14, issue #583; release leg re-measured 2026-11-15): the
+regenerated core re-measured, two builds ahead of the pin — 0 of 28 on the
+pin, 1 of 28 on releases 0.9.1 and 0.9.2 (identical), and no build says why
+the rest fall back.** Extraction only (`klt pex --extract-only
+--resistance-graph --resistance-graph-r-cut 9.3`, the same arguments
+`run-pex.sh` passes; no corner grid, no record minted), run three times
+against
+the *same* GDS — `LATEST-LVS` `20261112-110237-820ba8b3`'s `ldo_core.gds`,
+sha256 `5e6171873b24b8d4c7af6f55d59600d84099cd13790c8320d8ccf074e657c1ca`
+(byte-identical to the `LATEST` record's copy), i.e. the PR #557-regenerated
+core that record `20261022-232148-56dd87fe` predates. Evidence:
+`diagnostics/20261114-193718-fabcb0c6-rgraph-recheck/` (full JSON response,
+stderr log, `klt --version` and a derived per-net table per leg).
+
+- **Pinned build (`dc136150`, `klt 0.7.1.dev2457+gdc136150a49e`): 0 of 28
+  nets graph-derived**, every net `legacy` at its legacy value — unchanged
+  from the 2026-10-22 record, as expected for a build that predates
+  #4061's fix.
+- **Release `klt 0.9.1`: 1 of 28 nets graph-derived** — `N_FBB`
+  (the feedback divider node), 768.47 Ω legacy → 806.42 Ω graph. The other
+  27 nets, `VIN` and `VOUT` included, remain `legacy` at their legacy
+  values. #4061's fix (closed-completed 2026-10-23) therefore lands
+  *partially* on this geometry: it works for a small signal net, not for
+  the strapped power rails the item-7 numbers turn on.
+- **Newest release (`klt 0.9.2`, measured 2026-11-15): 1 of 28,
+  identical to 0.9.1** — the `resistance_graph.nets` arrays diff empty
+  between the two release legs (same net flips, same values, same 27
+  legacy nets). 0.9.2 was published 2026-11-14T07:48Z, ~12 h after the
+  original two-leg capture, so the first "newest release" leg had run a
+  superseded build; re-measured, the reading is unchanged.
+- **No per-net fallback reason is emitted by any build** — the
+  `resistance_graph.nets[]` entries carry exactly the five fields
+  (`net`, `net_id`, `resistance_source`, `selected_resistance_ohm`,
+  `legacy_resistance_ohm`) and all three stderr logs are empty (tracked
+  files; their emptiness is the finding). The
+  `unsupported_geometry` text and the 4542/5648 interior-landing counts
+  quoted in the 2026-10-22 update above came from that run's gitignored
+  stdout/stderr, not from committed evidence. Whether the 27 still-legacy
+  nets are blocked by `unsupported_geometry` or by `graph_too_large`
+  (#4061's own "known risk" puts rails with 4,500–5,700 interior landings
+  over the 4096-cell/5000-node caps) **cannot be determined from tool
+  output**. Filed generically as
+  [klayout-tools#5747](https://github.com/2AMLogic/klayout-tools/issues/5747)
+  (friction protocol, generic); #4061 was not re-filed.
+
+**What this means for item 7** (see `signoff/README.md`, "What would move
+the needle", point 2, updated to match): the tool blocker has narrowed but
+not cleared. A `klt` pin bump is now *necessary but not sufficient* — at
+`0.9.2` (as at `0.9.1`) it would change one small-signal net's R and leave
+the full-load
+rows non-physical (a pin bump remains out of scope here). The 27 legacy
+nets' mechanism was unknowable until #5747's per-net reason existed — it
+does now (merged as #6130, 2026-11-17); see the 2026-11-20 update below.
+
+**Update (2026-11-20, issue #690): the per-net reasons are measured — `VIN`
+and `VOUT` fall back with `graph_too_large`, not `terminal_count_not_two`.**
+Extraction only, same GDS/flags as the 2026-11-14 legs, on the first build
+carrying #6130 (no release does yet; pinned 2AMLogic/klayout-tools `main` @
+`6bd18bbc8637`, klt `0.9.3.dev2575+g6bd18bbc8637`, throwaway `uvx` env — the
+repo pin is untouched). Evidence:
+`diagnostics/20261120-223209-542c11e1-rgraph-recheck/` (pex + companion
+`klt extract` legs, per-net tables, and the layout-free reproduction behind
+the new upstream filing).
+
+- Reason census (28 nets): 1 graph (still only `N_FBB`), 22
+  `terminal_count_not_two` (graphs all `ok` — the #5894-curation inference of
+  the two-terminal selection rule is confirmed for these), 3
+  `graph_too_large` (`VIN`, `VOUT`, `EA_OUT`), 1 `graph_status_skipped`
+  (`EA_CZ`, single-terminal), 1 `pair_resistance_unavailable` (`VREF`,
+  disconnected pair).
+- **The rails never reach the terminal-count check.** `VIN`: 77 terminals
+  over the `MAX_GRAPH_TERMINALS = 64` cap. `VOUT`: ≤ 64 terminals, but its
+  `metal1` polygon needs up to 85,680 mesh cells (metal2: 12,876) against
+  `DEFAULT_MAX_DECOMPOSITION_CELLS = 4096`. Those caps are keyword-only
+  parameters on `build_resistance_graph` that no `klt extract`/`klt pex`
+  flag reaches — filed generically as
+  [klayout-tools#6964](https://github.com/2AMLogic/klayout-tools/issues/6964)
+  (the `klt power` verb got its own knob in #3124; the graph is the remaining
+  capped surface).
+- Live upstream mapping (replacing the closed #2391/#2458/#5747 as *the*
+  covers for item 7's tool gap): `graph_too_large` →
+  [klayout-tools#6964](https://github.com/2AMLogic/klayout-tools/issues/6964)
+  (newly filed, the actual `VIN`/`VOUT` blocker);
+  `terminal_count_not_two` →
+  [klayout-tools#6899](https://github.com/2AMLogic/klayout-tools/issues/6899)
+  (opt-in graph netlist mode, explicitly reachable from `klt pex` — #5894 /
+  PR #6053 echo and document only and do not remove it);
+  `via_resistance_unknown` did not appear here (`--resistance-graph-r-cut
+  9.3` stamps every landing) — that mechanism is
+  [klayout-tools#6917](https://github.com/2AMLogic/klayout-tools/issues/6917),
+  which is also #6899's declared dependency. A per-net census table was
+  posted on #5894 as cross-confirmation of its inferred selection rule.
+- **Re-mint condition (unchanged in substance, now with named
+  prerequisites):** a klt build on which `VIN` and `VOUT` are graph-derived
+  and the 45 full-load rows return a physical extracted `VOUT` — which needs
+  #6964 (caps reachable), #6899 (a graph-derived value for a ≥3-terminal net
+  reaching the written netlist) and a per-cut value (r-cut flag or #6917's
+  deck values). Then the 45-corner record mints via the batch backend
+  (sharding per closed #623) as a *new* append-only record, and the item-7
+  citation moves through its own issue — nothing was re-pointed here.
+
 **Limits are declared as of this record (issue #154).** All three measurements
 now carry `limits`, so a `delta[]` row's `pass` means the extracted value sits
 inside a bound rather than merely being non-null. The `vout_*_v` bounds are
@@ -752,6 +853,70 @@ batch probe of the PDK-relative form with the current `klt` (`klt pex ... --back
 produced real extracted-side numbers (no `unavailable_comparison` rows), so the
 request now uses it. The model identity is unchanged: both forms resolve to the
 same `combined/sky130.lib.spice` under the pinned `sky130A` PDK.
+
+## Why the request shards its batch jobs (`job_ceiling_check: "split"`, issue #623)
+
+`tb_pex_post_layout.request.json` carries a `batch` block setting
+`job_ceiling_check: "split"`. This is scheduling only -- it changes which
+fleet job runs a unit, never any unit's own value; `options.timeout_s`, the
+45-unit corner matrix (5 process x 3 `vvin` x 3 temperature) and all three
+`measurements[]` are untouched by it.
+
+The problem it solves: on the batch backend `klt sim` computes a
+conservative **fully-serial** whole-job bound of
+`options.timeout_s x unit_count + 120` overhead and compares it against the
+fleet's per-job ceiling `max_job_seconds: 3600` (`fleet_config`). At
+`timeout_s: 120` the 45-unit matrix bounds at `120 x 45 + 120 = 5520 s` --
+already over the ceiling, so under the default `"warn"` check every submit
+warned and went through anyway (the advisory fires three times per
+`run-pex.sh` invocation: once for the standalone schematic leg and once per
+`klt pex` side; see record `20261115-133911-1caff9b9`'s
+`environment.remote.job_ceiling` on PR #616).
+
+The failure mode avoided is not slowness but **total evidence loss**: if a
+job is killed at the ceiling, the incomplete `report.json` makes **every**
+unit of that job come back `batch_job_timeout` -- units that had already
+finished included -- so a 45-corner leg that was mostly done mints no usable
+record at all. The advisory was latent rather than active (that run
+completed 45/45 units serially in 30 s, ~184x under the bound), but the
+bound is a worst case, not an estimate: a slower-converging matrix would
+have hit it.
+
+Why `"split"` rather than the alternatives considered:
+
+- **Not `remote.hosts: 2`** (the advisory's literal recommendation): valid,
+  but it hardcodes a host count correct only while the matrix stays under
+  `2 x 29 = 58` units -- exactly the manual re-check burden this would
+  otherwise impose on every future corner addition. `"split"` recomputes the
+  shard size from `max_job_seconds` and `timeout_s` on **every** submit
+  (at most `floor((3600 - 120) / 120) = 29` units per job, here 2 balanced
+  jobs of 23/22), so the invariant holds structurally as the matrix grows.
+  Both produce 2 jobs today; the capacity cost is identical.
+- **Not "accept and document the warning"**: cheapest, but it leaves the
+  whole-job kill as the failure mode and trains readers to ignore a warning
+  firing 3x per run.
+- **Not lowering `options.timeout_s`** (to <= 77 s, which would fit one
+  job): retuning a *measurement* parameter on an evidence-producing
+  testbench to solve a *scheduling* problem, and fragile besides (two added
+  corners break it again). Sharding provably does not change any unit's
+  value -- concatenated shards reproduce the unsharded unit list exactly.
+
+The invariant a future editor of the request must preserve is recorded
+in-file, in the `_batch_comment` key (same ignored-top-level-key convention
+as `_limits_comment`): `options.timeout_s x unit_count + 120` must stay
+satisfiable by `"split"`'s shards, which it is by construction as long as
+`timeout_s` and the matrix are edited with the arithmetic in view.
+
+Pre-submit validation: use `klt sim --batch-set <request> --dry-run`, which
+runs the batch preflight (verified 2026-11-16: accepts the `"split"` block,
+exit 0; rejects an invalid `job_ceiling_check` value pre-submit with
+`request.batch.job_ceiling_check must be one of 'warn', 'enforce', 'split'`,
+exit 1, nothing submitted). The plain `klt sim <request> --dry-run` does
+**not** check the batch block -- tracked upstream as
+[2AMLogic/klayout-tools#5674](https://github.com/2AMLogic/klayout-tools/issues/5674).
+Capacity: the split submits 2 concurrent jobs per leg where there was 1; on
+a `batch_concurrency_cap` / `lost_shard` refusal the documented lever is
+`batch.max_concurrent_jobs` -- add it then, not pre-emptively.
 
 ## `klt` pin used for the recorded runs
 

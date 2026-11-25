@@ -33,12 +33,16 @@ Convention (the ONE geometry convention this repo's Area row is judged by):
 
 from __future__ import annotations
 
-import hashlib
 import math
 import struct
 from dataclasses import dataclass
 from decimal import Decimal
 from pathlib import Path
+
+# The repo's one content-digest contract (issue #589). Re-exported here under
+# its established name so the layout tree's existing `_gds_area.sha256_file`
+# callers keep working; `_digest.py` holds the only definition.
+from _digest import sha256_file  # noqa: F401
 
 # The ratified limit: spec/target-spec.md "Area" row, < 0.1 mm^2. Stated here
 # in um^2 (1 mm^2 = 1e6 um^2) so the comparison needs no float conversion.
@@ -64,14 +68,6 @@ _TEXT, _NODE = 0x0C, 0x15
 
 class GdsError(ValueError):
     """The stream is malformed or cannot be measured."""
-
-
-def sha256_file(path: Path) -> str:
-    h = hashlib.sha256()
-    with path.open("rb") as f:
-        for chunk in iter(lambda: f.read(1 << 20), b""):
-            h.update(chunk)
-    return h.hexdigest()
 
 
 def _real8(raw: bytes) -> float:

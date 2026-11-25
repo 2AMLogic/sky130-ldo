@@ -1,15 +1,42 @@
 *.raw
 *.log
 !sim/loop-gain/diagnostics/*/runs/*/ngspice.log
+# issue #757: the paired loop-gain comparison's engine logs -- the local corner
+# log (the full-precision print lines behind paired/local/values.json) and the
+# three klt batch responses' retained ngspice logs (the confirmed-non-crossing
+# evidence the comparator's runner-error bridge reads, klayout-tools#7770).
+!sim/loop-gain/diagnostics/*/paired/local/*.fail.log
+!sim/loop-gain/diagnostics/*/paired/remote/*/ngspice.log
 # dropout-vs-load/ diagnostics (issue #357): the raw per-run solver logs (incl. failed/invalid
 # attempts and the merged investigation log) are committed evidence behind provenance.json.
 !sim/dropout-vs-load/diagnostics/*/runs/*/ngspice.log
 !sim/dropout-vs-load/diagnostics/*/runs/*/ngspice.merged.log
+# issue #692: the paired 45-point PVT campaign's per-corner engine logs -- both the
+# local copies under runs/<leg>/logs/ and the klt batch responses' own corner logs
+# under runs/<leg>/klt-out/ -- are the solver-diagnostic validity evidence behind
+# the campaign's verdict.json (same precedent as the #357 lines above).
+!sim/dropout-vs-load/diagnostics/*/runs/*/logs/*.log
+!sim/dropout-vs-load/diagnostics/*/runs/*/klt-out/**/ngspice.log
+# issue #705: the paired rev2-qualification campaign's per-corner engine logs --
+# runs/<leg>/logs/*.log and runs/<leg>/klt-out/**/ngspice.log -- are the
+# solver-diagnostic validity evidence behind its verdict.json (same precedent
+# as the #692 lines above).
+!sim/startup/diagnostics/*/runs/*/logs/*.log
+!sim/startup/diagnostics/*/runs/*/klt-out/**/ngspice.log
 # issue #374: real klt engine logs captured as dropout batch-adapter test fixtures.
 !sim/tests/fixtures/issue-374/*.ngspice.log
 # issue #384: paired line-regulation local/fleet diagnostic -- the raw local and remote
 # corner-run / ngspice logs are the source records behind comparison.json.
 !sim/line-regulation/diagnostics/issue-384/**/*.log
+# issue #375: paired dropout cold-start local/fleet diagnostic -- the raw local and remote
+# corner-run / ngspice logs are the source records behind comparison.json.
+!sim/dropout-vs-load/diagnostics/issue-375/**/*.log
+# issue #755: paired enable-shutdown local/fleet diagnostic -- the committed local
+# corner-run log is the raw local-leg output behind comparison.json.
+!sim/enable-shutdown/diagnostics/issue-755/**/*.log
+# issue #583: the pex re-measure legs' klt stderr (empty, and the emptiness
+# itself is the finding — committed evidence per the diagnostics convention).
+!sim/pex-post-layout/diagnostics/*/*/pex.stderr.log
 __pycache__/
 .DS_Store
 
@@ -33,14 +60,9 @@ sim/.work/
 # clobber unrelated *.out files elsewhere in the tree.
 /*.out
 
-# layout/ DRC/LVS flow: local klt install, created by layout/bin/setup-venv.sh
+# layout/ flows (DRC/LVS/PEX/ERC/cap-rail): the one local klt install,
+# created by layout/bin/setup-venv.sh
 layout/.venv/
-# layout/ ERC supply-spec flow: its own klt install on its own pin
-# (layout/erc-requirements.txt explains why the pins differ)
-layout/.venv-erc/
-# layout/ MiM-capacitor + rail overlay demonstrator: its own klt pin
-# (layout/cap-requirements.txt explains why)
-layout/.venv-cap/
 # >>> loom-managed (do not edit) >>>
 # Loom runtime state (don't commit these)
 .loom-in-use
@@ -127,3 +149,7 @@ layout/.venv-cap/
 
 # Repo Skills Codex-side machine-local install metadata (never committed)
 .agents/skills/repo/.install-local.json
+# issue #706 paired campaign diagnostics: the raw per-corner engine logs and
+# batch outputs are committed evidence (same convention as issue #357/#692's
+# diagnostics dirs), so they escape the *.log rule.
+!sim/iq/diagnostics/issue-706/**/*.log

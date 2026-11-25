@@ -1,0 +1,18 @@
+--- netlist.rev2.spice
++++ netlist.rev2-decoupled.spice
+@@ -113,7 +113,7 @@
+ XM_RCEO TS_CMP EN VIN VIN sky130_fd_pr__pfet_g5v0d10v5 L=0.5 W=2 nf=1 ad=0.58 as=0.58 pd=4.58 ps=4.58 nrd=0.145 nrs=0.145 sa=0
+ + sb=0 sd=0 mult=1 m=1
+ * --- issue #357 candidate rev2: VREF-referenced bias + NMOS-input OTA (diagnostic) ---
+-XM_VRF PBR VREF NVR 0 sky130_fd_pr__nfet_g5v0d10v5 L=1 W=10 nf=2 ad=1.45
++XM_VRF PBR VREFB NVR 0 sky130_fd_pr__nfet_g5v0d10v5 L=1 W=10 nf=2 ad=1.45
+ + as=2.9 pd=10.58 ps=21.16
+ + nrd=0.029 nrs=0.029 sa=0 sb=0 sd=0 mult=1 m=1
+ XR_VR NVR AMP_ENN 0 sky130_fd_pr__res_high_po W=0.42 L=550 mult=1 m=1
+@@ -165,5 +165,6 @@
+ XM_ENP7 ND2 EN VIN VIN sky130_fd_pr__pfet_g5v0d10v5 L=0.5 W=2 nf=1 ad=0.58
+ + as=0.58 pd=4.58 ps=4.58
+ + nrd=0.145 nrs=0.145 sa=0 sb=0 sd=0 mult=1 m=1
++VVREFB VREFB 0 DC 1.2 AC 0
+ .ends
+ 

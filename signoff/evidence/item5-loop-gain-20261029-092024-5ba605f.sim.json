@@ -1,0 +1,1450 @@
+{
+  "schema_version": 1,
+  "netlist": "sim/loop-gain/netlist-snapshots/20261029-092024-5ba605f.spice",
+  "status": "fail",
+  "corner_count": 1,
+  "passed": 0,
+  "failed": 1,
+  "errored": 0,
+  "wrapper": "NOT a `klt sim` run. Hand-wrapped by signoff/make_item5_envelope.py from the committed harness-format record named in `source_record`; every value, limit and verdict is copied verbatim and nothing was re-simulated. Measurements tagged with a `spec_row` carry that row's RATIFIED bound (spec/target-spec.md, DR-006), which the script checked against the record's own limit before writing. The input pin is the netlist snapshot the record simulated, not necessarily the current schematic: see measurements/characterization.md for per-record freshness.",
+  "source_record": {
+    "bench": "loop-gain",
+    "record_id": "20261029-092024-5ba605f",
+    "path": "sim/loop-gain/records/20261029-092024-5ba605f.json",
+    "sha256": "sha256:4dea077fd1605e545a21d10751e3c2c90121140451762a26bcdd024a598667db",
+    "overall_pass": false,
+    "matrix_is_subset": true
+  },
+  "environment": {
+    "engine": "ngspice",
+    "engine_version": "ngspice-42 : Circuit level simulation program",
+    "pdk": "c6d73a35f524070e85faff4a6a9eef49553ebc2b",
+    "platform": "Linux 7.0.0-1014-aws x86_64"
+  },
+  "provenance": {
+    "input": {
+      "path": "sim/loop-gain/netlist-snapshots/20261029-092024-5ba605f.spice",
+      "role": "netlist",
+      "content_hash": "sha256:a63eb6444eb0cae1b5041c198c52d7a183e320067a7cdedb9b523e7d72469504"
+    }
+  },
+  "metrics": {
+    "sim__corner__count": 1,
+    "sim__corner__passed_count": 0,
+    "sim__corner__failed_count": 1,
+    "sim__corner__errored_count": 0
+  },
+  "coverage": {
+    "schema_version": 1,
+    "known": true,
+    "checked": [
+      "loop-gain:tt_27c_3.30v:gm_c033_0ma_db",
+      "loop-gain:tt_27c_3.30v:gm_c033_1ma_db",
+      "loop-gain:tt_27c_3.30v:gm_c033_50ma_db",
+      "loop-gain:tt_27c_3.30v:gm_c033_esr0_0ma_db",
+      "loop-gain:tt_27c_3.30v:gm_c033_esr0_1ma_db",
+      "loop-gain:tt_27c_3.30v:gm_c033_esr0_50ma_db",
+      "loop-gain:tt_27c_3.30v:gm_c033_esr500m_0ma_db",
+      "loop-gain:tt_27c_3.30v:gm_c033_esr500m_1ma_db",
+      "loop-gain:tt_27c_3.30v:gm_c033_esr500m_50ma_db",
+      "loop-gain:tt_27c_3.30v:gm_c47_0ma_db",
+      "loop-gain:tt_27c_3.30v:gm_c47_1ma_db",
+      "loop-gain:tt_27c_3.30v:gm_c47_50ma_db",
+      "loop-gain:tt_27c_3.30v:gm_c47_esr0_0ma_db",
+      "loop-gain:tt_27c_3.30v:gm_c47_esr0_1ma_db",
+      "loop-gain:tt_27c_3.30v:gm_c47_esr0_50ma_db",
+      "loop-gain:tt_27c_3.30v:gm_c47_esr500m_0ma_db",
+      "loop-gain:tt_27c_3.30v:gm_c47_esr500m_1ma_db",
+      "loop-gain:tt_27c_3.30v:gm_c47_esr500m_50ma_db",
+      "loop-gain:tt_27c_3.30v:pm_c033_0ma_deg",
+      "loop-gain:tt_27c_3.30v:pm_c033_1ma_deg",
+      "loop-gain:tt_27c_3.30v:pm_c033_50ma_deg",
+      "loop-gain:tt_27c_3.30v:pm_c033_esr0_0ma_deg",
+      "loop-gain:tt_27c_3.30v:pm_c033_esr0_1ma_deg",
+      "loop-gain:tt_27c_3.30v:pm_c033_esr0_50ma_deg",
+      "loop-gain:tt_27c_3.30v:pm_c033_esr500m_0ma_deg",
+      "loop-gain:tt_27c_3.30v:pm_c033_esr500m_1ma_deg",
+      "loop-gain:tt_27c_3.30v:pm_c033_esr500m_50ma_deg",
+      "loop-gain:tt_27c_3.30v:pm_c47_0ma_deg",
+      "loop-gain:tt_27c_3.30v:pm_c47_1ma_deg",
+      "loop-gain:tt_27c_3.30v:pm_c47_50ma_deg",
+      "loop-gain:tt_27c_3.30v:pm_c47_esr0_0ma_deg",
+      "loop-gain:tt_27c_3.30v:pm_c47_esr0_1ma_deg",
+      "loop-gain:tt_27c_3.30v:pm_c47_esr0_50ma_deg",
+      "loop-gain:tt_27c_3.30v:pm_c47_esr500m_0ma_deg",
+      "loop-gain:tt_27c_3.30v:pm_c47_esr500m_1ma_deg",
+      "loop-gain:tt_27c_3.30v:pm_c47_esr500m_50ma_deg",
+      "loop-gain:tt_27c_3.30v:vout_seed_p10_v",
+      "loop-gain:tt_27c_3.30v:vout_seed_p11_v",
+      "loop-gain:tt_27c_3.30v:vout_seed_p12_v",
+      "loop-gain:tt_27c_3.30v:vout_seed_p13_v",
+      "loop-gain:tt_27c_3.30v:vout_seed_p14_v",
+      "loop-gain:tt_27c_3.30v:vout_seed_p15_v",
+      "loop-gain:tt_27c_3.30v:vout_seed_p16_v",
+      "loop-gain:tt_27c_3.30v:vout_seed_p17_v",
+      "loop-gain:tt_27c_3.30v:vout_seed_p18_v",
+      "loop-gain:tt_27c_3.30v:vout_seed_p1_v",
+      "loop-gain:tt_27c_3.30v:vout_seed_p2_v",
+      "loop-gain:tt_27c_3.30v:vout_seed_p3_v",
+      "loop-gain:tt_27c_3.30v:vout_seed_p4_v",
+      "loop-gain:tt_27c_3.30v:vout_seed_p5_v",
+      "loop-gain:tt_27c_3.30v:vout_seed_p6_v",
+      "loop-gain:tt_27c_3.30v:vout_seed_p7_v",
+      "loop-gain:tt_27c_3.30v:vout_seed_p8_v",
+      "loop-gain:tt_27c_3.30v:vout_seed_p9_v"
+    ],
+    "skipped": [
+      {
+        "id": "loop-gain:corner-matrix",
+        "reason": "pvt_subset: DR-013 single-corner debug probe (#467); batch backend refuses loop-gain and local grids are not permitted on the dispatch host"
+      }
+    ],
+    "inapplicable": [],
+    "unknown": [],
+    "nothing_checked": false,
+    "nothing_checked_reasons": [],
+    "measurements_declared": 56,
+    "measurements_with_limits": 54
+  },
+  "measurements": [
+    {
+      "name": "pm_c033_50ma_deg",
+      "unit": "deg",
+      "limits": {
+        "min": 45
+      },
+      "status": "fail",
+      "worst_case": {
+        "corner_id": "tt_27c_3.30v",
+        "value": 40.535,
+        "margin": -4.465000000000003
+      },
+      "spec_row": "stability"
+    },
+    {
+      "name": "gm_c033_50ma_db",
+      "unit": "dB",
+      "limits": {
+        "min": 10
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_27c_3.30v",
+        "value": 17.52621,
+        "margin": 7.526209999999999
+      },
+      "spec_row": "stability"
+    },
+    {
+      "name": "fc_c033_50ma_hz",
+      "unit": "Hz",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_27c_3.30v",
+        "value": 178071.1,
+        "margin": null
+      }
+    },
+    {
+      "name": "dcgain_c033_50ma_db",
+      "unit": "dB",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_27c_3.30v",
+        "value": 62.92903,
+        "margin": null
+      }
+    },
+    {
+      "name": "pm_c033_1ma_deg",
+      "unit": "deg",
+      "limits": {
+        "min": 45
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_27c_3.30v",
+        "value": 82.64883,
+        "margin": 37.648830000000004
+      },
+      "spec_row": "stability"
+    },
+    {
+      "name": "gm_c033_1ma_db",
+      "unit": "dB",
+      "limits": {
+        "min": 10
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_27c_3.30v",
+        "value": 28.22315,
+        "margin": 18.22315
+      }
+    },
+    {
+      "name": "pm_c033_0ma_deg",
+      "unit": "deg",
+      "limits": {
+        "min": 45
+      },
+      "status": "fail",
+      "worst_case": {
+        "corner_id": "tt_27c_3.30v",
+        "value": 19.6297,
+        "margin": -25.3703
+      },
+      "spec_row": "stability"
+    },
+    {
+      "name": "gm_c033_0ma_db",
+      "unit": "dB",
+      "limits": {
+        "min": 10
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_27c_3.30v",
+        "value": 68.57612,
+        "margin": 58.57612
+      },
+      "spec_row": "stability"
+    },
+    {
+      "name": "pm_c47_50ma_deg",
+      "unit": "deg",
+      "limits": {
+        "min": 45
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_27c_3.30v",
+        "value": 83.31037,
+        "margin": 38.310370000000006
+      },
+      "spec_row": "stability"
+    },
+    {
+      "name": "gm_c47_50ma_db",
+      "unit": "dB",
+      "limits": {
+        "min": 10
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_27c_3.30v",
+        "value": 30.23632,
+        "margin": 20.23632
+      }
+    },
+    {
+      "name": "pm_c47_1ma_deg",
+      "unit": "deg",
+      "limits": {
+        "min": 45
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_27c_3.30v",
+        "value": 51.8376,
+        "margin": 6.837600000000002
+      },
+      "spec_row": "stability"
+    },
+    {
+      "name": "gm_c47_1ma_db",
+      "unit": "dB",
+      "limits": {
+        "min": 10
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_27c_3.30v",
+        "value": 42.04335,
+        "margin": 32.04335
+      }
+    },
+    {
+      "name": "pm_c47_0ma_deg",
+      "unit": "deg",
+      "limits": {
+        "min": 45
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_27c_3.30v",
+        "value": 53.052,
+        "margin": 8.052
+      },
+      "spec_row": "stability"
+    },
+    {
+      "name": "gm_c47_0ma_db",
+      "unit": "dB",
+      "limits": {
+        "min": 10
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_27c_3.30v",
+        "value": 72.36228,
+        "margin": 62.36228
+      }
+    },
+    {
+      "name": "pm_c033_esr500m_50ma_deg",
+      "unit": "deg",
+      "limits": {
+        "min": 45
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_27c_3.30v",
+        "value": 52.6841,
+        "margin": 7.684100000000001
+      },
+      "spec_row": "stability"
+    },
+    {
+      "name": "gm_c033_esr500m_50ma_db",
+      "unit": "dB",
+      "limits": {
+        "min": 10
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_27c_3.30v",
+        "value": 27.43179,
+        "margin": 17.43179
+      }
+    },
+    {
+      "name": "pm_c033_esr500m_1ma_deg",
+      "unit": "deg",
+      "limits": {
+        "min": 45
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_27c_3.30v",
+        "value": 84.58608,
+        "margin": 39.586079999999995
+      }
+    },
+    {
+      "name": "gm_c033_esr500m_1ma_db",
+      "unit": "dB",
+      "limits": {
+        "min": 10
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_27c_3.30v",
+        "value": 32.41152,
+        "margin": 22.411520000000003
+      }
+    },
+    {
+      "name": "pm_c033_esr500m_0ma_deg",
+      "unit": "deg",
+      "limits": {
+        "min": 45
+      },
+      "status": "fail",
+      "worst_case": {
+        "corner_id": "tt_27c_3.30v",
+        "value": 19.646,
+        "margin": -25.354
+      }
+    },
+    {
+      "name": "gm_c033_esr500m_0ma_db",
+      "unit": "dB",
+      "limits": {
+        "min": 10
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_27c_3.30v",
+        "value": 68.99456,
+        "margin": 58.99456000000001
+      }
+    },
+    {
+      "name": "pm_c47_esr500m_50ma_deg",
+      "unit": "deg",
+      "limits": {
+        "min": 45
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_27c_3.30v",
+        "value": 102.3158,
+        "margin": 57.315799999999996
+      }
+    },
+    {
+      "name": "gm_c47_esr500m_50ma_db",
+      "unit": "dB",
+      "limits": {
+        "min": 10
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_27c_3.30v",
+        "value": 50.79477,
+        "margin": 40.79477
+      }
+    },
+    {
+      "name": "pm_c47_esr500m_1ma_deg",
+      "unit": "deg",
+      "limits": {
+        "min": 45
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_27c_3.30v",
+        "value": 54.3358,
+        "margin": 9.335799999999999
+      }
+    },
+    {
+      "name": "gm_c47_esr500m_1ma_db",
+      "unit": "dB",
+      "limits": {
+        "min": 10
+      },
+      "status": "fail",
+      "worst_case": {
+        "corner_id": "tt_27c_3.30v",
+        "value": null,
+        "margin": null
+      }
+    },
+    {
+      "name": "pm_c47_esr500m_0ma_deg",
+      "unit": "deg",
+      "limits": {
+        "min": 45
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_27c_3.30v",
+        "value": 53.1013,
+        "margin": 8.101300000000002
+      }
+    },
+    {
+      "name": "gm_c47_esr500m_0ma_db",
+      "unit": "dB",
+      "limits": {
+        "min": 10
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_27c_3.30v",
+        "value": 73.57131,
+        "margin": 63.57131
+      }
+    },
+    {
+      "name": "pm_c47_esr0_50ma_deg",
+      "unit": "deg",
+      "limits": {
+        "min": 45
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_27c_3.30v",
+        "value": 82.85929,
+        "margin": 37.85929
+      }
+    },
+    {
+      "name": "gm_c47_esr0_50ma_db",
+      "unit": "dB",
+      "limits": {
+        "min": 10
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_27c_3.30v",
+        "value": 29.1565,
+        "margin": 19.1565
+      }
+    },
+    {
+      "name": "pm_c47_esr0_1ma_deg",
+      "unit": "deg",
+      "limits": {
+        "min": 45
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_27c_3.30v",
+        "value": 51.7865,
+        "margin": 6.786499999999997
+      }
+    },
+    {
+      "name": "gm_c47_esr0_1ma_db",
+      "unit": "dB",
+      "limits": {
+        "min": 10
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_27c_3.30v",
+        "value": 41.56913,
+        "margin": 31.56913
+      }
+    },
+    {
+      "name": "pm_c47_esr0_0ma_deg",
+      "unit": "deg",
+      "limits": {
+        "min": 45
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_27c_3.30v",
+        "value": 53.051,
+        "margin": 8.051000000000002
+      }
+    },
+    {
+      "name": "gm_c47_esr0_0ma_db",
+      "unit": "dB",
+      "limits": {
+        "min": 10
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_27c_3.30v",
+        "value": 72.33526,
+        "margin": 62.335260000000005
+      }
+    },
+    {
+      "name": "pm_c033_esr0_0ma_deg",
+      "unit": "deg",
+      "limits": {
+        "min": 45
+      },
+      "status": "fail",
+      "worst_case": {
+        "corner_id": "tt_27c_3.30v",
+        "value": 19.6293,
+        "margin": -25.3707
+      }
+    },
+    {
+      "name": "gm_c033_esr0_0ma_db",
+      "unit": "dB",
+      "limits": {
+        "min": 10
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_27c_3.30v",
+        "value": 68.5667,
+        "margin": 58.5667
+      }
+    },
+    {
+      "name": "pm_c033_esr0_1ma_deg",
+      "unit": "deg",
+      "limits": {
+        "min": 45
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_27c_3.30v",
+        "value": 82.60871,
+        "margin": 37.60871
+      }
+    },
+    {
+      "name": "gm_c033_esr0_1ma_db",
+      "unit": "dB",
+      "limits": {
+        "min": 10
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_27c_3.30v",
+        "value": 28.14023,
+        "margin": 18.14023
+      }
+    },
+    {
+      "name": "pm_c033_esr0_50ma_deg",
+      "unit": "deg",
+      "limits": {
+        "min": 45
+      },
+      "status": "fail",
+      "worst_case": {
+        "corner_id": "tt_27c_3.30v",
+        "value": 40.269,
+        "margin": -4.731000000000002
+      }
+    },
+    {
+      "name": "gm_c033_esr0_50ma_db",
+      "unit": "dB",
+      "limits": {
+        "min": 10
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_27c_3.30v",
+        "value": 17.30316,
+        "margin": 7.303159999999998
+      }
+    },
+    {
+      "name": "vout_seed_p1_v",
+      "unit": "V",
+      "limits": {
+        "min": 1.62,
+        "max": 1.98
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_27c_3.30v",
+        "value": 1.798831,
+        "margin": 0.17883099999999996
+      }
+    },
+    {
+      "name": "vout_seed_p2_v",
+      "unit": "V",
+      "limits": {
+        "min": 1.62,
+        "max": 1.98
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_27c_3.30v",
+        "value": 1.800595,
+        "margin": 0.17940500000000004
+      }
+    },
+    {
+      "name": "vout_seed_p3_v",
+      "unit": "V",
+      "limits": {
+        "min": 1.62,
+        "max": 1.98
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_27c_3.30v",
+        "value": 1.802383,
+        "margin": 0.1776169999999999
+      }
+    },
+    {
+      "name": "vout_seed_p4_v",
+      "unit": "V",
+      "limits": {
+        "min": 1.62,
+        "max": 1.98
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_27c_3.30v",
+        "value": 1.798831,
+        "margin": 0.17883099999999996
+      }
+    },
+    {
+      "name": "vout_seed_p5_v",
+      "unit": "V",
+      "limits": {
+        "min": 1.62,
+        "max": 1.98
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_27c_3.30v",
+        "value": 1.800595,
+        "margin": 0.17940500000000004
+      }
+    },
+    {
+      "name": "vout_seed_p6_v",
+      "unit": "V",
+      "limits": {
+        "min": 1.62,
+        "max": 1.98
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_27c_3.30v",
+        "value": 1.802383,
+        "margin": 0.1776169999999999
+      }
+    },
+    {
+      "name": "vout_seed_p7_v",
+      "unit": "V",
+      "limits": {
+        "min": 1.62,
+        "max": 1.98
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_27c_3.30v",
+        "value": 1.798831,
+        "margin": 0.17883099999999996
+      }
+    },
+    {
+      "name": "vout_seed_p8_v",
+      "unit": "V",
+      "limits": {
+        "min": 1.62,
+        "max": 1.98
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_27c_3.30v",
+        "value": 1.800595,
+        "margin": 0.17940500000000004
+      }
+    },
+    {
+      "name": "vout_seed_p9_v",
+      "unit": "V",
+      "limits": {
+        "min": 1.62,
+        "max": 1.98
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_27c_3.30v",
+        "value": 1.802383,
+        "margin": 0.1776169999999999
+      }
+    },
+    {
+      "name": "vout_seed_p10_v",
+      "unit": "V",
+      "limits": {
+        "min": 1.62,
+        "max": 1.98
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_27c_3.30v",
+        "value": 1.798831,
+        "margin": 0.17883099999999996
+      }
+    },
+    {
+      "name": "vout_seed_p11_v",
+      "unit": "V",
+      "limits": {
+        "min": 1.62,
+        "max": 1.98
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_27c_3.30v",
+        "value": 1.800595,
+        "margin": 0.17940500000000004
+      }
+    },
+    {
+      "name": "vout_seed_p12_v",
+      "unit": "V",
+      "limits": {
+        "min": 1.62,
+        "max": 1.98
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_27c_3.30v",
+        "value": 1.802383,
+        "margin": 0.1776169999999999
+      }
+    },
+    {
+      "name": "vout_seed_p13_v",
+      "unit": "V",
+      "limits": {
+        "min": 1.62,
+        "max": 1.98
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_27c_3.30v",
+        "value": 1.798831,
+        "margin": 0.17883099999999996
+      }
+    },
+    {
+      "name": "vout_seed_p14_v",
+      "unit": "V",
+      "limits": {
+        "min": 1.62,
+        "max": 1.98
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_27c_3.30v",
+        "value": 1.800595,
+        "margin": 0.17940500000000004
+      }
+    },
+    {
+      "name": "vout_seed_p15_v",
+      "unit": "V",
+      "limits": {
+        "min": 1.62,
+        "max": 1.98
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_27c_3.30v",
+        "value": 1.802383,
+        "margin": 0.1776169999999999
+      }
+    },
+    {
+      "name": "vout_seed_p16_v",
+      "unit": "V",
+      "limits": {
+        "min": 1.62,
+        "max": 1.98
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_27c_3.30v",
+        "value": 1.802383,
+        "margin": 0.1776169999999999
+      }
+    },
+    {
+      "name": "vout_seed_p17_v",
+      "unit": "V",
+      "limits": {
+        "min": 1.62,
+        "max": 1.98
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_27c_3.30v",
+        "value": 1.800595,
+        "margin": 0.17940500000000004
+      }
+    },
+    {
+      "name": "vout_seed_p18_v",
+      "unit": "V",
+      "limits": {
+        "min": 1.62,
+        "max": 1.98
+      },
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt_27c_3.30v",
+        "value": 1.798831,
+        "margin": 0.17883099999999996
+      }
+    }
+  ],
+  "corners": [
+    {
+      "corner_id": "tt_27c_3.30v",
+      "process": "tt",
+      "supply_v": {
+        "vvin": 3.3
+      },
+      "temperature_c": 27.0,
+      "status": "fail",
+      "measurements": [
+        {
+          "name": "pm_c033_50ma_deg",
+          "value": 40.535,
+          "unit": "deg",
+          "limits": {
+            "min": 45
+          },
+          "status": "fail",
+          "margin": -4.465000000000003
+        },
+        {
+          "name": "gm_c033_50ma_db",
+          "value": 17.52621,
+          "unit": "dB",
+          "limits": {
+            "min": 10
+          },
+          "status": "pass",
+          "margin": 7.526209999999999
+        },
+        {
+          "name": "fc_c033_50ma_hz",
+          "value": 178071.1,
+          "unit": "Hz",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "dcgain_c033_50ma_db",
+          "value": 62.92903,
+          "unit": "dB",
+          "limits": null,
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "pm_c033_1ma_deg",
+          "value": 82.64883,
+          "unit": "deg",
+          "limits": {
+            "min": 45
+          },
+          "status": "pass",
+          "margin": 37.648830000000004
+        },
+        {
+          "name": "gm_c033_1ma_db",
+          "value": 28.22315,
+          "unit": "dB",
+          "limits": {
+            "min": 10
+          },
+          "status": "pass",
+          "margin": 18.22315
+        },
+        {
+          "name": "pm_c033_0ma_deg",
+          "value": 19.6297,
+          "unit": "deg",
+          "limits": {
+            "min": 45
+          },
+          "status": "fail",
+          "margin": -25.3703
+        },
+        {
+          "name": "gm_c033_0ma_db",
+          "value": 68.57612,
+          "unit": "dB",
+          "limits": {
+            "min": 10
+          },
+          "status": "pass",
+          "margin": 58.57612
+        },
+        {
+          "name": "pm_c47_50ma_deg",
+          "value": 83.31037,
+          "unit": "deg",
+          "limits": {
+            "min": 45
+          },
+          "status": "pass",
+          "margin": 38.310370000000006
+        },
+        {
+          "name": "gm_c47_50ma_db",
+          "value": 30.23632,
+          "unit": "dB",
+          "limits": {
+            "min": 10
+          },
+          "status": "pass",
+          "margin": 20.23632
+        },
+        {
+          "name": "pm_c47_1ma_deg",
+          "value": 51.8376,
+          "unit": "deg",
+          "limits": {
+            "min": 45
+          },
+          "status": "pass",
+          "margin": 6.837600000000002
+        },
+        {
+          "name": "gm_c47_1ma_db",
+          "value": 42.04335,
+          "unit": "dB",
+          "limits": {
+            "min": 10
+          },
+          "status": "pass",
+          "margin": 32.04335
+        },
+        {
+          "name": "pm_c47_0ma_deg",
+          "value": 53.052,
+          "unit": "deg",
+          "limits": {
+            "min": 45
+          },
+          "status": "pass",
+          "margin": 8.052
+        },
+        {
+          "name": "gm_c47_0ma_db",
+          "value": 72.36228,
+          "unit": "dB",
+          "limits": {
+            "min": 10
+          },
+          "status": "pass",
+          "margin": 62.36228
+        },
+        {
+          "name": "pm_c033_esr500m_50ma_deg",
+          "value": 52.6841,
+          "unit": "deg",
+          "limits": {
+            "min": 45
+          },
+          "status": "pass",
+          "margin": 7.684100000000001
+        },
+        {
+          "name": "gm_c033_esr500m_50ma_db",
+          "value": 27.43179,
+          "unit": "dB",
+          "limits": {
+            "min": 10
+          },
+          "status": "pass",
+          "margin": 17.43179
+        },
+        {
+          "name": "pm_c033_esr500m_1ma_deg",
+          "value": 84.58608,
+          "unit": "deg",
+          "limits": {
+            "min": 45
+          },
+          "status": "pass",
+          "margin": 39.586079999999995
+        },
+        {
+          "name": "gm_c033_esr500m_1ma_db",
+          "value": 32.41152,
+          "unit": "dB",
+          "limits": {
+            "min": 10
+          },
+          "status": "pass",
+          "margin": 22.411520000000003
+        },
+        {
+          "name": "pm_c033_esr500m_0ma_deg",
+          "value": 19.646,
+          "unit": "deg",
+          "limits": {
+            "min": 45
+          },
+          "status": "fail",
+          "margin": -25.354
+        },
+        {
+          "name": "gm_c033_esr500m_0ma_db",
+          "value": 68.99456,
+          "unit": "dB",
+          "limits": {
+            "min": 10
+          },
+          "status": "pass",
+          "margin": 58.99456000000001
+        },
+        {
+          "name": "pm_c47_esr500m_50ma_deg",
+          "value": 102.3158,
+          "unit": "deg",
+          "limits": {
+            "min": 45
+          },
+          "status": "pass",
+          "margin": 57.315799999999996
+        },
+        {
+          "name": "gm_c47_esr500m_50ma_db",
+          "value": 50.79477,
+          "unit": "dB",
+          "limits": {
+            "min": 10
+          },
+          "status": "pass",
+          "margin": 40.79477
+        },
+        {
+          "name": "pm_c47_esr500m_1ma_deg",
+          "value": 54.3358,
+          "unit": "deg",
+          "limits": {
+            "min": 45
+          },
+          "status": "pass",
+          "margin": 9.335799999999999
+        },
+        {
+          "name": "gm_c47_esr500m_1ma_db",
+          "value": null,
+          "unit": "dB",
+          "limits": {
+            "min": 10
+          },
+          "status": "fail",
+          "margin": null
+        },
+        {
+          "name": "pm_c47_esr500m_0ma_deg",
+          "value": 53.1013,
+          "unit": "deg",
+          "limits": {
+            "min": 45
+          },
+          "status": "pass",
+          "margin": 8.101300000000002
+        },
+        {
+          "name": "gm_c47_esr500m_0ma_db",
+          "value": 73.57131,
+          "unit": "dB",
+          "limits": {
+            "min": 10
+          },
+          "status": "pass",
+          "margin": 63.57131
+        },
+        {
+          "name": "pm_c47_esr0_50ma_deg",
+          "value": 82.85929,
+          "unit": "deg",
+          "limits": {
+            "min": 45
+          },
+          "status": "pass",
+          "margin": 37.85929
+        },
+        {
+          "name": "gm_c47_esr0_50ma_db",
+          "value": 29.1565,
+          "unit": "dB",
+          "limits": {
+            "min": 10
+          },
+          "status": "pass",
+          "margin": 19.1565
+        },
+        {
+          "name": "pm_c47_esr0_1ma_deg",
+          "value": 51.7865,
+          "unit": "deg",
+          "limits": {
+            "min": 45
+          },
+          "status": "pass",
+          "margin": 6.786499999999997
+        },
+        {
+          "name": "gm_c47_esr0_1ma_db",
+          "value": 41.56913,
+          "unit": "dB",
+          "limits": {
+            "min": 10
+          },
+          "status": "pass",
+          "margin": 31.56913
+        },
+        {
+          "name": "pm_c47_esr0_0ma_deg",
+          "value": 53.051,
+          "unit": "deg",
+          "limits": {
+            "min": 45
+          },
+          "status": "pass",
+          "margin": 8.051000000000002
+        },
+        {
+          "name": "gm_c47_esr0_0ma_db",
+          "value": 72.33526,
+          "unit": "dB",
+          "limits": {
+            "min": 10
+          },
+          "status": "pass",
+          "margin": 62.335260000000005
+        },
+        {
+          "name": "pm_c033_esr0_0ma_deg",
+          "value": 19.6293,
+          "unit": "deg",
+          "limits": {
+            "min": 45
+          },
+          "status": "fail",
+          "margin": -25.3707
+        },
+        {
+          "name": "gm_c033_esr0_0ma_db",
+          "value": 68.5667,
+          "unit": "dB",
+          "limits": {
+            "min": 10
+          },
+          "status": "pass",
+          "margin": 58.5667
+        },
+        {
+          "name": "pm_c033_esr0_1ma_deg",
+          "value": 82.60871,
+          "unit": "deg",
+          "limits": {
+            "min": 45
+          },
+          "status": "pass",
+          "margin": 37.60871
+        },
+        {
+          "name": "gm_c033_esr0_1ma_db",
+          "value": 28.14023,
+          "unit": "dB",
+          "limits": {
+            "min": 10
+          },
+          "status": "pass",
+          "margin": 18.14023
+        },
+        {
+          "name": "pm_c033_esr0_50ma_deg",
+          "value": 40.269,
+          "unit": "deg",
+          "limits": {
+            "min": 45
+          },
+          "status": "fail",
+          "margin": -4.731000000000002
+        },
+        {
+          "name": "gm_c033_esr0_50ma_db",
+          "value": 17.30316,
+          "unit": "dB",
+          "limits": {
+            "min": 10
+          },
+          "status": "pass",
+          "margin": 7.303159999999998
+        },
+        {
+          "name": "vout_seed_p1_v",
+          "value": 1.798831,
+          "unit": "V",
+          "limits": {
+            "min": 1.62,
+            "max": 1.98
+          },
+          "status": "pass",
+          "margin": 0.17883099999999996
+        },
+        {
+          "name": "vout_seed_p2_v",
+          "value": 1.800595,
+          "unit": "V",
+          "limits": {
+            "min": 1.62,
+            "max": 1.98
+          },
+          "status": "pass",
+          "margin": 0.17940500000000004
+        },
+        {
+          "name": "vout_seed_p3_v",
+          "value": 1.802383,
+          "unit": "V",
+          "limits": {
+            "min": 1.62,
+            "max": 1.98
+          },
+          "status": "pass",
+          "margin": 0.1776169999999999
+        },
+        {
+          "name": "vout_seed_p4_v",
+          "value": 1.798831,
+          "unit": "V",
+          "limits": {
+            "min": 1.62,
+            "max": 1.98
+          },
+          "status": "pass",
+          "margin": 0.17883099999999996
+        },
+        {
+          "name": "vout_seed_p5_v",
+          "value": 1.800595,
+          "unit": "V",
+          "limits": {
+            "min": 1.62,
+            "max": 1.98
+          },
+          "status": "pass",
+          "margin": 0.17940500000000004
+        },
+        {
+          "name": "vout_seed_p6_v",
+          "value": 1.802383,
+          "unit": "V",
+          "limits": {
+            "min": 1.62,
+            "max": 1.98
+          },
+          "status": "pass",
+          "margin": 0.1776169999999999
+        },
+        {
+          "name": "vout_seed_p7_v",
+          "value": 1.798831,
+          "unit": "V",
+          "limits": {
+            "min": 1.62,
+            "max": 1.98
+          },
+          "status": "pass",
+          "margin": 0.17883099999999996
+        },
+        {
+          "name": "vout_seed_p8_v",
+          "value": 1.800595,
+          "unit": "V",
+          "limits": {
+            "min": 1.62,
+            "max": 1.98
+          },
+          "status": "pass",
+          "margin": 0.17940500000000004
+        },
+        {
+          "name": "vout_seed_p9_v",
+          "value": 1.802383,
+          "unit": "V",
+          "limits": {
+            "min": 1.62,
+            "max": 1.98
+          },
+          "status": "pass",
+          "margin": 0.1776169999999999
+        },
+        {
+          "name": "vout_seed_p10_v",
+          "value": 1.798831,
+          "unit": "V",
+          "limits": {
+            "min": 1.62,
+            "max": 1.98
+          },
+          "status": "pass",
+          "margin": 0.17883099999999996
+        },
+        {
+          "name": "vout_seed_p11_v",
+          "value": 1.800595,
+          "unit": "V",
+          "limits": {
+            "min": 1.62,
+            "max": 1.98
+          },
+          "status": "pass",
+          "margin": 0.17940500000000004
+        },
+        {
+          "name": "vout_seed_p12_v",
+          "value": 1.802383,
+          "unit": "V",
+          "limits": {
+            "min": 1.62,
+            "max": 1.98
+          },
+          "status": "pass",
+          "margin": 0.1776169999999999
+        },
+        {
+          "name": "vout_seed_p13_v",
+          "value": 1.798831,
+          "unit": "V",
+          "limits": {
+            "min": 1.62,
+            "max": 1.98
+          },
+          "status": "pass",
+          "margin": 0.17883099999999996
+        },
+        {
+          "name": "vout_seed_p14_v",
+          "value": 1.800595,
+          "unit": "V",
+          "limits": {
+            "min": 1.62,
+            "max": 1.98
+          },
+          "status": "pass",
+          "margin": 0.17940500000000004
+        },
+        {
+          "name": "vout_seed_p15_v",
+          "value": 1.802383,
+          "unit": "V",
+          "limits": {
+            "min": 1.62,
+            "max": 1.98
+          },
+          "status": "pass",
+          "margin": 0.1776169999999999
+        },
+        {
+          "name": "vout_seed_p16_v",
+          "value": 1.802383,
+          "unit": "V",
+          "limits": {
+            "min": 1.62,
+            "max": 1.98
+          },
+          "status": "pass",
+          "margin": 0.1776169999999999
+        },
+        {
+          "name": "vout_seed_p17_v",
+          "value": 1.800595,
+          "unit": "V",
+          "limits": {
+            "min": 1.62,
+            "max": 1.98
+          },
+          "status": "pass",
+          "margin": 0.17940500000000004
+        },
+        {
+          "name": "vout_seed_p18_v",
+          "value": 1.798831,
+          "unit": "V",
+          "limits": {
+            "min": 1.62,
+            "max": 1.98
+          },
+          "status": "pass",
+          "margin": 0.17883099999999996
+        }
+      ],
+      "diagnostics": []
+    }
+  ]
+}

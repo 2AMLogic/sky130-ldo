@@ -25,7 +25,8 @@ exercise the LDO core-regulation-loop schematic from issue #14
 symbol `design/ldo_3v3in_1v8out.sym`) against a row of
 `spec/target-spec.md`. That table is **RATIFIED** (issue #1 / DR-006; the Iq
 row is the one row DR-006 left open, and is set by `DR-009`, which is still
-`proposed` and ratifies on its own PR merge), so every measurement bound
+`proposed` — fresh ratification pending under #301, historical #134 merge
+context only), so every measurement bound
 these testbenches use cites a ratified spec row verbatim rather than an
 invented "final" number, and each experiment's `claim` says so. Records
 minted before ratification quote the manifest `claim` as it then read, in
@@ -436,9 +437,63 @@ Single-corner ngspice probes under `sim/*/diagnostics/` should import
 `load_corner_run()` (the `corner-run.py` module), `sha()`,
 `logical_lines()`/`find_card()` (netlist editing; accept a string or a list of
 lines), `run_ngspice_deck(run_dir)` (returns `(log, elapsed_s, returncode)` and
-writes `ngspice.log`), `git_provenance()` and `load_results()`. Existing
+writes `ngspice.log`), and `git_provenance()`. Existing
 diagnostics run-id directories are append-only evidence and keep their own
 copies unedited; the helper is forward-only. Tests: `sim/tests/test_probe_common.py`.
+
+**Replaying a run's report never writes into the archive.** A report script
+that regenerates `tables.md`/`verdict.json` from a run's saved inputs is run
+on a *copy*: copy the run directory to scratch and render there, the same way
+`sim/tests/test_rcz_shelf_691.py` replays the refused #691 preflight. From the
+repository root:
+
+```sh
+tmp="$(mktemp -d)"
+cp -r sim/loop-gain/diagnostics/20261120-223530-542c11e-rcz-shelf/. "$tmp/"
+python3 -I sim/bin/rcz-shelf-691-report.py "$tmp"   # prints the verdict
+less "$tmp/tables.md" "$tmp/verdict.json"            # both outputs live in the copy
+```
+
+The tracked record stays byte-identical. Editing, renaming, or deleting a
+committed run file fails CI (`.loom/scripts/check-evidence-append-only.sh`,
+same as a `records/` edit) — a correction mints a new run directory, never an
+in-place regeneration.
+
+### Writing a new batch-fleet campaign driver (issue #574)
+
+A campaign driver — one that netlists a testbench once, text-edits a per-case
+variant of that body, writes one `klt sim` request per case and sends the lot to
+the batch fleet — should import `sim/bin/_fleet_campaign.py` rather than copy an
+earlier driver. It holds the whole shared core: `preamble()` (host worker cap,
+refuse-to-overwrite, `pdk.json` + `PDK_ROOT`), `netlist()` (optionally with a
+candidate patch applied for netlisting only), `sub_line()`, `insert_in_subckt()` /
+`insert_loop_gain_probe()` + `LOOP_GAIN_PROBE` / `LOOP_TRANSFER_MEAS`, `deck()`,
+`base_request()`, `submit()` and `submit_all()` (the executor, the status print and
+the `SUBMIT FAILED (no local fallback)` branch — host rule: a refused submit is
+reported, never re-run as a local grid).
+
+Row shaping stays in the driver on purpose: `submit_all()` yields
+`(key, meta, response, job_id)` and `corner_base()` supplies only the fields every
+record shares, so each campaign keeps emitting the `summary.json` shape its own
+append-only record family already uses — `bias-retopo-grid.py`, for instance, drops
+`corner_base()`'s `key` because its committed rows never carried one.
+`sim/bin/bias-retopo-pvt.py`, `sim/bin/rcz-fleet-confirm.py`,
+`sim/bin/rcz-adaptive-370.py` and `sim/bin/bias-retopo-grid.py` (folded on by #586)
+are the four drivers on it. A campaign whose grid is a deliberate superset of
+`fc.PROCESS` passes `base_request(..., order=…)` with its own process ordering: the
+bias grid adds the resistor-only skew corners `ll`/`hh`, which `pdk.json` declares
+but the MOS-corner campaigns do not run. Tests:
+`sim/tests/test_fleet_campaign_574.py`, and
+`sim/tests/test_bias_retopo_grid_586.py` for the bias grid's requests against the
+committed `sim/bias-retopo/20261029-bias-grid-467/requests/` golden reference.
+
+The same split applies one layer up, to the batch endpoint-adapter *tests*: a new
+adapter test file should mix in `sim/tests/_endpoint_adapter_contract.py` rather
+than copy an earlier one — it holds `baseline_netlist(slug)`, the
+`EndpointShapeGate` manifest-gate helpers and renewal tripwires, the
+`BackendContract` response-envelope and structural-abort assertions and the
+`RecordProvenance` record head, while each adapter's own admission rules,
+mutation tables, card lists and grading maths stay in its own file (issue #587).
 
 ### Runner options
 
@@ -453,7 +508,7 @@ copies unedited; the helper is forward-only. Tests: `sim/tests/test_probe_common
 | `--supersedes <record-id>` | record which prior record this replaces |
 | `--author`, `--timeout` | record author (default `git config user.email`), per-corner ngspice timeout |
 | `--allow-pdk-mismatch` | run against a non-pinned PDK; the record flags it |
-| `--backend {local,batch}` | `local` (default) runs ngspice here. `batch` is the opt-in `klt sim` batch backend, **`sim/pdk-smoke` and the `sim/load-transient` window grid only** — see "Batch backend" below |
+| `--backend {local,batch}` | `local` (default) runs ngspice here. `batch` is the opt-in `klt sim` batch backend, **`sim/pdk-smoke`, the `sim/load-transient` window grid, the validated `sim/dropout-vs-load` cold-start crossing, the validated `sim/line-regulation` / `sim/load-regulation` / `sim/iq` endpoints and the validated `sim/startup` ramp-trace grid only** — see "Batch backend" below |
 | `--dry-run` | netlist, print the corner list and one deck, run nothing, write nothing (with `--backend batch`: print the `klt sim` requests, submit nothing) |
 | `--no-write` | run every corner for real (ngspice included) but skip writing an evidence record — for CI/selftest liveness runs that should not mint new evidence on every push |
 
@@ -557,8 +612,18 @@ below; leg ids are `<cout>_<load>_<esr>`, e.g. `c4u7_50ma_esr500m`). This is loc
   run (tt, 27 C, 3.30 V; wiring check only, no evidence minted) shows all four
   legs at strict `tolerance_v = 0` FAIL with drawdowns of 2 uV to 32 uV: VOUT
   sags by that amount in the first ~18 us after the enable edge, while still at
-  the sub-mV pre-ramp level, before the soft-start ramp takes over. That is
-  physical-looking, far below any window edge, and exactly the case the open
+  the sub-mV pre-ramp level, before the soft-start ramp takes over.
+  **Attributed (issue #693)**: this is circuit behaviour, not solver noise —
+  a fixed charge packet (drawdown x C_out constant to 0.21 % across all 45
+  corners of the #336 record; converging UP to ~12.6 pC at tt/27 C/3.30 V
+  under solver tightening) that leaves C_out through the Miller compensation
+  cap `C_COMP` (VOUT -> EA_CZ) as the error amplifier's EA_OUT wake transient
+  displaces EA_CZ before the pass device conducts; removing `C_COMP` removes
+  97 % of the 0 mA packet. The mechanism, the 45-corner charge table, the
+  solver ladder and a screened partial fix (R_CZ co-design, verdict REVISE)
+  are in `sim/startup/pilots/20261121-693-enable-edge-charge-attribution.md`;
+  landing the reduction in the schematic is the follow-up issue it names.
+  The dip is far below any window edge, and exactly the case the open
   decision-record question above covers. The checker deliberately does not
   hide it with a tolerance; a decision record must say whether such a dip is
   acceptable (and over what window) before any tolerance is set.
@@ -600,13 +665,28 @@ the strict 0 V monotonicity tolerance and the sampled-trace scope are unchanged.
   forward and reversed leg order give identical measurements and byte-identical
   traces. It also shows strict monotonicity FAILing on all twelve legs at 2-32 uV
   (the open decision-record question in "Startup ramp monotonicity" above).
-- **Campaign (step 2, NOT done).** The append-only 45-point PVT record has not been
-  minted. `--backend batch` still refuses `ramp_monotonicity` (it needs the raw
-  `V(VOUT)` traces back, which the batch path does not hand back in the
-  `wrdata` form the checker reads; klt can retain rawfiles but the converter is
-  tracked upstream as 2AMLogic/klayout-tools#3360), and a 540-transient
-  grid must not be hand-launched on a shared worker. Run it on an authorised capable
-  runner once trace-returning execution exists; coordinate the rerun with #231.
+- **Campaign (step 2, done 2026-11-17, issue #336).** The append-only 45-point
+  PVT record is minted on the batch backend: `sim/startup/records/20261117-221657-efb6bd6b`
+  (36 scalar per-leg `klt sim` requests, 540 leg transients, ngspice-47 on the Spot
+  fleet, runner klt 0.9.0, `runner_compatibility: match`; the single-unit preflight
+  `batch-preflight.py` exited 0 first — job `klt-sim-410e0b9bf1a9` — and a one-corner
+  `--no-write` smoke confirmed the request shape and trace return before the matrix).
+  The grid is **COMPLETE**: all 2160 (corner x leg x electrical/ramp) conditions
+  evaluated, every leg's `V(VOUT)` trace returned and graded — 1620 electrical
+  conditions PASS (vpk <= 1.8246 V against the 1.836 V ceiling; vfloor >= 1.79836 V
+  against the 1.764 V floor; ramp 0.205-0.605 ms), and all 540 ramp-monotonicity
+  conditions FAIL the strict 0 V tolerance with drawdowns of 0.016-66 uV in the first
+  ~20 us after the enable edge — the same sub-mV pre-ramp behaviour #309 recorded at
+  tt/27 C/3.30 V, at every PVT corner and at every ESR sample (the ESR boundaries do
+  not worsen it; ESR changes a given (C_out, load) pair's drawdown by well under an
+  order of magnitude). The ESR = 0/10 mOhm legs agree with the #309-era local numbers
+  to within the ngspice 42 -> 47 drift at the pilot corner. The tolerance was NOT
+  raised: the open decision-record question from "Startup ramp monotonicity" above
+  stays open, so the record's grid verdict is **FAIL** and the ratified Startup row's
+  monotonicity claim remains unqualified at the sampled points. 10 of the 45 corners
+  additionally carry ngspice singular-matrix warnings, recorded by the strict
+  solver-diagnostic gate. Traces, per-corner logs, requests and responses are staged
+  in the evidence store (the record's sha256s pin them).
 
 ### Batch backend (issue #298)
 
@@ -619,13 +699,34 @@ single `op` analysis and two scalar measurements (`vgs`, `isup`),
 #374, below) and `sim/line-regulation`'s four cold-start endpoints in their
 validated shape (issue #379, below) and `sim/load-regulation`'s two
 cold-start endpoints in their validated shape (issue #381, below) and `sim/iq`'s
-two cold-start endpoints (issue #213, below). Every other
-manifest — `current-limit`,
-`enable-shutdown`, `ic-screen-125c-*`, `loop-gain`,
-`psrr-dc`, `startup`, `thermal`, and the `mc-*` experiments (which have their
-own runner, `mc-run.py`) — and any edited smoke, window-grid or dropout shape
+two cold-start endpoints (issue #213, below) and `sim/current-limit`'s three
+chained legs as one three-step request per supply (issue #177, below) and
+`sim/enable-shutdown`'s enable cycle + three EN = 0 operating points as one
+four-step request per supply (issue #755, below) and
+`sim/loop-gain`'s 18-leg AC grid as three ESR-group requests per supply (issue
+#754, below) and
+`sim/psrr-dc`'s two-load op + AC pairs as one four-step request per supply
+(issue #786: `op1`/`ac1` at 1.8 kOhm, then `alter rload = 36` and `op2`/`ac2`;
+the `let` vectors travel as `ac`-step `expr` measurements, the six manifest
+rows are graded locally, and the AC stimulus, output network and three-node
+`.nodeset` are pinned in the netlist) and
+`sim/startup`'s ramp-trace grid in its validated shape (issue #336, "Startup
+ESR grid" above). Every other manifest — `ic-screen-125c-*`, `thermal`, and the `mc-*`
+experiments (which have their own runner, `mc-run.py`) — and any edited smoke,
+window-grid, dropout, endpoint or chained-legs shape
 is **refused before netlisting, submission or local ngspice**. The other
 regulation grids stay deferred on translating their measurement cards.
+
+**Where the code lives.** The backend itself is `sim/bin/_batch_backend.py`, an
+importable sibling module (issue #580); `corner-run.py` drives it and re-exports
+its names, so `corner_run.<name>` still resolves. A consumer that needs
+`prepare_batch_requests()`, `normalize_batch_response()`, `check_batch_supported()`,
+`batch_remote_info()` or `run_batch()` should `import _batch_backend` rather than
+reach `corner-run.py` through `_record_common.load_corner_run_module()`. The types
+and graders the runner and the backend share — `Experiment`, `Corner`,
+`Measurement`, `Pdk`, `HarnessError`, `grade_bounds()`, `window_legs()`,
+`leg_values()`, `detect_solver_diagnostic()` — live in `sim/bin/_corner_model.py`;
+neither of those two modules imports the other.
 
 - **Requests.** The supply is the netlist's `.param vsup`, not a klt corner
   axis (klt's supply override alters sources, which is not this harness's
@@ -787,14 +888,15 @@ shows "Operating point simulation skipped by 'uic'" and no solver
 diagnostic. This validates the translation on this host. **It is not a
 remote result.**
 
-**Live fleet qualification: NOT performed (blocked).** `batch-preflight.py`
-was run twice on 2026-10-11 (shortly after 22:06 UTC and at 22:16 UTC). Both times it exited
-`1` before any job existed:
-`batch-fleet-provision.sh launch failed (exit 1): error: 12 instance(s)
-already running + 1 requested exceeds BATCH_MAX_CONCURRENT_INSTANCES=8`
-(fleet concurrency cap, 2AMLogic/klayout-tools#2917). The runner/client
-version question (2AMLogic/klayout-tools#2948) was therefore not reached.
-The paired check is tracked in #375 and runs after the preflight exits `0`:
+**Live fleet qualification: performed 2026-11-14 (issue #375).**
+`batch-preflight.py` was first refused by the fleet concurrency cap (twice on
+2026-10-11, `BATCH_MAX_CONCURRENT_INSTANCES=8`,
+2AMLogic/klayout-tools#2917; the runner/client question,
+2AMLogic/klayout-tools#2948, was not reached). After both closed, the
+re-probe exited `0` (job `klt-sim-724db05b8a1c`, runner klt 0.9.0 /
+client 0.9.2.dev1029+g76f47afa48f1, `runner_compatibility` `match`) and the
+paired check ran at one commit, one corner (tt / 27 °C / 3.30 V), both legs
+`--no-write`:
 
 ```bash
 python3 sim/bin/batch-preflight.py                       # must exit 0 first
@@ -806,17 +908,78 @@ python3 sim/bin/corner-run.py sim/dropout-vs-load \
     --subset-reason "issue #374 paired local/remote baseline check" --no-write
 ```
 
-Run both at the same commit. **Comparison tolerance:** equal at the printed
-precision, |Δ| ≤ 1 µV on `dropout_v` and `vout_at_max_vin_v`, when the
-remote `engine_version` equals the local ngspice. If the engine versions
-differ, report Δ together with both versions and the request netlist sha256
-(klt `environment.netlist_sha256`), and do not claim equivalence. Do not
-widen the tolerance to absorb tool drift. A failed or incompatible preflight
-only defers this check. It does not permit a local multi-corner campaign.
-After a passing paired check, the full campaign is
+Verdict (`sim/bin/compare_dropout_paired.py`, artifacts and provenance in
+`sim/dropout-vs-load/diagnostics/issue-375/`): the remote job
+`klt-sim-1d3242e701fb` and the local leg both ran **ngspice 47** — the fleet
+image has since moved past the ngspice-46 of the earlier records, so the
+engines-match branch of the **comparison tolerance** applies: |Δ| ≤ 1 µV on
+`dropout_vin_x`, `vout_at_max_vin_v` and the derived `dropout_v`, with
+equivalence claimable only when the remote `engine_version` equals the local
+ngspice (if they ever differ again, report Δ with both versions and the
+request netlist sha256, klt `environment.netlist_sha256`, and do not claim
+equivalence). Here all three metrics agree with Δ = 0. Both legs graded FAIL
+(0.397658 V vs the ratified < 0.3 V bound) — matching FAIL verdicts support
+execution parity only, never spec compliance (the #114 gap). Agreement is
+demonstrated at the remote's 7-significant-digit print resolution — exactly
+the tolerance — not below it, and the worker's PDK-stamp mismatch warning is
+recorded in the diagnostic, not absorbed. Tolerances were not widened. A
+failed or incompatible preflight only defers a re-check; it does not permit
+a local multi-corner campaign. After this passing paired check, the full
+campaign is
 `python3 sim/bin/corner-run.py sim/dropout-vs-load --backend batch`. That is
 the batch command above without `--process/--temp/--supply`,
 `--subset-reason` or `--no-write`.
+
+#### Startup ramp-trace grid on the batch backend (issue #336)
+
+`python3 sim/bin/corner-run.py sim/startup --backend batch` runs the twelve-leg
+startup grid off-host. `sim/bin/batch_startup_ramp.py` (PDK-free) builds one
+**scalar-`tran` request per supply × leg** (default run: 36 requests of 5
+process × 3 temperatures; `--quick`: one singleton per explicit tuple × leg),
+because `analysis_steps` requests can never return a rawfile — klt refuses
+`options.waveforms` for a step sequence (one waveform artifact per corner
+cannot represent several analyses). What travels where:
+
+| local deck (per-leg `leg_analyses`) | batch request |
+|---|---|
+| `reset`, `save all` | nothing to translate: each (corner, leg) is its own ngspice process, so isolation is at least the local in-process `reset` |
+| `alter cout/resr/cdir/rload = {placeholder}` | the leg's values baked into that request's netlist (the `COUT`/`RESR`/`CDIR`/`RLOAD` value field rewritten to exactly what the `alter` would set; ESR = 0 keeps the `leg_values()` topology — series branch 0 F, `CDIR` carries COUT, `RESR` parked) |
+| `tran 10u 4m` | the request's scalar `analysis` (`kind: tran`, args verbatim) |
+| `meas tran vpk/vfloor/tset ...` | request `measurements[]` with the card as `spice`; the `when`-threshold `tset` card carries `on_unreached: "null"` so a ramp that never reaches the window is a missing value, not an error-grade diagnostic |
+| `wrdata {corner_id}.{leg_id}.trace.dat v(vout)` | replaced by `options.waveforms: true` + `keep_artifacts`: klt returns each corner's waveform JSON artifact and the harness rebuilds the same `<corner>.<leg>.trace.dat` locally |
+
+The three manifest measurements (`vpk_v`, `vfloor_v`, `tramp_ms`) are graded
+**locally** over the returned card values with the manifest's own expressions
+(`tramp_ms` = `1000*(tset - 100u)`), the same inclusive bounds as the local
+path. The ramp-monotonicity condition is graded from the returned waveform
+artifact by the same `ramp_monotonicity.py`, at the same strict `tolerance_v
+= 0`; the rebuilt traces are staged beside the per-corner logs and their
+sha256s recorded per leg.
+
+- **Shape gate (before netlisting).** `check_ramp_trace_shape` pins the
+  shape the translation relies on: the leg block must open with
+  `reset`/`save all`, carry exactly one `wrdata` whose signal equals
+  `ramp_monotonicity.signal`, no `let` helpers, and `ramp_monotonicity.legs`
+  must be exactly the declared `window_grid` legs in order. A `startup`
+  manifest without the `ramp_monotonicity` block refuses outright (it would
+  qualify no trace condition). The element rewrite refuses unless each of
+  `cout`/`resr`/`cdir`/`rload` appears exactly once in the netlist.
+- **Never PASS without a completed, compatible remote run.** Same rule as
+  dropout: the response must name a remote job whose state is `done` (or
+  `failed` with a ran-to-report exit 0/3/4) and `runner_compatibility` must
+  be `match` — an old runner might ignore `options.waveforms`, which would
+  turn every leg INVALID.
+- **A missing trace can only lower the verdict.** A leg whose waveform
+  artifact is absent, unreadable, decimated away (`waveform_too_large`) or
+  without the declared signal records an INVALID ramp condition with the
+  reason and FAILs the corner; the grid's 36 electrical + 12 ramp conditions
+  per corner count it as failing/missing. No missing trace silently
+  qualifies.
+- **Fixtures.** `sim/tests/test_batch_startup_ramp_336.py` is headless. It
+  covers the shape-gate refusals, the scalar request + per-leg netlist
+  content, all-pass records with staged traces (sha256-verified), missing and
+  wrong-shaped artifacts, a strict-monotonicity FAIL lowering the grid, an
+  unreached `tset`, the runner-compatibility abort and cross-leg merging.
 
 #### Line regulation endpoints on the batch backend (issue #379)
 
@@ -1081,9 +1244,10 @@ non-finite cell -> no finding, listed). Tests: `sim/tests/test_psrr_cap_sweep.py
 The grid samples the window; it cannot prove the continuous-window or 45-corner
 worst case.
 
-**Runner (`sim/bin/psrr-cap-sweep-run.py`).** `corner-run.py --backend batch` still
-refuses `psrr-dc` (its allowlist is untouched). This dedicated runner sends the sweep
-to `klt sim` instead, as **one request per corner**. Each corner's deck walks every
+**Runner (`sim/bin/psrr-cap-sweep-run.py`).** `corner-run.py --backend batch`
+runs the graded `psrr-dc` campaign through the adapter added in #786. The cap/ESR
+sweep has its own manifest slug, `psrr-dc-cap-esr-sweep`, and its dedicated runner
+sends **one request per corner** to `klt sim`. Each corner's deck walks every
 point as ordered `analysis_steps`: for each point and load, an `op` step whose
 `alter`s set COUT, RESR, CDIR and RLOAD explicitly, followed by the `ac lin 3 1e3 1e5`
 step. The testbench's `.nodeset` seed (#171/#179) applies to every one of these
@@ -1166,6 +1330,191 @@ The record's JSON twin lives in the artifact store (issue #436), so
 `measurements/characterization.md` and the signoff item 8 pins were **not**
 regenerated here and still cite `20260910-034648-6c0436d`.
 
+#### Current limit's chained legs on the batch backend (issue #177)
+
+`python3 sim/bin/corner-run.py sim/current-limit --backend batch` runs the
+current-limit matrix off-host. `sim/bin/batch_current_limit.py` (PDK-free)
+translates the deck's THREE chained legs into **one three-step
+`analysis_steps[]` request per supply group** (3 requests of 5 process × 3
+temperatures for the full 45-point matrix; 3 singletons under `--quick`),
+enabled by klayout-tools#2482 (`analysis_steps[]`). The legs are chained on
+purpose — the alters are cumulative in run order (issue #647 moved leg 2 to
+the front: leg 1 restores the netlist's own RLOAD/RFORCE after the DC leg
+walked them; leg 3 then re-alters `rforce = 1m`, keeping the DC leg's
+conducting forcing branch), and solver state is shared between steps — which
+is exactly klt's no-`reset` step sequence, so the three legs are one
+request, **not** three independent ones (that chaining is also why the
+window-grid rule "never pack legs as steps of one request" does not apply
+here: those legs `reset` between legs, these deliberately do not).
+
+| local deck (`deck.analyses`), in run order | klt request |
+|---|---|
+| `alter rload = 1e12`, `alter rforce = 1m`, `dc vforce 0 1.75 0.125` (leg 2, first) | step `dc1`: the alters as the step's `alter` map (`{rload: 1e12, rforce: 0.001}`), the sweep as `analysis`, its two `find i(vforce) at=` cards as `spice` |
+| `alter rload = 36`, `alter rforce = 1e12`, `tran 5u 1.0m uic` (leg 1) | step `tran1`: baseline element values restored, `analysis` verbatim (`uic` cold start, EN edge); its five window cards as step `spice` measurements |
+| `alter rforce = 1m`, `tran 500n 3.0m uic` (leg 3) | step `tran2`: **only `rforce` changes** — back at the DC leg's 1 mOhm, so the pre-fault window is a live loop delivering into the forcing source's 1.8 V; the short is VFORCE's own PWL, already in the netlist |
+| `let meas_<name> = tran1.vout_50ma`, `1000*dc1.ilim_short`, ... | the manifest's graded rows travel **verbatim** as klt top-level derived measurements named `meas_<name>` — the deck was already written plot-qualified, and klt renders `<step>.<card>` as ngspice plot-qualified vectors |
+
+Results come back as `tran1.<card>` / `dc1.<card>` / `tran2.<card>` plus the
+`meas_<name>` derived rows, and are graded **locally** with the manifest's own
+bounds and the strict solver-diagnostic gate over the one retained engine log
+(all three legs of a corner share it, so a diagnostic in any leg fails the
+corner). The response's result set is checked by name and count against the
+request — every card present exactly once, nothing unrequested — a klt-side
+error diagnostic or failed step cannot PASS, and an unfinished or
+runner-incompatible remote job aborts with no record (same gate as the
+cold-start crossing).
+
+- **Shape gate (before netlisting).** The deck must be exactly the three legs
+  in run order — leg 2 first (issue #647): `alter rload`, `alter rforce`,
+  `dc vforce <a> <b> <step>` + find cards; then leg 1: `alter rload`,
+  `alter rforce`, `tran <tstep> <tstop> uic` + window cards; then leg 3:
+  `alter rforce` (only), `tran <tstep> <tstop> uic` + window cards — with
+  `uic` load-bearing on both transient legs (a non-`uic` tran solves the
+  DC-valued operating point first: the exact hazard #177 fixed). Step names
+  follow content (`dc1`, `tran1`, `tran2`), not position, so the manifest's
+  plot-qualified graded expressions are position-independent. The request
+  netlist's stimulus/load lines are pinned
+  (`BATCH_ALLOWLIST["current-limit"]["stimulus"]`), and so is the testbench's
+  IC_SEED `.nodeset` card the seeded dc leg depends on
+  (`batch_current_limit.NODESET_CARD`, issue #647); the manifest is pinned by
+  digest, and `sim/tests/test_batch_current_limit_177.py` is headless.
+
+#### Enable/shutdown on the batch backend (issue #755)
+
+`python3 sim/bin/corner-run.py sim/enable-shutdown --backend batch` runs the
+enable/shutdown matrix off-host. `sim/bin/batch_enable_shutdown.py` (PDK-free)
+translates the deck into ONE four-step `analysis_steps[]` request per supply
+group (three requests, 45 distinct corners): `tran1` (`tran 5u 4.5m`, the EN
+enable -> shutdown cycle, four `meas tran` cards), `op1` (output free), `op2`
+(`alter rforce = 1m`, output forced to 0 V) and `op3` (`alter vforce = 1.8`
+with the 1 mOhm path still connected; `rforce` is repeated explicitly so the
+step is correct whether or not klt carries alters across steps). klt derived
+measurements cannot name raw plot vectors, so each manifest expression over
+`opN.<vector>` becomes an `opN` step `expr` measurement named like the manifest
+row (`-1e6*op1.i(vvin)` -> `-1e6*i(vvin)`) plus a top-level `meas_<name>` row
+`opN.<name>`; `tranN.<card>` expressions travel verbatim. All eight rows are
+graded locally with the manifest's bounds. The manifest is pinned by digest and
+the request netlist's `VVIN`, `VEN` (DC 0 + full PWL), `VVREF`, `COUT`, `RESR`,
+`RLOAD`, `RFORCE` and `VFORCE` lines are pinned verbatim
+(`BATCH_ALLOWLIST["enable-shutdown"]`); `sim/tests/test_batch_enable_shutdown_755.py`
+is headless. A `klt sim --dry-run` accepts the translated request; the
+chained-step alter carry-over and a live paired comparison against the local
+backend are not exercised by the headless tests.
+
+**Status (2026-11-24): record `20261124-042548-d0bee518`, FAIL, 36/45
+corners PASS** (`--supersedes 20260825-111526-933dfdd`; JSON twin store-only,
+issue #436). `batch-preflight.py` exited 0 (job `klt-sim-89e458932ca4`, runner
+klt 0.9.0, compatibility `match`) and the matrix ran as 3 chained-steps
+requests, one per supply (jobs `klt-sim-f56865efaf23` / `klt-sim-522cd1f8023a`
+/ `klt-sim-4763bbe9a4f3`, ngspice-47 on the Spot fleet). Results:
+
+- **Paired tt / 27 °C / 3.30 V `--no-write` comparison (issue #755 AC 3),
+  local vs batch on the same revision**: all eight scalars and
+  all grades identical at the harness summary's 6-significant-digit print
+  precision, zero discrepancies. The raw artifacts of both legs (request,
+  response, receipt, generated deck, the local corner-run log, `comparison.json`) are
+  committed under `sim/enable-shutdown/diagnostics/issue-755/` (its README
+  carries the reproduce command; the first, scratch-only pairing of this
+  session was re-run there so the evidence is retrievable). Engines: local
+  ngspice-47 (binary sha256 `39ca1adb…`) vs fleet ngspice-47 (binary sha256
+  `e12148ba…`) — same version, different builds; `models_lib_comparison:
+  match` (sky130.lib.spice sha256 `48de7c67…` on both sides) while the fleet
+  worker's PDK stamp
+  (`f6eeac7…`, sources-sha256 scheme) differs from the volare pin
+  (`c6d73a35…`) with byte-identical model libraries. Both engines drift from
+  the declared ngspice 42 (`sim/pdk.json` tools WARN, recorded in both runs).
+- **Chained-step alter carry-over (the #760 open item): observed — klt
+  carries `alter` state across `analysis_steps[]`.** The generated corner deck
+  (committed as `sim/enable-shutdown/diagnostics/issue-755/remote/corner.cir`)
+  is ONE ngspice deck with a single `.control`
+  block running `tran`, `op`, `alter rforce`, `op`, `alter rforce`, `alter
+  vforce`, `op` in sequence with no `reset`/restore between steps, so under
+  ngspice's own semantics `op2`'s `rforce = 1m` persists into `op3`. Because
+  the request itself repeats `rforce` in `op3`, the generated deck shows the
+  repeat (twice `alter rforce=0.001`) and cannot by itself distinguish carry-over
+  from a per-step reset; the adapter's explicit `rforce` repeat in `op3` is
+  redundant and idempotent,
+  keeping the translation correct under either behavior as designed.
+- **Solver-diagnostic gate: 9/45 corners FAIL, every one from a diagnostic,
+  none from a bound.** `singular matrix` (node `xldo.ea_cz` on `fs_-40c_3.63v`, `fs_27c_3.30v` and `sf_27c_3.63v`,
+  `m.xldo.xm_rcn1.msky130_fd_pr__nfet_g5v0d10v5#drain` on `ff_-40c_2.97v`),
+  `Dynamic gmin stepping failed` (`tt_125c_3.30v`, `sf_125c_3.63v`) and
+  `2 out of range for ^` (BSIM4 pow overflow on the `tt_-40c` / `fs_-40c` /
+  `fs_27c` corners). Every measured value stays inside its ratified bound at all 45
+  corners: worst shutdown Iq `0.117 µA` (bound 3 µA, both static and
+  after-edge rows), worst Vin->Vout leakage `0.152 µA` (bound 1 µA),
+  `vout_pre_disable_v` 1.8072-1.8213 V inside its 1.764-1.836 V window and
+  `vout_hold_2ms_v` 1.8060-1.8202 V above its 1.764 V floor (no upper bound) — including the ff/sf 125 °C pre-disable
+  witness the test plan names (`1.8185`-`1.8209` V).
+- **Verdict delta vs the superseded record**: `20260825-111526-933dfdd`
+  (local backend, ngspice-46) read 45/45 PASS because it predates the
+  integrated comparator (#230): 17 of its 45 logs already carry
+  `Dynamic gmin stepping failed` that today's detector flags (under the gate
+  it would have been FAIL, 28/45 PASS). The batch re-run is cleaner, not
+  worse: 9 flagged corners vs 17, on a newer engine.
+
+**Status (2026-11-17): record `20261117-173516-d843d914`, FAIL, 41/45
+corners PASS** (`--supersedes 20260825-105322-933dfdd`; JSON twin store-only,
+issue #436). `batch-preflight.py` exited 0 (runner klt 0.9.0, ngspice 47) and
+the full 45-point matrix ran as 3 chained-legs requests. Results against the
+#177-seeded deck:
+
+- **Solver-diagnostic gate (#171): 4/45 corners FAIL, every one from leg 2's
+  `dc vforce` sweep, every one on the 3.63 V (Vin_max) column**:
+  `tt_27c_3.63v` / `ff_27c_3.63v` / `fs_27c_3.63v` hit
+  `Warning: singular matrix` (node `xldo.ea_cz` on tt/ff, `xldo.n_fbb` on fs)
+  and `fs_125c_3.63v` hits `Warning: Dynamic gmin stepping failed`, all inside
+  the dc step's gmin continuation — where ngspice recovers each point via
+  *true* gmin stepping, completes the sweep, and every measured value stays
+  healthy; the gate grades those corners FAIL regardless of bounds, as
+  designed. This is the leg-2 exposure the deck's own claim already names —
+  "the one analysis that still solves with EN at its dc value" — now measured:
+  at 2.97 V and 3.3 V its gmin stepping completes at all 30 corners; at 3.63 V
+  it does not always. **The two transient legs #177 seeded are clean at all 45
+  corners** — the hazard this issue fixed (the DC-valued transient operating
+  point both `uic`-less legs solved from nowhere) no longer fires anywhere.
+- **Verdict deltas vs the superseded record.** That record read 45/45 PASS
+  because it predates the #171 gate: 16 of its logs already carry solver
+  diagnostics that were simply not detected then — under the gate it would
+  not read 45/45. The measured values also move for two honest reasons that
+  are not this fix: the DUT changed between the records (the integrated
+  comparator, #230) and the deck changed (issue #76's EN edge on leg 3,
+  PR #185's `uic` + leg-1 conversion). Illustrative at the equivalence
+  corner: the clamp window reads 129-207 mA across PVT now.
+- **Paired local/fleet equivalence (#612 precedent).** One corner
+  (`tt_27c_3.30v`) was also run through the local backend on the same commit:
+  all 10 measurements agree with the fleet's values to every printed digit
+  (vout_50ma_v 1.79883 V, ilim_short_ma 153.306 mA, ishort_sustained_ma
+  153.349 mA, ...) — the chained-steps translation is numerically the local
+  deck.
+
+**Status (2026-11-22): record `20261122-220637-f1d875fa`, PASS, 45/45
+corners PASS** (`--supersedes 20261117-173516-d843d914`; issue #647). The
+full 45-point matrix ran as 3 chained-legs requests on the batch fleet
+against the #647 deck: leg 2's `dc vforce` sweep seeded with the
+testbench's new IC_SEED `.nodeset` card (values measured from the settled
+held-short end state of leg 3's own transient at tt/27C/3.30V, the sweep's
+own starting point; `{vsup-x}` forms for the ~1 V/V-slope nodes, per
+#189's classification method) and moved to the FRONT of the deck — the
+configuration every seeded bench in `sim/` already used, and the one the
+localization probes measured clean: with the same card chained after leg
+1's transient, `fs_125c_3.63v` still tripped `Dynamic gmin stepping
+failed` at the sweep's first continuation step, while dc-first solves all
+four previously-failing corners and the matrix extremes with zero
+diagnostics. The two `uic` transient legs are order-independent by
+construction; every graded value matches the superseded record to 4-5
+significant digits (the clamp window still reads 98-232 mA across PVT —
+the window is unchanged, only its gate-compliance is). All 45 retained
+engine logs carry none of the #171 markers (verified by grep over the
+store-fetched bytes, and by the gate itself: a marker FAILs the corner
+regardless of bounds). The characterization report's Current limit row
+now reads **PASS** on this record. The four corners' diagnostics were
+solver-graded, never electrical — no spec row, bound or schematic device
+changed, and no decision record was needed: the singular nodes named
+(`ea_cz`, `n_fbb`) were the solver's first-continuation flail at the
+dead-short end of a forced-output sweep, not a design instability, and
+seeding removed them (the #189 precedent's exact mechanism class).
+
 ## Bound inclusivity (issue #335)
 
 A measurement's `min` / `max` are inclusive by default (value == bound passes).
@@ -1179,6 +1528,70 @@ manifests (flags omitted or default) keep their previous digest; flipping a
 flag to strict changes the `measurements` digest, so records made before the
 change are reported as input-stale rather than regraded (records are
 append-only and are never rewritten).
+
+#### Loop-gain AC leg grid on the batch backend (issue #754)
+
+`python3 sim/bin/corner-run.py sim/loop-gain --backend batch` runs the 18-leg
+closed-loop-injection `ac_leg_grid` (C_out {0.33, 4.7 uF} x ESR {0, 10 m, 500 m
+ohm} x load {50 mA, 1 mA, 0 mA}) through `sim/bin/batch_loop_gain.py`:
+
+- **Three requests per supply, not eighteen.** klt's step `alter` takes
+  V/I/R/C/L elements only, and the ESR is the CCVS `HESR` (gain = ESR; gain `0`
+  is an exact short, a 0-ohm resistor is floored by ngspice). So `HESR`'s gain
+  travels in each request's NETLIST and the manifest's three contiguous
+  six-leg ESR blocks (`esr10m`, `esr500m`, `esr0`) are the requests; a
+  full 45-corner run is 9 requests (`--quick` is 3 requests per explicit
+  tuple). Only the one pinned `HESR VESRS 0
+  VESRSENSE 10m` line is rewritten (`10m` / `0.5` / `0`).
+- **Steps.** Each request is twelve `analysis_steps[]`: `op<i>` (explicit
+  `alter {COUT, RLOAD}` so every group is self-contained, `vseed = v(vout)`)
+  and `ac<i>` (`ac dec 30 1e-2 1e9`; `lg`, `lgdb`, `lgph` as `intermediate`
+  vectors; `fc`, `phc`, `gmdb` as `.meas ac` cards with `on_unreached: "null"`;
+  `dcg = lgdb[0]` on leg 1). `options.ngspice_init` is `sim/spiceinit` plus
+  `set units=degrees` (so `cph` reports degrees as in the local deck). Step
+  names are the manifest's own plot names, so its expressions carry over.
+- **Grading is local, over step cards.** The request carries NO top-level
+  `measurements[]`: all 56 manifest expressions (`180 + ac<i>.phc`,
+  `-ac<i>.gmdb`, `op<i>.vseed`, `ac1.fc`, `ac1.dcg`) are evaluated by the
+  harness with the manifest's bounds (strict at equality: PM >= 45, GM >= 10,
+  vout_seed in [1.62, 1.98]). A leg with no -180 deg crossing is reported
+  `not_reached` by klt (null value): that measurement grades FAIL, never PASS,
+  and does not abort the corner — matching the local backend — instead of a klt
+  `derived_input_unavailable` corner error.
+- **Admission (renewal pin).** The record input-fingerprint digests of
+  `analyses`, `measurements` and `matrix` are pinned in `BATCH_ALLOWLIST`; they
+  do NOT hash `ac_leg_grid`, so the adapter also replays the deck's `alter`s
+  from the netlist baseline and requires every leg's resulting (C_out, ESR,
+  R_load) to equal `ac_leg_grid`, plus the exact PM/GM/validity expression per
+  leg. The seven baseline top-level cards (`VVIN`, `VEN`, `VVREF`, `COUT`,
+  `VESRSENSE`, `HESR`, `RLOAD`) and the verbatim `.nodeset` seed are pinned in
+  each request netlist. Any drift refuses before netlisting or submission;
+  an intentional change needs renewed validation
+  (`sim/tests/test_batch_loop_gain_754.py`) and a deliberate pin update.
+- **Never a PASS from missing data.** A missing/duplicate/unrequested/errored/
+  non-finite step card, a non-completed corner, an incomplete ESR-group set for
+  a corner, a solver diagnostic or an absent engine log is a recorded FAIL; a
+  structurally wrong response aborts with no record and no local fallback.
+- **Solver continuation across groups (measured, #757).** The local deck runs
+  all 18 legs in ONE ngspice process (leg 7's `op` starts from leg 6's
+  solution, leg 13's from leg 12's); the batch path restarts the solver per
+  ESR-group request from the `.nodeset`-seeded initial solve. The #757 paired
+  tt/27C/3.30V comparison measured legs 7 and 13 (seed, PM, GM together) at
+  |delta| <= 2e-4 against pair tolerances of 1e-3 — the continuation
+  difference is not observable; see
+  `sim/loop-gain/diagnostics/issue-757/`.
+- **Runner `on_unreached` caveat (klayout-tools#7770).** The batch runner the
+  fleet reports (klt 0.9.0) grades an unreached `.meas` crossing card
+  `status: "error"` (corner `error`) instead of the documented
+  `on_unreached: "null"` → `not_reached`, even when the engine log carries the
+  out-of-interval + `failed!` no-crossing pattern. The harness still grades
+  such a leg as the local backend does (measurement FAIL, corner completes),
+  and `compare_loop_gain_paired.py` confirms non-crossings from the retained
+  engine log; the record carries the runner diagnostic verbatim.
+- **Provenance.** `execution.adapter` records the ESR groups, the `HESR` line
+  per group, the cards, the extra init line and the validated pins.
+  `corner-run.py` has no `--wait-for-capacity` flag: every request already
+  carries `batch.capacity_wait_s` and `run_klt_batch` retries capacity refusals.
 
 ## Evidence bytes go to the artifact store (issue #436)
 
