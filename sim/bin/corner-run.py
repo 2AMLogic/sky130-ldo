@@ -55,6 +55,7 @@ from _record_common import (
     reserve_record_id,
     render_record_footer,
     render_record_header,
+    WorkerPdkStamp,
     spiceinit_sha256,
     write_new_text,
 )
@@ -1021,10 +1022,11 @@ def render_batch_execution(record: dict) -> list[str]:
             + (f" ({detail})" if detail else "")
         )
         lines.append(
-            f"    - klt provenance.pdk.version `{rq.get('pdk_version') or 'not reported'}` — "
+            f"    - submitter klt provenance.pdk.version `{rq.get('pdk_version') or 'not reported'}` — "
             + ("names" if rq.get("klt_pdk_names_pin") else "**does NOT name**")
             + " the pinned open_pdks commit"
         )
+        lines.append(f"    - {WorkerPdkStamp(remote).describe()}")
     if ex.get("adapter") and ex["adapter"].get("name") in (
         "line-regulation-endpoints", "load-regulation-endpoints", "iq-endpoints",
     ):

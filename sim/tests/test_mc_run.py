@@ -24,6 +24,7 @@ from __future__ import annotations
 import contextlib
 import hashlib
 import io
+import json
 import sys
 import unittest
 from pathlib import Path
@@ -378,6 +379,82 @@ class TestAssertKltReadThePinnedPdk(unittest.TestCase):
                 _response(PIN["open_pdks_commit"]), _pdk(), PIN, True
             )
         self.assertEqual(stderr.getvalue(), "")
+
+
+class TestWorkerPdk(unittest.TestCase):
+    def setUp(self):
+        # Projection of PR #790's paired-batch-report.json, job klt-sim-7a400ce98ee7.
+        self.response = json.loads((SIM_DIR / "tests/fixtures/issue-791-paired-pdk.json").read_text())
+        self.pin = {"open_pdks_commit": "c6d73a35f524070e85faff4a6a9eef49553ebc2b"}
+        self.remote = self.response["environment"]["remote"]
+        self.worker = self.remote["worker_environment"]
+
+    def check(self, allow=False):
+        mc_run.assert_klt_read_the_pinned_pdk(self.response, _pdk(), self.pin, allow)
+
+    def render(self):
+        return "\n".join(mc_run.render_execution_backend({"backend": "batch", "klt_response": self.response}))
+
+    def test_paired_report(self):
+        stamp = self.worker["pdk"]["stamp_text"]
+        with self.assertRaises(mc_run.HarnessError) as err:
+            self.check()
+        with contextlib.redirect_stderr(io.StringIO()) as warnings:
+            self.check(allow=True)
+        for text in (str(err.exception), warnings.getvalue()):
+            for expected in (self.remote["job_id"], self.pin["open_pdks_commit"], stamp):
+                self.assertIn(expected, text)
+        md = self.render()
+        self.assertIn(stamp, md)
+        self.assertIn("mismatch", md)
+
+    def test_matching_stamps_still_require_the_pin(self):
+        self.worker["pdk_stamp_comparison"] = {"status": "match"}
+        with self.assertRaises(mc_run.HarnessError):
+            self.check()  # pinned client, unpinned worker
+        self.response["provenance"]["pdk"]["version"] = self.worker["pdk"]["stamp_text"]
+        with self.assertRaises(mc_run.HarnessError):
+            self.check()  # both name the same unpinned revision
+        version = "open_pdks " + self.pin["open_pdks_commit"]
+        self.response["provenance"]["pdk"]["version"] = self.worker["pdk"]["stamp_text"] = version
+        self.check()
+        self.worker["pdk_stamp_comparison"]["status"] = "mismatch"
+        with self.assertRaisesRegex(mc_run.HarnessError, "mismatch"):
+            self.check()  # the full SOURCES stamps disagree despite the same open_pdks entry
+
+    def test_pin_on_another_sources_line_is_insufficient(self):
+        self.worker["pdk_stamp_comparison"] = {"status": "match"}
+        self.worker["pdk"]["stamp_text"] += "\nother_dependency " + self.pin["open_pdks_commit"]
+        with self.assertRaises(mc_run.HarnessError):
+            self.check()
+
+    def test_missing_or_unusable_executed_stamp(self):
+        self.worker["pdk_stamp_comparison"] = {"status": "match"}
+        stamp = "open_pdks " + self.pin["open_pdks_commit"]
+        for pdk in (
+            None,
+            "invalid",
+            {},
+            {"stamp_scope": "image", "stamp_text": stamp},
+            {"stamp_scope": "executed", "stamp_text": 17},
+            {"stamp_scope": "executed", "stamp_text": "no revision"},
+        ):
+            with self.subTest(pdk=pdk):
+                self.worker["pdk"] = pdk
+                with self.assertRaisesRegex(mc_run.HarnessError, "unavailable"):
+                    self.check()
+                with contextlib.redirect_stderr(io.StringIO()) as warnings:
+                    self.check(allow=True)
+                self.assertIn("unavailable", warnings.getvalue())
+                self.assertIn("unavailable", self.render())
+
+    def test_backend_supplies_execution_context_for_older_responses(self):
+        self.response.pop("environment")
+        for backend in ("batch", "remote"):
+            with self.subTest(backend=backend), self.assertRaisesRegex(mc_run.HarnessError, "unavailable"):
+                mc_run.assert_klt_read_the_pinned_pdk(self.response, _pdk(), self.pin, False, backend=backend)
+        for backend in ("local", "local-parallel"):
+            mc_run.assert_klt_read_the_pinned_pdk(self.response, _pdk(), self.pin, False, backend=backend)
 
 
 if __name__ == "__main__":

@@ -423,12 +423,46 @@ def run_klt_sim(
     }
 
 
+def _as_dict(value) -> dict:
+    return value if isinstance(value, dict) else {}
+
+
+class WorkerPdkStamp:
+    """The worker's SOURCES stamp and klt's separate worker/submitter comparison."""
+
+    def __init__(self, remote: dict):
+        worker = _as_dict(remote.get("worker_environment"))
+        pdk = _as_dict(worker.get("pdk"))
+        text = pdk.get("stamp_text")
+        self.text = text.strip() if isinstance(text, str) else ""
+        self.scope = pdk.get("stamp_scope")
+        comparison = _as_dict(worker.get("pdk_stamp_comparison")).get("status")
+        self.comparison = comparison if isinstance(comparison, str) and comparison else "unavailable"
+        # A SOURCES file can also name other dependencies' commits. Only
+        # its open_pdks entry identifies the pin, and only at executed scope.
+        revisions = re.findall(r"^open_pdks[ \t]+([0-9a-fA-F]{40})[ \t]*$", self.text, re.MULTILINE)
+        self.commit = revisions[0].lower() if self.scope == "executed" and len(revisions) == 1 else None
+
+    def describe(self) -> str:
+        # Keep a multi-line SOURCES stamp in one Markdown list item or table cell.
+        stamp = " ".join(self.text.splitlines()).replace("|", r"\|")
+        if self.commit:
+            observation = f"`{stamp}`"
+        else:
+            observation = "unavailable"
+            if stamp:
+                observation += f" (reported `{stamp}`, scope `{self.scope or 'unavailable'}`)"
+        return f"executed worker PDK stamp {observation}, worker/submitter comparison `{self.comparison}`"
+
+
 def assert_klt_read_the_pinned_pdk(
     response: dict,
     pdk,
     pin: dict,
     allow_mismatch: bool,
     error_cls: type[Exception] = RuntimeError,
+    *,
+    backend: str | None = None,
 ) -> None:
     """Check `klt sim`'s OWN provenance names the PDK this harness pinned.
 
@@ -444,19 +478,31 @@ def assert_klt_read_the_pinned_pdk(
     warning, the same escape hatch the pre-run check offers. Missing
     provenance counts as a mismatch: absent evidence never implies a pin.
 
-    Shared by `mc-run.py` and `corner-run.py --backend batch` (issue #298).
+    On a remote run, provenance.pdk.version names the submitter's PDK.
+    Independently verify the worker's executed stamp against the repository pin.
     """
+    expected = pin["open_pdks_commit"]
+    env = _as_dict(response.get("environment"))
+    problems = []
+    if env.get("engine_host") == "worker" or backend in ("batch", "remote"):
+        remote = _as_dict(env.get("remote"))
+        worker = WorkerPdkStamp(remote)
+        if worker.commit != expected or worker.comparison == "mismatch":
+            problems.append(
+                f"klt job {remote.get('job_id') or '(no job id reported)'}: {worker.describe()}. "
+                f"Expected sim/pdk.json's pinned open_pdks commit {expected}."
+            )
     claimed = ((response.get("provenance") or {}).get("pdk") or {}).get("version") or ""
-    if pin["open_pdks_commit"] in claimed:
+    if expected not in claimed:
+        problems.append(
+            f"klt sim's own provenance.pdk.version is {claimed!r}, which does not name "
+            f"sim/pdk.json's pinned open_pdks commit {expected}\n"
+            f"  this harness resolved: {pdk.dir}\n"
+            "  check PDK_ROOT and the resolved install"
+        )
+    if not problems:
         return
-    message = (
-        f"klt sim's own provenance.pdk.version is {claimed!r}, which does not name "
-        f"sim/pdk.json's pinned open_pdks commit {pin['open_pdks_commit']}\n"
-        f"  this harness resolved: {pdk.dir}\n"
-        "  klt resolved something else -- the record's `pdk` block would name the "
-        "pin while the simulation read a different model build. Set PDK_ROOT "
-        "explicitly, or remove the competing install"
-    )
+    message = "\n".join(problems)
     if not allow_mismatch:
         raise error_cls(message)
     print(f"WARNING: {message}", file=sys.stderr)
@@ -480,9 +526,10 @@ def render_record_header(record: dict, tools_line: str) -> list[str]:
         f"(`{r['experiment']['provenance_source']}`)"
     )
     pdk = r["pdk"]
+    label = "Submitter PDK" if r.get("backend") in ("remote", "batch") else "PDK"
     pin_state = "matches sim/pdk.json pin" if pdk["matches_pin"] else "**MISMATCH vs sim/pdk.json pin**"
     lines.append(
-        f"- **PDK**: {pdk['variant']} @ open_pdks `{pdk['installed_commit']}` ({pin_state}); "
+        f"- **{label}**: {pdk['variant']} @ open_pdks `{pdk['installed_commit']}` ({pin_state}); "
         f"models `{pdk['lib_file']}`"
     )
     lines.append(f"- **Tools**: {tools_line}")

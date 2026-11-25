@@ -1431,7 +1431,7 @@ def run_batch(
             info = batch_remote_info(response)
             if info["job_id"]:
                 jobs.append(str(info["job_id"]))
-            _shared_assert_pdk(response, pdk, pin, allow_mismatch, error_cls=HarnessError)
+            _shared_assert_pdk(response, pdk, pin, allow_mismatch, error_cls=HarnessError, backend="batch")
             if is_chained_steps(exp):
                 # The chained legs are ONE klt request, so one response
                 # covers all three steps of a corner and
