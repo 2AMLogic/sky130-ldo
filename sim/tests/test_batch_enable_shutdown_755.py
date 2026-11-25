@@ -259,6 +259,14 @@ class TestEnableShutdownAdapter(
             with self.assertRaises(bes.EnableShutdownTranslationError):
                 bes.parse_deck(raw["deck"]["analyses"])
 
+    def test_unsupported_suffix_refused_by_the_number_parser_itself(self):
+        # #778: the deck-shape `1q` edit above can be caught by the pinned-value
+        # check instead of the suffix grammar if `q` ever joins _SCALE; this
+        # case fails under that widening on its own, whichever check wins there.
+        with self.assertRaisesRegex(bes.EnableShutdownTranslationError,
+                                    r"unsupported alter value '1q'"):
+            bes._num("1q")
+
     def test_untranslatable_measurement_expression_is_refused(self):
         legs = bes.parse_deck(manifest(SLUG)["deck"]["analyses"])
         for expr in ("op1.i(vvin)+op2.i(vforce)", "op9.v(vout)", "tran1.nope"):
@@ -293,7 +301,7 @@ class TestEnableShutdownAdapter(
         self.assertEqual(self.klt_calls(), [])
 
     def test_sibling_local_only_benches_stay_refused(self):
-        for slug in ("psrr-dc", "thermal"):
+        for slug in ("thermal",):
             self.assertNotIn(slug, corner_run.BATCH_ALLOWLIST)
 
     # -- provenance ------------------------------------------------------------

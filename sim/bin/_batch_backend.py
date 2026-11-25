@@ -27,6 +27,7 @@ import batch_dropout
 import batch_enable_shutdown as bes
 import batch_iq as biq
 import batch_loop_gain as blg
+import batch_psrr_dc as bpd
 import batch_line_regulation as blr
 import batch_load_regulation as bld
 import batch_startup_ramp as bsr
@@ -263,6 +264,32 @@ BATCH_ALLOWLIST = {
             "RLOAD VOUT 0 36 m=1",
         ],
     },
+    # Shape (issue #786): the graded two-load PSRR campaign as ONE four-step
+    # `analysis_steps[]` request per supply group (sim/bin/batch_psrr_dc.py):
+    # `op1` + `ac1` (`ac lin 3 1e3 1e5`) at the schematic's 1.8 kOhm load, then
+    # `alter rload = 36` with `op2` + `ac2`. The deck's `let` vectors travel as
+    # ac-step `expr` measurements; the six manifest rows are `meas_<name>`
+    # derived results, graded locally. The AC stimulus (VVIN AC 1; EN carries
+    # none), the output network and the IC_SEED `.nodeset` are pinned in the
+    # netlist. RENEWAL: pinned like the other chained adapters, by the record
+    # input-fingerprint digests (sim/tests/test_batch_psrr_dc_786.py).
+    "psrr-dc": {
+        "chained_steps": True,
+        "adapter_kind": "psrr-dc",
+        "manifest_sections": {
+            "analyses": "d551358174b77f05918cca07ca2e0d266c6bc48aea26c1fe513c0e4498c1b38a",
+            "measurements": "76b7faf3b26ef53e9e52a223e5fff63a3e044ab1d3c3a005a18652d631f67a0e",
+            "matrix": "639e50d5a920cef70120de11fefa3ffc5bf53f0446c56a853f87c39e95976b21",
+        },
+        "stimulus": [
+            "VVIN VIN 0 DC 'vsup' AC 1",
+            "VEN EN 0 'vsup'",
+            "VVREF VREF 0 1.2",
+            "COUT VOUT VESR 1u m=1",
+            "RESR VESR 0 10m m=1",
+            "RLOAD VOUT 0 1.8k m=1",
+        ],
+    },
 }
 
 BATCH_REFUSAL_HINT = (
@@ -280,7 +307,9 @@ BATCH_REFUSAL_HINT = (
     "and the sim/startup ramp-trace grid "
     "(one scalar `tran` request per leg with `options.waveforms`, issue #336) "
     "and the sim/loop-gain 18-leg AC grid (one `analysis_steps[]` request per "
-    "supply x ESR group, issue #754); "
+    "supply x ESR group, issue #754) "
+    "and sim/psrr-dc's two-load op + AC pairs "
+    "(one four-step `analysis_steps[]` request per supply, issue #786); "
     "every other "
     "experiment, including the other transient/AC/DC-sweep and mc-* manifests, "
     "stays on the local backend (see sim/README.md, \"Batch backend\")"
@@ -367,10 +396,23 @@ def is_enable_shutdown(exp: Experiment) -> bool:
     return BATCH_ALLOWLIST.get(exp.slug, {}).get("adapter_kind") == "enable-shutdown"
 
 
+def is_psrr_dc(exp: Experiment) -> bool:
+    """Whether the chained-steps experiment is the issue #786 PSRR bench."""
+    return BATCH_ALLOWLIST.get(exp.slug, {}).get("adapter_kind") == "psrr-dc"
+
+
+def _vector_adapter(exp: Experiment):
+    """The chained adapter that splits op/ac vector expressions into step
+    measurements (enable-shutdown #755, psrr-dc #786), or None (current-limit)."""
+    if is_psrr_dc(exp):
+        return bpd
+    return bes if is_enable_shutdown(exp) else None
+
+
 def chained_deck(exp: Experiment) -> list:
     """The chained steps of the deck, parsed and with every graded
     expression checked against them (raises the adapter's translation error)."""
-    mod = bes if is_enable_shutdown(exp) else bcl
+    mod = _vector_adapter(exp) or bcl
     legs = mod.parse_deck((exp.raw.get("deck") or {}).get("analyses") or [])
     mod.check_measurements(legs, [(m.name, m.expr, m.unit) for m in exp.measurements])
     return legs
@@ -380,11 +422,12 @@ def chained_request_shape(exp: Experiment) -> dict:
     """The `analysis_steps[]` + derived-`measurements[]` shape of a chained
     request: the manifest's graded rows travel as `meas_<name>` results."""
     legs = chained_deck(exp)
-    if is_enable_shutdown(exp):
+    mod = _vector_adapter(exp)
+    if mod is not None:
         meas = [(m.name, m.expr, m.unit) for m in exp.measurements]
         return {
-            "analysis_steps": bes.chained_steps(legs),
-            "measurements": bes.request_measurements(legs, meas),
+            "analysis_steps": mod.chained_steps(legs),
+            "measurements": mod.request_measurements(legs, meas),
         }
     return {
         "analysis_steps": bcl.chained_steps(legs),
@@ -404,7 +447,7 @@ def check_chained_batch_shape(exp: Experiment) -> None:
         inner_shape="chained-steps", outer_shape="chained-steps",
         translate=chained_deck,
         err_types=(bcl.CurrentLimitTranslationError, bes.EnableShutdownTranslationError,
-                   blr.EndpointTranslationError),
+                   bpd.PsrrDcTranslationError, blr.EndpointTranslationError),
         step_noun="the chained klt steps",
     )
 
@@ -771,7 +814,16 @@ def _check_pinned_netlist(exp: Experiment, body: list[str]) -> None:
                 f"--backend batch: {exp.slug!r} netlist is not the validated ac-leg-grid "
                 f"baseline ({exc}): {BATCH_REFUSAL_HINT}"
             ) from exc
-    if is_chained_steps(exp) and is_enable_shutdown(exp):
+    if is_psrr_dc(exp):
+        try:
+            blr.check_netlist(body, allowed["stimulus"], bpd.PsrrDcTranslationError,
+                              "a psrr-dc chained-step request", pinned_extra=(bpd.NODESET_CARD,))
+        except bpd.PsrrDcTranslationError as exc:
+            raise HarnessError(
+                f"--backend batch: {exp.slug!r} netlist is not the validated chained-steps "
+                f"baseline ({exc}): {BATCH_REFUSAL_HINT}"
+            ) from exc
+    elif is_chained_steps(exp) and is_enable_shutdown(exp):
         try:
             blr.check_netlist(body, allowed["stimulus"], bes.EnableShutdownTranslationError,
                               "an enable/shutdown chained-step request")
@@ -1235,8 +1287,8 @@ def normalize_chained_response(
         raise HarnessError(f"request {group.key}: {problem}")
     results, logs = normalize_batch_response(exp, group, response, outdir, timeout)
     legs = chained_deck(exp)
-    if is_enable_shutdown(exp):
-        expected = bes.step_result_names(legs)
+    if _vector_adapter(exp) is not None:
+        expected = _vector_adapter(exp).step_result_names(legs)
     else:
         expected = [f"{leg.step_name}.{name}" for leg in legs for name, _ in leg.cards]
     expected += [f"meas_{m.name}" for m in exp.measurements]

@@ -1,12 +1,10 @@
 #!/usr/bin/env python3
 """Full-loop PSRR + stability PVT grid for the DR-013 `R_BIAS` candidate (issue #467).
 
-`corner-run.py` refuses `--backend batch` for `psrr-dc` and `loop-gain` (their
-decks are ngspice control scripts with `let`/`cph`/`meas ... when`, which have no
-pinned translation). This script does NOT change that allowlist. It expresses the
-same two benches as plain `klt sim` requests and lets `--backend batch` send them
-to the fleet; there is NO local fallback (host rule: a refused submit is reported,
-never re-run as a local grid).
+`corner-run.py --backend batch` now supports `loop-gain` (#754) and
+`psrr-dc` (#786). This script predates those adapters and expresses both
+benches as plain `klt sim` requests for the DR-013 grid. It submits them to
+the fleet with `--backend batch` and reports failures without retrying locally.
 
 Translation (every step is stated in the record it writes):
   * PSRR  : the `sim/psrr-dc` testbench netlist; `RLOAD` 1.8k (1 mA) / 36 (50 mA);

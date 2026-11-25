@@ -28,7 +28,6 @@ Run under the pinned `klt`'s Python (needs `klayout.db` and
 from __future__ import annotations
 
 import argparse
-import importlib.util
 import json
 import sys
 from pathlib import Path
@@ -38,18 +37,8 @@ BIN_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(BIN_DIR))
 
 import _cap_rail_plan as plan  # noqa: E402
+import _power_rails as GEN  # noqa: E402
 from _spec_constants import read_spec_constants  # noqa: E402
-
-
-def _load_gen_blocks():
-    spec = importlib.util.spec_from_file_location("gen_ldo_blocks", BIN_DIR / "gen-ldo-blocks.py")
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
-
-
-GEN = _load_gen_blocks()
 
 # --- sky130 GDS layers ------------------------------------------------------
 L = {

@@ -3,13 +3,14 @@
 Current roadmap derived from GitHub lifecycle labels. Maintained by the Loom Guide role.
 
 <!-- guide:plan-body:start -->
-_Generated: 2026-11-23T02:54:50Z (snapshot; compare against live labels)_
+_Generated: 2026-11-25T10:01:04Z (snapshot; compare against live labels)_
 ## Operator Attention: Merge-Risk-Hold Pileup
 
 Judge-approved PRs under a hold (`loom:blocked` or `loom:operator`) — only a human merge decision is missing.
 
 - **#569**: docs: propose DR-014 binding capacitor condition for the PSRR row
 - **#735**: docs(spec): reconcile DR-008 status text with its ratification path
+- **#777**: migrate sky130 PDK pin from volare c6d73a35 to ciel f6eeac7 (DR-015)
 
 ## Very Important
 
@@ -29,16 +30,13 @@ Human-approved issues (`loom:issue`) ready for implementation — excluding held
 
 - **#629**: characterization.md Output row reads PASS on light-load-only evidence; record 20261115-133911-1caff9b9 is full-load evidence against that same window
 - **#639**: xschem pin migration: migrate sky130-ldo to the fleet 3.4.7
-- **#705**: Qualify rev2 start-up, line/load regulation and mismatch accuracy
 
 ## In Progress
 
 Issues currently being built (`loom:building`).
 
 - **#301**: spec: decide whether DR-008 through DR-012 ratified on merge
-- **#693**: Startup: attribute the enable-edge charge packet behind the 0.016-66 uV pre-ramp drawdown and remove its cause
-- **#709**: Qualify R_CZ L=180 for startup charge reduction and land a verified compensation change
-- **#715**: Share the cold-start and re-enable temperature schedule across the three thermal paths
+- **#767**: sim/pdk.json pins a volare sky130A build while every worker run uses the ciel store (--allow-pdk-mismatch on every record)
 
 ## PRs Awaiting Review
 
@@ -52,6 +50,7 @@ PRs that passed review and are queued for Champion auto-merge (`loom:pr`).
 
 - **#569**: docs: propose DR-014 binding capacitor condition for the PSRR row
 - **#735**: docs(spec): reconcile DR-008 status text with its ratification path
+- **#777**: migrate sky130 PDK pin from volare c6d73a35 to ciel f6eeac7 (DR-015)
 
 ## Proposed
 
@@ -70,15 +69,11 @@ Issues carrying `loom:curated`.
 - **#639**: xschem pin migration: migrate sky130-ldo to the fleet 3.4.7 *(curated)*
 - **#645**: CI: nightly pdk-smoke red for 6+ nights — declared ngspice pin 42 vs resolved 45.2 (CI) / 47 (workers) *(curated)* *(held)*
 - **#691**: Stability: screen a compensation candidate that closes the 10-300 uA band at both C_out endpoints and the 0.33 uF / 50 mA shortfall (follow-on to #370) *(curated)* *(held)*
-- **#693**: Startup: attribute the enable-edge charge packet behind the 0.016-66 uV pre-ramp drawdown and remove its cause *(curated)*
-- **#705**: Qualify rev2 start-up, line/load regulation and mismatch accuracy *(curated)*
-- **#709**: Qualify R_CZ L=180 for startup charge reduction and land a verified compensation change *(curated)*
+- **#767**: sim/pdk.json pins a volare sky130A build while every worker run uses the ciel store (--allow-pdk-mismatch on every record) *(curated)*
 
 ## Proposed (Architect / Hermit)
 
-- **#576**: Collapse layout/'s three klt pins into one: the main pin now descends from both the ERC and cap-rail pins *(hermit)* *(held)*
-- **#591**: ci.yml: the 65-line check-inventory header restates package.json and has drifted from it in four places *(hermit)* *(held)*
-- **#595**: Remove load_results() from sim/bin/_probe_common.py: the one advertised probe helper with no caller *(hermit)* *(held)*
+_None._
 
 ## Epics
 
@@ -88,14 +83,14 @@ Issues carrying `loom:curated`.
 
 | Bucket | Count |
 |------|-------|
-| Operator merge-risk holds | 2 |
+| Operator merge-risk holds | 3 |
 | Very important | 1 |
 | Important | 1 |
-| Ready (`loom:issue`, net of holds/building/merge-pending) | 3 |
-| In Progress (`loom:building`) | 4 |
+| Ready (`loom:issue`, net of holds/building/merge-pending) | 2 |
+| In Progress (`loom:building`) | 2 |
 | PRs awaiting review | 0 |
-| Approved PRs awaiting merge | 2 |
-| Curated | 16 |
-| Architect / Hermit proposals | 3 |
+| Approved PRs awaiting merge | 3 |
+| Curated | 14 |
+| Architect / Hermit proposals | 0 |
 | Active epics | 1 |
 <!-- guide:plan-body:end -->

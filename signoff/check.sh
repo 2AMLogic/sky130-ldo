@@ -102,6 +102,13 @@ fi
 # ---------------------------------------------------------------------------
 python3 signoff/verify-pins.py "$MANIFEST" "$PINS"
 
+# Item 9's PDK/tools pins must mirror sim/pdk.json -- the declaration the sim
+# harness actually runs against -- across the inventory, the attested envelope
+# and signoff/README.md row 9. `klt signoff --attest 9 --check` only compares
+# the inventory with the envelope, so without this a re-pinned sim/pdk.json
+# leaves item 9 attesting a pin nothing uses (issue #780).
+python3 signoff/check-item9-pins.py
+
 # ---------------------------------------------------------------------------
 # 2 + 3. Re-grade, and compare against the committed verdict of record.
 # ---------------------------------------------------------------------------

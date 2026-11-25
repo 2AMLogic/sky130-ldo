@@ -706,8 +706,13 @@ chained legs as one three-step request per supply (issue #177, below) and
 four-step request per supply (issue #755, below) and
 `sim/loop-gain`'s 18-leg AC grid as three ESR-group requests per supply (issue
 #754, below) and
+`sim/psrr-dc`'s two-load op + AC pairs as one four-step request per supply
+(issue #786: `op1`/`ac1` at 1.8 kOhm, then `alter rload = 36` and `op2`/`ac2`;
+the `let` vectors travel as `ac`-step `expr` measurements, the six manifest
+rows are graded locally, and the AC stimulus, output network and three-node
+`.nodeset` are pinned in the netlist) and
 `sim/startup`'s ramp-trace grid in its validated shape (issue #336, "Startup
-ESR grid" above). Every other manifest — `ic-screen-125c-*`, `psrr-dc`, `thermal`, and the `mc-*`
+ESR grid" above). Every other manifest — `ic-screen-125c-*`, `thermal`, and the `mc-*`
 experiments (which have their own runner, `mc-run.py`) — and any edited smoke,
 window-grid, dropout, endpoint or chained-legs shape
 is **refused before netlisting, submission or local ngspice**. The other
@@ -1240,9 +1245,10 @@ non-finite cell -> no finding, listed). Tests: `sim/tests/test_psrr_cap_sweep.py
 The grid samples the window; it cannot prove the continuous-window or 45-corner
 worst case.
 
-**Runner (`sim/bin/psrr-cap-sweep-run.py`).** `corner-run.py --backend batch` still
-refuses `psrr-dc` (its allowlist is untouched). This dedicated runner sends the sweep
-to `klt sim` instead, as **one request per corner**. Each corner's deck walks every
+**Runner (`sim/bin/psrr-cap-sweep-run.py`).** `corner-run.py --backend batch`
+runs the graded `psrr-dc` campaign through the adapter added in #786. The cap/ESR
+sweep has its own manifest slug, `psrr-dc-cap-esr-sweep`, and its dedicated runner
+sends **one request per corner** to `klt sim`. Each corner's deck walks every
 point as ordered `analysis_steps`: for each point and load, an `op` step whose
 `alter`s set COUT, RESR, CDIR and RLOAD explicitly, followed by the `ac lin 3 1e3 1e5`
 step. The testbench's `.nodeset` seed (#171/#179) applies to every one of these

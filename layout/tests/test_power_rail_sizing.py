@@ -1,5 +1,5 @@
-"""Unit tests for the load-current conductor sizing `gen-ldo-blocks.py` does
-(issue #154).
+"""Unit tests for the load-current conductor sizing `layout/bin/_power_rails.py`
+does (issue #154).
 
 These cover the parts of the power-rail path that are pure arithmetic or pure
 schematic bookkeeping -- the parts a DRC/LVS run would *not* catch, because a
@@ -18,7 +18,6 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
-from _layout_script_loader import load_script  # noqa: E402
 
 BIN_DIR = Path(__file__).resolve().parents[1] / "bin"
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -26,13 +25,18 @@ SPEC_PATH = REPO_ROOT / "spec" / "target-spec.md"
 
 sys.path.insert(0, str(BIN_DIR))
 
-
-def _load_gen_module():
-    return load_script("gen_ldo_blocks", BIN_DIR / "gen-ldo-blocks.py")
-
-
-GEN = _load_gen_module()
-
+from _power_rails import (  # noqa: E402
+    ADJ_ENCLOSURE_UM,
+    POWER_VIA_PAD_UM,
+    VIA1_UM,
+    VIA2_UM,
+    GenError,
+    identify_power_nets,
+    metal_min_rule_um,
+    parallel_sheet_rho,
+    power_rail_width_um,
+    rail_sheet_rho_ohm_sq,
+)
 from _spec_constants import SpecError, read_spec_constants  # noqa: E402
 
 
@@ -81,7 +85,7 @@ class PowerNetIdentificationTest(unittest.TestCase):
             {"kind": "res", "id": "R_FB_A", "name": "R_FB_A",
              "nets": {"A": "VOUT", "B": "FB", "W": "0"}},
         ]
-        power = GEN.identify_power_nets(devices)
+        power = identify_power_nets(devices)
         self.assertEqual(set(power), {"VOUT", "VIN"})
         self.assertEqual(power["VOUT"]["terminal"], "D")
         self.assertEqual(power["VIN"]["terminal"], "S")
@@ -92,13 +96,13 @@ class PowerNetIdentificationTest(unittest.TestCase):
             self._mos("M_A", 100.0, {"D": "N1", "G": "G1", "S": "VIN", "B": "VIN"}),
             self._mos("M_B", 90.0, {"D": "N2", "G": "G2", "S": "VIN", "B": "VIN"}),
         ]
-        with self.assertRaises(GEN.GenError):
-            GEN.identify_power_nets(devices)
+        with self.assertRaises(GenError):
+            identify_power_nets(devices)
 
 
 class RailSizingTest(unittest.TestCase):
     def test_width_meets_the_declared_ir_budget_exactly_when_unclamped(self) -> None:
-        sizing = GEN.power_rail_width_um(
+        sizing = power_rail_width_um(
             span_um=100.0,
             current_a=0.05,
             budget_v=0.0075,
@@ -113,12 +117,12 @@ class RailSizingTest(unittest.TestCase):
         self.assertAlmostEqual(sizing["width_um"], 0.0625 * 100.0 / 0.15, places=9)
 
     def test_doubling_the_current_doubles_the_width(self) -> None:
-        base = GEN.power_rail_width_um(100.0, 0.05, 0.0075, 0.0625, 1e6, 0.30)
-        twice = GEN.power_rail_width_um(100.0, 0.10, 0.0075, 0.0625, 1e6, 0.30)
+        base = power_rail_width_um(100.0, 0.05, 0.0075, 0.0625, 1e6, 0.30)
+        twice = power_rail_width_um(100.0, 0.10, 0.0075, 0.0625, 1e6, 0.30)
         self.assertAlmostEqual(twice["width_um"], 2.0 * base["width_um"], places=9)
 
     def test_clamping_is_reported_not_silent(self) -> None:
-        sizing = GEN.power_rail_width_um(
+        sizing = power_rail_width_um(
             span_um=2000.0,
             current_a=0.05,
             budget_v=0.0075,
@@ -132,24 +136,24 @@ class RailSizingTest(unittest.TestCase):
         self.assertGreater(sizing["ir_drop_v"], sizing["ir_budget_v"])
 
     def test_a_signal_scale_span_never_goes_below_the_minimum(self) -> None:
-        sizing = GEN.power_rail_width_um(0.5, 0.05, 0.0075, 0.0625, 1e6, 0.30)
+        sizing = power_rail_width_um(0.5, 0.05, 0.0075, 0.0625, 1e6, 0.30)
         self.assertEqual(sizing["width_um"], 0.30)
 
     def test_parallel_sheet_rho_is_the_parallel_combination(self) -> None:
         self.assertAlmostEqual(
-            GEN.parallel_sheet_rho([12.8, 0.125, 0.125, 0.047], (1, 2)),
+            parallel_sheet_rho([12.8, 0.125, 0.125, 0.047], (1, 2)),
             0.0625,
             places=9,
         )
         self.assertAlmostEqual(
-            GEN.parallel_sheet_rho([12.8, 0.125, 0.125, 0.047], (2, 3)),
+            parallel_sheet_rho([12.8, 0.125, 0.125, 0.047], (2, 3)),
             1.0 / (1.0 / 0.125 + 1.0 / 0.047),
             places=9,
         )
 
     def test_missing_sheet_rho_is_an_error_not_a_zero(self) -> None:
-        with self.assertRaises(GEN.GenError):
-            GEN.parallel_sheet_rho([12.8, 0.125, None, 0.047], (2, 3))
+        with self.assertRaises(GenError):
+            parallel_sheet_rho([12.8, 0.125, None, 0.047], (2, 3))
 
 
 class DeckConstantsTest(unittest.TestCase):
@@ -162,10 +166,10 @@ class DeckConstantsTest(unittest.TestCase):
             self.skipTest("klayout_tools not importable (run under layout/.venv)")
 
     def test_sheet_rho_and_min_widths_come_from_the_deck(self) -> None:
-        rho = GEN.rail_sheet_rho_ohm_sq("sky130")
+        rho = rail_sheet_rho_ohm_sq("sky130")
         self.assertGreater(rho[0], rho[1])  # li1 is far more resistive than met1
-        widths = GEN.metal_min_rule_um("sky130", "width")
-        spaces = GEN.metal_min_rule_um("sky130", "space")
+        widths = metal_min_rule_um("sky130", "width")
+        spaces = metal_min_rule_um("sky130", "space")
         for level in (1, 2, 3):
             self.assertIn(level, widths)
             self.assertIn(level, spaces)
@@ -178,16 +182,16 @@ class ViaEnclosureArithmeticTest(unittest.TestCase):
     """Issue #267: official-deck via length and adjacent-edge enclosure."""
 
     def test_via1_is_the_decks_exact_length(self) -> None:
-        self.assertAlmostEqual(GEN.VIA1_UM, 0.15)
+        self.assertAlmostEqual(VIA1_UM, 0.15)
 
     def test_extended_ends_meet_the_adjacent_edge_enclosure(self) -> None:
         # A POWER_VIA_PAD_UM-wide strap encloses a via by (pad - via) / 2 on its
         # sides, which falls short of the adjacent-edge figure, so the ends
         # must carry it: the end extension is what satisfies the rule.
-        for via in (GEN.VIA1_UM, GEN.VIA2_UM):
-            side = (GEN.POWER_VIA_PAD_UM - via) / 2.0
+        for via in (VIA1_UM, VIA2_UM):
+            side = (POWER_VIA_PAD_UM - via) / 2.0
             self.assertLess(side, 0.085 - 1e-9, "sides alone must not suffice")
-            end_half = via / 2.0 + GEN.ADJ_ENCLOSURE_UM
+            end_half = via / 2.0 + ADJ_ENCLOSURE_UM
             self.assertGreaterEqual(end_half - via / 2.0, 0.085 - 1e-9)
 
 

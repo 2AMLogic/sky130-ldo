@@ -31,6 +31,8 @@ signoff/
   check.sh                                re-grade + freshness gate (CI runs this)
   verify-pins.py                          check.sh stage 1: verify each pinned artifact (re-hash or store manifest)
   tests/test_verify_pins.py               mutation coverage for that stage (runs in check:ci)
+  check-item9-pins.py                     check.sh stage 1: item 9's pins must mirror sim/pdk.json
+  tests/test_item9_pins.py                mutation coverage for that check (runs in check:ci)
 ```
 
 - `block` is `"sky130-ldo"`. It is required: it is how this block's row is
@@ -714,6 +716,40 @@ not expressible in `klt` today: inventory entries are bare path strings with no
 per-entry options, and `_file_check()` always stamps a `content_hash`. Filed as
 a capability gap on the tool
 ([klayout-tools#5615](https://github.com/2AMLogic/klayout-tools/issues/5615)).
+
+### Item 9's pins are checked against `sim/pdk.json`, not just each other
+
+`sim/pdk.json` is the harness's authoritative declaration of the PDK
+(`variant`, `open_pdks_commit`) and toolchain (`tools`) every simulation
+record is pinned against. Item 9's evidence hardcodes the same values in
+three more places — the inventory's `pins`, the `{"check": "pin"}` entries
+of the attested envelope, and this document's item-9 row — and
+`klt signoff --attest 9 --check` only compares the inventory with the
+envelope: it never reads `sim/pdk.json`. Until issue #780 nothing compared
+the two sides, so a PDK re-pin could move `sim/pdk.json` and edit this
+document's row while the envelope kept attesting the old revision, with CI
+green the whole way. The tool-pin migrations (#639 `xschem`, #645 `ngspice`)
+touch the same `tools` object and would hit the identical blind spot.
+
+`signoff/check-item9-pins.py`, in `npm run check:ci` and `check.sh` stage 1,
+now fails unless all four sources agree. When `sim/pdk.json`'s pin moves,
+the same branch must:
+
+1. update `pins` (and, if the host tooling disclosure moved, the cold-start
+   `description`) in
+   [`evidence/item9-inventory.json`](evidence/item9-inventory.json);
+2. re-mint the envelope:
+
+   ```bash
+   uvx --from klayout-tools==0.9.0 klt signoff --attest 9 \
+     --inventory signoff/evidence/item9-inventory.json \
+     -o signoff/evidence/item9-attestation.generic.json
+   ```
+
+3. update item 9's row above to what the new run reported;
+4. re-pin `artifact-pins.json` and `block-manifest.json` for the re-minted
+   envelope and regenerate the verdict of record with
+   `bash signoff/check.sh --write`.
 
 ### The T1 headline in the root README is checked, not asserted
 
