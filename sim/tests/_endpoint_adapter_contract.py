@@ -122,7 +122,7 @@ class SiblingBenchGate:
         # issue #336 admits sim/startup through its own ramp-trace shape
         # (sim/tests/test_batch_startup_ramp_336.py); the remaining sibling
         # stays local-only.
-        self.assertNotIn("psrr-dc", corner_run.BATCH_ALLOWLIST)
+        self.assertNotIn("thermal", corner_run.BATCH_ALLOWLIST)
         self.assertEqual(
             corner_run.BATCH_ALLOWLIST.get("startup"), {"window_grid": True, "ramp_traces": True}
         )
