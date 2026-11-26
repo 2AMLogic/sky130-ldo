@@ -259,3 +259,136 @@ the standing process, not the already-merged #132 (see the "Ratification path"
 bullet and the 2026-11-22 amendment in the Status line).
 If a later ruling sets a ratified ambient, or moves θJA ownership into this
 block, a superseding record replaces this one. This record is not edited.
+
+---
+
+## Append (2026-11-26, issue #805): restart-evidence reconciliation for the fresh ratification review
+
+**This is an append, not an edit.** Nothing above changes: the 2026-08-25
+record's FAIL verdict, Finding 1's "hysteresis absent at all 15 corners"
+reading, the Decision (A)/(B) text and the Status / Ratification-path notes
+all stand as written, and DR-005's nominal targets — 150 °C trip / 135 °C
+reset, 15 °C interval — are preserved unchanged. What this append adds is the
+restart evidence issue #805 routed into this record for the fresh EE and
+market review owed under #301, so the ratifying PR links one dated place
+instead of a scattered set of `sim/` records. Every figure below was
+re-derived from the committed `result.json` files at repo state `aa5d06ff`
+(2026-11-26); #805's curation verified the same values against `e64fc01e`
+(2026-11-25).
+
+### What the market escalation actually measured (historical DUT and method)
+
+The 2026-11-22 market-key reviews on #735 ([comparison][mk1], [formal
+escalation][mk2] — both verdict `escalate`, both rating the shutdown/restart
+row `uncompetitive` and recommending operator review at ratification) are
+reviews of **this record's own Finding 1**, i.e. of the **historical DUT and
+method**: the pre-#230 comparator (the #29 5T-OTA with linear
+current-injection hysteresis `M_TSHYS`/`M_TSHYSB`, whose marginal
+regenerative loop gain #77 root-caused and #91 re-confirmed), measured by a
+single continuous ngspice **DC `.dc temp` continuation** — ascending then
+descending in one session, 2 °C grid — in record
+[`20260825-104426-933dfdd`](../../sim/thermal/records/20260825-104426-933dfdd.md):
+hysteresis 0.0 °C at 12 corners, −2.0/−2.4 °C at two more (at/just past the
+2 °C grid), −8.0 °C at `ff_27c_3.63v`. Those recommendations are not
+withdrawn here; the failure they ask to keep visible is preserved verbatim
+above.
+
+[mk1]: https://github.com/2AMLogic/sky130-ldo/pull/735#issuecomment-7077566952
+[mk2]: https://github.com/2AMLogic/sky130-ldo/pull/735#issuecomment-7077768812
+
+### What the integrated DUT and the staircase evidence show
+
+#242 (issue #230) replaced that comparator with the #229 regenerative trip
+comparator, and replaced the method: a DC continuation cannot resolve the two
+branches of a regenerative comparator — the mechanism Finding 1's zero-width
+results trace to — so `sim/thermal/run_hysteresis.py` (issues #511/#541)
+runs independent per-temperature `uic` transients, cold-start seeded for the
+rising trip and tripped-seeded for the falling reset, and bisects each
+crossing to 0.3125 °C. The graded record
+[`20261105-202028-97cd9a9e-qual-15corner`](../../sim/thermal/hysteresis/20261105-202028-97cd9a9e-qual-15corner/result.json)
+(354 points, 15 process/supply corners, complete, graded on each corner's
+conservative bracket edge) resolves **positive hysteresis at all 15
+corners**. The dependent record
+[`20261112-095143-16b7450c-qual-15corner-dependent`](../../sim/thermal/hysteresis/20261112-095143-16b7450c-qual-15corner-dependent/result.json)
+(#231, 682 points) adds the cold-start, EN-re-enable and amplitude-robustness
+rounds from each corner's recorded bracket, states recorded with no threshold
+applied or relaxed; and the paired campaign
+[`20261121-092243-db9f161a-i706-paired`](../../sim/thermal/records/20261121-092243-db9f161a-i706-paired.md)
+(#706) independently re-bisects the production DUT and the rev2 candidate —
+positive at all 30 corner/variant pairs, |Δtrip| ≤ one 0.3125 °C bisection
+step, every thermal limitation inherited identically.
+
+Because both the circuit and the measurement changed between the August and
+November records, the two results cannot be subtracted to isolate either
+contribution; each is reported on its own DUT and method.
+
+### Figures for both review keys, alongside the original vendor comparisons
+
+| DUT / part | Trip (rising) | Reset (falling) | Cooling interval | Kind |
+|---|---|---|---|---|
+| This block, integrated — worst corner, conservative bracket edge | ≥ 161.875 °C (`ss/3.63V`) | ≥ 148.75 °C (`sf/3.63V`) | ≥ 12.1875 °C (`fs/2.97V`) | measured, 15-corner floor |
+| This block, integrated — nominal corner `tt/3.30V`, midpoints | 172.34 °C | 159.22 °C | 13.125 °C | measured |
+| This block, integrated — full 15-corner range, midpoints | 162.03–181.41 °C | 148.91–168.91 °C | 12.5–13.44 °C (bracket 12.1875–13.75) | measured |
+| DR-005 nominal target (unchanged) | 150 °C | 135 °C | 15 °C | spec target |
+| Historical DUT (pre-#230, DC continuation) | 138.8–163.0 °C | equal to trip at 12 corners, above it at 3 | 0.0 °C ×12, −2.0/−2.4/−8.0 °C ×3 | measured, FAIL |
+| TI TLV700 (SLVSA00E §§6.5, 10.3) | ~160 °C | ~140 °C | ~20 °C | typical, datasheet |
+| TI TPS7A02 (SBVS277C §§6.5, 7.3.8) | ~170 °C | ~145 °C | ~25 °C | typical, datasheet |
+| TI TLV755P (SBVS320D, formal escalation) | ~165 °C | ~155 °C | ~10 °C | typical, datasheet |
+
+**Three claims that must not be conflated** — the distinction both review
+keys need:
+
+1. **A demonstrated positive interval.** The spec row's binding backstop
+   bound is the hysteresis *sign* (the paired campaign's own framing); the
+   staircase demonstrates a positive interval at all 15 corners with a
+   conservative floor of 12.1875 °C. That is the escalation's functional gap
+   — "no demonstrated cooling before restart" — and it is now evidenced.
+2. **Meeting the nominal values.** Not met: the 15 °C nominal interval is
+   short by 1.6–2.5 °C at midpoints (2.8 °C at the worst conservative edge).
+   Trip and reset sit *above* their 150/135 °C nominals at every corner — the
+   untrimmed, PVT-loose direction DR-005 itself predicts — and Finding 1's
+   worst-corner guard-band floor (≥ 150 °C, pending #1's ruling on whether
+   that reading binds) is met on the integrated DUT (lowest bracket edge
+   161.875 °C), where the historical DUT missed it at 6 of 15 corners. The
+   nominal row is not relaxed by this append; whether the shortfall is
+   acceptable is a ratification disposition.
+3. **Matching a vendor's typical interval.** Not a claim this record can
+   make: the cited vendor figures are *typical* values, not guaranteed
+   minima, and span 10–25 °C across the comparable parts. The demonstrated
+   12.19–13.44 °C interval sits below the TLV700/TPS7A02 typicals and above
+   the TLV755P typical; whether that is competitive is a disposition for the
+   market key, not a fact asserted here.
+
+### Qualification limits that survive
+
+- **Model extrapolation.** Every trip/reset point (bracket edges
+  148.75–181.56 °C) runs the pinned BSIM models above DR-004's characterized
+  125 °C axis — the caveat DR-005's own records and the paired campaign
+  carry. The simulated fault temperatures exceed the characterized model
+  range.
+- **ff search ceiling.** The ff bisection upper bound is 180 °C (190 °C
+  aborts with `timestep_too_small`); the `ff/2.97V` trip bracket
+  [179.6875, 180] touches that cap — trip found, no margin above it.
+- **Scenario coverage.** The graded record covers the hot/cold_exc staircase
+  only; cold-start, EN-re-enable and amplitude-robustness states live in the
+  dependent record (recorded, not threshold-graded).
+- **Toolchain and provenance.** The graded record ran ngspice-46 / XSCHEM
+  V3.4.7 against the declared baseline ngspice 42 / xschem 3.4.4
+  (`on_baseline: False`, recorded not gated; the paired campaign ran
+  ngspice-47 on remote executors); it carries no input fingerprint, so
+  `measurements/characterization.md` reports its experiment/solver inputs
+  and netlist freshness as `unverified`; and the paired campaign's executed
+  worker PDK is unverified for the thermal legs (sibling legs of the same
+  fleet reported a stamp mismatch).
+- **The historical FAIL itself** stays as an artifact on its own DUT and
+  method, per the append-only convention.
+
+### Dispositions owed
+
+DR-008 stays `proposed` (see Status and Ratification path above). The EE and
+market dispositions for this evidence are owed by the fresh review on the
+ratifying PR that carries this append, coordinated under #301; their
+outcomes must be linked back to #805, and if a reviewer finds an unresolved
+shortfall, the specific evidence gap — or the explicit operator decision
+that accepts it — must be identified or linked before ratification. This
+append records evidence; it grants neither key's verdict.
