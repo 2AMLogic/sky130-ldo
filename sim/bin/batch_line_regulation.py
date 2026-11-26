@@ -293,7 +293,14 @@ def extract_endpoint_values(ep: Endpoint, measurements: list) -> tuple[dict[str,
     (keyed by `tran<N>.<card>`), plus reasons the corner cannot PASS: a
     missing, duplicated, errored or non-finite value, or a result identity the
     request never asked for."""
-    expected = {klt_result_name(ep, n): n for n, _, _ in ep.cards}
+    expected = [klt_result_name(ep, n) for n, _, _ in ep.cards]
+    return extract_step_values(ep.step_name, expected, measurements)
+
+
+def extract_step_values(
+    step_name: str, expected: list[str], measurements: list,
+) -> tuple[dict[str, float | None], list[str]]:
+    """Validate a step's measurements against its expected qualified identities."""
     by_name: dict[str, list] = {}
     for rm in measurements:
         if isinstance(rm, dict) and isinstance(rm.get("name"), str):
@@ -302,21 +309,21 @@ def extract_endpoint_values(ep: Endpoint, measurements: list) -> tuple[dict[str,
             by_name.setdefault("<malformed>", []).append(rm)
     reasons, values = [], {}
     for extra in sorted(set(by_name) - set(expected)):
-        reasons.append(f"[{ep.step_name}] unexpected result identity {extra!r} in klt sim response")
+        reasons.append(f"[{step_name}] unexpected result identity {extra!r} in klt sim response")
     for klt_name in expected:
         entries = by_name.get(klt_name, [])
         value = None
         if not entries:
-            reasons.append(f"[{ep.step_name}] endpoint value {klt_name} not found in klt sim response")
+            reasons.append(f"[{step_name}] endpoint value {klt_name} not found in klt sim response")
         elif len(entries) > 1:
-            reasons.append(f"[{ep.step_name}] endpoint value {klt_name} reported more than once")
+            reasons.append(f"[{step_name}] endpoint value {klt_name} reported more than once")
         else:
             e = entries[0]
             v = e.get("value")
             if e.get("status") not in (None, "pass", "fail", "ok"):
-                reasons.append(f"[{ep.step_name}] {klt_name} status {e.get('status')!r}")
+                reasons.append(f"[{step_name}] {klt_name} status {e.get('status')!r}")
             elif isinstance(v, bool) or not isinstance(v, (int, float)) or not math.isfinite(v):
-                reasons.append(f"[{ep.step_name}] {klt_name} value is missing or non-finite ({v!r})")
+                reasons.append(f"[{step_name}] {klt_name} value is missing or non-finite ({v!r})")
             else:
                 value = float(v)
         values[klt_name] = value

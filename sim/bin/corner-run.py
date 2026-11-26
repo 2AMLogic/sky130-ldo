@@ -55,6 +55,7 @@ from _record_common import (
     reserve_record_id,
     render_record_footer,
     render_record_header,
+    WorkerPdkStamp,
     spiceinit_sha256,
     write_new_text,
 )
@@ -806,17 +807,12 @@ def grid_coverage(exp: Experiment, results: list[dict], corners: list[Corner]) -
                 status, reason = "non-finite", "value is NaN/inf"
             else:
                 evaluated += 1
-                if m.min is not None and value < m.min:
-                    status, reason = "fail", f"below min {m.min:g}"
-                elif m.max is not None and value > m.max:
-                    status, reason = "fail", f"above max {m.max:g}"
-                elif check.get("pass") is not True:
-                    status, reason = "fail", check.get("reason") or "flagged failing"
-                else:
-                    status, reason = "pass", ""
-            if status == "pass":
-                passing += 1
-                continue
+                in_bounds, reason = grade_bounds(m, value)
+                if in_bounds and check.get("pass") is True:
+                    passing += 1
+                    continue
+                status = "fail"
+                reason = reason or check.get("reason") or "flagged failing"
             n_failures += 1
             if len(failures) < GRID_FAILURE_CAP:
                 failures.append(
@@ -1029,10 +1025,11 @@ def render_batch_execution(record: dict) -> list[str]:
             + (f" ({detail})" if detail else "")
         )
         lines.append(
-            f"    - klt provenance.pdk.version `{rq.get('pdk_version') or 'not reported'}` — "
+            f"    - submitter klt provenance.pdk.version `{rq.get('pdk_version') or 'not reported'}` — "
             + ("names" if rq.get("klt_pdk_names_pin") else "**does NOT name**")
             + " the pinned open_pdks commit"
         )
+        lines.append(f"    - {WorkerPdkStamp(remote).describe()}")
     if ex.get("adapter") and ex["adapter"].get("name") in (
         "line-regulation-endpoints", "load-regulation-endpoints", "iq-endpoints",
     ):

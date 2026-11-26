@@ -90,12 +90,14 @@ class CompareTests(unittest.TestCase):
 GROUPS = ("0ma", "50ma")
 
 
-def write_remote(d: Path, environments, vals=None) -> None:
+def write_remote(d: Path, environments, vals=None, change_first=None) -> None:
     """Lay out remote/tran{1,2}/response.json: each request carries its own
     `environment` and, given `vals`, its three endpoint measurements."""
     for t, (environment, ld) in enumerate(zip(environments, GROUPS), 1):
         names = [f"vout_{ld}{sfx}" for sfx in ("", "_min", "_max")]
-        ms = [{"name": f"tran.{n}", "value": vals[n]} for n in names] if vals else []
+        ms = [{"name": f"tran{t}.{n}", "value": vals[n]} for n in names] if vals else []
+        if t == 1 and change_first:
+            change_first(ms)
         (d / "remote" / f"tran{t}").mkdir(parents=True)
         (d / "remote" / f"tran{t}" / "response.json").write_text(
             json.dumps({"environment": environment, "corners": [{"measurements": ms}]})
@@ -129,15 +131,14 @@ class RemoteEngineTests(unittest.TestCase):
         self.assertIsNone(self.load([self.KNOWN, {"engine_version": "47"}]))
 
 
-class CliEngineTests(unittest.TestCase):
-    """Issue #768: both legs agree on every endpoint and both grade FAIL, so
-    the verdict turns on the engine version alone."""
+class CliTests(unittest.TestCase):
+    """Both legs start with matching endpoints and FAIL grades."""
 
-    def run_cli(self, environments, local_engine):
+    def run_cli(self, environments, local_engine, change_first=None):
         v = values()
         with tempfile.TemporaryDirectory() as t:
             d = Path(t)
-            write_remote(d, environments, v)
+            write_remote(d, environments, v, change_first)
             (d / "local").mkdir()
             (d / "local" / "ngspice.log").write_text(
                 "".join(f"{k} = {x!r}\n" for k, x in v.items())
@@ -163,6 +164,22 @@ class CliEngineTests(unittest.TestCase):
         rc, rep, _ = self.run_cli([{"engine_version": "46"}] * 2, "46")
         self.assertEqual(rc, 0)
         self.assertEqual(rep["verdict"], "equivalent")
+
+    def test_invalid_endpoint_measurements_are_unresolved(self):
+        def duplicate(ms):
+            ms.insert(0, {**ms[0], "value": ms[0]["value"] + 0.1})
+
+        for reason, change in (
+            ("reported more than once", duplicate),
+            ("status 'error'", lambda ms: ms[0].update(status="error")),
+            ("unexpected result identity", lambda ms: ms.append({**ms[0], "name": "tran1.extra"})),
+            ("not found", lambda ms: ms[0].update(name="tran2.vout_0ma")),
+        ):
+            with self.subTest(reason=reason):
+                rc, rep, _ = self.run_cli([{"engine_version": "46"}] * 2, "46", change)
+                self.assertEqual((rc, rep["verdict"]), (2, "unresolved"))
+                self.assertFalse(rep["equivalence_claimable"])
+                self.assertTrue(any(reason in error for error in rep["remote_errors"]))
 
 
 if __name__ == "__main__":

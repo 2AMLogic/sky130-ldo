@@ -1,0 +1,694 @@
+{
+  "schema_version": 3,
+  "netlist": {
+    "path": "sim/build/psrr-dc/20261125-113045-f6089144.ephemeral-4136074/klt-requests/v3.30.spice",
+    "scope": "repo"
+  },
+  "status": "pass",
+  "corner_count": 1,
+  "passed": 1,
+  "failed": 0,
+  "errored": 0,
+  "inconclusive": 0,
+  "diagnostic_counts": {
+    "by_code": {},
+    "by_severity": {},
+    "corners_with_diagnostics": 0
+  },
+  "metrics": {
+    "sim__corner__count": 1,
+    "sim__corner__passed_count": 1,
+    "sim__corner__failed_count": 0,
+    "sim__corner__errored_count": 0,
+    "sim__corner__inconclusive_count": 0
+  },
+  "environment": {
+    "engine": "ngspice",
+    "engine_version": "47",
+    "ngspice_binary": "/usr/local/bin/ngspice",
+    "engine_build": {
+      "version_banner": "******\n** ngspice-47 : Circuit level simulation program\n** Compiled with KLU Direct Linear Solver\n** The U. C. Berkeley CAD Group\n** Copyright 1985-1994, Regents of the University of California.\n** Copyright 2001-2026, The ngspice team.\n** Please get your ngspice manual from https://ngspice.sourceforge.io/docs.html\n** Please file your bug-reports at http://ngspice.sourceforge.net/bugrep.html\n** Creation Date: Fri Nov 13 23:19:32 UTC 2026\n******",
+      "binary_sha256": "e12148baf532d879d2e2053cecc5b498680bd4156a0dc3f69ce4f83e741e1314",
+      "probe": "ok",
+      "reason": null
+    },
+    "ngspice_init": {
+      "source": "runner",
+      "lines": null,
+      "sha256": null
+    },
+    "models_lib": {
+      "path": null,
+      "scope": "external"
+    },
+    "models_lib_sha256": "48de7c677e2c6e7d09b2559279de9f818be71010a4aa933d728eb4db3b133c84",
+    "models_lib_sha256_scope": "client",
+    "netlist_sha256": "357010077670d58d39b1f6587fa3983711eefee9595eb6fd7b54560f30bfa18c",
+    "netlist_sha256_scope": "staged",
+    "netlist_closure": [
+      {
+        "path": "sim/build/psrr-dc/20261125-113045-f6089144.ephemeral-4136074/klt-requests/v3.30.spice",
+        "scope": "repo",
+        "sha256": "357010077670d58d39b1f6587fa3983711eefee9595eb6fd7b54560f30bfa18c"
+      }
+    ],
+    "netlist_identity": "sha256:04782f5c6f82ddace459113e2e32e9447e0c508328ad74f5982b043282d1e31a",
+    "remote": {
+      "provider": "aws-batch-fleet",
+      "job_id": "klt-sim-7a400ce98ee7",
+      "image_profile": "sim",
+      "region": "us-east-1",
+      "instance_id": "i-07bbc129e9be103aa",
+      "instance_type": "c7i.4xlarge",
+      "availability_zone": "us-east-1b",
+      "ami_id": "ami-09c14f55df4958cbd",
+      "lifecycle": "spot",
+      "spot": true,
+      "state": "done",
+      "exit_code": "0",
+      "concurrency": "1",
+      "physical_cores": "8",
+      "elapsed_seconds": 20,
+      "client_submitted_at": "2026-11-25T11:30:48.883087Z",
+      "client_launched_at": "2026-11-25T11:31:12.298468Z",
+      "client_status_terminal_at": "2026-11-25T11:32:15.156774Z",
+      "client_collected_at": "2026-11-25T11:32:16.091904Z",
+      "runner_klt_version": "0.9.0",
+      "client_klt_version": "0.9.3.dev5605+g473b2f82d793",
+      "runner_compatibility": "match",
+      "runner_request_features": {
+        "required": [
+          "analysis_steps",
+          "measurements[].expr",
+          "options.ngspice_init"
+        ],
+        "missing": [],
+        "status": "supported"
+      },
+      "worker_environment": {
+        "capture": "ok",
+        "simulator": {
+          "requested_binary": "ngspice",
+          "binary_source": "PATH",
+          "selected_path": "/usr/local/bin/ngspice",
+          "version_banner": "******\n** ngspice-47 : Circuit level simulation program\n** Compiled with KLU Direct Linear Solver\n** The U. C. Berkeley CAD Group\n** Copyright 1985-1994, Regents of the University of California.\n** Copyright 2001-2026, The ngspice team.\n** Please get your ngspice manual from https://ngspice.sourceforge.io/docs.html\n** Please file your bug-reports at http://ngspice.sourceforge.net/bugrep.html\n** Creation Date: Fri Nov 13 23:19:32 UTC 2026\n******\n",
+          "version_probe": "ok",
+          "binary_sha256": "e12148baf532d879d2e2053cecc5b498680bd4156a0dc3f69ce4f83e741e1314"
+        },
+        "pdk": {
+          "variant": "sky130A",
+          "root": "/opt/pdk",
+          "stamp_scheme": "sources-sha256",
+          "stamp_sha256": "4ca10280ae9f293aa1ff69f0060a52e0026929111bda881503717469b429ce67",
+          "stamp_text": "open_pdks f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7",
+          "models_staged": false,
+          "stamp_scope": "executed"
+        },
+        "cpu_model": "Intel(R) Xeon(R) Platinum 8488C",
+        "omp_num_threads": null,
+        "image_manifest": null,
+        "model_inputs": null,
+        "diagnostics": [],
+        "pdk_stamp_comparison": {
+          "status": "mismatch",
+          "warning": "the worker's PDK revision stamp for sky130A differs from the one the submitter resolved locally; results may differ from a local run (a matching stamp would not prove identical models)"
+        },
+        "ngspice_init": null,
+        "threads_per_worker": null,
+        "engine_build_comparison": {
+          "status": "match"
+        }
+      },
+      "runner_model_inputs": null,
+      "runner_models_lib_sha256": "48de7c677e2c6e7d09b2559279de9f818be71010a4aa933d728eb4db3b133c84",
+      "runner_corner_section_libs": null,
+      "runner_osdi_preload": null,
+      "job_ceiling": {
+        "basis": "conservative_serial_bound",
+        "unit_count": 1,
+        "per_unit_timeout_s": 300,
+        "overhead_s": 120.0,
+        "job_bound_s": 420.0,
+        "max_job_seconds": 3600.0,
+        "max_job_seconds_source": "fleet_config",
+        "exceeds_ceiling": false,
+        "check": "warn",
+        "max_units_per_job": 11,
+        "recommended_hosts": 1,
+        "image_profile": "sim"
+      },
+      "models_lib_comparison": {
+        "status": "match"
+      }
+    },
+    "engine_host": "worker",
+    "client_ngspice_binary": "/home/ubuntu/.local/bin/ngspice",
+    "client_engine_build": {
+      "version_banner": "******\n** ngspice-47 : Circuit level simulation program\n** Compiled with KLU Direct Linear Solver\n** The U. C. Berkeley CAD Group\n** Copyright 1985-1994, Regents of the University of California.\n** Copyright 2001-2026, The ngspice team.\n** Please get your ngspice manual from https://ngspice.sourceforge.io/docs.html\n** Please file your bug-reports at http://ngspice.sourceforge.net/bugrep.html\n** Creation Date: Fri Nov 13 23:19:32 UTC 2026\n******",
+      "binary_sha256": "39ca1adb826660324c3626f72bd946ec40704f0f3fc8e243c623f76e24b3eee2",
+      "probe": "ok",
+      "reason": null
+    },
+    "backend": {
+      "resolved": "batch",
+      "source": "flag",
+      "requested": "batch"
+    }
+  },
+  "coverage": {
+    "corners_simulated": 1,
+    "measurements_declared": 12,
+    "measurements_with_limits": 0,
+    "unrecognized_limit_keys": [],
+    "schema_version": 1,
+    "known": true,
+    "checked": [
+      "measurement:[0,\"tt/novdd/27C\",\"ac1.psrr_100khz_1ma_db\"]/observation",
+      "measurement:[0,\"tt/novdd/27C\",\"ac1.psrr_1khz_1ma_db\"]/observation",
+      "measurement:[0,\"tt/novdd/27C\",\"ac2.psrr_100khz_50ma_db\"]/observation",
+      "measurement:[0,\"tt/novdd/27C\",\"ac2.psrr_1khz_50ma_db\"]/observation",
+      "measurement:[0,\"tt/novdd/27C\",\"meas_psrr_100khz_1ma_db\"]/observation",
+      "measurement:[0,\"tt/novdd/27C\",\"meas_psrr_100khz_50ma_db\"]/observation",
+      "measurement:[0,\"tt/novdd/27C\",\"meas_psrr_1khz_1ma_db\"]/observation",
+      "measurement:[0,\"tt/novdd/27C\",\"meas_psrr_1khz_50ma_db\"]/observation",
+      "measurement:[0,\"tt/novdd/27C\",\"meas_vout_seed_1ma_v\"]/observation",
+      "measurement:[0,\"tt/novdd/27C\",\"meas_vout_seed_50ma_v\"]/observation",
+      "measurement:[0,\"tt/novdd/27C\",\"op1.vout_seed_1ma_v\"]/observation",
+      "measurement:[0,\"tt/novdd/27C\",\"op2.vout_seed_50ma_v\"]/observation"
+    ],
+    "skipped": [],
+    "inapplicable": [
+      {
+        "id": "measurement:[0,\"tt/novdd/27C\",\"ac1.psrr_100khz_1ma_db\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/27C\",\"ac1.psrr_1khz_1ma_db\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/27C\",\"ac2.psrr_100khz_50ma_db\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/27C\",\"ac2.psrr_1khz_50ma_db\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/27C\",\"meas_psrr_100khz_1ma_db\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/27C\",\"meas_psrr_100khz_50ma_db\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/27C\",\"meas_psrr_1khz_1ma_db\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/27C\",\"meas_psrr_1khz_50ma_db\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/27C\",\"meas_vout_seed_1ma_v\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/27C\",\"meas_vout_seed_50ma_v\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/27C\",\"op1.vout_seed_1ma_v\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"tt/novdd/27C\",\"op2.vout_seed_50ma_v\"]/limits",
+        "reason": "characterization_without_limits"
+      }
+    ],
+    "unknown": [],
+    "nothing_checked": false,
+    "nothing_checked_reasons": []
+  },
+  "provenance": {
+    "klt_version": "0.9.3.dev5605+g473b2f82d793",
+    "klt_git_commit": "473b2f82d793afc797c9509ca44824e59f61244a",
+    "klt_reinstall_spec": "klayout-tools @ git+https://github.com/2AMLogic/klayout-tools@473b2f82d793afc797c9509ca44824e59f61244a",
+    "klayout_version": "0.30.13",
+    "pdk": {
+      "name": "sky130A",
+      "source": "PDK_ROOT environment variable",
+      "version": "open_pdks c6d73a35f524070e85faff4a6a9eef49553ebc2b",
+      "ambiguous_sources": [
+        "search root: ~/.ciel"
+      ],
+      "compatibility": {
+        "status": "mismatch",
+        "package": "open_pdks-sky130",
+        "expected": "open_pdks f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7"
+      }
+    },
+    "deck": {
+      "name": "sky130.lib.spice",
+      "content_hash": "sha256:48de7c677e2c6e7d09b2559279de9f818be71010a4aa933d728eb4db3b133c84",
+      "released": false
+    },
+    "input": {
+      "content_hash": "sha256:357010077670d58d39b1f6587fa3983711eefee9595eb6fd7b54560f30bfa18c",
+      "role": "netlist"
+    }
+  },
+  "measurements": [
+    {
+      "name": "op1.vout_seed_1ma_v",
+      "unit": "V",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/27C",
+        "value": 1.800596,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "tt/novdd/27C",
+        "value": 1.800596
+      },
+      "max": {
+        "corner_id": "tt/novdd/27C",
+        "value": 1.800596
+      },
+      "step": "op1"
+    },
+    {
+      "name": "ac1.psrr_1khz_1ma_db",
+      "unit": "dB",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/27C",
+        "value": 23.23332,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "tt/novdd/27C",
+        "value": 23.23332
+      },
+      "max": {
+        "corner_id": "tt/novdd/27C",
+        "value": 23.23332
+      },
+      "step": "ac1"
+    },
+    {
+      "name": "ac1.psrr_100khz_1ma_db",
+      "unit": "dB",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/27C",
+        "value": 33.51854,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "tt/novdd/27C",
+        "value": 33.51854
+      },
+      "max": {
+        "corner_id": "tt/novdd/27C",
+        "value": 33.51854
+      },
+      "step": "ac1"
+    },
+    {
+      "name": "op2.vout_seed_50ma_v",
+      "unit": "V",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/27C",
+        "value": 1.798832,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "tt/novdd/27C",
+        "value": 1.798832
+      },
+      "max": {
+        "corner_id": "tt/novdd/27C",
+        "value": 1.798832
+      },
+      "step": "op2"
+    },
+    {
+      "name": "ac2.psrr_1khz_50ma_db",
+      "unit": "dB",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/27C",
+        "value": 23.32967,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "tt/novdd/27C",
+        "value": 23.32967
+      },
+      "max": {
+        "corner_id": "tt/novdd/27C",
+        "value": 23.32967
+      },
+      "step": "ac2"
+    },
+    {
+      "name": "ac2.psrr_100khz_50ma_db",
+      "unit": "dB",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/27C",
+        "value": 11.32011,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "tt/novdd/27C",
+        "value": 11.32011
+      },
+      "max": {
+        "corner_id": "tt/novdd/27C",
+        "value": 11.32011
+      },
+      "step": "ac2"
+    },
+    {
+      "name": "meas_psrr_1khz_1ma_db",
+      "unit": "dB",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/27C",
+        "value": 23.23332,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "tt/novdd/27C",
+        "value": 23.23332
+      },
+      "max": {
+        "corner_id": "tt/novdd/27C",
+        "value": 23.23332
+      },
+      "derived_from": [
+        "ac1.psrr_1khz_1ma_db"
+      ]
+    },
+    {
+      "name": "meas_psrr_100khz_1ma_db",
+      "unit": "dB",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/27C",
+        "value": 33.51854,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "tt/novdd/27C",
+        "value": 33.51854
+      },
+      "max": {
+        "corner_id": "tt/novdd/27C",
+        "value": 33.51854
+      },
+      "derived_from": [
+        "ac1.psrr_100khz_1ma_db"
+      ]
+    },
+    {
+      "name": "meas_psrr_1khz_50ma_db",
+      "unit": "dB",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/27C",
+        "value": 23.32967,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "tt/novdd/27C",
+        "value": 23.32967
+      },
+      "max": {
+        "corner_id": "tt/novdd/27C",
+        "value": 23.32967
+      },
+      "derived_from": [
+        "ac2.psrr_1khz_50ma_db"
+      ]
+    },
+    {
+      "name": "meas_psrr_100khz_50ma_db",
+      "unit": "dB",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/27C",
+        "value": 11.32011,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "tt/novdd/27C",
+        "value": 11.32011
+      },
+      "max": {
+        "corner_id": "tt/novdd/27C",
+        "value": 11.32011
+      },
+      "derived_from": [
+        "ac2.psrr_100khz_50ma_db"
+      ]
+    },
+    {
+      "name": "meas_vout_seed_1ma_v",
+      "unit": "V",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/27C",
+        "value": 1.800596,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "tt/novdd/27C",
+        "value": 1.800596
+      },
+      "max": {
+        "corner_id": "tt/novdd/27C",
+        "value": 1.800596
+      },
+      "derived_from": [
+        "op1.vout_seed_1ma_v"
+      ]
+    },
+    {
+      "name": "meas_vout_seed_50ma_v",
+      "unit": "V",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "tt/novdd/27C",
+        "value": 1.798832,
+        "margin": null
+      },
+      "min": {
+        "corner_id": "tt/novdd/27C",
+        "value": 1.798832
+      },
+      "max": {
+        "corner_id": "tt/novdd/27C",
+        "value": 1.798832
+      },
+      "derived_from": [
+        "op2.vout_seed_50ma_v"
+      ]
+    }
+  ],
+  "corners": [
+    {
+      "corner_id": "tt/novdd/27C",
+      "process": "tt",
+      "supply_v": {},
+      "temperature_c": 27.0,
+      "status": "pass",
+      "runtime_s": 4.731,
+      "peak_rss_bytes": 188624896,
+      "engine_exit_code": 0,
+      "engine_killed_by_signal": null,
+      "measurements": [
+        {
+          "name": "op1.vout_seed_1ma_v",
+          "value": 1.800596,
+          "unit": "V",
+          "status": "pass",
+          "margin": null,
+          "step": "op1"
+        },
+        {
+          "name": "ac1.psrr_1khz_1ma_db",
+          "value": 23.23332,
+          "unit": "dB",
+          "status": "pass",
+          "margin": null,
+          "step": "ac1"
+        },
+        {
+          "name": "ac1.psrr_100khz_1ma_db",
+          "value": 33.51854,
+          "unit": "dB",
+          "status": "pass",
+          "margin": null,
+          "step": "ac1"
+        },
+        {
+          "name": "op2.vout_seed_50ma_v",
+          "value": 1.798832,
+          "unit": "V",
+          "status": "pass",
+          "margin": null,
+          "step": "op2"
+        },
+        {
+          "name": "ac2.psrr_1khz_50ma_db",
+          "value": 23.32967,
+          "unit": "dB",
+          "status": "pass",
+          "margin": null,
+          "step": "ac2"
+        },
+        {
+          "name": "ac2.psrr_100khz_50ma_db",
+          "value": 11.32011,
+          "unit": "dB",
+          "status": "pass",
+          "margin": null,
+          "step": "ac2"
+        },
+        {
+          "name": "meas_psrr_1khz_1ma_db",
+          "value": 23.23332,
+          "unit": "dB",
+          "status": "pass",
+          "margin": null,
+          "derived_from": [
+            "ac1.psrr_1khz_1ma_db"
+          ]
+        },
+        {
+          "name": "meas_psrr_100khz_1ma_db",
+          "value": 33.51854,
+          "unit": "dB",
+          "status": "pass",
+          "margin": null,
+          "derived_from": [
+            "ac1.psrr_100khz_1ma_db"
+          ]
+        },
+        {
+          "name": "meas_psrr_1khz_50ma_db",
+          "value": 23.32967,
+          "unit": "dB",
+          "status": "pass",
+          "margin": null,
+          "derived_from": [
+            "ac2.psrr_1khz_50ma_db"
+          ]
+        },
+        {
+          "name": "meas_psrr_100khz_50ma_db",
+          "value": 11.32011,
+          "unit": "dB",
+          "status": "pass",
+          "margin": null,
+          "derived_from": [
+            "ac2.psrr_100khz_50ma_db"
+          ]
+        },
+        {
+          "name": "meas_vout_seed_1ma_v",
+          "value": 1.800596,
+          "unit": "V",
+          "status": "pass",
+          "margin": null,
+          "derived_from": [
+            "op1.vout_seed_1ma_v"
+          ]
+        },
+        {
+          "name": "meas_vout_seed_50ma_v",
+          "value": 1.798832,
+          "unit": "V",
+          "status": "pass",
+          "margin": null,
+          "derived_from": [
+            "op2.vout_seed_50ma_v"
+          ]
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-786/sim/build/psrr-dc/20261125-113045-f6089144.ephemeral-4136074/klt-out/v3.30/tt_novdd_27C/ngspice.log",
+        "raw": null,
+        "waveform": null,
+        "deck": "/home/ubuntu/GitHub/sky130-ldo/.loom/worktrees/issue-786/sim/build/psrr-dc/20261125-113045-f6089144.ephemeral-4136074/klt-out/v3.30/tt_novdd_27C/corner.cir"
+      },
+      "monte_carlo": null,
+      "steps": [
+        {
+          "name": "op1",
+          "kind": "op",
+          "status": "ok"
+        },
+        {
+          "name": "ac1",
+          "kind": "ac",
+          "status": "ok"
+        },
+        {
+          "name": "op2",
+          "kind": "op",
+          "status": "ok"
+        },
+        {
+          "name": "ac2",
+          "kind": "ac",
+          "status": "ok"
+        }
+      ]
+    }
+  ],
+  "diagnostics": [
+    {
+      "code": "batch_ngspice_init_unverified",
+      "severity": "warning",
+      "feature": "options.ngspice_init",
+      "simulator_application": "unverified",
+      "jobs": [
+        {
+          "job_id": "klt-sim-7a400ce98ee7",
+          "fleet_index": null,
+          "request_identity": "unverified"
+        }
+      ],
+      "message": "Worker reports do not confirm that ngspice applied options.ngspice_init. Jobs marked digest_reported reported the requested init contents. For jobs marked unverified, the request identity is also unknown."
+    },
+    {
+      "severity": "warning",
+      "code": "model_bin_range_preflight",
+      "message": "preflight: instance 'XM_PASS' (sky130_fd_pr__pfet_g5v0d10v5) has w=100u nf=25, at/above the ~100 um per-instance width bin range some PDKs enforce (keyed on w as written; nf= does not widen it); ngspice may abort with \"could not find a valid modelname\". Use m= to parallel smaller-width instances (see issue #4976)",
+      "instance": "XM_PASS",
+      "model": "sky130_fd_pr__pfet_g5v0d10v5",
+      "w_um": 100.0,
+      "nf": 25.0
+    }
+  ]
+}

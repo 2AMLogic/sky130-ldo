@@ -38,12 +38,13 @@ def _response(engine: str, measurements: list) -> str:
 
 def write_dropout_pair(d: Path) -> None:
     vals = {"dropout_vin_x": 2.161658, "vout_at_max_vin_v": 1.798832}
+    measurements = [{"name": f"dropout.{k}", "value": v} for k, v in vals.items()]
+    measurements.append(
+        {"name": "dropout.dropout_v", "value": vals["dropout_vin_x"] - 1.764}
+    )
     (d / "remote" / "v3.30").mkdir(parents=True)
     (d / "remote" / "v3.30" / "response.json").write_text(
-        _response(
-            "46",
-            [{"name": f"dropout.{k}", "value": v} for k, v in vals.items()],
-        )
+        _response("46", measurements)
     )
     (d / "local").mkdir()
     (d / "local" / "ngspice.log").write_text(
@@ -57,7 +58,7 @@ def write_load_regulation_pair(d: Path) -> None:
         names = [prefix + s for s in ("", "_min", "_max")]
         (d / "remote" / f"tran{t}").mkdir(parents=True)
         (d / "remote" / f"tran{t}" / "response.json").write_text(
-            _response("46", [{"name": f"load.{n}", "value": value} for n in names])
+            _response("46", [{"name": f"tran{t}.{n}", "value": value} for n in names])
         )
     (d / "local").mkdir()
     (d / "local" / "ngspice.log").write_text(
@@ -81,7 +82,7 @@ def write_line_regulation_pair(d: Path) -> None:
         part = names[3 * (t - 1) : 3 * t]
         (d / "remote" / f"tran{t}").mkdir(parents=True)
         (d / "remote" / f"tran{t}" / "response.json").write_text(
-            _response("46", [{"name": f"lr.{n}", "value": vals[n]} for n in part])
+            _response("46", [{"name": f"tran{t}.{n}", "value": vals[n]} for n in part])
         )
     slopes = {
         f"line_reg_{ld}_mv_per_v": abs(1000 * (hi - lo) / (3.63 - 2.97))

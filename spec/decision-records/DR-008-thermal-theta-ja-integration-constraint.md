@@ -4,6 +4,14 @@
   `spec/target-spec.md`; it records an assumption the ratified Thermal row
   delegates, so its ratification is an operator decision (PR approval, per the
   ratification-via-PR standing policy cited in DR-005's header)
+  *Amendment (2026-11-22, #301; additive — the clause above is superseded for this
+  record only):* under the #301 operator ruling of 2026-10-19 (option 2), #132's merge
+  was **not** this record's ratifying act (see "Ratification path" below). The
+  operator decision the clause above names is therefore still owed: DR-008 is
+  **unratified** until a fresh ratification PR is reviewed and released under the
+  standing process and merged. Read "operator approval of the PR that lands it" in
+  the Status notes as naming that fresh PR, not #132. This amendment changes no
+  decision text, target value or status word.
 - **Ratification path**: fresh ratification required — operator ruling on
   #301, 2026-10-19 (option 2). The historical merge of #132 (`51a2a9f`) is cited
   for context only and is not accepted as this record's ratifying event; the
@@ -245,6 +253,9 @@ auto-restarts. The behaviour of that cycle is exactly what the open
 
 `proposed`. The record changes no ratified number; the Thermal row's target
 text is unchanged, and its Notes column gains only a cross-reference to this
-record. It becomes `ratified` on operator approval of the PR that lands it.
+record. It becomes `ratified` on operator approval of the PR that lands it —
+under the #301 ruling, a **fresh** ratification PR reviewed and released under
+the standing process, not the already-merged #132 (see the "Ratification path"
+bullet and the 2026-11-22 amendment in the Status line).
 If a later ruling sets a ratified ambient, or moves θJA ownership into this
 block, a superseding record replaces this one. This record is not edited.

@@ -589,6 +589,16 @@ class FakeKlt:
         self.stdout, self.raise_exc = stdout, raise_exc
         self.calls = []
 
+    def finish_response(self, resp, req):
+        env = resp["environment"]
+        env["engine_host"] = "worker"
+        env["remote"]["worker_environment"] = {
+            "pdk": {"stamp_scope": "executed", "stamp_text": "open_pdks " + self.pin["open_pdks_commit"]},
+            "pdk_stamp_comparison": {"status": "match"},
+        }
+        if self.mutate:
+            self.mutate(resp, req)
+
     def __call__(self, cmd, **kw):
         self.calls.append((cmd, kw))
         if cmd[0] != "/fake/klt":
@@ -620,8 +630,7 @@ class FakeKlt:
                             "remote": {"provider": "aws-batch-fleet", "job_id": f"klt-sim-{abs(hash(str(req_path))) % 10**6:06x}"}},
             "provenance": {"klt_version": "0.7.0", "pdk": {"version": self.pin["open_pdks_commit"]}},
         }
-        if self.mutate:
-            self.mutate(resp, req)
+        self.finish_response(resp, req)
         out = self.stdout if self.stdout is not None else json.dumps(resp)
         return subprocess.CompletedProcess(cmd, self.rc, stdout=out, stderr="")
 
@@ -697,8 +706,7 @@ class FakeSingleStepKlt(FakeKlt):
                                        "runner_compatibility": "match"}},
             "provenance": {"klt_version": "0.7.0", "pdk": {"version": self.pin["open_pdks_commit"]}},
         }
-        if self.mutate:
-            self.mutate(resp, req)
+        self.finish_response(resp, req)
         out = self.stdout if self.stdout is not None else json.dumps(resp)
         return subprocess.CompletedProcess(cmd, self.rc, stdout=out, stderr="")
 
@@ -1146,6 +1154,45 @@ class TestBatchGrading(BatchHarness):
         self.assertFalse(rec["execution"]["requests"][0]["klt_pdk_names_pin"])
         self.assertIn("does NOT name", self.records()[0].with_suffix(".md").read_text())
 
+    def test_worker_only_mismatch_in_second_request(self):
+        pin = self.pin["open_pdks_commit"]
+        other = ("1" if pin.startswith("0") else "0") + pin[1:]
+
+        def report_worker(resp, req):
+            if req["corners"]["process"] == ["ss"]:
+                worker = resp["environment"]["remote"]["worker_environment"]
+                worker["pdk"]["stamp_text"] = "open_pdks " + other
+                worker["pdk_stamp_comparison"]["status"] = "mismatch"
+
+        self.fake = FakeKlt(self, self.pin, mutate=report_worker)
+        err, _, _ = self.run_main("--backend", "batch", *QUICK, expect_exit=HarnessErr)
+        self.assertEqual(len(self.klt_calls()), 2)
+        self.assertIn(other, str(err))
+        self.assertIn(pin, str(err))
+        self.assertFalse(self.records())
+        self.assertFalse((self.tmp / "manifests").exists())
+
+        rc, _, warnings = self.run_main("--backend", "batch", *QUICK, "--allow-pdk-mismatch")
+        self.assertEqual(rc, 0)
+        self.assertIn("WARNING", warnings)
+        self.assertIn(other, warnings)
+        (path,) = self.records()
+        requests = json.loads(path.read_text())["execution"]["requests"]
+        header, *sections = path.with_suffix(".md").read_text().split("  - request `")
+        self.assertIn("submitter", header.lower())
+        self.assertEqual(len(requests), 3)
+        self.assertEqual(len(sections), len(requests))
+        self.assertIn(requests[1]["job_id"], warnings)
+        expected = [(pin, "match"), (other, "mismatch"), (pin, "match")]
+        for rq, section, (revision, status) in zip(requests, sections, expected):
+            self.assertTrue(section.startswith(rq["key"] + "`"))
+            evidence = rq["remote"]["worker_environment"]
+            stamp = "open_pdks " + revision
+            self.assertEqual(evidence["pdk"]["stamp_text"], stamp)
+            self.assertEqual(evidence["pdk_stamp_comparison"]["status"], status)
+            self.assertIn(stamp, section)
+            self.assertIn(f"`{status}`", section)
+
 
 class TestLocalPathUnchangedByBatchWork(BatchHarness):
     def test_default_and_explicit_local_use_the_same_ngspice_path(self):
@@ -1297,6 +1344,39 @@ class TestWindowGrid(unittest.TestCase):
         bad = next(c for c in results[0]["measurements"] if c["name"] == "undershoot_rise_v__c330n_esr10m")
         bad["value"] = 0.2  # still flagged pass=True
         self.assertFalse(self.cov(results)["pass"])
+
+    def test_grid_rechecks_equality_at_manifest_bounds(self):
+        measurement = next(m for m in self.exp.measurements if m.name == "vout_pre_v__c330n_esr0")
+        results = self.good_results()
+        check = next(c for c in results[0]["measurements"] if c["name"] == measurement.name)
+        for bound, strict_reason in (("min", "not above strict min"), ("max", "not below strict max")):
+            value = getattr(measurement, bound)
+            check["value"] = value  # the stored check still says pass
+            for inclusive in (False, True):
+                with (
+                    self.subTest(bound=bound, inclusive=inclusive),
+                    mock.patch.object(measurement, f"{bound}_inclusive", inclusive),
+                ):
+                    cov = self.cov(results)
+                    self.assertTrue(cov["complete"])
+                    self.assertEqual(cov["conditions_evaluated"], 96)
+                    self.assertEqual(cov["pass"], inclusive)
+                    self.assertEqual(cov["conditions_passing"], 96 if inclusive else 95)
+                    if inclusive:
+                        self.assertEqual(cov["failures"], [])
+                    else:
+                        (failure,) = cov["failures"]
+                        self.assertEqual(failure["measurement"], measurement.name)
+                        self.assertEqual(failure["status"], "fail")
+                        self.assertEqual(failure["reason"], f"{strict_reason} {value:g}")
+
+    def test_failing_stored_check_vetoes_an_in_bounds_value(self):
+        results = self.good_results()
+        results[0]["measurements"][0].update({"pass": False, "reason": "flagged by corner"})
+        cov = self.cov(results)
+        self.assertFalse(cov["pass"])
+        (failure,) = cov["failures"]
+        self.assertEqual(failure["reason"], "flagged by corner")
 
     def test_nan_and_unparsable_values_are_not_a_pass(self):
         for value in (float("nan"), float("inf"), None):
@@ -1728,8 +1808,7 @@ class FakeStepKlt(FakeKlt):
                             "remote": {"provider": "aws-batch-fleet", "job_id": "klt-sim-0000aa"}},
             "provenance": {"klt_version": "0.7.0", "pdk": {"version": self.pin["open_pdks_commit"]}},
         }
-        if self.mutate:
-            self.mutate(resp, req)
+        self.finish_response(resp, req)
         return subprocess.CompletedProcess(cmd, self.rc, stdout=json.dumps(resp), stderr="")
 
 

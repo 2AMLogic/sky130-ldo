@@ -25,7 +25,7 @@ reproduces the same next-round points.
 
 from __future__ import annotations
 
-from _record_common import cold_enable_temps  # stdlib-only sibling: this module stays PDK-free
+from _record_common import cold_enable_temps, tripped  # stdlib-only sibling: this module stays PDK-free
 
 SCENARIOS = {  # name -> (disturbance amplitude A, want_lowest of the held predicate)
     "hot": (+0.5e-6, True),        # tripped state held?  -> T_reset
@@ -121,10 +121,6 @@ def build_request(netlist_path, process: str, temps: list[float], model: dict, s
         "options": {"timeout_s": timeout_s, "keep_artifacts": True, "ngspice_init": spiceinit},
         "batch": {"capacity_wait_s": capacity_wait_s},
     }
-
-
-def tripped(v_cmp: float, supply_v: float) -> bool:
-    return v_cmp < supply_v / 2  # same rule as _record_common.tripped
 
 
 def held(scenario: str, forced_v: float, hold_v: float, supply_v: float) -> bool:

@@ -991,7 +991,8 @@ def _batch_corner_result(
 
 
 def normalize_batch_response(
-    exp: Experiment, group: BatchGroup, response: dict, outdir: Path, timeout: int
+    exp: Experiment, group: BatchGroup, response: dict, outdir: Path, timeout: int,
+    corner_reasons=None,
 ) -> tuple[list[dict], dict[str, str]]:
     """Validate one response against its request and grade each point locally.
 
@@ -1000,6 +1001,11 @@ def normalize_batch_response(
     problems (errored/inconclusive corner, absent or non-finite value, absent
     log) become recorded FAIL results. klt's own verdict is never consulted;
     limits, spread and the solver-diagnostic gate are the harness's own.
+    `corner_reasons(corner response) -> list[str]`, when given, appends each
+    corner's own extra FAIL reasons read from its raw response entry: the
+    chained grader's worker-error and step-result checks ride along here, on
+    the corner the validated process/temperature pairing already identified
+    (issue #808 -- the worker's `corner_id` stays provenance, never a key).
     Returns (results in request point order, {corner id: engine log text}).
     """
     cold_start = group.leg is None and is_cold_start_crossing(exp)
@@ -1029,6 +1035,8 @@ def normalize_batch_response(
             reasons.append(f"{tag}klt sim corner status {status!r} (not a completed result)")
         if cold_start:
             reasons.extend(batch_dropout.corner_diagnostic_problems(rc))
+        if corner_reasons is not None:
+            reasons.extend(corner_reasons(rc))
         by_name: dict[str, list] = {}
         for rm in rc["measurements"]:
             if isinstance(rm, dict) and isinstance(rm.get("name"), str):
@@ -1074,13 +1082,15 @@ def normalize_startup_response(
 
     Structure problems raise HarnessError (an unfinished/incompatible remote
     job is never a result; there is no trustworthy record to write). Per-point
-    problems (errored corner, absent log, solver diagnostic, missing/non-finite
-    `.meas` card) become recorded FAIL reasons. The manifest's per-leg
-    measurements are evaluated over the leg's raw card values with the
-    manifest's own expressions, and the ramp-monotonicity condition is graded
-    from the returned waveform artifact (a missing/unusable trace is an
-    INVALID condition with its reasons — it can only lower the verdict).
-    Returns (results in request point order, {corner id: engine log text}).
+    problems (errored corner, absent log, solver diagnostic, or a
+    missing/duplicated/errored/non-finite/unexpected `.meas` card, as judged
+    by the shared `extract_step_values` validator) become recorded FAIL
+    reasons. The manifest's per-leg measurements are evaluated over the leg's
+    raw card values with the manifest's own expressions, and the
+    ramp-monotonicity condition is graded from the returned waveform artifact
+    (a missing/unusable trace is an INVALID condition with its reasons — it
+    can only lower the verdict). Returns (results in request point order,
+    {corner id: engine log text}).
     """
     problem = batch_dropout.remote_completion_problem(response)
     if problem:
@@ -1096,27 +1106,10 @@ def normalize_startup_response(
         if status not in ("pass", "fail"):
             reasons.append(f"{tag}klt sim corner status {status!r} (not a completed result)")
         reasons.extend(f"{tag}{r}" for r in batch_dropout.corner_diagnostic_problems(rc))
-        by_name: dict[str, dict] = {}
-        for rm_ in rc["measurements"]:
-            if isinstance(rm_, dict) and isinstance(rm_.get("name"), str):
-                name = rm_["name"]
-                if name in by_name:
-                    reasons.append(f"{tag}measurement {name!r} reported more than once")
-                by_name[name] = rm_
-        card_values: dict[str, float | None] = {}
-        for name in template_cards:
-            entry = by_name.get(name)
-            if entry is None:
-                reasons.append(f"{tag}measurement {name!r} not found in klt sim response")
-                card_values[name] = None
-            elif not _finite_number(entry.get("value")):
-                reasons.append(
-                    f"{tag}measurement {name!r} value is missing or non-finite "
-                    f"({entry.get('value')!r}, klt status {entry.get('status')!r})"
-                )
-                card_values[name] = None
-            else:
-                card_values[name] = float(entry["value"])
+        card_values, card_reasons = blr.extract_step_values(
+            group.leg, template_cards, rc["measurements"]
+        )
+        reasons.extend(card_reasons)
 
         checks = []
         for m in exp.measurements:
@@ -1281,20 +1274,27 @@ def normalize_chained_response(
     and every derived row must be present exactly once (the local deck grades
     all twelve cards; a batch response that lost one would otherwise pass
     silently whenever no derived row happened to read it), and a result the
-    request never asked for is refused rather than ignored."""
+    request never asked for is refused rather than ignored.
+
+    The diagnostic and step-result checks read the raw response entry of the
+    corner the validated process/temperature pairing identified, so they
+    follow that corner whatever the worker's optional `corner_id` says (issue
+    #808: two corners sharing an id, or both omitting it, must not lose a
+    corner's diagnostics onto whichever entry came last). The worker id is
+    still recorded, as provenance only.
+    """
     problem = batch_dropout.remote_completion_problem(response)
     if problem:
         raise HarnessError(f"request {group.key}: {problem}")
-    results, logs = normalize_batch_response(exp, group, response, outdir, timeout)
     legs = chained_deck(exp)
     if _vector_adapter(exp) is not None:
         expected = _vector_adapter(exp).step_result_names(legs)
     else:
         expected = [f"{leg.step_name}.{name}" for leg in legs for name, _ in leg.cards]
     expected += [f"meas_{m.name}" for m in exp.measurements]
-    by_corner = {c.get("corner_id"): c for c in response["corners"] if isinstance(c, dict)}
-    for r in results:
-        rc = by_corner.get(r["klt_corner_id"], {})
+    expected_lower = {e.lower() for e in expected}
+
+    def chained_corner_reasons(rc: dict) -> list[str]:
         reasons = batch_dropout.corner_diagnostic_problems(rc)
         names: dict[str, int] = {}
         for rm in rc.get("measurements") or []:
@@ -1302,7 +1302,7 @@ def normalize_chained_response(
                 continue
             key = rm["name"].lower()
             names[key] = names.get(key, 0) + 1
-            if key not in {e.lower() for e in expected}:
+            if key not in expected_lower:
                 reasons.append(f"result {rm['name']!r} is not one the request asked for")
             elif rm.get("status") == "error":
                 reasons.append(f"result {rm['name']!r} is errored in klt sim response")
@@ -1313,9 +1313,11 @@ def normalize_chained_response(
             if got != 1:
                 reasons.append(
                     f"result {want!r} reported {got} time(s) in klt sim response (expected once)")
-        r["batch_reasons"].extend(reasons)
-        r["pass"] = r["pass"] and not r["batch_reasons"]
-    return results, logs
+        return reasons
+
+    return normalize_batch_response(
+        exp, group, response, outdir, timeout, corner_reasons=chained_corner_reasons,
+    )
 
 
 def normalize_ac_grid_response(
@@ -1431,7 +1433,7 @@ def run_batch(
             info = batch_remote_info(response)
             if info["job_id"]:
                 jobs.append(str(info["job_id"]))
-            _shared_assert_pdk(response, pdk, pin, allow_mismatch, error_cls=HarnessError)
+            _shared_assert_pdk(response, pdk, pin, allow_mismatch, error_cls=HarnessError, backend="batch")
             if is_chained_steps(exp):
                 # The chained legs are ONE klt request, so one response
                 # covers all three steps of a corner and
