@@ -282,5 +282,63 @@ class CliValidationTests(unittest.TestCase):
                 self.assertTrue(any(reason in error for error in rep["remote_errors"]))
 
 
+class ReportedDropoutCrossCheckTests(unittest.TestCase):
+    """Issue #821: the fleet-reported `dropout.dropout_v` (the one
+    klt-evaluated derived expression this bench requests) is kept as
+    reported and cross-checked against `derive` of the remote's own
+    `dropout_vin_x`; a gap beyond DROPOUT_V_TOL is a remote error, never a
+    silent overwrite by the local recomputation."""
+
+    def run_cli(self, change=None):
+        with tempfile.TemporaryDirectory() as t:
+            d = Path(t)
+            write_pair(d, {"engine_version": "46"}, change)
+            out = d / "report.json"
+            argv = [str(d), "--local-engine", "46", "--remote-pass", "FAIL",
+                    "--local-pass", "FAIL", "--out", str(out)]
+            with contextlib.redirect_stdout(io.StringIO()):
+                rc = cmp.main(argv)
+            rep = json.loads(out.read_text())
+        return rc, rep
+
+    def row(self, rep, name):
+        return next(r for r in rep["rows"] if r["name"] == name)
+
+    def test_unmodified_response_is_equivalent(self):
+        rc, rep = self.run_cli()
+        self.assertEqual((rc, rep["verdict"]), (0, "equivalent"))
+
+    def test_grossly_inconsistent_reported_dropout_v_is_unresolved(self):
+        rc, rep = self.run_cli(lambda ms: ms[2].update(value=99.0))
+        self.assertEqual((rc, rep["verdict"]), (2, "unresolved"))
+        self.assertFalse(rep["equivalence_claimable"])
+        self.assertTrue(any(
+            "dropout.dropout_v" in e and "disagrees" in e
+            for e in rep["remote_errors"]
+        ))
+        self.assertEqual(self.row(rep, "dropout_v")["remote"], 99.0)
+
+    def test_missing_dropout_v_card_falls_back_to_derived(self):
+        rc, rep = self.run_cli(lambda ms: ms.pop())
+        self.assertEqual((rc, rep["verdict"]), (2, "unresolved"))
+        self.assertTrue(any(
+            "dropout.dropout_v" in e and "not found" in e
+            for e in rep["remote_errors"]
+        ))
+        self.assertAlmostEqual(
+            self.row(rep, "dropout_v")["remote"],
+            cmp.derive(RAW)["dropout_v"],
+            places=9,
+        )
+
+    def test_invalid_dropout_vin_x_keeps_reported_dropout_v(self):
+        rc, rep = self.run_cli(lambda ms: ms[0].update(status="error"))
+        self.assertEqual((rc, rep["verdict"]), (2, "unresolved"))
+        self.assertTrue(any("status 'error'" in e for e in rep["remote_errors"]))
+        self.assertEqual(
+            self.row(rep, "dropout_v")["remote"], cmp.derive(RAW)["dropout_v"]
+        )
+
+
 if __name__ == "__main__":
     unittest.main()
