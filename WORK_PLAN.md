@@ -3,14 +3,14 @@
 Current roadmap derived from GitHub lifecycle labels. Maintained by the Loom Guide role.
 
 <!-- guide:plan-body:start -->
-_Generated: 2026-11-26T08:19:57Z (snapshot; compare against live labels)_
+_Generated: 2026-11-26T08:40:26Z (snapshot; compare against live labels)_
 ## Operator Attention: Merge-Risk-Hold Pileup
 
 Judge-approved PRs under a hold (`loom:blocked` or `loom:operator`) — only a human merge decision is missing.
 
 - **#569**: docs: propose DR-014 binding capacitor condition for the PSRR row
-- **#810**: docs(spec): append DR-008 restart-evidence reconciliation for the fresh ratification review
 - **#777**: migrate sky130 PDK pin from volare c6d73a35 to ciel f6eeac7 (DR-015)
+- **#810**: docs(spec): append DR-008 restart-evidence reconciliation for the fresh ratification review
 
 ## Very Important
 
@@ -27,10 +27,17 @@ Judge-approved PRs under a hold (`loom:blocked` or `loom:operator`) — only a h
 
 ## Ready
 
-Human-approved issues (`loom:issue`) ready for implementation — excluding held (`loom:blocked`/`loom:operator`/`loom:frozen`), `loom:building`, and issues closed by an open `loom:pr` PR (listed under Approved).
+Human-approved issues (`loom:issue`) ready for implementation — excluding held (`loom:blocked`/`loom:operator`/`loom:frozen`), `loom:building`, and issues with an open linked PR (native admission `OPEN_PR`; listed under Issues with Open PRs).
 
-- **#629**: characterization.md Output row reads PASS on light-load-only evidence; record 20261115-133911-1caff9b9 is full-load evidence against that same window *(PR #633 on operator hold)*
-- **#639**: xschem pin migration: migrate sky130-ldo to the fleet 3.4.7 *(PR #641 on operator hold)*
+_None._
+
+## Issues with Open PRs (Not Dispatchable)
+
+`loom:issue` issues an open linked PR already holds — native admission would refuse them (`OPEN_PR`); listed with the PR and its stage, not counted above.
+
+- **#314**: PSRR: decide and evidence the binding output-capacitor/ESR condition — open PR #569 (held)
+- **#629**: characterization.md Output row reads PASS on light-load-only evidence; record 20261115-133911-1caff9b9 is full-load evidence against that same window — open PR #633 (held)
+- **#639**: xschem pin migration: migrate sky130-ldo to the fleet 3.4.7 — open PR #641 (held)
 
 ## In Progress
 
@@ -49,9 +56,9 @@ _None._
 
 PRs that passed review and are queued for Champion auto-merge (`loom:pr`).
 
-- **#569**: docs: propose DR-014 binding capacitor condition for the PSRR row *(held)*
-- **#810**: docs(spec): append DR-008 restart-evidence reconciliation for the fresh ratification review *(held)*
-- **#777**: migrate sky130 PDK pin from volare c6d73a35 to ciel f6eeac7 (DR-015) *(held)*
+- **#569**: docs: propose DR-014 binding capacitor condition for the PSRR row — closes #314
+- **#777**: migrate sky130 PDK pin from volare c6d73a35 to ciel f6eeac7 (DR-015) — closes #767
+- **#810**: docs(spec): append DR-008 restart-evidence reconciliation for the fresh ratification review — closes #805
 
 ## Proposed
 
@@ -89,8 +96,9 @@ _None._
 | Operator merge-risk holds | 3 |
 | Very important | 1 |
 | Important | 2 |
-| Ready (`loom:issue`, net of holds/building/merge-pending) | 2 |
+| Ready (`loom:issue`, net of holds/building/open-linked-PRs) | 0 |
 | In Progress (`loom:building`) | 2 |
+| Held, no other bucket | 8 |
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 3 |
 | Curated | 16 |

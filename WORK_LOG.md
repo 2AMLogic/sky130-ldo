@@ -6,14 +6,16 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 
 - [2026-09](work_log/WORK_LOG_2026-09.md)
 
+## Entries
+
 ### 2026-11-26
 
+- **Issue #812** (closed): Resync Loom so large private defaults no longer abort create-pr.sh and create-issue.sh
+- **PR #816**: chore(loom): resync installed Loom to v0.20.37
 - **Issue #821** (closed): compare_dropout_paired.py discards the remote's own reported dropout.dropout_v
 - **PR #822**: fix: cross-check the fleet-reported dropout_v instead of overwriting it
 - **Issue #818** (closed): Reuse the batch step validator in compare_dropout_paired.py
 - **PR #820**: fix: validate dropout remote readings through the shared step validator
-- **Issue #812** (closed): Resync Loom so large private defaults no longer abort create-pr.sh and create-issue.sh
-- **PR #816**: chore(loom): resync installed Loom to v0.20.37
 - **Issue #813** (closed): Reuse the batch measurement validator so startup cannot pass an errored peak-voltage reading
 - **PR #817**: fix: grade startup batch card readings through the shared step validator
 - **Issue #795** (closed): run_hysteresis records drop the worker PDK stamp the #791 guard now checks
