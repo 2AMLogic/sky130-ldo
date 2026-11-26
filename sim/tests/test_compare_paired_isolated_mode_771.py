@@ -38,12 +38,13 @@ def _response(engine: str, measurements: list) -> str:
 
 def write_dropout_pair(d: Path) -> None:
     vals = {"dropout_vin_x": 2.161658, "vout_at_max_vin_v": 1.798832}
+    measurements = [{"name": f"dropout.{k}", "value": v} for k, v in vals.items()]
+    measurements.append(
+        {"name": "dropout.dropout_v", "value": vals["dropout_vin_x"] - 1.764}
+    )
     (d / "remote" / "v3.30").mkdir(parents=True)
     (d / "remote" / "v3.30" / "response.json").write_text(
-        _response(
-            "46",
-            [{"name": f"dropout.{k}", "value": v} for k, v in vals.items()],
-        )
+        _response("46", measurements)
     )
     (d / "local").mkdir()
     (d / "local" / "ngspice.log").write_text(
