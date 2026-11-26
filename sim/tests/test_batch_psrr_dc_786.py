@@ -13,6 +13,7 @@ evidence of remote execution or of local/fleet equivalence.
 from __future__ import annotations
 
 import json
+import re
 import subprocess
 import sys
 import unittest
@@ -47,6 +48,22 @@ SEED2, P1K_50MA, P100K_50MA = "op2.vout_seed_50ma_v", "ac2.psrr_1khz_50ma_db", "
 def healthy_values(p: str, t: float, vsup: float) -> dict[str, float]:
     return {SEED1: 1.8001, P1K_1MA: 71.0, P100K_1MA: 41.0,
             SEED2: 1.7982, P1K_50MA: 62.0, P100K_50MA: 23.0}
+
+
+# the two-corner subset the issue #808 regression runs: both temperatures of
+# one supply group, so both points travel in ONE klt response
+TWO_POINT = ("--process", "tt", "--temp", "27,125", "--supply", "3.30",
+             "--subset-reason", "fixture", "--no-write")
+
+
+def _corner_verdicts(out: str) -> dict[str, str]:
+    """The per-corner verdict lines the CLI prints ({corner id: PASS/FAIL})."""
+    verdicts: dict[str, str] = {}
+    for ln in out.splitlines():
+        m = re.match(r"\[\s*\d+/\s*\d+\]\s+(\S+)\s+(PASS|FAIL)", ln)
+        if m:
+            verdicts[m.group(1)] = m.group(2)
+    return verdicts
 
 
 class FakePsrrKlt(FakeKlt):
@@ -229,6 +246,51 @@ class TestPsrrDcAdapter(EndpointShapeGate, BackendContract, RecordProvenance, Ps
             for bad in (float("nan"), float("inf")):
                 rc, _, _ = self.graded(**{key: bad})
                 self.assertEqual(rc, 2, (key, bad))
+
+    # -- issue #808: a corner's diagnostics follow its validated pairing ------
+    def test_a_corner_error_fails_only_that_corner_without_worker_ids(self):
+        # The chained grader indexed the response by the worker's optional
+        # `corner_id`: with two corners sharing an id (or both omitting it)
+        # every corner graded against whichever raw entry came last, so a real
+        # corner error was lost. The validated process/temperature pairing
+        # (sim/bin/_batch_backend.py, `_index_response_corners`) keeps each
+        # corner's diagnostics with its own measurements, whatever the worker
+        # ids say and in either response order.
+        def err_27c(resp, req):
+            for c in resp["corners"]:
+                if c["temperature_c"] == 27:
+                    c["diagnostics"] = [
+                        {"severity": "error", "code": "measurement", "message": "injected error"}]
+
+        def strip_ids(resp, req):
+            for c in resp["corners"]:
+                c.pop("corner_id", None)
+
+        def repeat_id(resp, req):
+            for c in resp["corners"]:
+                c["corner_id"] = "tt/novdd/shared"
+
+        def two_point(mutate=None):
+            self.fake = self.make_fake(mutate=mutate)
+            return self.run_main("--backend", "batch", *TWO_POINT)
+
+        rc, out, _ = two_point()  # healthy control: distinct ids, no error
+        self.assertEqual(rc, 0, out)
+        self.assertEqual(_corner_verdicts(out),
+                         {"tt_27c_3.30v": "PASS", "tt_125c_3.30v": "PASS"})
+        for mangle in (lambda r, q: None, strip_ids, repeat_id):
+            for order in ("as-built", "reversed"):
+                def mutate(resp, req, mangle=mangle, order=order):
+                    mangle(resp, req)
+                    err_27c(resp, req)
+                    if order == "reversed":
+                        resp["corners"].reverse()
+                rc, out, err = two_point(mutate)
+                self.assertEqual(rc, 2, (mangle, order, out))
+                self.assertEqual(_corner_verdicts(out),
+                                 {"tt_27c_3.30v": "FAIL", "tt_125c_3.30v": "PASS"},
+                                 (mangle, order))
+                self.assertIn("klt diagnostic", err)
 
     # -- refusals -----------------------------------------------------------------
     def test_deck_shape_refusals(self):
