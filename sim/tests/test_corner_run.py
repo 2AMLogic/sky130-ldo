@@ -519,11 +519,11 @@ SMOKE_NETLIST = "** sch_path: x\nV1 VDD 0 'vsup'\nR1 VDD vg 1Meg\nXM1 vg vg 0 0 
 
 class TestPdkResolution(unittest.TestCase):
     def setUp(self):
-        temp = tempfile.TemporaryDirectory()
-        self.addCleanup(temp.cleanup)
-        self.home = Path(temp.name)
+        self.stack = contextlib.ExitStack()
+        self.addCleanup(self.stack.close)
+        self.home = Path(self.stack.enter_context(tempfile.TemporaryDirectory()))
         self.pin = corner_run.load_pin()
-        self.enterContext(mock.patch.dict(os.environ, HOME=str(self.home)))
+        self.stack.enter_context(mock.patch.dict(os.environ, HOME=str(self.home)))
         os.environ.pop("PDK_ROOT", None)
         os.environ.pop("PDK", None)
         self.store = Path(self.pin["default_pdk_root"]).expanduser()
@@ -541,12 +541,12 @@ class TestPdkResolution(unittest.TestCase):
         enabled = self.store / "versions" / "other-build"
         self.install_variant(enabled, "sky130B")
         (self.store / "sky130B").symlink_to(enabled / "sky130B")
-        self.enterContext(mock.patch.object(corner_run, "ciel_path", return_value=self.pinned))
+        self.stack.enter_context(mock.patch.object(corner_run, "ciel_path", return_value=self.pinned))
 
         netlist = self.home / "smoke.spice"
         netlist.write_text(SMOKE_NETLIST)
-        self.enterContext(mock.patch.object(corner_run, "BUILD_DIR", self.home / "build"))
-        netlister = self.enterContext(
+        self.stack.enter_context(mock.patch.object(corner_run, "BUILD_DIR", self.home / "build"))
+        netlister = self.stack.enter_context(
             mock.patch.object(corner_run, "netlist_with_xschem", return_value=netlist)
         )
         args = [str(SIM_DIR / "pdk-smoke"), "--dry-run"]
