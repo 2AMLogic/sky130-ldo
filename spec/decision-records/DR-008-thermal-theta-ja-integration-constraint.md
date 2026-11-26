@@ -298,13 +298,14 @@ above.
 
 ### What the integrated DUT and the staircase evidence show
 
-#242 (issue #230) replaced that comparator with the #229 regenerative trip
-comparator, and replaced the method: a DC continuation cannot resolve the two
-branches of a regenerative comparator — the mechanism Finding 1's zero-width
-results trace to — so `sim/thermal/run_hysteresis.py` (issues #511/#541)
-runs independent per-temperature `uic` transients, cold-start seeded for the
-rising trip and tripped-seeded for the falling reset, and bisects each
-crossing to 0.3125 °C. The graded record
+#242 (issue #230) integrated the #229 regenerative trip comparator. A DC
+continuation follows one solution branch. To test whether each state holds
+at the same temperature, `sim/thermal/run_hysteresis.py` (issues #511/#541)
+runs independent `uic` transients. For the rising trip, `cold_exc` applies
+−0.5 µA at the sense node to prepare the untripped state. For the falling
+reset, `hot` applies +0.5 µA to prepare the tripped state. The bench removes
+the disturbance before reading the state and bisects each crossing to
+0.3125 °C. The graded record
 [`20261105-202028-97cd9a9e-qual-15corner`](../../sim/thermal/hysteresis/20261105-202028-97cd9a9e-qual-15corner/result.json)
 (354 points, 15 process/supply corners, complete, graded on each corner's
 conservative bracket edge) resolves **positive hysteresis at all 15
@@ -318,9 +319,11 @@ applied or relaxed; and the paired campaign
 positive at all 30 corner/variant pairs, |Δtrip| ≤ one 0.3125 °C bisection
 step, every thermal limitation inherited identically.
 
-Because both the circuit and the measurement changed between the August and
-November records, the two results cannot be subtracted to isolate either
-contribution; each is reported on its own DUT and method.
+The fine-grid and modified-gmin checks in [DR-005](DR-005-thermal-shutdown-trip.md)
+(#91) found near-zero loop gain at the flat corners for the sizing tested.
+Both the comparator and the measurement changed between August and November,
+so the comparison leaves open why the August sweep measured zero width at
+12 corners.
 
 ### Figures for both review keys, alongside the original vendor comparisons
 
@@ -345,19 +348,22 @@ keys need:
    — "no demonstrated cooling before restart" — and it is now evidenced.
 2. **Meeting the nominal values.** Not met: the 15 °C nominal interval is
    short by 1.6–2.5 °C at midpoints (2.8 °C at the worst conservative edge).
-   Trip and reset sit *above* their 150/135 °C nominals at every corner — the
-   untrimmed, PVT-loose direction DR-005 itself predicts — and Finding 1's
-   worst-corner guard-band floor (≥ 150 °C, pending #1's ruling on whether
-   that reading binds) is met on the integrated DUT (lowest bracket edge
-   161.875 °C), where the historical DUT missed it at 6 of 15 corners. The
-   nominal row is not relaxed by this append; whether the shortfall is
-   acceptable is a ratification disposition.
-3. **Matching a vendor's typical interval.** Not a claim this record can
-   make: the cited vendor figures are *typical* values, not guaranteed
-   minima, and span 10–25 °C across the comparable parts. The demonstrated
-   12.19–13.44 °C interval sits below the TLV700/TPS7A02 typicals and above
-   the TLV755P typical; whether that is competitive is a disposition for the
-   market key, not a fact asserted here.
+   Trip and reset sit *above* their 150/135 °C nominals at every corner, as
+   DR-005 predicts for the untrimmed circuit. Finding 1 interpreted the guard
+   band as requiring trip ≥ 150 °C at every corner. The historical DUT fell
+   below that floor at 6 of 15 corners. The integrated DUT clears it at all
+   15, with a lowest trip bracket edge of 161.875 °C. Issue #1 closed after
+   the operator chose to ratify the targets as written.
+   [Operator ruling](https://github.com/2AMLogic/sky130-ldo/issues/1#issuecomment-5673311328),
+   [ratification record](DR-006-spec-ratification.md).
+   The fresh #301 review must assess the interval shortfall and resolve any
+   remaining question about whether the every-corner guard band binds.
+3. **Matching a vendor's typical interval.** The vendor datasheets give
+   *typical* intervals ranging from 10 to 25 °C across the comparable parts.
+   A typical value alone establishes no guaranteed minimum. The integrated
+   DUT's 15 corner midpoints span 12.5–13.4375 °C, below the TLV700 and
+   TPS7A02 typical intervals and above the TLV755P typical interval. The
+   market key assesses competitiveness.
 
 ### Qualification limits that survive
 
