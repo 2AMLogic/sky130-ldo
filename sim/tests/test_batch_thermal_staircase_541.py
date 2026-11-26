@@ -124,6 +124,59 @@ class TestIngest(unittest.TestCase):
         self.assertIn(("tt", 3.3, "hot_ix+0.25uA", 160), rh.load_points(out))
 
 
+class TestWorkerPdkStampRetention(unittest.TestCase):
+    """Issue #795: the per-point `remote` projection keeps the executed worker
+    PDK stamp (issue #791's evidence) instead of dropping it at ingest."""
+
+    vals = {"ts_cmp_19": 3.3, "ts_cmp_39": 3.3, "ts_cmp_90": 0.1}
+
+    def setUp(self):
+        self.env = json.loads((SIM_DIR / "tests/fixtures/issue-791-paired-pdk.json").read_text())["environment"]
+
+    def ingest(self, env):
+        """Ingest one passing 160 C hot point reported under `env`; return (record, guard mock)."""
+        from unittest import mock
+        d = tempfile.mkdtemp()
+        rep = cmp_report((160,), self.vals)
+        rep["environment"] = env
+        with mock.patch.object(rh.batch_dropout, "remote_completion_problem", return_value=None), \
+             mock.patch.object(rh, "assert_klt_read_the_pinned_pdk") as guard, \
+             mock.patch.object(rh.batch_dropout, "corner_diagnostic_problems", return_value=[]), \
+             mock.patch.object(rh.cr, "detect_solver_diagnostic", return_value=None), \
+             mock.patch.object(Path, "read_text", return_value=""):
+            n, fails = rh.ingest_report(Path(d), Path(d), rep, "tt", 3.3, "hot", [160], None, None, "r")
+        self.assertEqual((n, fails), (1, []))
+        rec = json.loads(rh.point_path(Path(d), "tt", 3.3, "hot", 160).read_text())
+        return rec, guard
+
+    def test_fixture_stamp_fields_are_retained_verbatim(self):
+        rec, guard = self.ingest(self.env)
+        worker = rec["remote"]["worker_environment"]
+        self.assertEqual(worker["pdk"]["stamp_text"], "open_pdks f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7")
+        self.assertEqual(worker["pdk"]["stamp_scope"], "executed")
+        self.assertEqual(worker["pdk_stamp_comparison"]["status"], "mismatch")
+        guard.assert_called_once()
+        self.assertEqual(guard.call_args.kwargs.get("backend"), "batch")
+
+    def test_missing_worker_environment_yields_none_fields(self):
+        rec, _ = self.ingest({"engine_host": "worker", "remote": {"job_id": "j1"}})
+        self.assertEqual(rec["remote"]["worker_environment"],
+                         {"pdk": {"stamp_scope": None, "stamp_text": None},
+                          "pdk_stamp_comparison": {"status": None}})
+
+    def test_guard_refusal_raises_before_any_record_is_minted(self):
+        from unittest import mock
+        d = tempfile.mkdtemp()
+        rep = cmp_report((160,), self.vals)
+        rep["environment"] = self.env
+        with mock.patch.object(rh.batch_dropout, "remote_completion_problem", return_value=None), \
+             mock.patch.object(rh, "assert_klt_read_the_pinned_pdk",
+                               side_effect=RuntimeError("worker PDK stamp mismatch")):
+            with self.assertRaises(RuntimeError):
+                rh.ingest_report(Path(d), Path(d), rep, "tt", 3.3, "hot", [160], None, None, "r")
+        self.assertFalse(rh.point_path(Path(d), "tt", 3.3, "hot", 160).exists())
+
+
 class TestCornerBrackets(unittest.TestCase):
     def test_none_until_both_staircases_done(self):
         self.assertIsNone(rh.corner_brackets({}, "tt", 3.3, 0.3125))

@@ -193,12 +193,30 @@ def append_jsonl(path: Path, obj: dict) -> None:
         fh.write(json.dumps(obj, sort_keys=True) + "\n")
 
 
+def worker_pdk_evidence(remote: dict) -> dict:
+    """The executed worker's PDK stamp, copied verbatim from klt's
+    `environment.remote.worker_environment` (issue #795): `pdk.stamp_scope` /
+    `pdk.stamp_text` and `pdk_stamp_comparison.status`, so a stored staircase
+    point names the open_pdks build behind it.  A missing block yields None
+    fields, not a crash; the guard has already refused such a report."""
+    worker = remote.get("worker_environment")
+    worker = worker if isinstance(worker, dict) else {}
+    stamp = worker.get("pdk")
+    stamp = stamp if isinstance(stamp, dict) else {}
+    comparison = worker.get("pdk_stamp_comparison")
+    comparison = comparison if isinstance(comparison, dict) else {}
+    return {
+        "pdk": {"stamp_scope": stamp.get("stamp_scope"), "stamp_text": stamp.get("stamp_text")},
+        "pdk_stamp_comparison": {"status": comparison.get("status")},
+    }
+
+
 def ingest_report(out, report_dir: Path, report: dict, proc, vsup, scen, temps, pdk, pin, req_name):
     """Record each successful point; return (n_recorded, [failure strings])."""
     problem = batch_dropout.remote_completion_problem(report)
     if problem:
         return 0, [f"{req_name}: {problem}"]
-    assert_klt_read_the_pinned_pdk(report, pdk, pin, False)
+    assert_klt_read_the_pinned_pdk(report, pdk, pin, False, backend="batch")
     remote = (report.get("environment") or {}).get("remote") or {}
     by_t = {float(c["temperature_c"]): c for c in report.get("corners", []) if isinstance(c, dict)}
     n, fails = 0, []
@@ -234,7 +252,10 @@ def ingest_report(out, report_dir: Path, report: dict, proc, vsup, scen, temps, 
             "forced_tripped": bts.tripped(vals[f"ts_cmp_{bts.T_FORCED}"], vsup),
             "hold_tripped": bts.tripped(vals[f"ts_cmp_{bts.T_HOLD}"], vsup),
             "solver_diagnostic": None, "klt_request": req_name,
-            "remote": {k: remote.get(k) for k in ("provider", "job_id", "state", "runner_compatibility")},
+            "remote": {
+                **{k: remote.get(k) for k in ("provider", "job_id", "state", "runner_compatibility")},
+                "worker_environment": worker_pdk_evidence(remote),
+            },
         }
         if params["base"] in bts.SCENARIOS:  # staircase and amplitude points: the monotone hold predicate
             rec["held"] = bts.held(params["base"], vals[f"ts_cmp_{bts.T_FORCED}"], vals[f"ts_cmp_{bts.T_HOLD}"], vsup)
