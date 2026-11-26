@@ -107,10 +107,11 @@ class CompareTests(unittest.TestCase):
             d = Path(t)
             (d / "remote" / "v3.30").mkdir(parents=True)
             (d / "remote" / "v3.30" / "response.json").write_text(json.dumps(resp("46")))
-            v, eng = cmp.load_remote(d)
+            v, eng, errors = cmp.load_remote(d)
         self.assertEqual(eng, "46")
         self.assertEqual(v["dropout_vin_x"], 2.161658)
         self.assertAlmostEqual(v["dropout_v"], 0.397658, places=9)
+        self.assertEqual(errors, [])
 
     def test_load_remote_with_no_response_raises(self):
         with tempfile.TemporaryDirectory() as t:
@@ -148,7 +149,8 @@ class CompareTests(unittest.TestCase):
 
     def test_load_remote_single_incomplete_response_still_loads(self):
         """One response carrying only part of the pair stays a loadable
-        (and hence unresolved-at-compare) input; only the count is an error."""
+        (and hence unresolved-at-compare) input, its missing measurements
+        reported as remote errors; only the response count is an error."""
 
         def partial(name, value):
             return {
@@ -164,20 +166,24 @@ class CompareTests(unittest.TestCase):
             (d / "remote" / "v3.30" / "response.json").write_text(
                 json.dumps(partial("dropout.dropout_vin_x", 2.161658))
             )
-            v, eng = cmp.load_remote(d)
+            v, eng, errors = cmp.load_remote(d)
         self.assertEqual(eng, "46")
         self.assertEqual(v["dropout_vin_x"], 2.161658)
-        self.assertNotIn("vout_at_max_vin_v", v)
+        self.assertIsNone(v["vout_at_max_vin_v"])
+        self.assertTrue(any("dropout.vout_at_max_vin_v" in e for e in errors))
 
 
 RAW = {"dropout_vin_x": 2.161658, "vout_at_max_vin_v": 1.798832}
 
 
-def write_pair(d: Path, environment) -> None:
+def write_pair(d: Path, environment, change=None) -> None:
     """Lay out the issue-#768 fixture: one remote response carrying
-    `environment` (None leaves the object out) and a local log that agrees
-    with both raw measurements."""
+    `environment` (None leaves the object out) and the three `dropout.*`
+    measurements, and a local log that agrees with the raw cards."""
     ms = [{"name": f"dropout.{k}", "value": v} for k, v in RAW.items()]
+    ms.append({"name": "dropout.dropout_v", "value": cmp.derive(RAW)["dropout_v"]})
+    if change is not None:
+        change(ms)
     resp = {"corners": [{"measurements": ms}]}
     if environment is not None:
         resp["environment"] = environment
@@ -241,6 +247,39 @@ class CliEngineTests(unittest.TestCase):
         rc, rep, _ = self.run_cli({"engine_version": "46"}, "46")
         self.assertEqual(rc, 0)
         self.assertEqual(rep["verdict"], "equivalent")
+
+
+class CliValidationTests(unittest.TestCase):
+    """Issue #818: an invalid remote measurement is `unresolved` with the
+    validation error reported, never a silent `equivalent`."""
+
+    def run_cli(self, change):
+        with tempfile.TemporaryDirectory() as t:
+            d = Path(t)
+            write_pair(d, {"engine_version": "46"}, change)
+            out = d / "report.json"
+            argv = [str(d), "--local-engine", "46", "--remote-pass", "FAIL",
+                    "--local-pass", "FAIL", "--out", str(out)]
+            with contextlib.redirect_stdout(io.StringIO()):
+                rc = cmp.main(argv)
+            rep = json.loads(out.read_text())
+        return rc, rep
+
+    def test_invalid_remote_measurements_are_unresolved(self):
+        def duplicate(ms):
+            ms.insert(0, {**ms[0], "value": ms[0]["value"] + 0.1})
+
+        for reason, change in (
+            ("reported more than once", duplicate),
+            ("status 'error'", lambda ms: ms[0].update(status="error")),
+            ("unexpected result identity", lambda ms: ms.append({**ms[0], "name": "dropout.extra"})),
+            ("not found", lambda ms: ms[0].update(name="other.dropout_vin_x")),
+        ):
+            with self.subTest(reason=reason):
+                rc, rep = self.run_cli(change)
+                self.assertEqual((rc, rep["verdict"]), (2, "unresolved"))
+                self.assertFalse(rep["equivalence_claimable"])
+                self.assertTrue(any(reason in error for error in rep["remote_errors"]))
 
 
 if __name__ == "__main__":

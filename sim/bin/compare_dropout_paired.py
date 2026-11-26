@@ -43,6 +43,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import _paired_compare
 from _record_common import is_finite_number
+from batch_dropout import STEP_NAME
+from batch_line_regulation import extract_step_values
 
 ENDPOINT_TOL_V = 1e-6
 DROPOUT_V_TOL = 1e-6
@@ -55,6 +57,7 @@ TOLS = {
     "vout_at_max_vin_v": (ENDPOINT_TOL_V, "V"),
     "dropout_v": (DROPOUT_V_TOL, "V"),
 }
+EXPECTED = [f"{STEP_NAME}.{n}" for n in RAW + DERIVED]
 
 
 def derive(v: dict) -> dict:
@@ -70,6 +73,7 @@ def compare(
     local_engine,
     remote_pass=None,
     local_pass=None,
+    remote_errors: list[str] | None = None,
 ) -> dict:
     return _paired_compare.compare(
         TOLS,
@@ -80,27 +84,33 @@ def compare(
         remote_pass,
         local_pass,
         extra={"print_resolution_v": PRINT_RESOLUTION_V},
+        remote_errors=remote_errors,
     )
 
 
-def load_remote(d: Path) -> tuple[dict, str | None]:
+def load_remote(d: Path) -> tuple[dict, str | None, list[str]]:
     """Load the one remote response this bench writes; pooling measurements
-    across requests would let two incomplete requests fake a complete pair."""
+    across requests would let two incomplete requests fake a complete pair.
+    The step's measurements are validated with the shared step validator, so
+    a duplicated, errored, unexpected or missing reading is reported as a
+    remote error (verdict `unresolved`), never silently accepted."""
     paths = sorted((d / "remote").glob("*/response.json"))
     if len(paths) != 1:
         raise SystemExit(
             f"expected exactly one remote/*/response.json under {d}, found {len(paths)}"
         )
     resp = json.loads(paths[0].read_text())
-    vals = {}
-    for m in resp["corners"][0]["measurements"]:
-        if is_finite_number(m.get("value")):
-            vals[m["name"].split(".", 1)[-1]] = m["value"]
-    if not vals:
-        raise SystemExit(f"no remote/*/response.json measurements under {d}")
+    raw, errors = extract_step_values(
+        STEP_NAME, EXPECTED, resp["corners"][0]["measurements"]
+    )
+    vals = {name.split(".", 1)[1]: value for name, value in raw.items()}
     vals.update({k: v for k, v in derive(vals).items() if v is not None})
-    return vals, _paired_compare.engine_version(
-        [resp.get("environment", {}).get("engine_version")]
+    return (
+        vals,
+        _paired_compare.engine_version(
+            [resp.get("environment", {}).get("engine_version")]
+        ),
+        errors,
     )
 
 
@@ -131,10 +141,11 @@ def main(argv: list[str]) -> int:
     ap.add_argument("--remote-pass", choices=("PASS", "FAIL"), required=True)
     ap.add_argument("--local-pass", choices=("PASS", "FAIL"), required=True)
     a = ap.parse_args(argv)
-    rv, reng = load_remote(a.dir)
+    rv, reng, errors = load_remote(a.dir)
     lv = load_local(a.dir)
     rep = compare(
-        rv, lv, reng, a.local_engine, a.remote_pass == "PASS", a.local_pass == "PASS"
+        rv, lv, reng, a.local_engine, a.remote_pass == "PASS", a.local_pass == "PASS",
+        remote_errors=errors,
     )
     if a.out:
         a.out.write_text(json.dumps(rep, indent=2) + "\n")
