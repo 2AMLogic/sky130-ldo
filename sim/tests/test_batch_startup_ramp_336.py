@@ -3,8 +3,10 @@
 Headless: `klt sim` is faked (nothing submitted). Covers the shape gate, the
 scalar per-leg request + leg netlist, the returned-waveform trace grading
 (including a missing artifact, a wrong-shaped artifact, a strict-0 V
-monotonicity failure and an unreached tset), the runner-compatibility abort,
-cross-leg merging and the staged trace files in the record.
+monotonicity failure and an unreached tset), the scalar-card ingestion gate
+(an errored vpk status must fail its condition, and unexpected/malformed/
+duplicated rows are recorded reasons, issue #813), the runner-compatibility
+abort, cross-leg merging and the staged trace files in the record.
 """
 
 from __future__ import annotations
@@ -386,6 +388,93 @@ class TestStartupTraceGrading(StartupBatchHarness):
         self.assertIsNone(tr["value"])
         self.assertFalse(tr["pass"])
         self.assertIn("missing", tr["reason"])
+
+    def test_errored_vpk_status_fails_only_its_condition(self):
+        # issue #813: a finite vpk the worker marks errored must not grade as
+        # a pass -- the old startup parser read the value and dropped the status
+        exp = corner_run.load_experiment(SIM_DIR / "startup")
+        legs = [leg["id"] for leg in corner_run.window_legs(exp.raw)]
+        hit = []
+
+        def error_one_vpk(resp, req):
+            if hit:
+                return  # only the first leg's response: exactly one condition
+            hit.append(next(k for k in legs if f"-{k}.spice" in req["netlist"]))
+            m = next(m for m in resp["corners"][0]["measurements"] if m["name"] == "vpk")
+            m["status"] = "error"  # the finite value stays: only the status lies
+
+        self.fake = self.make_fake(mutate=error_one_vpk)
+        rc, out, _ = self.run_batch_subset()
+        self.assertEqual(rc, 2)
+        self.assertEqual(len(hit), 1)
+        leg = hit[0]
+        rec, _ = self.record_json()
+        grid = rec["window_grid"]
+        self.assertEqual(grid["conditions_expected"], 48)
+        self.assertEqual(grid["conditions_passing"], 47)
+        self.assertFalse(grid["pass"])
+        corner = rec["corners"][0]
+        failing = [c["name"] for c in corner["measurements"] if not c["pass"]]
+        self.assertEqual(failing, [f"vpk_v__{leg}"])
+        self.assertIn(f"[{leg}] vpk status 'error'", corner["batch_reasons"])
+
+    def test_unexpected_malformed_and_duplicated_rows_become_reasons(self):
+        # issue #813: startup ingestion reuses the shared step validator, so
+        # rows the old parser ignored (unexpected, malformed, duplicated) now
+        # carry leg- and card-naming reasons, and a rejected row's value is
+        # dropped (its condition fails, not just the corner)
+        good = [
+            {"name": "vpk", "value": 1.812, "status": "pass"},
+            {"name": "vfloor", "value": 1.807, "status": "pass"},
+            {"name": "tset", "value": 4.274e-4, "status": "pass"},
+        ]
+        leg = "c330n_0ma_esr0"
+        cases = [
+            ("unexpected row",
+             good + [{"name": "extra", "value": 1.0, "status": "pass"}],
+             f"[{leg}] unexpected result identity 'extra' in klt sim response", []),
+            ("malformed row",
+             good + ["not a measurement row"],
+             f"[{leg}] unexpected result identity '<malformed>' in klt sim response", []),
+            ("duplicated card",
+             good + [{"name": "vpk", "value": 1.9, "status": "pass"}],
+             f"[{leg}] endpoint value vpk reported more than once",
+             [f"vpk_v__{leg}"]),
+            ("errored card",
+             [dict(good[0], status="error")] + good[1:],
+             f"[{leg}] vpk status 'error'",
+             [f"vpk_v__{leg}"]),
+        ]
+        for label, measurements, reason, failing in cases:
+            with self.subTest(label=label):
+                res, _ = self._normalize_leg_response(measurements)
+                self.assertEqual(len(res), 1)
+                self.assertIn(reason, res[0]["batch_reasons"])
+                failed = [c["name"] for c in res[0]["measurements"] if not c["pass"]]
+                self.assertEqual(failed, failing)
+
+    def _normalize_leg_response(self, measurements):
+        """One well-formed single-corner leg response (valid waveform, the
+        given measurement rows) through the startup normalizer directly."""
+        exp = corner_run.load_experiment(SIM_DIR / "startup")
+        tmp = Path(tempfile.mkdtemp())
+        self.addCleanup(lambda: shutil.rmtree(tmp, True))
+        wpath = tmp / "tt_27.waveform.json"
+        wpath.write_text(json.dumps(ramp_waveform()))
+        resp = {
+            "status": "pass",
+            "corners": [{
+                "corner_id": "tt/27C", "process": "tt", "temperature_c": 27.0,
+                "status": "pass", "runtime_s": 1.0, "diagnostics": [],
+                "artifacts": {"waveform": str(wpath)},
+                "measurements": measurements,
+            }],
+            "environment": {"remote": {"job_id": "j", "state": "done", "exit_code": "0",
+                                       "runner_compatibility": "match"}},
+        }
+        group = _batch_backend.BatchGroup("v3.30-c330n_0ma_esr0", 3.3, [
+            corner_run.Corner("tt", 27.0, 3.3)], ["tt"], [27.0], "c330n_0ma_esr0")
+        return _batch_backend.normalize_startup_response(exp, group, resp, tmp, 300)
 
     def test_mismatched_runner_aborts_with_no_record(self):
         def mismatch(resp, req):

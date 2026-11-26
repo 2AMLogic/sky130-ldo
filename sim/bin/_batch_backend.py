@@ -1082,13 +1082,15 @@ def normalize_startup_response(
 
     Structure problems raise HarnessError (an unfinished/incompatible remote
     job is never a result; there is no trustworthy record to write). Per-point
-    problems (errored corner, absent log, solver diagnostic, missing/non-finite
-    `.meas` card) become recorded FAIL reasons. The manifest's per-leg
-    measurements are evaluated over the leg's raw card values with the
-    manifest's own expressions, and the ramp-monotonicity condition is graded
-    from the returned waveform artifact (a missing/unusable trace is an
-    INVALID condition with its reasons — it can only lower the verdict).
-    Returns (results in request point order, {corner id: engine log text}).
+    problems (errored corner, absent log, solver diagnostic, or a
+    missing/duplicated/errored/non-finite/unexpected `.meas` card, as judged
+    by the shared `extract_step_values` validator) become recorded FAIL
+    reasons. The manifest's per-leg measurements are evaluated over the leg's
+    raw card values with the manifest's own expressions, and the
+    ramp-monotonicity condition is graded from the returned waveform artifact
+    (a missing/unusable trace is an INVALID condition with its reasons — it
+    can only lower the verdict). Returns (results in request point order,
+    {corner id: engine log text}).
     """
     problem = batch_dropout.remote_completion_problem(response)
     if problem:
@@ -1104,27 +1106,10 @@ def normalize_startup_response(
         if status not in ("pass", "fail"):
             reasons.append(f"{tag}klt sim corner status {status!r} (not a completed result)")
         reasons.extend(f"{tag}{r}" for r in batch_dropout.corner_diagnostic_problems(rc))
-        by_name: dict[str, dict] = {}
-        for rm_ in rc["measurements"]:
-            if isinstance(rm_, dict) and isinstance(rm_.get("name"), str):
-                name = rm_["name"]
-                if name in by_name:
-                    reasons.append(f"{tag}measurement {name!r} reported more than once")
-                by_name[name] = rm_
-        card_values: dict[str, float | None] = {}
-        for name in template_cards:
-            entry = by_name.get(name)
-            if entry is None:
-                reasons.append(f"{tag}measurement {name!r} not found in klt sim response")
-                card_values[name] = None
-            elif not _finite_number(entry.get("value")):
-                reasons.append(
-                    f"{tag}measurement {name!r} value is missing or non-finite "
-                    f"({entry.get('value')!r}, klt status {entry.get('status')!r})"
-                )
-                card_values[name] = None
-            else:
-                card_values[name] = float(entry["value"])
+        card_values, card_reasons = blr.extract_step_values(
+            group.leg, template_cards, rc["measurements"]
+        )
+        reasons.extend(card_reasons)
 
         checks = []
         for m in exp.measurements:
