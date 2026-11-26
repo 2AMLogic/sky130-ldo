@@ -3,12 +3,14 @@
 Current roadmap derived from GitHub lifecycle labels. Maintained by the Loom Guide role.
 
 <!-- guide:plan-body:start -->
-_Generated: 2026-11-26T02:32:33Z (snapshot; compare against live labels)_
+_Generated: 2026-11-26T05:02:31Z (snapshot; compare against live labels)_
 ## Operator Attention: Merge-Risk-Hold Pileup
 
 Judge-approved PRs under a hold (`loom:blocked` or `loom:operator`) — only a human merge decision is missing.
 
 - **#569**: docs: propose DR-014 binding capacitor condition for the PSRR row
+- **#810**: docs(spec): append DR-008 restart-evidence reconciliation for the fresh ratification review
+- **#816**: chore(loom): resync installed Loom to v0.20.37
 
 ## Very Important
 
@@ -27,31 +29,30 @@ Judge-approved PRs under a hold (`loom:blocked` or `loom:operator`) — only a h
 
 Human-approved issues (`loom:issue`) ready for implementation — excluding held (`loom:blocked`/`loom:operator`/`loom:frozen`), `loom:building`, and issues closed by an open `loom:pr` PR (listed under Approved).
 
-- **#629**: characterization.md Output row reads PASS on light-load-only evidence; record 20261115-133911-1caff9b9 is full-load evidence against that same window
-- **#639**: xschem pin migration: migrate sky130-ldo to the fleet 3.4.7
+- **#629**: characterization.md Output row reads PASS on light-load-only evidence; record 20261115-133911-1caff9b9 is full-load evidence against that same window *(PR #633 on operator hold)*
+- **#639**: xschem pin migration: migrate sky130-ldo to the fleet 3.4.7 *(PR #641 on operator hold)*
 
 ## In Progress
 
 Issues currently being built (`loom:building`).
 
 - **#767**: sim/pdk.json pins a volare sky130A build while every worker run uses the ciel store (--allow-pdk-mismatch on every record)
-- **#791**: Batch-mode PDK provenance: the pinned-PDK guard and the record's PDK line are blind to the fleet worker's own stamp
 - **#805**: DR-008 ratification: reconcile the thermal-restart market escalation with integrated-comparator evidence
-- **#808**: Remove the second corner lookup that loses chained batch diagnostics
+- **#812**: Resync Loom so large private defaults no longer abort create-pr.sh and create-issue.sh
 
 ## PRs Awaiting Review
 
 PRs waiting on Judge (`loom:review-requested`).
 
-- **#810**: docs(spec): append DR-008 restart-evidence reconciliation for the fresh ratification review
+_None._
 
 ## Approved (Awaiting Merge)
 
 PRs that passed review and are queued for Champion auto-merge (`loom:pr`).
 
 - **#569**: docs: propose DR-014 binding capacitor condition for the PSRR row *(held)*
-- **#794**: fix: verify the executed worker PDK before publishing simulation records
-- **#811**: fix: keep chained batch corner diagnostics on the validated pairing
+- **#810**: docs(spec): append DR-008 restart-evidence reconciliation for the fresh ratification review *(held)*
+- **#816**: chore(loom): resync installed Loom to v0.20.37 *(held)*
 
 ## Proposed
 
@@ -72,13 +73,12 @@ Issues carrying `loom:curated`.
 - **#691**: Stability: screen a compensation candidate that closes the 10-300 uA band at both C_out endpoints and the 0.33 uF / 50 mA shortfall (follow-on to #370) *(curated)* *(held)*
 - **#767**: sim/pdk.json pins a volare sky130A build while every worker run uses the ciel store (--allow-pdk-mismatch on every record) *(curated)*
 - **#786**: Verify the graded PSRR batch adapter and publish its 45-corner fleet record *(curated)* *(held)*
-- **#791**: Batch-mode PDK provenance: the pinned-PDK guard and the record's PDK line are blind to the fleet worker's own stamp *(curated)*
 - **#805**: DR-008 ratification: reconcile the thermal-restart market escalation with integrated-comparator evidence *(curated)*
 - **#812**: Resync Loom so large private defaults no longer abort create-pr.sh and create-issue.sh *(curated)*
 
 ## Proposed (Architect / Hermit)
 
-- **#813**: Reuse the batch measurement validator so startup cannot pass an errored peak-voltage reading *(hermit)*
+- **#818**: Reuse the batch step validator in compare_dropout_paired.py *(hermit)*
 
 ## Epics
 
@@ -88,14 +88,14 @@ Issues carrying `loom:curated`.
 
 | Bucket | Count |
 |------|-------|
-| Operator merge-risk holds | 1 |
+| Operator merge-risk holds | 3 |
 | Very important | 1 |
 | Important | 2 |
 | Ready (`loom:issue`, net of holds/building/merge-pending) | 2 |
-| In Progress (`loom:building`) | 4 |
-| PRs awaiting review | 1 |
+| In Progress (`loom:building`) | 3 |
+| PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 3 |
-| Curated | 18 |
+| Curated | 17 |
 | Architect / Hermit proposals | 1 |
 | Active epics | 1 |
 <!-- guide:plan-body:end -->
