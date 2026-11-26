@@ -3,13 +3,12 @@
 Current roadmap derived from GitHub lifecycle labels. Maintained by the Loom Guide role.
 
 <!-- guide:plan-body:start -->
-_Generated: 2026-11-25T20:44:28Z (snapshot; compare against live labels)_
+_Generated: 2026-11-25T23:30:08Z (snapshot; compare against live labels)_
 ## Operator Attention: Merge-Risk-Hold Pileup
 
 Judge-approved PRs under a hold (`loom:blocked` or `loom:operator`) — only a human merge decision is missing.
 
-- **#569**: docs: propose DR-014 binding capacitor condition for the PSRR row
-- **#735**: docs(spec): reconcile DR-008 status text with its ratification path
+_None._
 
 ## Very Important
 
@@ -21,13 +20,14 @@ Judge-approved PRs under a hold (`loom:blocked` or `loom:operator`) — only a h
 
 `loom:important`; taken before unlabelled work.
 
-- **#301**: spec: decide whether DR-008 through DR-012 ratified on merge
+- **#301**: spec: decide whether DR-008 through DR-012 ratified on merge *(held)*
 - **#786**: Verify the graded PSRR batch adapter and publish its 45-corner fleet record *(held)*
 
 ## Ready
 
 Human-approved issues (`loom:issue`) ready for implementation — excluding held (`loom:blocked`/`loom:operator`/`loom:frozen`), `loom:building`, and issues closed by an open `loom:pr` PR (listed under Approved).
 
+- **#314**: PSRR: decide and evidence the binding output-capacitor/ESR condition
 - **#629**: characterization.md Output row reads PASS on light-load-only evidence; record 20261115-133911-1caff9b9 is full-load evidence against that same window
 - **#639**: xschem pin migration: migrate sky130-ldo to the fleet 3.4.7
 
@@ -35,22 +35,21 @@ Human-approved issues (`loom:issue`) ready for implementation — excluding held
 
 Issues currently being built (`loom:building`).
 
-- **#301**: spec: decide whether DR-008 through DR-012 ratified on merge
 - **#767**: sim/pdk.json pins a volare sky130A build while every worker run uses the ciel store (--allow-pdk-mismatch on every record)
 - **#791**: Batch-mode PDK provenance: the pinned-PDK guard and the record's PDK line are blind to the fleet worker's own stamp
+- **#804**: Remove obsolete MOS model-substitution warning from generated PEX decks
 
 ## PRs Awaiting Review
 
 PRs waiting on Judge (`loom:review-requested`).
 
-- **#777**: migrate sky130 PDK pin from volare c6d73a35 to ciel f6eeac7 (DR-015)
+- **#569**: docs: propose DR-014 binding capacitor condition for the PSRR row
+- **#806**: fix: replace obsolete 01v8 substitution note in PEX deck generator
 
 ## Approved (Awaiting Merge)
 
 PRs that passed review and are queued for Champion auto-merge (`loom:pr`).
 
-- **#569**: docs: propose DR-014 binding capacitor condition for the PSRR row
-- **#735**: docs(spec): reconcile DR-008 status text with its ratification path
 - **#794**: fix: verify the executed worker PDK before publishing simulation records
 
 ## Proposed
@@ -59,7 +58,7 @@ Issues carrying `loom:curated`.
 
 - **#114**: Gap to T1: 6 of 12 ratified rows FAIL — replacement tracker (#58 closed on child-completion, not on verdict) *(curated)* *(held)*
 - **#131**: Thermal shutdown: track regenerative auto-restart hysteresis design, integration, and qualification *(curated)* *(held)*
-- **#301**: spec: decide whether DR-008 through DR-012 ratified on merge *(curated)*
+- **#301**: spec: decide whether DR-008 through DR-012 ratified on merge *(curated)* *(held)*
 - **#314**: PSRR: decide and evidence the binding output-capacitor/ESR condition *(curated)*
 - **#345**: Load transient: mint the COUT/ESR window-grid x 45 PVT campaign via --backend batch (blocked on fleet runner update) *(curated)* *(held)*
 - **#416**: Re-run folded-resistor MC at n>=1000 to firm up M2 sigma-ratio gate *(curated)* *(held)*
@@ -73,10 +72,11 @@ Issues carrying `loom:curated`.
 - **#767**: sim/pdk.json pins a volare sky130A build while every worker run uses the ciel store (--allow-pdk-mismatch on every record) *(curated)*
 - **#786**: Verify the graded PSRR batch adapter and publish its 45-corner fleet record *(curated)* *(held)*
 - **#791**: Batch-mode PDK provenance: the pinned-PDK guard and the record's PDK line are blind to the fleet worker's own stamp *(curated)*
+- **#805**: DR-008 ratification: reconcile the thermal-restart market escalation with integrated-comparator evidence *(curated)*
 
 ## Proposed (Architect / Hermit)
 
-- **#797**: Use the batch endpoint validator in paired line- and load-regulation comparisons *(hermit)*
+_None._
 
 ## Epics
 
@@ -86,14 +86,14 @@ Issues carrying `loom:curated`.
 
 | Bucket | Count |
 |------|-------|
-| Operator merge-risk holds | 2 |
+| Operator merge-risk holds | 0 |
 | Very important | 1 |
 | Important | 2 |
-| Ready (`loom:issue`, net of holds/building/merge-pending) | 2 |
+| Ready (`loom:issue`, net of holds/building/merge-pending) | 3 |
 | In Progress (`loom:building`) | 3 |
-| PRs awaiting review | 1 |
-| Approved PRs awaiting merge | 3 |
-| Curated | 16 |
-| Architect / Hermit proposals | 1 |
+| PRs awaiting review | 2 |
+| Approved PRs awaiting merge | 1 |
+| Curated | 17 |
+| Architect / Hermit proposals | 0 |
 | Active epics | 1 |
 <!-- guide:plan-body:end -->

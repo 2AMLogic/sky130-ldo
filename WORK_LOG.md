@@ -8,6 +8,14 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 
 ### 2026-11-25
 
+- **PR #735**: docs(spec): reconcile DR-008 status text with its ratification path
+- **Issue #802** (closed): Use the shared bounds grader for the window-grid campaign recheck
+- **PR #803**: fix: honor strict bounds in window-grid campaign verdicts
+- **Issue #799** (closed): Use the shared thermal trip threshold in the batch staircase
+- **PR #800**: refactor: import the shared trip predicate in the batch staircase
+- **Issue #797** (closed): Use the batch endpoint validator in paired line- and load-regulation comparisons
+- **PR #801**: fix: validate fleet endpoint measurements in paired regulation reports
+- **PR #790**: feat: publish graded 45-corner psrr-dc fleet campaign with paired local/fleet check
 - **PR #793**: docs: clarify batch support for PSRR and loop-gain campaigns
 - **Issue #792** (closed): psrr-dc issue-786 diagnostics README cites a `models_lib_comparison: match` verdict the report records as `null`
 - **Issue #788** (closed): Stale 'batch refuses psrr-dc' claims in sim/README.md and bias-retopo-pvt.py after #786
