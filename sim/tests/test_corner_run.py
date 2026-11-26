@@ -1,6 +1,6 @@
 """Unit coverage for sim/bin/corner-run.py's pure helper functions.
 
-PDK-free by design (no ngspice/xschem/volare required) so this runs on every
+PDK-free by design (no ngspice/xschem/ciel required) so this runs on every
 `npm run check:ci` invocation, including in CI where the sky130 PDK is not
 installed -- see sim/selftest.sh stage 1/3.
 
@@ -14,6 +14,7 @@ from __future__ import annotations
 import datetime
 import hashlib
 import math
+import os
 import re
 import subprocess
 import sys
@@ -514,6 +515,69 @@ import json
 import shutil
 
 SMOKE_NETLIST = "** sch_path: x\nV1 VDD 0 'vsup'\nR1 VDD vg 1Meg\nXM1 vg vg 0 0 sky130_fd_pr__nfet_01v8\n.end\n"
+
+
+class TestPdkResolution(unittest.TestCase):
+    def setUp(self):
+        temp = tempfile.TemporaryDirectory()
+        self.addCleanup(temp.cleanup)
+        self.home = Path(temp.name)
+        self.pin = corner_run.load_pin()
+        self.enterContext(mock.patch.dict(os.environ, HOME=str(self.home)))
+        os.environ.pop("PDK_ROOT", None)
+        os.environ.pop("PDK", None)
+        self.store = Path(self.pin["default_pdk_root"]).expanduser()
+        self.pinned = self.store / "versions" / self.pin["open_pdks_commit"]
+
+    def install_variant(self, root, variant):
+        library = root / variant / self.pin["ngspice_lib"]
+        library.parent.mkdir(parents=True)
+        library.touch()
+
+    def test_missing_requested_variant_allows_deliberate_off_pin_run(self):
+        # Ciel can report the pin's path even if only another variant exists there.
+        self.install_variant(self.pinned, "sky130A")
+        os.environ["PDK"] = "sky130B"
+        enabled = self.store / "versions" / "other-build"
+        self.install_variant(enabled, "sky130B")
+        (self.store / "sky130B").symlink_to(enabled / "sky130B")
+        self.enterContext(mock.patch.object(corner_run, "ciel_path", return_value=self.pinned))
+
+        netlist = self.home / "smoke.spice"
+        netlist.write_text(SMOKE_NETLIST)
+        self.enterContext(mock.patch.object(corner_run, "BUILD_DIR", self.home / "build"))
+        netlister = self.enterContext(
+            mock.patch.object(corner_run, "netlist_with_xschem", return_value=netlist)
+        )
+        args = [str(SIM_DIR / "pdk-smoke"), "--dry-run"]
+        with self.assertRaisesRegex(corner_run.HarnessError, "--allow-pdk-mismatch"):
+            corner_run.main(args)
+        netlister.assert_not_called()
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(corner_run.main([*args, "--allow-pdk-mismatch"]), 0)
+        pdk = netlister.call_args.args[2]
+        self.assertEqual(pdk.dir, self.store / "sky130B")
+        self.assertEqual(pdk.installed_commit, "other-build")
+
+    def test_installed_pin_and_explicit_root_precedence(self):
+        variant = self.pin["variant"]
+        self.install_variant(self.pinned, variant)
+        with mock.patch.object(corner_run, "ciel_path", return_value=self.pinned):
+            self.assertTrue(corner_run.resolve_pdk(self.pin).matches_pin)
+        os.environ["PDK_ROOT"] = str(self.home / "explicit")
+        with mock.patch.object(corner_run, "ciel_path") as lookup:
+            with self.assertRaisesRegex(corner_run.HarnessError, "no PDK at .*explicit"):
+                corner_run.resolve_pdk(self.pin)
+            lookup.assert_not_called()
+
+    @unittest.skipUnless(shutil.which("tclsh"), "requires tclsh")
+    def test_xschemrc_sources_the_configured_default_with_no_environment(self):
+        pdk_rc = self.store / self.pin["variant"] / self.pin["xschem_pdk_rc"]
+        pdk_rc.parent.mkdir(parents=True)
+        pdk_rc.write_text("puts [info script]\n")
+        project_rc = shutil.copy(SIM_DIR / "xschemrc", self.home)
+        result = subprocess.run(["tclsh", project_rc], capture_output=True, text=True, check=True)
+        self.assertEqual(result.stdout.strip(), str(pdk_rc))
 
 
 class FakeKlt:

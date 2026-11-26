@@ -136,13 +136,7 @@ def load_pin() -> dict:
 
 
 def ciel_path(pin: dict) -> Path | None:
-    """Ask the ciel CLI for the pinned version's directory, if it is installed.
-
-    Unlike volare's bare `volare path` (which prints only the store root),
-    `ciel path` requires the family and version, so this returns the exact
-    directory of the *pinned* build when ciel can resolve it. Any failure
-    (ciel absent, version not fetched) falls back to `default_pdk_root`.
-    """
+    """Ask Ciel where the pinned build would live, even if it hasn't been fetched."""
     exe = shutil.which("ciel")
     if not exe:
         return None
@@ -160,12 +154,14 @@ def ciel_path(pin: dict) -> Path | None:
 
 
 def resolve_pdk(pin: dict) -> Pdk:
+    variant = os.environ.get("PDK", "").strip() or pin["variant"]
     root_env = os.environ.get("PDK_ROOT", "").strip()
     if root_env:
         root = Path(root_env).expanduser()
     else:
-        root = ciel_path(pin) or Path(pin["default_pdk_root"]).expanduser()
-    variant = os.environ.get("PDK", "").strip() or pin["variant"]
+        root = ciel_path(pin)
+        if root is None or not (root / variant).is_dir():
+            root = Path(pin["default_pdk_root"]).expanduser()
     pdk_dir = root / variant
     if not pdk_dir.is_dir():
         raise HarnessError(
