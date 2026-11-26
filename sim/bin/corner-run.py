@@ -136,26 +136,33 @@ def load_pin() -> dict:
     return json.loads(PDK_PIN_FILE.read_text())
 
 
-def volare_path() -> Path | None:
-    exe = shutil.which("volare")
+def ciel_path(pin: dict) -> Path | None:
+    """Ask Ciel where the pinned build would live, even if it hasn't been fetched."""
+    exe = shutil.which("ciel")
     if not exe:
         return None
     try:
         out = subprocess.run(
-            [exe, "path"], capture_output=True, text=True, timeout=60, check=True
+            [exe, "path", "--pdk-family", pin["family"], pin["open_pdks_commit"]],
+            capture_output=True,
+            text=True,
+            timeout=60,
+            check=True,
         ).stdout.strip()
-    except (subprocess.SubprocessError, OSError):
+    except (subprocess.SubprocessError, OSError, KeyError):
         return None
     return Path(out) if out else None
 
 
 def resolve_pdk(pin: dict) -> Pdk:
+    variant = os.environ.get("PDK", "").strip() or pin["variant"]
     root_env = os.environ.get("PDK_ROOT", "").strip()
     if root_env:
         root = Path(root_env).expanduser()
     else:
-        root = volare_path() or Path(pin["default_pdk_root"]).expanduser()
-    variant = os.environ.get("PDK", "").strip() or pin["variant"]
+        root = ciel_path(pin)
+        if root is None or not (root / variant).is_dir():
+            root = Path(pin["default_pdk_root"]).expanduser()
     pdk_dir = root / variant
     if not pdk_dir.is_dir():
         raise HarnessError(
@@ -177,7 +184,8 @@ def resolve_pdk(pin: dict) -> Pdk:
 
 
 def installed_commit(pdk_dir: Path) -> str:
-    """Recover the volare version hash by resolving the PDK symlink."""
+    """Recover the open_pdks build hash (ciel- or volare-layout store) by
+    resolving the PDK symlink."""
     parts = pdk_dir.resolve().parts
     if "versions" in parts:
         idx = parts.index("versions")
@@ -287,7 +295,7 @@ def spiceinit_log_section(run_dir: Path) -> list[str]:
 TOOL_VERSION_FLAGS = {
     "ngspice": "-v",
     "xschem": "--version",
-    "volare": "--version",
+    "ciel": "--version",
 }
 
 
@@ -1280,7 +1288,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     p.add_argument(
         "--check-env",
         action="store_true",
-        help="check ngspice/xschem/volare/PDK are usable and exit (0 if all OK)",
+        help="check ngspice/xschem/ciel/PDK are usable and exit (0 if all OK)",
     )
     p.add_argument(
         "--require-pdk",

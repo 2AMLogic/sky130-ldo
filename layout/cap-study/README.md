@@ -28,7 +28,7 @@ Records are append-only: a new measurement mints a new directory.
 
 ## Rules the study follows
 
-- Each number comes from one of three places: a named file and parameter in the pinned PDK (`sim/pdk.json`: `sky130A` at open_pdks `c6d73a35...`), a `klt sim` run in the record, or an existing repo record. Anything else is the literal `unmeasured`, with a reason.
+- Each number comes from one of three places: a named file and parameter in the pinned PDK (`sim/pdk.json`: `sky130A` at open_pdks `f6eeac7...`), a `klt sim` run in the record, or an existing repo record. Anything else is the literal `unmeasured`, with a reason.
 - Area accounting is the #246 convention: drawn area = C / density, and "beside" = scenario D + drawn area. A keep-out-inclusive figure appears only where a drawn record measured one.
 - Capacitor terminals come from the xschem netlist, which identifies terminals only. Their voltages come from cold-start settled operating points (#171) through `klt sim`. A multi-corner grid goes to `--backend batch`. Only single units run locally, and a failed batch job is recorded, never replaced by a local grid.
 - Outcomes:

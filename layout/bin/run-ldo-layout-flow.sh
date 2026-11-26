@@ -19,8 +19,8 @@
 #   layout/bin/run-ldo-layout-flow.sh
 #
 # Requires: layout/.venv (see setup-venv.sh), `xschem` and `klayout` on PATH, and a
-# resolvable sky130A PDK install (same pin as sim/pdk.json; `volare enable
-# --pdk sky130 <sha>`).
+# resolvable sky130A PDK install (same pin as sim/pdk.json; `ciel enable
+# --pdk-family sky130 -l sky130_fd_pr <sha>`).
 set -euo pipefail
 
 # LAYOUT_DIR/REPO_ROOT, the klt/PDK guards, the record mint and the headless

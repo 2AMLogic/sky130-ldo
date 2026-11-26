@@ -399,8 +399,9 @@ string"), `R_FB_A`/`R_FB_B`/`R_FB_C` are three identical `res_xhigh_po` unit
 resistors (`W=0.42 L=180`), ratio 1:2 (one unit `VOUT->FB`, two units
 `FB->GND`) so `VOUT = 1.5 x VREF`. The unit value was **measured**, not
 assumed, via a quick op screening deck against the pinned PDK
-(`sky130A`, open_pdks `c6d73a35f524070e85faff4a6a9eef49553ebc2b`, same pin as
-`sim/pdk.json`; `tt` corner, 27°C; method: 1V across the resistor to ground,
+(`sky130A`, open_pdks `c6d73a35f524070e85faff4a6a9eef49553ebc2b` — the pin at
+the time, model-identical to today's `f6eeac7…` per DR-015's same-engine pair;
+`tt` corner, 27°C; method: 1V across the resistor to ground,
 `R = 1V / I`) — mirroring DR-001/DR-003's own screening-deck convention:
 
 | Resistor | Geometry | Measured value (tt/27°C, screening only) |
@@ -1159,7 +1160,8 @@ removable disturbance current `IX` at `xldo.TS_SNS` and an `EN` source that is
 ## Screening checks (screening only — not `sim/` evidence)
 
 Everything below was run against the pinned PDK (`sky130A`, open_pdks
-`c6d73a35f524070e85faff4a6a9eef49553ebc2b`, same pin as `sim/pdk.json`), `tt`
+`c6d73a35f524070e85faff4a6a9eef49553ebc2b` — the pin at the time,
+model-identical to today's `f6eeac7…` per DR-015's same-engine pair), `tt`
 corner, 27°C, `VREF = 1.2V` (placeholder, see above), **from the committed
 schematic's own xschem-generated netlist** (`klt netlist -o
 /tmp/ldo_3v3in_1v8out.spice` ; `.include` that `.spice` file into a
