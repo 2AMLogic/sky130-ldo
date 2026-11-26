@@ -46,6 +46,7 @@ from _record_common import (  # noqa: E402
     load_corner_run_module,
     reserve_record_id,
     run_klt_sim,
+    WorkerPdkStamp,
     write_new_text,
 )
 
@@ -128,18 +129,19 @@ def render_md(rec: dict) -> str:
         f"- **Manifest**: `{m['path']}` (sha256 `{m['sha256'][:16]}…`)",
         f"- **Testbench**: `sim/psrr-dc/testbench/tb_psrr_dc.sch`, netlist snapshot "
         f"`sim/psrr-dc/netlist-snapshots/{rec['record_id']}.spice` (with the added `CDIR` branch)",
-        f"- **PDK**: {rec['pdk']['variant']} @ `{rec['pdk']['installed_commit']}` "
+        f"- **Submitter PDK**: {rec['pdk']['variant']} @ `{rec['pdk']['installed_commit']}` "
         f"(pin `{rec['pdk']['pin']}`, matches: {rec['pdk']['matches_pin']})",
         f"- **Execution**: `klt sim --backend {rec['backend']}`, one request per corner",
         "",
         "## Execution backend", "",
-        "| corner | job id | reported backend | engine | klt | klt PDK names pin | corner status |",
-        "|---|---|---|---|---|---|---|",
+        "| corner | job id | reported backend | engine | klt | submitter klt PDK names pin | worker PDK evidence | corner status |",
+        "|---|---|---|---|---|---|---|---|",
     ]
     for e in rec["execution"]:
         L.append(f"| `{e['corner_id']}` | `{e.get('job_id')}` | {e.get('reported_backend')} | "
                  f"{e.get('engine')} {e.get('engine_version')} | {e.get('klt_version')} | "
-                 f"{e.get('klt_pdk_names_pin')} | {e.get('klt_corner_status')} |")
+                 f"{e.get('klt_pdk_names_pin')} | {WorkerPdkStamp(e.get('remote') or {}).describe()} | "
+                 f"{e.get('klt_corner_status')} |")
     L += ["", "## Results (dB; VOUT of the seeded operating point in V)", "",
           "| corner | C_eff (uF) | ESR (ohm) | 1k/1mA | 100k/1mA | 1k/50mA | 100k/50mA | "
           "VOUT 1mA | VOUT 50mA | ok |",
@@ -256,7 +258,9 @@ def main(argv: list[str]) -> int:
         print(f"submitting {cid} ({args.backend}) ...", flush=True)
         try:
             response, meta = run_klt(rpath, outdir, args.backend, pdk.root)
-            assert_klt_read_the_pinned_pdk(response, pdk, pin, args.allow_pdk_mismatch, error_cls=HarnessError)
+            assert_klt_read_the_pinned_pdk(
+                response, pdk, pin, args.allow_pdk_mismatch, error_cls=HarnessError, backend=args.backend
+            )
         except HarnessError as exc:
             done = [e["job_id"] for e in execution]
             raise HarnessError(f"{exc}\n  corner {cid} failed: NO record written, NO local fallback, "

@@ -6,6 +6,11 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 
 - [2026-09](work_log/WORK_LOG_2026-09.md)
 
+### 2026-11-26
+
+- **Issue #804** (closed): Remove obsolete MOS model-substitution warning from generated PEX decks
+- **PR #806**: fix: replace obsolete 01v8 substitution note in PEX deck generator
+
 ### 2026-11-25
 
 - **PR #735**: docs(spec): reconcile DR-008 status text with its ratification path
@@ -577,37 +582,4 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 - **PR #212**: signoff item 6: mint a `klt yield` report over the MC campaign — unmet/wrong_kind -> met (T1 3/11 -> 4/11)
 - **PR #210**: docs(signoff): item 5 FAIL count 7 -> 6 after Line regulation moved to PASS
 - **PR #209**: sim(psrr-dc): settle the AC-grounded EN question — measured over 45 corners, ≤0.0017 dB, bench unchanged
-
-### 2026-09-26
-
-- **Issue #206** (closed): docs(spec): restate the Line regulation row's Notes against record 20260926-200304-35b7392 — 'FAIL (18/45)' is three records stale and the row now passes 45/45
-- **Issue #200** (closed): sim(line-regulation): mint the 45-corner record under #196's EN convention — the deck is fixed, the matrix is not re-run (~7 h serial on the sweep host)
-- **Issue #196** (closed): sim(line-regulation): EN is driven at 'vsup' while VIN is alter-ed to 3.63V — the same EN-below-VIN geometry #187 root-caused, and the 5 failing corners are exactly that column
-- **Issue #191** (closed): sim/README.md and dropout-vs-load/experiment.json misstate the shipped ramp rate as 106.5 V/s / 26ms (actual: 266.3 V/s / 14ms)
-- **Issue #190** (closed): corner-run.py records the deck as the "exact input given to ngspice" but not sim/spiceinit, and #171's solver-diagnostic FAIL does not reproduce without it
-- **Issue #189** (closed): sim(thermal): 2 of 15 corners still trip the #171 solver-diagnostic gate after seeding, and it is not the shared-.nodeset limitation
-- **Issue #187** (closed): sim(dropout-vs-load): fs/125C/2.97V does not come up — the one residual outlier in the post-#178 record, with no solver diagnostic
-- **Issue #184** (closed): sim/load-regulation's '200ms not 1ms' justification is attributed to the uic deck but measured on the seeded one (does not reproduce)
-- **Issue #180** (closed): Seed sim/load-transient's tran analysis to conform to the initial-condition contract
-- **Issue #179** (closed): Seed sim/loop-gain and sim/psrr-dc's AC analyses to conform to the initial-condition contract
-- **Issue #178** (closed): Seed sim/dropout-vs-load and sim/thermal's DC/temperature sweeps to conform to the initial-condition contract
-- **Issue #172** (closed): Convert sim/line-regulation and sim/load-regulation's .op chains to a seeded initial condition, re-run and record
-- **Issue #166** (closed): spec/target-spec.md: rewrite the Load transient row's Notes column now that #180/PR #183 landed the full 45-corner re-run
-- **Issue #127** (closed): signoff: items 4 and 6 cannot be freshness-pinned — this repo's LVS/MC envelopes were produced by klt 0.2.0 (provenance.input: null)
-- **PR #208**: docs(spec): restate Line/Load regulation Notes against their current records
-- **PR #205**: sim(line-regulation): mint the 45-corner record under #196's EN convention — 45/45 PASS, and the supply axis is finally a negative control
-- **PR #204**: signoff: re-point item 6 at the current Monte Carlo record and pin it — the graded reason moves check_failed -> wrong_kind
-- **PR #202**: sim(line-regulation): drive EN at the instantaneous VIN — the 5 failing corners were the #187 EN-below-VIN artifact, and the 45-corner re-run is a measured compute gap (#196)
-- **PR #199**: signoff: re-point item 4 at a klt-0.6.0 LVS record; defer item 6's re-pointing
-- **PR #198**: docs(spec): restate the Load transient row's Notes against the full 45-corner record 20260926-013955-6449a98
-- **PR #197**: sim(dropout-vs-load): drive EN at the VIN rail and hold the ramp rate constant — the fs/125C/2.97V collapse was an enable-path headroom limit the bench convention walked into
-- **PR #195**: sim(thermal): the last two #171-gate corners were one node's supply classification in the .nodeset seed, not the trip bifurcation (#189)
-- **PR #194**: sim(corner-run): record the .spiceinit ngspice read next to each deck
-- **PR #193**: docs(sim): correct dropout-vs-load's shipped ramp rate to 266.3 V/s / 14ms in two stale prose spots
-- **PR #192**: docs(sim): correct load-regulation's 200ms-vs-1ms attribution (does not reproduce on the uic deck)
-- **PR #188**: sim: seed loop-gain/psrr-dc's ac analyses per the initial-condition contract (#179)
-- **PR #186**: sim: convert dropout-vs-load's dc VIN sweep to a cold-start ramp and seed thermal's dc temp sweeps (#171 contract)
-- **PR #185**: sim(current-limit): seed legs 1 and 3 with `tran ... uic` — an EN edge alone does not cover the transient's op solve
-- **PR #183**: sim: seed load-transient's tran to the #171 initial-condition contract
-- **PR #182**: sim: convert line/load-regulation's unseeded .op chains to the #171 initial-condition contract, re-run both 45-corner matrices
 
