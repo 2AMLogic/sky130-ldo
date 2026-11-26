@@ -104,8 +104,7 @@ class FakeScalarKlt(FakeKlt):
                                        "runner_compatibility": "match"}},
             "provenance": {"klt_version": "0.9.0", "pdk": {"version": self.pin["open_pdks_commit"]}},
         }
-        if self.mutate:
-            self.mutate(resp, req)
+        self.finish_response(resp, req)
         return subprocess.CompletedProcess(cmd, self.rc, stdout=json.dumps(resp), stderr="")
 
 

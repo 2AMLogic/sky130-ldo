@@ -115,8 +115,7 @@ class FakeLoopGainKlt(FakeKlt):
             "provenance": {"klt_version": "0.9.3.dev4220+g01d19126ca02",
                            "pdk": {"version": self.pin["open_pdks_commit"]}},
         }
-        if self.mutate:
-            self.mutate(resp, req)
+        self.finish_response(resp, req)
         out = self.stdout if self.stdout is not None else json.dumps(resp)
         return subprocess.CompletedProcess(cmd, self.rc, stdout=out, stderr="")
 

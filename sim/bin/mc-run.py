@@ -55,6 +55,7 @@ from _record_common import (
     load_corner_run_module,
     render_record_footer,
     render_record_header,
+    WorkerPdkStamp,
     reserve_record_id,
     run_klt_sim as _shared_run_klt_sim,
     write_new_text,
@@ -95,12 +96,12 @@ def load_mc_experiment(path: Path) -> dict:
 
 
 def assert_klt_read_the_pinned_pdk(
-    response: dict, pdk, pin: dict, allow_mismatch: bool
+    response: dict, pdk, pin: dict, allow_mismatch: bool, *, backend: str | None = None
 ) -> None:
     """Check `klt sim`'s OWN provenance names the PDK this harness pinned
     (issue #211). The implementation is shared with `corner-run.py --backend
     batch` and lives in `_record_common.py`; see its docstring."""
-    _shared_assert_pdk(response, pdk, pin, allow_mismatch, error_cls=HarnessError)
+    _shared_assert_pdk(response, pdk, pin, allow_mismatch, error_cls=HarnessError, backend=backend)
 
 
 # --------------------------------------------------------------------------
@@ -435,7 +436,7 @@ def render_execution_backend(record: dict) -> list[str]:
             else " **on the remote executor, not this machine**"
         )
     ]
-    remote = env.get("remote") or {}
+    remote = env.get("remote") if isinstance(env.get("remote"), dict) else {}
     if remote:
         detail = ", ".join(
             f"{k}=`{remote[k]}`"
@@ -443,11 +444,11 @@ def render_execution_backend(record: dict) -> list[str]:
             if remote.get(k) is not None
         )
         lines.append(f"  - Remote job: {detail}")
-        lines.append(
-            "  - The remote executor resolves its own PDK copy; `klt sim`'s own "
-            f"provenance block records it as `{(r.get('klt_response') or {}).get('provenance', {}).get('pdk', {}).get('version', 'unknown')}` "
-            "— compare that against the **PDK** line above, which is this machine's install."
-        )
+    if backend in ("remote", "batch"):
+        provenance = (r.get("klt_response") or {}).get("provenance") or {}
+        version = (provenance.get("pdk") or {}).get("version") or "unavailable"
+        lines.append(f"  - submitter klt provenance.pdk.version `{version}`")
+        lines.append(f"  - {WorkerPdkStamp(remote).describe()}")
     return lines
 
 
@@ -761,7 +762,7 @@ def main(argv: list[str]) -> int:
         request_file, klt_outdir, args.backend, args.max_workers, pdk_root=pdk.root
     )
 
-    assert_klt_read_the_pinned_pdk(response, pdk, pin, args.allow_pdk_mismatch)
+    assert_klt_read_the_pinned_pdk(response, pdk, pin, args.allow_pdk_mismatch, backend=args.backend)
 
     store.stage_text(response_rel, json.dumps(response, indent=2, sort_keys=True) + "\n")
 
