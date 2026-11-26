@@ -93,7 +93,14 @@ def load_remote(d: Path) -> tuple[dict, str | None, list[str]]:
     across requests would let two incomplete requests fake a complete pair.
     The step's measurements are validated with the shared step validator, so
     a duplicated, errored, unexpected or missing reading is reported as a
-    remote error (verdict `unresolved`), never silently accepted."""
+    remote error (verdict `unresolved`), never silently accepted.
+
+    `dropout_v` is the one value the fleet reports as a klt-evaluated derived
+    expression, so a reported reading is kept as-is and cross-checked against
+    `derive` of the remote's own `dropout_vin_x`: a gap beyond DROPOUT_V_TOL
+    is reported as a remote error (`unresolved`), never silently overwritten
+    by the local recomputation. Only when no valid reading was reported does
+    the recomputation fill the row, exactly as `load_local` does."""
     paths = sorted((d / "remote").glob("*/response.json"))
     if len(paths) != 1:
         raise SystemExit(
@@ -104,7 +111,17 @@ def load_remote(d: Path) -> tuple[dict, str | None, list[str]]:
         STEP_NAME, EXPECTED, resp["corners"][0]["measurements"]
     )
     vals = {name.split(".", 1)[1]: value for name, value in raw.items()}
-    vals.update({k: v for k, v in derive(vals).items() if v is not None})
+    reported, derived = vals.get("dropout_v"), derive(vals)["dropout_v"]
+    if is_finite_number(reported) and derived is not None:
+        gap = abs(reported - derived)
+        if gap > DROPOUT_V_TOL:
+            errors.append(
+                f"[{STEP_NAME}] dropout.dropout_v {reported!r} disagrees with its "
+                f"own dropout.dropout_vin_x-derived value {derived!r} "
+                f"(|d| = {gap:.6g} V > {DROPOUT_V_TOL} V)"
+            )
+    elif derived is not None:
+        vals["dropout_v"] = derived
     return (
         vals,
         _paired_compare.engine_version(
