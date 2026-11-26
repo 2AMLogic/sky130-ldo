@@ -8,6 +8,14 @@ Chronological record of merged pull requests and closed issues. Maintained by th
 
 ### 2026-11-26
 
+- **Issue #813** (closed): Reuse the batch measurement validator so startup cannot pass an errored peak-voltage reading
+- **PR #817**: fix: grade startup batch card readings through the shared step validator
+- **Issue #795** (closed): run_hysteresis records drop the worker PDK stamp the #791 guard now checks
+- **PR #815**: fix: keep the executed worker PDK stamp in thermal staircase records
+- **Issue #808** (closed): Remove the second corner lookup that loses chained batch diagnostics
+- **PR #811**: fix: keep chained batch corner diagnostics on the validated pairing
+- **Issue #791** (closed): Batch-mode PDK provenance: the pinned-PDK guard and the record's PDK line are blind to the fleet worker's own stamp
+- **PR #794**: fix: verify the executed worker PDK before publishing simulation records
 - **Issue #804** (closed): Remove obsolete MOS model-substitution warning from generated PEX decks
 - **PR #806**: fix: replace obsolete 01v8 substitution note in PEX deck generator
 
