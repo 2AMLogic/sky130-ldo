@@ -3733,22 +3733,36 @@ if [[ "$MERGED_TITLE" =~ ^chore\(loom\):\ resync\ installed\ Loom\ to\ v([0-9]+\
 fi
 ```
 
-### Step 4: Verify Issue Auto-Close
+### Step 4: Issue closure is the daemon's; Champion only reads (#14905)
 
-After merge, verify linked issues were auto-closed by GitHub.
+**Champion no longer closes, reopens, or holds a linked issue.** The daemon's
+merge-observation pass (`loom-daemon`, `claim_reconciliation/pass_loop/merge_observation.rs`,
+#14902) does everything this step used to do, for **any** merge — this one, a
+queue merge, or one made on the forge — from a record pinned under
+`.loom/state/merge-bookkeeping/pr-<N>.json`, within one reconciliation tick:
 
-**Before confirming (or forcing) any linked issue's close, run the Out-of-Band
-Acceptance-Criteria Gate for that issue** (defined just below). Merging proves
-only what CI can check (not a live external source, a scheduled run, or an
-observation over time), so this is where "PR merged" becomes "issue done".
+- the **Out-of-Band Acceptance-Criteria Gate** below (`champion.outOfBandAcGate`
+  honored, current-head `loom:ac-verified` evidence, the `champion:ac-hold`
+  notice posted once per `(PR, head)`, `loom:operator` added, and a close GitHub
+  already made undone);
+- the negated-reference reopen (#1057), only for an issue **this** merge closed (#8942);
+- the belt-and-suspenders close of a linked issue that is still open;
+- the partial-increment reset, branch-derived close and closed-issue strip that
+  `merge-pr.sh` used to run, in their original order.
+
+Do not duplicate any of it here. A second writer would race the daemon's
+once-per-merge comment dedupe and its reopened-after-merge check.
+
+**Before unblocking dependents, check which linked issues are ready.** GitHub can
+already show an issue as closed while the daemon still has to reopen it for
+unverified acceptance criteria or a negated-only reference (#1057). Read the
+merged PR and its merge commit once, then check each target before Step 5.
 
 ```bash
 PR_NUMBER=$1
 
-# Per-repo switch (#12703): `champion.outOfBandAcGate`, resolved through the
-# daemon's config tiers (fleet / repo-class / .loom/config.json). Only an
-# explicit boolean `false` turns the gate off; absent, unreadable, a missing
-# verb or any non-boolean value keeps it ON (fail closed).
+# `champion.outOfBandAcGate` (#12703): only an explicit boolean `false` turns the
+# gate off; absent, unreadable, a missing verb or any non-boolean value keeps it ON.
 ac_gate_enabled() {
   local out
   command -v loom-daemon >/dev/null 2>&1 || return 0
@@ -3756,79 +3770,46 @@ ac_gate_enabled() {
   printf '%s' "$out" | jq -e '.found == true and .value == false' >/dev/null 2>&1 && return 1
   return 0
 }
-if ac_gate_enabled; then AC_GATE=on; else AC_GATE=off; fi
 
-# GitHub's own parser (closingIssuesReferences): the set it auto-closes on
-# merge. Ignores `Updates #N`, `See #N`, code fences, `Discloses #N` (#3267) —
-# but is NOT negation-aware, hence the #1057 check in the loop.
 source "$(git rev-parse --show-toplevel)/.loom/scripts/lib/forge-helpers.sh"
 forge_detect
 LINKED_ISSUES=$(forge_pr_close_targets "$PR_NUMBER")
+[ -z "$LINKED_ISSUES" ] && { echo "No linked issues found in PR body"; exit 0; }
 
-if [ -z "$LINKED_ISSUES" ]; then
-  echo "No linked issues found in PR body"
-  exit 0
+READY_TO_UNBLOCK=""
+# A failed read leaves the readiness list empty. An empty PR body is valid:
+# the squash commit alone can say "does not fix #N".
+REPO=$(forge_get_repo_nwo) || exit 1
+PR_JSON=$(forge_get_pr "$REPO" "$PR_NUMBER") || exit 1
+HEAD_SHA=$(jq -er '.head.sha | strings | select(length > 0)' <<<"$PR_JSON") || exit 1
+MERGE_SHA=$(jq -er 'select(.merged == true) | .merge_commit_sha | strings | select(length > 0)' <<<"$PR_JSON") || exit 1
+PR_BODY=$(jq -er '(.body // "") | strings' <<<"$PR_JSON") || exit 1
+if [ "$FORGE_TYPE" = gitea ]; then
+  COMMIT_JSON=$(gitea_api GET "repos/$REPO/git/commits/$MERGE_SHA") || exit 1
+else
+  COMMIT_JSON=$(gh api "repos/$REPO/commits/$MERGE_SHA") || exit 1
 fi
+MERGE_MESSAGE=$(jq -er '.commit.message | strings' <<<"$COMMIT_JSON") || exit 1
 
-# One REST read (#12242): the head SHA this merge landed (it survives the
-# merge; it is the tree any `loom:ac-verified` marker must name) and the merge
-# commit, empty unless merged.
-read -r HEAD_SHA M < <(gh api "repos/{owner}/{repo}/pulls/$PR_NUMBER" --jq '"\(.head.sha) \(if .merged then .merge_commit_sha else "" end)"' 2>/dev/null)
-
-# #1057 negation-check input: PR body + (GitHub) merge-commit message.
-NEG_SRC=$(forge_get_pr_body "$(forge_get_repo_nwo)" "$PR_NUMBER" 2>/dev/null)
-[ -n "$NEG_SRC" ] && [ -n "$M" ] && NEG_SRC+=$'\n'$(gh api "repos/{owner}/{repo}/commits/$M" --jq .commit.message 2>/dev/null)
-
-# Per linked issue. Plain `gh` — NOT "$GH_READ": this runs right after your own
-# merge and gates writes, so it must see post-merge state ("Cached forge reads").
 for issue in $LINKED_ISSUES; do
-  # --- Out-of-Band Acceptance-Criteria Gate (#6883) ---
-  # Classify this issue's own acceptance criteria BEFORE acting on its state.
-  # Exit codes: 0 CLEAR / 10 NO-AC / 11 SATISFIED (current-SHA marker present)
-  #             12 UNVERIFIED / 13 STALE-MARKER / 1 ERROR.
-  # 0, 10 and 11 fall through to the unchanged close logic below.
-  # `champion.outOfBandAcGate=false` (#12703): skip the classifier entirely
-  # (exit 10 = NO-AC, which falls through to the unchanged close logic).
-  if [ "$AC_GATE" = "off" ]; then
-    AC_REPORT=""; AC_RC=10
-  else
-    AC_REPORT=$(./.loom/scripts/classify-ac-verification.sh \
-      --issue "$issue" --pr "$PR_NUMBER" --head-sha "$HEAD_SHA")
-    AC_RC=$?
+  REF_RC=0
+  loom-daemon merge-pr-refs has-unnegated-closing-ref --issue "$issue" <<<"$PR_BODY"$'\n'"$MERGE_MESSAGE" || REF_RC=$?
+  # 3 means no textual match, e.g. a Development sidebar link. Only a
+  # readable, non-negated target may use GitHub's current CLOSED state.
+  case "$REF_RC" in 0|3) ;; *) continue ;; esac
+  if ac_gate_enabled; then
+    # Read-only classifier. 0 CLEAR / 10 NO-AC / 11 SATISFIED pass; 12 UNVERIFIED,
+    # 13 STALE-MARKER and 1 ERROR do NOT ("could not run" is not "criteria met").
+    AC_RC=0
+    ./.loom/scripts/classify-ac-verification.sh --issue "$issue" --pr "$PR_NUMBER" --head-sha "$HEAD_SHA" >/dev/null || AC_RC=$?
+    case "$AC_RC" in 0|10|11) ;; *) echo "Issue #$issue: out-of-band AC unverified — NOT unblocking dependents (the daemon holds the close)"; continue ;; esac
   fi
-
-  # 1 (ERROR) is grouped with 12/13 deliberately: "the classifier could not
-  # run" is not "the criteria are met". Fail closed — see item 5 below.
-  if [ "$AC_RC" -eq 12 ] || [ "$AC_RC" -eq 13 ] || [ "$AC_RC" -eq 1 ]; then
-    echo "Issue #$issue has an unverified out-of-band acceptance criterion — HOLDING the close"
-    hold_issue_on_unverified_ac "$issue" "$PR_NUMBER" "$HEAD_SHA" "$AC_RC" "$AC_REPORT"
-    continue   # do NOT close, do NOT confirm — next linked issue
-  fi
-
-  # Tri-state (#1057): 0 unnegated, 1 negated-only, 3 no textual reference; 3
-  # and an older daemon's clap 2 fall through to the close. On 1, reopen ONLY if
-  # THIS merge closed it (#8942): closed-by-merge exit 0. 1 = no; else no answer.
-  printf '%s\n' "$NEG_SRC" | loom-daemon merge-pr-refs has-unnegated-closing-ref --issue "$issue"
-  if [ $? -eq 1 ] && [ -n "$NEG_SRC" ]; then
-    cbm() { loom-daemon merge-pr closed-by-merge --issue "$issue" --pr "$PR_NUMBER" "$@"; }
-    cbm <<<"$(gh api graphql -F o='{owner}' -F r='{repo}' -f query="$(cbm --print-query)")"
-    case $? in
-      0) gh issue reopen "$issue" --comment "Reopened: PR #$PR_NUMBER only references this issue negated (#1057)." ;;
-      1) ;;
-      *) echo "Issue #$issue: no closed-by-merge answer; NOT reopened (#8942)" ;;
-    esac
-    continue
-  fi
-
-  ISSUE_STATE=$(gh issue view "$issue" --json state --jq '.state' 2>&1)
-
-  if [ "$ISSUE_STATE" = "CLOSED" ]; then
-    echo "Issue #$issue is closed (auto-closed by PR merge)"
-  else
-    echo "Issue #$issue is still $ISSUE_STATE - closing manually..."
-    gh issue close "$issue" --comment "Closed by PR #$PR_NUMBER which was auto-merged by Champion."
-  fi
+  # Read the live state for this unblocking decision.
+  if [ "$(forge_get_issue_state "$REPO" "$issue")" = "CLOSED" ]; then READY_TO_UNBLOCK="$READY_TO_UNBLOCK $issue"; fi
 done
+# Step 5 runs only for $READY_TO_UNBLOCK. An issue still OPEN or skipped above is
+# picked up on a later pass, once the daemon has finished with it or a human has
+# cleared the hold.
 ```
 
 #### Out-of-Band Acceptance-Criteria Gate (#6883)
@@ -3853,8 +3834,9 @@ cannot distinguish from a correctly-passing filter.
 and does not want a human hold waiting on a confirmation of a real run sets it
 `false` through the normal config tiers (for the fleet state store: the repo's override
 in `fleet.yml`; no new plumbing, same resolution as `champion.standingAuthorizations`).
-First use case: 2AMLogic/loom-ui. With `false`, Step 4 runs neither the
-classifier nor `hold_issue_on_unverified_ac` for any linked issue: no
+First use case: 2AMLogic/loom-ui. With `false`, neither Step 4's read-only
+check nor the daemon's merge-observation pass runs the classifier or the hold for
+any linked issue: no
 `loom:operator` is added for an out-of-band criterion and the issue closes as
 normal. Only an explicit boolean `false` disables the gate; absent, unreadable,
 a missing `loom-daemon config` verb or a non-boolean value (including the
@@ -3878,7 +3860,7 @@ continuation lines, joined into one line.
 Test-plan execution is Judge's, and its posture there is explicitly non-blocking
 (`judge.md` → "Test Execution"); folding it in here would hold issues on steps
 this gate has no standing to gate. **An issue with no AC heading at all yields no
-items (exit `10`) and Step 4 behaves exactly as it did before this gate existed**
+items (exit `10`) and the issue is handled exactly as it was before this gate existed**
 — that is the common case and it must stay a no-op.
 
 **2. Classifying each item — a fixed phrase vocabulary, not judgment.** An item
@@ -3948,78 +3930,26 @@ the out-of-band step actually performed, and against which tree"**.
   the same fail-safe the verdict-SHA convention applies.
 
 **4. Hold behavior when a criterion is unverified.** On exit `12`, `13`, or `1`,
-Champion must **not** let the issue close. The PR stays merged — this gate is
-about the issue's state, never about reversing a merge. Define the helper below
-**before** running Step 4's loop (the loop calls it by name).
+the issue must **not** be left closed. The PR stays merged — this gate is about
+the issue's state, never about reversing a merge. Since #14905 the **daemon**
+performs the hold (`hold_for_unverified_ac` in `merge_observation.rs`); Champion
+does not. The hold is, in order:
 
-```bash
-# Hold the close on a linked issue whose AC needs out-of-band verification.
-# Idempotent: re-running a pass over the same PR must not re-post the comment.
-hold_issue_on_unverified_ac() {
-  local issue="$1" pr="$2" head_sha="$3" rc="$4" report="$5"
+1. reopen the issue if GitHub's own `Closes #N` linkage already closed it — the
+   load-bearing half, since by the time anything runs the silent close has
+   usually already happened;
+2. post one notice per `(PR, head SHA)` hold episode, idempotent on the marker
+   `<!-- champion:ac-hold pr=<N> sha=<head> -->`. It names the unmet criteria
+   verbatim and shows the `loom:ac-verified` marker **shape** with a `<head>`
+   placeholder — never a live `sha=<head>` literal, which the classifier would
+   read as evidence and self-satisfy the hold it just posted (#13900);
+3. add `loom:operator` (the engine has stopped until a human performs or attests
+   one step). Idempotent.
 
-  # Reopen if GitHub's own `Closes #N` linkage already closed it on merge.
-  # This is the load-bearing half: by the time Step 4 runs, the silent close
-  # has usually ALREADY happened, so holding means undoing it.
-  local state
-  state=$(gh issue view "$issue" --json state --jq '.state')
-  if [ "$state" = "CLOSED" ]; then
-    gh issue reopen "$issue"
-  fi
-
-  # Idempotency guard: one comment per (PR, head SHA) hold episode. The marker
-  # embeds both, so a plain `grep -F` cannot prefix-collide (cf. #5371).
-  # Cached ("$GH_READ") — an idempotency-marker grep, not a merge gate.
-  local marker="<!-- champion:ac-hold pr=$pr sha=$head_sha -->"
-  if "$GH_READ" issue view "$issue" --json comments \
-       --jq '.comments[].body' | grep -qF "$marker"; then
-    echo "Issue #$issue already carries the AC hold notice for $head_sha — not re-posting"
-  else
-    local reason quoted
-    case "$rc" in
-      12) reason="no \`loom:ac-verified\` marker was found on this issue or on PR #$pr" ;;
-      13) reason="a \`loom:ac-verified\` marker exists, but it names a different tree than the merged head \`$head_sha\`" ;;
-      *)  reason="the acceptance-criteria classifier could not complete, so this gate fails closed" ;;
-    esac
-    # Quote each unmet criterion VERBATIM so a human sees which is outstanding.
-    quoted=$(printf '%s\n' "$report" | awk -F'\t' 'NF{printf "> - [ ] %s\n>\n>   _(matched: `%s`)_\n", $2, $1}')
-    # The notice shows the marker SHAPE with a `<head>` placeholder and names
-    # the real head in prose -- never a live `sha=$head_sha` literal. The
-    # classifier scans this very comment (issue comments are the evidence
-    # corpus) for a marker, and a rendered literal would self-satisfy the hold
-    # it just posted (#13900). The placeholder is rejected by the extractor's
-    # hex requirement, so prose-quoting stays inert.
-    ./.loom/scripts/post-comment.sh "$issue" --body "$marker
-**Champion is holding this issue open.** PR #$pr merged, but this issue's own
-acceptance criteria include a step that CI structurally cannot perform, and
-$reason.
-
-Unmet criteria:
-
-$quoted
-
-A green suite is not evidence for these — merging proves the criteria CI can
-check, not a live-source, real-run, or over-time observation. See
-\`champion-pr-merge.md\` → \"Out-of-Band Acceptance-Criteria Gate\" (#6883).
-
-**To clear this**: perform the step, then post a comment on this issue (or on
-PR #$pr) saying what you ran and what you observed, ending with
-
-    <!-- loom:ac-verified sha=<head> -->
-
-where \`<head>\` is the merged head \`$head_sha\` (the full 40-char SHA or a
-7+-char abbreviation of it both match), and close the issue. If the criterion
-was never actually out-of-band, reword it
-so it no longer reads as live/scheduled/over-time and close normally.
-
-*Automated by Champion role*"
-  fi
-
-  # loom:operator (.loom/docs/label-state-machine.md): the engine has stopped
-  # until a human performs or attests one step. Idempotent, safe to reassert.
-  gh issue edit "$issue" --add-label "loom:operator"
-}
-```
+**To clear a hold**: perform the step, comment what you ran and observed, end
+with `<!-- loom:ac-verified sha=<head> -->` (full 40-char SHA or a 7+-char
+abbreviation of the merged head), and close the issue. If the criterion was never
+actually out-of-band, reword it so it no longer reads as live/scheduled/over-time.
 
 **5. Fail closed on `1` (ERROR), never open.** An unreadable issue, a missing
 script, or an unparseable body means the gate **could not be evaluated** — which
@@ -4044,11 +3974,10 @@ broader list would still miss the next phrasing while flagging ordinary prose.
 
 After verifying issue closure, check for blocked issues that can now be unblocked.
 
-**Run this only for issues that actually closed.** An issue held open by Step 4's
-Out-of-Band Acceptance-Criteria Gate is, by construction, *not* done — unblocking
-its dependents would propagate the same unsound "merged ⇒ done" inference one
-level further out. Skip it in this step and pick it up on a later pass, once a
-human has cleared the hold.
+**Run this only for issues in Step 4's `READY_TO_UNBLOCK` list.** Carry
+`LINKED_ISSUES` and `READY_TO_UNBLOCK` from that step into the check below.
+A dependent can name several issues from this merge. Each must pass Step 4
+even when another one triggered the scan.
 
 **Epic-aware dependency check (#5211).** This is *the* call site named first
 under "Affected Files" in issue #5211 — the bare `state != CLOSED` read below
@@ -4127,6 +4056,11 @@ for blocked in $BLOCKED_ISSUES; do
   ALL_RESOLVED=true
   for ref in $ALL_DEPS; do
     parse_blocker_ref "$ref" "$THIS_REPO" || continue
+    if grep -Fxiq "$BLOCKER_REPO" <<<"$THIS_REPO" && grep -Fxq "$BLOCKER_NUM" <<<"${LINKED_ISSUES:?run Step 4 first}" &&
+       [[ " ${READY_TO_UNBLOCK?run Step 4 first} " != *" $BLOCKER_NUM "* ]]; then
+      ALL_RESOLVED=false
+      break
+    fi
     # Run champion-common.md → "Epic-Aware Blocker Check" Step 2 for
     # BLOCKER_REPO/BLOCKER_NUM here — it sets EPIC_BLOCK_STATE.
     case "$EPIC_BLOCK_STATE" in

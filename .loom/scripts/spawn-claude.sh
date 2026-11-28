@@ -1225,6 +1225,21 @@ if [[ -z "${LOOM_SPAWN_NO_EXPORT:-}" && -z "${CLAUDE_CODE_OAUTH_TOKEN:-}" ]]; th
     # shellcheck disable=SC2206,SC2207
     _select_args+=($(loom_daemon_model_select_flag "$_daemon_bin" "$_resolved_model"))
 
+    # Resume account pin (issue #14981): a Claude session resumed from a
+    # persistent seat only works in the account whose config dir holds the
+    # transcript. The daemon exports LOOM_RESUME_ACCOUNT for such a resume;
+    # it must reach `tokens select` as an explicit --pin-account, because an
+    # exported LOOM_TOKEN_NAME is overwritten by the `eval` below. NOT
+    # capability-degraded like --auto-unpin / --model: a binary that predates
+    # the flag would silently draw another account, so refuse instead.
+    if [[ -n "${LOOM_RESUME_ACCOUNT:-}" ]]; then
+        if ! "$_daemon_bin" tokens select --help 2>&1 | grep -q -- '--pin-account'; then
+            log_error "spawn-claude: resuming in account '$LOOM_RESUME_ACCOUNT' needs a loom-daemon whose 'tokens select' supports --pin-account (#14981); $_daemon_bin does not."
+            exit 78  # EX_CONFIG
+        fi
+        _select_args+=(--pin-account "$LOOM_RESUME_ACCOUNT")
+    fi
+
     # Prompt-cache affinity key (issue #8146): the account that last ran this
     # (repo, role) is the one holding a warm prompt cache for it — a 65% full
     # prefix-hit rate on same-account ticks vs 1.4% on cross-account ones.
@@ -1274,6 +1289,29 @@ if [[ -z "${LOOM_SPAWN_NO_EXPORT:-}" && -z "${CLAUDE_CODE_OAUTH_TOKEN:-}" ]]; th
     log_info "spawn-claude: using OAuth account '${LOOM_TOKEN_NAME:-unknown}' (mode=${LOOM_TOKEN_MODE:-unknown})"
     echo "# LOOM_ACCOUNT name=${LOOM_TOKEN_NAME:-unknown}" >&2
     unset LOOM_TOKEN_MODE
+fi
+
+# --- Resume pin enforcement (issue #14981) ---
+# Whatever chose the account (the pinned `tokens select` above, or a caller-set
+# CLAUDE_CODE_OAUTH_TOKEN / LOOM_SPAWN_NO_EXPORT that skipped selection), a
+# resume must land in the pinned account and its recorded session store, or it
+# dies with "no conversation found". Fail closed; the daemon then re-dispatches
+# the step fresh.
+if [[ -n "${LOOM_RESUME_ACCOUNT:-}" && "${LOOM_TOKEN_NAME:-}" != "$LOOM_RESUME_ACCOUNT" ]]; then
+    log_error "spawn-claude: resume pinned to account '$LOOM_RESUME_ACCOUNT' but this launch runs as '${LOOM_TOKEN_NAME:-unknown}'; refusing (#14981)."
+    exit 78
+fi
+if [[ -n "${LOOM_RESUME_SESSION_STORE:-}" ]]; then
+    if [[ "$_has_seats" == true && -n "${LOOM_TOKEN_NAME:-}" && -f "$_seat_root/$LOOM_TOKEN_NAME/.session-managed.json" ]]; then
+        _resume_store_here="$_seat_root/$LOOM_TOKEN_NAME/home"
+    else
+        _resume_store_here="${CLAUDE_CONFIG_DIR:-${HOME:-}/.claude}"
+    fi
+    if [[ "${_resume_store_here%/}" != "${LOOM_RESUME_SESSION_STORE%/}" ]]; then
+        log_error "spawn-claude: resume pinned to session store '$LOOM_RESUME_SESSION_STORE' but this launch uses '$_resume_store_here'; refusing (#14981)."
+        exit 78
+    fi
+    unset _resume_store_here
 fi
 
 if [[ "$_has_seats" == true ]]; then
@@ -1434,7 +1472,7 @@ fi
 # read here, but a nested spawn-codex.sh would write the parent's handle through
 # it. The proxied host half keeps
 # them: its in-container copy receives them by name and drops them itself.
-[[ "$_CONTAINMENT_CRED_PROXY" == "1" ]] || unset LOOM_AGENT_SCOPE_UNIT LOOM_RESUME_SESSION_ID LOOM_RESUME_PROMPT LOOM_RESUME_HANDLE_FILE
+[[ "$_CONTAINMENT_CRED_PROXY" == "1" ]] || unset LOOM_AGENT_SCOPE_UNIT LOOM_RESUME_SESSION_ID LOOM_RESUME_PROMPT LOOM_RESUME_HANDLE_FILE LOOM_RESUME_ACCOUNT LOOM_RESUME_SESSION_STORE
 
 # --- Optional safehouse MCP server injection (issue #3999) ---
 # When the `safehouse` config block is enabled and a socket + launch command
@@ -1506,7 +1544,7 @@ if [[ "$_CONTAINMENT_CRED_PROXY" != "1" && -f "$_mcp_config_lib" ]]; then
             # stale. Name that consequence here, and point at the standalone,
             # on-demand check (independent of a daemon restart) that answers
             # "is this drifted?" without reading any sweep log.
-            log_warn "spawn-claude: SAFEHOUSE DRIFT — safehouse.enabled is true but no socket resolves (safehouse.socket / \$LOOM_SAFEHOUSE_SOCKET / \$SAFEHOUSED_SOCKET); no safehouse narration will be recorded for this sweep — the public fleet pulse is fed exclusively from safehouse narration, so this host's activity will not appear there until the socket resolves. Run '.loom/scripts/check-safehouse-socket.sh' to check every managed repo on this host without reading sweep logs. Skipping safehouse MCP injection (loom MCP unaffected)."
+            log_warn "spawn-claude: SAFEHOUSE DRIFT — safehouse.enabled is true but no socket resolves (safehouse.socket / \$LOOM_SAFEHOUSE_SOCKET / \$SAFEHOUSED_SOCKET); no safehouse MCP tools are injected for this sweep, and this host's merged-PR report will not reach the fleet room until the socket resolves. Run '.loom/scripts/check-safehouse-socket.sh' to check every managed repo on this host without reading sweep logs. Skipping safehouse MCP injection (loom MCP unaffected)."
         elif ! command -v "$_sh_command" >/dev/null 2>&1; then
             log_warn "spawn-claude: safehouse launch command '$_sh_command' not found in PATH; skipping safehouse MCP injection (loom MCP unaffected)."
         else

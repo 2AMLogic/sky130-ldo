@@ -1339,6 +1339,44 @@ _fec_err="$( (FORGE_TYPE=github; forge_get_pr o/r 1 "$_FEC_SHIM/gh" 2>&1 >/dev/n
 assert_eq "gh: Not Found (HTTP 404)" "$_fec_err" "forge_get_pr passes gh's stderr through instead of discarding it"
 rm -rf "$_FEC_SHIM"
 
+# --- _forge_nwo_from_url: strict remote-URL contract (#15628) ---
+echo ""
+echo "Testing _forge_nwo_from_url (#15628)..."
+nfu() { local out rc=0; out="$(_forge_nwo_from_url "$1")" || rc=$?; printf '%s|%s' "$out" "$rc"; }
+for _u in 'https://github.com/o/r' 'https://github.com/o/r.git' 'https://github.com/o/r/' \
+          'https://github.com/o/r.git/' 'HTTPS://GitHub.com/o/r' 'http://host/o/r' \
+          'git@github.com:o/r.git' 'git@github.com:o/r' 'deploy@host:o/r.git' \
+          'ssh://git@host/o/r.git' 'ssh://git@host:2222/o/r' 'git://host/o/r.git' \
+          'https://gitea.example.com/o/r'; do
+  assert_eq "o/r|0" "$(nfu "$_u")" "_forge_nwo_from_url resolves $_u"
+done
+for _u in '/srv/git/widgets.git' 'https://github.com/only-owner' 'https://host/gitea/o/r' \
+          'https://github.com' 'https://github.com/' 'ftp://host/o/r' 'file:///srv/o/r' \
+          'git@host:only-owner' 'git@host:/o/r' 'git@host:a/b/c' 'o/r' '' '   '; do
+  assert_eq "|1" "$(nfu "$_u")" "_forge_nwo_from_url fails closed on '$_u'"
+done
+
+# forge_get_repo_nwo / _forge_nwo_from_remote use the same contract, so a remote
+# the Rust parser rejects never yields an invented owner on either forge.
+_NFU_REPO="$(mktemp -d)"
+git -C "$_NFU_REPO" init -q
+git -C "$_NFU_REPO" remote add origin '/srv/git/widgets.git'
+_NFU_GH_SHIM="$(mktemp -d)"; printf '#!/usr/bin/env bash\nexit 1\n' > "$_NFU_GH_SHIM/gh"; chmod +x "$_NFU_GH_SHIM/gh"
+for _ft in github gitea; do
+  _nfu_out="$( (cd "$_NFU_REPO" && FORGE_TYPE=$_ft forge_get_repo_nwo "$_NFU_GH_SHIM/gh") 2>/dev/null; echo "rc=$?")"
+  assert_eq "rc=1" "$_nfu_out" "forge_get_repo_nwo ($_ft) fails closed on a local-path remote"
+done
+_nfu_out="$( (cd "$_NFU_REPO" && _forge_nwo_from_remote) 2>/dev/null; echo "rc=$?")"
+assert_eq "rc=1" "$_nfu_out" "_forge_nwo_from_remote fails closed on a local-path remote"
+git -C "$_NFU_REPO" remote set-url origin 'git@github.com:o/r.git'
+for _ft in github gitea; do
+  _nfu_out="$( (cd "$_NFU_REPO" && FORGE_TYPE=$_ft forge_get_repo_nwo "$_NFU_GH_SHIM/gh") 2>/dev/null)"
+  assert_eq "o/r" "$_nfu_out" "forge_get_repo_nwo ($_ft) resolves a scp-form remote"
+done
+_nfu_out="$( (cd "$_NFU_REPO" && _forge_nwo_from_remote) 2>/dev/null)"
+assert_eq "o/r" "$_nfu_out" "_forge_nwo_from_remote resolves a scp-form remote"
+rm -rf "$_NFU_REPO" "$_NFU_GH_SHIM"
+
 # --- Summary ---
 echo ""
 echo "────────────────────────────────"
