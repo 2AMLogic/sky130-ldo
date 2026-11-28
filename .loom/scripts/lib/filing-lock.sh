@@ -107,6 +107,11 @@
 #                                   production filers never set it. Semantics are
 #                                   unchanged either way.
 
+# Atomic single-directory creation (#15265, shared since #15287): plain `mkdir`
+# is not mutual exclusion on uutils coreutils (Ubuntu 26.04).
+# shellcheck source=./atomic-mkdir.sh
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/atomic-mkdir.sh"
+
 # Resolved lock dir currently held by this shell (empty = none).
 LOOM_FILING_LOCK_PATH="${LOOM_FILING_LOCK_PATH:-}"
 
@@ -284,54 +289,6 @@ _loom_filing_lock_captain_release() {
     return 0
 }
 
-# Resolve an atomic single-directory creation backend (#15265).
-# Ubuntu 26.04 ships uutils coreutils 0.10.0 as /usr/bin/mkdir, whose
-# create_dir() checks path.exists() before mkdir(2) and then returns Ok(()) on
-# EEXIST when path.is_dir() even without -p (src/uu/mkdir/src/mkdir.rs:198,342).
-# Under concurrency two callers both pass path.exists() and both exit 0,
-# breaking POSIX mkdir mutual exclusion.
-#
-# Resolution order:
-#   1. Shell-function `mkdir` (preserves test-seam stubs like #15122).
-#   2. `gnumkdir` when installed (Ubuntu 26.04 ships /usr/bin/gnumkdir from
-#      gnu-coreutils alongside rust-coreutils).
-#   3. When `mkdir` is uutils and `gnumkdir` is absent, direct mkdir(2) via
-#      `python3` or `perl` (Debian Essential `perl-base`).
-#   4. Plain `mkdir` (GNU coreutils, BSD/macOS, BusyBox — atomic).
-_loom_filing_lock_mkdir_backend() {
-    if [[ "$(type -t mkdir 2>/dev/null || true)" == "function" ]]; then
-        printf 'mkdir\n'
-        return 0
-    fi
-    if command -v gnumkdir >/dev/null 2>&1; then
-        printf 'gnumkdir\n'
-        return 0
-    fi
-    local ver
-    ver="$(mkdir --version 2>/dev/null || true)"
-    if [[ "$ver" == *[Uu][Uu][Tt][Ii][Ll][Ss]* ]]; then
-        if command -v python3 >/dev/null 2>&1; then
-            printf 'python3\n'
-            return 0
-        fi
-        if command -v perl >/dev/null 2>&1; then
-            printf 'perl\n'
-            return 0
-        fi
-    fi
-    printf 'mkdir\n'
-}
-
-_loom_filing_lock_mkdir() {
-    local backend="$1" path="$2"
-    case "$backend" in
-        gnumkdir) gnumkdir -- "$path" 2>/dev/null ;;
-        python3)  python3 -c 'import os, sys; os.mkdir(sys.argv[1])' "$path" 2>/dev/null ;;
-        perl)     perl -e 'mkdir($ARGV[0]) or exit 1' -- "$path" 2>/dev/null ;;
-        *)        mkdir "$path" 2>/dev/null ;;
-    esac
-}
-
 # Acquire the machine-wide filing lock.
 #   0  — safe to file
 #   75 — DEFER (caller must not file)
@@ -363,11 +320,11 @@ loom_filing_lock_acquire() {
 
     local holder="$store/holder"
     local start now blocker logged_wait=0 vanished=0 mkdir_backend
-    mkdir_backend="$(_loom_filing_lock_mkdir_backend)"
+    mkdir_backend="$(loom_atomic_mkdir_backend)"
     start="$(date +%s)"
     while :; do
         local mkdir_rc=0
-        _loom_filing_lock_mkdir "$mkdir_backend" "$holder" || mkdir_rc=$?
+        loom_atomic_mkdir_with "$mkdir_backend" "$holder" || mkdir_rc=$?
         _loom_filing_lock_diag "mkdir rc=${mkdir_rc} backend=${mkdir_backend}" "$holder"
         if [[ "$mkdir_rc" -eq 0 ]]; then
             printf '{"host":"%s","pid":%s,"label":"%s","acquired_at":%s}\n' \

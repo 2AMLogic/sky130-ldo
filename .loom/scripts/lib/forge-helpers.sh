@@ -859,7 +859,7 @@ forge_get_pr_body() {
 #   Neither branch is negation-aware: "does not fix #N" reads exactly like
 #   "fixes #N" (#1057). A caller about to ACT on a candidate re-checks it with
 #   `loom-daemon merge-pr-refs has-unnegated-closing-ref --issue N` (text on
-#   stdin), as champion-pr-merge.md Step 4 does before `gh issue close`.
+#   stdin), as Champion Step 4 does before unblocking dependents.
 #
 # Gitea: The Gitea API does not expose an equivalent of closingIssuesReferences,
 #   so this falls back to a word-boundary regex over the PR body. The regex
@@ -1121,18 +1121,61 @@ forge_write_permission_confirmed() {
   return 0
 }
 
+# _forge_nwo_from_url URL -> echoes owner/repo parsed from a git remote URL, or
+# prints nothing and returns 1. The shell twin of the Rust
+# `forge_cmd::parse_remote_url` contract (#9548, #15624): a recognised scheme
+# (https, http, ssh, git; case-insensitive) or the scp form `user@host:o/r`,
+# a non-empty host, and EXACTLY two path segments after stripping a trailing
+# `.git` and `/`. It never invents an owner from a hostname or a local path --
+# `/srv/git/widgets.git`, `https://github.com/only-owner` and a sub-path
+# install (`https://host/gitea/o/r`) all fail closed (#15628). Callers must
+# treat a failed parse as "unknown repository", not fall back to a looser guess.
+_forge_nwo_from_url() {
+  local url="${1:-}" scheme rest authority path
+  url="${url#"${url%%[![:space:]]*}"}"
+  url="${url%"${url##*[![:space:]]}"}"
+  url="${url%/}"
+  url="${url%.git}"
+  url="${url%/}"
+  [[ -n "$url" ]] || return 1
+  if [[ "$url" == *://* ]]; then
+    scheme=$(printf '%s' "${url%%://*}" | tr '[:upper:]' '[:lower:]')
+    case "$scheme" in
+      https|http|ssh|git) ;;
+      *) return 1 ;;
+    esac
+    rest="${url#*://}"
+    [[ "$rest" == */* ]] || return 1
+    authority="${rest%%/*}"
+    path="${rest#*/}"
+    [[ -n "${authority##*@}" ]] || return 1
+  elif [[ "$url" =~ ^[^/@:[:space:]]+@([^/:[:space:]]+):(.*)$ ]]; then
+    path="${BASH_REMATCH[2]}"
+  else
+    return 1
+  fi
+  [[ "$path" =~ ^([^/[:space:]]+)/([^/[:space:]]+)$ ]] || return 1
+  printf '%s/%s' "${BASH_REMATCH[1]}" "${BASH_REMATCH[2]}"
+}
+
 # _forge_nwo_from_remote -> echoes owner/repo parsed from `git remote get-url
 # origin`, with ZERO API calls. Deliberately NOT forge_get_repo_nwo(), whose
 # GitHub branch tries `gh repo view` first -- that is GraphQL-backed, so it can
 # fail for unrelated reasons in the middle of the very recovery path that
 # exists because a `gh` call just failed (#4659's lesson, applied here).
 _forge_nwo_from_remote() {
+  # Prefer the CONFIGURED url: `git remote get-url` applies url.<base>.insteadOf
+  # transport rewrites (e.g. a local bare repo), which is not forge identity and
+  # would parse as "unknown repository". Fall back to get-url if it fails to parse.
   local remote_url nwo
+  remote_url=$(git config --get remote.origin.url 2>/dev/null || echo "")
+  if [[ -n "$remote_url" ]] && nwo=$(_forge_nwo_from_url "$remote_url"); then
+    printf '%s' "$nwo"
+    return 0
+  fi
   remote_url=$(git remote get-url origin 2>/dev/null || echo "")
   [[ -n "$remote_url" ]] || return 1
-  nwo=$(printf '%s' "$remote_url" | sed -E 's|\.git$||; s|/$||; s|.*[:/]([^/]+/[^/]+)$|\1|')
-  [[ -n "$nwo" ]] || return 1
-  printf '%s' "$nwo"
+  _forge_nwo_from_url "$remote_url"
 }
 
 # loom_write_repo [OWNER/REPO] -> Loom writes only to repos it manages (#9548).
@@ -2236,7 +2279,7 @@ forge_get_repo_nwo() {
     local remote_url
     remote_url=$(git remote get-url origin 2>/dev/null || echo "")
     if [[ -n "$remote_url" ]]; then
-      nwo=$(echo "$remote_url" | sed -E 's|\.git$||; s|.*[:/]([^/]+/[^/]+)$|\1|')
+      nwo=$(_forge_nwo_from_url "$remote_url") || return 1
       echo "$nwo"
       return 0
     fi
@@ -2244,7 +2287,7 @@ forge_get_repo_nwo() {
   else
     # GitHub: try gh repo view, fallback to git remote
     nwo=$("$gh_cmd" repo view --json nameWithOwner --jq '.nameWithOwner' 2>/dev/null) && [[ -n "$nwo" ]] && echo "$nwo" && return 0
-    nwo=$(git remote get-url origin 2>/dev/null | sed -E 's|\.git$||; s|.*[:/]([^/]+/[^/]+)$|\1|') && [[ -n "$nwo" ]] && echo "$nwo" && return 0
+    nwo=$(_forge_nwo_from_url "$(git remote get-url origin 2>/dev/null)") && [[ -n "$nwo" ]] && echo "$nwo" && return 0
     return 1
   fi
 }

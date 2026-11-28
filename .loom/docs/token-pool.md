@@ -551,6 +551,15 @@ non-exported `LOOM_TOKEN_MODE=...`) so callers `eval` the output directly
 instead of round-tripping through a JSON parser; `--auto-unpin` runs the
 pinned-account auto-recovery pre-flight (see below) before selecting, and
 `--role <name>` supplies the prompt-cache affinity key described next.
+`--pin-account <name>` (#14981) replaces the draw with exactly that Claude
+account and fails closed (exit 78, nothing selected) when it is missing, empty,
+bad-marked or ranked exhausted/blocked: a seat-stored session resume only works
+in the account whose config dir holds the transcript. The daemon exports
+`LOOM_RESUME_ACCOUNT` / `LOOM_RESUME_SESSION_STORE` for such a resume;
+`spawn-claude.sh` passes the former as `--pin-account` (refusing a daemon that
+lacks the flag, unlike the degrading `--auto-unpin` / `--model` probes) and
+refuses a launch whose account or store differs. The flag is not env-backed, so
+`claude-wrapper.sh`'s post-failure rotation is never re-pinned.
 
 ### Prompt-cache affinity: a preference tier, off by default (issue #8146)
 

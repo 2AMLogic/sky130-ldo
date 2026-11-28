@@ -26,6 +26,7 @@ documented here.
 
 - [What a lease record is](#what-a-lease-record-is)
 - [Who writes one (every claim path — #6320, #8193, #9453)](#who-writes-one-every-claim-path--6320-8193-9453)
+- [Builder leases on a Gitea checkout (#14941)](#builder-leases-on-a-gitea-checkout-14941)
 - [When it is written](#when-it-is-written)
 - [What this phase explicitly does not do](#what-this-phase-explicitly-does-not-do)
 - [Renewer ownership, completion and request budget (Issue #10229)](#renewer-ownership-completion-and-request-budget-issue-10229)
@@ -197,6 +198,17 @@ pid — exactly what `--watch-pid` wants
 (`${LOOM_AGENT_SESSION_PID:-${CLAUDE_PID:-$PPID}}`). Presence (non-empty) of
 any one marker admits the publish; `--force` semantics are unchanged, and a
 blank marker still refuses.
+
+**Who exports it in a native launch (#15455).** `loom-daemon spawn-worker`
+sets `LOOM_AGENT_SESSION_PID` for every native harness to the launch pid — the
+same value it already exported as `LOOM_NATIVE_WORKER_PID` — overwriting
+anything a caller inherited. That pid owns the session for the launch's whole
+lifetime: on the Unix `exec` path it is the harness's own pid, and under an
+egress proxy it is the launcher supervising the harness. A tool shell's
+`${LOOM_AGENT_SESSION_PID:-${CLAUDE_PID:-$PPID}}` therefore resolves to the
+session's owner, never to the tool's own short-lived parent, so a self-claim's
+renewer outlives the tool call that published the lease instead of dying on
+its first wake and letting the lease age out.
 
 **Call-site parity and observable outcome (#10570).** `worktree.sh`'s
 `_wt_lease_claim` uses the same `${LOOM_AGENT_SESSION_PID:-${CLAUDE_PID:-$PPID}}`
